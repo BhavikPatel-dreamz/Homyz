@@ -1,12 +1,20 @@
 import { AppError } from "@/lib/api/errors";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/prisma";
+import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
 import type {
   ChangePasswordInput,
   UpdateProfileInput,
 } from "@/lib/validation/user";
 
-import { toPublicUser, type PublicUser } from "./mappers";
+import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
+
+// The profile payload is a pure function of the target user row (viewer-
+// independent), so the key is the target id and the entry is safe to share
+// across authorized callers. If getById ever returns viewer-dependent fields,
+// this MUST be re-keyed by viewer to avoid cross-user leakage.
+const USER_PROFILE_TTL = 180;
 
 function isUniqueViolation(err: unknown): boolean {
   return (
@@ -18,9 +26,15 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 async function getById(id: string): Promise<PublicUser> {
-  const user = await prisma.user.findUnique({ where: { id } });
-  if (!user) throw AppError.notFound("User not found");
-  return toPublicUser(user);
+  return getOrSetCache(
+    keys.userProfile(id),
+    async () => {
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) throw AppError.notFound("User not found");
+      return toPublicUser(user);
+    },
+    { ttl: USER_PROFILE_TTL, revive: revivePublicUser },
+  );
 }
 
 async function updateProfile(
@@ -43,6 +57,8 @@ async function updateProfile(
 
   try {
     const user = await prisma.user.update({ where: { id: userId }, data });
+    // Invalidate the cached profile after the write commits (fail-open).
+    await deleteCache(keys.userProfile(userId));
     return toPublicUser(user);
   } catch (err) {
     if (isUniqueViolation(err)) {

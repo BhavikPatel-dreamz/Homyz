@@ -11,6 +11,8 @@ import {
   verifyRefreshToken,
 } from "@/lib/auth/tokens";
 import { prisma } from "@/lib/db/prisma";
+import { deleteCache } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
 import { assertLoginRateLimit } from "@/lib/services/rate-limit";
 import * as email from "@/lib/services/email";
 import * as sms from "@/lib/services/sms";
@@ -141,11 +143,13 @@ async function verifyEmail(rawToken: string): Promise<{ success: true }> {
     await prisma.verificationToken.delete({ where: { token } });
     throw AppError.badRequest("Verification token has expired");
   }
-  await prisma.user.update({
+  const updated = await prisma.user.update({
     where: { email: vt.identifier },
     data: { emailVerified: new Date() },
   });
   await prisma.verificationToken.delete({ where: { token } });
+  // emailVerified changed → drop the cached profile (after commit, fail-open).
+  await deleteCache(keys.userProfile(updated.id));
   return { success: true };
 }
 
@@ -279,6 +283,13 @@ async function verifyOtp(
       where: { phone: input.identifier },
       data: { phoneVerified: new Date() },
     });
+    // phone is @unique, so this matches at most one user. Resolve the id(s) and
+    // drop their cached profiles so phoneVerified isn't served stale.
+    const affected = await prisma.user.findMany({
+      where: { phone: input.identifier },
+      select: { id: true },
+    });
+    await deleteCache(...affected.map((u) => keys.userProfile(u.id)));
   }
   return { success: true, verified: true };
 }

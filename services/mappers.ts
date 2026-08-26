@@ -45,3 +45,26 @@ export function toBookingDTO(b: Booking) {
   };
 }
 export type BookingDTO = ReturnType<typeof toBookingDTO>;
+
+// ── Cache revivers ───────────────────────────────────────────────────────────
+// JSON has no Date type, so a DTO read back from the Redis cache has its Date
+// fields as ISO strings. These restore the declared types on a cache HIT (the
+// DB miss-path already returns real Dates). Idempotent and null-safe — matters
+// at the Server-Action→client boundary, where React preserves real Dates.
+
+export function revivePublicUser(u: PublicUser): PublicUser {
+  return {
+    ...u,
+    emailVerified: u.emailVerified ? new Date(u.emailVerified) : u.emailVerified,
+    phoneVerified: u.phoneVerified ? new Date(u.phoneVerified) : u.phoneVerified,
+    createdAt: new Date(u.createdAt),
+  };
+}
+
+export function reviveListingDTO(l: ListingDTO): ListingDTO {
+  return {
+    ...l,
+    createdAt: new Date(l.createdAt),
+    updatedAt: new Date(l.updatedAt),
+  };
+}

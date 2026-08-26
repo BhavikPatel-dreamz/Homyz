@@ -234,3 +234,70 @@ Request: `{ "role": "HOST" }` (`USER | HOST | ADMIN`)
   redirects and is **not** the security boundary.
 - **Ownership:** hosts can only read/mutate resources they own; ADMIN bypasses
   ownership. Enforced inside the services, not the routes.
+
+---
+
+## Health
+
+### `GET /api/v1/health`
+Public liveness/readiness probe. `200` when the database is reachable, `503`
+when it is not. Redis is optional and never affects the status code.
+
+```json
+{ "success": true, "data": { "status": "ok", "database": "healthy", "redis": "disabled" } }
+```
+
+- `database`: `healthy | unavailable` (`SELECT 1`).
+- `redis`: `disabled` (not configured / package absent) · `healthy` (PING ok) ·
+  `unavailable` (configured but PING failed). Only status strings are exposed —
+  never the connection string or any error internals.
+
+---
+
+## Redis (optional cache)
+
+Redis is a **pure, optional performance layer**. The API contract is identical
+whether Redis is enabled or not — mobile and web clients cannot tell the
+difference. If `REDIS_URL` is blank, the `ioredis` package is missing, or Redis
+errors/times out, every read transparently falls back to the database. **No
+request ever fails because of Redis**, and Redis is never a source of truth.
+
+### Configuration (env)
+
+| Var | Default | Meaning |
+|---|---|---|
+| `REDIS_URL` | `""` | Connection string. **Blank ⇒ cache disabled** (DB-only). |
+| `REDIS_ENABLED` | `true` | Set `false` to disable even when a URL is present. |
+| `REDIS_DEFAULT_TTL` | `300` | Fallback TTL (seconds) when a call passes none. |
+| `REDIS_CONNECT_TIMEOUT` | `2000` | Connect timeout (ms); also the per-op timeout ceiling. |
+
+### What is cached
+
+Caching lives in the **service layer**, so it covers API routes, Server Actions,
+and RSC from one place. Authentication/authorization run at the route/page
+boundary *before* the cached read, so cache hits sit behind the existing guards.
+
+| Read | Key | TTL |
+|---|---|---|
+| `GET /listings/[id]` | `homyz:listing:{id}` | 300s |
+| `GET /listings` (published view, shallow pages `skip ≤ 200`) | `homyz:listings:published:v{ver}:s{skip}:t{take}` | 120s |
+| `GET /users/me`, `GET /users/[id]`, profile page | `homyz:user:{id}:profile` | 180s |
+| `GET /admin/stats` counts | `homyz:stats:global` | 60s (TTL-only) |
+
+**Never cached:** passwords, OTPs, verification/reset/refresh/access tokens, and
+any auth secret; bookings (private + availability-sensitive); a host's own
+listing list and the admin user list (low-traffic / high-churn). Private data is
+keyed by its owner's id, so a cache entry can never leak between users.
+
+### Invalidation
+
+Writes invalidate **after** the DB transaction commits (the TTL is a backstop):
+
+- Update/delete a listing → drop `listing:{id}` **and** bump the catalogue
+  version (`INCR homyz:listings:published:ver`, an O(1) invalidation of every
+  page). Create a *published* listing → bump the version.
+- `PATCH /users/me` (profile), `PATCH /admin/users/[id]/role`, email
+  verification, and phone OTP verification → drop that user's `user:{id}:profile`.
+  A role change also drops the cached profile immediately; effective
+  authorization is unaffected because it derives from JWT claims, not the cache.
+- Global stats are TTL-only (no explicit invalidation).

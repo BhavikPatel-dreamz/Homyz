@@ -2,16 +2,25 @@ import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { prisma } from "@/lib/db/prisma";
+import { deleteCache, getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
 import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
 import { Role } from "@/generated/prisma/enums";
 
-import { toListingDTO, type ListingDTO } from "./mappers";
+import { reviveListingDTO, toListingDTO, type ListingDTO } from "./mappers";
 
-// Public catalogue — published listings only by default.
-async function list(opts: {
+// Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
+// the paginated catalogue turns over faster (spec §13/§14).
+const LISTING_TTL = 300;
+const LISTINGS_LIST_TTL = 120;
+// Only shallow pages of the public catalogue are cached; deep pagination is rare
+// and would bloat the keyspace, so it falls straight through to the DB.
+const MAX_CACHED_LIST_SKIP = 200;
+
+async function queryList(opts: {
   skip: number;
   take: number;
   publishedOnly?: boolean;
@@ -29,10 +38,44 @@ async function list(opts: {
   return { items: items.map(toListingDTO), total };
 }
 
+// Public catalogue — published listings only by default.
+async function list(opts: {
+  skip: number;
+  take: number;
+  publishedOnly?: boolean;
+}): Promise<{ items: ListingDTO[]; total: number }> {
+  // Cache only the public (published) view and only shallow pages. The admin
+  // "all" view (publishedOnly === false) and deep pages bypass the cache.
+  const isPublicView = opts.publishedOnly !== false;
+  if (!isPublicView || opts.skip > MAX_CACHED_LIST_SKIP) {
+    return queryList(opts);
+  }
+  // Version-tagged key: a mutation bumps the version (O(1) INCR) and every
+  // cached page is invalidated at once; the stale keys simply expire.
+  const version = await getCounter(keys.listingsPublicVersion());
+  return getOrSetCache(
+    keys.listingsPublic(version, opts.skip, opts.take),
+    () => queryList(opts),
+    {
+      ttl: LISTINGS_LIST_TTL,
+      revive: (cached) => ({
+        items: cached.items.map(reviveListingDTO),
+        total: cached.total,
+      }),
+    },
+  );
+}
+
 async function getById(id: string): Promise<ListingDTO> {
-  const listing = await prisma.listing.findUnique({ where: { id } });
-  if (!listing) throw AppError.notFound("Listing not found");
-  return toListingDTO(listing);
+  return getOrSetCache(
+    keys.listing(id),
+    async () => {
+      const listing = await prisma.listing.findUnique({ where: { id } });
+      if (!listing) throw AppError.notFound("Listing not found");
+      return toListingDTO(listing);
+    },
+    { ttl: LISTING_TTL, revive: reviveListingDTO },
+  );
 }
 
 // A host's own listings.
@@ -68,6 +111,10 @@ async function create(
       published: input.published ?? false,
     },
   });
+  // Only a published listing changes the public catalogue.
+  if (listing.published) {
+    await incrCounter(keys.listingsPublicVersion());
+  }
   return toListingDTO(listing);
 }
 
@@ -81,6 +128,12 @@ async function update(
   // Host must own it; ADMIN bypasses ownership.
   assertOwnership(actor, existing.hostId);
   const listing = await prisma.listing.update({ where: { id }, data: input });
+  // After commit: drop the detail entry and invalidate every catalogue page
+  // (title/price/published may have changed). Both are best-effort (fail-open).
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
   return toListingDTO(listing);
 }
 
@@ -89,6 +142,10 @@ async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
   if (!existing) throw AppError.notFound("Listing not found");
   assertOwnership(actor, existing.hostId);
   await prisma.listing.delete({ where: { id } });
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
   return { success: true };
 }
 
