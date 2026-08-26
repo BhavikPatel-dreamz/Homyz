@@ -1,0 +1,47 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { runAction } from "@/lib/actions/result";
+import { AppError } from "@/lib/api/errors";
+import { getSessionUser } from "@/lib/auth/session";
+import { assertRole } from "@/lib/permissions/authorize";
+import {
+  createListingSchema,
+  updateListingSchema,
+} from "@/lib/validation/listing";
+import { listingService } from "@/services/listing.service";
+import { Role } from "@/generated/prisma/enums";
+
+export async function createListingAction(input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.HOST, Role.ADMIN]);
+    const data = createListingSchema.parse(input);
+    const listing = await listingService.create(actor, data);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function updateListingAction(id: string, input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const data = updateListingSchema.parse(input);
+    // Ownership (host must own; ADMIN bypasses) is enforced in the service.
+    const listing = await listingService.update(actor, id, data);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function deleteListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const result = await listingService.remove(actor, id);
+    revalidatePath("/host/listings");
+    return result;
+  });
+}
