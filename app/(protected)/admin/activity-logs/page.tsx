@@ -9,20 +9,9 @@ export default async function AdminActivityLogsPage() {
   const logsRes = await auditService.list({ limit: 100 });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 ">
-          Activity & Audit Logs
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Comprehensive, immutable audit trail of logins, administrative modifications, and security events.
-        </p>
-      </div>
-
-      <ActivityLogViewer
-        initialLogs={logsRes.items}
-        pagination={logsRes.pagination}
-      />
-    </div>
+    <ActivityLogViewer
+      initialLogs={logsRes.items}
+      pagination={logsRes.pagination}
+    />
   );
 }

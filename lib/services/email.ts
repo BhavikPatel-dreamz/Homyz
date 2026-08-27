@@ -14,9 +14,23 @@ function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
 }
 
+function getFromAddress(): string {
+  const raw = process.env.EMAIL_FROM?.trim();
+  if (!raw) return "Homyz <onboarding@resend.dev>";
+
+  // If provided value is already a full email address or "Name <email@domain>" format
+  if (raw.includes("@")) {
+    if (raw.includes("<") && raw.includes(">")) return raw;
+    return `Homyz <${raw}>`;
+  }
+
+  // If a domain string like "homyz.dynamicdreamz.net" was provided
+  return `Homyz <no-reply@${raw}>`;
+}
+
 async function deliver(msg: EmailMessage): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "Homyz <no-reply@homyz.local>";
+  const from = getFromAddress();
 
   if (!apiKey) {
     if (process.env.NODE_ENV !== "production") {
@@ -29,23 +43,28 @@ async function deliver(msg: EmailMessage): Promise<void> {
     return;
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: msg.to,
-      subject: msg.subject,
-      text: msg.text,
-      ...(msg.html ? { html: msg.html } : {}),
-    }),
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Resend send failed: ${res.status} ${detail}`);
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: msg.to,
+        subject: msg.subject,
+        text: msg.text,
+        ...(msg.html ? { html: msg.html } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error(`[email] Resend send failed (${res.status}): ${detail}`);
+    }
+  } catch (err) {
+    console.error("[email] Exception delivering email:", err);
   }
 }
 
