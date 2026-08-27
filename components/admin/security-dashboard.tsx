@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useState } from "react";
+import { AdminPagination } from "./admin-pagination";
 import type { SecurityStats } from "@/services/audit.service";
 
 export function SecurityDashboard({
@@ -15,6 +17,14 @@ export function SecurityDashboard({
     createdAt: Date | string;
   }>;
 }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  const totalPages = Math.max(1, Math.ceil(failedEvents.length / pageSize));
+  const paginatedEvents = failedEvents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
   return (
     <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
 
@@ -176,7 +186,7 @@ export function SecurityDashboard({
               No failed logins or suspicious security events recorded.
             </div>
           ) : (
-            failedEvents.map((event) => (
+            paginatedEvents.map((event) => (
               <div
                 key={event.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 hover:bg-[var(--surface-secondary)] transition-colors"
@@ -198,6 +208,23 @@ export function SecurityDashboard({
               </div>
             ))
           )}
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="p-3 border-t border-[var(--border-subtle)]">
+          <AdminPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={failedEvents.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            itemLabel="security events"
+            pageSizeOptions={[5, 10, 20]}
+          />
         </div>
       </div>
     </div>

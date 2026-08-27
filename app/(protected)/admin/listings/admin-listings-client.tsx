@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 
 export interface ListingItem {
   id: string;
@@ -45,6 +46,15 @@ export function AdminListingsClient({
       return true;
     });
   }, [listings, search, statusFilter]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedListings = useMemo(() => {
+    return filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
+  }, [filtered, activePage, pageSize]);
 
   function exportCSV() {
     if (filtered.length === 0) return;
@@ -175,7 +185,7 @@ export function AdminListingsClient({
                   </td>
                 </tr>
               ) : (
-                filtered.map((item) => (
+                paginatedListings.map((item) => (
                   <tr
                     key={item.id}
                     className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
@@ -236,6 +246,23 @@ export function AdminListingsClient({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="p-4 border-t border-[var(--border)]">
+          <AdminPagination
+            currentPage={activePage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            itemLabel="listings"
+            pageSizeOptions={[10, 20, 50]}
+          />
         </div>
       </div>
 

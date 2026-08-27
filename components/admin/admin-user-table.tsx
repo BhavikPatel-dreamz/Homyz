@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { AdminPagination } from "./admin-pagination";
 import {
   createAdminAction,
   updateAdminAction,
@@ -76,6 +77,16 @@ export function AdminUserTable({
 
     return matchesSearch && matchesStatus && matchesRole;
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedUsers = filteredUsers.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize
+  );
 
   function handleCreateAdmin(e: React.FormEvent) {
     e.preventDefault();
@@ -303,7 +314,7 @@ export function AdminUserTable({
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((u) => (
+              paginatedUsers.map((u) => (
                 <tr key={u.id} className="hover:bg-zinc-50/50 :bg-zinc-900/30 transition-colors">
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
@@ -416,7 +427,7 @@ export function AdminUserTable({
 
       {/* Mobile Card List View */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
-        {filteredUsers.map((u) => (
+        {paginatedUsers.map((u) => (
           <div
             key={u.id}
             className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs flex flex-col gap-3"
@@ -492,6 +503,21 @@ export function AdminUserTable({
           </div>
         ))}
       </div>
+
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filteredUsers.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="administrators"
+        pageSizeOptions={[10, 20, 50]}
+      />
 
       {/* Modal 1: Add Administrator */}
       {showAddModal && (

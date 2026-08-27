@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "./admin-pagination";
 
 export interface AuditLogItem {
   id: string;
@@ -93,6 +94,15 @@ export function ActivityLogViewer({
       return true;
     });
   }, [logs, search, moduleFilter, actionFilter, statusFilter, startDate, endDate]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedLogs = useMemo(() => {
+    return filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
+  }, [filtered, activePage, pageSize]);
 
   function exportCSV() {
     if (filtered.length === 0) return;
@@ -271,11 +281,11 @@ export function ActivityLogViewer({
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-[var(--muted-foreground)]">
-                    No audit log records match the applied criteria.
+                    No activity logs match the selected filters.
                   </td>
                 </tr>
               ) : (
-                filtered.map((log) => (
+                paginatedLogs.map((log) => (
                   <tr
                     key={log.id}
                     onClick={() => setSelectedLog(log)}
@@ -353,7 +363,7 @@ export function ActivityLogViewer({
             No audit records found.
           </div>
         ) : (
-          filtered.map((log) => (
+          paginatedLogs.map((log) => (
             <div
               key={log.id}
               onClick={() => setSelectedLog(log)}
@@ -385,6 +395,21 @@ export function ActivityLogViewer({
           ))
         )}
       </div>
+
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="activity logs"
+        pageSizeOptions={[15, 30, 50]}
+      />
 
       {/* Audit Event Details Drawer / Modal */}
       {selectedLog && (

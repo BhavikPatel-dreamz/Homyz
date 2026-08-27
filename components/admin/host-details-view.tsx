@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { HostDetailsData } from "@/services/admin.service";
 import { UserStatus } from "@/generated/prisma/enums";
+import { AdminPagination } from "./admin-pagination";
 import {
   updateHostAction,
   updateHostVerificationAction,
@@ -20,6 +21,16 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
   const router = useRouter();
   const [data, setData] = useState<HostDetailsData>(initialData);
   const [activeTab, setActiveTab] = useState<"overview" | "listings" | "bookings" | "earnings" | "reviews" | "activity">("overview");
+
+  // Tab pagination states
+  const [listingsPage, setListingsPage] = useState(1);
+  const [listingsPageSize, setListingsPageSize] = useState(5);
+
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookingsPageSize, setBookingsPageSize] = useState(5);
+
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityPageSize, setActivityPageSize] = useState(5);
 
   // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -42,6 +53,24 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
   const host = data.host;
   const metrics = data.metrics;
+
+  const totalListingsPages = Math.max(1, Math.ceil(data.listings.length / listingsPageSize));
+  const paginatedListings = data.listings.slice(
+    (listingsPage - 1) * listingsPageSize,
+    listingsPage * listingsPageSize
+  );
+
+  const totalBookingsPages = Math.max(1, Math.ceil(data.bookings.length / bookingsPageSize));
+  const paginatedBookings = data.bookings.slice(
+    (bookingsPage - 1) * bookingsPageSize,
+    bookingsPage * bookingsPageSize
+  );
+
+  const totalActivityPages = Math.max(1, Math.ceil(data.activity.length / activityPageSize));
+  const paginatedActivity = data.activity.slice(
+    (activityPage - 1) * activityPageSize,
+    activityPage * activityPageSize
+  );
 
   // Handlers
   function handleEditSubmit(e: React.FormEvent) {
@@ -371,7 +400,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                   </td>
                 </tr>
               ) : (
-                data.listings.map((item) => (
+                paginatedListings.map((item) => (
                   <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-zinc-900">{item.title}</td>
                     <td className="py-3.5 px-4 text-zinc-700 font-semibold">${(item.price / 100).toFixed(2)}</td>
@@ -393,6 +422,21 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
               )}
             </tbody>
           </table>
+          <div className="p-3 border-t border-zinc-100">
+            <AdminPagination
+              currentPage={listingsPage}
+              totalPages={totalListingsPages}
+              totalItems={data.listings.length}
+              pageSize={listingsPageSize}
+              onPageChange={setListingsPage}
+              onPageSizeChange={(size) => {
+                setListingsPageSize(size);
+                setListingsPage(1);
+              }}
+              itemLabel="listings"
+              pageSizeOptions={[5, 10, 20]}
+            />
+          </div>
         </div>
       )}
 
@@ -419,7 +463,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                   </td>
                 </tr>
               ) : (
-                data.bookings.map((b) => (
+                paginatedBookings.map((b) => (
                   <tr key={b.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-zinc-900">{b.id}</td>
                     <td className="py-3.5 px-4">
@@ -440,6 +484,21 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
               )}
             </tbody>
           </table>
+          <div className="p-3 border-t border-zinc-100">
+            <AdminPagination
+              currentPage={bookingsPage}
+              totalPages={totalBookingsPages}
+              totalItems={data.bookings.length}
+              pageSize={bookingsPageSize}
+              onPageChange={setBookingsPage}
+              onPageSizeChange={(size) => {
+                setBookingsPageSize(size);
+                setBookingsPage(1);
+              }}
+              itemLabel="bookings"
+              pageSizeOptions={[5, 10, 20]}
+            />
+          </div>
         </div>
       )}
 
@@ -479,18 +538,33 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
           {data.activity.length === 0 ? (
             <p className="text-xs text-zinc-400 py-4 text-center">No recorded activity history for this host.</p>
           ) : (
-            <div className="space-y-3">
-              {data.activity.map((log) => (
-                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
-                  <div>
-                    <span className="font-bold text-zinc-900">{log.action}</span>
-                    <p className="text-zinc-600 mt-0.5">{log.description}</p>
-                    <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+            <>
+              <div className="space-y-3">
+                {paginatedActivity.map((log) => (
+                  <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
+                    <div>
+                      <span className="font-bold text-zinc-900">{log.action}</span>
+                      <p className="text-zinc-600 mt-0.5">{log.description}</p>
+                      <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <AdminPagination
+                currentPage={activityPage}
+                totalPages={totalActivityPages}
+                totalItems={data.activity.length}
+                pageSize={activityPageSize}
+                onPageChange={setActivityPage}
+                onPageSizeChange={(size) => {
+                  setActivityPageSize(size);
+                  setActivityPage(1);
+                }}
+                itemLabel="logs"
+                pageSizeOptions={[5, 10, 20]}
+              />
+            </>
           )}
         </div>
       )}

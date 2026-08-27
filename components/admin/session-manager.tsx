@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { AdminPagination } from "./admin-pagination";
 import type { UnifiedSessionDTO } from "@/services/session.service";
 
 export function SessionManager({
@@ -23,6 +24,16 @@ export function SessionManager({
       s.deviceInfo.toLowerCase().includes(search.toLowerCase())
     );
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedSessions = filtered.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize
+  );
 
   async function handleRevokeOne(session: UnifiedSessionDTO) {
     if (!confirm(`Revoke session from ${session.deviceInfo} (${session.ip || "Unknown IP"})?`)) {
@@ -108,7 +119,7 @@ export function SessionManager({
                 </td>
               </tr>
             ) : (
-              filtered.map((s) => (
+              paginatedSessions.map((s) => (
                 <tr key={s.id} className="hover:bg-zinc-50/50 :bg-zinc-900/30 transition-colors">
                   <td className="py-3.5 px-4">
                     <div className="font-semibold text-zinc-900 ">
@@ -157,6 +168,21 @@ export function SessionManager({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="sessions"
+        pageSizeOptions={[10, 20, 50]}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "./admin-pagination";
 import type { GuestAnalyticsData, GuestTableItem } from "@/services/admin.service";
 
 interface GuestDashboardProps {
@@ -43,7 +44,7 @@ export function GuestManagementDashboard({
   const [sortBy, setSortBy] = useState<"createdAt" | "name" | "totalSpending" | "bookingsCount">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredGuests = useMemo(() => {
     return initialGuests
@@ -305,34 +306,19 @@ export function GuestManagementDashboard({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 pt-2">
-        <div>
-          Showing {filteredGuests.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
-          {Math.min(currentPage * pageSize, filteredGuests.length)} of {filteredGuests.length} guests
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
-          >
-            Previous
-          </button>
-          <span className="font-semibold text-zinc-800">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            type="button"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <AdminPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredGuests.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="guests"
+        pageSizeOptions={[10, 20, 50]}
+      />
     </div>
   );
 }

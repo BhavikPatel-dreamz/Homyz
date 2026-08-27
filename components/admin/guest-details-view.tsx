@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GuestDetailsData } from "@/services/admin.service";
 import { UserStatus } from "@/generated/prisma/enums";
+import { AdminPagination } from "./admin-pagination";
 import {
   updateGuestAction,
   toggleGuestSuspensionAction,
@@ -19,6 +20,13 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
   const router = useRouter();
   const [data, setData] = useState<GuestDetailsData>(initialData);
   const [activeTab, setActiveTab] = useState<"overview" | "bookings" | "activity">("overview");
+
+  // Tab pagination states
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookingsPageSize, setBookingsPageSize] = useState(5);
+
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityPageSize, setActivityPageSize] = useState(5);
 
   // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -37,6 +45,18 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
   const guest = data.guest;
   const metrics = data.metrics;
+
+  const totalBookingsPages = Math.max(1, Math.ceil(data.bookings.length / bookingsPageSize));
+  const paginatedBookings = data.bookings.slice(
+    (bookingsPage - 1) * bookingsPageSize,
+    bookingsPage * bookingsPageSize
+  );
+
+  const totalActivityPages = Math.max(1, Math.ceil(data.activity.length / activityPageSize));
+  const paginatedActivity = data.activity.slice(
+    (activityPage - 1) * activityPageSize,
+    activityPage * activityPageSize
+  );
 
   function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -316,7 +336,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   </td>
                 </tr>
               ) : (
-                data.bookings.map((b) => (
+                paginatedBookings.map((b) => (
                   <tr key={b.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-zinc-900">{b.id}</td>
                     <td className="py-3.5 px-4 font-semibold text-zinc-900">{b.listingTitle}</td>
@@ -337,6 +357,21 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
               )}
             </tbody>
           </table>
+          <div className="p-3 border-t border-zinc-100">
+            <AdminPagination
+              currentPage={bookingsPage}
+              totalPages={totalBookingsPages}
+              totalItems={data.bookings.length}
+              pageSize={bookingsPageSize}
+              onPageChange={setBookingsPage}
+              onPageSizeChange={(size) => {
+                setBookingsPageSize(size);
+                setBookingsPage(1);
+              }}
+              itemLabel="bookings"
+              pageSizeOptions={[5, 10, 20]}
+            />
+          </div>
         </div>
       )}
 
@@ -347,18 +382,33 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
           {data.activity.length === 0 ? (
             <p className="text-xs text-zinc-400 py-4 text-center">No recorded activity history for this guest.</p>
           ) : (
-            <div className="space-y-3">
-              {data.activity.map((log) => (
-                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
-                  <div>
-                    <span className="font-bold text-zinc-900">{log.action}</span>
-                    <p className="text-zinc-600 mt-0.5">{log.description}</p>
-                    <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+            <>
+              <div className="space-y-3">
+                {paginatedActivity.map((log) => (
+                  <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
+                    <div>
+                      <span className="font-bold text-zinc-900">{log.action}</span>
+                      <p className="text-zinc-600 mt-0.5">{log.description}</p>
+                      <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <AdminPagination
+                currentPage={activityPage}
+                totalPages={totalActivityPages}
+                totalItems={data.activity.length}
+                pageSize={activityPageSize}
+                onPageChange={setActivityPage}
+                onPageSizeChange={(size) => {
+                  setActivityPageSize(size);
+                  setActivityPage(1);
+                }}
+                itemLabel="logs"
+                pageSizeOptions={[5, 10, 20]}
+              />
+            </>
           )}
         </div>
       )}
