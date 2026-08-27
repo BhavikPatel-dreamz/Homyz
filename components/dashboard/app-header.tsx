@@ -36,10 +36,10 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md transition-colors">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8 gap-4">
-        
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 gap-4">
+
         {/* Left: Brand Logo */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 shrink-0">
           <Link href="/dashboard" className="flex items-center gap-2.5 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs transition-transform group-hover:scale-105">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -52,22 +52,24 @@ export function AppHeader() {
           </Link>
         </div>
 
-        {/* Center: Main Navigation Menu (All menu items in top header) */}
-        <nav className="hidden md:flex items-center gap-1.5 bg-[var(--surface-secondary)]/80 p-1.5 rounded-full border border-[var(--border)] shadow-2xs">
+        {/* Center: Main Navigation Menu */}
+        <nav className="hidden sm:flex items-center gap-1 bg-[var(--surface-secondary)]/80 p-1.5 rounded-full border border-[var(--border)] shadow-2xs">
           {navItems.map((item) => {
             if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
             if (item.requireAdmin && role !== "ADMIN") return null;
 
             const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
+              item.href === "/admin"
+                ? pathname.startsWith("/admin")
+                : item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(item.href);
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-[#FBDE9B] text-[#291E05] font-extrabold shadow-2xs dark:bg-[#f59e0b] dark:text-zinc-950"
                     : "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
@@ -79,13 +81,13 @@ export function AppHeader() {
           })}
         </nav>
 
-        {/* Right: Actions (Switch Mode, Theme, Language, User Profile Dropdown) */}
-        <div className="flex items-center gap-2.5">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Traveling / Hosting Switcher */}
           <button
             type="button"
             onClick={() => setMode(mode === "hosting" ? "traveling" : "hosting")}
-            className="hidden sm:inline-flex rounded-full bg-[#FBDE9B] hover:bg-[#F7D37E] px-4 py-2 text-xs font-bold text-[#291E05] shadow-2xs transition-all hover:scale-102 active:scale-98 dark:bg-[#f59e0b] dark:text-zinc-950 dark:hover:bg-[#d97706]"
+            className="hidden sm:inline-flex whitespace-nowrap items-center rounded-full bg-[#FBDE9B] hover:bg-[#F7D37E] px-4 py-2 text-xs font-bold text-[#291E05] shadow-2xs transition-all hover:scale-102 active:scale-98 dark:bg-[#f59e0b] dark:text-zinc-950 dark:hover:bg-[#d97706]"
           >
             switch to {mode === "hosting" ? "traveling" : "hosting"}
           </button>
@@ -94,18 +96,6 @@ export function AppHeader() {
           <div className="hidden sm:block">
             <ThemeSwitcher />
           </div>
-
-          {/* Language Globe Icon */}
-          <button
-            type="button"
-            className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors shadow-2xs"
-            title="Language & Currency"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8" />
-            </svg>
-          </button>
 
           {/* User Menu Trigger */}
           <div className="relative" ref={menuRef}>
@@ -140,7 +130,7 @@ export function AppHeader() {
                 )}
 
                 {/* Mobile View Nav Links inside Dropdown */}
-                <div className="py-1 md:hidden border-b border-[var(--border)] mb-1">
+                <div className="py-1 sm:hidden border-b border-[var(--border)] mb-1">
                   {navItems.map((item) => {
                     if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
                     if (item.requireAdmin && role !== "ADMIN") return null;
@@ -198,6 +188,7 @@ export function AppHeader() {
             )}
           </div>
         </div>
+
       </div>
     </header>
   );

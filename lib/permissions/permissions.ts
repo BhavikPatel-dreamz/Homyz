@@ -5,11 +5,13 @@ export const PERMISSIONS = {
   // Dashboard
   DASHBOARD_VIEW: "dashboard.view",
 
-  // Users
+  // Users & Hosts & Guests
   USERS_VIEW: "users.view",
   USERS_CREATE: "users.create",
   USERS_EDIT: "users.edit",
   USERS_DELETE: "users.delete",
+  HOSTS_VIEW: "hosts.view",
+  GUESTS_VIEW: "guests.view",
   USERS_EXPORT: "users.export",
 
   // Admins
@@ -67,6 +69,12 @@ export interface PermissionDefinition {
 export const ALL_PERMISSIONS: PermissionDefinition[] = [
   // Dashboard
   { slug: PERMISSIONS.DASHBOARD_VIEW, module: "Dashboard", action: "View", description: "Access admin dashboard overview" },
+
+  // Hosts
+  { slug: PERMISSIONS.HOSTS_VIEW, module: "Hosts", action: "View", description: "View host registry, earnings, and analytics" },
+
+  // Guests
+  { slug: PERMISSIONS.GUESTS_VIEW, module: "Guests", action: "View", description: "View guest registry, spending, and analytics" },
 
   // Users
   { slug: PERMISSIONS.USERS_VIEW, module: "Users", action: "View", description: "View registered users and details" },

@@ -35,7 +35,8 @@ function formatFromAddress(raw?: string): string {
     if (trimmed.includes("@homyz.local") || trimmed.includes(".local")) {
       return "Homyz <onboarding@resend.dev>";
     }
-    return trimmed;
+    if (trimmed.includes("<") && trimmed.includes(">")) return trimmed;
+    return `Homyz <${trimmed}>`;
   }
 
   // 2. If entered as "Name <domain.com>" without username part
