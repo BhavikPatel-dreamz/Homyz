@@ -25,6 +25,7 @@ export async function createAdminAction(input: unknown) {
     const data = createAdminSchema.parse(input);
     const newAdmin = await adminService.createAdmin(actor, data);
 
+    revalidatePath("/admin");
     revalidatePath("/admin/admins");
     revalidatePath("/admin/users");
     return newAdmin;
@@ -40,6 +41,7 @@ export async function updateAdminAction(userId: string, input: unknown) {
     const data = updateAdminSchema.parse(input);
     const updated = await adminService.updateAdmin(actor, userId, data);
 
+    revalidatePath("/admin");
     revalidatePath("/admin/admins");
     revalidatePath("/admin/users");
     return updated;
@@ -89,6 +91,21 @@ export async function revokeUserSessionsAction(userId: string) {
     revalidatePath("/admin/sessions");
     revalidatePath("/admin/admins");
     return { success: true };
+  });
+}
+
+export async function deleteAdminAction(userId: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_DELETE);
+
+    const res = await adminService.deleteAdmin(actor, userId);
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return res;
   });
 }
 

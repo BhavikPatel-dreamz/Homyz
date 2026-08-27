@@ -95,7 +95,7 @@ export function AuthHeader() {
               Become a host
             </Link>
             <Link
-              href="/admin/login"
+              href="/admin"
               onClick={() => setMenuOpen(false)}
               className="text-sm font-medium text-amber-800 hover:text-amber-900"
             >

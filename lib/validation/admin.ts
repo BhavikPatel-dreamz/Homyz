@@ -11,8 +11,7 @@ export const createAdminSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Must contain at least one number"),
+    .optional(),
   role: z.enum(["USER", "HOST", "ADMIN"]).default("ADMIN"),
   adminRoleSlug: z.string().optional(),
 });

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -14,18 +20,23 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "homyz-theme";
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "light";
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
-      setThemeState(saved);
-    }
-    setMounted(true);
-  }, []);
+    return saved &&
+      (saved === "light" || saved === "dark" || saved === "system")
+      ? saved
+      : "light";
+  });
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!mounted) return;

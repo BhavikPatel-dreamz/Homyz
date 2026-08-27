@@ -13,6 +13,7 @@ declare module "next-auth" {
       status?: string;
       adminRoleSlug?: string | null;
       permissions?: string[];
+      tokenVersion?: number;
     } & DefaultSession["user"];
   }
 
@@ -22,6 +23,7 @@ declare module "next-auth" {
     status?: string;
     adminRoleSlug?: string | null;
     permissions?: string[];
+    tokenVersion?: number;
   }
 }
 
@@ -32,5 +34,7 @@ declare module "next-auth/jwt" {
     status?: string;
     adminRoleSlug?: string | null;
     permissions?: string[];
+    tokenVersion?: number;
+    isRevoked?: boolean;
   }
 }

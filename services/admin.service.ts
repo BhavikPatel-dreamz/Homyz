@@ -1,9 +1,11 @@
+import { randomInt } from "node:crypto";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
 import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
 import { keys } from "@/lib/redis/keys";
 import { Role, UserStatus } from "@/generated/prisma/enums";
 import { hashPassword } from "@/lib/auth/password";
+import { sendAdminInvitationEmail } from "@/lib/services/email";
 import { auditService } from "./audit.service";
 import { sessionService } from "./session.service";
 import { ALL_PERMISSIONS } from "@/lib/permissions/permissions";
@@ -101,6 +103,26 @@ async function getAdminById(id: string): Promise<PublicUser> {
   return toPublicUser(user);
 }
 
+function generateRandomAdminPassword(length = 12): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const nums = "23456789";
+  const symbols = "!@#$%&*";
+  const all = upper + lower + nums + symbols;
+
+  let pwd = "";
+  pwd += upper[randomInt(0, upper.length)];
+  pwd += lower[randomInt(0, lower.length)];
+  pwd += nums[randomInt(0, nums.length)];
+  pwd += symbols[randomInt(0, symbols.length)];
+
+  for (let i = pwd.length; i < length; i++) {
+    pwd += all[randomInt(0, all.length)];
+  }
+
+  return pwd.split("").sort(() => 0.5 - Math.random()).join("");
+}
+
 async function createAdmin(
   actor: AuthUser,
   input: CreateAdminInput,
@@ -117,7 +139,10 @@ async function createAdmin(
     if (roleRecord) adminRoleId = roleRecord.id;
   }
 
-  const passwordHash = await hashPassword(input.password);
+  // Automatically generate secure password if not provided by creator
+  const rawPassword = input.password?.trim() || generateRandomAdminPassword(12);
+  const passwordHash = await hashPassword(rawPassword);
+
   const user = await prisma.user.create({
     data: {
       name: input.name,
@@ -131,14 +156,34 @@ async function createAdmin(
     include: { adminRole: { select: { name: true, slug: true } } },
   });
 
+  const roleDisplay =
+    user.adminRole?.name || (user.role === Role.ADMIN ? "Administrator" : "Staff");
+
+  // Send invitation email with credentials to newly created admin
+  try {
+    await sendAdminInvitationEmail(
+      user.email ?? emailAddr,
+      user.name,
+      rawPassword,
+      roleDisplay,
+    );
+  } catch (emailErr) {
+    console.error(
+      "[admin:invite-email] Failed to deliver credentials email:",
+      emailErr,
+    );
+  }
+
   await auditService.record({
     actorId: actor.id,
     actorEmail: actor.email,
     action: "ADMIN_CREATED",
     resourceType: "User",
     resourceId: user.id,
-    description: `Created new admin ${user.email} with role ${user.role} (${input.adminRoleSlug ?? "standard"})`,
+    description: `Created new admin ${user.email} with role ${roleDisplay}. Credentials dispatched to user email.`,
   });
+
+  await deleteCache(keys.statsGlobal());
 
   return toPublicUser(user);
 }
@@ -249,6 +294,61 @@ async function toggleUserStatus(
   });
 
   return toPublicUser(updated);
+}
+
+async function deleteAdmin(
+  actor: AuthUser,
+  targetUserId: string,
+): Promise<{ success: boolean; id: string }> {
+  const user = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    include: { adminRole: true },
+  });
+  if (!user) throw AppError.notFound("Administrator not found");
+
+  // Prevent deleting oneself
+  if (targetUserId === actor.id) {
+    throw AppError.badRequest("You cannot delete your own administrator account");
+  }
+
+  // Prevent deleting last remaining Super Admin
+  if (user.adminRole?.slug === "super_admin") {
+    const superCount = await prisma.user.count({
+      where: { adminRole: { slug: "super_admin" }, status: UserStatus.ACTIVE },
+    });
+    if (superCount <= 1) {
+      throw AppError.conflict("Cannot delete the last active Super Admin");
+    }
+  }
+
+  // Revoke all sessions first
+  await sessionService.revokeAllForUser(
+    targetUserId,
+    undefined,
+    actor.id,
+    actor.email ?? undefined,
+  );
+
+  // Delete user record (cascades sessions, accounts, refresh tokens, password reset tokens)
+  await prisma.user.delete({
+    where: { id: targetUserId },
+  });
+
+  await Promise.all([
+    deleteCache(keys.userProfile(targetUserId)),
+    deleteCache(keys.statsGlobal()),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "ADMIN_DELETED",
+    resourceType: "User",
+    resourceId: targetUserId,
+    description: `Permanently deleted administrator ${user.email} (${user.adminRole?.name ?? user.role})`,
+  });
+
+  return { success: true, id: targetUserId };
 }
 
 async function resetAdminPassword(
@@ -516,7 +616,7 @@ async function stats(): Promise<{
     keys.statsGlobal(),
     async () => {
       const [users, hosts, admins, listings, bookings, activeSessions] =
-        await prisma.$transaction([
+        await Promise.all([
           prisma.user.count(),
           prisma.user.count({ where: { role: Role.HOST } }),
           prisma.user.count({ where: { role: Role.ADMIN } }),
@@ -536,6 +636,7 @@ export const adminService = {
   getAdminById,
   createAdmin,
   updateAdmin,
+  deleteAdmin,
   toggleUserStatus,
   resetAdminPassword,
   setUserRole,

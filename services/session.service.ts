@@ -167,7 +167,11 @@ async function revokeSession(sessionId: string, actorId?: string, actorEmail?: s
 }
 
 async function revokeAllForUser(userId: string, currentSessionId?: string, actorId?: string, actorEmail?: string): Promise<void> {
-  await prisma.$transaction([
+  await Promise.all([
+    prisma.user.update({
+      where: { id: userId },
+      data: { tokenVersion: { increment: 1 } },
+    }),
     prisma.session.updateMany({
       where: {
         userId,

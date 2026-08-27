@@ -16,6 +16,9 @@ export async function requirePageUser(callbackUrl?: string): Promise<AuthUser> {
       : "";
     redirect(`/login${suffix}`);
   }
+  if (user.status === "SUSPENDED") {
+    redirect("/login?error=account_suspended");
+  }
   return user;
 }
 

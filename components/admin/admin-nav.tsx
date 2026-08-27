@@ -58,9 +58,9 @@ export function AdminNav() {
     },
   ];
 
-  // Filter based on user permissions
+  // Filter based on user permissions; defaults to showing nav during initial hydration
   const allowedNav = navItems.filter((item) => {
-    if (!user) return false;
+    if (!user) return true;
     return hasPermission(
       {
         id: user.id,
@@ -119,6 +119,28 @@ export function AdminNav() {
 
         {/* Right: User & Actions */}
         <div className="flex items-center gap-3">
+          {/* Link to view public app */}
+          <Link
+            href="/dashboard"
+            className="hidden md:inline-flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-900 border border-zinc-200 rounded-full px-3 py-1.5 hover:bg-zinc-50 transition-colors"
+            title="View App Dashboard"
+          >
+            <span>View App</span>
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </Link>
+
           {user ? (
             <div className="hidden sm:flex items-center gap-2.5">
               <div className="flex flex-col text-right">
@@ -129,13 +151,17 @@ export function AdminNav() {
                   {user.adminRoleSlug || user.role}
                 </span>
               </div>
-              <Badge>{user.adminRoleSlug === "super_admin" ? "Super Admin" : user.role}</Badge>
+              <Badge>
+                {user.adminRoleSlug === "super_admin"
+                  ? "Super Admin"
+                  : user.role}
+              </Badge>
             </div>
           ) : null}
 
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/admin/login" })}
+            onClick={() => signOut({ callbackUrl: "/login" })}
             className="rounded-full border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 px-3.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors"
           >
             Sign out
@@ -148,8 +174,18 @@ export function AdminNav() {
             className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
             aria-label="Toggle navigation"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
@@ -179,6 +215,15 @@ export function AdminNav() {
                 </Link>
               );
             })}
+          </div>
+          <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between">
+            <Link
+              href="/dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="text-xs text-zinc-600 hover:text-zinc-900 underline"
+            >
+              ← Go to App Dashboard
+            </Link>
           </div>
         </div>
       )}

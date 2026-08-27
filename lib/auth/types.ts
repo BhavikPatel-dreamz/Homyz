@@ -11,4 +11,5 @@ export interface AuthUser {
   status?: string;
   adminRoleSlug?: string | null;
   permissions?: string[];
+  tokenVersion?: number;
 }
