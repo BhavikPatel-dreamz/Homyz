@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GuestDetailsData } from "@/services/admin.service";
+import { UserStatus } from "@/generated/prisma/enums";
 import {
   updateGuestAction,
   toggleGuestSuspensionAction,
@@ -48,7 +49,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to update guest profile" });
         return;
       }
 
@@ -75,7 +76,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
     startTransition(async () => {
       const res = await toggleGuestSuspensionAction(guest.id, suspend, suspendReason);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to toggle guest suspension" });
         return;
       }
 
@@ -83,7 +84,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
         ...prev,
         guest: {
           ...prev.guest,
-          status: suspend ? ("SUSPENDED" as any) : ("ACTIVE" as any),
+          status: suspend ? UserStatus.SUSPENDED : UserStatus.ACTIVE,
         },
       }));
 
@@ -102,7 +103,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
     startTransition(async () => {
       const res = await deleteGuestAction(guest.id);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to delete guest" });
         setShowDeleteModal(false);
         return;
       }
@@ -225,15 +226,17 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* Tabs */}
       <div className="border-b border-zinc-200 flex items-center gap-2 overflow-x-auto pt-2">
-        {[
-          { id: "overview", label: "Overview" },
-          { id: "bookings", label: `Bookings History (${data.bookings.length})` },
-          { id: "activity", label: `Activity (${data.activity.length})` },
-        ].map((tab) => (
+        {(
+          [
+            { id: "overview", label: "Overview" },
+            { id: "bookings", label: `Bookings History (${data.bookings.length})` },
+            { id: "activity", label: `Activity (${data.activity.length})` },
+          ] as const
+        ).map((tab) => (
           <button
             key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-blue-500 text-blue-900 font-extrabold"

@@ -104,8 +104,8 @@ export function HostPhase1Dashboard({
 
       return true;
     }).sort((a, b) => {
-      let valA: any = a[sortBy];
-      let valB: any = b[sortBy];
+      let valA: string | number | Date = a[sortBy] ?? 0;
+      let valB: string | number | Date = b[sortBy] ?? 0;
 
       if (sortBy === "createdAt") {
         valA = new Date(a.createdAt).getTime();
@@ -222,7 +222,7 @@ export function HostPhase1Dashboard({
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as "createdAt" | "name" | "listingsCount")}
             className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
           >
             <option value="createdAt">Joined Date</option>

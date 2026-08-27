@@ -734,7 +734,7 @@ async function listHostsPhase1(input: ListHostsPhase1Input = {}) {
     take = 20,
   } = input;
 
-  const where: any = {
+  const where: Prisma.UserWhereInput = {
     OR: [
       { role: Role.HOST },
       { listings: { some: {} } },

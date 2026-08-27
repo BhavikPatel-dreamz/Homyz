@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { HostDetailsData } from "@/services/admin.service";
+import { UserStatus } from "@/generated/prisma/enums";
 import {
   updateHostAction,
   updateHostVerificationAction,
@@ -54,7 +55,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to update host profile" });
         return;
       }
 
@@ -80,7 +81,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
     startTransition(async () => {
       const res = await updateHostVerificationAction(host.id, verifStatusChoice, verifReason);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to update host verification status" });
         return;
       }
 
@@ -106,7 +107,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
     startTransition(async () => {
       const res = await toggleHostSuspensionAction(host.id, suspend, suspendReason);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to toggle host suspension" });
         return;
       }
 
@@ -114,7 +115,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
         ...prev,
         host: {
           ...prev.host,
-          status: suspend ? ("SUSPENDED" as any) : ("ACTIVE" as any),
+          status: suspend ? UserStatus.SUSPENDED : UserStatus.ACTIVE,
         },
       }));
 
@@ -133,7 +134,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
     startTransition(async () => {
       const res = await deleteHostAction(host.id);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        setFeedback({ tone: "error", msg: res.error || "Failed to delete host" });
         setShowDeleteModal(false);
         return;
       }
@@ -275,18 +276,20 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Tabs Bar Navigation */}
       <div className="border-b border-zinc-200 flex items-center gap-2 overflow-x-auto pt-2">
-        {[
-          { id: "overview", label: "Overview" },
-          { id: "listings", label: `Listings (${data.listings.length})` },
-          { id: "bookings", label: `Bookings (${data.bookings.length})` },
-          { id: "earnings", label: "Earnings" },
-          { id: "reviews", label: `Reviews (${metrics.reviewsCount})` },
-          { id: "activity", label: `Activity (${data.activity.length})` },
-        ].map((tab) => (
+        {(
+          [
+            { id: "overview", label: "Overview" },
+            { id: "listings", label: `Listings (${data.listings.length})` },
+            { id: "bookings", label: `Bookings (${data.bookings.length})` },
+            { id: "earnings", label: "Earnings" },
+            { id: "reviews", label: `Reviews (${metrics.reviewsCount})` },
+            { id: "activity", label: `Activity (${data.activity.length})` },
+          ] as const
+        ).map((tab) => (
           <button
             key={tab.id}
             type="button"
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-amber-500 text-amber-900 font-extrabold"
@@ -559,7 +562,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <label className="block text-zinc-700 font-semibold mb-1">Decision</label>
                 <select
                   value={verifStatusChoice}
-                  onChange={(e) => setVerifStatusChoice(e.target.value as any)}
+                  onChange={(e) => setVerifStatusChoice(e.target.value as "APPROVED" | "REJECTED")}
                   className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none"
                 >
                   <option value="APPROVED">Approve Host Verification</option>
