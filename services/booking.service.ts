@@ -38,6 +38,7 @@ async function listForUser(
       where,
       skip: opts.skip,
       take: opts.take,
+      include: { listing: true, user: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.booking.count({ where }),

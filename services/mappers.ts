@@ -39,7 +39,9 @@ export function toListingDTO(l: Listing) {
 }
 export type ListingDTO = ReturnType<typeof toListingDTO>;
 
-export function toBookingDTO(b: Booking) {
+export function toBookingDTO(
+  b: Booking & { listing?: Listing | null; user?: User | null },
+) {
   return {
     id: b.id,
     userId: b.userId,
@@ -48,6 +50,21 @@ export function toBookingDTO(b: Booking) {
     startDate: b.startDate,
     endDate: b.endDate,
     createdAt: b.createdAt,
+    listing: b.listing
+      ? {
+          id: b.listing.id,
+          title: b.listing.title,
+          description: b.listing.description,
+          price: b.listing.price,
+        }
+      : null,
+    user: b.user
+      ? {
+          id: b.user.id,
+          name: b.user.name,
+          email: b.user.email,
+        }
+      : null,
   };
 }
 export type BookingDTO = ReturnType<typeof toBookingDTO>;

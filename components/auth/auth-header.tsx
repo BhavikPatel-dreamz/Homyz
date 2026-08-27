@@ -9,7 +9,7 @@ export function AuthHeader() {
   return (
     <header className="w-full bg-white border-b border-zinc-200/80 sticky top-0 z-50">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5">
-        {/* Left: Tagline / Brand */}
+        {/* Left: Brand Logo */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 flex items-center justify-center text-zinc-900">
@@ -18,12 +18,6 @@ export function AuthHeader() {
                 <circle cx="16" cy="11" r="3" />
               </svg>
             </div>
-            <span
-              className="text-2xl font-bold text-zinc-900 select-none"
-              style={{ fontFamily: "'Caveat', cursive, sans-serif" }}
-            >
-              Stay like a homie.
-            </span>
           </Link>
         </div>
 

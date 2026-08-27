@@ -28,5 +28,9 @@ export const redisConfig = {
  * reachable (see isRedisAvailable() in ./client for live state).
  */
 export function isRedisConfigured(): boolean {
-  return redisConfig.enabled && redisConfig.url.length > 0;
+  return (
+    redisConfig.enabled &&
+    redisConfig.url.length > 0 &&
+    (redisConfig.url.startsWith("redis://") || redisConfig.url.startsWith("rediss://"))
+  );
 }

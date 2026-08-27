@@ -1,18 +1,18 @@
 import type { ReactNode } from "react";
 
-// Presentational primitives shared by web pages. Clean, light Homyz design system.
+// Presentational primitives shared by web pages. Homyz design system tokens.
 
 export const inputClass =
-  "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900";
+  "w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] outline-none transition-colors focus:border-[var(--muted-foreground)]";
 
 export const labelClass =
-  "block text-xs font-semibold text-zinc-800";
+  "block text-xs font-semibold text-[var(--foreground)] mb-1";
 
 export const buttonClass =
-  "inline-flex items-center justify-center rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] px-5 py-2.5 text-xs font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-full bg-[#FBDE9B] hover:bg-[#F7D37E] px-5 py-2.5 text-xs font-bold text-[#291E05] transition-all shadow-2xs disabled:opacity-50 dark:bg-[#f59e0b] dark:text-zinc-950 hover:scale-102 active:scale-98 cursor-pointer";
 
 export const secondaryButtonClass =
-  "inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors disabled:opacity-50 cursor-pointer shadow-2xs";
 
 export function Card({
   children,
@@ -23,7 +23,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs text-zinc-900 ${className}`}
+      className={`rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xs text-[var(--card-foreground)] transition-colors ${className}`}
     >
       {children}
     </div>
@@ -38,11 +38,11 @@ export function Alert({
   children: ReactNode;
 }) {
   const tones = {
-    error: "border-red-200 bg-red-50 text-red-700",
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    error: "border-[var(--error)]/30 bg-[var(--error)]/10 text-[var(--error)]",
+    success: "border-[var(--success)]/30 bg-[var(--success)]/10 text-[var(--success)]",
   };
   return (
-    <div className={`rounded-xl border px-3.5 py-2.5 text-xs ${tones[tone]}`}>
+    <div className={`rounded-2xl border px-4 py-3 text-xs font-medium ${tones[tone]}`}>
       {children}
     </div>
   );
@@ -50,7 +50,7 @@ export function Alert({
 
 export function Badge({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-zinc-100 border border-zinc-200/60 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-800">
+    <span className="inline-flex items-center rounded-full bg-[var(--accent)] px-3 py-0.5 text-[11px] font-extrabold text-[var(--accent-foreground)] shadow-2xs">
       {children}
     </span>
   );
