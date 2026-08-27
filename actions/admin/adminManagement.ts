@@ -132,3 +132,50 @@ export async function deleteRoleAction(roleId: string) {
     return res;
   });
 }
+
+export async function getAdminPermissionResolutionAction(adminId: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_VIEW);
+
+    const { getAdminPermissionResolution } = await import("@/lib/permissions/admin-permission-service");
+    return getAdminPermissionResolution(adminId);
+  });
+}
+
+export async function updateAdminPermissionsAction(
+  adminId: string,
+  updates: { permission: string; effect: "INHERIT" | "ALLOW" | "DENY" }[],
+  reason?: string
+) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_MANAGE_PERMISSIONS);
+
+    const { updateAdminPermissionOverrides } = await import("@/lib/permissions/admin-permission-service");
+    const result = await updateAdminPermissionOverrides(actor, adminId, updates, reason);
+
+    revalidatePath(`/admin/admins/${adminId}/permissions`);
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return result;
+  });
+}
+
+export async function resetAdminPermissionsAction(adminId: string, reason?: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_MANAGE_PERMISSIONS);
+
+    const { resetAdminPermissionOverrides } = await import("@/lib/permissions/admin-permission-service");
+    const result = await resetAdminPermissionOverrides(actor, adminId, reason);
+
+    revalidatePath(`/admin/admins/${adminId}/permissions`);
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return result;
+  });
+}

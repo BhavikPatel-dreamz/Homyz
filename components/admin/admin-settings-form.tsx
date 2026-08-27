@@ -148,9 +148,12 @@ export function AdminSettingsForm() {
             <button
               type="submit"
               disabled={pending || !hasMinLength || !hasUppercase || !hasNumber || !passwordsMatch}
-              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-bold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50"
+              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-bold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2"
             >
-              {pending ? "Updating..." : "Update Password"}
+              {pending && (
+                <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
+              <span>{pending ? "Updating..." : "Update Password"}</span>
             </button>
           </div>
         </form>

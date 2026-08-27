@@ -281,12 +281,12 @@ export function ActivityLogViewer({
                     onClick={() => setSelectedLog(log)}
                     className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer group"
                   >
-                    <td className="py-3.5 px-4 whitespace-nowrap text-[var(--muted-foreground)] font-mono text-[11px]">
-                      {new Date(log.createdAt).toLocaleDateString([], {
+                    <td className="py-3.5 px-4 whitespace-nowrap text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                      {new Date(log.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                       })}{" "}
-                      {new Date(log.createdAt).toLocaleTimeString([], {
+                      {new Date(log.createdAt).toLocaleTimeString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
                         second: "2-digit",
@@ -379,7 +379,7 @@ export function ActivityLogViewer({
 
               <div className="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] border-t border-[var(--border-subtle)] pt-2 font-mono">
                 <span>{log.actorEmail || "System"}</span>
-                <span>{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span suppressHydrationWarning>{new Date(log.createdAt).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
           ))
@@ -420,8 +420,8 @@ export function ActivityLogViewer({
             <div className="grid grid-cols-2 gap-3 rounded-xl bg-[var(--surface-secondary)] p-3.5 text-xs text-[var(--foreground)] border border-[var(--border-subtle)]">
               <div>
                 <span className="text-[var(--muted-foreground)] text-[11px] block">Timestamp</span>
-                <span className="font-mono text-[var(--foreground)] font-medium">
-                  {new Date(selectedLog.createdAt).toLocaleString()}
+                <span className="font-mono text-[var(--foreground)] font-medium" suppressHydrationWarning>
+                  {new Date(selectedLog.createdAt).toLocaleString("en-US")}
                 </span>
               </div>
               <div>

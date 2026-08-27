@@ -1,24 +1,17 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Alert } from "../ui";
+import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
-import {
-  updateHostAction,
-  updateHostVerificationAction,
-  toggleHostSuspensionAction,
-  deleteHostAction,
-} from "@/actions/admin/hostActions";
 
-interface HostDetailsViewProps {
-  initialData: HostDetailsData;
-}
+export type HostDetailsDTO = HostDetailsData;
 
-export function HostDetailsView({ initialData }: HostDetailsViewProps) {
-  const router = useRouter();
-  const [data, setData] = useState<HostDetailsData>(initialData);
-  const [activeTab, setActiveTab] = useState<"overview" | "listings" | "bookings" | "earnings" | "reviews" | "activity">("overview");
+export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }) {
+  const [data, setData] = useState<HostDetailsDTO>(initialData);
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "permissions" | "listings" | "bookings" | "earnings" | "reviews" | "activity"
+  >("overview");
 
   // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -26,7 +19,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
   const [showSuspendModal, setShowSuspendModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Form states
+  // Form input states
   const [editName, setEditName] = useState(data.host.name || "");
   const [editEmail, setEditEmail] = useState(data.host.email || "");
   const [editPhone, setEditPhone] = useState(data.host.phone || "");
@@ -36,162 +29,176 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
   const [suspendReason, setSuspendReason] = useState("");
 
-  const [feedback, setFeedback] = useState<{ tone: "success" | "error"; msg: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const host = data.host;
   const metrics = data.metrics;
 
-  // Handlers
-  function handleEditSubmit(e: React.FormEvent) {
+  // Handler: Edit Host Info
+  async function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
+
     startTransition(async () => {
-      const res = await updateHostAction(host.id, {
-        name: editName,
-        email: editEmail,
-        phone: editPhone,
-      });
-
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editName,
+            email: editEmail,
+            phone: editPhone,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          setFeedback({ tone: "error", msg: result.error?.message || "Failed to update host profile" });
+          return;
+        }
+        setData((prev) => ({
+          ...prev,
+          host: {
+            ...prev.host,
+            name: editName,
+            email: editEmail,
+            phone: editPhone,
+          },
+        }));
+        setShowEditModal(false);
+        setFeedback({ tone: "success", msg: "Host profile updated successfully." });
+      } catch {
+        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
       }
-
-      setData((prev) => ({
-        ...prev,
-        host: {
-          ...prev.host,
-          name: editName,
-          email: editEmail,
-          phone: editPhone,
-        },
-      }));
-
-      setShowEditModal(false);
-      setFeedback({ tone: "success", msg: "Host profile updated successfully!" });
-      router.refresh();
     });
   }
 
-  function handleVerifSubmit(e: React.FormEvent) {
+  // Handler: Verification Review
+  async function handleVerifSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
+
     startTransition(async () => {
-      const res = await updateHostVerificationAction(host.id, verifStatusChoice, verifReason);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}/verification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            verificationStatus: verifStatusChoice,
+            rejectionReason: verifStatusChoice === "REJECTED" ? verifReason : undefined,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          setFeedback({ tone: "error", msg: result.error?.message || "Failed to submit verification" });
+          return;
+        }
+        setData((prev) => ({
+          ...prev,
+          host: {
+            ...prev.host,
+            verificationStatus: verifStatusChoice,
+          },
+        }));
+        setShowVerifModal(false);
+        setFeedback({ tone: "success", msg: `Verification ${verifStatusChoice.toLowerCase()} successfully.` });
+      } catch {
+        setFeedback({ tone: "error", msg: "Failed to submit verification." });
       }
-
-      setData((prev) => ({
-        ...prev,
-        host: {
-          ...prev.host,
-          status: verifStatusChoice === "APPROVED" ? "ACTIVE" : prev.host.status,
-          verificationStatus: verifStatusChoice,
-        },
-      }));
-
-      setShowVerifModal(false);
-      setFeedback({ tone: "success", msg: `Verification status updated to ${verifStatusChoice}.` });
-      router.refresh();
     });
   }
 
-  function handleSuspendSubmit(e: React.FormEvent) {
+  // Handler: Suspend / Unsuspend Host
+  async function handleSuspendSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
-    const suspend = host.status !== "SUSPENDED";
+    const newStatus = host.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+
     startTransition(async () => {
-      const res = await toggleHostSuspensionAction(host.id, suspend, suspendReason);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: newStatus,
+            reason: newStatus === "SUSPENDED" ? suspendReason : undefined,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          setFeedback({ tone: "error", msg: result.error?.message || "Failed to change host status" });
+          return;
+        }
+        setData((prev) => ({
+          ...prev,
+          host: {
+            ...prev.host,
+            status: newStatus as any,
+          },
+        }));
+        setShowSuspendModal(false);
+        setFeedback({ tone: "success", msg: `Host status changed to ${newStatus}.` });
+      } catch {
+        setFeedback({ tone: "error", msg: "Failed to update host status." });
       }
-
-      setData((prev) => ({
-        ...prev,
-        host: {
-          ...prev.host,
-          status: suspend ? ("SUSPENDED" as any) : ("ACTIVE" as any),
-        },
-      }));
-
-      setShowSuspendModal(false);
-      setSuspendReason("");
-      setFeedback({
-        tone: "success",
-        msg: `Host account ${suspend ? "suspended" : "unsuspended"} successfully.`,
-      });
-      router.refresh();
     });
   }
 
-  function handleDeleteSubmit() {
+  // Handler: Delete Host
+  async function handleDeleteSubmit() {
     setFeedback(null);
+
     startTransition(async () => {
-      const res = await deleteHostAction(host.id);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
+          method: "DELETE",
+        });
+        const result = await res.json();
+        if (!result.success) {
+          setFeedback({ tone: "error", msg: result.error?.message || "Cannot delete host with active bookings." });
+          setShowDeleteModal(false);
+          return;
+        }
+        window.location.href = "/admin/hosts";
+      } catch {
+        setFeedback({ tone: "error", msg: "Failed to delete host account." });
         setShowDeleteModal(false);
-        return;
       }
-
-      router.push("/admin/hosts");
     });
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-zinc-900 pb-12">
-      {/* Back Link */}
-      <div>
-        <Link
-          href="/admin/hosts"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
-        >
-          ← Back to Host Registry
-        </Link>
-      </div>
-
-      {/* Action feedback */}
+    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+      {/* Alert Feedback */}
       {feedback && (
-        <div
-          className={`rounded-2xl p-4 text-xs font-semibold flex items-center justify-between border ${
-            feedback.tone === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}
-        >
-          <span>{feedback.msg}</span>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-xs underline ml-4 hover:opacity-80"
-          >
-            Dismiss
-          </button>
-        </div>
+        <Alert tone={feedback.tone}>
+          <div className="flex items-center justify-between">
+            <span>{feedback.msg}</span>
+            <button onClick={() => setFeedback(null)} className="text-xs underline ml-4">
+              Dismiss
+            </button>
+          </div>
+        </Alert>
       )}
 
-      {/* Main Profile Header Card */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Header Info Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-2xl shadow-inner border border-amber-200">
+          <div className="h-14 w-14 rounded-2xl bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold flex items-center justify-center text-xl shadow-2xs">
             {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
           </div>
-
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
                 {host.name || "Unnamed Host"}
               </h1>
 
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                   host.status === "ACTIVE"
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border border-rose-200"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                    : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
                 }`}
               >
                 {host.status}
@@ -199,17 +206,17 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
               {/* Verification Badge */}
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                   host.verificationStatus === "APPROVED"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "bg-amber-50 text-amber-800 border border-amber-200"
+                    ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50"
+                    : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50"
                 }`}
               >
                 {host.verificationStatus === "APPROVED" ? "✓ Verified" : "Unverified"}
               </span>
             </div>
 
-            <p className="mt-1 text-xs text-zinc-500 font-mono">{host.email} • ID: {host.id}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)] font-mono">{host.email} • ID: {host.id}</p>
           </div>
         </div>
 
@@ -218,7 +225,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowEditModal(true)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-all"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Edit Profile
           </button>
@@ -226,7 +233,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowVerifModal(true)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-all"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Verification Review
           </button>
@@ -234,10 +241,10 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowSuspendModal(true)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-all border ${
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${
               host.status === "SUSPENDED"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
             }`}
           >
             {host.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
@@ -246,7 +253,7 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowDeleteModal(true)}
-            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-semibold text-white transition-all shadow-2xs"
+            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold text-white transition-all shadow-2xs"
           >
             Delete Host
           </button>
@@ -255,28 +262,29 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Top Metric Cards (4 Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Listings Owned</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">{metrics.totalListings}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Listings Owned</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">{metrics.totalListings}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Total Bookings</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">{metrics.totalBookings}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">{metrics.totalBookings}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Total Earnings</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-700">${(metrics.totalEarnings / 100).toFixed(2)}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Earnings</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">${(metrics.totalEarnings / 100).toFixed(2)}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Average Rating</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-amber-600">★ {metrics.averageRating} <span className="text-xs font-normal text-zinc-400">({metrics.reviewsCount} reviews)</span></p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Average Rating</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400">★ {metrics.averageRating} <span className="text-xs font-normal text-[var(--muted-foreground)]">({metrics.reviewsCount} reviews)</span></p>
         </div>
       </div>
 
       {/* Tabs Bar Navigation */}
-      <div className="border-b border-zinc-200 flex items-center gap-2 overflow-x-auto pt-2">
+      <div className="border-b border-[var(--border)] flex items-center gap-2 overflow-x-auto pt-2" suppressHydrationWarning>
         {[
           { id: "overview", label: "Overview" },
+          { id: "permissions", label: "Access & Permissions" },
           { id: "listings", label: `Listings (${data.listings.length})` },
           { id: "bookings", label: `Bookings (${data.bookings.length})` },
           { id: "earnings", label: "Earnings" },
@@ -287,10 +295,10 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? "border-amber-500 text-amber-900 font-extrabold"
-                : "border-transparent text-zinc-500 hover:text-zinc-800"
+                ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
+                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
             {tab.label}
@@ -298,49 +306,59 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
         ))}
       </div>
 
+      {/* Tab: ACCESS & PERMISSIONS */}
+      {activeTab === "permissions" && (
+        <HostPermissionsTab
+          hostId={host.id}
+          hostName={host.name}
+          hostEmail={host.email}
+          hostStatus={host.status}
+        />
+      )}
+
       {/* Tab 1: OVERVIEW */}
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Personal & Profile Info</h2>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Personal & Profile Info</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-zinc-400 block font-medium">Full Name</span>
-                <span className="font-semibold text-zinc-900">{host.name || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.name || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Email Address</span>
-                <span className="font-semibold text-zinc-900">{host.email || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.email || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Phone Number</span>
-                <span className="font-semibold text-zinc-900">{host.phone || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.phone || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">User Role</span>
-                <span className="font-semibold text-zinc-900">{host.role}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">User Role</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.role}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Account Status</span>
-                <span className="font-semibold text-zinc-900">{host.status}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Account Status</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.status}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Verification</span>
-                <span className="font-semibold text-zinc-900">{host.verificationStatus}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Verification</span>
+                <span className="font-semibold text-[var(--foreground)]">{host.verificationStatus}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Account System Timestamps</h2>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-zinc-400 block font-medium">Joined Date</span>
-                <span className="font-semibold text-zinc-900">{new Date(host.createdAt).toLocaleString()}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Joined Date</span>
+                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(host.createdAt).toLocaleString("en-US")}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Last Active Timestamp</span>
-                <span className="font-semibold text-zinc-900">{new Date(host.lastActive).toLocaleString()}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Last Active Timestamp</span>
+                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(host.lastActive).toLocaleString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -349,9 +367,9 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Tab 2: LISTINGS */}
       {activeTab === "listings" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Listing Title</th>
                 <th className="py-3.5 px-4">Price / Night</th>
@@ -360,31 +378,31 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <th className="py-3.5 px-4">Created Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {data.listings.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-zinc-400">
+                  <td colSpan={5} className="py-8 text-center text-[var(--muted-foreground)]">
                     This host has no property listings yet.
                   </td>
                 </tr>
               ) : (
                 data.listings.map((item) => (
-                  <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-zinc-900">{item.title}</td>
-                    <td className="py-3.5 px-4 text-zinc-700 font-semibold">${(item.price / 100).toFixed(2)}</td>
+                  <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
+                    <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
                     <td className="py-3.5 px-4">
                       {item.published ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
                           Published
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
                           Draft
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold">{item.bookingsCount}</td>
-                    <td className="py-3.5 px-4 text-zinc-500">{new Date(item.createdAt).toLocaleDateString()}</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleDateString("en-US")}</td>
                   </tr>
                 ))
               )}
@@ -395,9 +413,9 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Tab 3: BOOKINGS */}
       {activeTab === "bookings" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Booking ID</th>
                 <th className="py-3.5 px-4">Guest</th>
@@ -408,30 +426,30 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <th className="py-3.5 px-4 text-right">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {data.bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-zinc-400">
+                  <td colSpan={7} className="py-8 text-center text-[var(--muted-foreground)]">
                     No reservations recorded for this host.
                   </td>
                 </tr>
               ) : (
                 data.bookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-zinc-900">{b.id}</td>
+                  <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-900">{b.guestName || "Guest"}</div>
-                      <div className="text-[11px] text-zinc-400">{b.guestEmail}</div>
+                      <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
+                      <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.guestEmail}</div>
                     </td>
-                    <td className="py-3.5 px-4 font-medium text-zinc-800">{b.listingTitle}</td>
-                    <td className="py-3.5 px-4 text-zinc-500">{new Date(b.startDate).toLocaleDateString()}</td>
-                    <td className="py-3.5 px-4 text-zinc-500">{new Date(b.endDate).toLocaleDateString()}</td>
+                    <td className="py-3.5 px-4 font-medium text-[var(--foreground)]">{b.listingTitle}</td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.endDate).toLocaleDateString("en-US")}</td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
                         {b.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-zinc-900">${(b.amount / 100).toFixed(2)}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
                   </tr>
                 ))
               )}
@@ -442,20 +460,20 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Tab 4: EARNINGS */}
       {activeTab === "earnings" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Earnings & Payout Ledger</h2>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Earnings & Payout Ledger</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl border border-zinc-200 p-4">
-              <span className="text-xs text-zinc-400 font-medium">Lifetime Gross Earnings</span>
-              <p className="text-2xl font-bold text-emerald-700 mt-1">${(metrics.totalEarnings / 100).toFixed(2)}</p>
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">Lifetime Gross Earnings</span>
+              <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">${(metrics.totalEarnings / 100).toFixed(2)}</p>
             </div>
-            <div className="rounded-xl border border-zinc-200 p-4">
-              <span className="text-xs text-zinc-400 font-medium">Platform Fee Withheld (10%)</span>
-              <p className="text-2xl font-bold text-zinc-700 mt-1">${((metrics.totalEarnings * 0.1) / 100).toFixed(2)}</p>
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">Platform Fee Withheld (10%)</span>
+              <p className="text-2xl font-extrabold text-[var(--foreground)] mt-1">${((metrics.totalEarnings * 0.1) / 100).toFixed(2)}</p>
             </div>
-            <div className="rounded-xl border border-zinc-200 p-4">
-              <span className="text-xs text-zinc-400 font-medium">Net Payout Completed</span>
-              <p className="text-2xl font-bold text-blue-700 mt-1">${((metrics.totalEarnings * 0.9) / 100).toFixed(2)}</p>
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">Net Payout Completed</span>
+              <p className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">${((metrics.totalEarnings * 0.9) / 100).toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -463,28 +481,28 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* Tab 5: REVIEWS */}
       {activeTab === "reviews" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Guest Ratings & Feedback</h2>
-          <p className="text-xs text-zinc-500">Average Host Rating: <span className="font-bold text-amber-600">★ {metrics.averageRating}</span> based on guest stay reviews.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Guest Ratings & Feedback</h2>
+          <p className="text-xs text-[var(--muted-foreground)]">Average Host Rating: <span className="font-bold text-amber-600 dark:text-amber-400">★ {metrics.averageRating}</span> based on guest stay reviews.</p>
         </div>
       )}
 
       {/* Tab 6: ACTIVITY LOG */}
       {activeTab === "activity" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Host Audit History Logs</h2>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Host Audit History Logs</h2>
           {data.activity.length === 0 ? (
-            <p className="text-xs text-zinc-400 py-4 text-center">No recorded activity history for this host.</p>
+            <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">No recorded activity history for this host.</p>
           ) : (
             <div className="space-y-3">
               {data.activity.map((log) => (
-                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
+                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
                   <div>
-                    <span className="font-bold text-zinc-900">{log.action}</span>
-                    <p className="text-zinc-600 mt-0.5">{log.description}</p>
-                    <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+                    <span className="font-bold text-[var(--foreground)]">{log.action}</span>
+                    <p className="text-[var(--muted-foreground)] mt-0.5">{log.description}</p>
+                    <span className="text-[11px] text-[var(--muted-foreground)] mt-1 block">Actor: {log.actorEmail || "System"}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
+                  <span className="text-[11px] font-mono text-[var(--muted-foreground)]" suppressHydrationWarning>{new Date(log.createdAt).toLocaleString("en-US")}</span>
                 </div>
               ))}
             </div>
@@ -494,37 +512,37 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* EDIT HOST MODAL */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-zinc-900">Edit Host Profile</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">Edit Host Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Full Name</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Full Name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Email Address</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Email Address</label>
                 <input
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Phone Number</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Phone Number</label>
                 <input
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -532,16 +550,20 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[#F8D88E] hover:bg-[#F4CF74] px-4 py-2 font-bold text-zinc-900 shadow-2xs"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
                 >
-                  Save Changes
+                  {pending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  <span>{pending ? "Saving..." : "Save Changes"}</span>
                 </button>
               </div>
             </form>
@@ -551,16 +573,16 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* VERIFICATION REVIEW MODAL */}
       {showVerifModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-zinc-900">Host Verification Review</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">Host Verification Review</h3>
             <form onSubmit={handleVerifSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Decision</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Decision</label>
                 <select
                   value={verifStatusChoice}
                   onChange={(e) => setVerifStatusChoice(e.target.value as any)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
                 >
                   <option value="APPROVED">Approve Host Verification</option>
                   <option value="REJECTED">Reject Host Verification</option>
@@ -569,13 +591,13 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
               {verifStatusChoice === "REJECTED" && (
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Rejection Reason</label>
+                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Rejection Reason</label>
                   <textarea
                     rows={3}
                     value={verifReason}
                     onChange={(e) => setVerifReason(e.target.value)}
                     placeholder="Provide reason for rejecting verification..."
-                    className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -585,16 +607,20 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <button
                   type="button"
                   onClick={() => setShowVerifModal(false)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2 font-bold text-white shadow-2xs"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
                 >
-                  Submit Decision
+                  {pending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  <span>{pending ? "Submitting..." : "Submit Decision"}</span>
                 </button>
               </div>
             </form>
@@ -604,12 +630,12 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* SUSPEND / UNSUSPEND MODAL */}
       {showSuspendModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-zinc-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">
               {host.status === "SUSPENDED" ? "Unsuspend Host Account" : "Suspend Host Account"}
             </h3>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[var(--muted-foreground)]">
               {host.status === "SUSPENDED"
                 ? "This will restore full hosting capabilities for this account."
                 : "Suspending this host will restrict hosting actions. No permanent data will be deleted."}
@@ -618,13 +644,13 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
             <form onSubmit={handleSuspendSubmit} className="space-y-3 text-xs">
               {host.status !== "SUSPENDED" && (
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Suspension Reason</label>
+                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Suspension Reason</label>
                   <textarea
                     rows={3}
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}
                     placeholder="Reason for suspending host..."
-                    className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -634,18 +660,22 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 <button
                   type="button"
                   onClick={() => setShowSuspendModal(false)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className={`rounded-full px-4 py-2 font-bold text-white shadow-2xs ${
+                  className={`rounded-full px-4 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all ${
                     host.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                   }`}
                 >
-                  Confirm
+                  {pending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  )}
+                  <span>{pending ? "Processing..." : "Confirm"}</span>
                 </button>
               </div>
             </form>
@@ -655,10 +685,10 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
 
       {/* DELETE HOST MODAL */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-rose-700">Delete Host Account</h3>
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-rose-600">Delete Host Account</h3>
+            <div className="p-3 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50 rounded-xl text-xs text-rose-800 dark:text-rose-300">
               <strong className="block mb-1 font-bold">⚠️ Warning: Destructive Action</strong>
               Are you sure you want to delete this host account ({host.email})? If the host has active confirmed bookings, deletion will be blocked automatically.
             </div>
@@ -667,7 +697,8 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -675,9 +706,12 @@ export function HostDetailsView({ initialData }: HostDetailsViewProps) {
                 type="button"
                 onClick={handleDeleteSubmit}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 font-bold text-white shadow-2xs"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
-                Permanently Delete
+                {pending && (
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                )}
+                <span>{pending ? "Deleting..." : "Permanently Delete"}</span>
               </button>
             </div>
           </div>

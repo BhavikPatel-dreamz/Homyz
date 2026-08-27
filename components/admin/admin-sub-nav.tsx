@@ -10,7 +10,7 @@ export function AdminSubNav() {
     { href: "/admin", label: "Overview", exact: true },
     { href: "/admin/hosts", label: "Host Management" },
     { href: "/admin/guests", label: "Guest Management" },
-    { href: "/admin/roles", label: "Roles & Permissions" },
+    // { href: "/admin/roles", label: "Roles & Permissions" },
     { href: "/admin/admins", label: "Admin Accounts" },
     { href: "/admin/activity-logs", label: "Audit Logs" },
   ];

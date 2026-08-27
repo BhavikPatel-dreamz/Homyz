@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from "react";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -14,22 +14,39 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "homyz-theme";
 
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
-      setThemeState(saved);
-    }
-    setMounted(true);
+  // Synchronously apply saved theme on initial client mount before paint
+  useIsomorphicLayoutEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const activeTheme =
+        saved === "dark" || ((!saved || saved === "system") && mediaQuery.matches)
+          ? "dark"
+          : "light";
+
+      if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
+        setThemeState(saved);
+      }
+      setResolvedTheme(activeTheme);
+
+      if (activeTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
+      } else {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.style.colorScheme = "light";
+      }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-
     const root = document.documentElement;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -62,7 +79,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

@@ -21,15 +21,17 @@ function MetricCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border bg-white p-5 shadow-2xs transition-all ${
-        highlight ? "border-amber-300 bg-amber-50/20" : "border-zinc-200"
+      className={`rounded-2xl border p-5 shadow-2xs transition-all ${
+        highlight
+          ? "border-amber-400/60 bg-amber-500/10 text-[var(--foreground)]"
+          : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)]"
       }`}
     >
-      <p className="text-xs font-semibold text-zinc-500">{label}</p>
-      <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
+      <p className="text-xs font-semibold text-[var(--muted-foreground)]">{label}</p>
+      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
         {value}
       </p>
-      {subtitle && <p className="mt-1 text-xs text-zinc-400">{subtitle}</p>}
+      {subtitle && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{subtitle}</p>}
     </div>
   );
 }
@@ -89,13 +91,13 @@ export function GuestManagementDashboard({
   }, [filteredGuests, currentPage, pageSize]);
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-zinc-900">
+    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
           Guest Management
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
           Overview of platform guest accounts, reservations, and spending activity.
         </p>
       </div>
@@ -123,10 +125,10 @@ export function GuestManagementDashboard({
                 setCurrentPage(1);
               }}
               placeholder="Search guest by name, email, phone..."
-              className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-9 pr-4 text-xs text-zinc-900 outline-none focus:border-zinc-500"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)]"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -143,7 +145,7 @@ export function GuestManagementDashboard({
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -156,7 +158,7 @@ export function GuestManagementDashboard({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="createdAt">Joined Date</option>
             <option value="name">Guest Name</option>
@@ -167,7 +169,7 @@ export function GuestManagementDashboard({
           <button
             type="button"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
           >
             {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
           </button>
@@ -175,9 +177,9 @@ export function GuestManagementDashboard({
       </div>
 
       {/* Guest Desktop Table View */}
-      <div className="hidden md:block rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
             <tr>
               <th className="py-3.5 px-4">Guest</th>
               <th className="py-3.5 px-4">Email</th>
@@ -189,74 +191,74 @@ export function GuestManagementDashboard({
               <th className="py-3.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-[var(--border-subtle)]">
             {paginatedGuests.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-zinc-400">
+                <td colSpan={8} className="py-8 text-center text-[var(--muted-foreground)]">
                   No guests found matching your criteria.
                 </td>
               </tr>
             ) : (
               paginatedGuests.map((guest) => (
-                <tr key={guest.id} className="hover:bg-zinc-50/50 transition-colors">
+                <tr key={guest.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                   {/* Guest Name */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-900 font-semibold flex items-center justify-center text-xs">
+                      <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
                         {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold text-zinc-900">
+                        <div className="font-semibold text-[var(--foreground)]">
                           {guest.name || "Unnamed Guest"}
                         </div>
-                        <div className="text-[11px] text-zinc-400">{guest.id}</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{guest.id}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Email */}
-                  <td className="py-3.5 px-4 text-zinc-600 font-mono text-[11px]">
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]">
                     {guest.email || "N/A"}
                   </td>
 
                   {/* Phone */}
-                  <td className="py-3.5 px-4 text-zinc-600">
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)]">
                     {guest.phone || "—"}
                   </td>
 
                   {/* Status Badge */}
                   <td className="py-3.5 px-4">
                     {guest.status === "ACTIVE" ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
                         Suspended
                       </span>
                     )}
                   </td>
 
                   {/* Bookings Count */}
-                  <td className="py-3.5 px-4 text-center font-bold text-zinc-900">
+                  <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">
                     {guest.bookingsCount}
                   </td>
 
                   {/* Total Spending */}
-                  <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
+                  <td className="py-3.5 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
                     ${(guest.totalSpending / 100).toFixed(2)}
                   </td>
 
                   {/* Joined Date */}
-                  <td className="py-3.5 px-4 text-zinc-500 text-[11px]">
-                    {new Date(guest.createdAt).toLocaleDateString()}
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                    {new Date(guest.createdAt).toLocaleDateString("en-US")}
                   </td>
 
                   {/* Actions */}
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/guests/${guest.id}`}
-                      className="rounded-full border border-zinc-200 hover:bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700 font-medium transition-colors inline-block"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-[var(--foreground)] font-bold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -271,33 +273,35 @@ export function GuestManagementDashboard({
       {/* Guest Mobile Card List View */}
       <div className="md:hidden flex flex-col gap-3">
         {paginatedGuests.map((guest) => (
-          <div key={guest.id} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs flex flex-col gap-2">
+          <div key={guest.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-900 font-semibold flex items-center justify-center text-xs">
+                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
                   {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-zinc-900 text-xs">{guest.name || "Unnamed Guest"}</h3>
-                  <p className="text-[11px] text-zinc-400">{guest.email}</p>
+                  <h3 className="font-bold text-[var(--foreground)] text-xs">{guest.name || "Unnamed Guest"}</h3>
+                  <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{guest.email}</p>
                 </div>
               </div>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                guest.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                guest.status === "ACTIVE"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                  : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
               }`}>
                 {guest.status}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-zinc-100">
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-zinc-400">Bookings:</span> <span className="font-semibold">{guest.bookingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-bold text-[var(--foreground)]">{guest.bookingsCount}</span>
               </div>
               <div>
-                <span className="text-zinc-400">Spending:</span> <span className="font-semibold text-emerald-700">${(guest.totalSpending / 100).toFixed(2)}</span>
+                <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-bold text-emerald-600 dark:text-emerald-400">${(guest.totalSpending / 100).toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-zinc-400">Joined:</span> <span className="font-semibold">{new Date(guest.createdAt).toLocaleDateString()}</span>
+                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-bold text-[var(--foreground)]" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -305,7 +309,7 @@ export function GuestManagementDashboard({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 pt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--muted-foreground)] pt-2">
         <div>
           Showing {filteredGuests.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
           {Math.min(currentPage * pageSize, filteredGuests.length)} of {filteredGuests.length} guests
@@ -316,18 +320,18 @@ export function GuestManagementDashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-semibold text-zinc-800">
+          <span className="font-bold text-[var(--foreground)]">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>

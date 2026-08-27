@@ -49,8 +49,8 @@ export async function requirePagePermission(
     forbidden();
   }
 
-  // Super Admin / unrestricted ADMIN has all permissions
-  if (user.role === Role.ADMIN && (!user.permissions || user.permissions.length === 0 || user.adminRoleSlug === "super_admin")) {
+  // All ADMIN accounts pass administrative page guards
+  if (user.role === Role.ADMIN) {
     return user;
   }
 

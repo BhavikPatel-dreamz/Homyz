@@ -72,8 +72,12 @@ model User {
   bookings            Booking[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
-  adminRole           AdminRole?            @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+  adminRole           AdminRole?              @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
   auditLogs           AuditLog[]
+  hostPermissionOverrides HostPermissionOverride[] @relation("HostOverrides")
+  createdHostOverrides    HostPermissionOverride[] @relation("HostOverridesCreated")
+  adminPermissionOverrides AdminPermissionOverride[] @relation("AdminOverrides")
+  createdAdminOverrides    AdminPermissionOverride[] @relation("AdminOverridesCreated")
 
   @@index([role])
   @@index([adminRoleId])
@@ -275,4 +279,38 @@ model AuditLog {
   @@index([action])
   @@index([resourceType])
   @@index([createdAt])
+}
+
+model HostPermissionOverride {
+  id          String   @id @default(cuid())
+  hostId      String
+  permission  String
+  effect      String   // "ALLOW" or "DENY"
+  reason      String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  host      User  @relation("HostOverrides", fields: [hostId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("HostOverridesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([hostId, permission])
+  @@index([hostId])
+}
+
+model AdminPermissionOverride {
+  id          String   @id @default(cuid())
+  adminId     String
+  permission  String
+  effect      String   // "ALLOW" or "DENY"
+  reason      String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admin     User  @relation("AdminOverrides", fields: [adminId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("AdminOverridesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([adminId, permission])
+  @@index([adminId])
 }

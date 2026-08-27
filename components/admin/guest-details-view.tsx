@@ -112,12 +112,12 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-zinc-900 pb-12">
+    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)] pb-12">
       {/* Back Link */}
       <div>
         <Link
           href="/admin/guests"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
           ← Back to Guest Registry
         </Link>
@@ -126,10 +126,10 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* Feedback banner */}
       {feedback && (
         <div
-          className={`rounded-2xl p-4 text-xs font-semibold flex items-center justify-between border ${
+          className={`rounded-2xl p-4 text-xs font-bold flex items-center justify-between border ${
             feedback.tone === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+              : "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
           }`}
         >
           <span>{feedback.msg}</span>
@@ -143,31 +143,31 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       )}
 
       {/* Guest Profile Header Card */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-blue-100 text-blue-900 font-bold flex items-center justify-center text-2xl shadow-inner border border-blue-200">
+          <div className="h-16 w-16 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold flex items-center justify-center text-2xl shadow-inner">
             {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
           </div>
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
                 {guest.name || "Unnamed Guest"}
               </h1>
 
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${
                   guest.status === "ACTIVE"
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border border-rose-200"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                    : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
                 }`}
               >
                 {guest.status}
               </span>
             </div>
 
-            <p className="mt-1 text-xs text-zinc-500 font-mono">{guest.email} • ID: {guest.id}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)] font-mono">{guest.email} • ID: {guest.id}</p>
           </div>
         </div>
 
@@ -176,7 +176,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowEditModal(true)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-all"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Edit Profile
           </button>
@@ -184,10 +184,10 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowSuspendModal(true)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-all border ${
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${
               guest.status === "SUSPENDED"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
             }`}
           >
             {guest.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
@@ -196,7 +196,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
           <button
             type="button"
             onClick={() => setShowDeleteModal(true)}
-            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-semibold text-white transition-all shadow-2xs"
+            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold text-white transition-all shadow-2xs"
           >
             Delete Guest
           </button>
@@ -205,26 +205,26 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Total Bookings</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">{metrics.totalBookings}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">{metrics.totalBookings}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Total Spending</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-700">${(metrics.totalSpending / 100).toFixed(2)}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Spending</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">${(metrics.totalSpending / 100).toFixed(2)}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Joined Date</p>
-          <p className="mt-2 text-base font-bold tracking-tight text-zinc-900">{new Date(guest.createdAt).toLocaleDateString()}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Joined Date</p>
+          <p className="mt-2 text-base font-extrabold tracking-tight text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-zinc-500">Last Active</p>
-          <p className="mt-2 text-base font-bold tracking-tight text-zinc-900">{new Date(guest.lastActive).toLocaleDateString()}</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <p className="text-xs font-semibold text-[var(--muted-foreground)]">Last Active</p>
+          <p className="mt-2 text-base font-extrabold tracking-tight text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleDateString("en-US")}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-zinc-200 flex items-center gap-2 overflow-x-auto pt-2">
+      <div className="border-b border-[var(--border)] flex items-center gap-2 overflow-x-auto pt-2">
         {[
           { id: "overview", label: "Overview" },
           { id: "bookings", label: `Bookings History (${data.bookings.length})` },
@@ -234,10 +234,10 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? "border-blue-500 text-blue-900 font-extrabold"
-                : "border-transparent text-zinc-500 hover:text-zinc-800"
+                ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
+                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
             {tab.label}
@@ -248,42 +248,42 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* Tab 1: OVERVIEW */}
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Personal & Contact Info</h2>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Personal & Contact Info</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-zinc-400 block font-medium">Full Name</span>
-                <span className="font-semibold text-zinc-900">{guest.name || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
+                <span className="font-semibold text-[var(--foreground)]">{guest.name || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Email Address</span>
-                <span className="font-semibold text-zinc-900">{guest.email || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
+                <span className="font-semibold text-[var(--foreground)]">{guest.email || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Phone Number</span>
-                <span className="font-semibold text-zinc-900">{guest.phone || "Not provided"}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
+                <span className="font-semibold text-[var(--foreground)]">{guest.phone || "Not provided"}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Role</span>
-                <span className="font-semibold text-zinc-900">{guest.role}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Role</span>
+                <span className="font-semibold text-[var(--foreground)]">{guest.role}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Account Status</span>
-                <span className="font-semibold text-zinc-900">{guest.status}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Account Status</span>
+                <span className="font-semibold text-[var(--foreground)]">{guest.status}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Account System Timestamps</h2>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-zinc-400 block font-medium">Joined Date</span>
-                <span className="font-semibold text-zinc-900">{new Date(guest.createdAt).toLocaleString()}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Joined Date</span>
+                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleString("en-US")}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block font-medium">Last Active Timestamp</span>
-                <span className="font-semibold text-zinc-900">{new Date(guest.lastActive).toLocaleString()}</span>
+                <span className="text-[var(--muted-foreground)] block font-medium">Last Active Timestamp</span>
+                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -292,9 +292,9 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* Tab 2: BOOKINGS */}
       {activeTab === "bookings" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Booking ID</th>
                 <th className="py-3.5 px-4">Property Title</th>
@@ -305,30 +305,30 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                 <th className="py-3.5 px-4 text-right">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[var(--border-subtle)]">
               {data.bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-zinc-400">
+                  <td colSpan={7} className="py-8 text-center text-[var(--muted-foreground)]">
                     No reservations recorded for this guest.
                   </td>
                 </tr>
               ) : (
                 data.bookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-zinc-900">{b.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-zinc-900">{b.listingTitle}</td>
+                  <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
+                    <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{b.listingTitle}</td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-900">{b.hostName || "Host"}</div>
-                      <div className="text-[11px] text-zinc-400">{b.hostEmail}</div>
+                      <div className="font-semibold text-[var(--foreground)]">{b.hostName || "Host"}</div>
+                      <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.hostEmail}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-zinc-500">{new Date(b.startDate).toLocaleDateString()}</td>
-                    <td className="py-3.5 px-4 text-zinc-500">{new Date(b.endDate).toLocaleDateString()}</td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.endDate).toLocaleDateString("en-US")}</td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
                         {b.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-zinc-900">${(b.amount / 100).toFixed(2)}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
                   </tr>
                 ))
               )}
@@ -339,20 +339,20 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* Tab 3: ACTIVITY */}
       {activeTab === "activity" && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Guest Activity History Logs</h2>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Guest Activity History Logs</h2>
           {data.activity.length === 0 ? (
-            <p className="text-xs text-zinc-400 py-4 text-center">No recorded activity history for this guest.</p>
+            <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">No recorded activity history for this guest.</p>
           ) : (
             <div className="space-y-3">
               {data.activity.map((log) => (
-                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-zinc-100 text-xs">
+                <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
                   <div>
-                    <span className="font-bold text-zinc-900">{log.action}</span>
-                    <p className="text-zinc-600 mt-0.5">{log.description}</p>
-                    <span className="text-[11px] text-zinc-400 mt-1 block">Actor: {log.actorEmail || "System"}</span>
+                    <span className="font-bold text-[var(--foreground)]">{log.action}</span>
+                    <p className="text-[var(--muted-foreground)] mt-0.5">{log.description}</p>
+                    <span className="text-[11px] text-[var(--muted-foreground)] mt-1 block">Actor: {log.actorEmail || "System"}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">{new Date(log.createdAt).toLocaleString()}</span>
+                  <span className="text-[11px] font-mono text-[var(--muted-foreground)]" suppressHydrationWarning>{new Date(log.createdAt).toLocaleString("en-US")}</span>
                 </div>
               ))}
             </div>
@@ -362,37 +362,37 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* EDIT GUEST MODAL */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-zinc-900">Edit Guest Profile</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">Edit Guest Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Full Name</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Full Name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Email Address</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Email Address</label>
                 <input
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-zinc-700 font-semibold mb-1">Phone Number</label>
+                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Phone Number</label>
                 <input
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none focus:border-zinc-500"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -400,16 +400,20 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[#F8D88E] hover:bg-[#F4CF74] px-4 py-2 font-bold text-zinc-900 shadow-2xs"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
                 >
-                  Save Changes
+                  {pending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  <span>{pending ? "Saving..." : "Save Changes"}</span>
                 </button>
               </div>
             </form>
@@ -419,12 +423,12 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* SUSPEND / UNSUSPEND MODAL */}
       {showSuspendModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-zinc-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">
               {guest.status === "SUSPENDED" ? "Unsuspend Guest Account" : "Suspend Guest Account"}
             </h3>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[var(--muted-foreground)]">
               {guest.status === "SUSPENDED"
                 ? "This will restore active status for this guest."
                 : "Suspending this guest will block future booking actions. No historical data will be deleted."}
@@ -433,13 +437,13 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
             <form onSubmit={handleSuspendSubmit} className="space-y-3 text-xs">
               {guest.status !== "SUSPENDED" && (
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Suspension Reason</label>
+                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Suspension Reason</label>
                   <textarea
                     rows={3}
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}
                     placeholder="Reason for suspending guest..."
-                    className="w-full rounded-xl border border-zinc-200 p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -449,18 +453,22 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                 <button
                   type="button"
                   onClick={() => setShowSuspendModal(false)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className={`rounded-full px-4 py-2 font-bold text-white shadow-2xs ${
+                  className={`rounded-full px-4 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all ${
                     guest.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                   }`}
                 >
-                  Confirm
+                  {pending && (
+                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  )}
+                  <span>{pending ? "Processing..." : "Confirm"}</span>
                 </button>
               </div>
             </form>
@@ -470,10 +478,10 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       {/* DELETE GUEST MODAL */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200 space-y-4">
-            <h3 className="text-lg font-bold text-rose-700">Delete Guest Account</h3>
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-rose-600">Delete Guest Account</h3>
+            <div className="p-3 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50 rounded-xl text-xs text-rose-800 dark:text-rose-300">
               <strong className="block mb-1 font-bold">⚠️ Warning: Destructive Action</strong>
               Are you sure you want to delete this guest account ({guest.email})? If the guest has active confirmed bookings, deletion will be blocked automatically.
             </div>
@@ -482,7 +490,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50"
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -490,9 +499,12 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                 type="button"
                 onClick={handleDeleteSubmit}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 font-bold text-white shadow-2xs"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
-                Permanently Delete
+                {pending && (
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                )}
+                <span>{pending ? "Deleting..." : "Permanently Delete"}</span>
               </button>
             </div>
           </div>

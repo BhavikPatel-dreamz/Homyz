@@ -118,11 +118,10 @@ export function SessionManager({
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                        s.type === "web"
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${s.type === "web"
                           ? "bg-sky-100 text-sky-800 "
                           : "bg-purple-100 text-purple-800 "
-                      }`}
+                        }`}
                     >
                       {s.type === "web" ? "Web Cookie" : "Mobile Bearer"}
                     </span>

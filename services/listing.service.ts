@@ -1,6 +1,7 @@
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
+import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
 import { deleteCache, getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
 import { keys } from "@/lib/redis/keys";
@@ -84,6 +85,9 @@ async function listForHost(
   opts: { skip: number; take: number },
 ): Promise<{ items: ListingDTO[]; total: number }> {
   authorize(actor, [Role.HOST, Role.ADMIN]);
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.view");
+  }
   const where = { hostId: actor.id };
   const [items, total] = await Promise.all([
     prisma.listing.findMany({
@@ -102,6 +106,13 @@ async function create(
   input: CreateListingInput,
 ): Promise<ListingDTO> {
   authorize(actor, [Role.HOST, Role.ADMIN]);
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.create");
+    if (input.published) {
+      await assertHostPermission(actor.id, "listing.publish");
+    }
+  }
+
   const listing = await prisma.listing.create({
     data: {
       hostId: actor.id,
@@ -127,6 +138,15 @@ async function update(
   if (!existing) throw AppError.notFound("Listing not found");
   // Host must own it; ADMIN bypasses ownership.
   assertOwnership(actor, existing.hostId);
+
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+    if (input.published !== undefined && input.published !== existing.published) {
+      const permSlug = input.published ? "listing.publish" : "listing.unpublish";
+      await assertHostPermission(actor.id, permSlug);
+    }
+  }
+
   const listing = await prisma.listing.update({ where: { id }, data: input });
   // After commit: drop the detail entry and invalidate every catalogue page
   // (title/price/published may have changed). Both are best-effort (fail-open).
@@ -141,6 +161,11 @@ async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
   assertOwnership(actor, existing.hostId);
+
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.delete");
+  }
+
   await prisma.listing.delete({ where: { id } });
   await Promise.all([
     deleteCache(keys.listing(id)),

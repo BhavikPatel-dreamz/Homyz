@@ -31,11 +31,13 @@ export function AdminNav() {
       label: "All Users",
       permission: PERMISSIONS.USERS_VIEW,
     },
+    /*
     {
       href: "/admin/roles",
       label: "Roles & Permissions",
       permission: PERMISSIONS.ROLES_VIEW,
     },
+    */
     {
       href: "/admin/activity-logs",
       label: "Activity Logs",

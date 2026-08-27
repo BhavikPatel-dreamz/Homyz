@@ -51,8 +51,8 @@ function buildProviders(): NextAuthOptions["providers"] {
           return null;
         }
 
-        const permissions = user.adminRole?.permissions.map((p) => p.permission.slug) ?? [];
-        const isSuperAdmin = user.role === "ADMIN" && (user.adminRole?.slug === "super_admin" || permissions.length === 0);
+        const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+        const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
 
         await auditService.record({
           actorId: user.id,
@@ -74,7 +74,7 @@ function buildProviders(): NextAuthOptions["providers"] {
           role: user.role,
           status: user.status,
           adminRoleSlug: user.adminRole?.slug ?? null,
-          permissions: isSuperAdmin ? ["*"] : permissions,
+          permissions: effectivePermissions,
         };
       },
     }),

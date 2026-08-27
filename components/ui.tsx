@@ -34,15 +34,17 @@ export function Alert({
   tone = "error",
   children,
 }: {
-  tone?: "error" | "success";
+  tone?: "error" | "success" | "warning" | "info";
   children: ReactNode;
 }) {
   const tones = {
-    error: "border-[var(--error)]/30 bg-[var(--error)]/10 text-[var(--error)]",
-    success: "border-[var(--success)]/30 bg-[var(--success)]/10 text-[var(--success)]",
+    error: "border-rose-300/80 bg-rose-50/90 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60",
+    success: "border-emerald-300/80 bg-emerald-50/90 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60",
+    warning: "border-amber-300/80 bg-amber-50/90 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60",
+    info: "border-sky-300/80 bg-sky-50/90 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60",
   };
   return (
-    <div className={`rounded-2xl border px-4 py-3 text-xs font-medium ${tones[tone]}`}>
+    <div className={`rounded-2xl border px-4 py-3 text-xs font-semibold ${tones[tone]}`}>
       {children}
     </div>
   );

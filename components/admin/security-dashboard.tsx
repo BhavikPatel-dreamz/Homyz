@@ -193,7 +193,7 @@ export function SecurityDashboard({
 
                 <div className="flex items-center gap-4 text-xs text-[var(--muted-foreground)] font-mono">
                   <span>{event.ip || "No IP captured"}</span>
-                  <span>{new Date(event.createdAt).toLocaleString()}</span>
+                  <span suppressHydrationWarning>{new Date(event.createdAt).toLocaleString("en-US")}</span>
                 </div>
               </div>
             ))

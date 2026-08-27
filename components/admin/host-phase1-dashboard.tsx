@@ -36,20 +36,20 @@ function MetricCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border bg-white p-5 shadow-2xs transition-all ${
+      className={`rounded-2xl border p-5 shadow-2xs transition-all ${
         highlight
-          ? "border-amber-300 bg-amber-50/20"
-          : "border-zinc-200"
+          ? "border-amber-400/60 bg-amber-500/10 text-[var(--foreground)]"
+          : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)]"
       }`}
     >
-      <p className="text-xs font-semibold text-zinc-500">
+      <p className="text-xs font-semibold text-[var(--muted-foreground)]">
         {label}
       </p>
-      <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
+      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
         {value}
       </p>
       {subtitle && (
-        <p className="mt-1 text-xs text-zinc-400">
+        <p className="mt-1 text-xs text-[var(--muted-foreground)]">
           {subtitle}
         </p>
       )}
@@ -128,13 +128,13 @@ export function HostPhase1Dashboard({
   }, [filteredHosts, currentPage, pageSize]);
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-zinc-900">
+    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
       {/* Top Title Section */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
           Host Management
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
           Overview of registered platform hosts, property counts, and active status.
         </p>
       </div>
@@ -161,10 +161,10 @@ export function HostPhase1Dashboard({
                 setCurrentPage(1);
               }}
               placeholder="Search host by name, email, phone..."
-              className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-9 pr-4 text-xs text-zinc-900 outline-none focus:border-zinc-500"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)]"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -181,7 +181,7 @@ export function HostPhase1Dashboard({
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -195,7 +195,7 @@ export function HostPhase1Dashboard({
               setVerificationFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="ALL">All Verification</option>
             <option value="APPROVED">Approved</option>
@@ -209,7 +209,7 @@ export function HostPhase1Dashboard({
               setDateFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="ALL">All Time</option>
             <option value="LAST_30_DAYS">Last 30 Days</option>
@@ -223,7 +223,7 @@ export function HostPhase1Dashboard({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-700 outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
           >
             <option value="createdAt">Joined Date</option>
             <option value="name">Host Name</option>
@@ -233,7 +233,7 @@ export function HostPhase1Dashboard({
           <button
             type="button"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
           >
             {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
           </button>
@@ -241,9 +241,9 @@ export function HostPhase1Dashboard({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider">
+          <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
             <tr>
               <th className="py-3.5 px-4">Host Name</th>
               <th className="py-3.5 px-4">Email</th>
@@ -257,49 +257,49 @@ export function HostPhase1Dashboard({
               <th className="py-3.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-[var(--border-subtle)]">
             {paginatedHosts.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-8 text-center text-zinc-400">
+                <td colSpan={10} className="py-8 text-center text-[var(--muted-foreground)]">
                   No hosts found matching your criteria.
                 </td>
               </tr>
             ) : (
               paginatedHosts.map((host) => (
-                <tr key={host.id} className="hover:bg-zinc-50/50 transition-colors">
+                <tr key={host.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                   {/* Host Name */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-amber-100 text-amber-900 font-semibold flex items-center justify-center text-xs">
+                      <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
                         {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold text-zinc-900">
+                        <div className="font-semibold text-[var(--foreground)]">
                           {host.name || "Unnamed Host"}
                         </div>
-                        <div className="text-[11px] text-zinc-400">{host.id}</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{host.id}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Email */}
-                  <td className="py-3.5 px-4 text-zinc-600 font-mono text-[11px]">
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]">
                     {host.email || "N/A"}
                   </td>
 
                   {/* Phone */}
-                  <td className="py-3.5 px-4 text-zinc-600">
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)]">
                     {host.phone || "—"}
                   </td>
 
                   {/* Status Badge */}
                   <td className="py-3.5 px-4">
                     {host.status === "ACTIVE" ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
                         Suspended
                       </span>
                     )}
@@ -308,43 +308,43 @@ export function HostPhase1Dashboard({
                   {/* Verification Status */}
                   <td className="py-3.5 px-4">
                     {host.verificationStatus === "APPROVED" ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-100/90 text-sky-800 border border-sky-300/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60 shadow-2xs">
                         Approved
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs">
                         Unverified
                       </span>
                     )}
                   </td>
 
                   {/* Number of Listings */}
-                  <td className="py-3.5 px-4 text-center font-semibold text-zinc-900">
+                  <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">
                     {host.listingsCount}
                   </td>
 
                   {/* Number of Reservations */}
-                  <td className="py-3.5 px-4 text-center font-semibold text-zinc-900">
+                  <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">
                     {host.bookingsCount}
                   </td>
 
                   {/* Rating */}
                   <td className="py-3.5 px-4 text-center">
-                    <span className="font-semibold text-amber-700">
+                    <span className="font-extrabold text-amber-700 dark:text-amber-300 inline-flex items-center justify-center gap-1 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-300/60 dark:border-amber-800/60 text-[11px] shadow-2xs">
                       ★ {host.rating}
                     </span>
                   </td>
 
                   {/* Joined Date */}
-                  <td className="py-3.5 px-4 text-zinc-500 text-[11px]">
-                    {new Date(host.createdAt).toLocaleDateString()}
+                  <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                    {new Date(host.createdAt).toLocaleDateString("en-US")}
                   </td>
 
                   {/* Actions */}
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/hosts/${host.id}`}
-                      className="rounded-full border border-zinc-200 hover:bg-zinc-50 px-3.5 py-1.5 text-xs text-zinc-700 font-medium transition-colors inline-block"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-[var(--foreground)] font-bold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -359,36 +359,38 @@ export function HostPhase1Dashboard({
       {/* Mobile Card List View */}
       <div className="md:hidden flex flex-col gap-3">
         {paginatedHosts.map((host) => (
-          <div key={host.id} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs flex flex-col gap-2">
+          <div key={host.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-amber-100 text-amber-900 font-semibold flex items-center justify-center text-xs">
+                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
                   {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-zinc-900 text-xs">{host.name || "Unnamed Host"}</h3>
-                  <p className="text-[11px] text-zinc-400">{host.email}</p>
+                  <h3 className="font-bold text-[var(--foreground)] text-xs">{host.name || "Unnamed Host"}</h3>
+                  <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{host.email}</p>
                 </div>
               </div>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                host.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                host.status === "ACTIVE"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
+                  : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
               }`}>
                 {host.status}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-zinc-100">
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-zinc-400">Listings:</span> <span className="font-semibold">{host.listingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Listings:</span> <span className="font-bold text-[var(--foreground)]">{host.listingsCount}</span>
               </div>
               <div>
-                <span className="text-zinc-400">Reservations:</span> <span className="font-semibold">{host.bookingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Reservations:</span> <span className="font-bold text-[var(--foreground)]">{host.bookingsCount}</span>
               </div>
               <div>
-                <span className="text-zinc-400">Joined:</span> <span className="font-semibold">{new Date(host.createdAt).toLocaleDateString()}</span>
+                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-bold text-[var(--foreground)]" suppressHydrationWarning>{new Date(host.createdAt).toLocaleDateString("en-US")}</span>
               </div>
               <div>
-                <span className="text-zinc-400">Rating:</span> <span className="font-semibold text-amber-700">★ {host.rating}</span>
+                <span className="text-[var(--muted-foreground)]">Rating:</span> <span className="font-bold text-amber-600 dark:text-amber-400">★ {host.rating}</span>
               </div>
             </div>
           </div>
@@ -396,7 +398,7 @@ export function HostPhase1Dashboard({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 pt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--muted-foreground)] pt-2">
         <div>
           Showing {filteredHosts.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
           {Math.min(currentPage * pageSize, filteredHosts.length)} of {filteredHosts.length} hosts
@@ -407,18 +409,18 @@ export function HostPhase1Dashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-semibold text-zinc-800">
+          <span className="font-bold text-[var(--foreground)]">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>
