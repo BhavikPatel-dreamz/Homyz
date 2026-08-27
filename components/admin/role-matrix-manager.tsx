@@ -76,6 +76,15 @@ export function RoleMatrixManager({
     setSelectedPerms(next);
   }
 
+  function selectAllGlobal() {
+    const allSlugs = allPermissions.map((p) => p.slug);
+    setSelectedPerms(new Set(allSlugs));
+  }
+
+  function clearAllGlobal() {
+    setSelectedPerms(new Set());
+  }
+
   function handleSavePermissions() {
     setFeedback(null);
 
@@ -250,14 +259,30 @@ export function RoleMatrixManager({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSavePermissions}
-            disabled={pending}
-            className="rounded-full bg-[#F8D88E] hover:bg-[#F4CF74] px-5 py-2 text-xs font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 self-start sm:self-auto"
-          >
-            {pending ? "Saving..." : "Save Matrix Changes"}
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={selectAllGlobal}
+              className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onClick={clearAllGlobal}
+              className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors"
+            >
+              Clear All
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePermissions}
+              disabled={pending}
+              className="rounded-full bg-[#F8D88E] hover:bg-[#F4CF74] px-5 py-2 text-xs font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50"
+            >
+              {pending ? "Saving..." : "Save Matrix Changes"}
+            </button>
+          </div>
         </div>
 
         {/* Matrix Table */}
