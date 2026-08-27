@@ -6,4 +6,7 @@ export interface AuthUser {
   id: string;
   role: Role;
   email: string | null;
+  status?: string;
+  adminRoleSlug?: string | null;
+  permissions?: string[];
 }

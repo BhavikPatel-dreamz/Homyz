@@ -66,7 +66,7 @@ export function LoginForm({
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              className="text-xs text-zinc-500 hover:text-zinc-800 :text-zinc-200"
             >
               Forgot password?
             </Link>
@@ -88,7 +88,7 @@ export function LoginForm({
         No account?{" "}
         <Link
           href="/register"
-          className="font-medium text-zinc-900 dark:text-zinc-100"
+          className="font-medium text-zinc-900 "
         >
           Create one
         </Link>

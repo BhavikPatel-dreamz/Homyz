@@ -37,7 +37,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <Alert tone="success">Your password has been updated.</Alert>
         <Link
           href="/login"
-          className="text-center text-sm font-medium text-zinc-900 dark:text-zinc-100"
+          className="text-center text-sm font-medium text-zinc-900 "
         >
           Sign in
         </Link>

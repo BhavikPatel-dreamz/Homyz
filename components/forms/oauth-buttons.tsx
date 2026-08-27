@@ -40,9 +40,9 @@ export function OAuthButtons({
         </button>
       ))}
       <div className="my-2 flex items-center gap-3 text-xs text-zinc-400">
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <span className="h-px flex-1 bg-zinc-200 " />
         or
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <span className="h-px flex-1 bg-zinc-200 " />
       </div>
     </div>
   );

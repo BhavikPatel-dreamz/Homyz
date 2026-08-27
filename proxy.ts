@@ -17,6 +17,11 @@ export async function proxy(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  // /admin/login is a public authentication route
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   // Unauthenticated → login, preserving the intended destination.
   if (!token) {
     const url = new URL("/login", request.url);

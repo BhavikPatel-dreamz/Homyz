@@ -1,45 +1,37 @@
-import { RoleForm } from "@/components/forms/role-form";
-import { Card } from "@/components/ui";
-import { requirePageRole } from "@/lib/permissions/page-guards";
+import { AdminUserTable } from "@/components/admin/admin-user-table";
+import { requirePagePermission } from "@/lib/permissions/page-guards";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
-import { Role } from "@/generated/prisma/enums";
 
-export default async function AdminUsersPage() {
-  await requirePageRole([Role.ADMIN]);
-  const { items } = await adminService.listUsers({ skip: 0, take: 100 });
+export default async function AdminAllUsersPage() {
+  await requirePagePermission(PERMISSIONS.USERS_VIEW);
+
+  const [usersRes, roles] = await Promise.all([
+    adminService.listUsers({ skip: 0, take: 100 }),
+    adminService.listRoles(),
+  ]);
+
+  const roleOptions = roles.map((r) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Users
-      </h1>
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-zinc-200 text-xs uppercase text-zinc-500 dark:border-zinc-800">
-            <tr>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((u) => (
-              <tr
-                key={u.id}
-                className="border-b border-zinc-100 last:border-0 dark:border-zinc-900"
-              >
-                <td className="px-4 py-3 text-zinc-900 dark:text-zinc-50">
-                  {u.email}
-                </td>
-                <td className="px-4 py-3 text-zinc-500">{u.name ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <RoleForm userId={u.id} currentRole={u.role} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 ">
+          User Directory
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          All registered guest, host, and staff accounts. Manage active status and credentials.
+        </p>
+      </div>
+
+      <AdminUserTable
+        initialUsers={usersRes.items}
+        availableRoles={roleOptions}
+      />
     </div>
   );
 }

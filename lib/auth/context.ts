@@ -28,6 +28,9 @@ export async function getAuthContext(
       id: token.id,
       role: token.role,
       email: typeof token.email === "string" ? token.email : null,
+      status: token.status,
+      adminRoleSlug: token.adminRoleSlug,
+      permissions: token.permissions,
     };
   }
   return null;

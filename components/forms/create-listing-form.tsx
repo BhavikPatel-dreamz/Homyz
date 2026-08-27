@@ -73,7 +73,7 @@ export function CreateListingForm() {
           className={inputClass}
         />
       </div>
-      <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+      <label className="flex items-center gap-2 text-sm text-zinc-700 ">
         <input name="published" type="checkbox" className="h-4 w-4" />
         Publish immediately
       </label>

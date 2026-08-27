@@ -4,12 +4,18 @@ import type { Booking, Listing, User } from "@/generated/prisma/client";
 // layer. `passwordHash` (and any future secret column) is never included here,
 // so it can never appear in an API response or Server Action result.
 
-export function toPublicUser(u: User) {
+export function toPublicUser(
+  u: User & { adminRole?: { name: string; slug: string } | null },
+) {
   return {
     id: u.id,
     name: u.name,
     email: u.email,
     role: u.role,
+    status: u.status,
+    lastLoginAt: u.lastLoginAt,
+    adminRoleId: u.adminRoleId,
+    adminRole: u.adminRole ? { name: u.adminRole.name, slug: u.adminRole.slug } : null,
     phone: u.phone,
     image: u.image,
     emailVerified: u.emailVerified,
@@ -57,6 +63,7 @@ export function revivePublicUser(u: PublicUser): PublicUser {
     ...u,
     emailVerified: u.emailVerified ? new Date(u.emailVerified) : u.emailVerified,
     phoneVerified: u.phoneVerified ? new Date(u.phoneVerified) : u.phoneVerified,
+    lastLoginAt: u.lastLoginAt ? new Date(u.lastLoginAt) : null,
     createdAt: new Date(u.createdAt),
   };
 }

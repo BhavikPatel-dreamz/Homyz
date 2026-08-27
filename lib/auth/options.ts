@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db/prisma";
 import { assertLoginRateLimit } from "@/lib/services/rate-limit";
 import { loginSchema } from "@/lib/validation/auth";
 import { authService } from "@/services/auth.service";
+import { auditService } from "@/services/audit.service";
 import type { Role } from "@/generated/prisma/enums";
 
 // Build the provider list from whatever credentials are present in the
@@ -22,7 +23,7 @@ function buildProviders(): NextAuthOptions["providers"] {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
         const { email, password } = parsed.data;
@@ -30,16 +31,50 @@ function buildProviders(): NextAuthOptions["providers"] {
         // Throttle before touching the password hash.
         assertLoginRateLimit(email.toLowerCase());
 
-        const user = await authService.verifyCredentials(email, password);
-        if (!user) return null;
+        const headers = req?.headers as Record<string, string | string[] | undefined> | undefined;
+        const rawIp = headers?.["x-forwarded-for"] || headers?.["x-real-ip"] || null;
+        const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp;
+        const rawUa = headers?.["user-agent"] || null;
+        const userAgent = Array.isArray(rawUa) ? rawUa[0] : rawUa;
 
-        // Only non-secret fields flow into the JWT.
+        const user = await authService.verifyCredentials(email, password);
+        if (!user) {
+          await auditService.record({
+            action: "LOGIN_FAILED",
+            resourceType: "Auth",
+            actorEmail: email.toLowerCase(),
+            description: `Failed login attempt for ${email.toLowerCase()}`,
+            status: "FAILURE",
+            ip: typeof ip === "string" ? ip : null,
+            userAgent: typeof userAgent === "string" ? userAgent : null,
+          });
+          return null;
+        }
+
+        const permissions = user.adminRole?.permissions.map((p) => p.permission.slug) ?? [];
+        const isSuperAdmin = user.role === "ADMIN" && (user.adminRole?.slug === "super_admin" || permissions.length === 0);
+
+        await auditService.record({
+          actorId: user.id,
+          actorEmail: user.email,
+          action: user.role === "ADMIN" || user.adminRole ? "ADMIN_LOGIN" : "USER_LOGIN",
+          resourceType: "Auth",
+          resourceId: user.id,
+          description: `Successful login for ${user.email} (${user.adminRole?.name ?? user.role})`,
+          ip: typeof ip === "string" ? ip : null,
+          userAgent: typeof userAgent === "string" ? userAgent : null,
+        });
+
+        // Non-secret fields + role & permissions flow into JWT.
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           image: user.image,
           role: user.role,
+          status: user.status,
+          adminRoleSlug: user.adminRole?.slug ?? null,
+          permissions: isSuperAdmin ? ["*"] : permissions,
         };
       },
     }),
@@ -91,11 +126,13 @@ export const authOptions: NextAuthOptions = {
   providers: buildProviders(),
   callbacks: {
     async jwt({ token, user }) {
-      // `user` is only present at sign-in (Credentials return value or the
-      // adapter user for OAuth). Persist id + role into the token.
+      // `user` is only present at sign-in. Persist id, role, status, adminRoleSlug, and permissions.
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? token.role;
+        token.status = (user as { status?: string }).status;
+        token.adminRoleSlug = (user as { adminRoleSlug?: string | null }).adminRoleSlug;
+        token.permissions = (user as { permissions?: string[] }).permissions;
       }
       return token;
     },
@@ -103,6 +140,9 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
+        session.user.status = token.status as string | undefined;
+        session.user.adminRoleSlug = token.adminRoleSlug as string | null | undefined;
+        session.user.permissions = token.permissions as string[] | undefined;
       }
       return session;
     },

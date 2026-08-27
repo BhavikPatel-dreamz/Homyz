@@ -15,5 +15,8 @@ export async function getSessionUser(): Promise<AuthUser | null> {
     id: session.user.id,
     role: session.user.role,
     email: session.user.email ?? null,
+    status: session.user.status,
+    adminRoleSlug: session.user.adminRoleSlug,
+    permissions: session.user.permissions,
   };
 }

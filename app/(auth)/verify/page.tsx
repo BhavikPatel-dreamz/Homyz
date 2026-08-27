@@ -26,7 +26,7 @@ export default async function VerifyEmailPage({
 
   return (
     <Card>
-      <h1 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mb-4 text-xl font-semibold text-zinc-900 ">
         Email verification
       </h1>
       {success ? (

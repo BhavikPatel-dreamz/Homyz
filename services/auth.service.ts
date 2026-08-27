@@ -107,21 +107,49 @@ async function register(input: RegisterInput): Promise<PublicUser> {
   return toPublicUser(user);
 }
 
+export type UserWithAdminDetails = User & {
+  adminRole?: {
+    name: string;
+    slug: string;
+    permissions: Array<{ permission: { slug: string } }>;
+  } | null;
+};
+
 /**
- * Validate email + password. Returns the full user record or null (never
- * throws for wrong credentials) so the NextAuth Credentials provider can use it
- * directly. Rate limiting is applied by the caller (web authorize / mobileLogin).
+ * Validate email + password. Returns the full user record or null.
+ * Rejects suspended accounts with 401. Rate limiting applied by caller.
  */
 async function verifyCredentials(
   emailAddr: string,
   password: string,
-): Promise<User | null> {
+): Promise<UserWithAdminDetails | null> {
   const user = await prisma.user.findUnique({
     where: { email: emailAddr.toLowerCase() },
+    include: {
+      adminRole: {
+        select: {
+          name: true,
+          slug: true,
+          permissions: {
+            select: { permission: { select: { slug: true } } },
+          },
+        },
+      },
+    },
   });
   if (!user?.passwordHash) return null;
+  if (user.status === "SUSPENDED") {
+    throw AppError.unauthorized("Account has been suspended. Please contact an administrator.");
+  }
   const valid = await verifyPassword(password, user.passwordHash);
-  return valid ? user : null;
+  if (!valid) return null;
+
+  prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  }).catch(() => {});
+
+  return user;
 }
 
 async function resendVerification(emailAddr: string): Promise<{ success: true }> {

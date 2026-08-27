@@ -39,24 +39,32 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?     @unique
   emailVerified DateTime?
   image         String?
   // Local credentials + custom fields
   passwordHash  String?
-  role          Role      @default(USER)
-  phone         String?   @unique
+  role          Role        @default(USER)
+  status        UserStatus  @default(ACTIVE)
+  lastLoginAt   DateTime?
+  adminRoleId   String?
+  phone         String?     @unique
   phoneVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   accounts            Account[]
   sessions            Session[]
@@ -64,8 +72,12 @@ model User {
   bookings            Booking[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  adminRole           AdminRole?            @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+  auditLogs           AuditLog[]
 
   @@index([role])
+  @@index([adminRoleId])
+  @@index([status])
 }
 
 model Account {
@@ -93,6 +105,10 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  ip           String?
+  userAgent    String?
+  lastActiveAt DateTime @default(now())
+  isRevoked    Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -191,4 +207,72 @@ model Booking {
 
   @@index([userId])
   @@index([listingId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin RBAC & Audit Logging
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AdminRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions AdminRolePermission[]
+  users       User[]
+
+  @@index([slug])
+}
+
+model AdminPermission {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  module      String
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles AdminRolePermission[]
+
+  @@index([module])
+  @@index([slug])
+}
+
+model AdminRolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role       AdminRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission AdminPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actorEmail   String?
+  action       String
+  resourceType String
+  resourceId   String?
+  description  String
+  status       String   @default("SUCCESS")
+  ip           String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([createdAt])
 }

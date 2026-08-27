@@ -1,20 +1,15 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { AuthHeader } from "@/components/auth/auth-header";
+import { AuthFooter } from "@/components/auth/auth-footer";
 
-// Layout for the auth pages (login, register, verify, forgot/reset password).
-// No authentication required.
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center bg-zinc-50 px-4 py-12 dark:bg-black">
-      <div className="w-full max-w-md">
-        <Link
-          href="/"
-          className="mb-6 block text-center text-xl font-semibold text-zinc-900 dark:text-zinc-50"
-        >
-          homyz
-        </Link>
+    <div className="flex min-h-screen flex-col bg-white text-zinc-900 font-sans">
+      <AuthHeader />
+      <main className="flex-1 flex flex-col justify-center bg-white">
         {children}
-      </div>
+      </main>
+      <AuthFooter />
     </div>
   );
 }

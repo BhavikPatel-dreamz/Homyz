@@ -24,3 +24,20 @@ export async function requireApiRole(
   authorize(user, roles);
   return user;
 }
+
+export async function requireApiPermission(
+  req: NextRequest,
+  permission: string,
+): Promise<AuthUser> {
+  const user = await requireApiAuth(req);
+  if (user.status === "SUSPENDED") {
+    throw AppError.forbidden("Account is suspended");
+  }
+  if (user.role === "ADMIN" && (!user.permissions || user.permissions.length === 0 || user.adminRoleSlug === "super_admin")) {
+    return user;
+  }
+  if (user.permissions?.includes("*") || user.permissions?.includes(permission)) {
+    return user;
+  }
+  throw AppError.forbidden(`Missing required permission: ${permission}`);
+}

@@ -4,7 +4,7 @@ import { Card } from "@/components/ui";
 export default function ForgotPasswordPage() {
   return (
     <Card>
-      <h1 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="mb-1 text-xl font-semibold text-zinc-900 ">
         Forgot password
       </h1>
       <p className="mb-5 text-sm text-zinc-500">

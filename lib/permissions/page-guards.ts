@@ -2,7 +2,7 @@ import { forbidden, redirect } from "next/navigation";
 
 import { getSessionUser } from "@/lib/auth/session";
 import type { AuthUser } from "@/lib/auth/types";
-import type { Role } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 
 /**
  * Page/RSC guard: require an authenticated user or redirect to /login.
@@ -30,8 +30,33 @@ export async function requirePageRole(
   callbackUrl?: string,
 ): Promise<AuthUser> {
   const user = await requirePageUser(callbackUrl);
-  if (!roles.includes(user.role)) {
+  if (user.status === "SUSPENDED" || !roles.includes(user.role)) {
     forbidden();
   }
   return user;
+}
+
+/**
+ * Page/RSC guard: require a specific granular permission.
+ * Super Admin or unrestricted ADMIN holds all permissions.
+ */
+export async function requirePagePermission(
+  permission: string,
+  callbackUrl?: string,
+): Promise<AuthUser> {
+  const user = await requirePageUser(callbackUrl);
+  if (user.status === "SUSPENDED") {
+    forbidden();
+  }
+
+  // Super Admin / unrestricted ADMIN has all permissions
+  if (user.role === Role.ADMIN && (!user.permissions || user.permissions.length === 0 || user.adminRoleSlug === "super_admin")) {
+    return user;
+  }
+
+  if (user.permissions?.includes("*") || user.permissions?.includes(permission)) {
+    return user;
+  }
+
+  forbidden();
 }

@@ -1,0 +1,37 @@
+import { AdminUserTable } from "@/components/admin/admin-user-table";
+import { requirePagePermission } from "@/lib/permissions/page-guards";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { adminService } from "@/services/admin.service";
+
+export default async function AdminUsersPage() {
+  await requirePagePermission(PERMISSIONS.ADMINS_VIEW);
+
+  const [adminsRes, roles] = await Promise.all([
+    adminService.listAdmins({ skip: 0, take: 100 }),
+    adminService.listRoles(),
+  ]);
+
+  const roleOptions = roles.map((r) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+  }));
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 ">
+          Administrator Accounts
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Manage administrative personnel, assign RBAC permissions, and oversee account security.
+        </p>
+      </div>
+
+      <AdminUserTable
+        initialUsers={adminsRes.items}
+        availableRoles={roleOptions}
+      />
+    </div>
+  );
+}

@@ -98,7 +98,7 @@ export function RegisterForm() {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-medium text-zinc-900 dark:text-zinc-100"
+          className="font-medium text-zinc-900 "
         >
           Sign in
         </Link>

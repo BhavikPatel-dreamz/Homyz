@@ -10,12 +10,18 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      status?: string;
+      adminRoleSlug?: string | null;
+      permissions?: string[];
     } & DefaultSession["user"];
   }
 
   // Returned by the Credentials `authorize` callback and the adapter.
   interface User {
     role: Role;
+    status?: string;
+    adminRoleSlug?: string | null;
+    permissions?: string[];
   }
 }
 
@@ -23,5 +29,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    status?: string;
+    adminRoleSlug?: string | null;
+    permissions?: string[];
   }
 }
