@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 
 export interface BookingItem {
   id: string;
@@ -52,6 +53,15 @@ export function AdminBookingsClient({
       return true;
     });
   }, [bookings, search, statusFilter]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedBookings = useMemo(() => {
+    return filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
+  }, [filtered, activePage, pageSize]);
 
   function getDurationNights(start: string, end: string) {
     const d1 = new Date(start).getTime();
@@ -202,7 +212,7 @@ export function AdminBookingsClient({
                   </td>
                 </tr>
               ) : (
-                filtered.map((booking) => {
+                paginatedBookings.map((booking) => {
                   const nights = getDurationNights(booking.startDate, booking.endDate);
                   const totalPrice = ((booking.listing.price / 100) * nights).toFixed(2);
 
@@ -270,6 +280,23 @@ export function AdminBookingsClient({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="p-4 border-t border-[var(--border)]">
+          <AdminPagination
+            currentPage={activePage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+            itemLabel="bookings"
+            pageSizeOptions={[10, 20, 50]}
+          />
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { ALL_PERMISSIONS, isSuperAdmin } from "@/lib/permissions/permissions";
 import type { AuthUser } from "@/lib/auth/types";
 import { AppError } from "@/lib/api/errors";
 import { auditService } from "@/services/audit.service";
+import { randomUUID } from "crypto";
 
 export type ThreeStateOverride = "INHERIT" | "ALLOW" | "DENY";
 
@@ -52,9 +53,24 @@ export async function getAdminPermissionResolution(adminId: string): Promise<Adm
           },
         },
       },
-      adminPermissionOverrides: true,
     },
   });
+
+  // Load individual admin overrides separately to avoid relying on a specific
+  // prisma client relation shape that may be out-of-sync in some dev builds.
+  // Try to use the generated client model API; fall back to a raw query
+  // if the property is not available on the `prisma` instance (can happen
+  // in some dev or build states where the generated client shape isn't present).
+  let adminOverrides: any[] = [];
+  if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.findMany === "function") {
+    adminOverrides = await (prisma as any).adminPermissionOverride.findMany({ where: { adminId } });
+  } else {
+    adminOverrides = await prisma.$queryRaw`
+      SELECT id, "adminId", permission, effect, reason, "createdById", "createdAt", "updatedAt"
+      FROM "AdminPermissionOverride"
+      WHERE "adminId" = ${adminId}
+    ` as any[];
+  }
 
   if (!adminUser) {
     throw AppError.notFound("Admin user not found");
@@ -108,7 +124,7 @@ export async function getAdminPermissionResolution(adminId: string): Promise<Adm
 
   // Map individual overrides
   const overrideMap = new Map<string, "ALLOW" | "DENY">();
-  for (const override of adminUser.adminPermissionOverrides) {
+  for (const override of adminOverrides) {
     if (override.effect === "ALLOW" || override.effect === "DENY") {
       overrideMap.set(override.permission, override.effect);
     }
@@ -209,33 +225,46 @@ export async function updateAdminPermissionOverrides(
   // Process updates
   for (const update of updates) {
     if (update.effect === "INHERIT") {
-      await prisma.adminPermissionOverride.deleteMany({
-        where: {
-          adminId,
-          permission: update.permission,
-        },
-      });
+      if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.deleteMany === "function") {
+        await (prisma as any).adminPermissionOverride.deleteMany({
+          where: { adminId, permission: update.permission },
+        });
+      } else {
+        await prisma.$executeRaw`
+          DELETE FROM "AdminPermissionOverride"
+          WHERE "adminId" = ${adminId} AND permission = ${update.permission}
+        `;
+      }
     } else {
-      await prisma.adminPermissionOverride.upsert({
-        where: {
-          adminId_permission: {
+      if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.upsert === "function") {
+        await (prisma as any).adminPermissionOverride.upsert({
+          where: { adminId_permission: { adminId, permission: update.permission } },
+          create: {
             adminId,
             permission: update.permission,
+            effect: update.effect,
+            reason,
+            createdById: actor.id,
           },
-        },
-        create: {
-          adminId,
-          permission: update.permission,
-          effect: update.effect,
-          reason,
-          createdById: actor.id,
-        },
-        update: {
-          effect: update.effect,
-          reason,
-          createdById: actor.id,
-        },
-      });
+          update: { effect: update.effect, reason, createdById: actor.id },
+        });
+      } else {
+        // Fallback: attempt an UPDATE, then INSERT if no rows updated.
+        const updated = await prisma.$executeRaw`
+          UPDATE "AdminPermissionOverride"
+          SET effect = ${update.effect}, reason = ${reason}, "createdById" = ${actor.id}, "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "adminId" = ${adminId} AND permission = ${update.permission}
+        `;
+        if (!updated || Number(updated) === 0) {
+          const newId = randomUUID();
+          await prisma.$executeRaw`
+            INSERT INTO "AdminPermissionOverride" (id, "adminId", permission, effect, reason, "createdById", "createdAt", "updatedAt")
+            VALUES (${newId}, ${adminId}, ${update.permission}, ${update.effect}, ${reason}, ${actor.id}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT ("adminId", permission) DO UPDATE
+            SET effect = EXCLUDED.effect, reason = EXCLUDED.reason, "createdById" = EXCLUDED."createdById", "updatedAt" = CURRENT_TIMESTAMP
+          `;
+        }
+      }
     }
   }
 

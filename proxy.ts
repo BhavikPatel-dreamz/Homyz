@@ -17,9 +17,9 @@ export async function proxy(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // /admin/login is a public authentication route
+  // /admin/login redirects to unified /login
   if (pathname === "/admin/login") {
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Unauthenticated → login, preserving the intended destination.
@@ -27,6 +27,16 @@ export async function proxy(request: NextRequest) {
     const url = new URL("/login", request.url);
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
+  }
+
+  // Suspended account → immediately redirect to login with notification
+  if (token.status === "SUSPENDED") {
+    return NextResponse.redirect(new URL("/login?error=account_suspended", request.url));
+  }
+
+  // Revoked session → immediately redirect to login
+  if (token.isRevoked || token.status === "REVOKED") {
+    return NextResponse.redirect(new URL("/login?error=session_revoked", request.url));
   }
 
   const role = token.role;

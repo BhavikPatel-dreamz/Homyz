@@ -126,14 +126,48 @@ export const authOptions: NextAuthOptions = {
   providers: buildProviders(),
   callbacks: {
     async jwt({ token, user }) {
-      // `user` is only present at sign-in. Persist id, role, status, adminRoleSlug, and permissions.
+      // `user` is only present at sign-in. Persist id, role, status, adminRoleSlug, tokenVersion, and permissions.
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? token.role;
         token.status = (user as { status?: string }).status;
         token.adminRoleSlug = (user as { adminRoleSlug?: string | null }).adminRoleSlug;
         token.permissions = (user as { permissions?: string[] }).permissions;
+        token.tokenVersion = (user as { tokenVersion?: number }).tokenVersion ?? 0;
+        return token;
       }
+
+      // Sync status and tokenVersion from DB so revoked sessions immediately lose access
+      if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              status: true,
+              role: true,
+              tokenVersion: true,
+              adminRole: { select: { slug: true } },
+            },
+          });
+          if (dbUser) {
+            if (
+              token.tokenVersion !== undefined &&
+              token.tokenVersion < dbUser.tokenVersion
+            ) {
+              token.isRevoked = true;
+              token.status = "REVOKED";
+            } else {
+              token.status = dbUser.status;
+              token.role = dbUser.role;
+              token.adminRoleSlug = dbUser.adminRole?.slug ?? null;
+              token.tokenVersion = dbUser.tokenVersion;
+            }
+          }
+        } catch {
+          // Keep existing claims if DB query fails
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -143,6 +177,7 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status as string | undefined;
         session.user.adminRoleSlug = token.adminRoleSlug as string | null | undefined;
         session.user.permissions = token.permissions as string[] | undefined;
+        session.user.tokenVersion = token.tokenVersion as number | undefined;
       }
       return session;
     },

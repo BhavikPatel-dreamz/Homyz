@@ -10,15 +10,15 @@ export const passwordSchema = z
 // accepted from client input (it mirrors the Prisma `Role` enum minus ADMIN).
 // ADMIN is assigned exclusively by trusted server-side code (seed / admin API).
 export const registerSchema = z.object({
-  name: z.string().trim().min(1).max(100).optional(),
-  email: z.email(),
+  name: z.string().trim().min(1, { message: "Full name is required" }).max(100).optional(),
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
   password: passwordSchema,
   role: z.enum(["USER", "HOST"]).default("USER"),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  email: z.email(),
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -13,8 +13,8 @@ export async function updateGuestAction(
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_EDIT);
     const updated = await adminService.updateGuestProfile(guestId, data, actorUser);
     return { ok: true, data: updated };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to update guest profile" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to update guest profile" };
   }
 }
 
@@ -27,8 +27,8 @@ export async function toggleGuestSuspensionAction(
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_EDIT);
     const updated = await adminService.toggleGuestSuspension(guestId, suspend, reason, actorUser);
     return { ok: true, data: updated };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to toggle guest suspension" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to toggle guest suspension" };
   }
 }
 
@@ -37,7 +37,7 @@ export async function deleteGuestAction(guestId: string) {
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_DELETE);
     const res = await adminService.deleteGuest(guestId, actorUser);
     return { ok: true, data: res };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to delete guest" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to delete guest" };
   }
 }

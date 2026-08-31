@@ -11,6 +11,7 @@ import { registerAction } from "@/actions/auth/register";
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
   callbackUrl?: string;
+  initialError?: string;
   providers?: {
     google?: boolean;
     apple?: boolean;
@@ -34,6 +35,7 @@ const COUNTRY_CODES = [
 export function HomyzAuthForm({
   initialMode = "login",
   callbackUrl = "/dashboard",
+  initialError,
   providers = {},
 }: HomyzAuthFormProps) {
   const router = useRouter();
@@ -54,38 +56,96 @@ export function HomyzAuthForm({
   const [otpCode, setOtpCode] = useState("");
   const [otpMessage, setOtpMessage] = useState<string | null>(null);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError || null);
   const [success, setSuccess] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
+
+  // Password complexity helpers for signup
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
 
   async function handleEmailSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setFieldErrors({});
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const errors: { name?: string; email?: string; password?: string } = {};
+
+    // 1. Validate Email
+    if (!trimmedEmail) {
+      errors.email = "Email address is required.";
+    } else if (!emailRegex.test(trimmedEmail)) {
+      errors.email = "Please enter a valid email address (e.g. name@example.com).";
+    }
+
+    // 2. Validate Password
+    if (!password) {
+      errors.password = "Password is required.";
+    } else if (authMode === "signup") {
+      if (password.length < 8) {
+        errors.password = "Password must be at least 8 characters long.";
+      } else if (!/[A-Z]/.test(password)) {
+        errors.password = "Password must contain at least one uppercase letter (A-Z).";
+      } else if (!/[0-9]/.test(password)) {
+        errors.password = "Password must contain at least one number (0-9).";
+      }
+    }
+
+    // 3. Validate Name for Signup
+    if (authMode === "signup" && !name.trim()) {
+      errors.name = "Full name is required.";
+    }
+
+    // If client-side errors exist, stop submission and display them
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError(
+        errors.email || errors.password || errors.name || "Please correct the highlighted errors."
+      );
+      return;
+    }
 
     if (authMode === "signup") {
       startTransition(async () => {
         const res = await registerAction({
-          name: name.trim() || undefined,
-          email: email.trim(),
+          name: name.trim(),
+          email: trimmedEmail,
           password,
           role,
         });
 
         if (!res.ok) {
           setError(res.error);
+          if (res.error.toLowerCase().includes("already exists")) {
+            setFieldErrors({ email: "An account with this email already exists. Please log in." });
+          } else if (res.fieldErrors) {
+            setFieldErrors({
+              name: res.fieldErrors.name,
+              email: res.fieldErrors.email,
+              password: res.fieldErrors.password,
+            });
+          }
           return;
         }
 
         // Automatic sign in upon registration
         const loginRes = await signIn("credentials", {
-          email,
+          email: trimmedEmail,
           password,
           redirect: false,
         });
 
         if (!loginRes || loginRes.error) {
-          setSuccess("Account created! Please sign in with your credentials.");
+          setSuccess("Account created successfully! Please sign in with your credentials.");
           setAuthMode("login");
           return;
         }
@@ -99,13 +159,24 @@ export function HomyzAuthForm({
     // Login mode
     startTransition(async () => {
       const res = await signIn("credentials", {
-        email: email.trim(),
+        email: trimmedEmail,
         password,
         redirect: false,
       });
 
       if (!res || res.error) {
-        setError(res?.error ?? "Invalid credentials. Please check your email and password.");
+        let msg = "Invalid email or password. Please verify your credentials.";
+        if (res?.error === "CredentialsSignin") {
+          msg = "Incorrect email or password. Please check your credentials and try again.";
+        } else if (res?.error && res.error !== "Error") {
+          msg = res.error;
+        }
+
+        setError(msg);
+        setFieldErrors({
+          email: "Incorrect email or password",
+          password: "Incorrect email or password",
+        });
         return;
       }
 
@@ -219,6 +290,8 @@ export function HomyzAuthForm({
                   onClick={() => {
                     setAuthMode("signup");
                     setError(null);
+                    setSuccess(null);
+                    setFieldErrors({});
                   }}
                   className="font-semibold text-zinc-900 underline hover:text-amber-800"
                 >
@@ -233,6 +306,8 @@ export function HomyzAuthForm({
                   onClick={() => {
                     setAuthMode("login");
                     setError(null);
+                    setSuccess(null);
+                    setFieldErrors({});
                   }}
                   className="font-semibold text-zinc-900 underline hover:text-amber-800"
                 >
@@ -269,21 +344,39 @@ export function HomyzAuthForm({
 
           {/* Input Method 1: Email Form */}
           {inputMethod === "email" ? (
-            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4" noValidate>
               {authMode === "signup" && (
                 <>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-zinc-800">
-                      Your Name
+                      Your Name *
                     </label>
                     <input
                       type="text"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                        if (error) setError(null);
+                      }}
                       placeholder="Jane Doe"
                       required
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition-colors focus:border-zinc-800"
+                      className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition-colors ${
+                        fieldErrors.name
+                          ? "border-red-500 bg-red-50/20 focus:border-red-600"
+                          : "border-zinc-300 focus:border-zinc-800"
+                      }`}
                     />
+                    {fieldErrors.name && (
+                      <p className="text-xs text-red-600 flex items-center gap-1 font-medium mt-0.5">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        {fieldErrors.name}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-1.5">
@@ -326,12 +419,30 @@ export function HomyzAuthForm({
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                    if (error) setError(null);
+                  }}
                   placeholder="emailexample@gmail.com"
                   required
                   autoComplete="email"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+                  className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors ${
+                    fieldErrors.email
+                      ? "border-red-500 bg-red-50/20 focus:border-red-600"
+                      : "border-zinc-300 focus:border-zinc-900"
+                  }`}
                 />
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-600 flex items-center gap-1 font-medium mt-0.5">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -353,16 +464,24 @@ export function HomyzAuthForm({
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                      if (error) setError(null);
+                    }}
                     placeholder="••••••••••••"
                     required
                     autoComplete={authMode === "login" ? "current-password" : "new-password"}
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+                    className={`w-full rounded-xl border bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors ${
+                      fieldErrors.password
+                        ? "border-red-500 bg-red-50/20 focus:border-red-600"
+                        : "border-zinc-300 focus:border-zinc-900"
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
                     aria-label="Toggle password visibility"
                   >
                     {showPassword ? (
@@ -377,6 +496,49 @@ export function HomyzAuthForm({
                     )}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-600 flex items-center gap-1 font-medium mt-0.5">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {fieldErrors.password}
+                  </p>
+                )}
+
+                {/* Password Policy Guidance on Signup */}
+                {authMode === "signup" && (
+                  <div className="mt-2 rounded-xl bg-zinc-50 border border-zinc-200/80 p-3 text-[11px] text-zinc-600 flex flex-col gap-1">
+                    <div className="font-semibold text-zinc-800 mb-0.5">
+                      Password Requirements:
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={hasMinLength ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                        {hasMinLength ? "✓" : "○"}
+                      </span>
+                      <span className={hasMinLength ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                        Minimum 8 characters
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={hasUppercase ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                        {hasUppercase ? "✓" : "○"}
+                      </span>
+                      <span className={hasUppercase ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                        At least one uppercase letter (A-Z)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={hasNumber ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                        {hasNumber ? "✓" : "○"}
+                      </span>
+                      <span className={hasNumber ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                        At least one number (0-9)
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Primary Continue Button */}
@@ -385,7 +547,7 @@ export function HomyzAuthForm({
                 disabled={pending}
                 className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50"
               >
-                {pending ? "Please wait..." : "Continue"}
+                {pending ? "Please wait..." : authMode === "login" ? "Sign in" : "Create account"}
               </button>
             </form>
           ) : (

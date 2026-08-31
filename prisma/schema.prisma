@@ -42,7 +42,17 @@ enum BookingStatus {
 enum UserStatus {
   ACTIVE
   SUSPENDED
+  INVITATION_PENDING
 }
+
+enum AdminInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+  FAILED
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
@@ -65,6 +75,7 @@ model User {
   phoneVerified DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  tokenVersion  Int         @default(0)
 
   accounts            Account[]
   sessions            Session[]
@@ -78,6 +89,8 @@ model User {
   createdHostOverrides    HostPermissionOverride[] @relation("HostOverridesCreated")
   adminPermissionOverrides AdminPermissionOverride[] @relation("AdminOverrides")
   createdAdminOverrides    AdminPermissionOverride[] @relation("AdminOverridesCreated")
+  sentInvitations          AdminInvitation[]        @relation("InvitedByAdmins")
+
 
   @@index([role])
   @@index([adminRoleId])
@@ -228,6 +241,8 @@ model AdminRole {
 
   permissions AdminRolePermission[]
   users       User[]
+  invitations AdminInvitation[]
+
 
   @@index([slug])
 }
@@ -314,3 +329,31 @@ model AdminPermissionOverride {
   @@unique([adminId, permission])
   @@index([adminId])
 }
+
+model AdminInvitation {
+  id                String                @id @default(cuid())
+  email             String
+  name              String?
+  role              Role                  @default(ADMIN)
+  adminRoleId       String?
+  tokenHash         String                @unique
+  status            AdminInvitationStatus @default(PENDING)
+  invitedById       String?
+  invitedByEmail    String?
+  expiresAt         DateTime
+  acceptedAt        DateTime?
+  revokedAt         DateTime?
+  lastResentAt      DateTime?
+  message           String?               @db.Text
+  customPermissions Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  invitedBy User?      @relation("InvitedByAdmins", fields: [invitedById], references: [id], onDelete: SetNull)
+  adminRole AdminRole? @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([tokenHash])
+}
+

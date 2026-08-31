@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "./admin-pagination";
 import type { GuestAnalyticsData, GuestTableItem } from "@/services/admin.service";
 
 interface GuestDashboardProps {
@@ -45,7 +46,7 @@ export function GuestManagementDashboard({
   const [sortBy, setSortBy] = useState<"createdAt" | "name" | "totalSpending" | "bookingsCount">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredGuests = useMemo(() => {
     return initialGuests
@@ -67,8 +68,8 @@ export function GuestManagementDashboard({
         return true;
       })
       .sort((a, b) => {
-        let valA: any = a[sortBy];
-        let valB: any = b[sortBy];
+        let valA: string | number | Date = a[sortBy] ?? 0;
+        let valB: string | number | Date = b[sortBy] ?? 0;
 
         if (sortBy === "createdAt") {
           valA = new Date(a.createdAt).getTime();

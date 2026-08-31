@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma/client";
@@ -5,6 +6,7 @@ import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
 import { keys } from "@/lib/redis/keys";
 import { Role, UserStatus } from "@/generated/prisma/enums";
 import { hashPassword } from "@/lib/auth/password";
+import { sendAdminInvitationEmail } from "@/lib/services/email";
 import { auditService } from "./audit.service";
 import { sessionService } from "./session.service";
 import { ALL_PERMISSIONS } from "@/lib/permissions/permissions";
@@ -15,7 +17,9 @@ import type {
   EditRoleInput,
   UpdateAdminInput,
 } from "@/lib/validation/admin";
+import { invitationService } from "./invitation.service";
 import { toPublicUser, type PublicUser } from "./mappers";
+
 
 const STATS_TTL = 60;
 
@@ -106,41 +110,21 @@ async function createAdmin(
   actor: AuthUser,
   input: CreateAdminInput,
 ): Promise<PublicUser> {
-  const emailAddr = input.email.toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email: emailAddr } });
-  if (existing) throw AppError.conflict("User with this email already exists");
+  const inv = await invitationService.createInvitation(actor, {
+    name: input.name,
+    email: input.email,
+    role: input.role,
+    adminRoleSlug: input.adminRoleSlug || "admin",
+  });
 
-  let adminRoleId: string | null = null;
-  if (input.adminRoleSlug) {
-    const roleRecord = await prisma.adminRole.findUnique({
-      where: { slug: input.adminRoleSlug },
-    });
-    if (roleRecord) adminRoleId = roleRecord.id;
-  }
-
-  const passwordHash = await hashPassword(input.password);
-  const user = await prisma.user.create({
-    data: {
-      name: input.name,
-      email: emailAddr,
-      passwordHash,
-      role: input.role as Role,
-      adminRoleId,
-      status: UserStatus.ACTIVE,
-      emailVerified: new Date(),
-    },
+  const user = await prisma.user.findUnique({
+    where: { email: inv.email },
     include: { adminRole: { select: { name: true, slug: true } } },
   });
 
-  await auditService.record({
-    actorId: actor.id,
-    actorEmail: actor.email,
-    action: "ADMIN_CREATED",
-    resourceType: "User",
-    resourceId: user.id,
-    description: `Created new admin ${user.email} with role ${user.role} (${input.adminRoleSlug ?? "standard"})`,
-  });
+  if (!user) throw AppError.notFound("User not found after invitation creation");
 
+  await deleteCache(keys.statsGlobal());
   return toPublicUser(user);
 }
 
@@ -250,6 +234,61 @@ async function toggleUserStatus(
   });
 
   return toPublicUser(updated);
+}
+
+async function deleteAdmin(
+  actor: AuthUser,
+  targetUserId: string,
+): Promise<{ success: boolean; id: string }> {
+  const user = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    include: { adminRole: true },
+  });
+  if (!user) throw AppError.notFound("Administrator not found");
+
+  // Prevent deleting oneself
+  if (targetUserId === actor.id) {
+    throw AppError.badRequest("You cannot delete your own administrator account");
+  }
+
+  // Prevent deleting last remaining Super Admin
+  if (user.adminRole?.slug === "super_admin") {
+    const superCount = await prisma.user.count({
+      where: { adminRole: { slug: "super_admin" }, status: UserStatus.ACTIVE },
+    });
+    if (superCount <= 1) {
+      throw AppError.conflict("Cannot delete the last active Super Admin");
+    }
+  }
+
+  // Revoke all sessions first
+  await sessionService.revokeAllForUser(
+    targetUserId,
+    undefined,
+    actor.id,
+    actor.email ?? undefined,
+  );
+
+  // Delete user record (cascades sessions, accounts, refresh tokens, password reset tokens)
+  await prisma.user.delete({
+    where: { id: targetUserId },
+  });
+
+  await Promise.all([
+    deleteCache(keys.userProfile(targetUserId)),
+    deleteCache(keys.statsGlobal()),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "ADMIN_DELETED",
+    resourceType: "User",
+    resourceId: targetUserId,
+    description: `Permanently deleted administrator ${user.email} (${user.adminRole?.name ?? user.role})`,
+  });
+
+  return { success: true, id: targetUserId };
 }
 
 async function resetAdminPassword(
@@ -517,7 +556,7 @@ async function stats(): Promise<{
     keys.statsGlobal(),
     async () => {
       const [users, hosts, admins, listings, bookings, activeSessions] =
-        await prisma.$transaction([
+        await Promise.all([
           prisma.user.count(),
           prisma.user.count({ where: { role: Role.HOST } }),
           prisma.user.count({ where: { role: Role.ADMIN } }),
@@ -634,7 +673,7 @@ async function listHostsPhase1(input: ListHostsPhase1Input = {}) {
     take = 20,
   } = input;
 
-  const where: any = {
+  const where: Prisma.UserWhereInput = {
     OR: [
       { role: Role.HOST },
       { listings: { some: {} } },
@@ -1390,6 +1429,7 @@ export const adminService = {
   getAdminById,
   createAdmin,
   updateAdmin,
+  deleteAdmin,
   toggleUserStatus,
   resetAdminPassword,
   setUserRole,

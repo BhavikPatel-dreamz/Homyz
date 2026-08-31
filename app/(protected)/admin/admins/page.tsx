@@ -1,4 +1,5 @@
 import { AdminUserTable } from "@/components/admin/admin-user-table";
+import { AdminManagementTabs } from "@/components/admin/admin-management-tabs";
 import { requirePagePermission } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
@@ -20,13 +21,15 @@ export default async function AdminUsersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 ">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           Administrator Accounts
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
           Manage administrative personnel, assign RBAC permissions, and oversee account security.
         </p>
       </div>
+
+      <AdminManagementTabs />
 
       <AdminUserTable
         initialUsers={adminsRes.items}
@@ -35,3 +38,4 @@ export default async function AdminUsersPage() {
     </div>
   );
 }
+

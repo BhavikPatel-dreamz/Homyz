@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { AdminPagination } from "./admin-pagination";
 import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
 
@@ -12,6 +13,16 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   const [activeTab, setActiveTab] = useState<
     "overview" | "permissions" | "listings" | "bookings" | "earnings" | "reviews" | "activity"
   >("overview");
+
+  // Tab pagination states
+  const [listingsPage, setListingsPage] = useState(1);
+  const [listingsPageSize, setListingsPageSize] = useState(5);
+
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookingsPageSize, setBookingsPageSize] = useState(5);
+
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityPageSize, setActivityPageSize] = useState(5);
 
   // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -34,6 +45,25 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
   const host = data.host;
   const metrics = data.metrics;
+
+  // Pagination calculations for tabs
+  const totalListingsPages = Math.max(1, Math.ceil(data.listings.length / listingsPageSize));
+  const paginatedListings = data.listings.slice(
+    (listingsPage - 1) * listingsPageSize,
+    listingsPage * listingsPageSize
+  );
+
+  const totalBookingsPages = Math.max(1, Math.ceil(data.bookings.length / bookingsPageSize));
+  const paginatedBookings = data.bookings.slice(
+    (bookingsPage - 1) * bookingsPageSize,
+    bookingsPage * bookingsPageSize
+  );
+
+  const totalActivityPages = Math.max(1, Math.ceil(data.activity.length / activityPageSize));
+  const paginatedActivity = data.activity.slice(
+    (activityPage - 1) * activityPageSize,
+    activityPage * activityPageSize
+  );
 
   // Handler: Edit Host Info
   async function handleEditSubmit(e: React.FormEvent) {
@@ -386,7 +416,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   </td>
                 </tr>
               ) : (
-                data.listings.map((item) => (
+                paginatedListings.map((item) => (
                   <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
                     <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
@@ -408,6 +438,21 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               )}
             </tbody>
           </table>
+          <div className="p-3 border-t border-zinc-100">
+            <AdminPagination
+              currentPage={listingsPage}
+              totalPages={totalListingsPages}
+              totalItems={data.listings.length}
+              pageSize={listingsPageSize}
+              onPageChange={setListingsPage}
+              onPageSizeChange={(size) => {
+                setListingsPageSize(size);
+                setListingsPage(1);
+              }}
+              itemLabel="listings"
+              pageSizeOptions={[5, 10, 20]}
+            />
+          </div>
         </div>
       )}
 
@@ -434,7 +479,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   </td>
                 </tr>
               ) : (
-                data.bookings.map((b) => (
+                paginatedBookings.map((b) => (
                   <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
                     <td className="py-3.5 px-4">
@@ -455,6 +500,21 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               )}
             </tbody>
           </table>
+          <div className="p-3 border-t border-zinc-100">
+            <AdminPagination
+              currentPage={bookingsPage}
+              totalPages={totalBookingsPages}
+              totalItems={data.bookings.length}
+              pageSize={bookingsPageSize}
+              onPageChange={setBookingsPage}
+              onPageSizeChange={(size) => {
+                setBookingsPageSize(size);
+                setBookingsPage(1);
+              }}
+              itemLabel="bookings"
+              pageSizeOptions={[5, 10, 20]}
+            />
+          </div>
         </div>
       )}
 
@@ -495,7 +555,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">No recorded activity history for this host.</p>
           ) : (
             <div className="space-y-3">
-              {data.activity.map((log) => (
+              {paginatedActivity.map((log) => (
                 <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
                   <div>
                     <span className="font-bold text-[var(--foreground)]">{log.action}</span>

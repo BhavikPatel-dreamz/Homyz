@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/auth/session";
 
 export default async function RegisterPage() {
   const user = await getSessionUser();
-  if (user) {
+  if (user && user.status !== "SUSPENDED") {
     if (user.role === "ADMIN" || user.adminRoleSlug) {
       redirect("/admin");
     }

@@ -3,13 +3,51 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
+import { AdminPagination } from "./admin-pagination";
 import {
   createAdminAction,
   updateAdminAction,
+  deleteAdminAction,
   toggleUserStatusAction,
   resetAdminPasswordAction,
   revokeUserSessionsAction,
 } from "@/actions/admin/adminManagement";
+
+// Use deterministic UTC-based formatting to avoid server/client locale/timezone
+// differences which can cause React hydration mismatches.
+const MONTH_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function formatUTCDateTime(value?: string | Date | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = MONTH_SHORT[d.getUTCMonth()];
+  const hours = String(d.getUTCHours()).padStart(2, "0");
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${day} ${month}, ${hours}:${minutes}`;
+}
+
+function formatUTCDate(value?: string | Date | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = MONTH_SHORT[d.getUTCMonth()];
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
+}
 
 export interface AdminUserItem {
   id: string;
@@ -45,15 +83,17 @@ export function AdminUserTable({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editUser, setEditUser] = useState<AdminUserItem | null>(null);
   const [resetPwdUser, setResetPwdUser] = useState<AdminUserItem | null>(null);
+  const [deleteUser, setDeleteUser] = useState<AdminUserItem | null>(null);
 
   // Form states
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [newRoleSlug, setNewRoleSlug] = useState(availableRoles[0]?.slug || "admin");
+  const [newPassword, setNewPassword] = useState("");
 
   const [editRoleSlug, setEditRoleSlug] = useState("");
   const [resetPasswordVal, setResetPasswordVal] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -81,18 +121,30 @@ export function AdminUserTable({
     return matchesSearch && matchesStatus && matchesRole;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedUsers = filteredUsers.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize
+  );
+
   function handleCreateAdmin(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
 
     startTransition(async () => {
-      const res = await createAdminAction({
-        name: newName,
-        email: newEmail,
-        password: newPassword,
+      const payload: any = {
+        name: newName.trim(),
+        email: newEmail.trim(),
         role: "ADMIN",
         adminRoleSlug: newRoleSlug,
-      });
+      };
+      if (newPassword.trim()) payload.password = newPassword.trim();
+
+      const res = await createAdminAction(payload);
 
       if (!res.ok) {
         setFeedback({ tone: "error", msg: res.error });
@@ -104,7 +156,10 @@ export function AdminUserTable({
       setNewName("");
       setNewEmail("");
       setNewPassword("");
-      setFeedback({ tone: "success", msg: `Administrator ${res.data.email} created successfully!` });
+      setFeedback({
+        tone: "success",
+        msg: `Administrator ${res.data.email} created! Auto-generated login credentials were sent to their email.`,
+      });
     });
   }
 
@@ -195,6 +250,27 @@ export function AdminUserTable({
         return;
       }
       setFeedback({ tone: "success", msg: `All active sessions revoked for ${user.email}.` });
+    });
+  }
+
+  function handleDeleteAdmin() {
+    if (!deleteUser) return;
+    setFeedback(null);
+
+    startTransition(async () => {
+      const res = await deleteAdminAction(deleteUser.id);
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error });
+        setDeleteUser(null);
+        return;
+      }
+
+      setUsers(users.filter((u) => u.id !== deleteUser.id));
+      setFeedback({
+        tone: "success",
+        msg: `Administrator ${deleteUser.email} was permanently deleted.`,
+      });
+      setDeleteUser(null);
     });
   }
 
@@ -522,6 +598,21 @@ export function AdminUserTable({
         })}
       </div>
 
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filteredUsers.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="administrators"
+        pageSizeOptions={[10, 20, 50]}
+      />
+
       {/* Modal 1: Add Administrator */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
@@ -721,6 +812,51 @@ export function AdminUserTable({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 4: Delete Administrator Confirmation */}
+      {deleteUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 shrink-0">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-zinc-900">
+                  Delete Administrator
+                </h2>
+                <p className="text-xs text-zinc-500">
+                  Permanent removal of administrator account
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-600 mb-5 leading-relaxed">
+              Are you sure you want to permanently delete <strong>{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteUser(null)}
+                className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAdmin}
+                disabled={pending}
+                className="rounded-full bg-red-600 hover:bg-red-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
+              >
+                {pending ? "Deleting..." : "Delete Administrator"}
+              </button>
+            </div>
           </div>
         </div>
       )}

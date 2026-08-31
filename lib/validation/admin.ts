@@ -11,8 +11,7 @@ export const createAdminSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Must contain at least one number"),
+    .optional(),
   role: z.enum(["USER", "HOST", "ADMIN"]).default("ADMIN"),
   adminRoleSlug: z.string().optional(),
 });
@@ -59,3 +58,30 @@ export const editRoleSchema = z.object({
   permissions: z.array(z.string()).optional(),
 });
 export type EditRoleInput = z.infer<typeof editRoleSchema>;
+
+export const inviteAdminSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Invalid email address").toLowerCase(),
+  role: z.enum(["USER", "HOST", "ADMIN"]).default("ADMIN"),
+  adminRoleSlug: z.string().min(1, "Role is required"),
+  message: z.string().max(500, "Message cannot exceed 500 characters").optional().nullable(),
+  customPermissions: z.array(z.string()).optional(),
+});
+export type InviteAdminInput = z.infer<typeof inviteAdminSchema>;
+
+export const acceptInvitationSchema = z
+  .object({
+    token: z.string().min(1, "Invitation token is required"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;
+

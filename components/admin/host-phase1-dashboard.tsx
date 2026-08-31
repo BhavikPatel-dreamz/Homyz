@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AdminPagination } from "./admin-pagination";
 import type { HostPhase1Analytics } from "@/services/admin.service";
 
 export interface HostTableItem {
@@ -68,7 +69,7 @@ export function HostPhase1Dashboard({
   const [sortBy, setSortBy] = useState<"createdAt" | "name" | "listingsCount">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredHosts = useMemo(() => {
     return initialHosts.filter((host) => {
@@ -104,8 +105,8 @@ export function HostPhase1Dashboard({
 
       return true;
     }).sort((a, b) => {
-      let valA: any = a[sortBy];
-      let valB: any = b[sortBy];
+      let valA: string | number | Date = a[sortBy] ?? 0;
+      let valB: string | number | Date = b[sortBy] ?? 0;
 
       if (sortBy === "createdAt") {
         valA = new Date(a.createdAt).getTime();

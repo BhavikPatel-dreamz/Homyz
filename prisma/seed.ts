@@ -90,64 +90,6 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 3. Manager
-  const managerRole = await prisma.adminRole.upsert({
-    where: { slug: "manager" },
-    update: { name: "Manager", isSystem: true },
-    create: {
-      name: "Manager",
-      slug: "manager",
-      description: "Operational management of reservations, listings, and user support.",
-      isSystem: true,
-    },
-  });
-  const managerPermSlugs = [
-    PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.USERS_VIEW,
-    PERMISSIONS.RESERVATIONS_VIEW,
-    PERMISSIONS.RESERVATIONS_CREATE,
-    PERMISSIONS.RESERVATIONS_EDIT,
-    PERMISSIONS.RESERVATIONS_CANCEL,
-    PERMISSIONS.LISTINGS_VIEW,
-    PERMISSIONS.LISTINGS_EDIT,
-    PERMISSIONS.REPORTS_VIEW,
-  ];
-  await prisma.adminRolePermission.deleteMany({ where: { roleId: managerRole.id } });
-  await prisma.adminRolePermission.createMany({
-    data: managerPermSlugs
-      .map((slug) => permMap.get(slug))
-      .filter((id): id is string => Boolean(id))
-      .map((permissionId) => ({ roleId: managerRole.id, permissionId })),
-    skipDuplicates: true,
-  });
-
-  // 4. Support Staff
-  const supportRole = await prisma.adminRole.upsert({
-    where: { slug: "support" },
-    update: { name: "Support Staff", isSystem: true },
-    create: {
-      name: "Support Staff",
-      slug: "support",
-      description: "Limited read-only support access to user and reservation details.",
-      isSystem: true,
-    },
-  });
-  const supportPermSlugs = [
-    PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.USERS_VIEW,
-    PERMISSIONS.RESERVATIONS_VIEW,
-    PERMISSIONS.LISTINGS_VIEW,
-    PERMISSIONS.ACTIVITY_LOGS_VIEW,
-  ];
-  await prisma.adminRolePermission.deleteMany({ where: { roleId: supportRole.id } });
-  await prisma.adminRolePermission.createMany({
-    data: supportPermSlugs
-      .map((slug) => permMap.get(slug))
-      .filter((id): id is string => Boolean(id))
-      .map((permissionId) => ({ roleId: supportRole.id, permissionId })),
-    skipDuplicates: true,
-  });
-
   // Seed default admin user
   const email = process.env.ADMIN_EMAIL ?? "admin@homyz.local";
   const password = process.env.ADMIN_PASSWORD ?? "ChangeMe!123";

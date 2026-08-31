@@ -13,8 +13,8 @@ export async function updateHostAction(
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_EDIT);
     const updated = await adminService.updateHostProfile(hostId, data, actorUser);
     return { ok: true, data: updated };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to update host profile" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to update host profile" };
   }
 }
 
@@ -27,8 +27,8 @@ export async function updateHostVerificationAction(
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_EDIT);
     const res = await adminService.updateHostVerification(hostId, status, reason, actorUser);
     return { ok: true, data: res };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to update host verification status" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to update host verification status" };
   }
 }
 
@@ -41,8 +41,8 @@ export async function toggleHostSuspensionAction(
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_EDIT);
     const updated = await adminService.toggleHostSuspension(hostId, suspend, reason, actorUser);
     return { ok: true, data: updated };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to toggle host suspension" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to toggle host suspension" };
   }
 }
 
@@ -51,7 +51,7 @@ export async function deleteHostAction(hostId: string) {
     const actorUser = await requirePagePermission(PERMISSIONS.USERS_DELETE);
     const res = await adminService.deleteHost(hostId, actorUser);
     return { ok: true, data: res };
-  } catch (err: any) {
-    return { ok: false, error: err.message || "Failed to delete host" };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Failed to delete host" };
   }
 }

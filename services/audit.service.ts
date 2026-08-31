@@ -166,7 +166,22 @@ async function getSecurityStats(): Promise<SecurityStats> {
       where: {
         OR: [
           { status: "FAILURE" },
-          { action: { in: ["LOGIN_FAILED", "USER_DEACTIVATED", "ROLE_CHANGED", "SESSION_REVOKED"] } },
+          {
+            action: {
+              in: [
+                "LOGIN_FAILED",
+                "ADMIN_LOGIN_FAILED",
+                "USER_DEACTIVATED",
+                "ROLE_CHANGED",
+                "SESSION_REVOKED",
+                "ADMIN_INVITATION_FAILED",
+                "INVITATION_TOKEN_INVALID",
+                "REVOKED_TOKEN_USAGE_ATTEMPT",
+                "ACCEPTED_TOKEN_REUSE_ATTEMPT",
+                "EXPIRED_TOKEN_USAGE_ATTEMPT",
+              ],
+            },
+          },
         ],
       },
       take: 10,

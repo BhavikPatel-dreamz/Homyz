@@ -3,6 +3,7 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { adminService } from "@/services/admin.service";
 import { auditService } from "@/services/audit.service";
 import { Role } from "@/generated/prisma/enums";
+import { AdminUserTable } from "@/components/admin/admin-user-table";
 
 function MetricCard({
   label,
@@ -71,11 +72,19 @@ function ShortcutCard({
 export default async function AdminPage() {
   await requirePageRole([Role.ADMIN]);
 
-  const [stats, securityStats, recentLogs] = await Promise.all([
+  const [stats, securityStats, adminsRes, roles, recentLogs] = await Promise.all([
     adminService.stats(),
     auditService.getSecurityStats(),
+    adminService.listAdmins({ skip: 0, take: 100 }),
+    adminService.listRoles(),
     auditService.list({ limit: 6 }),
   ]);
+
+  const roleOptions = roles.map((r) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+  }));
 
   return (
     <div className="flex flex-col gap-8 font-sans text-[var(--foreground)]">
@@ -169,6 +178,23 @@ export default async function AdminPage() {
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">In last 7 days</p>
           </div>
         </div>
+      </div>
+
+      {/* Administrator Accounts Table Section */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)]">
+            Administrator Accounts
+          </h2>
+          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+            Manage administrative personnel, assign RBAC permissions, and oversee account security.
+          </p>
+        </div>
+
+        <AdminUserTable
+          initialUsers={adminsRes.items}
+          availableRoles={roleOptions}
+        />
       </div>
 
       {/* Quick Navigation Modules */}
