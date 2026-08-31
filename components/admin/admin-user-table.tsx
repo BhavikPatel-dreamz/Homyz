@@ -351,7 +351,8 @@ export function AdminUserTable({
 
       {/* Desktop Table View (Columns: Name, Email, Role, Status, Permission Count, Last Login, Created, Actions) */}
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-        <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
           <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">Admin Name</th>
@@ -506,6 +507,7 @@ export function AdminUserTable({
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Mobile Card List View */}
@@ -818,33 +820,33 @@ export function AdminUserTable({
 
       {/* Modal 4: Delete Administrator Confirmation */}
       {deleteUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-zinc-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-zinc-900">
+                <h2 className="text-base font-extrabold text-[var(--foreground)]">
                   Delete Administrator
                 </h2>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-[var(--muted-foreground)]">
                   Permanent removal of administrator account
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-zinc-600 mb-5 leading-relaxed">
-              Are you sure you want to permanently delete <strong>{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
+            <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-[var(--foreground)]">{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
             </p>
 
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeleteUser(null)}
-                className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all"
               >
                 Cancel
               </button>
@@ -852,7 +854,7 @@ export function AdminUserTable({
                 type="button"
                 onClick={handleDeleteAdmin}
                 disabled={pending}
-                className="rounded-full bg-red-600 hover:bg-red-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
               >
                 {pending ? "Deleting..." : "Delete Administrator"}
               </button>

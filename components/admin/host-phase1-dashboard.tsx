@@ -243,7 +243,8 @@ export function HostPhase1Dashboard({
 
       {/* Desktop Table View */}
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-        <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
           <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
             <tr>
               <th className="py-3.5 px-4">Host Name</th>
@@ -355,6 +356,7 @@ export function HostPhase1Dashboard({
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Mobile Card List View */}

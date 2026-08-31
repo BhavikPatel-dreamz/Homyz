@@ -443,7 +443,8 @@ export function HostPermissionsTab({
 
         {/* Permission List Table */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 w-10">
@@ -621,6 +622,7 @@ export function HostPermissionsTab({
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

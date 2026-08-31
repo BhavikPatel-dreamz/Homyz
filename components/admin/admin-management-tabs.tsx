@@ -8,13 +8,13 @@ export function AdminManagementTabs() {
   const isInvitations = pathname.includes("/invitations");
 
   return (
-    <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-6">
+    <div className="flex border-b border-[var(--border-subtle)] mb-6">
       <Link
         href="/admin/admins"
-        className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           !isInvitations
-            ? "border-amber-500 text-amber-600 dark:text-amber-400"
-            : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+            ? "border-[var(--accent)] text-[var(--accent)]"
+            : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
         }`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -24,10 +24,10 @@ export function AdminManagementTabs() {
       </Link>
       <Link
         href="/admin/admins/invitations"
-        className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           isInvitations
-            ? "border-amber-500 text-amber-600 dark:text-amber-400"
-            : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+            ? "border-[var(--accent)] text-[var(--accent)]"
+            : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
         }`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

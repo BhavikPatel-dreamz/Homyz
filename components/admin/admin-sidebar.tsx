@@ -109,7 +109,6 @@ export function AdminSidebar({
             </svg>
           ),
         },
-        /*
         {
           label: "Roles & Permissions",
           href: "/admin/roles",
@@ -119,7 +118,6 @@ export function AdminSidebar({
             </svg>
           ),
         },
-        */
         {
           label: "Audit Logs",
           href: "/admin/activity-logs",

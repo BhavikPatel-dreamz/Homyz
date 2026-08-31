@@ -5,6 +5,12 @@ import { Alert } from "../ui";
 import { AdminPagination } from "./admin-pagination";
 import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
+import {
+  updateHostAction,
+  updateHostVerificationAction,
+  toggleHostSuspensionAction,
+  deleteHostAction,
+} from "@/actions/admin/hostActions";
 
 export type HostDetailsDTO = HostDetailsData;
 
@@ -71,35 +77,28 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
     setFeedback(null);
 
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: editName,
-            email: editEmail,
-            phone: editPhone,
-          }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to update host profile" });
-          return;
-        }
-        setData((prev) => ({
-          ...prev,
-          host: {
-            ...prev.host,
-            name: editName,
-            email: editEmail,
-            phone: editPhone,
-          },
-        }));
-        setShowEditModal(false);
-        setFeedback({ tone: "success", msg: "Host profile updated successfully." });
-      } catch {
-        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+      const res = await updateHostAction(host.id, {
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+      });
+
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error || "Failed to update host profile" });
+        return;
       }
+
+      setData((prev) => ({
+        ...prev,
+        host: {
+          ...prev.host,
+          name: editName,
+          email: editEmail,
+          phone: editPhone,
+        },
+      }));
+      setShowEditModal(false);
+      setFeedback({ tone: "success", msg: "Host profile updated successfully." });
     });
   }
 
@@ -109,32 +108,26 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
     setFeedback(null);
 
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/v1/admin/hosts/${host.id}/verification`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            verificationStatus: verifStatusChoice,
-            rejectionReason: verifStatusChoice === "REJECTED" ? verifReason : undefined,
-          }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to submit verification" });
-          return;
-        }
-        setData((prev) => ({
-          ...prev,
-          host: {
-            ...prev.host,
-            verificationStatus: verifStatusChoice,
-          },
-        }));
-        setShowVerifModal(false);
-        setFeedback({ tone: "success", msg: `Verification ${verifStatusChoice.toLowerCase()} successfully.` });
-      } catch {
-        setFeedback({ tone: "error", msg: "Failed to submit verification." });
+      const res = await updateHostVerificationAction(
+        host.id,
+        verifStatusChoice,
+        verifStatusChoice === "REJECTED" ? verifReason : undefined
+      );
+
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error || "Failed to submit verification" });
+        return;
       }
+
+      setData((prev) => ({
+        ...prev,
+        host: {
+          ...prev.host,
+          verificationStatus: verifStatusChoice,
+        },
+      }));
+      setShowVerifModal(false);
+      setFeedback({ tone: "success", msg: `Verification ${verifStatusChoice.toLowerCase()} successfully.` });
     });
   }
 
@@ -142,35 +135,30 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   async function handleSuspendSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFeedback(null);
-    const newStatus = host.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+    const suspend = host.status !== "SUSPENDED";
+    const newStatus = suspend ? "SUSPENDED" : "ACTIVE";
 
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/v1/admin/hosts/${host.id}/status`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: newStatus,
-            reason: newStatus === "SUSPENDED" ? suspendReason : undefined,
-          }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to change host status" });
-          return;
-        }
-        setData((prev) => ({
-          ...prev,
-          host: {
-            ...prev.host,
-            status: newStatus as any,
-          },
-        }));
-        setShowSuspendModal(false);
-        setFeedback({ tone: "success", msg: `Host status changed to ${newStatus}.` });
-      } catch {
-        setFeedback({ tone: "error", msg: "Failed to update host status." });
+      const res = await toggleHostSuspensionAction(
+        host.id,
+        suspend,
+        suspend ? suspendReason : undefined
+      );
+
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error || "Failed to change host status" });
+        return;
       }
+
+      setData((prev) => ({
+        ...prev,
+        host: {
+          ...prev.host,
+          status: newStatus as any,
+        },
+      }));
+      setShowSuspendModal(false);
+      setFeedback({ tone: "success", msg: `Host status changed to ${newStatus}.` });
     });
   }
 
@@ -179,21 +167,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
     setFeedback(null);
 
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
-          method: "DELETE",
-        });
-        const result = await res.json();
-        if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Cannot delete host with active bookings." });
-          setShowDeleteModal(false);
-          return;
-        }
-        window.location.href = "/admin/hosts";
-      } catch {
-        setFeedback({ tone: "error", msg: "Failed to delete host account." });
+      const res = await deleteHostAction(host.id);
+
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error || "Cannot delete host with active bookings." });
         setShowDeleteModal(false);
+        return;
       }
+      window.location.href = "/admin/hosts";
     });
   }
 
@@ -392,53 +373,120 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </div>
           </div>
+
+          {/* Compliance, Document Verification & Onboarding Card */}
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 md:col-span-2">
+            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+              <div>
+                <h2 className="text-base font-bold text-[var(--foreground)]">Host Compliance & Onboarding Review</h2>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">Verification assessment, document compliance checkpoints, and application status.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowVerifModal(true)}
+                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3.5 py-1.5 text-xs font-bold text-[var(--accent-foreground)] transition-colors shadow-2xs"
+              >
+                Change Verification Status
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-[var(--foreground)]">ID & Identity Check</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    host.verificationStatus === "APPROVED"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                  }`}>
+                    {host.verificationStatus === "APPROVED" ? "Verified" : "Pending Review"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Government-issued identity & host contact credentials.</p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-[var(--foreground)]">Account Compliance</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    host.status === "ACTIVE"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+                  }`}>
+                    {host.status === "ACTIVE" ? "Compliant" : "Restricted"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Platform terms of service and community policy compliance status.</p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-[var(--foreground)]">Onboarding Readiness</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    host.status === "ACTIVE" && host.verificationStatus === "APPROVED"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                  }`}>
+                    {host.status === "ACTIVE" && host.verificationStatus === "APPROVED" ? "Ready to Host" : "Action Required"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--muted-foreground)]">
+                  {host.status === "ACTIVE" && host.verificationStatus === "APPROVED"
+                    ? "Host is authorized to publish listings and accept bookings."
+                    : "Host requires approval or account resolution before publishing."}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Tab 2: LISTINGS */}
       {activeTab === "listings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Listing Title</th>
-                <th className="py-3.5 px-4">Price / Night</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-center">Bookings Count</th>
-                <th className="py-3.5 px-4">Created Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-subtle)]">
-              {data.listings.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-[var(--muted-foreground)]">
-                    This host has no property listings yet.
-                  </td>
+                  <th className="py-3.5 px-4">Listing Title</th>
+                  <th className="py-3.5 px-4">Price / Night</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-center">Bookings Count</th>
+                  <th className="py-3.5 px-4">Created Date</th>
                 </tr>
-              ) : (
-                paginatedListings.map((item) => (
-                  <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
-                    <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
-                    <td className="py-3.5 px-4">
-                      {item.published ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-                          Published
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
-                          Draft
-                        </span>
-                      )}
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {data.listings.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-[var(--muted-foreground)]">
+                      This host has no property listings yet.
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleDateString("en-US")}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <div className="p-3 border-t border-zinc-100">
+                ) : (
+                  paginatedListings.map((item) => (
+                    <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
+                      <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
+                      <td className="py-3.5 px-4">
+                        {item.published ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+                            Published
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
+                            Draft
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleDateString("en-US")}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-3 border-t border-[var(--border-subtle)]">
             <AdminPagination
               currentPage={listingsPage}
               totalPages={totalListingsPages}
@@ -459,48 +507,50 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tab 3: BOOKINGS */}
       {activeTab === "bookings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Booking ID</th>
-                <th className="py-3.5 px-4">Guest</th>
-                <th className="py-3.5 px-4">Property Title</th>
-                <th className="py-3.5 px-4">Check-In</th>
-                <th className="py-3.5 px-4">Check-Out</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-subtle)]">
-              {data.bookings.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[var(--muted-foreground)]">
-                    No reservations recorded for this host.
-                  </td>
+                  <th className="py-3.5 px-4">Booking ID</th>
+                  <th className="py-3.5 px-4">Guest</th>
+                  <th className="py-3.5 px-4">Property Title</th>
+                  <th className="py-3.5 px-4">Check-In</th>
+                  <th className="py-3.5 px-4">Check-Out</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Amount</th>
                 </tr>
-              ) : (
-                paginatedBookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
-                      <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.guestEmail}</div>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {data.bookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-[var(--muted-foreground)]">
+                      No reservations recorded for this host.
                     </td>
-                    <td className="py-3.5 px-4 font-medium text-[var(--foreground)]">{b.listingTitle}</td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.endDate).toLocaleDateString("en-US")}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <div className="p-3 border-t border-zinc-100">
+                ) : (
+                  paginatedBookings.map((b) => (
+                    <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                      <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
+                        <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "—"}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{b.listingTitle}</td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.endDate).toLocaleDateString("en-US")}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+                          {b.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-3 border-t border-[var(--border-subtle)]">
             <AdminPagination
               currentPage={bookingsPage}
               totalPages={totalBookingsPages}

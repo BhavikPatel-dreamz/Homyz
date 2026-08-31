@@ -314,7 +314,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* Tab 2: BOOKINGS */}
       {activeTab === "bookings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Booking ID</th>
@@ -355,7 +356,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
               )}
             </tbody>
           </table>
-          <div className="p-3 border-t border-zinc-100">
+          </div>
+          <div className="p-3 border-t border-[var(--border-subtle)]">
             <AdminPagination
               currentPage={bookingsPage}
               totalPages={totalBookingsPages}

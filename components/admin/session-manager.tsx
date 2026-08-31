@@ -80,10 +80,10 @@ export function SessionManager({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by user, device, IP..."
-            className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-9 pr-4 text-xs text-zinc-900 outline-none focus:border-zinc-500 "
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
           />
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)]"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -93,79 +93,148 @@ export function SessionManager({
           </svg>
         </div>
 
-        <span className="text-xs text-zinc-500">
-          Total active sessions: <strong>{sessions.length}</strong>
+        <span className="text-xs text-[var(--muted-foreground)]">
+          Total active sessions: <strong className="text-[var(--foreground)]">{sessions.length}</strong>
         </span>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs ">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-zinc-100 bg-zinc-50/50 text-zinc-400 font-semibold uppercase tracking-wider ">
-            <tr>
-              <th className="py-3 px-4">User</th>
-              <th className="py-3 px-4">Surface / Type</th>
-              <th className="py-3 px-4">Device & OS</th>
-              <th className="py-3 px-4">IP Address</th>
-              <th className="py-3 px-4">Last Activity</th>
-              <th className="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 ">
-            {filtered.length === 0 ? (
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
-                <td colSpan={6} className="py-8 text-center text-zinc-400">
-                  No active sessions found.
-                </td>
+                <th className="py-3 px-4">User</th>
+                <th className="py-3 px-4">Surface / Type</th>
+                <th className="py-3 px-4">Device & OS</th>
+                <th className="py-3 px-4">IP Address</th>
+                <th className="py-3 px-4">Last Activity</th>
+                <th className="py-3 px-4 text-right">Action</th>
               </tr>
-            ) : (
-              paginatedSessions.map((s) => (
-                <tr key={s.id} className="hover:bg-zinc-50/50 :bg-zinc-900/30 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-zinc-900 ">
-                      {s.userName || "User"}
-                    </div>
-                    <div className="text-[11px] text-zinc-500">{s.userEmail || s.userId}</div>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-[var(--muted-foreground)]">
+                    No active sessions found.
                   </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${s.type === "web"
-                          ? "bg-sky-100 text-sky-800 "
-                          : "bg-purple-100 text-purple-800 "
-                        }`}
-                    >
-                      {s.type === "web" ? "Web Cookie" : "Mobile Bearer"}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-medium text-zinc-800 ">
-                    {s.deviceInfo}
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-500">
-                    {s.ip || "—"}
-                  </td>
-                  <td className="py-3.5 px-4 text-zinc-500">
+                </tr>
+              ) : (
+                paginatedSessions.map((s) => (
+                  <tr key={s.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-[var(--foreground)]">
+                        {s.userName || "User"}
+                      </div>
+                      <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</div>
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s.type === "web"
+                            ? "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50"
+                            : "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
+                          }`}
+                      >
+                        {s.type === "web" ? "Web Cookie" : "Mobile Bearer"}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-[var(--foreground)]">
+                      {s.deviceInfo}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">
+                      {s.ip || "—"}
+                    </td>
+                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]">
+                      {new Date(s.lastActiveAt).toLocaleString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleRevokeOne(s)}
+                        disabled={pending}
+                        className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50"
+                      >
+                        Revoke
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile Card List View */}
+      <div className="md:hidden flex flex-col gap-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center text-xs text-[var(--muted-foreground)]">
+            No active sessions found.
+          </div>
+        ) : (
+          paginatedSessions.map((s) => (
+            <div
+              key={s.id}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-bold text-xs text-[var(--foreground)]">
+                    {s.userName || "User"}
+                  </h3>
+                  <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</p>
+                </div>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    s.type === "web"
+                      ? "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800/50"
+                      : "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
+                  }`}
+                >
+                  {s.type === "web" ? "Web Cookie" : "Mobile Bearer"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
+                <div>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Device & OS</span>
+                  <span className="font-medium text-[var(--foreground)] truncate block">{s.deviceInfo}</span>
+                </div>
+                <div>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">IP Address</span>
+                  <span className="font-mono text-[var(--muted-foreground)]">{s.ip || "—"}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Last Active</span>
+                  <span className="text-[var(--muted-foreground)] font-mono">
                     {new Date(s.lastActiveAt).toLocaleString([], {
                       month: "short",
                       day: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeOne(s)}
-                      disabled={pending}
-                      className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 :bg-red-950/40 transition-colors"
-                    >
-                      Revoke
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-[var(--border-subtle)] flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleRevokeOne(s)}
+                  disabled={pending}
+                  className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
+                >
+                  Revoke Session
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Pagination Footer */}
