@@ -11,10 +11,10 @@ export default async function AdminSessionsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 ">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
           Active Sessions
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
           Inspect currently logged-in web and mobile clients across all devices and terminate suspicious sessions.
         </p>
       </div>

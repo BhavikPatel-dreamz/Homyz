@@ -31,13 +31,11 @@ export function AdminNav() {
       label: "All Users",
       permission: PERMISSIONS.USERS_VIEW,
     },
-    /*
     {
       href: "/admin/roles",
       label: "Roles & Permissions",
       permission: PERMISSIONS.ROLES_VIEW,
     },
-    */
     {
       href: "/admin/activity-logs",
       label: "Activity Logs",
@@ -77,19 +75,19 @@ export function AdminNav() {
   });
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-200 bg-white shadow-2xs">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--surface)] shadow-2xs">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
         {/* Left: Brand & Admin Tag */}
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-base">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-bold text-base">
               H
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight text-zinc-900">
+              <span className="text-sm font-bold tracking-tight text-[var(--foreground)]">
                 homyz
               </span>
-              <span className="text-[10px] uppercase font-semibold tracking-wider text-amber-700 -mt-1">
+              <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--accent)] -mt-1">
                 Admin Console
               </span>
             </div>
@@ -109,8 +107,8 @@ export function AdminNav() {
                 href={item.href}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-[#FBDE9B] text-zinc-950 font-bold shadow-2xs"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)]"
                 }`}
               >
                 {item.label}
@@ -124,7 +122,7 @@ export function AdminNav() {
           {/* Link to view public app */}
           <Link
             href="/dashboard"
-            className="hidden md:inline-flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-900 border border-zinc-200 rounded-full px-3 py-1.5 hover:bg-zinc-50 transition-colors"
+            className="hidden md:inline-flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-full px-3 py-1.5 hover:bg-[var(--surface-secondary)] transition-colors"
             title="View App Dashboard"
           >
             <span>View App</span>
@@ -146,10 +144,10 @@ export function AdminNav() {
           {user ? (
             <div className="hidden sm:flex items-center gap-2.5">
               <div className="flex flex-col text-right">
-                <span className="text-xs font-semibold text-zinc-900">
+                <span className="text-xs font-semibold text-[var(--foreground)]">
                   {user.name || user.email?.split("@")[0]}
                 </span>
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-[var(--muted-foreground)]">
                   {user.adminRoleSlug || user.role}
                 </span>
               </div>
@@ -164,7 +162,7 @@ export function AdminNav() {
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="rounded-full border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 px-3.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors"
+            className="rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs font-medium text-[var(--foreground)] transition-colors"
           >
             Sign out
           </button>
@@ -173,7 +171,7 @@ export function AdminNav() {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
             aria-label="Toggle navigation"
           >
             <svg
@@ -195,7 +193,7 @@ export function AdminNav() {
 
       {/* Mobile Nav Bar */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-zinc-200 bg-white px-4 py-3 shadow-md">
+        <div className="lg:hidden border-t border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 shadow-md">
           <div className="grid grid-cols-2 gap-2">
             {allowedNav.map((item) => {
               const isActive = item.exact
@@ -209,8 +207,8 @@ export function AdminNav() {
                   onClick={() => setMobileOpen(false)}
                   className={`rounded-xl px-3 py-2 text-xs font-medium ${
                     isActive
-                      ? "bg-[#FBDE9B] text-zinc-950 font-bold"
-                      : "text-zinc-600 hover:bg-zinc-100"
+                      ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)]"
                   }`}
                 >
                   {item.label}
@@ -218,11 +216,11 @@ export function AdminNav() {
               );
             })}
           </div>
-          <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between">
             <Link
               href="/dashboard"
               onClick={() => setMobileOpen(false)}
-              className="text-xs text-zinc-600 hover:text-zinc-900 underline"
+              className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] underline"
             >
               ← Go to App Dashboard
             </Link>

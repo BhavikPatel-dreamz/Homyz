@@ -136,10 +136,10 @@ export function AdminListingsClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title, host name, email, listing ID..."
-            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
           />
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -147,6 +147,19 @@ export function AdminListingsClient({
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -162,8 +175,8 @@ export function AdminListingsClient({
         </div>
       </div>
 
-      {/* Listings Table */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
+      {/* Desktop Listings Table */}
+      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
@@ -247,24 +260,83 @@ export function AdminListingsClient({
             </tbody>
           </table>
         </div>
-
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-[var(--border)]">
-          <AdminPagination
-            currentPage={activePage}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            itemLabel="listings"
-            pageSizeOptions={[10, 20, 50]}
-          />
-        </div>
       </div>
+
+      {/* Mobile Listings Card List */}
+      <div className="md:hidden flex flex-col gap-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center text-xs text-[var(--muted-foreground)]">
+            No property listings match the selected criteria.
+          </div>
+        ) : (
+          paginatedListings.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setSelectedListing(item)}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
+                  <h3 className="font-bold text-xs text-[var(--foreground)] mt-0.5">{item.title}</h3>
+                </div>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    item.published
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+                      : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300"
+                  }`}
+                >
+                  {item.published ? "PUBLISHED" : "DRAFT"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
+                <div>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Host</span>
+                  <span className="font-medium text-[var(--foreground)]">{item.host.name || "Host"}</span>
+                </div>
+                <div>
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Price / Night</span>
+                  <span className="font-bold text-[var(--foreground)] font-mono">${(item.price / 100).toFixed(2)}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Bookings</span>
+                  <span className="font-mono text-[var(--foreground)] font-bold">{item.bookingCount} reservations</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-[var(--border-subtle)] flex justify-end">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedListing(item);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                >
+                  Inspect Listing
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="listings"
+        pageSizeOptions={[10, 20, 50]}
+      />
 
       {/* Listing Details Drawer */}
       {selectedListing && (

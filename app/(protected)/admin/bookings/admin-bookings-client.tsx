@@ -162,10 +162,10 @@ export function AdminBookingsClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search booking ID, listing, guest name, host..."
-            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
           />
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -173,6 +173,19 @@ export function AdminBookingsClient({
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -189,8 +202,8 @@ export function AdminBookingsClient({
         </div>
       </div>
 
-      {/* Bookings Table */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
+      {/* Desktop Bookings Table */}
+      <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
@@ -281,24 +294,92 @@ export function AdminBookingsClient({
             </tbody>
           </table>
         </div>
-
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-[var(--border)]">
-          <AdminPagination
-            currentPage={activePage}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-            itemLabel="bookings"
-            pageSizeOptions={[10, 20, 50]}
-          />
-        </div>
       </div>
+
+      {/* Mobile Bookings Card List */}
+      <div className="md:hidden flex flex-col gap-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center text-xs text-[var(--muted-foreground)]">
+            No bookings found matching the selected filter.
+          </div>
+        ) : (
+          paginatedBookings.map((booking) => {
+            const nights = getDurationNights(booking.startDate, booking.endDate);
+            const totalPrice = ((booking.listing.price / 100) * nights).toFixed(2);
+
+            return (
+              <div
+                key={booking.id}
+                onClick={() => setSelectedBooking(booking)}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)]"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{booking.id.slice(-8)}</span>
+                    <h3 className="font-bold text-xs text-[var(--foreground)] mt-0.5">{booking.listing.title}</h3>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                      booking.status === "CONFIRMED"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        : booking.status === "CANCELLED"
+                        ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300"
+                        : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300"
+                    }`}
+                  >
+                    {booking.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Guest</span>
+                    <span className="font-medium text-[var(--foreground)]">{booking.user.name || "Guest"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Amount</span>
+                    <span className="font-bold text-[var(--foreground)] font-mono">${totalPrice}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
+                    <span className="font-mono text-[var(--muted-foreground)]">
+                      {new Date(booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} — {new Date(booking.endDate).toLocaleDateString([], { month: "short", day: "numeric" })} ({nights} nights)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--border-subtle)] flex justify-end">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedBooking(booking);
+                    }}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Pagination Footer */}
+      <AdminPagination
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        itemLabel="bookings"
+        pageSizeOptions={[10, 20, 50]}
+      />
 
       {/* Booking Details Modal */}
       {selectedBooking && (

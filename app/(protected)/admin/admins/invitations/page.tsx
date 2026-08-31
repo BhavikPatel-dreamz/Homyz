@@ -22,10 +22,10 @@ export default async function AdminInvitationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
           Admin Invitations Management
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
           Invite new administrators via email, manage pending setup tokens, and audit account activations.
         </p>
       </div>
