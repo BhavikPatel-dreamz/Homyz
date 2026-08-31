@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local Claude Code settings (never commit)
+.claude/
+.claude/settings.local.json
+
 /doc
 
 # typescript
