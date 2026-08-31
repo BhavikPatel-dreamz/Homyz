@@ -23,7 +23,9 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
-export const forgotPasswordSchema = z.object({ email: z.email() });
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
+});
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({

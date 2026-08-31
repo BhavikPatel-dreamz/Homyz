@@ -2,27 +2,41 @@
 
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
-
 import { resetPasswordAction } from "@/actions/auth/resetPassword";
-
-import { Alert, buttonClass, inputClass, labelClass } from "../ui";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Password requirement checks
+  const minLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const matches = password.length > 0 && password === confirmPassword;
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    const fd = new FormData(e.currentTarget);
-    const password = String(fd.get("password") ?? "");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!minLength || !hasUpper || !hasNumber) {
+      setError("Please ensure your password meets all complexity requirements.");
+      return;
+    }
+
     startTransition(async () => {
       const res = await resetPasswordAction({ token, password });
       if (!res.ok) {
-        setError(res.error);
+        setError(res.error || "Failed to reset password. The link may have expired.");
         return;
       }
       setDone(true);
@@ -30,18 +44,48 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   if (!token) {
-    return <Alert>This reset link is missing its token.</Alert>;
+    return (
+      <div className="flex flex-col gap-4 py-2">
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 font-medium">
+          This password reset link is invalid or missing its security token.
+        </div>
+        <Link
+          href="/forgot-password"
+          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer"
+        >
+          Request New Reset Link →
+        </Link>
+      </div>
+    );
   }
 
   if (done) {
     return (
-      <div className="flex flex-col gap-4">
-        <Alert tone="success">Your password has been updated.</Alert>
+      <div className="flex flex-col gap-5 text-center py-2 animate-in fade-in zoom-in-95">
+        <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-xs">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-bold text-zinc-950">
+            Password Reset Successful!
+          </h2>
+          <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+            Your password has been updated successfully. All active sessions have been invalidated for security.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 font-medium">
+          You can now log in using your new credentials.
+        </div>
+
         <Link
-          href="/login"
-          className="text-center text-sm font-medium text-zinc-900 "
+          href="/admin/login"
+          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
-          Sign in
+          Sign In to Admin Console →
         </Link>
       </div>
     );
@@ -49,10 +93,16 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      {error ? <Alert>{error}</Alert> : null}
+      {error && (
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium animate-in fade-in">
+          {error}
+        </div>
+      )}
+
+      {/* New Password */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className={labelClass}>
-          New password
+        <label htmlFor="password" className="text-xs font-semibold text-zinc-800">
+          New Password *
         </label>
         <div className="relative">
           <input
@@ -61,12 +111,15 @@ export function ResetPasswordForm({ token }: { token: string }) {
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             required
-            className={`${inputClass} pr-10`}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+            placeholder="••••••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors p-1"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
@@ -82,8 +135,85 @@ export function ResetPasswordForm({ token }: { token: string }) {
           </button>
         </div>
       </div>
-      <button type="submit" disabled={pending} className={buttonClass}>
-        {pending ? "Updating…" : "Update password"}
+
+      {/* Confirm Password */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="confirmPassword" className="text-xs font-semibold text-zinc-800">
+          Confirm Password *
+        </label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type={showPassword ? "text" : "password"}
+          autoComplete="new-password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+          placeholder="••••••••••••"
+        />
+      </div>
+
+      {/* Complexity Checklist */}
+      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
+        <div className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">
+          Password Requirements:
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              minLength
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{minLength ? "✓" : "○"}</span> At least 8 characters
+          </div>
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              hasUpper
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
+          </div>
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              hasNumber
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
+          </div>
+          {confirmPassword ? (
+            <div
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+                matches
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-rose-50 text-rose-800 border-rose-200"
+              }`}
+            >
+              <span className="font-bold">{matches ? "✓" : "✕"}</span> Passwords match
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
+              <span>○</span> Match confirmation
+            </div>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
+        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+      >
+        {pending && (
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
+        )}
+        <span>{pending ? "Updating Password…" : "Update Password"}</span>
       </button>
     </form>
   );
