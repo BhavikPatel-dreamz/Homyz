@@ -12,6 +12,42 @@ import {
   revokeUserSessionsAction,
 } from "@/actions/admin/adminManagement";
 
+// Use deterministic UTC-based formatting to avoid server/client locale/timezone
+// differences which can cause React hydration mismatches.
+const MONTH_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function formatUTCDateTime(value?: string | Date | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = MONTH_SHORT[d.getUTCMonth()];
+  const hours = String(d.getUTCHours()).padStart(2, "0");
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${day} ${month}, ${hours}:${minutes}`;
+}
+
+function formatUTCDate(value?: string | Date | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = MONTH_SHORT[d.getUTCMonth()];
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 export interface AdminUserItem {
   id: string;
   name: string | null;
@@ -346,21 +382,10 @@ export function AdminUserTable({
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-zinc-500">
-                    {u.lastLoginAt
-                      ? new Date(u.lastLoginAt).toLocaleDateString([], {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "Never"}
+                    {u.lastLoginAt ? formatUTCDateTime(u.lastLoginAt) : "Never"}
                   </td>
                   <td className="py-3.5 px-4 text-zinc-500">
-                    {new Date(u.createdAt).toLocaleDateString([], {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatUTCDate(u.createdAt)}
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
@@ -455,7 +480,7 @@ export function AdminUserTable({
 
             <div className="flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-zinc-100 ">
               <span>Role: <strong className="text-zinc-800 ">{u.adminRole?.name || u.role}</strong></span>
-              <span>Last login: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "Never"}</span>
+              <span>Last login: {u.lastLoginAt ? formatUTCDateTime(u.lastLoginAt) : "Never"}</span>
             </div>
 
             <div className="grid grid-cols-5 gap-1.5 pt-1">
