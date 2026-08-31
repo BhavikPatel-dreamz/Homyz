@@ -16,6 +16,7 @@ jobs:
         run: |
           if [ -d "${{ env.VPS_APP_PATH }}/.git" ]; then
               cd "${{ env.VPS_APP_PATH }}"
+              git remote set-url origin git@github.com:BhavikPatel-dreamz/Homyz.git
               git fetch origin
               git reset --hard "origin/main"
               git clean -fd
