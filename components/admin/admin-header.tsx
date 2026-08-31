@@ -21,6 +21,7 @@ export function AdminHeader({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<"hosting" | "traveling">("hosting");
+  const [quickSearch, setQuickSearch] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,11 +77,13 @@ export function AdminHeader({
           <div className="relative hidden md:block w-48 lg:w-64">
             <input
               type="text"
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
               placeholder="Search admin app..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-3 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-amber-500/20 transition-all"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-amber-500/20 transition-all"
             />
             <svg
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)]"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -88,6 +91,19 @@ export function AdminHeader({
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            {quickSearch && (
+              <button
+                type="button"
+                onClick={() => setQuickSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Notifications Bell */}

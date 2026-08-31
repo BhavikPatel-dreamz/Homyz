@@ -235,7 +235,7 @@ export function AdminInvitationsTable({
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* Search */}
           <div className="relative min-w-[220px] flex-1 sm:flex-initial">
-            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -243,8 +243,21 @@ export function AdminInvitationsTable({
               placeholder="Search by email, name, inviter…"
               value={search}
               onChange={(e) => handleFilterChange(e.target.value, statusFilter, roleFilter, dateFilter)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+              className="w-full pl-9 pr-9 py-2 text-xs rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => handleFilterChange("", statusFilter, roleFilter, dateFilter)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Status Filter */}
