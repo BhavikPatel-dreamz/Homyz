@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/toast";
 
 export interface HostDocItem {
   id: string;
@@ -96,13 +97,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   const [selectedDocType, setSelectedDocType] = useState<string>("GOVERNMENT_ID");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submittedSuccess, setSubmittedSuccess] = useState<boolean>(accountState === "SUBMITTED");
 
   const showToast = (msg: string, type: "success" | "error" | "info" = "info") => {
-    setToast({ message: msg, type });
-    setTimeout(() => setToast(null), 5000);
+    if (type === "success") toast.success(msg);
+    else if (type === "error") toast.error(msg);
+    else toast.info(msg);
   };
 
   // Dynamic Real-time Application Completion Progress
@@ -480,24 +481,6 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-      {/* Toast Notification */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 text-sm font-semibold shadow-2xl transition-all animate-in fade-in slide-in-from-bottom-4 ${
-            toast.type === "success"
-              ? "bg-emerald-600 text-white"
-              : toast.type === "error"
-              ? "bg-rose-600 text-white"
-              : "bg-amber-500 text-zinc-950"
-          }`}
-        >
-          <span>{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-2 opacity-80 hover:opacity-100">
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 sm:p-8 backdrop-blur-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

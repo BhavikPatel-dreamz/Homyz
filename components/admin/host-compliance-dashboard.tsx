@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { AdminPagination } from "./admin-pagination";
 
 export interface ComplianceMetrics {
@@ -87,7 +88,6 @@ export function HostComplianceDashboard() {
   // UI state
   const [loading, setLoading] = useState(true);
   const [auditing, setAuditing] = useState(false);
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pendingTransition, startTransition] = useTransition();
 
   // Modals & Drawers
@@ -147,7 +147,7 @@ export function HostComplianceDashboard() {
       setTotal(paginationMeta.total || 0);
       setTotalPages(paginationMeta.totalPages || 1);
     } catch (err: any) {
-      setFeedback({ tone: "error", msg: err.message || "Failed to load records" });
+      toast.error(err.message || "Failed to load records");
     } finally {
       setLoading(false);
     }
@@ -169,14 +169,11 @@ export function HostComplianceDashboard() {
       if (!res.ok) throw new Error("Failed to run expiration audit");
 
       const json = await res.json();
-      setFeedback({
-        tone: "success",
-        msg: `Audit completed: Checked ${json.data.totalChecked} documents. ${json.data.expiredCount} marked expired, ${json.data.warningCount} expiring soon.`,
-      });
+      toast.success(`Audit completed: Checked ${json.data.totalChecked} documents. ${json.data.expiredCount} marked expired, ${json.data.warningCount} expiring soon.`);
       fetchMetrics();
       fetchRecords();
     } catch (err: any) {
-      setFeedback({ tone: "error", msg: err.message || "Audit failed" });
+      toast.error(err.message || "Audit failed");
     } finally {
       setAuditing(false);
     }
@@ -200,13 +197,13 @@ export function HostComplianceDashboard() {
           throw new Error(json.error?.message || "Failed to request re-verification");
         }
 
-        setFeedback({ tone: "success", msg: `Re-verification requested for ${selectedRecord.applicantName}. Host notified.` });
+        toast.success(`Re-verification requested for ${selectedRecord.applicantName}. Host notified.`);
         setReVerifyModalOpen(false);
         setReVerifyReason("");
         fetchRecords();
         fetchMetrics();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   };
@@ -233,13 +230,13 @@ export function HostComplianceDashboard() {
           throw new Error(json.error?.message || "Failed to create issue");
         }
 
-        setFeedback({ tone: "success", msg: "Compliance issue created successfully." });
+        toast.success("Compliance issue created successfully.");
         setCreateIssueModalOpen(false);
         setNewIssueDesc("");
         fetchRecords();
         fetchMetrics();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   };
@@ -262,13 +259,13 @@ export function HostComplianceDashboard() {
           throw new Error(json.error?.message || "Failed to resolve issue");
         }
 
-        setFeedback({ tone: "success", msg: "Compliance issue resolved." });
+        toast.success("Compliance issue resolved.");
         setResolveIssueModalOpen(false);
         setResolutionNotes("");
         fetchRecords();
         fetchMetrics();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   };
@@ -291,13 +288,13 @@ export function HostComplianceDashboard() {
           throw new Error(json.error?.message || "Failed to suspend host");
         }
 
-        setFeedback({ tone: "success", msg: `Host ${selectedRecord.applicantName} SUSPENDED for compliance non-compliance.` });
+        toast.success(`Host ${selectedRecord.applicantName} SUSPENDED for compliance non-compliance.`);
         setSuspendModalOpen(false);
         setSuspendReason("");
         fetchRecords();
         fetchMetrics();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   };
@@ -316,11 +313,11 @@ export function HostComplianceDashboard() {
 
         if (!res.ok) throw new Error("Failed to reactivate host");
 
-        setFeedback({ tone: "success", msg: `Host ${record.applicantName} reactivated.` });
+        toast.success(`Host ${record.applicantName} reactivated.`);
         fetchRecords();
         fetchMetrics();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   };
@@ -364,12 +361,6 @@ export function HostComplianceDashboard() {
           )}
         </button>
       </div>
-
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          {feedback.msg}
-        </Alert>
-      )}
 
       {/* METRICS CARDS */}
       {metrics && (

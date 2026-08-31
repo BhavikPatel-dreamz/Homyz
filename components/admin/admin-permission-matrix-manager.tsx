@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import {
   updateAdminPermissionsAction,
   resetAdminPermissionsAction,
@@ -43,8 +44,6 @@ export function AdminPermissionMatrixManager({
   const [showSetAllModal, setShowSetAllModal] = useState(false);
   const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [reason, setReason] = useState("");
-
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success" | "warning"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Get list of unique modules
@@ -122,10 +121,7 @@ export function AdminPermissionMatrixManager({
       updated[slug] = effect;
     }
     setStagedOverrides(updated);
-    setFeedback({
-      tone: "warning",
-      msg: `Staged ${slugsToUpdate.length} permission(s) to '${effect}'. Click "Save Changes" to commit.`,
-    });
+    toast.warning(`Staged ${slugsToUpdate.length} permission(s) to '${effect}'. Click "Save Changes" to commit.`);
   }
 
   // Reset local staged changes
@@ -137,13 +133,10 @@ export function AdminPermissionMatrixManager({
     setStagedOverrides(map);
     setSelectedSlugs([]);
     setReason("");
-    setFeedback(null);
   }
 
   // Execute Save API
   function handleConfirmSave() {
-    setFeedback(null);
-
     const updates: { permission: string; effect: ThreeStateOverride }[] = [];
     for (const p of permissions) {
       const current = stagedOverrides[p.slug];
@@ -154,14 +147,14 @@ export function AdminPermissionMatrixManager({
 
     if (updates.length === 0) {
       setShowSaveModal(false);
-      setFeedback({ tone: "warning", msg: "No permission changes to save." });
+      toast.warning("No permission changes to save.");
       return;
     }
 
     startTransition(async () => {
       const res = await updateAdminPermissionsAction(summary.adminId, updates, reason);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -174,21 +167,16 @@ export function AdminPermissionMatrixManager({
       setSelectedSlugs([]);
       setShowSaveModal(false);
       setReason("");
-      setFeedback({
-        tone: "success",
-        msg: `Successfully saved ${updates.length} permission override(s) for ${summary.adminName || summary.adminEmail}.`,
-      });
+      toast.success(`Successfully saved ${updates.length} permission override(s) for ${summary.adminName || summary.adminEmail}.`);
     });
   }
 
   // Execute Reset API
   function handleConfirmReset() {
-    setFeedback(null);
-
     startTransition(async () => {
       const res = await resetAdminPermissionsAction(summary.adminId, reason || "Reset to role defaults");
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -201,21 +189,16 @@ export function AdminPermissionMatrixManager({
       setSelectedSlugs([]);
       setShowResetModal(false);
       setReason("");
-      setFeedback({
-        tone: "success",
-        msg: "All individual permission overrides have been reset to role defaults.",
-      });
+      toast.success("All individual permission overrides have been reset to role defaults.");
     });
   }
 
   // Execute Set All Permissions API
   function handleConfirmSetAll() {
-    setFeedback(null);
-
     startTransition(async () => {
       const res = await setAllAdminPermissionsAction(summary.adminId, reason || "Granted all permissions");
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -228,21 +211,16 @@ export function AdminPermissionMatrixManager({
       setSelectedSlugs([]);
       setShowSetAllModal(false);
       setReason("");
-      setFeedback({
-        tone: "success",
-        msg: `Granted all ${res.data.summary.totalPermissions} available permissions for ${summary.adminName || summary.adminEmail}.`,
-      });
+      toast.success(`Granted all ${res.data.summary.totalPermissions} available permissions for ${summary.adminName || summary.adminEmail}.`);
     });
   }
 
   // Execute Clear All Permissions API
   function handleConfirmClearAll() {
-    setFeedback(null);
-
     startTransition(async () => {
       const res = await clearAllAdminPermissionsAction(summary.adminId, reason || "Cleared all permissions");
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -255,10 +233,7 @@ export function AdminPermissionMatrixManager({
       setSelectedSlugs([]);
       setShowClearAllModal(false);
       setReason("");
-      setFeedback({
-        tone: "warning",
-        msg: `Revoked all administrative permissions for ${summary.adminName || summary.adminEmail}. Account retained intact.`,
-      });
+      toast.warning(`Revoked all administrative permissions for ${summary.adminName || summary.adminEmail}. Account retained intact.`);
     });
   }
 
@@ -289,22 +264,6 @@ export function AdminPermissionMatrixManager({
           ← Back to Admins
         </Link>
       </div>
-
-      {/* Action feedback alert */}
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button
-              type="button"
-              onClick={() => setFeedback(null)}
-              className="text-xs underline ml-4 hover:opacity-80"
-            >
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
 
       {/* Super Admin System Protection Banner */}
       {summary.isSuperAdmin ? (

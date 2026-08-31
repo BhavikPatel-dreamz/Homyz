@@ -241,7 +241,7 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
 export function isSuperAdmin(user: { role?: string; adminRoleSlug?: string | null } | null | undefined): boolean {
   if (!user) return false;
   if (user.role !== "ADMIN") return false;
-  if (!user.adminRoleSlug || user.adminRoleSlug === "super_admin" || user.adminRoleSlug === "super-admin" || user.adminRoleSlug === "admin") {
+  if (user.adminRoleSlug === "super_admin" || user.adminRoleSlug === "super-admin") {
     return true;
   }
   return false;

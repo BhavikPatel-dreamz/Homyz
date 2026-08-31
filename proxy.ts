@@ -17,26 +17,35 @@ export async function proxy(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // /admin/login redirects to unified /login
+  // Dedicated /admin/login route handling
   if (pathname === "/admin/login") {
-    return NextResponse.redirect(new URL("/login", request.url));
+    if (!token) {
+      return NextResponse.next();
+    }
+    if (token.role === "ADMIN" || token.adminRoleSlug) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // Unauthenticated → login, preserving the intended destination.
   if (!token) {
-    const url = new URL("/login", request.url);
+    const targetLogin = pathname.startsWith("/admin") ? "/admin/login" : "/login";
+    const url = new URL(targetLogin, request.url);
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
   // Suspended account → immediately redirect to login with notification
   if (token.status === "SUSPENDED") {
-    return NextResponse.redirect(new URL("/login?error=account_suspended", request.url));
+    const targetLogin = pathname.startsWith("/admin") ? "/admin/login" : "/login";
+    return NextResponse.redirect(new URL(`${targetLogin}?error=account_suspended`, request.url));
   }
 
   // Revoked session → immediately redirect to login
   if (token.isRevoked || token.status === "REVOKED") {
-    return NextResponse.redirect(new URL("/login?error=session_revoked", request.url));
+    const targetLogin = pathname.startsWith("/admin") ? "/admin/login" : "/login";
+    return NextResponse.redirect(new URL(`${targetLogin}?error=session_revoked`, request.url));
   }
 
   const role = token.role;

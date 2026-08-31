@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Badge } from "../ui";
+import { LogoutButton } from "./logout-button";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 
 export function AdminNav() {
@@ -159,13 +160,9 @@ export function AdminNav() {
             </div>
           ) : null}
 
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs font-medium text-[var(--foreground)] transition-colors"
-          >
+          <LogoutButton callbackUrl="/admin/login?logged_out=true">
             Sign out
-          </button>
+          </LogoutButton>
 
           {/* Mobile hamburger */}
           <button

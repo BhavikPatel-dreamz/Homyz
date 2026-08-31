@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 
 export interface DocumentVerificationItem {
   id: string;
@@ -33,7 +34,6 @@ export function HostDocumentVerificationDashboard() {
   const [documents, setDocuments] = useState<DocumentVerificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pendingTransition, startTransition] = useTransition();
 
   // Filters
@@ -117,7 +117,6 @@ export function HostDocumentVerificationDashboard() {
 
   // Handle Verify Document
   async function handleVerify(doc: DocumentVerificationItem) {
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(
@@ -128,10 +127,10 @@ export function HostDocumentVerificationDashboard() {
           const body = await res.json();
           throw new Error(body.error || "Failed to verify document");
         }
-        setFeedback({ tone: "success", msg: `Document '${doc.fileName}' verified successfully!` });
+        toast.success(`Document '${doc.fileName}' verified successfully!`);
         fetchDocuments();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   }
@@ -140,7 +139,6 @@ export function HostDocumentVerificationDashboard() {
   async function handleConfirmReject() {
     if (!targetDoc) return;
     const finalReason = customRejectionReason.trim() || rejectionReasonSelect;
-    setFeedback(null);
 
     startTransition(async () => {
       try {
@@ -156,13 +154,13 @@ export function HostDocumentVerificationDashboard() {
           const body = await res.json();
           throw new Error(body.error || "Failed to reject document");
         }
-        setFeedback({ tone: "success", msg: `Document '${targetDoc.fileName}' rejected.` });
+        toast.success(`Document '${targetDoc.fileName}' rejected.`);
         setRejectModalOpen(false);
         setTargetDoc(null);
         setCustomRejectionReason("");
         fetchDocuments();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   }
@@ -170,7 +168,6 @@ export function HostDocumentVerificationDashboard() {
   // Handle Request Resubmission
   async function handleConfirmResubmit() {
     if (!targetDoc) return;
-    setFeedback(null);
 
     startTransition(async () => {
       try {
@@ -186,13 +183,13 @@ export function HostDocumentVerificationDashboard() {
           const body = await res.json();
           throw new Error(body.error || "Failed to request document resubmission");
         }
-        setFeedback({ tone: "success", msg: `Resubmission requested for '${targetDoc.fileName}'.` });
+        toast.success(`Resubmission requested for '${targetDoc.fileName}'.`);
         setResubmitModalOpen(false);
         setTargetDoc(null);
         setResubmitInstructions("");
         fetchDocuments();
       } catch (err: any) {
-        setFeedback({ tone: "error", msg: err.message });
+        toast.error(err.message);
       }
     });
   }
@@ -229,21 +226,6 @@ export function HostDocumentVerificationDashboard() {
           </p>
         </div>
       </div>
-
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button
-              type="button"
-              onClick={() => setFeedback(null)}
-              className="text-xs underline ml-4 hover:opacity-80"
-            >
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

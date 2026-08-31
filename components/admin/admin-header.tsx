@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
 
@@ -206,16 +207,9 @@ export function AdminHeader({
 
                 {/* Sign Out Action */}
                 <div className="border-t border-[var(--border-subtle)] pt-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => signOut({ callbackUrl: "/login" })}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
-                  >
-                    <svg className="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                  <LogoutButton variant="menu-item" callbackUrl="/admin/login?logged_out=true">
                     Sign Out
-                  </button>
+                  </LogoutButton>
                 </div>
               </div>
             )}

@@ -1,110 +1,151 @@
 "use client";
 
+import React, { useState, useTransition, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getSession, signOut } from "next-auth/react";
-import { useState, useTransition, type FormEvent } from "react";
-import { Alert, Badge } from "../ui";
+import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 
 export function AdminLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  const errorParam = searchParams.get("error");
+  const loggedOutParam = searchParams.get("logged_out");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (loggedOutParam === "true") {
+      toast.success("You have been signed out.");
+    } else if (errorParam === "account_suspended") {
+      setError("This account has been suspended by an administrator.");
+    } else if (errorParam === "session_revoked") {
+      setError("Your session was revoked. Please log in again.");
+    }
+  }, [loggedOutParam, errorParam]);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
 
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
+      setError("Please fill in both email and password.");
+      return;
+    }
+
     startTransition(async () => {
       const res = await signIn("credentials", {
-        email: email.trim(),
+        email: trimmedEmail,
         password,
         redirect: false,
       });
 
       if (!res || res.error) {
-        setError(res?.error || "Invalid administrative credentials.");
+        let msg = "Invalid email or password. Please verify your credentials.";
+        if (res?.error === "CredentialsSignin") {
+          msg = "Incorrect email or password. Please check your credentials.";
+        } else if (res?.error && res.error !== "Error") {
+          msg = res.error;
+        }
+        setError(msg);
+        toast.error(msg);
         return;
       }
 
-      // Verify the signed in user actually has administrative privileges
+      // Verify admin role
       const session = await getSession();
       if (session?.user?.role !== "ADMIN" && !session?.user?.adminRoleSlug) {
         await signOut({ redirect: false });
-        setError("Access denied: Your account does not have administrative privileges.");
+        const forbiddenMsg = "Access denied: Account lacks administrative privileges.";
+        setError(forbiddenMsg);
+        toast.error(forbiddenMsg);
         return;
       }
 
-      router.push("/admin");
+      toast.success("Signed in successfully!");
+      router.push(callbackUrl);
       router.refresh();
     });
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white text-zinc-900">
+    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-zinc-900 font-sans flex flex-col justify-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-        {/* Form Column */}
-        <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col">
-          <div className="mb-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-400 text-zinc-700 bg-white hover:bg-zinc-50 transition-colors"
-              aria-label="Go home"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        {/* Left Column: Form Area */}
+        <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center">
+          {/* Homyz Admin Logo */}
+          <Link href="/" className="mb-6 flex items-center gap-3 group w-fit">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-[#FBDE9B] font-black shadow-xs transition-transform group-hover:scale-105">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
               </svg>
-            </Link>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tight text-zinc-950 leading-none">
+                homyz
+              </span>
+              <span className="text-[10px] font-extrabold tracking-wider text-amber-700 uppercase mt-1">
+                Admin Console
+              </span>
+            </div>
+          </Link>
 
-            <Badge>Admin Portal</Badge>
-          </div>
-
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-950">
-            Administrator Sign In
+          {/* Heading */}
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-950 mb-6">
+            Log in
           </h1>
-          <p className="mt-2 mb-6 text-sm text-zinc-500">
-            Sign in to access system management, roles, and platform controls.
-          </p>
 
           {/* Mobile Image */}
           <div className="block lg:hidden mb-6 rounded-2xl overflow-hidden shadow-xs border border-zinc-200">
             <div className="relative aspect-[4/3] w-full">
               <Image
                 src="/images/auth-traveler-street.jpg"
-                alt="Admin Traveler"
+                alt="Traveler with backpack"
                 fill
                 priority
-                className="object-cover"
+                className="object-cover object-center"
               />
             </div>
           </div>
 
+          {/* Error Banner */}
           {error && (
             <div className="mb-4">
               <Alert tone="error">{error}</Alert>
             </div>
           )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Email Address */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-zinc-800">
-                Admin Email Address *
+                Email address *
               </label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@homyz.local"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="emailexample@gmail.com"
                 required
                 autoComplete="email"
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
               />
             </div>
 
+            {/* Password */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-zinc-800">
@@ -114,14 +155,17 @@ export function AdminLoginForm() {
                   href="/forgot-password"
                   className="text-xs text-zinc-500 hover:text-zinc-900"
                 >
-                  Forgot password?
+                  Forget password? <span className="underline">reset password</span>
                 </Link>
               </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="••••••••••••"
                   required
                   autoComplete="current-password"
@@ -130,7 +174,7 @@ export function AdminLoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? (
@@ -147,45 +191,27 @@ export function AdminLoginForm() {
               </div>
             </div>
 
+            {/* Sign In Button */}
             <button
               type="submit"
               disabled={pending}
-              className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50"
+              className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              {pending ? "Authenticating..." : "Log in to Admin"}
+              {pending ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          <div className="mt-8 rounded-2xl bg-[#F8F9FA] border border-zinc-200 p-4 text-xs text-zinc-600">
-            <div className="flex items-center gap-2 font-semibold text-zinc-900 mb-1">
-              <svg className="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Security Notice
-            </div>
-            All administrative access attempts, IP addresses, and session timestamps are logged and monitored in compliance with platform security policies.
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/login"
-              className="text-xs text-zinc-500 hover:text-zinc-900 underline"
-            >
-              Back to general user login
-            </Link>
-          </div>
         </div>
 
-        {/* Right Column Photo */}
-        <div className="hidden lg:block">
+        {/* Right Column: Hero Photo on Desktop */}
+        <div className="hidden lg:flex items-center justify-center">
           <div className="relative aspect-[4/5] w-full max-w-[520px] rounded-3xl overflow-hidden shadow-xs border border-zinc-200">
             <Image
               src="/images/auth-traveler-street.jpg"
-              alt="Homyz Admin Explorer"
+              alt="Traveler with backpack"
               fill
               priority
               sizes="(min-width: 1024px) 500px, 100vw"
-              className="object-cover"
+              className="object-cover object-center"
             />
           </div>
         </div>

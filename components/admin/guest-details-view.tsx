@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/toast";
 import type { GuestDetailsData } from "@/services/admin.service";
 import { UserStatus } from "@/generated/prisma/enums";
 import { AdminPagination } from "./admin-pagination";
@@ -39,8 +40,6 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
   const [editPhone, setEditPhone] = useState(data.guest.phone || "");
 
   const [suspendReason, setSuspendReason] = useState("");
-
-  const [feedback, setFeedback] = useState<{ tone: "success" | "error"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const guest = data.guest;
@@ -60,7 +59,6 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
   function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     startTransition(async () => {
       const res = await updateGuestAction(guest.id, {
         name: editName,
@@ -69,7 +67,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to update guest profile" });
+        toast.error(res.error || "Failed to update guest profile");
         return;
       }
 
@@ -84,19 +82,18 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       }));
 
       setShowEditModal(false);
-      setFeedback({ tone: "success", msg: "Guest profile updated successfully!" });
+      toast.success("Guest profile updated successfully!");
       router.refresh();
     });
   }
 
   function handleSuspendSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     const suspend = guest.status !== "SUSPENDED";
     startTransition(async () => {
       const res = await toggleGuestSuspensionAction(guest.id, suspend, suspendReason);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to toggle guest suspension" });
+        toast.error(res.error || "Failed to toggle guest suspension");
         return;
       }
 
@@ -110,20 +107,16 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
       setShowSuspendModal(false);
       setSuspendReason("");
-      setFeedback({
-        tone: "success",
-        msg: `Guest account ${suspend ? "suspended" : "unsuspended"} successfully.`,
-      });
+      toast.success(`Guest account ${suspend ? "suspended" : "unsuspended"} successfully.`);
       router.refresh();
     });
   }
 
   function handleDeleteSubmit() {
-    setFeedback(null);
     startTransition(async () => {
       const res = await deleteGuestAction(guest.id);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to delete guest" });
+        toast.error(res.error || "Failed to delete guest");
         setShowDeleteModal(false);
         return;
       }
@@ -143,25 +136,6 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
           ← Back to Guest Registry
         </Link>
       </div>
-
-      {/* Feedback banner */}
-      {feedback && (
-        <div
-          className={`rounded-2xl p-4 text-xs font-bold flex items-center justify-between border ${
-            feedback.tone === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
-              : "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
-          }`}
-        >
-          <span>{feedback.msg}</span>
-          <button
-            onClick={() => setFeedback(null)}
-            className="text-xs underline ml-4 hover:opacity-80"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Guest Profile Header Card */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">

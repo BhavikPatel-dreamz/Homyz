@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { changePasswordAction } from "@/actions/user/changePassword";
 
 export function AdminSettingsForm() {
@@ -12,7 +13,6 @@ export function AdminSettingsForm() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Password rules checks
@@ -23,18 +23,14 @@ export function AdminSettingsForm() {
 
   function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
 
     if (!hasMinLength || !hasUppercase || !hasNumber) {
-      setFeedback({
-        tone: "error",
-        msg: "New password does not meet complexity requirements.",
-      });
+      toast.error("New password does not meet complexity requirements.");
       return;
     }
 
     if (!passwordsMatch) {
-      setFeedback({ tone: "error", msg: "Passwords do not match." });
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -45,14 +41,14 @@ export function AdminSettingsForm() {
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error || "Failed to change password.");
         return;
       }
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setFeedback({ tone: "success", msg: "Your password has been changed successfully!" });
+      toast.success("Your password has been changed successfully!");
     });
   }
 
@@ -66,12 +62,6 @@ export function AdminSettingsForm() {
         <p className="text-xs text-[var(--muted-foreground)] mb-6">
           Update your administrative password. Changing your password invalidates all other active sessions.
         </p>
-
-        {feedback && (
-          <div className="mb-4">
-            <Alert tone={feedback.tone}>{feedback.msg}</Alert>
-          </div>
-        )}
 
         <form onSubmit={handleChangePassword} className="flex flex-col gap-4 max-w-lg">
           <div className="flex flex-col gap-1.5">

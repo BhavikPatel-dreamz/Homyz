@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { LogoutButton } from "@/components/admin/logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 
 export function AppHeader() {
@@ -168,13 +169,9 @@ export function AppHeader() {
                     <ThemeSwitcher compact />
                   </div>
                   {user ? (
-                    <button
-                      type="button"
-                      onClick={() => signOut({ callbackUrl: "/login" })}
-                      className="flex w-full items-center px-3 py-2 text-xs font-semibold text-[var(--error)] hover:bg-[var(--muted)] rounded-xl transition-colors"
-                    >
+                    <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
                       Sign out
-                    </button>
+                    </LogoutButton>
                   ) : (
                     <Link
                       href="/login"

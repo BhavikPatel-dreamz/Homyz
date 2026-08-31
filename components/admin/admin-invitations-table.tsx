@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { AdminPagination } from "./admin-pagination";
 import {
   inviteAdminAction,
@@ -81,8 +82,7 @@ export function AdminInvitationsTable({
   const [inviteRoleSlug, setInviteRoleSlug] = useState(availableRoles[0]?.slug || "admin");
   const [inviteMessage, setInviteMessage] = useState("");
 
-  // Feedback state
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   async function fetchInvitations(
@@ -126,7 +126,6 @@ export function AdminInvitationsTable({
 
   function handleSendInvite(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
 
     startTransition(async () => {
       const res = await inviteAdminAction({
@@ -138,11 +137,11 @@ export function AdminInvitationsTable({
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to send invitation." });
+        toast.error(res.error || "Failed to send invitation.");
         return;
       }
 
-      setFeedback({ tone: "success", msg: `Invitation sent successfully to ${inviteEmail}!` });
+      toast.success(`Invitation sent successfully to ${inviteEmail}!`);
       setShowInviteModal(false);
       setInviteName("");
       setInviteEmail("");
@@ -152,15 +151,19 @@ export function AdminInvitationsTable({
   }
 
   function handleResend(inv: PublicInvitationItem) {
-    setFeedback(null);
+    setActionLoadingId(`${inv.id}_resend`);
     startTransition(async () => {
-      const res = await resendInvitationAction(inv.id);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to resend invitation." });
-        return;
+      try {
+        const res = await resendInvitationAction(inv.id);
+        if (!res.ok) {
+          toast.error(res.error || "Failed to resend invitation.");
+          return;
+        }
+        toast.success(`Invitation email resent to ${inv.email}`);
+        fetchInvitations();
+      } finally {
+        setActionLoadingId(null);
       }
-      setFeedback({ tone: "success", msg: `Invitation email resent to ${inv.email}` });
-      fetchInvitations();
     });
   }
 
@@ -168,15 +171,19 @@ export function AdminInvitationsTable({
     if (!confirm(`Are you sure you want to revoke the invitation for ${inv.email}? The link will become permanently invalid.`)) {
       return;
     }
-    setFeedback(null);
+    setActionLoadingId(`${inv.id}_revoke`);
     startTransition(async () => {
-      const res = await revokeInvitationAction(inv.id);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error || "Failed to revoke invitation." });
-        return;
+      try {
+        const res = await revokeInvitationAction(inv.id);
+        if (!res.ok) {
+          toast.error(res.error || "Failed to revoke invitation.");
+          return;
+        }
+        toast.success(`Invitation for ${inv.email} has been revoked.`);
+        fetchInvitations();
+      } finally {
+        setActionLoadingId(null);
       }
-      setFeedback({ tone: "success", msg: `Invitation for ${inv.email} has been revoked.` });
-      fetchInvitations();
     });
   }
 
@@ -224,12 +231,6 @@ export function AdminInvitationsTable({
 
   return (
     <div className="flex flex-col gap-5">
-      {feedback && (
-        <Alert tone={feedback.tone === "error" ? "error" : "success"}>
-          {feedback.msg}
-        </Alert>
-      )}
-
       {/* Control Bar: Search, Filters, Primary Action */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)] shadow-2xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -372,10 +373,13 @@ export function AdminInvitationsTable({
                         <button
                           type="button"
                           onClick={() => handleResend(inv)}
-                          disabled={pending}
-                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50"
+                          disabled={pending || actionLoadingId === `${inv.id}_resend`}
+                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
-                          Resend
+                          {actionLoadingId === `${inv.id}_resend` && (
+                            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          )}
+                          <span>{actionLoadingId === `${inv.id}_resend` ? "Resending..." : "Resend"}</span>
                         </button>
                       )}
 
@@ -384,10 +388,13 @@ export function AdminInvitationsTable({
                         <button
                           type="button"
                           onClick={() => handleRevoke(inv)}
-                          disabled={pending}
-                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50"
+                          disabled={pending || actionLoadingId === `${inv.id}_revoke`}
+                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
-                          Revoke
+                          {actionLoadingId === `${inv.id}_revoke` && (
+                            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          )}
+                          <span>{actionLoadingId === `${inv.id}_revoke` ? "Revoking..." : "Revoke"}</span>
                         </button>
                       )}
 
@@ -395,7 +402,8 @@ export function AdminInvitationsTable({
                       <button
                         type="button"
                         onClick={() => setSelectedDetails(inv)}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                        disabled={pending}
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                       >
                         Details
                       </button>
@@ -452,26 +460,33 @@ export function AdminInvitationsTable({
                   <button
                     type="button"
                     onClick={() => handleResend(inv)}
-                    disabled={pending}
-                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
+                    disabled={pending || actionLoadingId === `${inv.id}_resend`}
+                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
-                    Resend
+                    {actionLoadingId === `${inv.id}_resend` && (
+                      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    )}
+                    <span>{actionLoadingId === `${inv.id}_resend` ? "Resending..." : "Resend"}</span>
                   </button>
                 )}
                 {inv.status === "PENDING" && (
                   <button
                     type="button"
                     onClick={() => handleRevoke(inv)}
-                    disabled={pending}
-                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
+                    disabled={pending || actionLoadingId === `${inv.id}_revoke`}
+                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
-                    Revoke
+                    {actionLoadingId === `${inv.id}_revoke` && (
+                      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    )}
+                    <span>{actionLoadingId === `${inv.id}_revoke` ? "Revoking..." : "Revoke"}</span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setSelectedDetails(inv)}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                  disabled={pending}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                 >
                   Details
                 </button>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert, Badge } from "../ui";
+import { toast } from "@/components/ui/toast";
 import {
   createRoleAction,
   updateRoleAction,
@@ -35,13 +36,11 @@ export function RoleMatrixManager({
     new Set(initialRoles[0]?.permissions || []),
   );
 
-  // Modals & form state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleSlug, setNewRoleSlug] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
 
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success" | "warning"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const isSuperRole = activeRole.slug === "super_admin" || activeRole.slug === "super-admin";
@@ -52,7 +51,6 @@ export function RoleMatrixManager({
   function selectRole(role: RoleDetail) {
     setActiveRole(role);
     setSelectedPerms(new Set(role.permissions));
-    setFeedback(null);
   }
 
   function togglePermission(slug: string) {
@@ -93,11 +91,9 @@ export function RoleMatrixManager({
 
   function handleSavePermissions() {
     if (isSuperRole) {
-      setFeedback({ tone: "error", msg: "Super Admin role permissions are fixed and cannot be modified." });
+      toast.error("Super Admin role permissions are fixed and cannot be modified.");
       return;
     }
-
-    setFeedback(null);
 
     startTransition(async () => {
       const permsArray = Array.from(selectedPerms);
@@ -106,28 +102,23 @@ export function RoleMatrixManager({
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
       const updated = res.data as unknown as RoleDetail;
       setRoles(roles.map((r) => (r.id === activeRole.id ? { ...r, ...updated, permissionCount: permsArray.length } : r)));
       setActiveRole((prev) => ({ ...prev, ...updated, permissionCount: permsArray.length }));
-      setFeedback({
-        tone: "success",
-        msg: `Permissions updated successfully for '${activeRole.name}'.`,
-      });
+      toast.success(`Permissions updated successfully for '${activeRole.name}'.`);
     });
   }
 
   function handleCreateRole(e: React.FormEvent) {
     e.preventDefault();
     if (newRoleSlug.toLowerCase() === "super_admin" || newRoleSlug.toLowerCase() === "super-admin") {
-      setFeedback({ tone: "error", msg: "Cannot create duplicate Super Admin role." });
+      toast.error("Cannot create duplicate Super Admin role.");
       return;
     }
-
-    setFeedback(null);
 
     startTransition(async () => {
       const res = await createRoleAction({
@@ -138,7 +129,7 @@ export function RoleMatrixManager({
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -155,22 +146,21 @@ export function RoleMatrixManager({
       setNewRoleName("");
       setNewRoleSlug("");
       setNewRoleDesc("");
-      setFeedback({ tone: "success", msg: `Role '${created.name}' created. You can now configure its permissions below.` });
+      toast.success(`Role '${created.name}' created. You can now configure its permissions below.`);
     });
   }
 
   function handleDeleteRole(role: RoleDetail) {
     if (role.isSystem || role.slug === "super_admin" || role.slug === "super-admin") {
-      setFeedback({ tone: "error", msg: "Super Admin and system roles cannot be deleted." });
+      toast.error("Super Admin and system roles cannot be deleted.");
       return;
     }
     if (!confirm(`Are you sure you want to delete the role '${role.name}'?`)) return;
-    setFeedback(null);
 
     startTransition(async () => {
       const res = await deleteRoleAction(role.id);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error);
         return;
       }
 
@@ -179,23 +169,12 @@ export function RoleMatrixManager({
       if (activeRole.id === role.id && nextRoles[0]) {
         selectRole(nextRoles[0]);
       }
-      setFeedback({ tone: "success", msg: `Role '${role.name}' deleted.` });
+      toast.success(`Role '${role.name}' deleted.`);
     });
   }
 
   return (
     <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button onClick={() => setFeedback(null)} className="text-xs underline ml-4 hover:opacity-80">
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
-
       {/* Role Cards List */}
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">

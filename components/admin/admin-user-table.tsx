@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { AdminPagination } from "./admin-pagination";
 import {
   createAdminAction,
@@ -83,20 +83,16 @@ export function AdminUserTable({
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
   const [editUser, setEditUser] = useState<AdminUserItem | null>(null);
-  const [resetPwdUser, setResetPwdUser] = useState<AdminUserItem | null>(null);
   const [deleteUser, setDeleteUser] = useState<AdminUserItem | null>(null);
 
   // Form states
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRoleSlug, setNewRoleSlug] = useState(availableRoles[0]?.slug || "admin");
-  const [newPassword, setNewPassword] = useState("");
 
   const [editRoleSlug, setEditRoleSlug] = useState("");
-  const [resetPasswordVal, setResetPasswordVal] = useState("");
-  const [showResetPassword, setShowResetPassword] = useState(false);
 
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Helper check for super admin
@@ -134,7 +130,6 @@ export function AdminUserTable({
 
   function handleCreateAdmin(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
 
     startTransition(async () => {
       const payload: any = {
@@ -143,12 +138,11 @@ export function AdminUserTable({
         role: "ADMIN",
         adminRoleSlug: newRoleSlug,
       };
-      if (newPassword.trim()) payload.password = newPassword.trim();
 
       const res = await createAdminAction(payload);
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error || "Failed to create administrator");
         return;
       }
 
@@ -156,11 +150,9 @@ export function AdminUserTable({
       setShowAddModal(false);
       setNewName("");
       setNewEmail("");
-      setNewPassword("");
-      setFeedback({
-        tone: "success",
-        msg: `Administrator ${res.data.email} created! Auto-generated login credentials were sent to their email.`,
-      });
+      toast.success(
+        `Invitation sent to ${res.data.email}! An invitation email has been sent for them to set up their password.`
+      );
     });
   }
 
@@ -168,10 +160,9 @@ export function AdminUserTable({
     e.preventDefault();
     if (!editUser) return;
     if (isSuper(editUser)) {
-      setFeedback({ tone: "error", msg: "Super Admin role cannot be modified." });
+      toast.error("Super Admin role cannot be modified.");
       return;
     }
-    setFeedback(null);
 
     startTransition(async () => {
       const res = await updateAdminAction(editUser.id, {
@@ -179,79 +170,60 @@ export function AdminUserTable({
       });
 
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error || "Failed to update role");
         return;
       }
 
       setUsers(users.map((u) => (u.id === editUser.id ? (res.data as AdminUserItem) : u)));
       setEditUser(null);
-      setFeedback({ tone: "success", msg: "Administrator role updated." });
+      toast.success("Administrator role updated.");
     });
   }
 
   function handleToggleStatus(user: AdminUserItem) {
     if (isSuper(user)) {
-      setFeedback({ tone: "error", msg: "Super Admin account cannot be suspended." });
+      toast.error("Super Admin account cannot be suspended.");
       return;
     }
 
     const current = user.status || "ACTIVE";
     const nextStatus = current === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
-    setFeedback(null);
+    setActionLoadingId(`${user.id}_status`);
 
     startTransition(async () => {
-      const res = await toggleUserStatusAction(user.id, nextStatus as "ACTIVE" | "SUSPENDED");
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
-      }
+      try {
+        const res = await toggleUserStatusAction(user.id, nextStatus as "ACTIVE" | "SUSPENDED");
+        if (!res.ok) {
+          toast.error(res.error || "Failed to update user status");
+          return;
+        }
 
-      setUsers(users.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)));
-      setFeedback({
-        tone: "success",
-        msg: `User ${user.email} is now ${nextStatus.toLowerCase()}.`,
-      });
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)));
+        toast.success(`User ${user.email} is now ${nextStatus.toLowerCase()}.`);
+      } finally {
+        setActionLoadingId(null);
+      }
     });
   }
 
   function handleActivateAdmin(user: AdminUserItem) {
-    setFeedback(null);
-    startTransition(async () => {
-      const res = await activatePendingAdminAction(user.id);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
-      }
-
-      setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "ACTIVE" } : u)));
-      setFeedback({
-        tone: "success",
-        msg: `Pending administrator ${user.email} permissions verified and account successfully activated!`,
-      });
-    });
-  }
-
-  function handleResetPassword(e: React.FormEvent) {
-    e.preventDefault();
-    if (!resetPwdUser) return;
-    setFeedback(null);
+    setActionLoadingId(`${user.id}_activate`);
 
     startTransition(async () => {
-      const res = await resetAdminPasswordAction(resetPwdUser.id, {
-        newPassword: resetPasswordVal,
-      });
+      try {
+        const res = await activatePendingAdminAction(user.id);
+        if (!res.ok) {
+          toast.error(res.error || "Failed to activate administrator");
+          return;
+        }
 
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "ACTIVE" } : u)));
+        toast.success(
+          `Pending administrator ${user.email} permissions verified and account successfully activated!`
+        );
+      } finally {
+        setActionLoadingId(null);
       }
-
-      setResetPwdUser(null);
-      setResetPasswordVal("");
-      setFeedback({
-        tone: "success",
-        msg: `Password reset successfully for ${resetPwdUser.email}. Sessions invalidated.`,
-      });
     });
   }
 
@@ -259,56 +231,41 @@ export function AdminUserTable({
     if (!confirm(`Revoke all active sessions for ${user.email}? They will be forced to log in again.`)) {
       return;
     }
-    setFeedback(null);
+    setActionLoadingId(`${user.id}_revoke`);
 
     startTransition(async () => {
-      const res = await revokeUserSessionsAction(user.id);
-      if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
-        return;
+      try {
+        const res = await revokeUserSessionsAction(user.id);
+        if (!res.ok) {
+          toast.error(res.error || "Failed to revoke sessions");
+          return;
+        }
+        toast.success(`All active sessions revoked for ${user.email}.`);
+      } finally {
+        setActionLoadingId(null);
       }
-      setFeedback({ tone: "success", msg: `All active sessions revoked for ${user.email}.` });
     });
   }
 
   function handleDeleteAdmin() {
     if (!deleteUser) return;
-    setFeedback(null);
 
     startTransition(async () => {
       const res = await deleteAdminAction(deleteUser.id);
       if (!res.ok) {
-        setFeedback({ tone: "error", msg: res.error });
+        toast.error(res.error || "Failed to delete administrator");
         setDeleteUser(null);
         return;
       }
 
       setUsers(users.filter((u) => u.id !== deleteUser.id));
-      setFeedback({
-        tone: "success",
-        msg: `Administrator ${deleteUser.email} was permanently deleted.`,
-      });
+      toast.success(`Administrator ${deleteUser.email} was permanently deleted.`);
       setDeleteUser(null);
     });
   }
 
   return (
     <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
-      {/* Action feedback */}
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button
-              onClick={() => setFeedback(null)}
-              className="text-xs underline ml-4 hover:opacity-80"
-            >
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
-
       {/* Controls Bar: Search, Filters, Add Admin Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -406,6 +363,11 @@ export function AdminUserTable({
               filteredUsers.map((u) => {
                 const superAdmin = isSuper(u);
                 const isPendingSetup = u.status === "INVITATION_PENDING" || u.status === "PENDING_SETUP";
+                const isActivating = actionLoadingId === `${u.id}_activate`;
+                const isTogglingStatus = actionLoadingId === `${u.id}_status`;
+                const isRevoking = actionLoadingId === `${u.id}_revoke`;
+                const isRowBusy = pending || isActivating || isTogglingStatus || isRevoking;
+
                 return (
                   <tr key={u.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4">
@@ -495,11 +457,14 @@ export function AdminUserTable({
                           <button
                             type="button"
                             onClick={() => handleActivateAdmin(u)}
-                            disabled={pending}
-                            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs disabled:opacity-50"
+                            disabled={isRowBusy}
+                            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
                             title="Verify configured permissions and activate account"
                           >
-                            Activate Admin
+                            {isActivating && (
+                              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            )}
+                            <span>{isActivating ? "Activating..." : "Activate Admin"}</span>
                           </button>
                         )}
 
@@ -510,7 +475,8 @@ export function AdminUserTable({
                               setEditUser(u);
                               setEditRoleSlug(u.adminRole?.slug || "admin");
                             }}
-                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                            disabled={isRowBusy}
+                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
                           >
                             Edit Role
                           </button>
@@ -520,34 +486,37 @@ export function AdminUserTable({
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(u)}
-                            disabled={pending}
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs ${
+                            disabled={isRowBusy}
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer ${
                               u.status === "SUSPENDED"
                                 ? "bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300"
                                 : "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300"
                             }`}
                           >
-                            {u.status === "SUSPENDED" ? "Activate" : "Suspend"}
+                            {isTogglingStatus && (
+                              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            )}
+                            <span>
+                              {isTogglingStatus
+                                ? "Updating..."
+                                : u.status === "SUSPENDED"
+                                ? "Activate"
+                                : "Suspend"}
+                            </span>
                           </button>
                         )}
 
                         <button
                           type="button"
-                          onClick={() => setResetPwdUser(u)}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
-                          title="Reset Password"
-                        >
-                          Password
-                        </button>
-
-                        <button
-                          type="button"
                           onClick={() => handleRevokeSessions(u)}
-                          disabled={pending}
-                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50"
+                          disabled={isRowBusy}
+                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
                           title="Revoke Sessions"
                         >
-                          Revoke
+                          {isRevoking && (
+                            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          )}
+                          <span>{isRevoking ? "Revoking..." : "Revoke"}</span>
                         </button>
                       </div>
                     </td>
@@ -565,6 +534,11 @@ export function AdminUserTable({
         {filteredUsers.map((u) => {
           const superAdmin = isSuper(u);
           const isPendingSetup = u.status === "INVITATION_PENDING" || u.status === "PENDING_SETUP";
+          const isActivating = actionLoadingId === `${u.id}_activate`;
+          const isTogglingStatus = actionLoadingId === `${u.id}_status`;
+          const isRevoking = actionLoadingId === `${u.id}_revoke`;
+          const isRowBusy = pending || isActivating || isTogglingStatus || isRevoking;
+
           return (
             <div
               key={u.id}
@@ -625,10 +599,13 @@ export function AdminUserTable({
                   <button
                     type="button"
                     onClick={() => handleActivateAdmin(u)}
-                    disabled={pending}
-                    className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[10px] font-extrabold shadow-2xs disabled:opacity-50"
+                    disabled={isRowBusy}
+                    className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[10px] font-extrabold shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
-                    Activate
+                    {isActivating && (
+                      <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    )}
+                    <span>{isActivating ? "Activating..." : "Activate"}</span>
                   </button>
                 )}
                 {!superAdmin && (
@@ -638,7 +615,8 @@ export function AdminUserTable({
                       setEditUser(u);
                       setEditRoleSlug(u.adminRole?.slug || "admin");
                     }}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)]"
+                    disabled={isRowBusy}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)] disabled:opacity-50 cursor-pointer"
                   >
                     Role
                   </button>
@@ -647,18 +625,21 @@ export function AdminUserTable({
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(u)}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)]"
+                    disabled={isRowBusy}
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)] disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
-                    {u.status === "SUSPENDED" ? "Activate" : "Suspend"}
+                    {isTogglingStatus && (
+                      <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    )}
+                    <span>
+                      {isTogglingStatus
+                        ? "Updating..."
+                        : u.status === "SUSPENDED"
+                        ? "Activate"
+                        : "Suspend"}
+                    </span>
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setResetPwdUser(u)}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)]"
-                >
-                  Reset Pwd
-                </button>
               </div>
             </div>
           );
@@ -684,7 +665,7 @@ export function AdminUserTable({
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="text-base font-extrabold text-[var(--foreground)]">
                 Add New Administrator
               </h2>
@@ -696,6 +677,9 @@ export function AdminUserTable({
                 ✕
               </button>
             </div>
+            <p className="text-xs text-[var(--muted-foreground)] mb-2">
+              An invitation email will be sent to the administrator to securely set up their confidential password.
+            </p>
 
             <form onSubmit={handleCreateAdmin} className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-1">
@@ -718,20 +702,6 @@ export function AdminUserTable({
                   onChange={(e) => setNewEmail(e.target.value)}
                   required
                   placeholder="alex@homyz.local"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">
-                  Temporary Password *
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  placeholder="Min 8 chars, 1 uppercase, 1 number"
                   className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 />
               </div>
@@ -825,57 +795,6 @@ export function AdminUserTable({
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   )}
                   <span>{pending ? "Saving..." : "Save Role"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 3: Reset Password */}
-      {resetPwdUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h2 className="text-base font-extrabold text-[var(--foreground)] mb-1">
-              Reset Password
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">
-              Enter a new secure password for {resetPwdUser.email}. All their active sessions will be invalidated.
-            </p>
-
-            <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">
-                  New Password *
-                </label>
-                <input
-                  type="password"
-                  value={resetPasswordVal}
-                  onChange={(e) => setResetPasswordVal(e.target.value)}
-                  required
-                  placeholder="Min 8 chars with 1 uppercase & 1 number"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setResetPwdUser(null)}
-                  disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
-                >
-                  {pending && (
-                    <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  )}
-                  <span>{pending ? "Resetting..." : "Confirm Reset"}</span>
                 </button>
               </div>
             </form>

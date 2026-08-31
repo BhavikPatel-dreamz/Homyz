@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { acceptInvitationAction } from "@/actions/admin/invitationActions";
-import { Alert, buttonClass, inputClass, labelClass } from "../ui";
 
 export function AcceptInvitationForm({
   token,
@@ -40,7 +39,7 @@ export function AcceptInvitationForm({
     }
 
     if (!minLength || !hasUpper || !hasNumber) {
-      setError("Please ensure your password meets all complexity requirements below.");
+      setError("Please ensure your password meets all complexity requirements.");
       return;
     }
 
@@ -62,29 +61,29 @@ export function AcceptInvitationForm({
 
   if (done) {
     return (
-      <div className="flex flex-col gap-6 text-center py-4">
-        <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+      <div className="flex flex-col gap-5 text-center py-2 animate-in fade-in zoom-in-95">
+        <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-xs">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
           </svg>
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            Account Activated Successfully!
+          <h2 className="text-2xl font-bold text-zinc-950">
+            Account Activated!
           </h2>
-          <p className="text-sm text-zinc-500 mt-1">
-            Your confidential administrator password has been set. You can now sign in with your new credentials.
+          <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+            Your administrator password has been set. You can now sign in to access the Homyz Admin Console.
           </p>
         </div>
 
-        <Alert tone="success">
-          Admin account for <strong>{email}</strong> is now active.
-        </Alert>
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 font-medium">
+          Admin account for <strong className="font-bold">{email}</strong> is now active.
+        </div>
 
         <Link
-          href="/login"
-          className={`${buttonClass} inline-flex items-center justify-center gap-2`}
+          href="/admin/login"
+          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
           Sign In to Admin Console →
         </Link>
@@ -94,23 +93,34 @@ export function AcceptInvitationForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      {error ? <Alert>{error}</Alert> : null}
+      {error && (
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium animate-in fade-in">
+          {error}
+        </div>
+      )}
 
-      <div className="bg-zinc-50 dark:bg-zinc-800/60 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700/60 mb-2">
-        <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-          Invitation Details
+      {/* Invitation Details Info Card */}
+      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 flex items-center gap-3.5 shadow-2xs">
+        <div className="h-10 w-10 rounded-full bg-zinc-900 text-white font-extrabold flex items-center justify-center text-sm shrink-0">
+          {(name?.[0] || email?.[0] || "A").toUpperCase()}
         </div>
-        <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          {name ? `${name} (${email})` : email}
-        </div>
-        <div className="text-xs text-amber-700 dark:text-amber-400 font-medium mt-0.5">
-          Role: {roleName}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <div className="text-xs font-bold text-zinc-900 truncate">
+              {name || "Administrator"}
+            </div>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+              Role: {roleName}
+            </span>
+          </div>
+          <div className="text-xs text-zinc-500 font-mono truncate">{email}</div>
         </div>
       </div>
 
+      {/* Create New Password */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className={labelClass}>
-          Create New Password
+        <label htmlFor="password" className="text-xs font-semibold text-zinc-800">
+          Create New Password *
         </label>
         <div className="relative">
           <input
@@ -121,13 +131,13 @@ export function AcceptInvitationForm({
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={`${inputClass} pr-10`}
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
             placeholder="••••••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors p-1"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
@@ -144,9 +154,10 @@ export function AcceptInvitationForm({
         </div>
       </div>
 
+      {/* Confirm Password */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="confirmPassword" className={labelClass}>
-          Confirm Password
+        <label htmlFor="confirmPassword" className="text-xs font-semibold text-zinc-800">
+          Confirm Password *
         </label>
         <input
           id="confirmPassword"
@@ -156,36 +167,72 @@ export function AcceptInvitationForm({
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className={inputClass}
+          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
           placeholder="••••••••••••"
         />
       </div>
 
       {/* Live Complexity Checklist */}
-      <div className="bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs flex flex-col gap-1.5">
-        <div className="font-semibold text-zinc-600 dark:text-zinc-400">Password Requirements:</div>
-        <div className={`flex items-center gap-2 ${minLength ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-zinc-400"}`}>
-          <span>{minLength ? "✓" : "○"}</span> At least 8 characters
+      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
+        <div className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">
+          Password Requirements:
         </div>
-        <div className={`flex items-center gap-2 ${hasUpper ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-zinc-400"}`}>
-          <span>{hasUpper ? "✓" : "○"}</span> At least one uppercase letter (A-Z)
-        </div>
-        <div className={`flex items-center gap-2 ${hasNumber ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-zinc-400"}`}>
-          <span>{hasNumber ? "✓" : "○"}</span> At least one number (0-9)
-        </div>
-        {confirmPassword && (
-          <div className={`flex items-center gap-2 ${matches ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-rose-500 font-medium"}`}>
-            <span>{matches ? "✓" : "✕"}</span> Passwords match
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              minLength
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{minLength ? "✓" : "○"}</span> At least 8 characters
           </div>
-        )}
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              hasUpper
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
+          </div>
+          <div
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+              hasNumber
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-white text-zinc-500 border-zinc-200"
+            }`}
+          >
+            <span className="font-bold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
+          </div>
+          {confirmPassword ? (
+            <div
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+                matches
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-rose-50 text-rose-800 border-rose-200"
+              }`}
+            >
+              <span className="font-bold">{matches ? "✓" : "✕"}</span> Passwords match
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
+              <span>○</span> Match confirmation
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className={`${buttonClass} mt-2`}
+        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
       >
-        {pending ? "Activating Account…" : "Set Password & Activate Account"}
+        {pending && (
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
+        )}
+        <span>{pending ? "Activating Account…" : "Set Password & Activate Account"}</span>
       </button>
     </form>
   );

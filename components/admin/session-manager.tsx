@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { AdminPagination } from "./admin-pagination";
 import type { UnifiedSessionDTO } from "@/services/session.service";
 
@@ -12,7 +13,6 @@ export function SessionManager({
 }) {
   const [sessions, setSessions] = useState<UnifiedSessionDTO[]>(initialSessions);
   const [search, setSearch] = useState("");
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const filtered = sessions.filter((s) => {
@@ -39,7 +39,6 @@ export function SessionManager({
     if (!confirm(`Revoke session from ${session.deviceInfo} (${session.ip || "Unknown IP"})?`)) {
       return;
     }
-    setFeedback(null);
 
     startTransition(async () => {
       try {
@@ -48,29 +47,19 @@ export function SessionManager({
         });
         const data = await res.json();
         if (!data.success) {
-          setFeedback({ tone: "error", msg: data.error?.message || "Failed to revoke session" });
+          toast.error(data.error?.message || "Failed to revoke session");
           return;
         }
         setSessions(sessions.filter((s) => s.id !== session.id));
-        setFeedback({ tone: "success", msg: "Session revoked successfully." });
+        toast.success("Session revoked successfully.");
       } catch {
-        setFeedback({ tone: "error", msg: "Error contacting session API." });
+        toast.error("Error contacting session API.");
       }
     });
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button onClick={() => setFeedback(null)} className="text-xs underline ml-4">
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
 
       {/* Search & Counter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

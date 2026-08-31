@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { Alert } from "../ui";
+import { toast } from "@/components/ui/toast";
 import { AdminPagination } from "./admin-pagination";
 import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
@@ -107,7 +108,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   const [verifReason, setVerifReason] = useState("");
   const [suspendReason, setSuspendReason] = useState("");
 
-  const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const host = data.host;
@@ -174,7 +174,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   // Handler: Edit Host Info
   async function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
 
     startTransition(async () => {
       try {
@@ -188,7 +187,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to update host profile" });
+          toast.error(result.error?.message || "Failed to update host profile");
           return;
         }
         setData((prev) => ({
@@ -201,9 +200,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           },
         }));
         setShowEditModal(false);
-        setFeedback({ tone: "success", msg: "Host profile updated successfully." });
+        toast.success("Host profile updated successfully.");
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+        toast.error("Failed to connect to API server.");
       }
 
       setData((prev) => ({
@@ -216,14 +215,13 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         },
       }));
       setShowEditModal(false);
-      setFeedback({ tone: "success", msg: "Host profile updated successfully." });
+      toast.success("Host profile updated successfully.");
     });
   }
 
   // Handler: Suspend / Unsuspend Host
   async function handleSuspendSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     const newAction = host.status === "SUSPENDED" ? "UNSUSPEND" : "SUSPEND";
     const newStatus = host.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
 
@@ -239,7 +237,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to change host status" });
+          toast.error(result.error?.message || "Failed to change host status");
           return;
         }
         setData((prev) => ({
@@ -250,9 +248,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           },
         }));
         setShowSuspendModal(false);
-        setFeedback({ tone: "success", msg: `Host status changed to ${newStatus}.` });
+        toast.success(`Host status changed to ${newStatus}.`);
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to update host status." });
+        toast.error("Failed to update host status.");
       }
 
       setData((prev) => ({
@@ -263,7 +261,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         },
       }));
       setShowSuspendModal(false);
-      setFeedback({ tone: "success", msg: `Host status changed to ${newStatus}.` });
+      toast.success(`Host status changed to ${newStatus}.`);
     });
   }
 
@@ -279,7 +277,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
   // Handler: Approve Host Application
   async function handleApproveApplication() {
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -289,7 +286,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to approve application." });
+          toast.error(result.error?.message || "Failed to approve application.");
           setShowApproveModal(false);
           return;
         }
@@ -307,9 +304,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           },
         }));
         setShowApproveModal(false);
-        setFeedback({ tone: "success", msg: "Host application approved successfully! User role updated to HOST." });
+        toast.success("Host application approved successfully! User role updated to HOST.");
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+        toast.error("Failed to connect to API server.");
         setShowApproveModal(false);
       }
       window.location.href = "/admin/hosts";
@@ -319,7 +316,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   // Handler: Reject Host Application
   async function handleRejectApplication(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -329,7 +325,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to reject application." });
+          toast.error(result.error?.message || "Failed to reject application.");
           setShowRejectModal(false);
           return;
         }
@@ -341,9 +337,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           },
         }));
         setShowRejectModal(false);
-        setFeedback({ tone: "success", msg: "Host application rejected." });
+        toast.success("Host application rejected.");
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+        toast.error("Failed to connect to API server.");
         setShowRejectModal(false);
       }
     });
@@ -352,7 +348,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   // Handler: Request Action / Updates
   async function handleRequestAction(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -362,7 +357,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to send action request." });
+          toast.error(result.error?.message || "Failed to send action request.");
           setShowActionReqModal(false);
           return;
         }
@@ -376,9 +371,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           },
         }));
         setShowActionReqModal(false);
-        setFeedback({ tone: "success", msg: "Action request sent to applicant." });
+        toast.success("Action request sent to applicant.");
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+        toast.error("Failed to connect to API server.");
         setShowActionReqModal(false);
       }
     });
@@ -388,7 +383,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
   // Handler: Document Verification / Rejection
   async function handleDocumentVerify(docId: string, status: "VERIFIED" | "REJECTED", reason?: string) {
-    setFeedback(null);
     setLoadingDocId(docId);
     try {
       const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -398,7 +392,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       });
       const result = await res.json();
       if (!result.success) {
-        setFeedback({ tone: "error", msg: result.error?.message || "Failed to update document status." });
+        toast.error(result.error?.message || "Failed to update document status.");
         setShowDocRejectModal(false);
         return;
       }
@@ -409,10 +403,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         ),
       }));
       setShowDocRejectModal(false);
-      setFeedback({ tone: "success", msg: `Document marked as ${status}.` });
+      toast.success(`Document marked as ${status}.`);
       await refreshData();
     } catch {
-      setFeedback({ tone: "error", msg: "Failed to connect to API server." });
+      toast.error("Failed to connect to API server.");
       setShowDocRejectModal(false);
     } finally {
       setLoadingDocId(null);
@@ -421,7 +415,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
   // Compliance Check Update Handler
   async function handleComplianceCheckUpdate(checkId: string, status: "PASSED" | "FAILED" | "PENDING", notes?: string) {
-    setFeedback(null);
     const actionKey = `${checkId}_${status}`;
     setLoadingCheckId(actionKey);
 
@@ -468,13 +461,13 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       });
       const result = await res.json();
       if (!result.success) {
-        setFeedback({ tone: "error", msg: result.error?.message || "Failed to update compliance check." });
+        toast.error(result.error?.message || "Failed to update compliance check.");
       } else {
-        setFeedback({ tone: "success", msg: `Compliance check marked as ${status}.` });
+        toast.success(`Compliance check marked as ${status}.`);
       }
       await refreshData();
     } catch {
-      setFeedback({ tone: "error", msg: "Failed to update compliance check." });
+      toast.error("Failed to update compliance check.");
     } finally {
       setLoadingCheckId(null);
     }
@@ -483,7 +476,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   // Create Compliance Issue Handler
   async function handleCreateComplianceIssue(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -498,16 +490,16 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to log compliance issue." });
+          toast.error(result.error?.message || "Failed to log compliance issue.");
           setShowCreateIssueModal(false);
           return;
         }
         await refreshData();
         setShowCreateIssueModal(false);
         setIssueDescription("");
-        setFeedback({ tone: "success", msg: "Compliance issue logged successfully." });
+        toast.success("Compliance issue logged successfully.");
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to log compliance issue." });
+        toast.error("Failed to log compliance issue.");
         setShowCreateIssueModal(false);
       }
     });
@@ -517,7 +509,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   async function handleResolveComplianceIssue(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedIssueId) return;
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -532,7 +523,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to update compliance issue." });
+          toast.error(result.error?.message || "Failed to update compliance issue.");
           setShowResolveIssueModal(false);
           return;
         }
@@ -540,9 +531,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         setShowResolveIssueModal(false);
         setSelectedIssueId(null);
         setResolutionNotes("");
-        setFeedback({ tone: "success", msg: `Compliance issue marked as ${resolutionStatus}.` });
+        toast.success(`Compliance issue marked as ${resolutionStatus}.`);
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to update compliance issue." });
+        toast.error("Failed to update compliance issue.");
         setShowResolveIssueModal(false);
       }
     });
@@ -551,7 +542,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   // Update Compliance Status Handler
   async function handleUpdateComplianceStatus(e: React.FormEvent) {
     e.preventDefault();
-    setFeedback(null);
     startTransition(async () => {
       try {
         const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
@@ -565,15 +555,15 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         });
         const result = await res.json();
         if (!result.success) {
-          setFeedback({ tone: "error", msg: result.error?.message || "Failed to update compliance status." });
+          toast.error(result.error?.message || "Failed to update compliance status.");
           setShowUpdateCompModal(false);
           return;
         }
         await refreshData();
         setShowUpdateCompModal(false);
-        setFeedback({ tone: "success", msg: `Overall compliance status set to ${newCompStatus}.` });
+        toast.success(`Overall compliance status set to ${newCompStatus}.`);
       } catch {
-        setFeedback({ tone: "error", msg: "Failed to update compliance status." });
+        toast.error("Failed to update compliance status.");
         setShowUpdateCompModal(false);
       }
     });
@@ -586,17 +576,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
   return (
     <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
-      {/* Alert Feedback */}
-      {feedback && (
-        <Alert tone={feedback.tone}>
-          <div className="flex items-center justify-between">
-            <span>{feedback.msg}</span>
-            <button onClick={() => setFeedback(null)} className="text-xs underline ml-4">
-              Dismiss
-            </button>
-          </div>
-        </Alert>
-      )}
 
       {/* Header Info Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
@@ -612,13 +591,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                  host.status === "ACTIVE"
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${host.status === "ACTIVE"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                     : host.status === "SUSPENDED"
-                    ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300"
-                    : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300"
-                }`}
+                      ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300"
+                      : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300"
+                  }`}
               >
                 Account: {host.status}
               </span>
@@ -681,11 +659,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           <button
             type="button"
             onClick={() => setShowSuspendModal(true)}
-            className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${
-              host.status === "SUSPENDED"
+            className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${host.status === "SUSPENDED"
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
                 : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
-            }`}
+              }`}
           >
             {host.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
           </button>
@@ -807,11 +784,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-              activeTab === tab.id
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
                 ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
                 : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -880,7 +856,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
 
           {/* Compliance, Document Verification & Onboarding Card */}
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 md:col-span-2">
+          {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 md:col-span-2">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
                 <h2 className="text-base font-bold text-[var(--foreground)]">Host Compliance & Onboarding Review</h2>
@@ -942,7 +918,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -1000,98 +976,97 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Document Type</th>
-                <th className="py-3.5 px-4">File Name</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Uploaded At</th>
-                <th className="py-3.5 px-4">Verified By</th>
-                <th className="py-3.5 px-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-subtle)]">
-              {data.documents.length === 0 ? (
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-[var(--muted-foreground)]">
-                    No documents uploaded by this host yet.
-                  </td>
+                  <th className="py-3.5 px-4">Document Type</th>
+                  <th className="py-3.5 px-4">File Name</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Uploaded At</th>
+                  <th className="py-3.5 px-4">Verified By</th>
+                  <th className="py-3.5 px-4 text-right">Action</th>
                 </tr>
-              ) : (
-                data.documents.map((doc: any) => (
-                  <tr key={doc.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{doc.documentType}</td>
-                    <td className="py-3.5 px-4 font-mono text-[var(--muted-foreground)]">{doc.fileName}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                        doc.status === "VERIFIED"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : doc.status === "REJECTED"
-                          ? "bg-rose-50 text-rose-700 border-rose-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
-                      }`}>
-                        {doc.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
-                      {new Date(doc.uploadedAt).toLocaleDateString("en-US")}
-                    </td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)]">
-                      {doc.verifiedBy?.name || doc.verifiedBy?.email || "—"}
-                    </td>
-                    <td className="py-3.5 px-4 text-right flex items-center justify-end gap-2">
-                      {doc.fileUrl && (
-                        <a
-                          href={doc.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sky-600 hover:underline font-bold mr-1"
-                        >
-                          View
-                        </a>
-                      )}
-                      {doc.status !== "VERIFIED" && (
-                        <button
-                          type="button"
-                          onClick={() => handleDocumentVerify(doc.id, "VERIFIED")}
-                          disabled={loadingDocId !== null || pending}
-                          className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loadingDocId === doc.id ? (
-                            <>
-                              <svg className="animate-spin h-3 w-3 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Verifying...
-                            </>
-                          ) : (
-                            <>Verify ✓</>
-                          )}
-                        </button>
-                      )}
-                      {doc.status !== "REJECTED" && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedDocId(doc.id);
-                            setShowDocRejectModal(true);
-                          }}
-                          disabled={loadingDocId !== null || pending}
-                          className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Reject ✕
-                        </button>
-                      )}
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {data.documents.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-[var(--muted-foreground)]">
+                      No documents uploaded by this host yet.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  data.documents.map((doc: any) => (
+                    <tr key={doc.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{doc.documentType}</td>
+                      <td className="py-3.5 px-4 font-mono text-[var(--muted-foreground)]">{doc.fileName}</td>
+                      <td className="py-3.5 px-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${doc.status === "VERIFIED"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : doc.status === "REJECTED"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}>
+                          {doc.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                        {new Date(doc.uploadedAt).toLocaleDateString("en-US")}
+                      </td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)]">
+                        {doc.verifiedBy?.name || doc.verifiedBy?.email || "—"}
+                      </td>
+                      <td className="py-3.5 px-4 text-right flex items-center justify-end gap-2">
+                        {doc.fileUrl && (
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sky-600 hover:underline font-bold mr-1"
+                          >
+                            View
+                          </a>
+                        )}
+                        {doc.status !== "VERIFIED" && (
+                          <button
+                            type="button"
+                            onClick={() => handleDocumentVerify(doc.id, "VERIFIED")}
+                            disabled={loadingDocId !== null || pending}
+                            className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {loadingDocId === doc.id ? (
+                              <>
+                                <svg className="animate-spin h-3 w-3 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Verifying...
+                              </>
+                            ) : (
+                              <>Verify ✓</>
+                            )}
+                          </button>
+                        )}
+                        {doc.status !== "REJECTED" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedDocId(doc.id);
+                              setShowDocRejectModal(true);
+                            }}
+                            disabled={loadingDocId !== null || pending}
+                            className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Reject ✕
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* Tab 4: COMPLIANCE (Permission Gated) */}
       {activeTab === "compliance" && canViewCompliance && (
@@ -1102,13 +1077,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <div>
                 <div className="flex items-center gap-2.5">
                   <h2 className="text-base font-bold text-[var(--foreground)]">Host Compliance Summary</h2>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${
-                    data.compliance.complianceStatus === "COMPLIANT"
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${data.compliance.complianceStatus === "COMPLIANT"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300"
                       : data.compliance.complianceStatus === "NON_COMPLIANT"
-                      ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300"
-                      : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300"
-                  }`}>
+                        ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300"
+                        : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300"
+                    }`}>
                     {data.compliance.complianceStatus}
                   </span>
                 </div>
@@ -1138,11 +1112,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             </div>
 
             {/* Approval Eligibility Alert Banner */}
-            <div className={`p-4 rounded-xl border text-xs leading-relaxed ${
-              data.compliance.eligibility?.eligible
+            <div className={`p-4 rounded-xl border text-xs leading-relaxed ${data.compliance.eligibility?.eligible
                 ? "bg-emerald-500/10 border-emerald-200 text-emerald-900 dark:border-emerald-800 dark:text-emerald-200"
                 : "bg-amber-500/10 border-amber-200 text-amber-900 dark:border-amber-800 dark:text-amber-200"
-            }`}>
+              }`}>
               <div className="flex items-start gap-2.5">
                 <span className="text-sm font-black">
                   {data.compliance.eligibility?.eligible ? "✓" : "⚠️"}
@@ -1209,13 +1182,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                         <p className="font-bold text-[var(--foreground)]">{c.checkName}</p>
                         <p className="text-[10px] font-mono text-[var(--muted-foreground)]">{c.checkKey}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                        c.status === "PASSED" || c.status === "COMPLIANT"
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${c.status === "PASSED" || c.status === "COMPLIANT"
                           ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
                           : c.status === "FAILED"
-                          ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300"
-                          : "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300"
-                      }`}>
+                            ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300"
+                            : "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300"
+                        }`}>
                         {c.status}
                       </span>
                     </div>
@@ -1292,29 +1264,26 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             ) : (
               <div className="space-y-3">
                 {data.compliance.issues.map((i: any) => (
-                  <div key={i.id} className={`p-4 rounded-xl border text-xs space-y-2 ${
-                    i.status === "RESOLVED"
+                  <div key={i.id} className={`p-4 rounded-xl border text-xs space-y-2 ${i.status === "RESOLVED"
                       ? "bg-[var(--surface-secondary)] border-[var(--border-subtle)]"
                       : i.severity === "HIGH" || i.severity === "CRITICAL"
-                      ? "bg-rose-500/10 border-rose-200 dark:border-rose-900"
-                      : "bg-amber-500/10 border-amber-200 dark:border-amber-900"
-                  }`}>
+                        ? "bg-rose-500/10 border-rose-200 dark:border-rose-900"
+                        : "bg-amber-500/10 border-amber-200 dark:border-amber-900"
+                    }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-[var(--foreground)]">{i.issueType}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                          i.severity === "CRITICAL" ? "bg-rose-600 text-white" :
-                          i.severity === "HIGH" ? "bg-rose-500 text-white" :
-                          i.severity === "MEDIUM" ? "bg-amber-500 text-white" : "bg-zinc-500 text-white"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${i.severity === "CRITICAL" ? "bg-rose-600 text-white" :
+                            i.severity === "HIGH" ? "bg-rose-500 text-white" :
+                              i.severity === "MEDIUM" ? "bg-amber-500 text-white" : "bg-zinc-500 text-white"
+                          }`}>
                           {i.severity}
                         </span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                        i.status === "RESOLVED"
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${i.status === "RESOLVED"
                           ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
                           : "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300"
-                      }`}>
+                        }`}>
                         {i.status}
                       </span>
                     </div>
@@ -1418,45 +1387,45 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Booking ID</th>
-                <th className="py-3.5 px-4">Listing Title</th>
-                <th className="py-3.5 px-4">Guest Info</th>
-                <th className="py-3.5 px-4">Dates</th>
-                <th className="py-3.5 px-4">Amount</th>
-                <th className="py-3.5 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-subtle)]">
-              {data.bookings.length === 0 ? (
+              <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-[var(--muted-foreground)]">
-                    No reservations recorded for this host.
-                  </td>
+                  <th className="py-3.5 px-4">Booking ID</th>
+                  <th className="py-3.5 px-4">Listing Title</th>
+                  <th className="py-3.5 px-4">Guest Info</th>
+                  <th className="py-3.5 px-4">Dates</th>
+                  <th className="py-3.5 px-4">Amount</th>
+                  <th className="py-3.5 px-4">Status</th>
                 </tr>
-              ) : (
-                paginatedBookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">{b.id}</td>
-                    <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{b.listingTitle}</td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
-                      <div className="text-[10px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "N/A"}</div>
-                    </td>
-                    <td className="py-3.5 px-4 text-[11px] font-mono" suppressHydrationWarning>
-                      {new Date(b.startDate).toLocaleDateString("en-US")} - {new Date(b.endDate).toLocaleDateString("en-US")}
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                        {b.status}
-                      </span>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {data.bookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-[var(--muted-foreground)]">
+                      No reservations recorded for this host.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
+                ) : (
+                  paginatedBookings.map((b) => (
+                    <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                      <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">{b.id}</td>
+                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{b.listingTitle}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
+                        <div className="text-[10px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "N/A"}</div>
+                      </td>
+                      <td className="py-3.5 px-4 text-[11px] font-mono" suppressHydrationWarning>
+                        {new Date(b.startDate).toLocaleDateString("en-US")} - {new Date(b.endDate).toLocaleDateString("en-US")}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                          {b.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
             </table>
           </div>
           <div className="p-3 border-t border-[var(--border-subtle)]">
@@ -1537,11 +1506,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     setActivityCategory(cat);
                     setActivityPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border ${
-                    activityCategory === cat
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border ${activityCategory === cat
                       ? "bg-sky-600 text-white border-sky-600 shadow-2xs"
                       : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border-subtle)] hover:border-[var(--border)]"
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -1565,12 +1533,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
-                        <span className={`w-2.5 h-2.5 rounded-full ${
-                          a.category === "APPROVAL" ? "bg-emerald-500" :
-                          a.category === "COMPLIANCE" ? "bg-amber-500" :
-                          a.category === "DOCUMENTS" ? "bg-sky-500" :
-                          a.category === "SECURITY" ? "bg-rose-500" : "bg-indigo-500"
-                        }`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${a.category === "APPROVAL" ? "bg-emerald-500" :
+                            a.category === "COMPLIANCE" ? "bg-amber-500" :
+                              a.category === "DOCUMENTS" ? "bg-sky-500" :
+                                a.category === "SECURITY" ? "bg-rose-500" : "bg-indigo-500"
+                          }`} />
                         <span className="font-extrabold text-[var(--foreground)]">{a.action}</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--surface)] text-[var(--muted-foreground)] border border-[var(--border-subtle)]">
                           {a.category}
@@ -1724,9 +1691,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 type="button"
                 onClick={handleSuspendSubmit}
                 disabled={pending}
-                className={`rounded-full px-4 py-1.5 text-xs font-extrabold text-white ${
-                  host.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
-                }`}
+                className={`rounded-full px-4 py-1.5 text-xs font-extrabold text-white ${host.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                  }`}
               >
                 Confirm {host.status === "SUSPENDED" ? "Unsuspend" : "Suspend"}
               </button>
