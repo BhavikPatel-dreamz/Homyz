@@ -5,7 +5,7 @@ import { HostDetailsView } from "@/components/admin/host-details-view";
 
 export const metadata = {
   title: "Host Details — Homyz Admin",
-  description: "Detailed host overview, listing portfolio, reservations, earnings, and administrative controls.",
+  description: "Detailed host overview, onboarding request lifecycle, listings, reservations, compliance, and controls.",
 };
 
 export default async function AdminHostDetailsPage({
@@ -16,11 +16,11 @@ export default async function AdminHostDetailsPage({
   await requirePageRole([Role.ADMIN]);
   const { id } = await params;
 
-  const hostDetailsData = await adminService.getHostDetails(id);
+  const hostDetailsData = await adminService.getUnifiedHostDetails(id);
 
   return (
     <div className="w-full">
-      <HostDetailsView initialData={hostDetailsData} />
+      <HostDetailsView initialData={hostDetailsData as any} />
     </div>
   );
 }

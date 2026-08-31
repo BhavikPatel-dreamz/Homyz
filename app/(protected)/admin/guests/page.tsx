@@ -1,5 +1,6 @@
-import { requirePageRole } from "@/lib/permissions/page-guards";
+import { requirePageRole, requirePagePermission } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
 import { GuestManagementDashboard } from "@/components/admin/guest-management-dashboard";
 
@@ -10,6 +11,7 @@ export const metadata = {
 
 export default async function AdminGuestsPage() {
   await requirePageRole([Role.ADMIN]);
+  await requirePagePermission(PERMISSIONS.GUESTS_VIEW);
 
   const [analytics, guestsRes] = await Promise.all([
     adminService.getGuestAnalytics(),

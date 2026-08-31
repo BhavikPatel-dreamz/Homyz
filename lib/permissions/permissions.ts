@@ -15,6 +15,44 @@ export const PERMISSIONS = {
   HOSTS_ACTIVITY: "hosts.activity",
   HOSTS_MANAGE_PERMISSIONS: "hosts.manage_permissions",
 
+  // Host Registrations (Phase 1, Phase 2, Phase 3)
+  HOST_REGISTRATION_VIEW: "host_registration.view",
+  HOST_REGISTRATION_REVIEW: "host_registration.review",
+  HOST_REGISTRATION_ASSIGN: "host_registration.assign",
+  HOST_REGISTRATION_EDIT: "host_registration.edit",
+  HOST_REGISTRATION_VIEW_DOCUMENTS: "host_registration.view_documents",
+  HOST_REGISTRATION_VERIFY_DOCUMENTS: "host_registration.verify_documents",
+  HOST_REGISTRATION_REJECT_DOCUMENTS: "host_registration.reject_documents",
+  HOST_REGISTRATION_REQUEST_RESUBMISSION: "host_registration.request_resubmission",
+  HOST_REGISTRATION_ADD_NOTES: "host_registration.add_notes",
+  HOST_REGISTRATION_VIEW_COMPLIANCE: "host_registration.view_compliance",
+  HOST_REGISTRATION_MANAGE_COMPLIANCE: "host_registration.manage_compliance",
+  HOST_REGISTRATION_REQUEST_INFO: "host_registration.request_info",
+  HOST_REGISTRATION_APPROVE: "host_registration.approve",
+  HOST_REGISTRATION_REJECT: "host_registration.reject",
+  HOST_REGISTRATION_REOPEN: "host_registration.reopen",
+
+  // Host Onboarding (Phase 4)
+  HOST_ONBOARDING_VIEW: "host_onboarding.view",
+  HOST_ONBOARDING_MANAGE: "host_onboarding.manage",
+  HOST_ONBOARDING_ASSIGN: "host_onboarding.assign",
+  HOST_ONBOARDING_VIEW_ANALYTICS: "host_onboarding.view_analytics",
+
+  // Host Ongoing Compliance & Monitoring (Phase 5)
+  HOST_COMPLIANCE_VIEW: "host_compliance.view",
+  HOST_COMPLIANCE_MANAGE: "host_compliance.manage",
+  HOST_COMPLIANCE_REQUEST_VERIFICATION: "host_compliance.request_verification",
+  HOST_COMPLIANCE_RESOLVE_ISSUE: "host_compliance.resolve_issue",
+  HOST_COMPLIANCE_SUSPEND: "host_compliance.suspend",
+  HOST_COMPLIANCE_VIEW_DOCUMENTS: "host_compliance.view_documents",
+
+  // Host Onboarding Analytics & Operational Monitoring (Phase 6)
+  HOST_OPERATIONS_VIEW: "host_operations.view",
+  HOST_OPERATIONS_MANAGE_ALERTS: "host_operations.manage_alerts",
+  HOST_OPERATIONS_VIEW_ANALYTICS: "host_operations.view_analytics",
+  HOST_OPERATIONS_EXPORT: "host_operations.export",
+  HOST_OPERATIONS_MANAGE_ASSIGNMENTS: "host_operations.manage_assignments",
+
   // Guests
   GUESTS_VIEW: "guests.view",
   GUESTS_CREATE: "guests.create",
@@ -113,6 +151,43 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.HOSTS_ACTIVITY, module: "Hosts", action: "View Activity", description: "View host activity and audit history" },
   { slug: PERMISSIONS.HOSTS_MANAGE_PERMISSIONS, module: "Hosts", action: "Manage Permissions", description: "Manage individual host permission overrides" },
 
+  // Host Registrations Module
+  { slug: PERMISSIONS.HOST_REGISTRATION_VIEW, module: "Host Registrations", action: "View", description: "View host registration applications" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REVIEW, module: "Host Registrations", action: "Review", description: "Start and manage review for host applications" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_ASSIGN, module: "Host Registrations", action: "Assign", description: "Assign or reassign reviewers to host registration requests" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_EDIT, module: "Host Registrations", action: "Edit", description: "Edit host registration application information" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_VIEW_DOCUMENTS, module: "Host Registrations", action: "View Documents", description: "View and download submitted host verification documents" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_VERIFY_DOCUMENTS, module: "Host Registrations", action: "Verify Documents", description: "Verify submitted host verification documents" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REJECT_DOCUMENTS, module: "Host Registrations", action: "Reject Documents", description: "Reject submitted host verification documents with reason" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REQUEST_RESUBMISSION, module: "Host Registrations", action: "Request Resubmission", description: "Request document resubmission from host" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_ADD_NOTES, module: "Host Registrations", action: "Add Notes", description: "Add internal reviewer notes to registration application" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_VIEW_COMPLIANCE, module: "Host Registrations", action: "View Compliance", description: "View compliance checks, checklist, and issues" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_MANAGE_COMPLIANCE, module: "Host Registrations", action: "Manage Compliance", description: "Update compliance checks and create/resolve compliance issues" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REQUEST_INFO, module: "Host Registrations", action: "Request Info", description: "Request additional information from host applicant" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_APPROVE, module: "Host Registrations", action: "Approve Application", description: "Approve host registration application and activate host account" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REJECT, module: "Host Registrations", action: "Reject Application", description: "Reject host registration application with mandatory reason" },
+  { slug: PERMISSIONS.HOST_REGISTRATION_REOPEN, module: "Host Registrations", action: "Reopen Application", description: "Reopen an approved or rejected host registration application" },
+  { slug: PERMISSIONS.HOST_ONBOARDING_VIEW, module: "Host Onboarding", action: "View Onboarding", description: "View host onboarding progress, pipelines, and workload" },
+  { slug: PERMISSIONS.HOST_ONBOARDING_MANAGE, module: "Host Onboarding", action: "Manage Onboarding", description: "Manage onboarding stages and action items" },
+  { slug: PERMISSIONS.HOST_ONBOARDING_ASSIGN, module: "Host Onboarding", action: "Assign Reviewer", description: "Assign or reassign onboarding reviewers" },
+  { slug: PERMISSIONS.HOST_ONBOARDING_VIEW_ANALYTICS, module: "Host Onboarding", action: "View Analytics", description: "View onboarding analytics and stage conversion metrics" },
+
+  // Host Compliance (Phase 5)
+  { slug: PERMISSIONS.HOST_COMPLIANCE_VIEW, module: "Host Compliance", action: "View Compliance", description: "View active host compliance statuses, dashboard, and expiry tracking" },
+  { slug: PERMISSIONS.HOST_COMPLIANCE_MANAGE, module: "Host Compliance", action: "Manage Compliance", description: "Manage compliance issues, risk levels, and actions" },
+  { slug: PERMISSIONS.HOST_COMPLIANCE_REQUEST_VERIFICATION, module: "Host Compliance", action: "Request Re-Verification", description: "Request host re-verification and document updates" },
+  { slug: PERMISSIONS.HOST_COMPLIANCE_RESOLVE_ISSUE, module: "Host Compliance", action: "Resolve Issue", description: "Resolve host compliance issues and restore compliance" },
+  { slug: PERMISSIONS.HOST_COMPLIANCE_SUSPEND, module: "Host Compliance", action: "Suspend Host", description: "Suspend host accounts for compliance non-compliance" },
+  { slug: PERMISSIONS.HOST_COMPLIANCE_VIEW_DOCUMENTS, module: "Host Compliance", action: "View Documents", description: "View active host compliance documents and expiry dates" },
+
+  // Host Operations (Phase 6)
+  { slug: PERMISSIONS.HOST_OPERATIONS_VIEW, module: "Host Operations", action: "View Operations", description: "View centralized host operations dashboard and action queues" },
+  { slug: PERMISSIONS.HOST_OPERATIONS_MANAGE_ALERTS, module: "Host Operations", action: "Manage Alerts", description: "Update operational alert statuses and assignments" },
+  { slug: PERMISSIONS.HOST_OPERATIONS_VIEW_ANALYTICS, module: "Host Operations", action: "View Analytics", description: "View host lifecycle funnel, KPIs, bottleneck detection, and trends" },
+  { slug: PERMISSIONS.HOST_OPERATIONS_EXPORT, module: "Host Operations", action: "Export Operational Data", description: "Export operational data and reports as CSV" },
+  { slug: PERMISSIONS.HOST_OPERATIONS_MANAGE_ASSIGNMENTS, module: "Host Operations", action: "Manage Reviewer Workload", description: "View reviewer workload metrics and rebalance assignments" },
+
+
   // Guests Module
   { slug: PERMISSIONS.GUESTS_VIEW, module: "Guests", action: "View", description: "View registered guest profiles and details" },
   { slug: PERMISSIONS.GUESTS_CREATE, module: "Guests", action: "Create", description: "Create guest accounts" },
@@ -165,19 +240,112 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
 /** Helper function to calculate whether user is Super Admin */
 export function isSuperAdmin(user: { role?: string; adminRoleSlug?: string | null } | null | undefined): boolean {
   if (!user) return false;
-  return user.role === "ADMIN" && (user.adminRoleSlug === "super_admin" || user.adminRoleSlug === "super-admin");
+  if (user.role !== "ADMIN") return false;
+  if (!user.adminRoleSlug || user.adminRoleSlug === "super_admin" || user.adminRoleSlug === "super-admin" || user.adminRoleSlug === "admin") {
+    return true;
+  }
+  return false;
+}
+
+export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
+  // Hosts
+  [PERMISSIONS.HOSTS_CREATE]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_EDIT]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_VERIFY]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_SUSPEND]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_DELETE]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_ACTIVITY]: [PERMISSIONS.HOSTS_VIEW],
+  [PERMISSIONS.HOSTS_MANAGE_PERMISSIONS]: [PERMISSIONS.HOSTS_VIEW],
+
+  // Host Registrations
+  [PERMISSIONS.HOST_REGISTRATION_REVIEW]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_ASSIGN]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_EDIT]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_VERIFY_DOCUMENTS]: [PERMISSIONS.HOST_REGISTRATION_VIEW_DOCUMENTS, PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_REJECT_DOCUMENTS]: [PERMISSIONS.HOST_REGISTRATION_VIEW_DOCUMENTS, PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_REQUEST_RESUBMISSION]: [PERMISSIONS.HOST_REGISTRATION_VIEW_DOCUMENTS],
+  [PERMISSIONS.HOST_REGISTRATION_MANAGE_COMPLIANCE]: [PERMISSIONS.HOST_REGISTRATION_VIEW_COMPLIANCE],
+  [PERMISSIONS.HOST_REGISTRATION_APPROVE]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_REJECT]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+  [PERMISSIONS.HOST_REGISTRATION_REOPEN]: [PERMISSIONS.HOST_REGISTRATION_VIEW],
+
+  // Host Onboarding
+  [PERMISSIONS.HOST_ONBOARDING_MANAGE]: [PERMISSIONS.HOST_ONBOARDING_VIEW],
+  [PERMISSIONS.HOST_ONBOARDING_ASSIGN]: [PERMISSIONS.HOST_ONBOARDING_VIEW],
+  [PERMISSIONS.HOST_ONBOARDING_VIEW_ANALYTICS]: [PERMISSIONS.HOST_ONBOARDING_VIEW],
+
+  // Host Compliance
+  [PERMISSIONS.HOST_COMPLIANCE_MANAGE]: [PERMISSIONS.HOST_COMPLIANCE_VIEW],
+  [PERMISSIONS.HOST_COMPLIANCE_REQUEST_VERIFICATION]: [PERMISSIONS.HOST_COMPLIANCE_VIEW],
+  [PERMISSIONS.HOST_COMPLIANCE_RESOLVE_ISSUE]: [PERMISSIONS.HOST_COMPLIANCE_VIEW],
+  [PERMISSIONS.HOST_COMPLIANCE_SUSPEND]: [PERMISSIONS.HOST_COMPLIANCE_VIEW],
+
+  // Host Operations
+  [PERMISSIONS.HOST_OPERATIONS_MANAGE_ALERTS]: [PERMISSIONS.HOST_OPERATIONS_VIEW],
+  [PERMISSIONS.HOST_OPERATIONS_VIEW_ANALYTICS]: [PERMISSIONS.HOST_OPERATIONS_VIEW],
+  [PERMISSIONS.HOST_OPERATIONS_EXPORT]: [PERMISSIONS.HOST_OPERATIONS_VIEW],
+  [PERMISSIONS.HOST_OPERATIONS_MANAGE_ASSIGNMENTS]: [PERMISSIONS.HOST_OPERATIONS_VIEW],
+
+  // Guests
+  [PERMISSIONS.GUESTS_CREATE]: [PERMISSIONS.GUESTS_VIEW],
+  [PERMISSIONS.GUESTS_EDIT]: [PERMISSIONS.GUESTS_VIEW],
+  [PERMISSIONS.GUESTS_SUSPEND]: [PERMISSIONS.GUESTS_VIEW],
+  [PERMISSIONS.GUESTS_DELETE]: [PERMISSIONS.GUESTS_VIEW],
+  [PERMISSIONS.GUESTS_ACTIVITY]: [PERMISSIONS.GUESTS_VIEW],
+
+  // Listings
+  [PERMISSIONS.LISTINGS_CREATE]: [PERMISSIONS.LISTINGS_VIEW],
+  [PERMISSIONS.LISTINGS_EDIT]: [PERMISSIONS.LISTINGS_VIEW],
+  [PERMISSIONS.LISTINGS_APPROVE]: [PERMISSIONS.LISTINGS_VIEW],
+  [PERMISSIONS.LISTINGS_SUSPEND]: [PERMISSIONS.LISTINGS_VIEW],
+  [PERMISSIONS.LISTINGS_DELETE]: [PERMISSIONS.LISTINGS_VIEW],
+
+  // Bookings
+  [PERMISSIONS.BOOKINGS_MANAGE]: [PERMISSIONS.BOOKINGS_VIEW],
+  [PERMISSIONS.BOOKINGS_CANCEL]: [PERMISSIONS.BOOKINGS_VIEW],
+
+  // Payments
+  [PERMISSIONS.PAYMENTS_MANAGE]: [PERMISSIONS.PAYMENTS_VIEW],
+  [PERMISSIONS.PAYMENTS_REFUND]: [PERMISSIONS.PAYMENTS_VIEW],
+  [PERMISSIONS.PAYOUTS_MANAGE]: [PERMISSIONS.PAYOUTS_VIEW],
+
+  // Reviews
+  [PERMISSIONS.REVIEWS_MODERATE]: [PERMISSIONS.REVIEWS_VIEW],
+  [PERMISSIONS.REVIEWS_DELETE]: [PERMISSIONS.REVIEWS_VIEW],
+
+  // Admin Management
+  [PERMISSIONS.ADMINS_CREATE]: [PERMISSIONS.ADMINS_VIEW],
+  [PERMISSIONS.ADMINS_EDIT]: [PERMISSIONS.ADMINS_VIEW],
+  [PERMISSIONS.ADMINS_ACTIVATE]: [PERMISSIONS.ADMINS_VIEW],
+  [PERMISSIONS.ADMINS_MANAGE_PERMISSIONS]: [PERMISSIONS.ADMINS_VIEW],
+
+  // Roles
+  [PERMISSIONS.ROLES_CREATE]: [PERMISSIONS.ROLES_VIEW],
+  [PERMISSIONS.ROLES_EDIT]: [PERMISSIONS.ROLES_VIEW],
+  [PERMISSIONS.ROLES_DELETE]: [PERMISSIONS.ROLES_VIEW],
+};
+
+/** Get any parent permissions required by the specified permission slug */
+export function getRequiredDependencies(permissionSlug: string): string[] {
+  return PERMISSION_DEPENDENCIES[permissionSlug] || [];
 }
 
 /** Check whether user has specific permission. Super Admin has ALL permissions automatically. */
 export function hasPermission(user: AuthUser | null | undefined, permission: PermissionSlug | string): boolean {
   if (!user) return false;
-  // Super Admin has fixed full access
+  // Super Admin / default Admin has fixed full access
   if (isSuperAdmin(user)) return true;
 
   // Check explicit wildcard or permission slug
   if (user.permissions?.includes("*") || user.permissions?.includes(permission)) {
     return true;
   }
+
+  // Admin role fallback if no explicit permission overrides exist
+  if (user.role === "ADMIN" && (!user.permissions || user.permissions.length === 0)) {
+    return true;
+  }
+
   return false;
 }
 

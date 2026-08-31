@@ -3,6 +3,7 @@ import { forbidden, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
+import { isSuperAdmin, hasPermission } from "@/lib/permissions/permissions";
 
 /**
  * Page/RSC guard: require an authenticated user or redirect to /login.
@@ -40,11 +41,11 @@ export async function requirePageRole(
 }
 
 /**
- * Page/RSC guard: require a specific granular permission.
- * Super Admin or unrestricted ADMIN holds all permissions.
+ * Page/RSC guard: require a specific granular permission or any of multiple permissions.
+ * Super Admin or an Admin with explicit permission / wildcard holds access.
  */
 export async function requirePagePermission(
-  permission: string,
+  permission: string | string[],
   callbackUrl?: string,
 ): Promise<AuthUser> {
   const user = await requirePageUser(callbackUrl);
@@ -52,12 +53,15 @@ export async function requirePagePermission(
     forbidden();
   }
 
-  // All ADMIN accounts pass administrative page guards
-  if (user.role === Role.ADMIN) {
+  if (isSuperAdmin(user)) {
     return user;
   }
 
-  if (user.permissions?.includes("*") || user.permissions?.includes(permission)) {
+  if (Array.isArray(permission)) {
+    if (permission.some((p) => hasPermission(user, p))) {
+      return user;
+    }
+  } else if (hasPermission(user, permission)) {
     return user;
   }
 

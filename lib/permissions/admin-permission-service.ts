@@ -330,6 +330,107 @@ export async function resetAdminPermissionOverrides(
   return getAdminPermissionResolution(adminId);
 }
 
+/** Set ALL permissions to ALLOW for an Admin user. */
+export async function setAllAdminPermissions(
+  actor: AuthUser,
+  adminId: string,
+  reason?: string
+): Promise<AdminPermissionResolution> {
+  const updates = ALL_PERMISSIONS.map((p) => ({
+    permission: p.slug,
+    effect: "ALLOW" as ThreeStateOverride,
+  }));
+
+  const res = await updateAdminPermissionOverrides(actor, adminId, updates, reason || "Granted all permissions");
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "SET_ALL_PERMISSIONS",
+    resourceType: "AdminUser",
+    resourceId: adminId,
+    description: `Granted all ${ALL_PERMISSIONS.length} administrative permissions for ${res.summary.adminEmail}`,
+    metadata: {
+      targetAdminEmail: res.summary.adminEmail,
+      reason: reason || "Set all permissions",
+      totalPermissions: ALL_PERMISSIONS.length,
+    },
+  });
+
+  return res;
+}
+
+/** Clear ALL permissions (set DENY overrides for all permissions) for an Admin user. Keeps account intact. */
+export async function clearAllAdminPermissions(
+  actor: AuthUser,
+  adminId: string,
+  reason?: string
+): Promise<AdminPermissionResolution> {
+  const updates = ALL_PERMISSIONS.map((p) => ({
+    permission: p.slug,
+    effect: "DENY" as ThreeStateOverride,
+  }));
+
+  const res = await updateAdminPermissionOverrides(actor, adminId, updates, reason || "Cleared all permissions");
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "CLEAR_ALL_PERMISSIONS",
+    resourceType: "AdminUser",
+    resourceId: adminId,
+    description: `Revoked all administrative permissions for ${res.summary.adminEmail} (account retained)`,
+    metadata: {
+      targetAdminEmail: res.summary.adminEmail,
+      reason: reason || "Clear all permissions",
+    },
+  });
+
+  return res;
+}
+
+/** Activate a Pending Admin user after verifying permissions are configured. */
+export async function activatePendingAdmin(actor: AuthUser, adminId: string) {
+  const targetAdmin = await prisma.user.findUnique({
+    where: { id: adminId },
+    include: { adminRole: true },
+  });
+
+  if (!targetAdmin) {
+    throw AppError.notFound("Target admin user not found");
+  }
+
+  const currentStatus = targetAdmin.status as string;
+  if (currentStatus !== "INVITATION_PENDING" && currentStatus !== "PENDING_SETUP") {
+    throw AppError.badRequest(`Admin account status is '${targetAdmin.status}', expected 'INVITATION_PENDING' or 'PENDING_SETUP'`);
+  }
+
+  const resolution = await getAdminPermissionResolution(adminId);
+  if (!resolution.summary.isSuperAdmin && resolution.summary.allowed === 0) {
+    throw AppError.badRequest("Cannot activate admin account before configuring permissions. Please grant at least one permission.");
+  }
+
+  const updatedAdmin = await prisma.user.update({
+    where: { id: adminId },
+    data: { status: "ACTIVE" },
+  });
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "ADMIN_ACTIVATED",
+    resourceType: "AdminUser",
+    resourceId: adminId,
+    description: `Activated pending admin account for ${targetAdmin.email || targetAdmin.name}`,
+    metadata: {
+      targetAdminEmail: targetAdmin.email,
+      configuredPermissionsCount: resolution.summary.allowed,
+    },
+  });
+
+  return updatedAdmin;
+}
+
 /** Calculate array of effective allowed permission slugs for a user. */
 export async function getEffectivePermissionsForUser(userId: string, role: string, adminRoleSlug?: string | null): Promise<string[]> {
   if (isSuperAdmin({ role, adminRoleSlug })) {

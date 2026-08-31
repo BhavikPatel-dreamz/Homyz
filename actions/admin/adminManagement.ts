@@ -196,3 +196,50 @@ export async function resetAdminPermissionsAction(adminId: string, reason?: stri
     return result;
   });
 }
+
+export async function setAllAdminPermissionsAction(adminId: string, reason?: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_MANAGE_PERMISSIONS);
+
+    const { setAllAdminPermissions } = await import("@/lib/permissions/admin-permission-service");
+    const result = await setAllAdminPermissions(actor, adminId, reason);
+
+    revalidatePath(`/admin/admins/${adminId}/permissions`);
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return result;
+  });
+}
+
+export async function clearAllAdminPermissionsAction(adminId: string, reason?: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_MANAGE_PERMISSIONS);
+
+    const { clearAllAdminPermissions } = await import("@/lib/permissions/admin-permission-service");
+    const result = await clearAllAdminPermissions(actor, adminId, reason);
+
+    revalidatePath(`/admin/admins/${adminId}/permissions`);
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return result;
+  });
+}
+
+export async function activatePendingAdminAction(adminId: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.ADMINS_ACTIVATE);
+
+    const { activatePendingAdmin } = await import("@/lib/permissions/admin-permission-service");
+    const result = await activatePendingAdmin(actor, adminId);
+
+    revalidatePath("/admin/admins");
+    revalidatePath("/admin/users");
+    return result;
+  });
+}

@@ -53,6 +53,51 @@ enum AdminInvitationStatus {
   FAILED
 }
 
+enum HostRegistrationStatus {
+  PENDING
+  IN_REVIEW
+  WAITING_FOR_DOCUMENTS
+  DOCUMENTS_UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum HostDocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum HostComplianceStatus {
+  PENDING
+  UNDER_REVIEW
+  ACTION_REQUIRED
+  COMPLIANT
+  NON_COMPLIANT
+}
+
+enum ComplianceCheckStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum ComplianceIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ComplianceIssueStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
@@ -90,6 +135,21 @@ model User {
   adminPermissionOverrides AdminPermissionOverride[] @relation("AdminOverrides")
   createdAdminOverrides    AdminPermissionOverride[] @relation("AdminOverridesCreated")
   sentInvitations          AdminInvitation[]        @relation("InvitedByAdmins")
+  assignedHostRegistrations HostRegistrationRequest[] @relation("AssignedRegistrations")
+  reviewedHostRegistrations HostRegistrationRequest[] @relation("ReviewedRegistrations")
+  hostRegistrations        HostRegistrationRequest[] @relation("HostRegistrations")
+  verifiedHostDocuments    HostRegistrationDocument[] @relation("VerifiedDocuments")
+  rejectedHostDocuments    HostRegistrationDocument[] @relation("RejectedDocuments")
+  createdRegistrationNotes HostRegistrationNote[]     @relation("CreatedRegistrationNotes")
+  complianceReviewedRegistrations HostRegistrationRequest[] @relation("ComplianceReviewedRegistrations")
+  approvedRegistrations HostRegistrationRequest[] @relation("ApprovedRegistrations")
+  reopenedRegistrations HostRegistrationRequest[] @relation("ReopenedRegistrations")
+  completedComplianceChecks HostComplianceCheck[] @relation("CompletedComplianceChecks")
+  createdComplianceIssues HostComplianceIssue[] @relation("CreatedComplianceIssues")
+  resolvedComplianceIssues HostComplianceIssue[] @relation("ResolvedComplianceIssues")
+  createdInfoRequests HostInfoRequest[] @relation("CreatedInfoRequests")
+
+
 
 
   @@index([role])
@@ -356,4 +416,191 @@ model AdminInvitation {
   @@index([status])
   @@index([tokenHash])
 }
+
+model HostRegistrationRequest {
+  id                  String                 @id @default(cuid())
+  applicationId       String                 @unique @default(cuid())
+  applicantName       String
+  applicantEmail      String
+  applicantPhone      String?
+  registrationType    String                 @default("INDIVIDUAL")
+  businessName        String?
+  propertyCount       Int                    @default(1)
+  location            String?
+  notes               String?                @db.Text
+  status              HostRegistrationStatus @default(PENDING)
+  onboardingStage     String                 @default("INITIAL_INTAKE")
+  
+  hostId              String?
+  host                User?                  @relation("HostRegistrations", fields: [hostId], references: [id], onDelete: SetNull)
+  
+  assignedReviewerId  String?
+  assignedReviewer    User?                  @relation("AssignedRegistrations", fields: [assignedReviewerId], references: [id], onDelete: SetNull)
+  assignedAt          DateTime?
+
+  reviewedById        String?
+  reviewedBy          User?                  @relation("ReviewedRegistrations", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewStartedAt     DateTime?
+
+  complianceStatus    HostComplianceStatus   @default(PENDING)
+  complianceReviewedById String?
+  complianceReviewedBy User?                 @relation("ComplianceReviewedRegistrations", fields: [complianceReviewedById], references: [id], onDelete: SetNull)
+  complianceReviewedAt DateTime?
+  complianceNotes     String?                @db.Text
+
+  rejectionReason     String?                @db.Text
+  approvedById        String?
+  approvedBy          User?                  @relation("ApprovedRegistrations", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt          DateTime?
+
+  reopenedById        String?
+  reopenedBy          User?                  @relation("ReopenedRegistrations", fields: [reopenedById], references: [id], onDelete: SetNull)
+  reopenedAt          DateTime?
+  reopenReason        String?                @db.Text
+
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  documents           HostRegistrationDocument[]
+  reviewNotes         HostRegistrationNote[]
+  complianceChecks    HostComplianceCheck[]
+  complianceIssues    HostComplianceIssue[]
+  infoRequests        HostInfoRequest[]
+
+  @@index([applicantEmail])
+  @@index([applicantPhone])
+  @@index([status])
+  @@index([complianceStatus])
+  @@index([assignedReviewerId])
+  @@index([createdAt])
+}
+
+
+model HostRegistrationDocument {
+  id                      String             @id @default(cuid())
+  requestId               String
+  request                 HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  documentType            String             // e.g. "GOVERNMENT_ID", "PROOF_OF_ADDRESS", "BUSINESS_LICENSE", "PROPERTY_DEED", "TAX_CERTIFICATE"
+  fileName                String
+  fileUrl                 String
+  mimeType                String?
+  fileSize                Int?
+  status                  HostDocumentStatus @default(PENDING)
+  uploadedAt              DateTime           @default(now())
+  expiryDate              DateTime?
+
+  verifiedById            String?
+  verifiedBy              User?              @relation("VerifiedDocuments", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt              DateTime?
+
+  rejectedById            String?
+  rejectedBy              User?              @relation("RejectedDocuments", fields: [rejectedById], references: [id], onDelete: SetNull)
+  rejectedAt              DateTime?
+  rejectionReason         String?
+
+  resubmissionRequested   Boolean            @default(false)
+  resubmissionInstructions String?
+  resubmissionRequestedAt DateTime?
+
+  version                 Int                @default(1)
+  previousDocumentId      String?
+
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  @@index([requestId])
+  @@index([documentType])
+  @@index([status])
+}
+
+model HostRegistrationNote {
+  id          String                 @id @default(cuid())
+  requestId   String
+  request     HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User                   @relation("CreatedRegistrationNotes", fields: [authorId], references: [id], onDelete: Cascade)
+  authorEmail String
+  authorName  String?
+
+  content     String                 @db.Text
+  isInternal  Boolean                @default(true)
+
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([requestId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model HostComplianceCheck {
+  id          String                @id @default(cuid())
+  requestId   String
+  request     HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  checkKey    String                // e.g. IDENTITY_VERIFIED, ADDRESS_VERIFIED, REQUIRED_DOCUMENTS_VERIFIED, PROPERTY_INFO_COMPLETED, BUSINESS_VERIFICATION, ADDITIONAL_REVIEW
+  checkName   String
+  status      ComplianceCheckStatus @default(PENDING)
+
+  reviewerId  String?
+  reviewer    User?                 @relation("CompletedComplianceChecks", fields: [reviewerId], references: [id], onDelete: SetNull)
+  completedAt DateTime?
+  notes       String?               @db.Text
+
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([requestId])
+  @@index([checkKey])
+  @@index([status])
+}
+
+model HostComplianceIssue {
+  id              String                 @id @default(cuid())
+  requestId       String
+  request         HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  issueType       String                 // e.g. "Address Mismatch", "Document Inconsistency", "Sanctions Check", "Missing Tax ID"
+  description     String                 @db.Text
+  severity        ComplianceIssueSeverity @default(MEDIUM)
+  status          ComplianceIssueStatus   @default(OPEN)
+
+  createdById     String
+  createdBy       User                   @relation("CreatedComplianceIssues", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt       DateTime               @default(now())
+
+  resolvedById    String?
+  resolvedBy      User?                  @relation("ResolvedComplianceIssues", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt      DateTime?
+  resolutionNotes String?                @db.Text
+
+  updatedAt       DateTime               @updatedAt
+
+  @@index([requestId])
+  @@index([severity])
+  @@index([status])
+}
+
+model HostInfoRequest {
+  id                  String                 @id @default(cuid())
+  requestId           String
+  request             HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  informationRequired String                 @db.Text
+  reason              String                 @db.Text
+  deadline            DateTime?
+
+  requestedById       String
+  requestedBy         User                   @relation("CreatedInfoRequests", fields: [requestedById], references: [id], onDelete: Cascade)
+  status              String                 @default("PENDING") // PENDING, FULFILLED
+
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@index([requestId])
+  @@index([status])
+}
+
 

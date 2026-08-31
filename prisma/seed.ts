@@ -91,9 +91,10 @@ async function main() {
   });
 
   // Seed default admin user
-  const email = process.env.ADMIN_EMAIL ?? "admin@homyz.local";
-  const password = process.env.ADMIN_PASSWORD ?? "ChangeMe!123";
+  const email = process.env.ADMIN_EMAIL ?? "admin@homyz.com";
+  const password = process.env.ADMIN_PASSWORD ?? "Admin@Password123!";
   const passwordHash = await bcrypt.hash(password, 12);
+  const hostPasswordHash = await bcrypt.hash("Host@Password123!", 12);
 
   const adminUser = await prisma.user.upsert({
     where: { email },
@@ -101,10 +102,11 @@ async function main() {
       role: Role.ADMIN,
       adminRoleId: superAdminRole.id,
       status: UserStatus.ACTIVE,
+      passwordHash,
     },
     create: {
       email,
-      name: "Homyz Super Admin",
+      name: "Homyz Lead Administrator",
       passwordHash,
       role: Role.ADMIN,
       adminRoleId: superAdminRole.id,
@@ -114,7 +116,136 @@ async function main() {
     select: { id: true, email: true, role: true, adminRoleId: true },
   });
 
-  console.log(`[seed] Admin user ready: ${adminUser.email} (Role: ${adminUser.role}, Super Admin)`);
+  console.log(`[seed] Admin user ready: ${adminUser.email} / ${password} (Role: ${adminUser.role}, Super Admin)`);
+
+  // Seed sample Host Registration Requests & Hosts for full Admin Testing
+  console.log("[seed] Seeding sample host registration requests and host data...");
+
+  // 1. Pending Review Applicant
+  const applicant1 = await prisma.user.upsert({
+    where: { email: "sarah.connor@apexluxury.com" },
+    update: { role: Role.USER, status: UserStatus.ACTIVE, passwordHash: hostPasswordHash },
+    create: {
+      email: "sarah.connor@apexluxury.com",
+      name: "Sarah Connor",
+      passwordHash: hostPasswordHash,
+      role: Role.USER,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const req1 = await prisma.hostRegistrationRequest.upsert({
+    where: { applicationId: "APP-PENDING-001" },
+    update: { status: "PENDING", onboardingStage: "APPLICATION_REVIEW", applicantEmail: applicant1.email! },
+    create: {
+      applicationId: "APP-PENDING-001",
+      host: { connect: { id: applicant1.id } },
+      applicantName: "Sarah Connor",
+      applicantEmail: applicant1.email!,
+      applicantPhone: "+1 (555) 234-5678",
+      businessName: "Apex Luxury Stays LLC",
+      registrationType: "CORPORATION",
+      propertyCount: 3,
+      status: "PENDING",
+      onboardingStage: "APPLICATION_REVIEW",
+      complianceStatus: "UNDER_REVIEW",
+    },
+  });
+
+  await prisma.hostRegistrationDocument.upsert({
+    where: { id: "doc-pending-id-001" },
+    update: { status: "PENDING" },
+    create: {
+      id: "doc-pending-id-001",
+      request: { connect: { id: req1.id } },
+      documentType: "GOVERNMENT_ID",
+      fileUrl: "https://via.placeholder.com/600x400.png?text=Government+ID",
+      fileName: "sarah_connor_passport.pdf",
+      status: "PENDING",
+    },
+  });
+
+  // 2. Action Required Applicant
+  const applicant2 = await prisma.user.upsert({
+    where: { email: "michael.scott@scrantonrentals.com" },
+    update: { role: Role.USER, status: UserStatus.ACTIVE, passwordHash: hostPasswordHash },
+    create: {
+      email: "michael.scott@scrantonrentals.com",
+      name: "Michael Scott",
+      passwordHash: hostPasswordHash,
+      role: Role.USER,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const req2 = await prisma.hostRegistrationRequest.upsert({
+    where: { applicationId: "APP-ACTION-002" },
+    update: { status: "WAITING_FOR_DOCUMENTS", onboardingStage: "DOCUMENT_VERIFICATION", applicantEmail: applicant2.email! },
+    create: {
+      applicationId: "APP-ACTION-002",
+      host: { connect: { id: applicant2.id } },
+      applicantName: "Michael Scott",
+      applicantEmail: applicant2.email!,
+      applicantPhone: "+1 (555) 345-6789",
+      businessName: "Scranton Rentals LLC",
+      registrationType: "INDIVIDUAL",
+      propertyCount: 1,
+      status: "WAITING_FOR_DOCUMENTS",
+      onboardingStage: "DOCUMENT_VERIFICATION",
+      complianceStatus: "ACTION_REQUIRED",
+      notes: "Please re-upload a clear copy of your business permit.",
+    },
+  });
+
+  await prisma.hostRegistrationDocument.upsert({
+    where: { id: "doc-action-license-002" },
+    update: { status: "REJECTED", rejectionReason: "Image blurry and illegible" },
+    create: {
+      id: "doc-action-license-002",
+      request: { connect: { id: req2.id } },
+      documentType: "BUSINESS_LICENSE",
+      fileUrl: "https://via.placeholder.com/600x400.png?text=Blurry+License",
+      fileName: "scranton_license_scan.pdf",
+      status: "REJECTED",
+      rejectionReason: "Image blurry and illegible",
+      resubmissionRequested: true,
+    },
+  });
+
+  // 3. Approved Active Host
+  const activeHost = await prisma.user.upsert({
+    where: { email: "elena.rostova@rostovaestates.com" },
+    update: { role: Role.HOST, status: UserStatus.ACTIVE, passwordHash: hostPasswordHash },
+    create: {
+      email: "elena.rostova@rostovaestates.com",
+      name: "Elena Rostova",
+      passwordHash: hostPasswordHash,
+      role: Role.HOST,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  await prisma.hostRegistrationRequest.upsert({
+    where: { applicationId: "APP-APPROVED-003" },
+    update: { status: "APPROVED", onboardingStage: "ONBOARDING_COMPLETE", applicantEmail: activeHost.email! },
+    create: {
+      applicationId: "APP-APPROVED-003",
+      host: { connect: { id: activeHost.id } },
+      applicantName: "Elena Rostova",
+      applicantEmail: activeHost.email!,
+      applicantPhone: "+1 (555) 456-7890",
+      businessName: "Rostova Estates Group",
+      registrationType: "CORPORATION",
+      propertyCount: 5,
+      status: "APPROVED",
+      onboardingStage: "ONBOARDING_COMPLETE",
+      complianceStatus: "COMPLIANT",
+      approvedAt: new Date(),
+      approvedBy: { connect: { id: adminUser.id } },
+    },
+  });
+
+  console.log("[seed] Sample test data seeded successfully!");
 }
 
 main()

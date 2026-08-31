@@ -3,15 +3,20 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
+
+export interface SidebarItem {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  exact?: boolean;
+  requiredPermission?: string | string[];
+}
 
 export interface SidebarGroup {
   name: string;
-  items: {
-    label: string;
-    href: string;
-    icon: React.ReactNode;
-    exact?: boolean;
-  }[];
+  items: SidebarItem[];
 }
 
 interface AdminSidebarProps {
@@ -28,6 +33,13 @@ export function AdminSidebar({
   setMobileOpen,
 }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const user = session?.user;
+  const permissions = user?.permissions || [];
+  const isSuper =
+    user?.role === "ADMIN" &&
+    (user?.adminRoleSlug === "super_admin" || user?.adminRoleSlug === "super-admin");
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     WORKSPACE: true,
@@ -40,6 +52,16 @@ export function AdminSidebar({
     setOpenGroups((prev) => ({ ...prev, [groupName]: !prev[groupName] }));
   };
 
+  const hasMenuPermission = (reqPerm?: string | string[]): boolean => {
+    if (isSuper) return true;
+    if (!reqPerm) return true;
+    if (permissions.includes("*")) return true;
+    if (Array.isArray(reqPerm)) {
+      return reqPerm.some((p) => permissions.includes(p));
+    }
+    return permissions.includes(reqPerm);
+  };
+
   const navGroups: SidebarGroup[] = [
     {
       name: "WORKSPACE",
@@ -48,6 +70,7 @@ export function AdminSidebar({
           label: "Dashboard",
           href: "/admin",
           exact: true,
+          requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -57,6 +80,7 @@ export function AdminSidebar({
         {
           label: "Bookings",
           href: "/admin/bookings",
+          requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -66,6 +90,7 @@ export function AdminSidebar({
         {
           label: "Listings",
           href: "/admin/listings",
+          requiredPermission: PERMISSIONS.LISTINGS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -80,6 +105,7 @@ export function AdminSidebar({
         {
           label: "Hosts",
           href: "/admin/hosts",
+          requiredPermission: PERMISSIONS.HOSTS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V7m0 4h4m-4 0H7" />
@@ -89,6 +115,7 @@ export function AdminSidebar({
         {
           label: "Guests",
           href: "/admin/guests",
+          requiredPermission: PERMISSIONS.GUESTS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -103,26 +130,17 @@ export function AdminSidebar({
         {
           label: "Admin Accounts",
           href: "/admin/admins",
+          requiredPermission: PERMISSIONS.ADMINS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           ),
         },
-        /*
-        {
-          label: "Roles & Permissions",
-          href: "/admin/roles",
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-          ),
-        },
-        */
         {
           label: "Audit Logs",
           href: "/admin/activity-logs",
+          requiredPermission: PERMISSIONS.ACTIVITY_LOGS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -137,6 +155,7 @@ export function AdminSidebar({
         {
           label: "Settings",
           href: "/admin/settings",
+          requiredPermission: PERMISSIONS.SETTINGS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -147,6 +166,7 @@ export function AdminSidebar({
         {
           label: "Security",
           href: "/admin/security",
+          requiredPermission: [PERMISSIONS.SECURITY_LOGS_VIEW, PERMISSIONS.SETTINGS_VIEW],
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -156,6 +176,14 @@ export function AdminSidebar({
       ],
     },
   ];
+
+  // Filter groups to only include permitted items
+  const filteredNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => hasMenuPermission(item.requiredPermission)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const sidebarContent = (
     <div className="flex h-full flex-col justify-between py-4 select-none bg-[var(--surface)] text-[var(--foreground)] border-r border-[var(--border)]">
@@ -210,7 +238,7 @@ export function AdminSidebar({
 
         {/* Navigation Section Groups */}
         <div className="flex flex-col gap-4 px-3 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
-          {navGroups.map((group) => {
+          {filteredNavGroups.map((group) => {
             const isOpen = openGroups[group.name] ?? true;
 
             return (

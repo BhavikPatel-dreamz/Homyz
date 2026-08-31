@@ -11,6 +11,7 @@ import {
   toggleUserStatusAction,
   resetAdminPasswordAction,
   revokeUserSessionsAction,
+  activatePendingAdminAction,
 } from "@/actions/admin/adminManagement";
 
 // Use deterministic UTC-based formatting to avoid server/client locale/timezone
@@ -213,6 +214,23 @@ export function AdminUserTable({
     });
   }
 
+  function handleActivateAdmin(user: AdminUserItem) {
+    setFeedback(null);
+    startTransition(async () => {
+      const res = await activatePendingAdminAction(user.id);
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error });
+        return;
+      }
+
+      setUsers(users.map((u) => (u.id === user.id ? { ...u, status: "ACTIVE" } : u)));
+      setFeedback({
+        tone: "success",
+        msg: `Pending administrator ${user.email} permissions verified and account successfully activated!`,
+      });
+    });
+  }
+
   function handleResetPassword(e: React.FormEvent) {
     e.preventDefault();
     if (!resetPwdUser) return;
@@ -373,6 +391,7 @@ export function AdminUserTable({
             ) : (
               filteredUsers.map((u) => {
                 const superAdmin = isSuper(u);
+                const isPendingSetup = u.status === "INVITATION_PENDING" || u.status === "PENDING_SETUP";
                 return (
                   <tr key={u.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4">
@@ -398,16 +417,22 @@ export function AdminUserTable({
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs ${
                           u.status === "SUSPENDED"
                             ? "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
+                            : isPendingSetup
+                            ? "bg-amber-100/90 text-amber-800 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60"
                             : "bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60"
                         }`}
                       >
-                        {u.status || "ACTIVE"}
+                        {isPendingSetup ? "Pending Setup" : u.status || "ACTIVE"}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       {superAdmin ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300">
                           🛡️ Super Admin (Full Access)
+                        </span>
+                      ) : isPendingSetup ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300">
+                          ⚠️ Needs Permission Setup
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]">
@@ -434,7 +459,7 @@ export function AdminUserTable({
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        {/* Manage Permissions Action (Requirement #2 & #3 & #10 - Hidden for Super Admin) */}
+                        {/* Manage Permissions Action */}
                         {!superAdmin ? (
                           <Link
                             href={`/admin/admins/${u.id}/permissions`}
@@ -452,6 +477,18 @@ export function AdminUserTable({
                           </span>
                         )}
 
+                        {isPendingSetup && !superAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleActivateAdmin(u)}
+                            disabled={pending}
+                            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs disabled:opacity-50"
+                            title="Verify configured permissions and activate account"
+                          >
+                            Activate Admin
+                          </button>
+                        )}
+
                         {!superAdmin && (
                           <button
                             type="button"
@@ -465,7 +502,7 @@ export function AdminUserTable({
                           </button>
                         )}
 
-                        {!superAdmin && (
+                        {!superAdmin && !isPendingSetup && (
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(u)}
@@ -512,6 +549,7 @@ export function AdminUserTable({
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {filteredUsers.map((u) => {
           const superAdmin = isSuper(u);
+          const isPendingSetup = u.status === "INVITATION_PENDING" || u.status === "PENDING_SETUP";
           return (
             <div
               key={u.id}
@@ -533,10 +571,12 @@ export function AdminUserTable({
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs ${
                     u.status === "SUSPENDED"
                       ? "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300"
+                      : isPendingSetup
+                      ? "bg-amber-100/90 text-amber-800 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300"
                       : "bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300"
                   }`}
                 >
-                  {u.status || "ACTIVE"}
+                  {isPendingSetup ? "Pending Setup" : u.status || "ACTIVE"}
                 </span>
               </div>
 
@@ -545,6 +585,8 @@ export function AdminUserTable({
                 <span>
                   {superAdmin ? (
                     <strong className="text-amber-700 dark:text-amber-300 font-extrabold">Full Access</strong>
+                  ) : isPendingSetup ? (
+                    <span className="text-amber-800 dark:text-amber-300 font-bold">Needs Setup</span>
                   ) : (
                     <span>Individual Matrix</span>
                   )}
@@ -564,6 +606,16 @@ export function AdminUserTable({
                     Fixed Super Access
                   </span>
                 )}
+                {isPendingSetup && !superAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => handleActivateAdmin(u)}
+                    disabled={pending}
+                    className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[10px] font-extrabold shadow-2xs disabled:opacity-50"
+                  >
+                    Activate
+                  </button>
+                )}
                 {!superAdmin && (
                   <button
                     type="button"
@@ -576,7 +628,7 @@ export function AdminUserTable({
                     Role
                   </button>
                 )}
-                {!superAdmin && (
+                {!superAdmin && !isPendingSetup && (
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(u)}

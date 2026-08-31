@@ -6,6 +6,8 @@ import { Alert } from "../ui";
 import {
   updateAdminPermissionsAction,
   resetAdminPermissionsAction,
+  setAllAdminPermissionsAction,
+  clearAllAdminPermissionsAction,
 } from "@/actions/admin/adminManagement";
 import type {
   AdminPermissionResolution,
@@ -38,6 +40,8 @@ export function AdminPermissionMatrixManager({
   // Modals state
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showSetAllModal, setShowSetAllModal] = useState(false);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [reason, setReason] = useState("");
 
   const [feedback, setFeedback] = useState<{ tone: "error" | "success" | "warning"; msg: string } | null>(null);
@@ -200,6 +204,60 @@ export function AdminPermissionMatrixManager({
       setFeedback({
         tone: "success",
         msg: "All individual permission overrides have been reset to role defaults.",
+      });
+    });
+  }
+
+  // Execute Set All Permissions API
+  function handleConfirmSetAll() {
+    setFeedback(null);
+
+    startTransition(async () => {
+      const res = await setAllAdminPermissionsAction(summary.adminId, reason || "Granted all permissions");
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error });
+        return;
+      }
+
+      setResolution(res.data);
+      const newMap: Record<string, ThreeStateOverride> = {};
+      for (const p of res.data.permissions) {
+        newMap[p.slug] = p.overrideEffect;
+      }
+      setStagedOverrides(newMap);
+      setSelectedSlugs([]);
+      setShowSetAllModal(false);
+      setReason("");
+      setFeedback({
+        tone: "success",
+        msg: `Granted all ${res.data.summary.totalPermissions} available permissions for ${summary.adminName || summary.adminEmail}.`,
+      });
+    });
+  }
+
+  // Execute Clear All Permissions API
+  function handleConfirmClearAll() {
+    setFeedback(null);
+
+    startTransition(async () => {
+      const res = await clearAllAdminPermissionsAction(summary.adminId, reason || "Cleared all permissions");
+      if (!res.ok) {
+        setFeedback({ tone: "error", msg: res.error });
+        return;
+      }
+
+      setResolution(res.data);
+      const newMap: Record<string, ThreeStateOverride> = {};
+      for (const p of res.data.permissions) {
+        newMap[p.slug] = p.overrideEffect;
+      }
+      setStagedOverrides(newMap);
+      setSelectedSlugs([]);
+      setShowClearAllModal(false);
+      setReason("");
+      setFeedback({
+        tone: "warning",
+        msg: `Revoked all administrative permissions for ${summary.adminName || summary.adminEmail}. Account retained intact.`,
       });
     });
   }
@@ -753,14 +811,32 @@ export function AdminPermissionMatrixManager({
 
           {/* Bottom Save & Reset Actions Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-[var(--border-subtle)]">
-            <button
-              type="button"
-              onClick={() => setShowResetModal(true)}
-              disabled={pending}
-              className="rounded-full border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 px-4 py-2 text-xs font-bold hover:bg-rose-100 transition-all shadow-2xs self-start sm:self-auto disabled:opacity-50"
-            >
-              Reset to Role Defaults
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSetAllModal(true)}
+                disabled={pending}
+                className="rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-4 py-2 text-xs font-bold hover:bg-emerald-100 transition-all shadow-2xs disabled:opacity-50"
+              >
+                ✓ Set All Permissions
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowClearAllModal(true)}
+                disabled={pending}
+                className="rounded-full border border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 px-4 py-2 text-xs font-bold hover:bg-rose-100 transition-all shadow-2xs disabled:opacity-50"
+              >
+                ✕ Clear All Permissions
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-4 py-2 text-xs font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
+              >
+                Reset to Role Defaults
+              </button>
+            </div>
 
             <div className="flex items-center gap-2 self-end sm:self-auto">
               <Link
@@ -894,6 +970,114 @@ export function AdminPermissionMatrixManager({
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 )}
                 <span>{pending ? "Resetting..." : "Reset to Defaults"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SET ALL PERMISSIONS CONFIRMATION MODAL */}
+      {showSetAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">
+              Grant All Administrative Permissions
+            </h3>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              This will grant <strong>all currently available permissions</strong> to{" "}
+              <strong>{summary.adminName || summary.adminEmail}</strong> across all modules.
+            </p>
+
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 rounded-xl text-xs text-emerald-900 dark:text-emerald-300 font-medium">
+              ✓ All {summary.totalPermissions} system permissions will be set to ALLOW. This action is logged in the Audit Trail.
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+                Reason / Note (Optional)
+              </label>
+              <textarea
+                rows={2}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Specify administrative reason..."
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setShowSetAllModal(false)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSetAll}
+                disabled={pending}
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+              >
+                {pending && (
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                )}
+                <span>{pending ? "Granting..." : "Confirm & Set All"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CLEAR ALL PERMISSIONS CONFIRMATION MODAL */}
+      {showClearAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-[var(--foreground)]">
+              Revoke All Administrative Permissions
+            </h3>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              This will revoke all normal Admin permissions for{" "}
+              <strong>{summary.adminName || summary.adminEmail}</strong> while keeping the user account intact.
+            </p>
+
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl text-xs text-rose-900 dark:text-rose-300 font-medium">
+              ⚠️ Warning: The admin user will lose access to all modules until permissions are granted again. Account status and credentials remain unchanged.
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+                Reason / Note (Optional)
+              </label>
+              <textarea
+                rows={2}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Specify reason for revoking all permissions..."
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setShowClearAllModal(false)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmClearAll}
+                disabled={pending}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+              >
+                {pending && (
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                )}
+                <span>{pending ? "Revoking..." : "Confirm & Clear All"}</span>
               </button>
             </div>
           </div>

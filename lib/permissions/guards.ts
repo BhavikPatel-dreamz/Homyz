@@ -5,6 +5,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import type { AuthUser } from "@/lib/auth/types";
 import { authorize } from "@/lib/permissions/authorize";
 import type { Role } from "@/generated/prisma/enums";
+import { isSuperAdmin, hasPermission } from "@/lib/permissions/permissions";
 
 // Route-handler guards: resolve the caller (web cookie or mobile Bearer) and
 // enforce auth / role. They throw AppError, which apiHandler maps to the JSON
@@ -27,17 +28,23 @@ export async function requireApiRole(
 
 export async function requireApiPermission(
   req: NextRequest,
-  permission: string,
+  permission: string | string[],
 ): Promise<AuthUser> {
   const user = await requireApiAuth(req);
   if (user.status === "SUSPENDED") {
     throw AppError.forbidden("Account is suspended");
   }
-  if (user.role === "ADMIN" && (!user.permissions || user.permissions.length === 0 || user.adminRoleSlug === "super_admin")) {
+  if (isSuperAdmin(user)) {
     return user;
   }
-  if (user.permissions?.includes("*") || user.permissions?.includes(permission)) {
+  if (Array.isArray(permission)) {
+    if (permission.some((p) => hasPermission(user, p))) {
+      return user;
+    }
+  } else if (hasPermission(user, permission)) {
     return user;
   }
-  throw AppError.forbidden(`Missing required permission: ${permission}`);
+  throw AppError.forbidden(
+    `Missing required permission: ${Array.isArray(permission) ? permission.join(", ") : permission}`
+  );
 }

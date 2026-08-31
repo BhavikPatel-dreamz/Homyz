@@ -137,7 +137,7 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // Sync status and tokenVersion from DB so revoked sessions immediately lose access
+      // Sync status, tokenVersion, and effective permissions from DB so changes take effect immediately
       if (token.id) {
         try {
           const dbUser = await prisma.user.findUnique({
@@ -161,6 +161,9 @@ export const authOptions: NextAuthOptions = {
               token.role = dbUser.role;
               token.adminRoleSlug = dbUser.adminRole?.slug ?? null;
               token.tokenVersion = dbUser.tokenVersion;
+
+              const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+              token.permissions = await getEffectivePermissionsForUser(token.id as string, dbUser.role, dbUser.adminRole?.slug);
             }
           }
         } catch {

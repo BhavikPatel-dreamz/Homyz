@@ -30,6 +30,7 @@ export function AppHeader() {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/bookings", label: "Bookings" },
     { href: "/host/listings", label: "My listings", requireHost: true },
+    { href: "/host/onboarding", label: "Become a Host / Application" },
     { href: "/admin", label: "Admin", requireAdmin: true },
     { href: "/profile", label: "Profile" },
   ];
@@ -84,13 +85,13 @@ export function AppHeader() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Traveling / Hosting Switcher */}
-          <button
-            type="button"
-            onClick={() => setMode(mode === "hosting" ? "traveling" : "hosting")}
+          <Link
+            href={role === "HOST" ? "/host/listings" : "/host/onboarding"}
             className="hidden sm:inline-flex whitespace-nowrap items-center rounded-full bg-[#FBDE9B] hover:bg-[#F7D37E] px-4 py-2 text-xs font-bold text-[#291E05] shadow-2xs transition-all hover:scale-102 active:scale-98 dark:bg-[#f59e0b] dark:text-zinc-950 dark:hover:bg-[#d97706]"
           >
-            switch to {mode === "hosting" ? "traveling" : "hosting"}
-          </button>
+            {role === "HOST" ? "switch to hosting" : "become a host"}
+          </Link>
+
 
           {/* Theme Switcher */}
           <div className="hidden sm:block">
