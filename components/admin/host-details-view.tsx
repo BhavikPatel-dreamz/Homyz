@@ -998,7 +998,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tab 3: DOCUMENTS (Permission Gated) */}
       {activeTab === "documents" && canViewDocuments && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Document Type</th>
@@ -1089,7 +1090,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             </tbody>
           </table>
         </div>
-      )}
+      </div>
+    )}
 
       {/* Tab 4: COMPLIANCE (Permission Gated) */}
       {activeTab === "compliance" && canViewCompliance && (
@@ -1361,25 +1363,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   <th className="py-3.5 px-4 text-center">Bookings Count</th>
                   <th className="py-3.5 px-4">Created Date</th>
                 </tr>
-              ) : (
-                paginatedListings.map((item) => (
-                  <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
-                    <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
-                    <td className="py-3.5 px-4">
-                      {item.published ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          Published
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
-                          Draft
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
-                    <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
-                      {new Date(item.createdAt).toLocaleDateString("en-US")}
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {data.listings.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-[var(--muted-foreground)]">
+                      No listings published by this host.
                     </td>
                   </tr>
                 ) : (
@@ -1389,7 +1378,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                       <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
                       <td className="py-3.5 px-4">
                         {item.published ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             Published
                           </span>
                         ) : (
@@ -1399,7 +1388,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
-                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleDateString("en-US")}</td>
+                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                        {new Date(item.createdAt).toLocaleDateString("en-US")}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -1425,7 +1416,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tab 6: BOOKINGS */}
       {activeTab === "bookings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Booking ID</th>
@@ -1462,27 +1454,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                       </span>
                     </td>
                   </tr>
-                ) : (
-                  paginatedBookings.map((b) => (
-                    <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                      <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
-                        <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "—"}</div>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{b.listingTitle}</td>
-                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
-                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.endDate).toLocaleDateString("en-US")}</td>
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-                          {b.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
+                ))
+              )}
+            </tbody>
             </table>
           </div>
           <div className="p-3 border-t border-[var(--border-subtle)]">
