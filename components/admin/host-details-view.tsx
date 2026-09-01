@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import Link from "next/link";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
@@ -22,7 +24,38 @@ export type HostDetailTabId =
   | "activity"
   | "permissions";
 
+const VALID_DETAIL_TABS: HostDetailTabId[] = [
+  "overview",
+  "onboarding",
+  "documents",
+  "compliance",
+  "listings",
+  "bookings",
+  "earnings",
+  "activity",
+  "permissions",
+];
+
 export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const tabParam = (searchParams.get("tab") || "").toLowerCase() as HostDetailTabId;
+  const activeTab: HostDetailTabId = VALID_DETAIL_TABS.includes(tabParam)
+    ? tabParam
+    : "overview";
+
+  function getTabHref(tabId: HostDetailTabId) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tabId === "overview") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tabId);
+    }
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
+
   const { data: session } = useSession();
   const user = session?.user;
   const userPermissions = user?.permissions || [];
@@ -60,7 +93,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
     userPermissions.includes(PERMISSIONS.HOSTS_MANAGE_PERMISSIONS);
 
   const [data, setData] = useState<HostDetailsDTO>(initialData);
-  const [activeTab, setActiveTab] = useState<HostDetailTabId>("overview");
 
   // Tab pagination states
   const [listingsPage, setListingsPage] = useState(1);
@@ -650,14 +682,6 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
           <button
             type="button"
-            onClick={() => setShowEditModal(true)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
-          >
-            Edit Profile
-          </button>
-
-          <button
-            type="button"
             onClick={() => setShowSuspendModal(true)}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${host.status === "SUSPENDED"
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
@@ -780,17 +804,16 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tabs Bar Navigation */}
       <div className="border-b border-[var(--border)] flex items-center gap-2 overflow-x-auto pt-2" suppressHydrationWarning>
         {visibleTabs.map((tab) => (
-          <button
+          <Link
             key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
+            href={getTabHref(tab.id)}
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
                 ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
                 : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
           >
             {tab.label}
-          </button>
+          </Link>
         ))}
       </div>
 
@@ -798,9 +821,22 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
-              Personal & Profile Info
-            </h2>
+            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+              <h2 className="text-base font-bold text-[var(--foreground)]">
+                Personal & Profile Info
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex items-center gap-1.5 p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--accent)] hover:bg-[var(--surface-secondary)] transition-all cursor-pointer"
+                title="Edit Host Profile"
+                aria-label="Edit Host Profile"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>

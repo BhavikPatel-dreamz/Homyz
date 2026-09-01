@@ -13,6 +13,7 @@ export function SessionManager({
 }) {
   const [sessions, setSessions] = useState<UnifiedSessionDTO[]>(initialSessions);
   const [search, setSearch] = useState("");
+  const [sessionToRevoke, setSessionToRevoke] = useState<UnifiedSessionDTO | null>(null);
   const [pending, startTransition] = useTransition();
 
   const filtered = sessions.filter((s) => {
@@ -35,10 +36,13 @@ export function SessionManager({
     activePage * pageSize
   );
 
-  async function handleRevokeOne(session: UnifiedSessionDTO) {
-    if (!confirm(`Revoke session from ${session.deviceInfo} (${session.ip || "Unknown IP"})?`)) {
-      return;
-    }
+  function handleRevokeOne(session: UnifiedSessionDTO) {
+    setSessionToRevoke(session);
+  }
+
+  function confirmRevokeOne() {
+    if (!sessionToRevoke) return;
+    const session = sessionToRevoke;
 
     startTransition(async () => {
       try {
@@ -52,6 +56,7 @@ export function SessionManager({
         }
         setSessions(sessions.filter((s) => s.id !== session.id));
         toast.success("Session revoked successfully.");
+        setSessionToRevoke(null);
       } catch {
         toast.error("Error contacting session API.");
       }
@@ -253,6 +258,59 @@ export function SessionManager({
         itemLabel="sessions"
         pageSizeOptions={[10, 20, 50]}
       />
+
+      {/* Revoke Session Confirmation Modal */}
+      {sessionToRevoke && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                  Revoke Active Session
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Terminate session access for this device
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
+              Are you sure you want to revoke the session for{" "}
+              <strong className="text-[var(--foreground)]">
+                {sessionToRevoke.userEmail || sessionToRevoke.userName || sessionToRevoke.userId}
+              </strong>{" "}
+              on <strong className="text-[var(--foreground)]">{sessionToRevoke.deviceInfo}</strong> ({sessionToRevoke.ip || "Unknown IP"})? The user will be immediately signed out on that device.
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSessionToRevoke(null)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRevokeOne}
+                disabled={pending}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                {pending && (
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                <span>{pending ? "Revoking..." : "Revoke Session"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

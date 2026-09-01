@@ -75,6 +75,7 @@ export function AdminInvitationsTable({
   // Modals
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState<PublicInvitationItem | null>(null);
+  const [revokeConfirmInv, setRevokeConfirmInv] = useState<PublicInvitationItem | null>(null);
 
   // Invite Form State
   const [inviteName, setInviteName] = useState("");
@@ -168,9 +169,12 @@ export function AdminInvitationsTable({
   }
 
   function handleRevoke(inv: PublicInvitationItem) {
-    if (!confirm(`Are you sure you want to revoke the invitation for ${inv.email}? The link will become permanently invalid.`)) {
-      return;
-    }
+    setRevokeConfirmInv(inv);
+  }
+
+  function confirmRevokeInvitation() {
+    if (!revokeConfirmInv) return;
+    const inv = revokeConfirmInv;
     setActionLoadingId(`${inv.id}_revoke`);
     startTransition(async () => {
       try {
@@ -180,6 +184,7 @@ export function AdminInvitationsTable({
           return;
         }
         toast.success(`Invitation for ${inv.email} has been revoked.`);
+        setRevokeConfirmInv(null);
         fetchInvitations();
       } finally {
         setActionLoadingId(null);
@@ -681,6 +686,57 @@ export function AdminInvitationsTable({
                 className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revoke Invitation Confirmation Modal */}
+      {revokeConfirmInv && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                  Revoke Administrator Invitation
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Invalidate pending invitation token
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
+              Are you sure you want to revoke the invitation for{" "}
+              <strong className="text-[var(--foreground)]">{revokeConfirmInv.email}</strong>?
+              The invitation link will become permanently invalid and cannot be used to set up an administrator account.
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRevokeConfirmInv(null)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRevokeInvitation}
+                disabled={pending}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                {pending && (
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                <span>{pending ? "Revoking..." : "Revoke Invitation"}</span>
               </button>
             </div>
           </div>

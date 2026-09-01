@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { UnifiedHostAnalytics, UnifiedHostItem } from "@/services/admin.service";
 
 export interface HostPhase1DashboardProps {
@@ -18,11 +20,28 @@ export type StatusTabKey =
   | "REJECTED"
   | "SUSPENDED";
 
+const VALID_TABS: StatusTabKey[] = [
+  "ALL",
+  "REGISTRATIONS",
+  "PENDING_REVIEW",
+  "DOCUMENTS_PENDING",
+  "COMPLIANCE_PENDING",
+  "APPROVED",
+  "REJECTED",
+  "SUSPENDED",
+];
+
 export function HostPhase1Dashboard({
   analytics,
   initialHosts,
 }: HostPhase1DashboardProps) {
-  const [activeTab, setActiveTab] = useState<StatusTabKey>("ALL");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const tabParam = (searchParams.get("tab") || "").toUpperCase() as StatusTabKey;
+  const activeTab: StatusTabKey = VALID_TABS.includes(tabParam) ? tabParam : "ALL";
+
   const [search, setSearch] = useState("");
   const [accountStatusFilter, setAccountStatusFilter] = useState("ALL");
   const [appStatusFilter, setAppStatusFilter] = useState("ALL");
@@ -33,6 +52,17 @@ export function HostPhase1Dashboard({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
+
+  function getTabHref(tabKey: StatusTabKey) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tabKey === "ALL") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tabKey);
+    }
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
 
   // Compute count for each primary filter tab
   const tabCounts = useMemo(() => {
@@ -198,14 +228,11 @@ export function HostPhase1Dashboard({
           const isActive = activeTab === tab.key;
           const count = tabCounts[tab.key];
           return (
-            <button
+            <Link
               key={tab.key}
-              type="button"
-              onClick={() => {
-                setActiveTab(tab.key);
-                setCurrentPage(1);
-              }}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition-all flex items-center gap-2 ${
+              href={getTabHref(tab.key)}
+              onClick={() => setCurrentPage(1)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-[#291E05] text-[#FBDE9B] dark:bg-[#f59e0b] dark:text-zinc-950 shadow-2xs"
                   : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border-subtle)]"
@@ -221,7 +248,7 @@ export function HostPhase1Dashboard({
               >
                 {count}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>

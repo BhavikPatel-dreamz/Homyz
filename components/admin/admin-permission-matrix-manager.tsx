@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
+import { HorizontalTabSlider } from "@/components/ui/horizontal-tab-slider";
 import {
   updateAdminPermissionsAction,
   resetAdminPermissionsAction,
@@ -36,7 +37,7 @@ export function AdminPermissionMatrixManager({
   const [search, setSearch] = useState("");
   const [selectedModule, setSelectedModule] = useState<string>("ALL");
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"table" | "modules">("table");
+  const [viewMode, setViewMode] = useState<"table" | "modules">("modules");
 
   // Modals state
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -342,7 +343,7 @@ export function AdminPermissionMatrixManager({
           </div>
 
           {/* Module Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <HorizontalTabSlider>
             <button
               type="button"
               onClick={() => setSelectedModule("ALL")}
@@ -372,7 +373,7 @@ export function AdminPermissionMatrixManager({
                 </button>
               );
             })}
-          </div>
+          </HorizontalTabSlider>
 
           {/* Controls Bar: Search, View Layout Switcher & Bulk Selection Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">

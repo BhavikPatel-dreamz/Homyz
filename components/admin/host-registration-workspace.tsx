@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useTransition } from "react";
+import Link from "next/link";
+import { useSearchParams, usePathname } from "next/navigation";
 import { Alert } from "../ui";
 import type {
   HostRegistrationDetailsData,
@@ -39,15 +41,30 @@ export function HostRegistrationWorkspace({
   onClose,
   isDrawer = false,
 }: HostRegistrationWorkspaceProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const tabParam = (searchParams.get("tab") || "").toLowerCase();
+  const VALID_WORKSPACE_TABS = ["overview", "applicant", "property", "documents", "notes", "activity"];
+
+  const activeTab = VALID_WORKSPACE_TABS.includes(tabParam) ? tabParam : "overview";
+
+  function getTabHref(tabId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tabId === "overview") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tabId);
+    }
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
+
   const [data, setData] = useState<HostRegistrationDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: "error" | "success"; msg: string } | null>(null);
   const [pendingTransition, startTransition] = useTransition();
-
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "applicant" | "property" | "documents" | "notes" | "activity"
-  >("overview");
 
   // Phase 4: Onboarding Progress State
   const [onboardingData, setOnboardingData] = useState<any | null>(null);
@@ -852,8 +869,8 @@ export function HostRegistrationWorkspace({
 
       {/* WORKSPACE NAVIGATION TABS */}
       <div className="flex items-center gap-1 border-b border-[var(--border-subtle)] overflow-x-auto text-xs font-bold">
-        <button
-          onClick={() => setActiveTab("overview")}
+        <Link
+          href={getTabHref("overview")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "overview"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -861,9 +878,9 @@ export function HostRegistrationWorkspace({
           }`}
         >
           Overview
-        </button>
-        <button
-          onClick={() => setActiveTab("applicant")}
+        </Link>
+        <Link
+          href={getTabHref("applicant")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "applicant"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -871,9 +888,9 @@ export function HostRegistrationWorkspace({
           }`}
         >
           Applicant Info
-        </button>
-        <button
-          onClick={() => setActiveTab("property")}
+        </Link>
+        <Link
+          href={getTabHref("property")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "property"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -881,9 +898,9 @@ export function HostRegistrationWorkspace({
           }`}
         >
           Property & Business
-        </button>
-        <button
-          onClick={() => setActiveTab("documents")}
+        </Link>
+        <Link
+          href={getTabHref("documents")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
             activeTab === "documents"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -894,12 +911,10 @@ export function HostRegistrationWorkspace({
           <span className="rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-0.2 text-[10px]">
             {data.documents.length}
           </span>
-        </button>
+        </Link>
 
-
-
-        <button
-          onClick={() => setActiveTab("notes")}
+        <Link
+          href={getTabHref("notes")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
             activeTab === "notes"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -910,9 +925,9 @@ export function HostRegistrationWorkspace({
           <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 text-[var(--foreground)] px-2 py-0.2 text-[10px]">
             {data.reviewNotes.length}
           </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("activity")}
+        </Link>
+        <Link
+          href={getTabHref("activity")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "activity"
               ? "border-[var(--accent)] text-[var(--foreground)]"
@@ -920,7 +935,7 @@ export function HostRegistrationWorkspace({
           }`}
         >
           Review Activity ({data.activityLogs.length})
-        </button>
+        </Link>
       </div>
 
       {/* TAB CONTENT 1: OVERVIEW */}

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useTransition } from "react";
+import Link from "next/link";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { Alert } from "../ui";
 import { AdminPagination } from "./admin-pagination";
 
@@ -75,7 +77,22 @@ export interface AnalyticsData {
 }
 
 export function HostOnboardingMonitoring() {
-  const [activeTab, setActiveTab] = useState<"pipeline" | "table" | "workload">("pipeline");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const tabParam = (searchParams.get("tab") || "").toLowerCase() as "pipeline" | "table" | "workload";
+  const activeTab = ["pipeline", "table", "workload"].includes(tabParam) ? tabParam : "pipeline";
+
+  function getTabHref(tabId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tabId === "pipeline") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tabId);
+    }
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
 
   // Metrics & Dashboard State
   const [metrics, setMetrics] = useState<OnboardingMetricSummary | null>(null);
@@ -203,9 +220,11 @@ export function HostOnboardingMonitoring() {
     }
   };
 
+  const router = useRouter();
+
   const handleStageClick = (stageKey: string) => {
     setStageFilter(stageKey);
-    setActiveTab("table");
+    router.push(getTabHref("table"));
   };
 
   return (
@@ -228,9 +247,8 @@ export function HostOnboardingMonitoring() {
 
         {/* TAB TOGGLE BUTTONS */}
         <div className="flex items-center gap-1.5 p-1 bg-[var(--surface-secondary)] rounded-xl border border-[var(--border)] self-start md:self-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab("pipeline")}
+          <Link
+            href={getTabHref("pipeline")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "pipeline"
                 ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
@@ -238,10 +256,9 @@ export function HostOnboardingMonitoring() {
             }`}
           >
             Pipeline View
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("table")}
+          </Link>
+          <Link
+            href={getTabHref("table")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "table"
                 ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
@@ -249,10 +266,9 @@ export function HostOnboardingMonitoring() {
             }`}
           >
             All Applications ({total})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("workload")}
+          </Link>
+          <Link
+            href={getTabHref("workload")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "workload"
                 ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
@@ -260,7 +276,7 @@ export function HostOnboardingMonitoring() {
             }`}
           >
             Reviewer Workload
-          </button>
+          </Link>
         </div>
       </div>
 

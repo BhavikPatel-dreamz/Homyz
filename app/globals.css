@@ -150,3 +150,22 @@ body {
   }
 }
 
+/* Ensure all buttons, selects, and interactive components display hand cursor (cursor: pointer) */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+

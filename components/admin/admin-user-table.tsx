@@ -84,6 +84,11 @@ export function AdminUserTable({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editUser, setEditUser] = useState<AdminUserItem | null>(null);
   const [deleteUser, setDeleteUser] = useState<AdminUserItem | null>(null);
+  const [statusConfirmUser, setStatusConfirmUser] = useState<{
+    user: AdminUserItem;
+    targetStatus: "ACTIVE" | "SUSPENDED";
+  } | null>(null);
+  const [revokeSessionsUser, setRevokeSessionsUser] = useState<AdminUserItem | null>(null);
 
   // Form states
   const [newName, setNewName] = useState("");
@@ -188,18 +193,25 @@ export function AdminUserTable({
 
     const current = user.status || "ACTIVE";
     const nextStatus = current === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+    setStatusConfirmUser({ user, targetStatus: nextStatus as "ACTIVE" | "SUSPENDED" });
+  }
+
+  function confirmToggleStatus() {
+    if (!statusConfirmUser) return;
+    const { user, targetStatus } = statusConfirmUser;
     setActionLoadingId(`${user.id}_status`);
 
     startTransition(async () => {
       try {
-        const res = await toggleUserStatusAction(user.id, nextStatus as "ACTIVE" | "SUSPENDED");
+        const res = await toggleUserStatusAction(user.id, targetStatus);
         if (!res.ok) {
           toast.error(res.error || "Failed to update user status");
           return;
         }
 
-        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)));
-        toast.success(`User ${user.email} is now ${nextStatus.toLowerCase()}.`);
+        setUsers(users.map((u) => (u.id === user.id ? { ...u, status: targetStatus } : u)));
+        toast.success(`User ${user.email} is now ${targetStatus.toLowerCase()}.`);
+        setStatusConfirmUser(null);
       } finally {
         setActionLoadingId(null);
       }
@@ -228,9 +240,12 @@ export function AdminUserTable({
   }
 
   function handleRevokeSessions(user: AdminUserItem) {
-    if (!confirm(`Revoke all active sessions for ${user.email}? They will be forced to log in again.`)) {
-      return;
-    }
+    setRevokeSessionsUser(user);
+  }
+
+  function confirmRevokeSessions() {
+    if (!revokeSessionsUser) return;
+    const user = revokeSessionsUser;
     setActionLoadingId(`${user.id}_revoke`);
 
     startTransition(async () => {
@@ -241,6 +256,7 @@ export function AdminUserTable({
           return;
         }
         toast.success(`All active sessions revoked for ${user.email}.`);
+        setRevokeSessionsUser(null);
       } finally {
         setActionLoadingId(null);
       }
@@ -841,6 +857,146 @@ export function AdminUserTable({
                 className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
               >
                 {pending ? "Deleting..." : "Delete Administrator"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 5: Suspend / Activate Administrator Confirmation */}
+      {statusConfirmUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
+                  statusConfirmUser.targetStatus === "SUSPENDED"
+                    ? "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400"
+                    : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                {statusConfirmUser.targetStatus === "SUSPENDED" ? (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                  {statusConfirmUser.targetStatus === "SUSPENDED" ? "Suspend Administrator" : "Activate Administrator"}
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {statusConfirmUser.targetStatus === "SUSPENDED" ? "Account restriction" : "Restore account access"}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
+              {statusConfirmUser.targetStatus === "SUSPENDED" ? (
+                <>
+                  Are you sure you want to suspend administrator{" "}
+                  <strong className="text-[var(--foreground)]">
+                    {statusConfirmUser.user.name || statusConfirmUser.user.email}
+                  </strong>{" "}
+                  ({statusConfirmUser.user.email})? They will immediately lose administrative portal access and all active sessions will be terminated.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to activate administrator{" "}
+                  <strong className="text-[var(--foreground)]">
+                    {statusConfirmUser.user.name || statusConfirmUser.user.email}
+                  </strong>{" "}
+                  ({statusConfirmUser.user.email})? They will regain administrative portal access based on their assigned permissions.
+                </>
+              )}
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setStatusConfirmUser(null)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmToggleStatus}
+                disabled={pending}
+                className={`rounded-full px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 ${
+                  statusConfirmUser.targetStatus === "SUSPENDED"
+                    ? "bg-rose-600 hover:bg-rose-700 text-white"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                }`}
+              >
+                {pending && (
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                <span>
+                  {pending
+                    ? "Updating..."
+                    : statusConfirmUser.targetStatus === "SUSPENDED"
+                    ? "Suspend Account"
+                    : "Activate Account"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 6: Revoke Sessions Confirmation */}
+      {revokeSessionsUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                  Revoke Active Sessions
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Force sign-out across all devices
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
+              Are you sure you want to revoke all active sessions for{" "}
+              <strong className="text-[var(--foreground)]">
+                {revokeSessionsUser.name || revokeSessionsUser.email}
+              </strong>{" "}
+              ({revokeSessionsUser.email})? The user will be immediately logged out of all active web and mobile sessions and will be required to authenticate again.
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRevokeSessionsUser(null)}
+                disabled={pending}
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRevokeSessions}
+                disabled={pending}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 text-xs font-semibold transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                {pending && (
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                <span>{pending ? "Revoking..." : "Revoke All Sessions"}</span>
               </button>
             </div>
           </div>

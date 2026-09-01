@@ -14,6 +14,7 @@ import {
   resetHostPermissionsAction,
 } from "@/actions/admin/hostPermissionActions";
 import { toast } from "@/components/ui/toast";
+import { HorizontalTabSlider } from "@/components/ui/horizontal-tab-slider";
 
 interface HostPermissionsTabProps {
   hostId: string;
@@ -326,7 +327,7 @@ export function HostPermissionsTab({
         {/* Toolbar: Category Pills & Search */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[var(--surface-secondary)] p-3 rounded-2xl border border-[var(--border-subtle)]">
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+          <HorizontalTabSlider className="lg:max-w-[70%]">
             <button
               type="button"
               onClick={() => setActiveCategory("all")}
@@ -356,7 +357,7 @@ export function HostPermissionsTab({
                 </button>
               );
             })}
-          </div>
+          </HorizontalTabSlider>
 
           {/* Search Box */}
           <div className="relative w-full lg:w-64">
