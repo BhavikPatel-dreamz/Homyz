@@ -36,7 +36,7 @@ export function AdminHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)] backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)] backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
 
         {/* Left Side: Sidebar Toggle & Breadcrumbs */}

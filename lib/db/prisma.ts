@@ -30,6 +30,7 @@ const globalForPrisma = globalThis as unknown as {
 function getPrismaClient() {
   if (
     globalForPrisma.prisma &&
+    typeof (globalForPrisma.prisma as any).hostRegistrationRequest !== "undefined" &&
     typeof (globalForPrisma.prisma as any).hostPermissionOverride !== "undefined" &&
     typeof (globalForPrisma.prisma as any).adminPermissionOverride !== "undefined" &&
     typeof (globalForPrisma.prisma as any).adminInvitation !== "undefined"

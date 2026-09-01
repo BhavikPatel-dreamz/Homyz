@@ -14,67 +14,58 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "homyz-theme";
 
-const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+function getSystemTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    if (saved === "light" || saved === "dark" || saved === "system") {
+      return saved;
+    }
+  } catch (e) {}
+  return "system";
+}
+
+function applyThemeToDocument(resolved: "light" | "dark") {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  if (resolved === "dark") {
+    root.classList.add("dark");
+    root.style.colorScheme = "dark";
+  } else {
+    root.classList.remove("dark");
+    root.style.colorScheme = "light";
+  }
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // Synchronously apply saved theme on initial client mount before paint
-  useIsomorphicLayoutEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const activeTheme =
-        saved === "dark" || ((!saved || saved === "system") && mediaQuery.matches)
-          ? "dark"
-          : "light";
+  // Read theme on initial mount
+  useEffect(() => {
+    const stored = getStoredTheme();
+    const system = getSystemTheme();
+    const active = stored === "system" ? system : stored;
 
-      if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
-        setThemeState(saved);
-      }
-      setResolvedTheme(activeTheme);
-
-      if (activeTheme === "dark") {
-        document.documentElement.classList.add("dark");
-        document.documentElement.style.colorScheme = "dark";
-      } else {
-        document.documentElement.classList.remove("dark");
-        document.documentElement.style.colorScheme = "light";
-      }
-    } catch (e) {}
+    setThemeState(stored);
+    setResolvedTheme(active);
+    applyThemeToDocument(active);
   }, []);
 
+  // Listen to system preference changes when theme is "system"
   useEffect(() => {
-    const root = document.documentElement;
+    if (theme !== "system") return;
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const applyTheme = () => {
-      let activeTheme: "light" | "dark" = "light";
-      if (theme === "system") {
-        activeTheme = mediaQuery.matches ? "dark" : "light";
-      } else {
-        activeTheme = theme;
-      }
-
-      setResolvedTheme(activeTheme);
-
-      if (activeTheme === "dark") {
-        root.classList.add("dark");
-        root.style.colorScheme = "dark";
-      } else {
-        root.classList.remove("dark");
-        root.style.colorScheme = "light";
-      }
-    };
-
-    applyTheme();
-
-    const handleChange = () => {
-      if (theme === "system") {
-        applyTheme();
-      }
+    const handleChange = (e: MediaQueryListEvent) => {
+      const active = e.matches ? "dark" : "light";
+      setResolvedTheme(active);
+      applyThemeToDocument(active);
     };
 
     mediaQuery.addEventListener("change", handleChange);
@@ -83,7 +74,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem(STORAGE_KEY, newTheme);
+    const system = getSystemTheme();
+    const active = newTheme === "system" ? system : newTheme;
+    setResolvedTheme(active);
+    applyThemeToDocument(active);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, newTheme);
+      document.cookie = `${STORAGE_KEY}=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch (e) {}
   };
 
   return (
