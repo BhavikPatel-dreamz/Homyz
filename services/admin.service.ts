@@ -3,7 +3,8 @@ import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { CACHE_KEYS, hashFilters, keys } from "@/lib/redis/keys";
+import { CACHE_TTL } from "@/lib/redis/ttl";
 import { Role, UserStatus } from "@/generated/prisma/enums";
 import { hashPassword } from "@/lib/auth/password";
 import { sendAdminInvitationEmail } from "@/lib/services/email";
@@ -371,7 +372,7 @@ async function listRoles() {
     },
   });
 
-  return roles.map((r) => ({
+  return roles.map((r: any) => ({
     id: r.id,
     name: r.name,
     slug: r.slug,
@@ -379,7 +380,7 @@ async function listRoles() {
     isSystem: r.isSystem,
     userCount: r._count.users,
     permissionCount: r._count.permissions,
-    permissions: r.permissions.map((p) => p.permission.slug),
+    permissions: r.permissions.map((p: any) => p.permission.slug),
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   }));
@@ -404,7 +405,7 @@ async function getRoleById(id: string) {
     description: role.description,
     isSystem: role.isSystem,
     userCount: role._count.users,
-    permissions: role.permissions.map((p) => p.permission.slug),
+    permissions: role.permissions.map((p: any) => p.permission.slug),
     createdAt: role.createdAt,
     updatedAt: role.updatedAt,
   };
@@ -430,7 +431,7 @@ async function createRole(actor: AuthUser, input: CreateRoleInput) {
       description: input.description ?? null,
       isSystem: false,
       permissions: {
-        create: permissions.map((p) => ({
+        create: permissions.map((p: any) => ({
           permissionId: p.id,
         })),
       },
@@ -455,7 +456,7 @@ async function createRole(actor: AuthUser, input: CreateRoleInput) {
     slug: newRole.slug,
     description: newRole.description,
     isSystem: newRole.isSystem,
-    permissions: newRole.permissions.map((p) => p.permission.slug),
+    permissions: newRole.permissions.map((p: any) => p.permission.slug),
   };
 }
 
@@ -468,7 +469,7 @@ async function updateRole(actor: AuthUser, id: string, input: EditRoleInput) {
     throw AppError.badRequest("Cannot remove core permissions from Super Admin role");
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     if (input.name || input.description !== undefined) {
       await tx.adminRole.update({
         where: { id },
@@ -487,7 +488,7 @@ async function updateRole(actor: AuthUser, id: string, input: EditRoleInput) {
       });
       if (perms.length > 0) {
         await tx.adminRolePermission.createMany({
-          data: perms.map((p) => ({
+          data: perms.map((p: any) => ({
             roleId: id,
             permissionId: p.id,
           })),
@@ -839,7 +840,11 @@ function mapStageLabel(stage: string): string {
 }
 
 async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
-  const {
+  const filterHash = hashFilters(input as Record<string, unknown>);
+  return getOrSetCache(
+    CACHE_KEYS.ADMIN_UNIFIED_HOSTS(filterHash),
+    async () => {
+      const {
     search,
     accountStatus = "ALL",
     applicationStatus = "ALL",
@@ -915,14 +920,14 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
     let appStatus: "PENDING" | "IN_REVIEW" | "WAITING_FOR_DOCUMENTS" | "ACTION_REQUIRED" | "APPROVED" | "REJECTED" =
       (primaryReq?.status as any) || (accStatus === "ACTIVE" ? "APPROVED" : "PENDING");
 
-    let stage = primaryReq?.onboardingStage || (accStatus === "ACTIVE" ? (user.listings.some((l) => l.published) ? "ONBOARDING_COMPLETE" : "APPROVED") : "REGISTRATION_SUBMITTED");
+    let stage = primaryReq?.onboardingStage || (accStatus === "ACTIVE" ? (user.listings.some((l: any) => l.published) ? "ONBOARDING_COMPLETE" : "APPROVED") : "REGISTRATION_SUBMITTED");
 
     let verifStatus: "VERIFIED" | "PENDING" | "ACTION_REQUIRED" | "REJECTED" | "UNVERIFIED" = "UNVERIFIED";
     if (primaryReq?.documents && primaryReq.documents.length > 0) {
       const docs = primaryReq.documents;
-      if (docs.some((d) => d.status === "REJECTED")) {
+      if (docs.some((d: any) => d.status === "REJECTED")) {
         verifStatus = "ACTION_REQUIRED";
-      } else if (docs.every((d) => d.status === "VERIFIED")) {
+      } else if (docs.every((d: any) => d.status === "VERIFIED")) {
         verifStatus = "VERIFIED";
       } else {
         verifStatus = "PENDING";
@@ -935,7 +940,7 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
       (primaryReq?.complianceStatus as any) || (accStatus === "ACTIVE" ? "COMPLIANT" : "PENDING");
 
     const listingsCount = user.listings.length;
-    const bookingsCount = user.listings.reduce((acc, l) => acc + l.bookings.length, 0);
+    const bookingsCount = user.listings.reduce((acc: any, l: any) => acc + l.bookings.length, 0);
 
     rawList.push({
       id: user.id,
@@ -975,9 +980,9 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
 
     let verifStatus: "VERIFIED" | "PENDING" | "ACTION_REQUIRED" | "REJECTED" | "UNVERIFIED" = "UNVERIFIED";
     if (req.documents && req.documents.length > 0) {
-      if (req.documents.some((d) => d.status === "REJECTED")) {
+      if (req.documents.some((d: any) => d.status === "REJECTED")) {
         verifStatus = "ACTION_REQUIRED";
-      } else if (req.documents.every((d) => d.status === "VERIFIED")) {
+      } else if (req.documents.every((d: any) => d.status === "VERIFIED")) {
         verifStatus = "VERIFIED";
       } else {
         verifStatus = "PENDING";
@@ -1140,6 +1145,9 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
     totalPages: Math.ceil(total / take) || 1,
     analytics,
   };
+    },
+    { ttl: CACHE_TTL.DASHBOARD_STATS }
+  );
 }
 
 async function getHostAnalyticsPhase1(): Promise<HostPhase1Analytics> {
@@ -1341,7 +1349,7 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
     },
   });
 
-  const formattedActivityLogs = rawAuditLogs.map((log) => {
+  const formattedActivityLogs = rawAuditLogs.map((log: any) => {
     const act = log.action.toUpperCase();
     let category = "ADMIN_ACTIONS";
     if (act.includes("REGISTR") || act.includes("ACCOUNT_CREATED")) category = "REGISTRATION";
@@ -1431,9 +1439,9 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
 
   const progressPercent = Math.round((stepsCompleted / 7) * 100);
 
-  const completedChecksCount = refetchedChecks.filter((c) => c.status === "PASSED").length;
+  const completedChecksCount = refetchedChecks.filter((c: any) => c.status === "PASSED").length;
   const totalChecksCount = refetchedChecks.length;
-  const openIssuesCount = refetchedIssues.filter((i) => i.status === "OPEN" || i.status === "UNDER_REVIEW").length;
+  const openIssuesCount = refetchedIssues.filter((i: any) => i.status === "OPEN" || i.status === "UNDER_REVIEW").length;
 
   return {
     host: {
@@ -1716,7 +1724,7 @@ async function deleteHost(hostId: string, actorUser?: AuthUser) {
 
   if (!host) throw AppError.notFound("Host not found");
 
-  const activeBookingsCount = host.listings.reduce((sum, l) => sum + l.bookings.length, 0);
+  const activeBookingsCount = host.listings.reduce((sum: number, l: any) => sum + l.bookings.length, 0);
   if (activeBookingsCount > 0) {
     throw AppError.badRequest(`Cannot delete host: Host has ${activeBookingsCount} active confirmed bookings.`);
   }
@@ -2046,40 +2054,46 @@ export interface GuestDetailsData {
 }
 
 async function getGuestAnalytics(): Promise<GuestAnalyticsData> {
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  return getOrSetCache(
+    CACHE_KEYS.GUEST_ANALYTICS(),
+    async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const [
-    totalGuests,
-    activeGuests,
-    suspendedGuests,
-    newGuests,
-    guestBookings,
-  ] = await Promise.all([
-    prisma.user.count({ where: { role: Role.USER } }),
-    prisma.user.count({ where: { role: Role.USER, status: UserStatus.ACTIVE } }),
-    prisma.user.count({ where: { role: Role.USER, status: UserStatus.SUSPENDED } }),
-    prisma.user.count({ where: { role: Role.USER, createdAt: { gte: thirtyDaysAgo } } }),
-    prisma.booking.findMany({
-      where: { user: { role: Role.USER } },
-      select: {
-        status: true,
-        listing: { select: { price: true } },
-      },
-    }),
-  ]);
+      const [
+        totalGuests,
+        activeGuests,
+        suspendedGuests,
+        newGuests,
+        guestBookings,
+      ] = await Promise.all([
+        prisma.user.count({ where: { role: Role.USER } }),
+        prisma.user.count({ where: { role: Role.USER, status: UserStatus.ACTIVE } }),
+        prisma.user.count({ where: { role: Role.USER, status: UserStatus.SUSPENDED } }),
+        prisma.user.count({ where: { role: Role.USER, createdAt: { gte: thirtyDaysAgo } } }),
+        prisma.booking.findMany({
+          where: { user: { role: Role.USER } },
+          select: {
+            status: true,
+            listing: { select: { price: true } },
+          },
+        }),
+      ]);
 
-  const totalBookings = guestBookings.length;
-  const confirmedBookings = guestBookings.filter((b) => b.status === "CONFIRMED");
-  const totalSpending = confirmedBookings.reduce((sum, b) => sum + b.listing.price, 0);
+      const totalBookings = guestBookings.length;
+      const confirmedBookings = guestBookings.filter((b: any) => b.status === "CONFIRMED");
+      const totalSpending = confirmedBookings.reduce((sum: number, b: any) => sum + b.listing.price, 0);
 
-  return {
-    totalGuests,
-    activeGuests,
-    suspendedGuests,
-    newGuests,
-    totalBookings,
-    totalSpending,
-  };
+      return {
+        totalGuests,
+        activeGuests,
+        suspendedGuests,
+        newGuests,
+        totalBookings,
+        totalSpending,
+      };
+    },
+    { ttl: CACHE_TTL.DASHBOARD_STATS }
+  );
 }
 
 async function listGuests(input: ListGuestsInput = {}) {
@@ -2113,17 +2127,17 @@ async function listGuests(input: ListGuestsInput = {}) {
     prisma.user.count({ where }),
   ]);
 
-  const guestIds = guests.map((g) => g.id);
+  const guestIds = guests.map((g: any) => g.id);
   const allBookings = await prisma.booking.findMany({
     where: { userId: { in: guestIds } },
     include: { listing: { select: { price: true } } },
   });
 
-  const items: GuestTableItem[] = guests.map((g) => {
-    const userBookings = allBookings.filter((b) => b.userId === g.id);
+  const items: GuestTableItem[] = guests.map((g: any) => {
+    const userBookings = allBookings.filter((b: any) => b.userId === g.id);
     const bookingsCount = userBookings.length;
-    const confirmed = userBookings.filter((b) => b.status === "CONFIRMED");
-    const totalSpending = confirmed.reduce((sum, b) => sum + b.listing.price, 0);
+    const confirmed = userBookings.filter((b: any) => b.status === "CONFIRMED");
+    const totalSpending = confirmed.reduce((sum: number, b: any) => sum + b.listing.price, 0);
 
     return {
       id: g.id,
@@ -2187,8 +2201,8 @@ async function getGuestDetails(guestId: string): Promise<GuestDetailsData> {
   ]);
 
   const totalBookings = bookings.length;
-  const confirmedBookings = bookings.filter((b) => b.status === "CONFIRMED");
-  const totalSpending = confirmedBookings.reduce((sum, b) => sum + b.listing.price, 0);
+  const confirmedBookings = bookings.filter((b: any) => b.status === "CONFIRMED");
+  const totalSpending = confirmedBookings.reduce((sum: number, b: any) => sum + b.listing.price, 0);
 
   return {
     guest: {
@@ -2206,7 +2220,7 @@ async function getGuestDetails(guestId: string): Promise<GuestDetailsData> {
       totalBookings,
       totalSpending,
     },
-    bookings: bookings.map((b) => ({
+    bookings: bookings.map((b: any) => ({
       id: b.id,
       status: b.status,
       startDate: b.startDate,

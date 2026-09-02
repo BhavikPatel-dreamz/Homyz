@@ -24,7 +24,7 @@ async function main() {
   }
 
   const allDbPerms = await prisma.adminPermission.findMany();
-  const permMap = new Map(allDbPerms.map((p) => [p.slug, p.id]));
+  const permMap = new Map(allDbPerms.map((p: any) => [p.slug, p.id]));
 
   console.log("[seed] Seeding default roles...");
   // 1. Super Admin
@@ -42,7 +42,7 @@ async function main() {
   // Assign ALL permissions to Super Admin
   await prisma.adminRolePermission.deleteMany({ where: { roleId: superAdminRole.id } });
   await prisma.adminRolePermission.createMany({
-    data: allDbPerms.map((p) => ({
+    data: allDbPerms.map((p: any) => ({
       roleId: superAdminRole.id,
       permissionId: p.id,
     })),

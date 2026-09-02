@@ -4,6 +4,8 @@ import { auditService } from "@/services/audit.service";
 import { sendHostComplianceStatusEmail } from "@/lib/services/email";
 import type { AuthUser } from "@/lib/auth/types";
 import { UserStatus } from "@/generated/prisma/enums";
+import { getOrSetCache } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
 
 export type DateRangePreset = "TODAY" | "7_DAYS" | "30_DAYS" | "90_DAYS" | "CUSTOM";
 export type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
@@ -53,6 +55,21 @@ export interface BottleneckStage {
   status: "NORMAL" | "WARNING" | "EXCEEDED";
 }
 
+export interface OperationalAlertItem {
+  id: string;
+  alertType: string;
+  title: string;
+  severity: AlertSeverity;
+  hostName: string;
+  applicationId: string;
+  requestId: string;
+  createdAt: Date;
+  status: AlertStatus;
+  assignedUser: { id: string; name: string | null; email: string | null } | null;
+  actionUrl: string;
+  details: string;
+}
+
 export interface ActionQueueItem {
   id: string;
   requestId: string;
@@ -68,21 +85,6 @@ export interface ActionQueueItem {
   dueDate: Date | null;
   status: string;
   targetUrl: string;
-}
-
-export interface OperationalAlertItem {
-  id: string;
-  alertType: string;
-  title: string;
-  severity: AlertSeverity;
-  hostName: string;
-  applicationId: string;
-  requestId: string;
-  createdAt: Date;
-  status: AlertStatus;
-  assignedUser: { id: string; name: string | null; email: string | null } | null;
-  actionUrl: string;
-  details: string;
 }
 
 export interface ReviewerWorkloadItem {
@@ -120,8 +122,8 @@ const alertStateStore: Record<string, { status: AlertStatus; assignedUserId: str
 /**
  * Helper to compute date range window
  */
-function getDateRangeWindow(preset: DateRangePreset, customFrom?: Date, customTo?: Date): { startDate: Date; endDate: Date } {
-  const endDate = customTo || new Date();
+function getDateRangeWindow(preset: DateRangePreset, customFrom?: Date): { startDate: Date; endDate: Date } {
+  const endDate = new Date();
   let startDate = new Date();
 
   switch (preset) {
@@ -150,78 +152,84 @@ function getDateRangeWindow(preset: DateRangePreset, customFrom?: Date, customTo
  * Get Operations Dashboard Metrics
  */
 export async function getOperationsDashboardMetrics(preset: DateRangePreset = "30_DAYS"): Promise<OperationsDashboardMetrics> {
-  const { startDate } = getDateRangeWindow(preset);
+  return getOrSetCache(
+    keys.hostOperationsMetrics(preset),
+    async () => {
+      const { startDate } = getDateRangeWindow(preset);
 
-  const [activeHosts, requests] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: "HOST" },
-      select: { id: true, status: true },
-    }),
-    prisma.hostRegistrationRequest.findMany({
-      include: {
-        documents: true,
-        complianceChecks: true,
-        host: { select: { status: true } },
-      },
-    }),
-  ]);
+      const [activeHosts, requests] = await Promise.all([
+        prisma.user.findMany({
+          where: { role: "HOST" },
+          select: { id: true, status: true },
+        }),
+        prisma.hostRegistrationRequest.findMany({
+          include: {
+            documents: true,
+            complianceChecks: true,
+            host: { select: { status: true } },
+          },
+        }),
+      ]);
 
-  const totalHosts = activeHosts.length || requests.length;
-  let newApplications = 0;
-  let pendingReviews = 0;
-  let documentsPending = 0;
-  let compliancePending = 0;
-  let actionRequired = 0;
-  let readyForApproval = 0;
-  let approved = 0;
-  let rejected = 0;
-  let suspended = activeHosts.filter((h) => h.status === "SUSPENDED").length;
+      const totalHosts = activeHosts.length || requests.length;
+      let newApplications = 0;
+      let pendingReviews = 0;
+      let documentsPending = 0;
+      let compliancePending = 0;
+      let actionRequired = 0;
+      let readyForApproval = 0;
+      let approved = 0;
+      let rejected = 0;
+      let suspended = activeHosts.filter((h: any) => h.status === "SUSPENDED").length;
 
-  requests.forEach((req) => {
-    if (new Date(req.createdAt) >= startDate) {
-      newApplications++;
-    }
+      requests.forEach((req: any) => {
+        if (new Date(req.createdAt) >= startDate) {
+          newApplications++;
+        }
 
-    if (req.status === "APPROVED") {
-      approved++;
-    } else if (req.status === "REJECTED") {
-      rejected++;
-    }
+        if (req.status === "APPROVED") {
+          approved++;
+        } else if (req.status === "REJECTED") {
+          rejected++;
+        }
 
-    if (req.status === "PENDING" || req.status === "IN_REVIEW") {
-      pendingReviews++;
-    }
+        if (req.status === "PENDING" || req.status === "IN_REVIEW") {
+          pendingReviews++;
+        }
 
-    const hasPendingDocs = req.documents.some((d) => d.status === "PENDING" || d.resubmissionRequested);
-    if (hasPendingDocs) documentsPending++;
+        const hasPendingDocs = req.documents.some((d: any) => d.status === "PENDING" || d.resubmissionRequested);
+        if (hasPendingDocs) documentsPending++;
 
-    if (req.complianceStatus === "PENDING" || req.complianceStatus === "UNDER_REVIEW") {
-      compliancePending++;
-    }
+        if (req.complianceStatus === "PENDING" || req.complianceStatus === "UNDER_REVIEW") {
+          compliancePending++;
+        }
 
-    if (req.complianceStatus === "ACTION_REQUIRED" || (req.status as string) === "ACTION_REQUIRED") {
-      actionRequired++;
-    }
+        if (req.complianceStatus === "ACTION_REQUIRED" || (req.status as string) === "ACTION_REQUIRED") {
+          actionRequired++;
+        }
 
-    const allDocsVerified = req.documents.length > 0 && req.documents.every((d) => d.status === "VERIFIED");
-    const compliancePassed = req.complianceStatus === "COMPLIANT";
-    if (allDocsVerified && compliancePassed && req.status !== "APPROVED") {
-      readyForApproval++;
-    }
-  });
+        const allDocsVerified = req.documents.length > 0 && req.documents.every((d: any) => d.status === "VERIFIED");
+        const compliancePassed = req.complianceStatus === "COMPLIANT";
+        if (allDocsVerified && compliancePassed && req.status !== "APPROVED") {
+          readyForApproval++;
+        }
+      });
 
-  return {
-    totalHosts,
-    newApplications,
-    pendingReviews,
-    documentsPending,
-    compliancePending,
-    actionRequired,
-    readyForApproval,
-    approved,
-    rejected,
-    suspended,
-  };
+      return {
+        totalHosts,
+        newApplications,
+        pendingReviews,
+        documentsPending,
+        compliancePending,
+        actionRequired,
+        readyForApproval,
+        approved,
+        rejected,
+        suspended,
+      };
+    },
+    { ttl: 60 }
+  );
 }
 
 /**
@@ -246,9 +254,9 @@ export async function getLifecycleFunnel(): Promise<FunnelStageMetric[]> {
   let onboardingComplete = 0;
   let activeHost = 0;
 
-  requests.forEach((r) => {
+  requests.forEach((r: any) => {
     if (r.reviewStartedAt || r.status === "IN_REVIEW" || r.status === "APPROVED") underReview++;
-    const docsVerified = r.documents.length > 0 && r.documents.every((d) => d.status === "VERIFIED");
+    const docsVerified = r.documents.length > 0 && r.documents.every((d: any) => d.status === "VERIFIED");
     if (docsVerified) documentsVerified++;
     if (r.complianceStatus === "COMPLIANT") compliancePassed++;
     if (r.status === "APPROVED") approved++;
@@ -268,7 +276,7 @@ export async function getLifecycleFunnel(): Promise<FunnelStageMetric[]> {
   ];
 
   let prevCount = totalRegistered;
-  return stageCounts.map((s) => {
+  return stageCounts.map((s: any) => {
     const conversionRate = Math.round((s.count / totalRegistered) * 100);
     const dropOffRate = prevCount > 0 ? Math.round(((prevCount - s.count) / prevCount) * 100) : 0;
     prevCount = s.count;
@@ -292,25 +300,25 @@ export async function getOperationalKPIs(): Promise<OperationalKPIs> {
   ]);
 
   const totalRequests = requests.length || 1;
-  const totalApproved = requests.filter((r) => r.status === "APPROVED").length;
-  const totalRejected = requests.filter((r) => r.status === "REJECTED").length;
+  const totalApproved = requests.filter((r: any) => r.status === "APPROVED").length;
+  const totalRejected = requests.filter((r: any) => r.status === "REJECTED").length;
   const decidedRequests = totalApproved + totalRejected || 1;
 
   const approvalRate = Math.round((totalApproved / decidedRequests) * 100);
   const rejectionRate = Math.round((totalRejected / decidedRequests) * 100);
 
   const totalDocs = documents.length || 1;
-  const rejectedDocs = documents.filter((d) => d.status === "REJECTED").length;
+  const rejectedDocs = documents.filter((d: any) => d.status === "REJECTED").length;
   const documentRejectionRate = Math.round((rejectedDocs / totalDocs) * 100);
 
   const totalIssues = complianceIssues.length;
   const complianceFailureRate = Math.round((totalIssues / totalRequests) * 100);
 
-  const reVerifications = requests.filter((r) => r.complianceNotes?.includes("Re-verification")).length;
+  const reVerifications = requests.filter((r: any) => r.complianceNotes?.includes("Re-verification")).length;
   const totalHostsCount = users.length || 1;
   const reVerificationRate = Math.round((reVerifications / totalHostsCount) * 100);
 
-  const suspendedHosts = users.filter((u) => u.status === "SUSPENDED").length;
+  const suspendedHosts = users.filter((u: any) => u.status === "SUSPENDED").length;
   const suspensionRate = Math.round((suspendedHosts / totalHostsCount) * 100);
 
   return {
@@ -338,30 +346,30 @@ export async function getBottlenecks(): Promise<BottleneckStage[]> {
   const now = new Date();
 
   // Document Verification bottleneck check
-  const pendingDocRequests = requests.filter((r) =>
-    r.documents.some((d) => d.status === "PENDING" || d.resubmissionRequested)
+  const pendingDocRequests = requests.filter((r: any) =>
+    r.documents.some((d: any) => d.status === "PENDING" || d.resubmissionRequested)
   );
 
   let docWaitMs = 0;
-  pendingDocRequests.forEach((r) => {
+  pendingDocRequests.forEach((r: any) => {
     docWaitMs += now.getTime() - new Date(r.updatedAt).getTime();
   });
   const avgDocWaitDays = pendingDocRequests.length > 0 ? Number((docWaitMs / pendingDocRequests.length / (1000 * 60 * 60 * 24)).toFixed(1)) : 0;
 
   // Compliance Review bottleneck check
   const pendingCompRequests = requests.filter(
-    (r) => r.complianceStatus === "PENDING" || r.complianceStatus === "UNDER_REVIEW"
+    (r: any) => r.complianceStatus === "PENDING" || r.complianceStatus === "UNDER_REVIEW"
   );
   let compWaitMs = 0;
-  pendingCompRequests.forEach((r) => {
+  pendingCompRequests.forEach((r: any) => {
     compWaitMs += now.getTime() - new Date(r.updatedAt).getTime();
   });
   const avgCompWaitDays = pendingCompRequests.length > 0 ? Number((compWaitMs / pendingCompRequests.length / (1000 * 60 * 60 * 24)).toFixed(1)) : 0;
 
   // Initial Intake bottleneck check
-  const pendingIntake = requests.filter((r) => r.status === "PENDING");
+  const pendingIntake = requests.filter((r: any) => r.status === "PENDING");
   let intakeWaitMs = 0;
-  pendingIntake.forEach((r) => {
+  pendingIntake.forEach((r: any) => {
     intakeWaitMs += now.getTime() - new Date(r.createdAt).getTime();
   });
   const avgIntakeWaitDays = pendingIntake.length > 0 ? Number((intakeWaitMs / pendingIntake.length / (1000 * 60 * 60 * 24)).toFixed(1)) : 0;
@@ -415,14 +423,14 @@ export async function getActionRequiredQueue(options?: {
   const now = new Date();
   const queue: ActionQueueItem[] = [];
 
-  requests.forEach((req) => {
+  requests.forEach((req: any) => {
     const hostName = req.applicantName || req.host?.name || "Host";
     const hostEmail = req.applicantEmail || req.host?.email || "";
 
     // 1. Critical compliance issues
     req.complianceIssues
-      .filter((i) => i.status !== "RESOLVED")
-      .forEach((iss) => {
+      .filter((i: any) => i.status !== "RESOLVED")
+      .forEach((iss: any) => {
         const isCritical = iss.severity === "CRITICAL";
         queue.push({
           id: `issue-${iss.id}`,
@@ -443,7 +451,7 @@ export async function getActionRequiredQueue(options?: {
       });
 
     // 2. Expired / Expiring documents
-    req.documents.forEach((doc) => {
+    req.documents.forEach((doc: any) => {
       if (doc.status === "EXPIRED" || (doc.expiryDate && new Date(doc.expiryDate) < now)) {
         queue.push({
           id: `doc-exp-${doc.id}`,
@@ -562,7 +570,7 @@ export async function getOperationalAlerts(): Promise<OperationalAlertItem[]> {
   const now = new Date();
   const alerts: OperationalAlertItem[] = [];
 
-  requests.forEach((req) => {
+  requests.forEach((req: any) => {
     const hostName = req.applicantName || "Host";
 
     // Application overdue alert
@@ -587,8 +595,8 @@ export async function getOperationalAlerts(): Promise<OperationalAlertItem[]> {
 
     // Critical compliance failure alert
     req.complianceIssues
-      .filter((i) => i.severity === "CRITICAL" && i.status !== "RESOLVED")
-      .forEach((iss) => {
+      .filter((i: any) => i.severity === "CRITICAL" && i.status !== "RESOLVED")
+      .forEach((iss: any) => {
         const alertId = `alert-crit-comp-${iss.id}`;
         const override = alertStateStore[alertId];
         alerts.push({
@@ -609,8 +617,8 @@ export async function getOperationalAlerts(): Promise<OperationalAlertItem[]> {
 
     // Document expired alert
     req.documents
-      .filter((d) => d.status === "EXPIRED" || (d.expiryDate && new Date(d.expiryDate) < now))
-      .forEach((doc) => {
+      .filter((d: any) => d.status === "EXPIRED" || (d.expiryDate && new Date(d.expiryDate) < now))
+      .forEach((doc: any) => {
         const alertId = `alert-doc-exp-${doc.id}`;
         const override = alertStateStore[alertId];
         alerts.push({
@@ -681,13 +689,13 @@ export async function getReviewerWorkload() {
   });
 
   const now = new Date();
-  const workloadList: ReviewerWorkloadItem[] = reviewers.map((rev) => {
-    const assignedReqs = requests.filter((r) => r.assignedReviewerId === rev.id);
-    const pending = assignedReqs.filter((r) => r.status === "PENDING" || r.status === "IN_REVIEW").length;
+  const workloadList: ReviewerWorkloadItem[] = reviewers.map((rev: any) => {
+    const assignedReqs = requests.filter((r: any) => r.assignedReviewerId === rev.id);
+    const pending = assignedReqs.filter((r: any) => r.status === "PENDING" || r.status === "IN_REVIEW").length;
     const overdue = assignedReqs.filter(
-      (r) => (r.status === "PENDING" || r.status === "IN_REVIEW") && now.getTime() - new Date(r.createdAt).getTime() > 3 * 86400000
+      (r: any) => (r.status === "PENDING" || r.status === "IN_REVIEW") && now.getTime() - new Date(r.createdAt).getTime() > 3 * 86400000
     ).length;
-    const completed = assignedReqs.filter((r) => r.status === "APPROVED" || r.status === "REJECTED").length;
+    const completed = assignedReqs.filter((r: any) => r.status === "APPROVED" || r.status === "REJECTED").length;
 
     return {
       reviewerId: rev.id,
@@ -729,7 +737,7 @@ export async function getGeographicAnalytics(): Promise<GeographicMetric[]> {
 
   const regionMap: Record<string, { total: number; approved: number; issues: number }> = {};
 
-  requests.forEach((r) => {
+  requests.forEach((r: any) => {
     const reg = r.location?.trim() || "Unspecified Region";
     if (!regionMap[reg]) {
       regionMap[reg] = { total: 0, approved: 0, issues: 0 };
@@ -773,9 +781,9 @@ export async function getTrendAnalytics(preset: DateRangePreset = "30_DAYS"): Pr
     d.setDate(d.getDate() - i * 4);
     const dateLabel = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-    const newRegs = requests.filter((r) => new Date(r.createdAt).toDateString() === d.toDateString()).length;
-    const appvs = requests.filter((r) => r.status === "APPROVED" && new Date(r.updatedAt).toDateString() === d.toDateString()).length;
-    const rejs = requests.filter((r) => r.status === "REJECTED" && new Date(r.updatedAt).toDateString() === d.toDateString()).length;
+    const newRegs = requests.filter((r: any) => new Date(r.createdAt).toDateString() === d.toDateString()).length;
+    const appvs = requests.filter((r: any) => r.status === "APPROVED" && new Date(r.updatedAt).toDateString() === d.toDateString()).length;
+    const rejs = requests.filter((r: any) => r.status === "REJECTED" && new Date(r.updatedAt).toDateString() === d.toDateString()).length;
 
     result.push({
       dateLabel,

@@ -80,7 +80,7 @@ export default async function AdminPage() {
     auditService.list({ limit: 6 }),
   ]);
 
-  const roleOptions = roles.map((r) => ({
+  const roleOptions = roles.map((r: any) => ({
     id: r.id,
     name: r.name,
     slug: r.slug,
@@ -251,7 +251,7 @@ export default async function AdminPage() {
                 No activity logs recorded yet.
               </div>
             ) : (
-              recentLogs.items.map((log) => (
+              recentLogs.items.map((log: any) => (
                 <div
                   key={log.id}
                   className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-2 hover:bg-[var(--surface-secondary)] transition-colors"

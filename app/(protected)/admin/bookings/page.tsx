@@ -29,7 +29,7 @@ export default async function AdminBookingsPage() {
     }),
   ]);
 
-  const serializedBookings = bookings.map((b) => ({
+  const serializedBookings = bookings.map((b: any) => ({
     id: b.id,
     status: b.status,
     startDate: b.startDate.toISOString(),
@@ -39,9 +39,9 @@ export default async function AdminBookingsPage() {
     listing: b.listing,
   }));
 
-  const pendingCount = stats.find((s) => s.status === "PENDING")?._count._all || 0;
-  const confirmedCount = stats.find((s) => s.status === "CONFIRMED")?._count._all || 0;
-  const cancelledCount = stats.find((s) => s.status === "CANCELLED")?._count._all || 0;
+  const pendingCount = stats.find((s: any) => s.status === "PENDING")?._count._all || 0;
+  const confirmedCount = stats.find((s: any) => s.status === "CONFIRMED")?._count._all || 0;
+  const cancelledCount = stats.find((s: any) => s.status === "CANCELLED")?._count._all || 0;
 
   return (
     <AdminBookingsClient

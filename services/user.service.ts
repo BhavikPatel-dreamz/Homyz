@@ -2,6 +2,7 @@ import { AppError } from "@/lib/api/errors";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/prisma";
 import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
+import { invalidateUserCache } from "@/lib/redis/invalidation";
 import { keys } from "@/lib/redis/keys";
 import type {
   ChangePasswordInput,
@@ -91,6 +92,8 @@ async function changePassword(
       data: { revokedAt: new Date() },
     }),
   ]);
+
+  await invalidateUserCache(userId);
   return { success: true };
 }
 

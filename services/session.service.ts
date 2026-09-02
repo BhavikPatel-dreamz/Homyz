@@ -45,7 +45,7 @@ async function listForUser(userId: string): Promise<UnifiedSessionDTO[]> {
   ]);
 
   const list: UnifiedSessionDTO[] = [
-    ...webSessions.map((s) => ({
+    ...webSessions.map((s: any) => ({
       id: s.id,
       type: "web" as const,
       userId: s.userId,
@@ -57,7 +57,7 @@ async function listForUser(userId: string): Promise<UnifiedSessionDTO[]> {
       expiresAt: s.expires,
       isRevoked: s.isRevoked,
     })),
-    ...refreshTokens.map((r) => ({
+    ...refreshTokens.map((r: any) => ({
       id: r.id,
       type: "mobile" as const,
       userId: r.userId,
@@ -91,7 +91,7 @@ async function listAllActive(limit = 50): Promise<UnifiedSessionDTO[]> {
   ]);
 
   const list: UnifiedSessionDTO[] = [
-    ...webSessions.map((s) => ({
+    ...webSessions.map((s: any) => ({
       id: s.id,
       type: "web" as const,
       userId: s.userId,
@@ -106,7 +106,7 @@ async function listAllActive(limit = 50): Promise<UnifiedSessionDTO[]> {
       expiresAt: s.expires,
       isRevoked: s.isRevoked,
     })),
-    ...refreshTokens.map((r) => ({
+    ...refreshTokens.map((r: any) => ({
       id: r.id,
       type: "mobile" as const,
       userId: r.userId,
