@@ -4,10 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState, useTransition, type FormEvent } from "react";
 import { Alert } from "../ui";
 import { HomyzLogo } from "../ui/homyz-logo";
 import { registerAction } from "@/actions/auth/register";
+import { AppHeader } from "@/components/dashboard/app-header";
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
@@ -44,6 +46,8 @@ export function HomyzAuthForm({
   const [inputMethod, setInputMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const user = status === "authenticated" ? session?.user : null;
 
   // Form states
   const [email, setEmail] = useState("");
@@ -279,90 +283,9 @@ export function HomyzAuthForm({
   return (
     <div className="min-h-screen flex flex-col bg-white text-zinc-900 font-sans selection:bg-amber-100">
       {/* --------------------------------------------------------- */}
-      {/* 1. TOP HEADER (Matches Reference Screenshots 100%)         */}
+      {/* 1. TOP HEADER (Unified AppHeader)                          */}
       {/* --------------------------------------------------------- */}
-      <header className="w-full bg-white border-b border-zinc-200/80 sticky top-0 z-50">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-8 py-3.5 relative">
-          {/* Left: Handwritten brand slogan */}
-          <Link href="/" className="font-['Caveat'] text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none">
-            Stay like a homie.
-          </Link>
-
-          {/* Center: Brand Logo */}
-          <Link href="/" className="flex items-center gap-2 group absolute left-1/2 -translate-x-1/2">
-            <HomyzLogo className="text-zinc-950 group-hover:scale-105 transition-transform shrink-0" size={28} />
-            <span className="text-xl font-extrabold tracking-tight text-zinc-900">
-              homyz
-            </span>
-          </Link>
-
-          {/* Right: Actions (logged-out variant) */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <Link
-              href="/host/onboarding"
-              className="text-sm font-semibold text-zinc-900 hover:bg-zinc-100 px-3.5 py-2 rounded-full transition-all cursor-pointer select-none whitespace-nowrap hidden sm:inline-block"
-            >
-              Become a host
-            </Link>
-
-            {/* User Profile Outline Button (👤) */}
-            <button
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              title="Account"
-            >
-              <svg className="w-5 h-5 text-zinc-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M20 21a8 8 0 10-16 0" />
-              </svg>
-            </button>
-
-            {/* Menu Hamburger Button (≡) */}
-            <button
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              aria-label="Menu"
-            >
-              <svg className="w-4 h-4 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                <line x1="4" y1="7" x2="20" y2="7" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="17" x2="20" y2="17" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer Menu */}
-      {menuOpen && (
-        <div className="border-t border-zinc-100 bg-white px-4 py-4 shadow-lg sm:px-6">
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-900 hover:text-zinc-600"
-            >
-              Log in / Sign up
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-zinc-900 hover:text-zinc-600"
-            >
-              Become a host
-            </Link>
-            <Link
-              href="/admin"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-amber-800 hover:text-amber-900"
-            >
-              Admin Portal
-            </Link>
-          </div>
-        </div>
-      )}
+      <AppHeader />
 
       {/* --------------------------------------------------------- */}
       {/* 2. MAIN FORM & HERO SECTION                                */}
@@ -749,14 +672,14 @@ export function HomyzAuthForm({
               <div className="h-px flex-1 bg-zinc-200/90" />
             </div>
 
-            {/* Social login buttons (Google, Apple, Facebook - Soft Purple Tint matching reference UI 100%) */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Social login buttons (Google, Apple - Center Aligned & Balanced Grid) */}
+            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto w-full">
               {/* Google */}
               {(providers.google ?? true) && (
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("google")}
-                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-3 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
+                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-4 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
                   title="Continue with Google"
                 >
                   <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
@@ -774,7 +697,7 @@ export function HomyzAuthForm({
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("apple")}
-                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-3 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
+                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-4 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
                   title="Continue with Apple"
                 >
                   <svg className="h-4 w-4 fill-current shrink-0 text-zinc-900" viewBox="0 0 24 24">
@@ -783,22 +706,6 @@ export function HomyzAuthForm({
                   <span>Apple</span>
                 </button>
               )}
-
-              {/* Facebook - hidden until configured
-              {(providers.facebook ?? true) && (
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("facebook")}
-                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-3 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
-                  title="Continue with Facebook"
-                >
-                  <svg className="h-4 w-4 fill-current text-zinc-900 shrink-0" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                  <span>Facebook</span>
-                </button>
-              )}
-              */}
             </div>
 
             {/* Toggle between Email / Phone Button */}
