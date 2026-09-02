@@ -30,17 +30,22 @@ export function AppHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isHostRoute = pathname?.startsWith("/host") ?? false;
+
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/host/today", label: "Today", requireHost: true },
+    { href: "/host/calendar", label: "Calendar", requireHost: true },
+    { href: "/host/listings", label: "Your listings", requireHost: true },
+    { href: "/host/messages", label: "Messages", requireHost: true },
     { href: "/bookings", label: "Bookings" },
-    { href: "/host/listings", label: "My listings", requireHost: true },
     { href: "/host/onboarding", label: "Become a Host / Application" },
     { href: "/admin", label: "Admin", requireAdmin: true },
     { href: "/profile", label: "Profile" },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-md text-zinc-900 transition-colors" suppressHydrationWarning>
+    <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-md text-zinc-900 transition-colors font-sans" suppressHydrationWarning>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-8 py-3 relative">
         {/* Left: Handwritten brand slogan */}
         <Link href="/" className="font-['Caveat'] text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none shrink-0">
@@ -48,7 +53,7 @@ export function AppHeader() {
         </Link>
 
         {/* Center: Brand Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2 group absolute left-1/2 -translate-x-1/2">
+        <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="flex items-center gap-2 group absolute left-1/2 -translate-x-1/2">
           <HomyzLogo className="text-zinc-950 group-hover:scale-105 transition-transform shrink-0" size={28} />
           <span className="text-xl font-extrabold tracking-tight text-zinc-900 hidden sm:inline-block">
             homyz
@@ -62,12 +67,12 @@ export function AppHeader() {
             /* LOGGED IN HEADER RIGHT SIDE (Yellow Pill + Photo Avatar + 文A + ≡) */
             /* ------------------------------------------------------------- */
             <>
-              {/* 1. Yellow Pill Button: Become a host / Switch to hosting */}
+              {/* 1. Yellow Pill Button: Become a host / Switch to hosting / Switch to traveling */}
               <Link
-                href={role === "HOST" ? "/host/listings" : "/host/onboarding"}
+                href={isHostRoute ? "/dashboard" : role === "HOST" ? "/host/listings" : "/host/onboarding"}
                 className="rounded-full bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-normal text-base px-7 py-3 transition-all cursor-pointer select-none whitespace-nowrap shrink-0 hidden sm:inline-block"
               >
-                {role === "HOST" ? "Switch to hosting" : "Become a host"}
+                {isHostRoute ? "switch to traveling" : role === "HOST" ? "switch to hosting" : "become a host"}
               </Link>
 
               {/* 2. Logged-in User Profile Photo Avatar */}

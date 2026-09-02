@@ -4,8 +4,8 @@ import React from "react";
 import { RealMap } from "@/components/ui/real-map";
 
 interface EditorSidebarProps {
-  editorTab: "space" | "arrival";
-  setEditorTab: (tab: "space" | "arrival") => void;
+  editorTab: "space" | "arrival" | "preferences";
+  setEditorTab: (tab: "space" | "arrival" | "preferences") => void;
   activeSection: string;
   setActiveSection: (section: any) => void;
   editTitle: string;
@@ -83,9 +83,11 @@ export function EditorSidebar({
   return (
     <aside className="lg:col-span-5 xl:col-span-5 flex flex-col sticky top-20 self-start max-h-[calc(100vh-6rem)]">
       <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
-        {/* Header Title (Fixed) */}
+        {/* Header Title (Matches Figma: "Edit preferences" when gear active, else "Listing editor") */}
         <div className="flex items-center justify-between pb-3 shrink-0">
-          <h2 className="text-xl font-extrabold tracking-tight text-zinc-900">Listing editor</h2>
+          <h2 className="text-xl font-extrabold tracking-tight text-zinc-900">
+            {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
+          </h2>
         </div>
 
         {/* Sub-Pills: [Your space] [Arrival guide] ⚙️ (Fixed) */}
@@ -122,7 +124,15 @@ export function EditorSidebar({
 
           <button
             type="button"
-            className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-xs transition-all cursor-pointer"
+            onClick={() => {
+              setEditorTab("preferences");
+              setActiveSection("listing-status");
+            }}
+            className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs transition-all cursor-pointer ${
+              editorTab === "preferences"
+                ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
+                : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+            }`}
           >
             ⚙️
           </button>
@@ -130,37 +140,172 @@ export function EditorSidebar({
 
         {/* Scrollable Sidebar Content Body */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1.5 space-y-3 custom-scrollbar">
-          {/* Photo Card Stack Preview */}
-          <div
-            onClick={() => setActiveSection("photos")}
-            className="relative cursor-pointer group my-2 pr-3 pt-2"
-          >
-            <div className="absolute inset-0 translate-x-2.5 -translate-y-1 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
-            <div className="absolute inset-0 translate-x-1.25 -translate-y-0.5 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
-
-            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-zinc-300 bg-zinc-100 shadow-xs flex items-center justify-center">
-              {editPhotos.length > 0 ? (
-                <img
-                  src={editPhotos[0]}
-                  alt="Property cover"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
-                  <span className="text-2xl mb-1">🏡</span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
-                <span className="bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-extrabold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
-                  {editPhotos.length || 14} photos
+          {/* Preferences Cards Stack */}
+          {editorTab === "preferences" ? (
+            <div className="space-y-3">
+              {/* Card 1: Listing status */}
+              <div
+                onClick={() => setActiveSection("listing-status")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "listing-status" || activeSection === "listingstatus"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-1">
+                  Listing status
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  listed
                 </span>
               </div>
-            </div>
-          </div>
 
-          {/* Card Items Stack (Clickable sections matching Figma) */}
-          {editorTab === "space" ? (
+              {/* Card 2: Language */}
+              <div
+                onClick={() => setActiveSection("language")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "language"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Language
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  English
+                </p>
+              </div>
+
+              {/* Card 3: Guest requirements */}
+              <div
+                onClick={() => setActiveSection("guest-requirements")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "guest-requirements" || activeSection === "guestrequirements"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Guest requirements
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Profile photo not required
+                </p>
+              </div>
+
+              {/* Card 4: Local laws */}
+              <div
+                onClick={() => setActiveSection("local-laws")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "local-laws" || activeSection === "locallaws"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Local laws
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Review your local laws
+                </p>
+              </div>
+
+              {/* Card 5: Regulations */}
+              <div
+                onClick={() => setActiveSection("regulations")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "regulations"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Regulations
+                </span>
+              </div>
+
+              {/* Card 6: Taxes */}
+              <div
+                onClick={() => setActiveSection("taxes")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "taxes"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Taxes
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Learn how taxes work for Hosts
+                </p>
+              </div>
+
+              {/* Card 7: Homyz.com stays */}
+              <div
+                onClick={() => setActiveSection("homyz-stays")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "homyz-stays" || activeSection === "homyzstays"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Homyz.com stays
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Learn how you can help
+                </p>
+              </div>
+
+              {/* Card 8: Remove listing */}
+              <div
+                onClick={() => setActiveSection("remove-listing")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "remove-listing" || activeSection === "removelisting"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Remove listing
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Permanently remove your listing
+                </p>
+              </div>
+            </div>
+          ) : editorTab === "space" ? (
             <div className="space-y-3">
+              {/* Photo Card Stack Preview (Only shown under "Your space") */}
+              <div
+                onClick={() => setActiveSection("photos")}
+                className="relative cursor-pointer group my-2 pr-3 pt-2"
+              >
+                <div className="absolute inset-0 translate-x-2.5 -translate-y-1 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
+                <div className="absolute inset-0 translate-x-1.25 -translate-y-0.5 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
+
+                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-zinc-300 bg-zinc-100 shadow-xs flex items-center justify-center">
+                  {editPhotos.length > 0 ? (
+                    <img
+                      src={editPhotos[0]}
+                      alt="Property cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                      <span className="text-2xl mb-1">🏡</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
+                    <span className="bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-extrabold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
+                      {editPhotos.length || 14} photos
+                    </span>
+                  </div>
+                </div>
+              </div>
               {/* 1. Title */}
               <div
                 onClick={() => setActiveSection("title")}
@@ -536,50 +681,7 @@ export function EditorSidebar({
           ) : (
             /* Arrival Guide Mode Sidebar Items (Matches Figma Screenshot 100%) */
             <div className="space-y-3">
-              {/* Card 1: Check-in / Check-out */}
-              <div
-                onClick={() => setActiveSection("check-in-out")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "check-in-out"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-zinc-900 block">Check-In</span>
-                  <p className="text-[11px] text-zinc-500 font-semibold">{checkInStart || "3:00 PM"}</p>
-                </div>
-
-                <div className="border-t border-indigo-100/80 my-3" />
-
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-zinc-900 block">Check-out</span>
-                  <p className="text-[11px] text-zinc-500 font-semibold">{checkOutTime || "12:00 PM"}</p>
-                </div>
-              </div>
-
-              {/* Card 2: Directions */}
-              <div
-                onClick={() => setActiveSection("directions")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "directions"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
-                  Directions
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  {directions && directions.trim() !== ""
-                    ? directions.length > 25
-                      ? directions.slice(0, 25) + "..."
-                      : directions
-                    : "Add details"}
-                </p>
-              </div>
-
-              {/* Card 3: Check-In method */}
+              {/* Card 1: Check-In method */}
               <div
                 onClick={() => setActiveSection("check-in-method")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
@@ -589,14 +691,14 @@ export function EditorSidebar({
                 }`}
               >
                 <span className="text-xs font-bold text-zinc-900 block mb-0.5">
-                  Check-In method
+                  Check-in method
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
                   {checkInMethod === "SMART_LOCK" || checkInMethod === "Smart lock" ? "Smart lock" : checkInMethod || "Smart lock"}
                 </p>
               </div>
 
-              {/* Card 4: Wifi details */}
+              {/* Card 2: Wifi details */}
               <div
                 onClick={() => setActiveSection("wifi-details")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
@@ -613,7 +715,7 @@ export function EditorSidebar({
                 </p>
               </div>
 
-              {/* Card 5: House manual */}
+              {/* Card 3: House manual */}
               <div
                 onClick={() => setActiveSection("house-manual")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
@@ -630,20 +732,138 @@ export function EditorSidebar({
                 </p>
               </div>
 
-              {/* Card 6: Description */}
+              {/* Card 4: House rules */}
               <div
-                onClick={() => setActiveSection("description")}
+                onClick={() => setActiveSection("house-rules")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "description"
+                  activeSection === "house-rules"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-2">House rules</span>
+                <div className="space-y-1 text-[11px] text-zinc-600 font-medium">
+                  <div className="flex items-center gap-2">
+                    <span>🕒</span>
+                    <span>Check-in after {checkInStart || "3:00PM"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>⏱️</span>
+                    <span>Check-out before {checkOutTime || "11:00AM"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>👥</span>
+                    <span>{maxGuestsCount || editGuests || 2} guest maximum</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-400 pt-0.5 font-bold">+3 more</p>
+                </div>
+              </div>
+
+              {/* Card 5: Check-out instructions */}
+              <div
+                onClick={() => setActiveSection("checkout-instructions")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "checkout-instructions" ||
+                  activeSection === "check-out-instructions" ||
+                  activeSection === "checkout" ||
+                  activeSection === "check-out"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
                 <span className="text-xs font-bold text-zinc-900 block mb-0.5">
-                  Description
+                  Check-out instructions
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Add details
+                </p>
+              </div>
+
+              {/* Card 6: Guidebooks */}
+              <div
+                onClick={() => setActiveSection("guidebooks")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "guidebooks" || activeSection === "guidebook"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Guidebooks
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal line-clamp-2 leading-relaxed">
-                  Lorem ipsum massa pellentesque enim lobortis mattis elit lorem morbi viverra nec congue tempus et pellentesque
+                  Create a guidebook to share your location tips with guests.
+                </p>
+              </div>
+
+              {/* Card 7: Interaction preferences (Matches Figma Screenshot 100%) */}
+              <div
+                onClick={() => setActiveSection("interaction-preferences")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "interaction-preferences" ||
+                  activeSection === "interactionpreferences" ||
+                  activeSection === "interaction"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Interaction preferences
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Add details
+                </p>
+              </div>
+
+              {/* Card 8: Listing status */}
+              <div
+                onClick={() => setActiveSection("listing-status")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "listing-status" || activeSection === "listingstatus"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-1">
+                  Listing status
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  listed
+                </span>
+              </div>
+
+              {/* Card 9: Language */}
+              <div
+                onClick={() => setActiveSection("language")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "language" || activeSection === "languages"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Language
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  English
+                </p>
+              </div>
+
+              {/* Card 10: Guest requirements */}
+              <div
+                onClick={() => setActiveSection("guest-requirements")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "guest-requirements" || activeSection === "guestrequirements"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                  Guest requirements
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  Profile photo not required
                 </p>
               </div>
             </div>

@@ -22,7 +22,32 @@ export type SectionKey =
   | "check-in-out"
   | "check-in-method"
   | "wifi-details"
-  | "house-manual";
+  | "house-manual"
+  | "checkout-instructions"
+  | "check-out-instructions"
+  | "checkout"
+  | "check-out"
+  | "checkout-page"
+  | "check-out-page"
+  | "checkoutpage"
+  | "guidebooks"
+  | "guidebook"
+  | "interaction-preferences"
+  | "interactionpreferences"
+  | "listing-status"
+  | "listingstatus"
+  | "language"
+  | "languages"
+  | "guest-requirements"
+  | "guestrequirements"
+  | "local-laws"
+  | "locallaws"
+  | "regulations"
+  | "taxes"
+  | "homyz-stays"
+  | "homyzstays"
+  | "remove-listing"
+  | "removelisting";
 
 const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "property-type": "propertyType",
@@ -63,6 +88,31 @@ const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "wifidetails": "wifi-details",
   "house-manual": "house-manual",
   "housemanual": "house-manual",
+  "checkout-instructions": "checkout-instructions",
+  "check-out-instructions": "checkout-instructions",
+  "checkoutinstructions": "checkout-instructions",
+  "checkout": "checkout-instructions",
+  "check-out": "checkout-instructions",
+  "checkout-page": "checkout-instructions",
+  "check-out-page": "checkout-instructions",
+  "checkoutpage": "checkout-instructions",
+  "guidebooks": "guidebooks",
+  "guidebook": "guidebooks",
+  "interaction-preferences": "interaction-preferences",
+  "interactionpreferences": "interaction-preferences",
+  "listing-status": "listing-status",
+  "listingstatus": "listing-status",
+  "language": "language",
+  "guest-requirements": "guest-requirements",
+  "guestrequirements": "guest-requirements",
+  "local-laws": "local-laws",
+  "locallaws": "local-laws",
+  "regulations": "regulations",
+  "taxes": "taxes",
+  "homyz-stays": "homyz-stays",
+  "homyzstays": "homyz-stays",
+  "remove-listing": "remove-listing",
+  "removelisting": "remove-listing",
 };
 
 export function sectionToSlug(section: SectionKey): string {

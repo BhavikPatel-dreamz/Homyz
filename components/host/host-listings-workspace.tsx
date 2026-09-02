@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
+import { HostSubNav } from "./host-sub-nav";
+import { Footer } from "@/components/dashboard/footer";
 import {
   createListingAction,
   updateListingAction,
@@ -385,6 +387,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
     <div className="min-h-screen bg-white text-zinc-900 font-sans flex flex-col selection:bg-[#FEE08B]">
       {/* ── 1. TOP HEADER (Matches Figma Screenshot Header) ── */}
       <HostHeader />
+      <HostSubNav activeTab="listing" />
 
       {/* ── 2. MAIN CONTENT AREA ── */}
       <main className="max-w-6xl mx-auto w-full px-6 sm:px-10 py-10 flex-1 space-y-8">
@@ -553,62 +556,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         )}
       </main>
 
-      {/* ── 3. FOOTER SECTION (Matches Figma Screenshot Footer) ── */}
-      <footer className="w-full bg-[#F7F7F7] border-t border-zinc-200 mt-20 py-12 px-6 sm:px-12 text-xs text-zinc-600 font-sans">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-10 pb-10 border-b border-zinc-200/80">
-          {/* Column 1: Support */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-zinc-900 text-xs">Support</h4>
-            <ul className="space-y-2.5 text-zinc-600 text-[11px]">
-              <li><a href="#" className="hover:underline">Help Center</a></li>
-              <li><a href="#" className="hover:underline">Get help with a safety issue</a></li>
-              <li><a href="#" className="hover:underline">Disability support</a></li>
-              <li><a href="#" className="hover:underline">Cancellation options</a></li>
-              <li><a href="#" className="hover:underline">Report neighborhood concern</a></li>
-            </ul>
-          </div>
-
-          {/* Column 2: Hosting */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-zinc-900 text-xs">Hosting</h4>
-            <ul className="space-y-2.5 text-zinc-600 text-[11px]">
-              <li><a href="#" className="hover:underline">Homyz your home</a></li>
-              <li><a href="#" className="hover:underline">Homyz your experience</a></li>
-              <li><a href="#" className="hover:underline">Homyz your service</a></li>
-              <li><a href="#" className="hover:underline">Homyz for Hosts</a></li>
-              <li><a href="#" className="hover:underline">Hosting resources</a></li>
-              <li><a href="#" className="hover:underline">Community forum</a></li>
-              <li><a href="#" className="hover:underline">Hosting responsibly</a></li>
-              <li><a href="#" className="hover:underline">Find a co-host</a></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Homyz */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-zinc-900 text-xs">Homyz</h4>
-            <ul className="space-y-2.5 text-zinc-600 text-[11px]">
-              <li><a href="#" className="hover:underline">2025 Summer Release</a></li>
-              <li><a href="#" className="hover:underline">Newsroom</a></li>
-              <li><a href="#" className="hover:underline">Careers</a></li>
-              <li><a href="#" className="hover:underline">Investors</a></li>
-              <li><a href="#" className="hover:underline">Gift cards</a></li>
-              <li><a href="#" className="hover:underline">Homyz.com emergency stays</a></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom copyright and social icons */}
-        <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
-          <div>
-            © 2025 Homyz, Inc.
-          </div>
-          <div className="flex items-center gap-4 text-zinc-700 font-bold">
-            <a href="#" className="hover:opacity-75">f</a>
-            <a href="#" className="hover:opacity-75">t</a>
-            <a href="#" className="hover:opacity-75">in</a>
-          </div>
-        </div>
-      </footer>
+      {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
+      <Footer />
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (
