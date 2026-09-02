@@ -493,7 +493,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 Application ID: {application.applicationId}
               </span>
             </div>
-            <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)] sm:text-3xl">
+            <h1 className="mt-2">
               Become a Homyz Host
             </h1>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">

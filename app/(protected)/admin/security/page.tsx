@@ -31,7 +31,7 @@ export default async function AdminSecurityPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+        <h1>
           Security Monitoring
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">

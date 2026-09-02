@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { HomyzLogo } from "../ui/homyz-logo";
+import { Container } from "@/components/ui/container";
 
 export interface HostHeaderProps {
   user?: {
@@ -63,11 +64,12 @@ export function HostHeader({ user }: HostHeaderProps) {
   return (
     <>
       {/* ── STICKY HEADER BAR ── */}
-      <header className="w-full border-b border-zinc-200/80 bg-white px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-40 relative font-sans">
+      <header className="w-full border-b border-zinc-200/80 bg-white sticky top-0 z-40 relative font-sans">
+        <Container className="flex items-center justify-between py-3.5 relative">
         {/* Left: Tagline in Cursive / Handwriting font */}
         <Link
           href="/"
-          className="font-['Caveat'] text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none"
+          className="font-script text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none"
         >
           Stay like a homie.
         </Link>
@@ -89,7 +91,7 @@ export function HostHeader({ user }: HostHeaderProps) {
           <button
             type="button"
             onClick={handleSwitchToTraveling}
-            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-900 font-normal text-sm sm:text-base px-6 py-2.5 sm:px-7 sm:py-3 transition-all cursor-pointer select-none"
+            className="rounded-full bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-normal text-sm sm:text-base px-6 py-2.5 sm:px-7 sm:py-3 transition-all cursor-pointer select-none"
           >
             switch to traveling
           </button>
@@ -97,7 +99,7 @@ export function HostHeader({ user }: HostHeaderProps) {
           {/* Profile Avatar */}
           <div
             onClick={() => setProfileModalOpen(true)}
-            className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-2xs border border-zinc-100/80 cursor-pointer hover:opacity-90 transition-opacity"
+            className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
             title="View Host Profile"
           >
             <Image
@@ -119,7 +121,7 @@ export function HostHeader({ user }: HostHeaderProps) {
           >
             <span className="font-sans font-medium text-xs tracking-tighter flex items-center justify-center">
               <span className="text-[13px] leading-none">文</span>
-              <span className="text-[10px] font-bold leading-none -ml-0.5">A</span>
+              <span className="text-[10px] font-bold leading-none -ml-0.5 transform translate-y-0.5">A</span>
             </span>
           </button>
 
@@ -127,16 +129,17 @@ export function HostHeader({ user }: HostHeaderProps) {
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
             aria-label="Menu"
           >
-            <svg className="w-4 h-4 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <svg className="w-5 h-5 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <line x1="4" y1="7" x2="20" y2="7" />
               <line x1="4" y1="12" x2="20" y2="12" />
               <line x1="4" y1="17" x2="20" y2="17" />
             </svg>
           </button>
         </div>
+        </Container>
       </header>
 
       {/* ── TOAST NOTIFICATION ── */}

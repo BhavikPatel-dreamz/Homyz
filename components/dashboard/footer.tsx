@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Container } from "@/components/ui/container";
 
 export function Footer() {
   const scrollToTop = () => {
@@ -10,7 +11,7 @@ export function Footer() {
 
   return (
     <footer className="w-full border-t border-[var(--border)] bg-[var(--surface-secondary)]/60 text-[var(--foreground)] transition-colors mt-auto">
-      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <Container className="py-12">
         {/* Columns Grid matching Reference Screenshot */}
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 relative">
           {/* Column 1: Support */}
@@ -179,7 +180,7 @@ export function Footer() {
             </a>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

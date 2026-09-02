@@ -7,11 +7,13 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { HomyzLogo } from "@/components/ui/homyz-logo";
+import { primaryButtonInteractionClass } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 
 export function AppHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const user = session?.user;
+  const user = session?.user ?? null;
   const role = user?.role;
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,9 +43,9 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-md text-zinc-900 transition-colors" suppressHydrationWarning>
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-8 py-3 relative">
+      <Container className="flex items-center justify-between py-3 relative">
         {/* Left: Handwritten brand slogan */}
-        <Link href="/" className="font-['Caveat'] text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none shrink-0">
+        <Link href="/" className="font-script text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none shrink-0">
           Stay like a homie.
         </Link>
 
@@ -55,25 +57,25 @@ export function AppHeader() {
           </span>
         </Link>
 
-        {/* Right: Actions (100% Reference UI Parity) */}
+        {/* Right: Actions (Conditional by Auth State) */}
         <div className="flex items-center gap-2.5 sm:gap-3" ref={menuRef}>
           {user ? (
             /* ------------------------------------------------------------- */
-            /* LOGGED IN HEADER RIGHT SIDE (Screenshot 1 Parity)            */
+            /* LOGGED IN HEADER RIGHT SIDE (Yellow Pill + Photo Avatar + 文A + ≡) */
             /* ------------------------------------------------------------- */
             <>
-              {/* Become a host / Switch to hosting Yellow Pill */}
+              {/* 1. Yellow Pill Button: Become a host / Switch to hosting */}
               <Link
                 href={role === "HOST" ? "/host/listings" : "/host/onboarding"}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-900 font-semibold text-xs sm:text-sm px-5 py-2.5 transition-all cursor-pointer select-none whitespace-nowrap shadow-2xs hidden sm:inline-block"
+                className={`rounded-full bg-[#FDE29B] text-zinc-900 font-normal text-base px-7 py-3 transition-colors cursor-pointer select-none whitespace-nowrap shrink-0 hidden sm:inline-block ${primaryButtonInteractionClass}`}
               >
                 {role === "HOST" ? "Switch to hosting" : "Become a host"}
               </Link>
 
-              {/* Profile Avatar Image */}
+              {/* 2. Logged-in User Profile Photo Avatar */}
               <Link
                 href="/profile"
-                className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-2xs border border-zinc-200 cursor-pointer hover:opacity-90 transition-opacity"
+                className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                 title="Profile"
               >
                 <Image
@@ -86,27 +88,27 @@ export function AppHeader() {
                 />
               </Link>
 
-              {/* Language Icon Button (文A) */}
+              {/* 3. Language Icon Button (文A) */}
               <button
                 type="button"
                 onClick={() => setLangModalOpen(!langModalOpen)}
-                className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Language"
               >
                 <span className="font-sans font-medium text-xs tracking-tighter flex items-center justify-center">
                   <span className="text-[13px] leading-none">文</span>
-                  <span className="text-[10px] font-bold leading-none -ml-0.5">A</span>
+                  <span className="text-[10px] font-bold leading-none -ml-0.5 transform translate-y-0.5">A</span>
                 </span>
               </button>
 
-              {/* Hamburger Menu Button */}
+              {/* 4. Hamburger Menu Button (≡) */}
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 aria-label="Menu"
               >
-                <svg className="w-4.5 h-4.5 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <svg className="w-5 h-5 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <line x1="4" y1="7" x2="20" y2="7" />
                   <line x1="4" y1="12" x2="20" y2="12" />
                   <line x1="4" y1="17" x2="20" y2="17" />
@@ -115,38 +117,51 @@ export function AppHeader() {
             </>
           ) : (
             /* ------------------------------------------------------------- */
-            /* LOGGED OUT HEADER RIGHT SIDE (Screenshot 2 Parity)           */
+            /* LOGGED OUT HEADER RIGHT SIDE (Yellow Pill + Account Silhouette 👤 + ≡) */
             /* ------------------------------------------------------------- */
             <>
-              {/* Become a Host Link (Plain text) */}
+              {/* 1. Become a Host Yellow Pill Button */}
               <Link
                 href="/host/onboarding"
-                className="text-sm font-semibold text-zinc-900 hover:bg-zinc-100 px-3.5 py-2 rounded-full transition-all cursor-pointer select-none whitespace-nowrap hidden sm:inline-block"
+                className={`rounded-full bg-[#FDE29B] text-zinc-900 font-normal text-base px-7 py-3 transition-colors cursor-pointer select-none whitespace-nowrap shrink-0 hidden sm:inline-block ${primaryButtonInteractionClass}`}
               >
                 Become a host
               </Link>
 
-              {/* User Profile Outline Button (👤) */}
+              {/* 2. Unauthenticated User Account Silhouette Button (👤) */}
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Account"
               >
-                <svg className="w-5 h-5 text-zinc-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-5 h-5 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="8" r="4" />
                   <path d="M20 21a8 8 0 10-16 0" />
                 </svg>
               </button>
 
-              {/* Hamburger Menu Button (≡) */}
+              {/* 3. Language Icon Button (文A) */}
+              <button
+                type="button"
+                onClick={() => setLangModalOpen(!langModalOpen)}
+                className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="Language"
+              >
+                <span className="font-sans font-medium text-xs tracking-tighter flex items-center justify-center">
+                  <span className="text-[13px] leading-none">文</span>
+                  <span className="text-[10px] font-bold leading-none -ml-0.5 transform translate-y-0.5">A</span>
+                </span>
+              </button>
+
+              {/* 4. Hamburger Menu Button (≡) */}
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-[#F3F4F6] hover:bg-zinc-200/80 text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 aria-label="Menu"
               >
-                <svg className="w-4.5 h-4.5 text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <svg className="w-5 h-5 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
                   <line x1="4" y1="7" x2="20" y2="7" />
                   <line x1="4" y1="12" x2="20" y2="12" />
                   <line x1="4" y1="17" x2="20" y2="17" />
@@ -155,12 +170,12 @@ export function AppHeader() {
             </>
           )}
 
-          {/* Dropdown Menu Container */}
+          {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
           {menuOpen && (
-            <div className="absolute right-4 top-14 w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-zinc-900">
+            <div className="absolute right-0 top-full mt-2.5 w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-zinc-900 max-h-[calc(100vh-80px)] overflow-y-auto">
               {!user ? (
                 /* ------------------------------------------------------------- */
-                /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot) */
+                /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
                 /* ------------------------------------------------------------- */
                 <div className="space-y-1">
                   {/* Languages & currency */}
@@ -192,7 +207,7 @@ export function AppHeader() {
 
                   <div className="my-2 border-t border-zinc-100" />
 
-                  {/* Become a host Card Banner */}
+                  {/* Become a host Card Banner with Host Illustration */}
                   <Link
                     href="/host/onboarding"
                     onClick={() => setMenuOpen(false)}
@@ -202,9 +217,17 @@ export function AppHeader() {
                       <p className="text-sm font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">Become a host</p>
                       <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">It&apos;s easy to start hosting and earn extra income.</p>
                     </div>
-                    <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    {/* Host Illustration matching Screenshot 3 */}
+                    <div className="w-12 h-14 flex items-center justify-center shrink-0">
+                      <svg className="w-10 h-12 shrink-0" viewBox="0 0 40 48" fill="none">
+                        <circle cx="20" cy="10" r="5" fill="#8D5B4C" />
+                        <circle cx="20" cy="9" r="4" fill="#FFCDB2" />
+                        <path d="M14 17C14 15.5 16.5 15 20 15C23.5 15 26 15.5 26 17L27 28H13L14 17Z" fill="#C84B31" />
+                        <path d="M26 18L32 14C33 13.5 34 14.5 33.5 15.5L30 22L27 20Z" fill="#C84B31" />
+                        <path d="M14 28H19V44H15V28Z" fill="#3D405B" />
+                        <path d="M21 28H26V44H22V28Z" fill="#3D405B" />
+                        <rect x="14" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
+                        <rect x="21" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
                       </svg>
                     </div>
                   </Link>
@@ -262,11 +285,10 @@ export function AppHeader() {
                           key={item.href}
                           href={item.href}
                           onClick={() => setMenuOpen(false)}
-                          className={`flex items-center px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${
-                            pathname === item.href
+                          className={`flex items-center px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${pathname === item.href
                               ? "bg-amber-100 text-amber-950 font-bold"
                               : "text-zinc-800 hover:bg-zinc-50"
-                          }`}
+                            }`}
                         >
                           {item.label}
                         </Link>
@@ -298,14 +320,14 @@ export function AppHeader() {
             </div>
           )}
         </div>
-      </div>
+      </Container>
 
       {/* ------------------------------------------------------------- */}
-      {/* LANGUAGES & CURRENCY MODAL                                    */}
+      {/* LANGUAGES & CURRENCY MODAL (Screen Centered Overlay)          */}
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-bold text-zinc-900">Languages &amp; currency</h3>
               <button
@@ -327,11 +349,10 @@ export function AppHeader() {
                       key={lang}
                       type="button"
                       onClick={() => setSelectedLang(lang)}
-                      className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${
-                        selectedLang === lang
+                      className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${selectedLang === lang
                           ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
                           : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       {lang}
                     </button>
@@ -348,11 +369,10 @@ export function AppHeader() {
                       key={curr}
                       type="button"
                       onClick={() => setSelectedCurrency(curr)}
-                      className={`p-3 rounded-2xl border text-xs font-semibold text-center transition-all cursor-pointer ${
-                        selectedCurrency === curr
+                      className={`p-3 rounded-2xl border text-xs font-semibold text-center transition-all cursor-pointer ${selectedCurrency === curr
                           ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
                           : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       {curr}
                     </button>

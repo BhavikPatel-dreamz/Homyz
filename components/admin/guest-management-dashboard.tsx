@@ -95,7 +95,7 @@ export function GuestManagementDashboard({
     <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
       {/* Page Title & Subtitle */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+        <h1>
           Guest Management
         </h1>
         <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">

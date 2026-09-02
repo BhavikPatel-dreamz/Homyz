@@ -759,7 +759,7 @@ export function HostRegistrationWorkspace({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight">
+              <h1>
                 {data.applicationId}
               </h1>
               {renderStatusBadge(data.status)}

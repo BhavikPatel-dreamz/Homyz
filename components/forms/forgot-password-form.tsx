@@ -100,7 +100,7 @@ export function ForgotPasswordForm() {
 
       <div className="text-center pt-2">
         <Link
-          href="/admin/login"
+          href="/login"
           className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors underline"
         >
           Remember your password? Log in

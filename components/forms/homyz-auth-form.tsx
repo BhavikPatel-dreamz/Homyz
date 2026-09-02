@@ -1,23 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { useState, useTransition, type FormEvent } from "react";
-import { Alert } from "../ui";
-import { HomyzLogo } from "../ui/homyz-logo";
+import { Alert, Button } from "../ui";
 import { registerAction } from "@/actions/auth/register";
+import { AppHeader } from "@/components/dashboard/app-header";
+import { AuthHeading } from "@/components/auth/auth-heading";
+import { AuthHeroImage } from "@/components/auth/auth-hero-image";
+import { AuthMethodToggle } from "@/components/auth/auth-method-toggle";
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
+import type { AuthMode, AuthProviders, SocialProvider } from "@/components/auth/auth-form.types";
+import { authFieldErrorClass, authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
+import { Container } from "@/components/ui/container";
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
   callbackUrl?: string;
   initialError?: string;
-  providers?: {
-    google?: boolean;
-    apple?: boolean;
-    facebook?: boolean;
-  };
+  providers?: AuthProviders;
 }
 
 const COUNTRY_CODES = [
@@ -40,10 +42,9 @@ export function HomyzAuthForm({
   providers = {},
 }: HomyzAuthFormProps) {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<"login" | "signup">(initialMode);
+  const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
   const [inputMethod, setInputMethod] = useState<"phone" | "email">("phone");
   const [showPassword, setShowPassword] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Form states
   const [email, setEmail] = useState("");
@@ -74,7 +75,7 @@ export function HomyzAuthForm({
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
 
-  async function handleSocialLogin(providerName: "google" | "apple" | "facebook") {
+  async function handleSocialLogin(providerName: SocialProvider) {
     setError(null);
     setSuccess(null);
     try {
@@ -287,121 +288,9 @@ export function HomyzAuthForm({
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
       {/* --------------------------------------------------------- */}
-      {/* 1. TOP HEADER (Responsive across all devices)              */}
+      {/* 1. TOP HEADER (Unified AppHeader)                          */}
       {/* --------------------------------------------------------- */}
-      <header className="w-full bg-white border-b border-[#E5E5E5] sticky top-0 z-50">
-        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-12 py-3.5 relative">
-          {/* Left: Mobile/Tablet (< lg) shows Logo mark, Desktop (lg+) shows Caveat Slogan */}
-          <div className="flex items-center min-w-0">
-            {/* Mobile & Tablet Logo Mark (< lg) */}
-            <Link href="/" className="lg:hidden flex items-center shrink-0" aria-label="Homyz Home">
-              <HomyzLogo className="text-[#1F1F1F]" size={30} />
-            </Link>
-            {/* Desktop Slogan (lg+) */}
-            <Link
-              href="/"
-              className="hidden lg:inline-block font-['Caveat'] text-2xl lg:text-3xl font-bold text-[#1F1F1F] tracking-wide hover:opacity-85 transition-opacity select-none whitespace-nowrap"
-            >
-              Stay like a homie.
-            </Link>
-          </div>
-
-          {/* Center: Mobile/Tablet (< lg) shows Caveat Slogan, Desktop (lg+) shows Logo + Brand Name */}
-          <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto">
-            {/* Mobile/Tablet Slogan (< lg) */}
-            <Link
-              href="/"
-              className="lg:hidden font-['Caveat'] text-xl sm:text-2xl font-bold text-[#1F1F1F] tracking-wide whitespace-nowrap select-none"
-            >
-              Stay like a homie.
-            </Link>
-            {/* Desktop Logo + homyz (lg+) */}
-            <Link
-              href="/"
-              className="hidden lg:flex items-center gap-2 group"
-            >
-              <HomyzLogo className="text-[#1F1F1F] group-hover:scale-105 transition-transform shrink-0" size={28} />
-              <span className="text-xl sm:text-2xl font-bold tracking-tight text-[#1F1F1F]">
-                homyz
-              </span>
-            </Link>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Link
-              href="/host/onboarding"
-              className="rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] text-sm font-medium px-4 lg:px-5 py-2 transition-all select-none whitespace-nowrap shadow-xs hidden md:inline-block"
-            >
-              Become a host
-            </Link>
-
-            {/* User Profile Avatar (hidden on mobile < sm) */}
-            <div className="w-9 h-9 rounded-full overflow-hidden border border-zinc-200 shrink-0 relative hidden sm:block">
-              <Image
-                src="/images/header-user-avatar.jpg"
-                alt="User Profile"
-                fill
-                sizes="36px"
-                className="object-cover"
-              />
-            </div>
-
-            {/* Language button (文A) (hidden on mobile < sm) */}
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full bg-[#F3F4F5] hover:bg-zinc-200 text-[#1F1F1F] hidden sm:flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              title="Change language"
-            >
-              <span className="font-sans text-xs font-semibold text-[#1F1F1F]">文A</span>
-            </button>
-
-            {/* Menu Hamburger Button (≡) */}
-            <button
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-9 h-9 rounded-full bg-[#F3F4F5] hover:bg-zinc-200 text-[#1F1F1F] flex items-center justify-center transition-colors cursor-pointer shrink-0"
-              aria-label="Menu"
-            >
-              <svg className="w-4 h-4 text-[#1F1F1F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <line x1="4" y1="7" x2="20" y2="7" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="17" x2="20" y2="17" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Responsive Drawer Menu */}
-      {menuOpen && (
-        <div className="border-b border-zinc-200 bg-white px-6 py-4 shadow-lg transition-all animate-in fade-in slide-in-from-top-1">
-          <div className="mx-auto max-w-[1400px] flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 sm:gap-6 font-medium text-sm">
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-[#1F1F1F] hover:text-amber-700 py-1"
-            >
-              Log in / Sign up
-            </Link>
-            <Link
-              href="/host/onboarding"
-              onClick={() => setMenuOpen(false)}
-              className="text-[#1F1F1F] hover:text-amber-700 py-1 flex items-center gap-2"
-            >
-              <span>Become a host</span>
-              <span className="md:hidden text-xs bg-[#FCDF9C] px-2 py-0.5 rounded-full font-medium">Earn</span>
-            </Link>
-            <Link
-              href="/admin"
-              onClick={() => setMenuOpen(false)}
-              className="text-amber-800 hover:text-amber-900 font-semibold py-1"
-            >
-              Admin Portal
-            </Link>
-          </div>
-        </div>
-      )}
+      <AppHeader />
 
       {/* --------------------------------------------------------- */}
       {/* 2. MAIN FORM & HERO SECTION (Fully Responsive)             */}
@@ -411,10 +300,8 @@ export function HomyzAuthForm({
           {/* Left Column: Form Area */}
           <div className="w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
-              <button
-                type="button"
-                onClick={() => {
+            <AuthHeading
+              onBack={() => {
                   if (otpSent) {
                     setOtpSent(false);
                   } else if (inputMethod === "email") {
@@ -422,21 +309,11 @@ export function HomyzAuthForm({
                   } else {
                     router.back();
                   }
-                }}
-                className="w-8 h-8 rounded-full bg-[#F3F4F5] border-[0.75px] border-[#1F1F1F] flex items-center justify-center text-[#1F1F1F] hover:bg-zinc-200 transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
-                aria-label="Go back"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <h1 className="font-['Poppins'] font-medium text-[24px] sm:text-[36px] lg:text-[42px] xl:text-[48px] leading-8.5 lg:leading-13.25 text-[#1F1F1F] wrap-break-words">
-                Log in or sign up
-              </h1>
-            </div>
+              }}
+            />
 
             {/* Subtitle */}
-            <div className="pl-0 sm:pl-12 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
+            <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
               {authMode === "login" ? (
                 <>
                   Already have an account?{" "}
@@ -473,31 +350,22 @@ export function HomyzAuthForm({
             </div>
 
             {/* Mobile/Tablet Hero Image (between subtitle and form inputs, matches mobile.jpg 100%, hidden on lg+) */}
-            <div className="w-full aspect-[4/4.5] max-h-[460px] relative overflow-hidden my-4 lg:hidden">
-              <Image
-                src="/images/auth-traveler-water.jpg"
-                alt="Homyz Traveler"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 500px"
-                className="object-cover"
-              />
-            </div>
+            <AuthHeroImage mobile />
 
             {/* Error / Success feedback */}
             {error && (
-              <div className="mb-4 pl-0 sm:pl-12">
+              <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
             {success && (
-              <div className="mb-4 pl-0 sm:pl-12">
+              <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="success">{success}</Alert>
               </div>
             )}
 
             {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
-            <div className="w-full max-w-[538px] pl-0 lg:pl-12 flex flex-col gap-5 lg:gap-6">
+            <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
               {inputMethod === "phone" ? (
                 /* ==================== PHONE FORM ==================== */
                 <form onSubmit={handlePhoneSubmit} className="flex flex-col gap-4 lg:gap-5" suppressHydrationWarning>
@@ -555,13 +423,15 @@ export function HomyzAuthForm({
                       </p>
 
                       {/* Continue Button (Height 56px, bg #FCDF9C, border #1F1F1F, radius 30px) */}
-                      <button
+                      <Button
                         type="submit"
                         disabled={pending}
-                        className="w-full h-[54px] sm:h-[56px] rounded-[30px] bg-[#FCDF9C] hover:bg-[#f5d687] border border-[#1F1F1F] font-['Poppins'] font-medium text-[16px] sm:text-[18px] leading-[23px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer shadow-xs disabled:opacity-60"
+                        fullWidth
+                        isLoading={pending}
+                        loadingText="Sending code..."
                       >
-                        {pending ? "Sending code..." : "Continue"}
-                      </button>
+                        Continue
+                      </Button>
                     </>
                   ) : (
                     /* OTP Verification */
@@ -585,13 +455,15 @@ export function HomyzAuthForm({
                           className="w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
                         />
                       </div>
-                      <button
+                      <Button
                         type="submit"
                         disabled={pending || otpCode.length < 6}
-                        className="w-full h-[54px] sm:h-[56px] rounded-[30px] bg-[#FCDF9C] hover:bg-[#f5d687] border border-[#1F1F1F] font-['Poppins'] font-medium text-[16px] sm:text-[18px] leading-[23px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer shadow-xs disabled:opacity-60"
+                        fullWidth
+                        isLoading={pending}
+                        loadingText="Verifying..."
                       >
-                        {pending ? "Verifying..." : "Verify & Continue"}
-                      </button>
+                        Verify &amp; Continue
+                      </Button>
                     </div>
                   )}
                 </form>
@@ -601,7 +473,7 @@ export function HomyzAuthForm({
                   {authMode === "signup" && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                        <label className={authLabelClass}>
                           Full name *
                         </label>
                         <input
@@ -617,13 +489,13 @@ export function HomyzAuthForm({
                           className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
                         />
                         {fieldErrors.name && (
-                          <p className="text-xs text-red-600 font-medium">{fieldErrors.name}</p>
+                          <p className={authFieldErrorClass}>{fieldErrors.name}</p>
                         )}
                       </div>
 
                       {/* Join as Guest / Host */}
                       <div className="flex flex-col gap-2">
-                        <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                        <label className={authLabelClass}>
                           I want to join as *
                         </label>
                         <div className="grid grid-cols-2 gap-3">
@@ -656,7 +528,7 @@ export function HomyzAuthForm({
 
                   {/* Email address */}
                   <div className="flex flex-col gap-2">
-                    <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                    <label className={authLabelClass}>
                       Email address *
                     </label>
                     <input
@@ -670,16 +542,16 @@ export function HomyzAuthForm({
                       placeholder="emailexample@gmail.com"
                       required
                       autoComplete="email"
-                      className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                      className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
                     />
                     {fieldErrors.email && (
-                      <p className="text-xs text-red-600 font-medium">{fieldErrors.email}</p>
+                      <p className={authFieldErrorClass}>{fieldErrors.email}</p>
                     )}
                   </div>
 
                   {/* Password */}
                   <div className="flex flex-col gap-2">
-                    <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                    <label className={authLabelClass}>
                       Password *
                     </label>
                     <div className="relative h-[56px]">
@@ -715,7 +587,7 @@ export function HomyzAuthForm({
                       </button>
                     </div>
                     {fieldErrors.password && (
-                      <p className="text-xs text-red-600 font-medium">{fieldErrors.password}</p>
+                      <p className={authFieldErrorClass}>{fieldErrors.password}</p>
                     )}
 
                     {authMode === "signup" && (
@@ -764,10 +636,10 @@ export function HomyzAuthForm({
                         }}
                         placeholder="••••••••••••"
                         required
-                        className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                        className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
                       />
                       {fieldErrors.repeatPassword && (
-                        <p className="text-xs text-red-600 font-medium">{fieldErrors.repeatPassword}</p>
+                        <p className={authFieldErrorClass}>{fieldErrors.repeatPassword}</p>
                       )}
                     </div>
                   )}
@@ -782,13 +654,15 @@ export function HomyzAuthForm({
                   )}
 
                   {/* Continue Button */}
-                  <button
+                  <Button
                     type="submit"
                     disabled={pending}
-                    className="w-full h-[54px] sm:h-[56px] rounded-[30px] bg-[#FCDF9C] hover:bg-[#f5d687] border border-[#1F1F1F] font-['Poppins'] font-medium text-[16px] sm:text-[18px] leading-[23px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer shadow-xs disabled:opacity-60 mt-2"
+                    fullWidth
+                    isLoading={pending}
+                    className="mt-2"
                   >
-                    {pending ? "Please wait..." : "Continue"}
-                  </button>
+                    Continue
+                  </Button>
                 </form>
               )}
 
@@ -802,90 +676,29 @@ export function HomyzAuthForm({
               </div>
 
               {/* Social Buttons (Frame 1996663725 - Google, Apple, Facebook in 1 row) */}
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-4 w-full">
-                {/* Google */}
-                {(providers.google ?? true) && (
-                  <button
-                    type="button"
-                    onClick={() => handleSocialLogin("google")}
-                    className="h-[52px] sm:h-[56px] rounded-[30px] bg-[#E9EBFF] hover:bg-[#dce0fd] border border-[#1F1F1F] flex items-center justify-center gap-2 sm:gap-2.5 px-2 sm:px-3 font-['Poppins'] font-medium text-[14px] sm:text-[16px] xl:text-[18px] leading-[23px] text-[#1F1F1F] transition-all cursor-pointer shadow-xs select-none"
-                    title="Continue with Google"
-                  >
-                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                    </svg>
-                    <span className="hidden sm:inline">Google</span>
-                  </button>
-                )}
-
-                {/* Apple */}
-                {(providers.apple ?? true) && (
-                  <button
-                    type="button"
-                    onClick={() => handleSocialLogin("apple")}
-                    className="h-[52px] sm:h-[56px] rounded-[30px] bg-[#E9EBFF] hover:bg-[#dce0fd] border border-[#1F1F1F] flex items-center justify-center gap-2 sm:gap-2.5 px-2 sm:px-3 font-['Poppins'] font-medium text-[14px] sm:text-[16px] xl:text-[18px] leading-[23px] text-[#1F1F1F] transition-all cursor-pointer shadow-xs select-none"
-                    title="Continue with Apple"
-                  >
-                    <svg className="w-5 h-5 shrink-0 fill-[#1F1F1F]" viewBox="0 0 24 24">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.58.67-.99 1.74-.88 2.76 1.02.08 2.01-.51 2.61-1.26z" />
-                    </svg>
-                    <span className="hidden sm:inline">Apple</span>
-                  </button>
-                )}
-
-                {/* Facebook */}
-                {(providers.facebook ?? true) && (
-                  <button
-                    type="button"
-                    onClick={() => handleSocialLogin("facebook")}
-                    className="h-[52px] sm:h-[56px] rounded-[30px] bg-[#E9EBFF] hover:bg-[#dce0fd] border border-[#1F1F1F] flex items-center justify-center gap-2 sm:gap-2.5 px-2 sm:px-3 font-['Poppins'] font-medium text-[14px] sm:text-[16px] xl:text-[18px] leading-[23px] text-[#1F1F1F] transition-all cursor-pointer shadow-xs select-none"
-                    title="Continue with Facebook"
-                  >
-                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="12" fill="#1F1F1F" />
-                      <path d="M15.5 12h-2v7h-3v-7h-1.5v-2.5h1.5v-1.6c0-2.1 1.2-3.4 3.3-3.4.9 0 1.7.1 1.7.1v2.3h-1c-1 0-1.3.6-1.3 1.3V9.5h2.5l-.5 2.5z" fill="white" />
-                    </svg>
-                    <span className="hidden sm:inline">Facebook</span>
-                  </button>
-                )}
-              </div>
+              <SocialLoginButtons providers={providers} onLogin={handleSocialLogin} />
 
               {/* Bottom Toggle Button (Continue with email / phone) */}
-              <button
-                type="button"
-                onClick={() => {
+              <AuthMethodToggle
+                inputMethod={inputMethod}
+                onToggle={() => {
                   setInputMethod(inputMethod === "phone" ? "email" : "phone");
                   setError(null);
                 }}
-                className="w-full h-[54px] sm:h-[56px] rounded-[30px] bg-transparent hover:bg-zinc-50 border border-[#1F1F1F] font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer select-none"
-              >
-                {inputMethod === "phone" ? "Continue with email" : "Continue with phone"}
-              </button>
+              />
             </div>
           </div>
 
           {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
-          <div className="hidden lg:block lg:w-1/2 xl:w-[619px] max-w-[619px] h-[520px] lg:h-[580px] xl:h-[714px] shrink-0 relative overflow-hidden">
-            <Image
-              src="/images/auth-traveler-water.jpg"
-              alt="Homyz Traveler"
-              fill
-              priority
-              sizes="(min-width: 1280px) 619px, 50vw"
-              className="object-cover"
-            />
-          </div>
+          <AuthHeroImage />
         </div>
       </main>
 
       {/* --------------------------------------------------------- */}
       {/* 3. FOOTER SECTION (Matches mobile.jpg & Desktop design)    */}
       {/* --------------------------------------------------------- */}
-      <footer className="w-full bg-[#FAFAFA] border-t border-[#E5E5E5] mt-12 pt-10 sm:pt-12 pb-8 px-4 sm:px-8 lg:px-16 text-[#1F1F1F]">
-        <div className="max-w-[1400px] mx-auto space-y-10">
+      <footer className="w-full bg-[#FAFAFA] border-t border-[#E5E5E5] mt-12 pt-10 sm:pt-12 pb-8 text-[#1F1F1F]">
+        <Container className="space-y-10">
           {/* 3 Columns Grid + Desktop Scroll to Top Button */}
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             {/* Column 1: Support */}
@@ -980,9 +793,8 @@ export function HomyzAuthForm({
           <div className="font-['Poppins'] text-sm font-normal text-[#1F1F1F]">
             © 2026 Homyz, Inc.
           </div>
-        </div>
+        </Container>
       </footer>
     </div>
   );
 }
-

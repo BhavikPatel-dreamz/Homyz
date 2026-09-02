@@ -363,7 +363,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
           </div>
 
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight">{listing.title}</h1>
+            <h1>{listing.title}</h1>
 
             <div className="flex items-center gap-2">
               <span

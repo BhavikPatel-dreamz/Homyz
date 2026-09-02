@@ -37,7 +37,7 @@ export default async function ResetPasswordPage({
           </Link>
 
           {/* Heading */}
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-950 mb-2">
+          <h1 className="mb-2">
             Reset Password
           </h1>
           <p className="text-xs text-zinc-500 mb-6 leading-relaxed">
