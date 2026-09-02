@@ -102,7 +102,7 @@ export function AdminLoginForm() {
           </Link>
 
           {/* Heading */}
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-950 mb-6">
+          <h1 className="mb-6">
             Log in
           </h1>
 

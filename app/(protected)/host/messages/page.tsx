@@ -18,7 +18,7 @@ export default async function HostMessagesPage() {
 
       <main className="max-w-6xl mx-auto w-full p-6 space-y-6 flex-1">
         <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-8 space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Guest Messages & Inquiries</h1>
+          <h1>Guest Messages & Inquiries</h1>
           <p className="text-xs text-zinc-500">Communicate directly with current and potential guests.</p>
         </div>
       </main>

@@ -18,7 +18,7 @@ export default async function HostCalendarPage() {
 
       <main className="max-w-6xl mx-auto w-full p-6 space-y-6 flex-1">
         <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-8 space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Host Calendar</h1>
+          <h1>Host Calendar</h1>
           <p className="text-xs text-zinc-500">Manage property availability, block dates, and adjust night rates across your listings.</p>
         </div>
       </main>

@@ -168,7 +168,7 @@ export function ProfileClient({ initial }: ProfileClientProps) {
 
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden md:flex flex-col w-72 pr-8 shrink-0 border-r border-zinc-100">
-          <h1 className="text-3xl font-bold text-zinc-900 mb-8 tracking-tight">My profile</h1>
+          <h1 className="mb-8">My profile</h1>
           <nav className="flex flex-col space-y-1">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
@@ -203,7 +203,7 @@ export function ProfileClient({ initial }: ProfileClientProps) {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>
             </div>
-            <h1 className="text-3xl font-bold text-zinc-900 mb-6 tracking-tight">My profile</h1>
+            <h1 className="mb-6">My profile</h1>
             <div className="grid grid-cols-2 gap-3 mb-8">
               {TABS.slice(1).map((tab) => (
                 <button

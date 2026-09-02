@@ -399,7 +399,7 @@ export function HostRegistrationRequestsTable() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+            <h1>
               Host Registration Requests
             </h1>
             <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-950/60 px-3 py-0.5 text-xs font-black text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50">

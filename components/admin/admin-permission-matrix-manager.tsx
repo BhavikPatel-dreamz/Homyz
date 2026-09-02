@@ -250,7 +250,7 @@ export function AdminPermissionMatrixManager({
             <span>/</span>
             <span>Individual Permissions</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+          <h1>
             Manage Permissions: <span className="text-[var(--accent)]">{summary.adminName}</span>
           </h1>
           <p className="text-xs text-[var(--muted-foreground)] mt-0.5">

@@ -73,7 +73,7 @@ export function GuestsSafetyView({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Guests safety</h1>
+            <h1>Guests safety</h1>
           </div>
           <p className="text-xs text-zinc-400 font-normal pl-11">
             Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.

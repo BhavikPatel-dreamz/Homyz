@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { HomyzLogo } from "@/components/ui/homyz-logo";
+import { primaryButtonInteractionClass } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -46,9 +48,9 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/95 backdrop-blur-md text-zinc-900 transition-colors font-sans" suppressHydrationWarning>
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-8 py-3 relative">
+      <Container className="flex items-center justify-between py-3 relative">
         {/* Left: Handwritten brand slogan */}
-        <Link href="/" className="font-['Caveat'] text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none shrink-0">
+        <Link href="/" className="font-script text-2xl sm:text-3xl font-bold text-zinc-900 tracking-wide hover:opacity-90 transition-opacity select-none shrink-0">
           Stay like a homie.
         </Link>
 
@@ -126,7 +128,7 @@ export function AppHeader() {
               {/* 1. Become a Host Yellow Pill Button */}
               <Link
                 href="/host/onboarding"
-                className="rounded-full bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-normal text-base px-7 py-3 transition-all cursor-pointer select-none whitespace-nowrap shrink-0 hidden sm:inline-block"
+                className={`rounded-full bg-[#FDE29B] text-zinc-900 font-normal text-base px-7 py-3 transition-colors cursor-pointer select-none whitespace-nowrap shrink-0 hidden sm:inline-block ${primaryButtonInteractionClass}`}
               >
                 Become a host
               </Link>
@@ -323,13 +325,13 @@ export function AppHeader() {
             </div>
           )}
         </div>
-      </div>
+      </Container>
 
       {/* ------------------------------------------------------------- */}
       {/* LANGUAGES & CURRENCY MODAL (Screen Centered Overlay)          */}
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
-        <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-bold text-zinc-900">Languages &amp; currency</h3>

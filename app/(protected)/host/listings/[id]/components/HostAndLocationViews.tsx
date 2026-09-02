@@ -175,7 +175,7 @@ export function HostAndLocationViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Photos tour</h1>
+              <h1>Photos tour</h1>
             </div>
           </div>
 
@@ -277,7 +277,7 @@ function LocationAccordionView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Location</h1>
+        <h1>Location</h1>
       </div>
 
       {/* Map Preview Box */}
@@ -898,7 +898,7 @@ export function AboutHostFullView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">About the host</h1>
+        <h1>About the host</h1>
       </div>
 
       {/* 1. Host Photo & Info Card */}

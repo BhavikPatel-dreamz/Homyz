@@ -99,7 +99,7 @@ export function PricingAndBookingViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Pricing</h1>
+              <h1>Pricing</h1>
             </div>
 
             <button
@@ -261,7 +261,7 @@ export function PricingAndBookingViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Availability</h1>
+              <h1>Availability</h1>
             </div>
             <p className="text-xs text-zinc-400 font-normal pl-11">
               *These settings apply to all nights, unless you customize them by date.{" "}
@@ -405,7 +405,7 @@ export function PricingAndBookingViews({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Booking settings</h1>
+            <h1>Booking settings</h1>
           </div>
 
           <div className="space-y-4 pt-1">
@@ -599,7 +599,7 @@ function CancellationPolicyView({
           >
             ‹
           </button>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Cancellation policy</h1>
+          <h1>Cancellation policy</h1>
         </div>
         <p className="text-xs text-zinc-500 font-normal pl-11">
           Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.

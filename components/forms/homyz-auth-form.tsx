@@ -1,25 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
-import { useSession } from "next-auth/react";
 import { useState, useTransition, type FormEvent } from "react";
-import { Alert } from "../ui";
-import { HomyzLogo } from "../ui/homyz-logo";
+import { Alert, Button } from "../ui";
 import { registerAction } from "@/actions/auth/register";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { AuthHeading } from "@/components/auth/auth-heading";
+import { AuthHeroImage } from "@/components/auth/auth-hero-image";
+import { AuthMethodToggle } from "@/components/auth/auth-method-toggle";
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
+import type { AuthMode, AuthProviders, SocialProvider } from "@/components/auth/auth-form.types";
+import { authFieldErrorClass, authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
+import { Container } from "@/components/ui/container";
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
   callbackUrl?: string;
   initialError?: string;
-  providers?: {
-    google?: boolean;
-    apple?: boolean;
-    facebook?: boolean;
-  };
+  providers?: AuthProviders;
 }
 
 const COUNTRY_CODES = [
@@ -42,16 +42,14 @@ export function HomyzAuthForm({
   providers = {},
 }: HomyzAuthFormProps) {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<"login" | "signup">(initialMode);
-  const [inputMethod, setInputMethod] = useState<"email" | "phone">("email");
+  const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
+  const [inputMethod, setInputMethod] = useState<"phone" | "email">("phone");
   const [showPassword, setShowPassword] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const user = status === "authenticated" ? session?.user : null;
 
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"USER" | "HOST">("USER");
   const [countryCode, setCountryCode] = useState("+39");
@@ -69,6 +67,7 @@ export function HomyzAuthForm({
     name?: string;
     email?: string;
     password?: string;
+    repeatPassword?: string;
   }>({});
 
   // Password complexity helpers for signup
@@ -76,7 +75,7 @@ export function HomyzAuthForm({
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
 
-  async function handleSocialLogin(providerName: "google" | "apple" | "facebook") {
+  async function handleSocialLogin(providerName: SocialProvider) {
     setError(null);
     setSuccess(null);
     try {
@@ -229,7 +228,13 @@ export function HomyzAuthForm({
     setError(null);
     setSuccess(null);
 
-    const fullPhone = `${countryCode}${phoneNumber.replace(/\D/g, "")}`;
+    const cleanNumber = phoneNumber.replace(/\D/g, "");
+    if (!cleanNumber) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
+
+    const fullPhone = `${countryCode}${cleanNumber}`;
 
     if (!otpSent) {
       startTransition(async () => {
@@ -281,43 +286,35 @@ export function HomyzAuthForm({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-zinc-900 font-sans selection:bg-amber-100">
+    <div className="min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
       {/* --------------------------------------------------------- */}
       {/* 1. TOP HEADER (Unified AppHeader)                          */}
       {/* --------------------------------------------------------- */}
       <AppHeader />
 
       {/* --------------------------------------------------------- */}
-      {/* 2. MAIN FORM & HERO SECTION                                */}
+      {/* 2. MAIN FORM & HERO SECTION (Fully Responsive)             */}
       {/* --------------------------------------------------------- */}
-      <main className="flex-1 w-full max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-          {/* Left Column: Form Area (5 cols on lg) */}
-          <div className="lg:col-span-6 xl:col-span-5 w-full max-w-md mx-auto lg:mx-0 flex flex-col pt-2">
-            {/* Title with Inline Back Button (Matches Reference Screenshots 100%) */}
-            <div className="flex items-center gap-3 mb-1">
-              <button
-                type="button"
-                onClick={() => {
+      <main className="flex-1 w-full flex items-center justify-center py-6 sm:py-8 lg:py-14 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1318px] flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-8 xl:gap-[56px] mx-auto">
+          {/* Left Column: Form Area */}
+          <div className="w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
+            {/* Header / Title area with Slide Back Button */}
+            <AuthHeading
+              title={authMode === "login" ? "Log in or sign up" : "Create an account"}
+              onBack={() => {
                   if (otpSent) {
                     setOtpSent(false);
-                  } else if (inputMethod === "phone") {
-                    setInputMethod("email");
+                  } else if (inputMethod === "email") {
+                    setInputMethod("phone");
                   } else {
                     router.back();
                   }
-                }}
-                className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs shrink-0"
-                aria-label="Go back"
-              >
-                ‹
-              </button>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
-                Log in or sign up
-              </h1>
-            </div>
+              }}
+            />
 
-            <div className="mt-1 mb-6 text-xs text-zinc-500 font-normal pl-10">
+            {/* Subtitle */}
+            <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
               {authMode === "login" ? (
                 <>
                   Don&apos;t have an account?{" "}
@@ -328,9 +325,8 @@ export function HomyzAuthForm({
                       window.history.pushState(null, "", "/register");
                       setError(null);
                       setSuccess(null);
-                      setFieldErrors({});
                     }}
-                    className="font-semibold text-zinc-900 underline hover:text-amber-800 cursor-pointer"
+                    className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Sign up
                   </button>
@@ -345,9 +341,8 @@ export function HomyzAuthForm({
                       window.history.pushState(null, "", "/login");
                       setError(null);
                       setSuccess(null);
-                      setFieldErrors({});
                     }}
-                    className="font-semibold text-zinc-900 underline hover:text-amber-800 cursor-pointer"
+                    className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Log in
                   </button>
@@ -355,480 +350,455 @@ export function HomyzAuthForm({
               )}
             </div>
 
+            {/* Mobile/Tablet Hero Image (between subtitle and form inputs, matches mobile.jpg 100%, hidden on lg+) */}
+            <AuthHeroImage mobile />
+
             {/* Error / Success feedback */}
             {error && (
-              <div className="mb-4">
+              <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
             {success && (
-              <div className="mb-4">
+              <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="success">{success}</Alert>
               </div>
             )}
 
-            {/* Input Method 1: Email Form */}
-            {inputMethod === "email" ? (
-              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4" noValidate suppressHydrationWarning>
-                {authMode === "signup" && (
-                  <>
-                    <div className="space-y-1.5" suppressHydrationWarning>
-                      <label className="block text-xs font-bold text-zinc-900">
-                        Your Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => {
-                          setName(e.target.value);
-                          if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
-                          if (error) setError(null);
-                        }}
-                        placeholder="Jane Doe"
-                        required
-                        suppressHydrationWarning
-                        className={`w-full rounded-2xl border bg-white p-4 text-xs font-medium text-zinc-900 outline-none transition-all shadow-2xs ${fieldErrors.name
-                          ? "border-red-500 bg-red-50/20 focus:border-red-600"
-                          : "border-zinc-200 focus:border-zinc-400"
-                          }`}
-                      />
-                      {fieldErrors.name && (
-                        <p className="text-xs text-red-600 font-medium mt-1">
-                          {fieldErrors.name}
-                        </p>
-                      )}
-                    </div>
+            {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
+            <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
+              {inputMethod === "phone" ? (
+                /* ==================== PHONE FORM ==================== */
+                <form onSubmit={handlePhoneSubmit} className="flex flex-col gap-4 lg:gap-5" suppressHydrationWarning>
+                  {!otpSent ? (
+                    <>
+                      {/* Country code + Phone number row */}
+                      <div className="flex flex-col sm:flex-row gap-3.5 sm:gap-3 w-full">
+                        {/* Country code (full width on mobile, 171px on sm+) */}
+                        <div className="flex flex-col gap-1.5 sm:gap-2 w-full sm:w-[171px] shrink-0">
+                          <label className="font-['Poppins'] font-medium text-base sm:text-lg leading-[24px] text-[#1F1F1F]">
+                            Country code *
+                          </label>
+                          <div className="relative h-[56px]">
+                            <select
+                              value={countryCode}
+                              onChange={(e) => setCountryCode(e.target.value)}
+                              className="w-full h-full appearance-none rounded-[8px] border border-[#72727299] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
+                            >
+                              {COUNTRY_CODES.map((c) => (
+                                <option key={c.code} value={c.code}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
+                              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
 
-                    {/* Join as Guest or Host Selection */}
-                    <div className="space-y-1.5" suppressHydrationWarning>
-                      <label className="block text-xs font-bold text-zinc-900">
-                        I want to join as *
-                      </label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => setRole("USER")}
-                          className={`rounded-2xl border py-3 px-3.5 text-xs transition-all cursor-pointer shadow-2xs select-none flex items-center justify-center gap-2 ${role === "USER"
-                              ? "border-amber-400 bg-[#FEF9EC] text-zinc-950 ring-2 ring-amber-300/40 font-bold"
-                              : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 font-semibold"
-                            }`}
-                        >
-                          <svg className="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span>Guest User</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRole("HOST")}
-                          className={`rounded-2xl border py-3 px-3.5 text-xs transition-all cursor-pointer shadow-2xs select-none flex items-center justify-center gap-2 ${role === "HOST"
-                              ? "border-amber-400 bg-[#FEF9EC] text-zinc-950 ring-2 ring-amber-300/40 font-bold"
-                              : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 font-semibold"
-                            }`}
-                        >
-                          <svg className="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                          <span>Property Host</span>
-                        </button>
+                        {/* Phone number (full width on mobile, flex-1 on sm+) */}
+                        <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full min-w-0" suppressHydrationWarning>
+                          <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                            Phone number *
+                          </label>
+                          <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="xxxx-xxx-xx-xxx"
+                            required
+                            suppressHydrationWarning
+                            className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
+                          />
+                        </div>
                       </div>
+
+                      {/* Disclaimer text */}
+                      <p className="font-['Poppins'] font-normal text-sm leading-5.25 text-[#727272]">
+                        We’ll call or text you to confirm your number. Standard message and data rates apply.{" "}
+                        <a href="#" className="underline text-[#1F1F1F] hover:text-[#727272]">
+                          Privacy Policy
+                        </a>
+                      </p>
+
+                      {/* Continue Button (Height 56px, bg #FCDF9C, border #1F1F1F, radius 30px) */}
+                      <Button
+                        type="submit"
+                        disabled={pending}
+                        fullWidth
+                        isLoading={pending}
+                        loadingText="Sending code..."
+                      >
+                        Continue
+                      </Button>
+                    </>
+                  ) : (
+                    /* OTP Verification */
+                    <div className="flex flex-col gap-4">
+                      {otpMessage && (
+                        <div className="rounded-xl bg-[#FEF9EC] border border-amber-300 p-3.5 text-xs text-amber-950 font-medium">
+                          {otpMessage}
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-2">
+                        <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] text-[#1F1F1F]">
+                          Enter 6-digit Verification Code *
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                          placeholder="123456"
+                          required
+                          className="w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        disabled={pending || otpCode.length < 6}
+                        fullWidth
+                        isLoading={pending}
+                        loadingText="Verifying..."
+                      >
+                        Verify &amp; Continue
+                      </Button>
                     </div>
-                  </>
-                )}
-
-                {/* Email Address */}
-                <div className="space-y-1.5" suppressHydrationWarning>
-                  <label className="block text-xs font-bold text-zinc-900">
-                    Email address *
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
-                      if (error) setError(null);
-                    }}
-                    placeholder="emailexample@gmail.com"
-                    required
-                    autoComplete="email"
-                    suppressHydrationWarning
-                    className={`w-full rounded-2xl border bg-white p-4 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 outline-none transition-all shadow-2xs ${fieldErrors.email
-                      ? "border-red-500 bg-red-50/20 focus:border-red-600"
-                      : "border-zinc-200 focus:border-zinc-400"
-                      }`}
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-xs text-red-600 font-medium mt-1">
-                      {fieldErrors.email}
-                    </p>
                   )}
-                </div>
+                </form>
+              ) : (
+                /* ==================== EMAIL FORM ==================== */
+                <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4" noValidate suppressHydrationWarning>
+                  {authMode === "signup" && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <label className={authLabelClass}>
+                          Full name *
+                        </label>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                            if (error) setError(null);
+                          }}
+                          placeholder="Jane Doe"
+                          required
+                          className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                        />
+                        {fieldErrors.name && (
+                          <p className={authFieldErrorClass}>{fieldErrors.name}</p>
+                        )}
+                      </div>
 
-                {/* Password */}
-                <div className="space-y-1.5 pt-1" suppressHydrationWarning>
-                  <label className="block text-xs font-bold text-zinc-900">
-                    Password *
-                  </label>
-                  <div className="relative" suppressHydrationWarning>
+                      {/* Join as Guest / Host */}
+                      <div className="flex flex-col gap-2">
+                        <label className={authLabelClass}>
+                          I want to join as *
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setRole("USER")}
+                            className={`h-[52px] rounded-[12px] border text-sm font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                              role === "USER"
+                                ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
+                                : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
+                            }`}
+                          >
+                            Guest User
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRole("HOST")}
+                            className={`h-[52px] rounded-[12px] border text-sm font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                              role === "HOST"
+                                ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
+                                : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
+                            }`}
+                          >
+                            Property Host
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Email address */}
+                  <div className="flex flex-col gap-2" suppressHydrationWarning>
+                    <label className={authLabelClass}>
+                      Email address *
+                    </label>
                     <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
+                      type="email"
+                      value={email}
                       onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                        setEmail(e.target.value);
+                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
                         if (error) setError(null);
                       }}
-                      placeholder="••••••••••••"
+                      placeholder="emailexample@gmail.com"
                       required
-                      autoComplete={authMode === "login" ? "current-password" : "new-password"}
+                      autoComplete="email"
                       suppressHydrationWarning
-                      className={`w-full rounded-2xl border bg-white p-4 pr-10 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 outline-none transition-all shadow-2xs ${fieldErrors.password
-                        ? "border-red-500 bg-red-50/20 focus:border-red-600"
-                        : "border-zinc-200 focus:border-zinc-400"
-                        }`}
+                      className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
-                      aria-label="Toggle password visibility"
-                    >
-                      {showPassword ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
-                    </button>
+                    {fieldErrors.email && (
+                      <p className={authFieldErrorClass}>{fieldErrors.email}</p>
+                    )}
                   </div>
-                  {fieldErrors.password && (
-                    <p className="text-xs text-red-600 font-medium mt-1">
-                      {fieldErrors.password}
-                    </p>
+
+                  {/* Password */}
+                  <div className="flex flex-col gap-2" suppressHydrationWarning>
+                    <label className={authLabelClass}>
+                      Password *
+                    </label>
+                    <div className="relative h-[56px]" suppressHydrationWarning>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                          if (error) setError(null);
+                        }}
+                        placeholder="••••••••••••"
+                        required
+                        autoComplete={authMode === "login" ? "current-password" : "new-password"}
+                        suppressHydrationWarning
+                        className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {fieldErrors.password && (
+                      <p className={authFieldErrorClass}>{fieldErrors.password}</p>
+                    )}
+
+                    {authMode === "signup" && (
+                      <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-[11px] text-zinc-600 flex flex-col gap-1 mt-1">
+                        <div className="font-semibold text-zinc-800 mb-0.5">Password Requirements:</div>
+                        <div className="flex items-center gap-2">
+                          <span className={hasMinLength ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                            {hasMinLength ? "✓" : "○"}
+                          </span>
+                          <span className={hasMinLength ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                            Minimum 8 characters
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={hasUppercase ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                            {hasUppercase ? "✓" : "○"}
+                          </span>
+                          <span className={hasUppercase ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                            At least one uppercase letter (A-Z)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={hasNumber ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                            {hasNumber ? "✓" : "○"}
+                          </span>
+                          <span className={hasNumber ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                            At least one number (0-9)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {authMode === "signup" && (
+                    <div className="flex flex-col gap-2">
+                      <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+                        Repeat password *
+                      </label>
+                      <input
+                        type="password"
+                        value={repeatPassword}
+                        onChange={(e) => {
+                          setRepeatPassword(e.target.value);
+                          if (fieldErrors.repeatPassword) setFieldErrors((prev) => ({ ...prev, repeatPassword: undefined }));
+                          if (error) setError(null);
+                        }}
+                        placeholder="••••••••••••"
+                        required
+                        className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
+                      />
+                      {fieldErrors.repeatPassword && (
+                        <p className={authFieldErrorClass}>{fieldErrors.repeatPassword}</p>
+                      )}
+                    </div>
                   )}
 
                   {authMode === "login" && (
-                    <div className="pt-1 text-xs text-zinc-500 font-normal">
+                    <div className="text-sm text-[#727272] font-normal">
                       Forget password?{" "}
-                      <Link href="/forgot-password" className="underline text-zinc-900 font-medium hover:text-zinc-700">
+                      <Link href="/forgot-password" className="underline text-[#1F1F1F] hover:opacity-80">
                         reset password
                       </Link>
                     </div>
                   )}
 
-                  {/* Password Policy Guidance on Signup */}
-                  {authMode === "signup" && (
-                    <div className="mt-2 rounded-2xl bg-zinc-50 border border-zinc-200/80 p-3 text-[11px] text-zinc-600 flex flex-col gap-1">
-                      <div className="font-semibold text-zinc-800 mb-0.5">
-                        Password Requirements:
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={hasMinLength ? "text-emerald-600 font-bold" : "text-zinc-400"}>
-                          {hasMinLength ? "✓" : "○"}
-                        </span>
-                        <span className={hasMinLength ? "text-zinc-900 font-medium" : "text-zinc-500"}>
-                          Minimum 8 characters
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={hasUppercase ? "text-emerald-600 font-bold" : "text-zinc-400"}>
-                          {hasUppercase ? "✓" : "○"}
-                        </span>
-                        <span className={hasUppercase ? "text-zinc-900 font-medium" : "text-zinc-500"}>
-                          At least one uppercase letter (A-Z)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={hasNumber ? "text-emerald-600 font-bold" : "text-zinc-400"}>
-                          {hasNumber ? "✓" : "○"}
-                        </span>
-                        <span className={hasNumber ? "text-zinc-900 font-medium" : "text-zinc-500"}>
-                          At least one number (0-9)
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Primary Continue Button (Yellow Pill Button) */}
-                <div className="pt-2">
-                  <button
+                  {/* Continue Button */}
+                  <Button
                     type="submit"
                     disabled={pending}
-                    className="w-full rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs py-3.5 shadow-2xs transition-all cursor-pointer text-center disabled:opacity-50"
+                    fullWidth
+                    isLoading={pending}
+                    className="mt-2"
                   >
-                    {pending ? "Please wait..." : "Continue"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              /* Input Method 2: Phone Form (Matches Reference Screenshot 2 100%) */
-              <form onSubmit={handlePhoneSubmit} className="flex flex-col gap-4" suppressHydrationWarning>
-                {!otpSent ? (
-                  <>
-                    <div className="grid grid-cols-12 gap-3">
-                      {/* Country Code */}
-                      <div className="col-span-5 space-y-1.5">
-                        <label className="block text-xs font-bold text-zinc-900">
-                          Country code *
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={countryCode}
-                            onChange={(e) => setCountryCode(e.target.value)}
-                            className="w-full appearance-none rounded-2xl border border-zinc-200 bg-white p-4 pr-8 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
-                          >
-                            {COUNTRY_CODES.map((c) => (
-                              <option key={c.code} value={c.code}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">
-                            ∨
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Phone Number */}
-                      <div className="col-span-7 space-y-1.5">
-                        <label className="block text-xs font-bold text-zinc-900">
-                          Phone number *
-                        </label>
-                        <input
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          placeholder="xxxx-xxx-xx-xxx"
-                          required
-                          className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-zinc-400 shadow-2xs"
-                        />
-                      </div>
-                    </div>
-
-                    <p className="text-[11px] text-zinc-500 font-normal leading-relaxed pt-1">
-                      We&apos;ll call or text you to confirm your number. Standard message and data rates apply.{" "}
-                      <a href="#" className="underline text-zinc-900 font-medium">Privacy Policy</a>
-                    </p>
-
-                    <div className="pt-2">
-                      <button
-                        type="submit"
-                        disabled={pending}
-                        className="w-full rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs py-3.5 shadow-2xs transition-all cursor-pointer text-center disabled:opacity-50"
-                      >
-                        {pending ? "Sending code..." : "Continue"}
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  /* OTP Verification Step */
-                  <>
-                    {otpMessage && (
-                      <div className="rounded-2xl bg-[#FEF9EC] border border-amber-300/80 p-3.5 text-xs text-amber-950 font-medium leading-relaxed shadow-2xs">
-                        {otpMessage}
-                      </div>
-                    )}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-bold text-zinc-900">
-                        Enter 6-digit Verification Code *
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                        placeholder="123456"
-                        required
-                        className="w-full text-center tracking-widest text-lg font-mono rounded-2xl border border-zinc-200 bg-white p-4 text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        type="submit"
-                        disabled={pending || otpCode.length < 6}
-                        className="w-full rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs py-3.5 shadow-2xs transition-all cursor-pointer text-center disabled:opacity-50"
-                      >
-                        {pending ? "Verifying..." : "Verify & Continue"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </form>
-            )}
-
-            {/* Divider */}
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-zinc-200/90" />
-              <span className="text-xs text-zinc-500 font-normal lowercase">
-                or
-              </span>
-              <div className="h-px flex-1 bg-zinc-200/90" />
-            </div>
-
-            {/* Social login buttons (Google, Apple - Center Aligned & Balanced Grid) */}
-            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto w-full">
-              {/* Google */}
-              {(providers.google ?? true) && (
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("google")}
-                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-4 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
-                  title="Continue with Google"
-                >
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                  </svg>
-                  <span>Google</span>
-                </button>
+                    Continue
+                  </Button>
+                </form>
               )}
 
-              {/* Apple */}
-              {(providers.apple ?? true) && (
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("apple")}
-                  className="rounded-full bg-[#ECE9FE] border border-[#DCD6FE] hover:bg-[#E0DCFD] py-3 px-4 text-xs sm:text-sm font-medium text-zinc-900 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-2xs select-none"
-                  title="Continue with Apple"
-                >
-                  <svg className="h-4 w-4 fill-current shrink-0 text-zinc-900" viewBox="0 0 24 24">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.58.67-.99 1.74-.88 2.76 1.02.08 2.01-.51 2.61-1.26z" />
-                  </svg>
-                  <span>Apple</span>
-                </button>
-              )}
-            </div>
+              {/* Divider (Frame 1996663724) */}
+              <div className="flex items-center gap-3 sm:gap-4 w-full my-1">
+                <div className="h-[1px] flex-1 bg-[#727272]" />
+                <span className="font-['Poppins'] font-normal text-[15px] sm:text-[16px] leading-[24px] text-[#1F1F1F]">
+                  or
+                </span>
+                <div className="h-[1px] flex-1 bg-[#727272]" />
+              </div>
 
-            {/* Toggle between Email / Phone Button */}
-            <div className="mt-4">
-              {inputMethod === "email" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputMethod("phone");
-                    setError(null);
-                  }}
-                  className="w-full rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 py-3.5 text-xs sm:text-sm font-medium text-zinc-900 transition-all cursor-pointer shadow-2xs text-center select-none"
-                >
-                  Continue with phone
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputMethod("email");
-                    setError(null);
-                  }}
-                  className="w-full rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 py-3.5 text-xs sm:text-sm font-medium text-zinc-900 transition-all cursor-pointer shadow-2xs text-center select-none"
-                >
-                  Continue with email
-                </button>
-              )}
-            </div>
-          </div>
+              {/* Social Buttons (Frame 1996663725 - Google, Apple, Facebook in 1 row) */}
+              <SocialLoginButtons providers={providers} onLogin={handleSocialLogin} />
 
-          {/* Right Column: Hero Image (Matches Reference Screenshot 100%) */}
-          <div className="lg:col-span-6 xl:col-span-7 flex justify-center lg:justify-end">
-            <div className="relative aspect-[4/4.5] w-full max-w-[480px] rounded-3xl overflow-hidden shadow-xs border border-zinc-200/80 bg-zinc-100">
-              <Image
-                src={inputMethod === "email" ? "/images/auth-traveler-street.jpg" : "/images/auth-traveler-water.jpg"}
-                alt="Homyz travel explorer"
-                fill
-                priority
-                sizes="(min-width: 1024px) 500px, 100vw"
-                className="object-cover"
+              {/* Bottom Toggle Button (Continue with email / phone) */}
+              <AuthMethodToggle
+                inputMethod={inputMethod}
+                onToggle={() => {
+                  setInputMethod(inputMethod === "phone" ? "email" : "phone");
+                  setError(null);
+                }}
               />
             </div>
           </div>
+
+          {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
+          <AuthHeroImage />
         </div>
       </main>
 
       {/* --------------------------------------------------------- */}
-      {/* 3. FOOTER SECTION (Matches Reference Screenshots 100%)     */}
+      {/* 3. FOOTER SECTION (Matches mobile.jpg & Desktop design)    */}
       {/* --------------------------------------------------------- */}
-      <footer className="w-full bg-[#F7F7F7] border-t border-zinc-200/80 mt-16 pt-12 pb-8 px-6 sm:px-12 lg:px-16 text-zinc-700">
-        <div className="max-w-7xl mx-auto space-y-12">
-          {/* Top Row: 3 Columns + Scroll to Top Button */}
+      <footer className="w-full bg-[#FAFAFA] border-t border-[#E5E5E5] mt-12 pt-10 sm:pt-12 pb-8 text-[#1F1F1F]">
+        <Container className="space-y-10">
+          {/* 3 Columns Grid + Desktop Scroll to Top Button */}
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             {/* Column 1: Support */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-zinc-900 tracking-wide">Support</h3>
-              <ul className="space-y-2 text-xs font-medium text-zinc-600">
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Help Center</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Get help with a safety issue</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Disability support</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Cancellation options</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Report neighborhood concern</a></li>
+              <div className="flex items-center justify-between">
+                <h3 className="font-['Poppins'] text-base font-semibold text-[#1F1F1F] tracking-wide">
+                  Support
+                </h3>
+                {/* Mobile Scroll to Top Button (visible on mobile only, matching mobile.jpg) */}
+                <button
+                  type="button"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="md:hidden w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                  title="Scroll to top"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+              <ul className="space-y-2.5 font-['Poppins'] text-sm font-normal text-[#1F1F1F]">
+                <li><a href="#" className="underline hover:text-black">Help Center</a></li>
+                <li><a href="#" className="underline hover:text-black">Get help with a safety issue</a></li>
+                <li><a href="#" className="underline hover:text-black">Disability support</a></li>
+                <li><a href="#" className="underline hover:text-black">Cancellation options</a></li>
+                <li><a href="#" className="underline hover:text-black">Report neighborhood concern</a></li>
               </ul>
             </div>
 
             {/* Column 2: Hosting */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-zinc-900 tracking-wide">Hosting</h3>
-              <ul className="space-y-2 text-xs font-medium text-zinc-600">
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Homyz your home</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Homyz your experience</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Homyz your service</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Homyz for Hosts</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Hosting resources</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Community forum</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Hosting responsibly</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Find a co-host</a></li>
+              <h3 className="font-['Poppins'] text-base font-semibold text-[#1F1F1F] tracking-wide">
+                Hosting
+              </h3>
+              <ul className="space-y-2.5 font-['Poppins'] text-sm font-normal text-[#1F1F1F]">
+                <li><a href="#" className="underline hover:text-black">Homyz your home</a></li>
+                <li><a href="#" className="underline hover:text-black">Homyz your experience</a></li>
+                <li><a href="#" className="underline hover:text-black">Homyz your service</a></li>
+                <li><a href="#" className="underline hover:text-black">Homyz for Hosts</a></li>
+                <li><a href="#" className="underline hover:text-black">Hosting resources</a></li>
+                <li><a href="#" className="underline hover:text-black">Community forum</a></li>
+                <li><a href="#" className="underline hover:text-black">Hosting responsibly</a></li>
+                <li><a href="#" className="underline hover:text-black">Find a co-host</a></li>
               </ul>
             </div>
 
             {/* Column 3: Homyz */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-zinc-900 tracking-wide">Homyz</h3>
-              <ul className="space-y-2 text-xs font-medium text-zinc-600">
-                <li><a href="#" className="hover:underline hover:text-zinc-900">2025 Summer Release</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Newsroom</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Careers</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Investors</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Gift cards</a></li>
-                <li><a href="#" className="hover:underline hover:text-zinc-900">Homyz.com emergency stays</a></li>
+              <h3 className="font-['Poppins'] text-base font-semibold text-[#1F1F1F] tracking-wide">
+                Homyz
+              </h3>
+              <ul className="space-y-2.5 font-['Poppins'] text-sm font-normal text-[#1F1F1F]">
+                <li><a href="#" className="underline hover:text-black">2025 Summer Release</a></li>
+                <li><a href="#" className="underline hover:text-black">Newsroom</a></li>
+                <li><a href="#" className="underline hover:text-black">Careers</a></li>
+                <li><a href="#" className="underline hover:text-black">Investors</a></li>
+                <li><a href="#" className="underline hover:text-black">Gift cards</a></li>
+                <li><a href="#" className="underline hover:text-black">Homyz.com emergency stays</a></li>
               </ul>
-
-              <div className="pt-4 border-t border-zinc-200/80 flex items-center gap-4 text-zinc-700">
-                <a href="#" aria-label="Facebook" className="hover:text-zinc-900">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                </a>
-                <a href="#" aria-label="Twitter" className="hover:text-zinc-900">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z" /></svg>
-                </a>
-                <a href="#" aria-label="Instagram" className="hover:text-zinc-900">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-                </a>
-              </div>
             </div>
 
-            {/* Scroll to Top Round Yellow Button */}
+            {/* Desktop Scroll to Top Button (hidden on mobile) */}
             <button
               type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="absolute right-0 top-0 w-8 h-8 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 flex items-center justify-center text-xs font-bold shadow-2xs transition-all cursor-pointer"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="hidden md:flex absolute right-0 top-0 w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] items-center justify-center transition-all cursor-pointer shadow-xs"
               title="Scroll to top"
             >
-              ^
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
             </button>
           </div>
 
-          {/* Bottom Copyright Row */}
-          <div className="pt-6 border-t border-zinc-200/80 text-xs font-medium text-zinc-500">
-            © 2025 Homyz, Inc.
+          {/* Separator Line */}
+          <div className="w-full max-w-[200px] md:max-w-none h-[1px] bg-[#E5E5E5]" />
+
+          {/* Social Icons row */}
+          <div className="flex items-center gap-5 text-[#1F1F1F]">
+            <a href="#" aria-label="Facebook" className="hover:opacity-75">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+            </a>
+            <a href="#" aria-label="Twitter" className="hover:opacity-75">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z" /></svg>
+            </a>
+            <a href="#" aria-label="Instagram" className="hover:opacity-75">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+            </a>
           </div>
-        </div>
+
+          {/* Bottom Copyright Row */}
+          <div className="font-['Poppins'] text-sm font-normal text-[#1F1F1F]">
+            © 2026 Homyz, Inc.
+          </div>
+        </Container>
       </footer>
     </div>
   );
 }
-

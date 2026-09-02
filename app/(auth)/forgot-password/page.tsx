@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { HomyzLogo } from "@/components/ui/homyz-logo";
 import Image from "next/image";
 import Link from "next/link";
+import { Container } from "@/components/ui/container";
 
 export const metadata = {
   title: "Forgot Password | Homyz Enterprise Console",
@@ -16,7 +17,7 @@ export default function ForgotPasswordPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="flex-1 w-full max-w-7xl mx-auto py-10 px-4 sm:px-8 lg:px-12 flex flex-col justify-center">
+      <Container as="main" className="flex-1 py-10 flex flex-col justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           {/* Left Column: Form */}
           <div className="lg:col-span-6 xl:col-span-5 w-full max-w-md mx-auto lg:mx-0 flex flex-col">
@@ -37,7 +38,7 @@ export default function ForgotPasswordPage() {
               >
                 ‹
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+              <h1>
                 Forgot password?
               </h1>
             </div>
@@ -70,7 +71,7 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
         </div>
-      </main>
+      </Container>
     </div>
   );
 }

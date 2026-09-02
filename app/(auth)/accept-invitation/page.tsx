@@ -24,7 +24,7 @@ export default async function AcceptInvitationPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-zinc-950 mb-2">Invalid Invitation Link</h1>
+          <h1 className="mb-2">Invalid Invitation Link</h1>
           <p className="text-xs text-zinc-500 mb-6 leading-relaxed">
             This invitation link is missing its security token or has already been consumed.
           </p>
@@ -57,7 +57,7 @@ export default async function AcceptInvitationPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-zinc-950">
+          <h1>
             Unable to Accept Invitation
           </h1>
           <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium">
@@ -89,7 +89,7 @@ export default async function AcceptInvitationPage({
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-3">
               🛡️ Homyz Admin Setup
             </span>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-950">
+            <h1>
               Set Up Your Account
             </h1>
             <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed">

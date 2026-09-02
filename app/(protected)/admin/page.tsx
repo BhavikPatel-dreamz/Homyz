@@ -91,7 +91,7 @@ export default async function AdminPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+          <h1>
             System Overview
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">

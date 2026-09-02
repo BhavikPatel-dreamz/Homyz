@@ -95,7 +95,7 @@ export function HouseRulesAndArrivalViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">House rules</h1>
+              <h1>House rules</h1>
             </div>
             <p className="text-xs text-zinc-500 font-normal pl-11">
               Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
@@ -424,7 +424,7 @@ export function HouseRulesAndArrivalViews({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Wifi details</h1>
+            <h1>Wifi details</h1>
           </div>
 
           <div className="space-y-5 pt-2">
@@ -477,7 +477,7 @@ export function HouseRulesAndArrivalViews({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">House manual</h1>
+            <h1>House manual</h1>
           </div>
           <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2">
             Share details about AC controls, appliances, trash disposal, or parking spots.
@@ -1303,7 +1303,7 @@ function CheckInCheckOutView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Check-in and check-out times</h1>
+        <h1>Check-in and check-out times</h1>
       </div>
 
       {/* Group 1: Check-in window and check-out times */}
@@ -1452,7 +1452,7 @@ function DirectionsView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Directions</h1>
+        <h1>Directions</h1>
       </div>
 
       {/* Subtitle description matching screenshot 100% */}
@@ -1519,7 +1519,7 @@ function CheckInMethodView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Check-in method</h1>
+        <h1>Check-in method</h1>
       </div>
 
       {/* Card 1: Selected Method Card (Matches Figma Screenshot 100%) */}

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Badge } from "../ui";
 import { LogoutButton } from "./logout-button";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions/permissions";
+import { Container } from "@/components/ui/container";
 
 export function AdminNav() {
   const pathname = usePathname();
@@ -77,7 +78,7 @@ export function AdminNav() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--border)] bg-[var(--surface)] shadow-2xs">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
+      <Container className="flex items-center justify-between py-3">
         {/* Left: Brand & Admin Tag */}
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2.5">
@@ -186,7 +187,7 @@ export function AdminNav() {
             </svg>
           </button>
         </div>
-      </div>
+      </Container>
 
       {/* Mobile Nav Bar */}
       {mobileOpen && (

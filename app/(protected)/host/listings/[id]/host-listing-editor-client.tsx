@@ -7,6 +7,7 @@ import { updateListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { RealMap } from "@/components/ui/real-map";
+import { Container } from "@/components/ui/container";
 import { EditorSidebar } from "./components/EditorSidebar";
 import { GuestsSafetyView } from "./components/GuestsSafetyView";
 import { EditorModals } from "./components/EditorModals";
@@ -553,7 +554,7 @@ export function HostListingEditorClient({
       <HostSubNav activeTab="listing" listingId={listing.id} />
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
-      <div className="flex-1 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 sm:px-8 py-6">
+      <Container className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 py-6">
         
         {/* ============================================================ */}
         {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
@@ -781,7 +782,7 @@ export function HostListingEditorClient({
           houseManual={houseManual}
           directions={directions}
         />
-      </div>
+      </Container>
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: ADD YOUR CO-HOST'S INFO */}

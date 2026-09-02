@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Container } from "@/components/ui/container";
 import type { OperationalAlertItem, AlertStatus, AlertSeverity } from "@/services/host-operations.service";
 
 export function HostAlertsCenter() {
@@ -67,12 +68,12 @@ export function HostAlertsCenter() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <Container className="py-8 space-y-8">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Operational Alerts Center</h1>
+            <h1>Operational Alerts Center</h1>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
               Live Monitoring
             </span>
@@ -236,6 +237,6 @@ export function HostAlertsCenter() {
           ))
         )}
       </div>
-    </div>
+    </Container>
   );
 }

@@ -705,7 +705,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+              <h1>
                 {host.name || "Unnamed Host / Applicant"}
               </h1>
 

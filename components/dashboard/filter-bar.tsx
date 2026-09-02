@@ -30,7 +30,7 @@ export function FilterBar({
       {/* Title & View Filters Row matching Screenshots */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--foreground)]">
+          <h1>
             You have {totalCount} {filters.tab === "upcoming" ? "upcoming " : ""}reservations
           </h1>
           <p className="text-sm text-[var(--muted-foreground)] mt-1 font-medium">

@@ -162,7 +162,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+              <h1>
                 {guest.name || "Unnamed Guest"}
               </h1>
 

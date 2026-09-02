@@ -136,7 +136,7 @@ export function PropertyDetailsViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Description</h1>
+              <h1>Description</h1>
             </div>
             <p className="text-xs text-zinc-400 font-normal pl-11">
               *These settings apply to all nights, unless you customize them by date.{" "}
@@ -356,7 +356,7 @@ export function PropertyDetailsViews({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Listing title</h1>
+            <h1>Listing title</h1>
           </div>
 
           <div className="space-y-3">
@@ -398,7 +398,7 @@ export function PropertyDetailsViews({
             >
               ‹
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Property type</h1>
+            <h1>Property type</h1>
           </div>
 
           <div className="space-y-5 pt-1">
@@ -679,7 +679,7 @@ export function PropertyDetailsViews({
                 >
                   ‹
                 </button>
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Amenities</h1>
+                <h1>Amenities</h1>
               </div>
               <p className="text-xs text-zinc-400 font-normal pl-11">
                 You've added these to your listing so far.
@@ -894,7 +894,7 @@ export function PropertyDetailsViews({
               >
                 ‹
               </button>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Accessibility features</h1>
+              <h1>Accessibility features</h1>
             </div>
 
             {/* Top Right Done Button */}

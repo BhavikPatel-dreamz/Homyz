@@ -402,7 +402,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
         {/* Page Title & Mobile Action Icons */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+          <h1>
             Your listings
           </h1>
 
