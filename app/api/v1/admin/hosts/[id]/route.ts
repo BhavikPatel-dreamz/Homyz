@@ -3,6 +3,7 @@ import { ok } from "@/lib/api/response";
 import { requireApiPermission } from "@/lib/permissions/guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminService } from "@/services/admin.service";
+import { listingService } from "@/services/listing.service";
 
 // GET /api/v1/admin/hosts/[id]
 export const GET = apiHandler(async (req, { params }) => {
@@ -32,6 +33,21 @@ export const PATCH = apiHandler(async (req, { params }) => {
   ]);
   const { id } = await params;
   const body = await req.json();
+
+  if (body.action === "APPROVE_LISTING") {
+    const result = await listingService.approveListingByAdmin(actor, body.listingId);
+    return ok(result);
+  }
+
+  if (body.action === "REQUEST_LISTING_CHANGES") {
+    const result = await listingService.requestChangesByAdmin(actor, body.listingId, body.requestedChanges || body.notes);
+    return ok(result);
+  }
+
+  if (body.action === "REJECT_LISTING") {
+    const result = await listingService.rejectListingByAdmin(actor, body.listingId, body.reason);
+    return ok(result);
+  }
 
   if (body.action === "APPROVE_APPLICATION") {
     const result = await adminService.approveHostApplication(id, actor);

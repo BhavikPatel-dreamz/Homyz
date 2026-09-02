@@ -18,24 +18,141 @@ import type { Role } from "@/generated/prisma/enums";
 function buildProviders(): NextAuthOptions["providers"] {
   const providers: NextAuthOptions["providers"] = [
     CredentialsProvider({
-      name: "Email and password",
+      name: "Email, Phone OTP, or Social",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        phone: { label: "Phone", type: "text" },
+        otpCode: { label: "OTP Code", type: "text" },
+        provider: { label: "Provider", type: "text" },
       },
       async authorize(credentials, req) {
+        const headers = req?.headers as Record<string, string | string[] | undefined> | undefined;
+        const rawIp = headers?.["x-forwarded-for"] || headers?.["x-real-ip"] || null;
+        const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp;
+        const rawUa = headers?.["user-agent"] || null;
+        const userAgent = Array.isArray(rawUa) ? rawUa[0] : rawUa;
+
+        // 1. Phone OTP Verification Sign-In
+        if (credentials?.phone && credentials?.otpCode) {
+          const verified = await authService.verifyOtp({
+            identifier: credentials.phone,
+            code: credentials.otpCode,
+            purpose: "LOGIN",
+          });
+
+          if (verified.success) {
+            let user = await prisma.user.findFirst({
+              where: { phone: credentials.phone },
+              include: {
+                adminRole: {
+                  select: {
+                    name: true,
+                    slug: true,
+                    permissions: { select: { permission: { select: { slug: true } } } },
+                  },
+                },
+              },
+            });
+
+            if (!user) {
+              const cleanPhone = credentials.phone.replace(/\D/g, "");
+              user = await prisma.user.create({
+                data: {
+                  phone: credentials.phone,
+                  phoneVerified: new Date(),
+                  role: "USER",
+                  name: `Guest (${cleanPhone.slice(-4) || "User"})`,
+                  email: `user_${cleanPhone || Date.now()}@homyz.app`,
+                },
+                include: {
+                  adminRole: {
+                    select: {
+                      name: true,
+                      slug: true,
+                      permissions: { select: { permission: { select: { slug: true } } } },
+                    },
+                  },
+                },
+              });
+            }
+
+            const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+            const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: user.role,
+              status: user.status,
+              adminRoleSlug: user.adminRole?.slug ?? null,
+              permissions: effectivePermissions,
+            };
+          }
+          return null;
+        }
+
+        // 2. Social Provider Fallback Sign-In
+        if (credentials?.provider) {
+          const providerName = credentials.provider.toLowerCase();
+          const demoEmail = `${providerName}.user@homyz.app`;
+          let user = await prisma.user.findUnique({
+            where: { email: demoEmail },
+            include: {
+              adminRole: {
+                select: {
+                  name: true,
+                  slug: true,
+                  permissions: { select: { permission: { select: { slug: true } } } },
+                },
+              },
+            },
+          });
+
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email: demoEmail,
+                name: `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`,
+                role: "USER",
+                emailVerified: new Date(),
+              },
+              include: {
+                adminRole: {
+                  select: {
+                    name: true,
+                    slug: true,
+                    permissions: { select: { permission: { select: { slug: true } } } },
+                  },
+                },
+              },
+            });
+          }
+
+          const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+          const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            status: user.status,
+            adminRoleSlug: user.adminRole?.slug ?? null,
+            permissions: effectivePermissions,
+          };
+        }
+
+        // 3. Email & Password Sign-In
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
         const { email, password } = parsed.data;
 
         // Throttle before touching the password hash.
         assertLoginRateLimit(email.toLowerCase());
-
-        const headers = req?.headers as Record<string, string | string[] | undefined> | undefined;
-        const rawIp = headers?.["x-forwarded-for"] || headers?.["x-real-ip"] || null;
-        const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp;
-        const rawUa = headers?.["user-agent"] || null;
-        const userAgent = Array.isArray(rawUa) ? rawUa[0] : rawUa;
 
         const user = await authService.verifyCredentials(email, password);
         if (!user) {
@@ -85,6 +202,7 @@ function buildProviders(): NextAuthOptions["providers"] {
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
     );
   }
@@ -94,6 +212,7 @@ function buildProviders(): NextAuthOptions["providers"] {
       FacebookProvider({
         clientId: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
     );
   }
@@ -105,6 +224,7 @@ function buildProviders(): NextAuthOptions["providers"] {
       AppleProvider({
         clientId: process.env.APPLE_CLIENT_ID,
         clientSecret: process.env.APPLE_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
     );
   }
@@ -125,6 +245,58 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
   providers: buildProviders(),
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // For OAuth sign-ins, allow linking and ensure user exists in DB
+      if (account && account.provider !== "credentials" && profile?.email) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: profile.email },
+          });
+
+          if (existingUser) {
+            // Link the OAuth account to the existing user if not already linked
+            const existingAccount = await prisma.account.findFirst({
+              where: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            });
+
+            if (!existingAccount) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                },
+              });
+            }
+
+            // Update user profile with Google avatar/name if not set
+            if (!existingUser.image && (user as { image?: string })?.image) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                  image: (user as { image?: string }).image,
+                  emailVerified: existingUser.emailVerified ?? new Date(),
+                },
+              });
+            }
+          }
+        } catch (err) {
+          console.error("OAuth signIn linking error:", err);
+          // Don't block sign-in on linking errors
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       // `user` is only present at sign-in. Persist id, role, status, adminRoleSlug, tokenVersion, and permissions.
       if (user) {

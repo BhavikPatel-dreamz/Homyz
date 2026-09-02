@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { HomyzLogo } from "@/components/ui/homyz-logo";
 
 export interface SidebarItem {
   label: string;
@@ -195,23 +196,17 @@ export function AdminSidebar({
             <div className="flex items-center justify-center">
               <Link
                 href="/admin"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] font-black shadow-2xs hover:scale-105 transition-transform"
+                className="flex items-center justify-center hover:scale-105 transition-transform"
                 title="Homyz Admin Overview"
               >
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
-                </svg>
+                <HomyzLogo className="text-[var(--foreground)] shrink-0" size={26} />
               </Link>
             </div>
           ) : (
             /* Expanded State: Brand + Collapse Toggle Button */
             <div className="flex items-center justify-between px-1">
               <Link href="/admin" className="flex items-center gap-3 group overflow-hidden">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] font-black shadow-2xs transition-transform group-hover:scale-105">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
-                  </svg>
-                </div>
+                <HomyzLogo className="text-[var(--foreground)] group-hover:scale-105 transition-transform shrink-0" size={26} />
                 <div className="flex flex-col min-w-0">
                   <span className="text-base font-black tracking-tight text-[var(--foreground)] leading-none">
                     homyz

@@ -8,8 +8,10 @@ import { Footer } from "@/components/dashboard/footer";
 export function ProtectedShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const isHostRoute = pathname.startsWith("/host");
 
-  if (isAdminRoute) {
+  // Admin and Host routes manage their own headers/layouts
+  if (isAdminRoute || isHostRoute) {
     return <>{children}</>;
   }
 

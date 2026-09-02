@@ -741,6 +741,49 @@ export interface HostDetailsData {
     description: string;
     price: number;
     published: boolean;
+    status: string;
+    hostingType?: string;
+    propertyType?: string | null;
+    listingType?: string | null;
+    address?: string | null;
+    city?: string | null;
+    district?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    showExactLocation?: boolean;
+    guests?: number;
+    bedrooms?: number;
+    beds?: number;
+    bathrooms?: number;
+    photos?: string[];
+    highlights?: string[];
+    amenities?: string[];
+    safetyDisclosures?: string[];
+    houseRules?: string[];
+    checkInMethod?: string | null;
+    checkInStart?: string | null;
+    checkInEnd?: string | null;
+    checkOutTime?: string | null;
+    cancellationPolicy?: string | null;
+    minNights?: number;
+    maxNights?: number;
+    instantBook?: boolean;
+    isPaused?: boolean;
+    blockedDates?: string[];
+    cleaningFee?: number | null;
+    securityDeposit?: number | null;
+    weekendPrice?: number | null;
+    weekendPremium?: number | null;
+    discounts?: any;
+    currentStep?: number;
+    submittedAt?: Date | string | null;
+    resubmittedAt?: Date | string | null;
+    reviewStartedAt?: Date | string | null;
+    rejectionReason?: string | null;
+    requestedChanges?: any;
+    approvedAt?: Date | string | null;
     createdAt: Date;
     updatedAt: Date;
     bookingsCount: number;
@@ -1504,6 +1547,49 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       description: l.description,
       price: l.price,
       published: l.published,
+      status: l.status || (l.published ? "ACTIVE" : "DRAFT"),
+      hostingType: l.hostingType || "HOME",
+      propertyType: l.propertyType || null,
+      listingType: l.listingType || null,
+      address: l.address || null,
+      city: l.city || null,
+      district: l.district || null,
+      postalCode: l.postalCode || null,
+      country: l.country || null,
+      latitude: l.latitude || null,
+      longitude: l.longitude || null,
+      showExactLocation: l.showExactLocation ?? true,
+      guests: l.guests ?? 1,
+      bedrooms: l.bedrooms ?? 1,
+      beds: l.beds ?? 1,
+      bathrooms: l.bathrooms ?? 1,
+      photos: l.photos || [],
+      highlights: l.highlights || [],
+      amenities: l.amenities || [],
+      safetyDisclosures: l.safetyDisclosures || [],
+      houseRules: l.houseRules || [],
+      checkInMethod: l.checkInMethod || "SMART_LOCK",
+      checkInStart: l.checkInStart || "15:00",
+      checkInEnd: l.checkInEnd || "22:00",
+      checkOutTime: l.checkOutTime || "11:00",
+      cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
+      minNights: l.minNights ?? 1,
+      maxNights: l.maxNights ?? 365,
+      instantBook: l.instantBook ?? true,
+      isPaused: l.isPaused ?? false,
+      blockedDates: l.blockedDates || [],
+      cleaningFee: l.cleaningFee ?? 0,
+      securityDeposit: l.securityDeposit ?? 0,
+      weekendPrice: l.weekendPrice || null,
+      weekendPremium: l.weekendPremium || null,
+      discounts: l.discounts || null,
+      currentStep: l.currentStep || 1,
+      submittedAt: l.submittedAt || null,
+      resubmittedAt: l.resubmittedAt || null,
+      reviewStartedAt: l.reviewStartedAt || null,
+      rejectionReason: l.rejectionReason || null,
+      requestedChanges: l.requestedChanges || null,
+      approvedAt: l.approvedAt || null,
       createdAt: l.createdAt,
       updatedAt: l.updatedAt,
       bookingsCount: l.bookings.length,

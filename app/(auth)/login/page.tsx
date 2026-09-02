@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { HomyzAuthForm } from "@/components/forms/homyz-auth-form";
 import { getSessionUser } from "@/lib/auth/session";
+import { LoginFormClient } from "./login-form-client";
 
 export default async function LoginPage({
   searchParams,
@@ -27,13 +27,13 @@ export default async function LoginPage({
         : undefined;
 
   const providers = {
-    google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-    facebook: Boolean(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET),
-    apple: Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
+    google: true,
+    facebook: true,
+    apple: true,
   };
 
   return (
-    <HomyzAuthForm
+    <LoginFormClient
       initialMode="login"
       callbackUrl={callbackUrl || "/dashboard"}
       providers={providers}

@@ -16,7 +16,7 @@ import { Role } from "@/generated/prisma/enums";
 export async function createListingAction(input: unknown) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.HOST, Role.ADMIN]);
+    assertRole(actor, [Role.USER, Role.HOST, Role.ADMIN]);
     const data = createListingSchema.parse(input);
     const listing = await listingService.create(actor, data);
     revalidatePath("/host/listings");
@@ -43,5 +43,89 @@ export async function deleteListingAction(id: string) {
     const result = await listingService.remove(actor, id);
     revalidatePath("/host/listings");
     return result;
+  });
+}
+
+export async function submitListingForReviewAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.submitForReview(actor, id);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function resubmitListingForReviewAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.resubmitForReview(actor, id);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function approveListingByAdminAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    const listing = await listingService.approveListingByAdmin(actor, id);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function requestListingChangesByAdminAction(id: string, requestedChanges: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    const listing = await listingService.requestChangesByAdmin(actor, id, requestedChanges);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function rejectListingByAdminAction(id: string, reason: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    const listing = await listingService.rejectListingByAdmin(actor, id, reason);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function duplicateListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.duplicate(actor, id);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function togglePauseListingAction(id: string, isPaused: boolean) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.togglePause(actor, id, isPaused);
+    revalidatePath("/host/listings");
+    revalidatePath("/admin/hosts");
+    return listing;
+  });
+}
+
+export async function updateListingAvailabilityAction(id: string, blockedDates: string[]) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.updateAvailability(actor, id, blockedDates);
+    revalidatePath("/host/listings");
+    return listing;
   });
 }

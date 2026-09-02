@@ -4,7 +4,7 @@ import React, { useState, useTransition, useEffect, type FormEvent } from "react
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn, getSession, signOut } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
 
@@ -61,18 +61,20 @@ export function AdminLoginForm() {
         return;
       }
 
-      // Verify admin role
+      // Intelligent role-based redirection
       const session = await getSession();
-      if (session?.user?.role !== "ADMIN" && !session?.user?.adminRoleSlug) {
-        await signOut({ redirect: false });
-        const forbiddenMsg = "Access denied: Account lacks administrative privileges.";
-        setError(forbiddenMsg);
-        toast.error(forbiddenMsg);
-        return;
-      }
+      const isAdmin = session?.user?.role === "ADMIN" || Boolean(session?.user?.adminRoleSlug);
 
       toast.success("Signed in successfully!");
-      router.push(callbackUrl);
+
+      let destination = callbackUrl;
+      if (!isAdmin) {
+        if (!destination || destination === "/admin" || destination.startsWith("/admin/")) {
+          destination = "/dashboard";
+        }
+      }
+
+      router.push(destination);
       router.refresh();
     });
   }

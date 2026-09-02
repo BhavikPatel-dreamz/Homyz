@@ -97,6 +97,22 @@ enum ComplianceIssueStatus {
   REJECTED
 }
 
+enum ListingStatus {
+  DRAFT
+  IN_PROGRESS
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+  ACTIVE
+}
+
+enum HostingType {
+  HOME
+  EXPERIENCE
+  SERVICE
+}
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -253,20 +269,85 @@ model RefreshToken {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Listing {
-  id          String   @id @default(cuid())
-  hostId      String
-  title       String
-  description String   @db.Text
-  price       Int // minor units (e.g. cents) per night
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String        @id @default(cuid())
+  hostId              String
+  title               String
+  description         String        @db.Text
+  price               Int           // minor units (e.g. cents) per night
+  published           Boolean       @default(false)
+  status              ListingStatus @default(DRAFT)
+  hostingType         HostingType   @default(HOME)
+
+  // Step 1 — Property & Location Details
+  propertyType        String?       // House, Apartment, Villa, Cabin, Cottage, etc.
+  listingType         String?       // Entire place, Private room, Shared room
+  address             String?       @db.Text
+  city                String?
+  district            String?
+  postalCode          String?
+  country             String?
+  latitude            Float?
+  longitude           Float?
+  showExactLocation   Boolean       @default(true)
+
+  guests              Int           @default(1)
+  bedrooms            Int           @default(1)
+  beds                Int           @default(1)
+  bathrooms           Int           @default(1)
+
+  // Step 2 — Photos & Content Details
+  photos              String[]      @default([]) // Min 5 photos required for submission
+  highlights          String[]      @default([]) // Max 3 highlights
+  amenities           String[]      @default([]) // Amenities list (WiFi, Pool, Kitchen, Parking, Aircon, etc.)
+  safetyDisclosures   String[]      @default([])
+
+  // Step 3 — House Rules & Check-in Details
+  houseRules          String[]      @default([]) // No smoking, Pets allowed, Quiet hours, etc.
+  checkInMethod       String?       @default("SMART_LOCK") // SMART_LOCK, KEYPAD, LOCKBOX, HOST_MEET
+  checkInStart        String?       @default("15:00")
+  checkInEnd          String?       @default("22:00")
+  checkOutTime        String?       @default("11:00")
+
+  // Step 4 — Policies & Constraints
+  cancellationPolicy  String?       @default("FLEXIBLE") // FLEXIBLE, MODERATE, STRICT, SUPER_STRICT
+  minNights           Int           @default(1)
+  maxNights           Int           @default(365)
+  instantBook         Boolean       @default(true)
+  isPaused            Boolean       @default(false)
+  isFeatured          Boolean       @default(false)
+
+  // Step 5 — Availability & Dates
+  blockedDates        String[]      @default([]) // Array of YYYY-MM-DD blocked dates
+
+  // Pricing & Fees
+  cleaningFee         Int?          @default(0) // Fee in cents
+  securityDeposit     Int?          @default(0) // Fee in cents
+  weekendPrice        Int?          // Weekend price in cents
+  weekendPremium      Int?          // Weekend premium percentage
+  discounts           Json?         // Discounts configuration
+
+  // Wizard state & progress
+  currentStep         Int           @default(1)
+
+  // Admin Review & Approval
+  submittedAt         DateTime?
+  resubmittedAt       DateTime?
+  reviewStartedAt     DateTime?
+  reviewerId          String?
+  rejectionReason     String?       @db.Text
+  requestedChanges    Json?         // Structured action items requested by Admin
+  approvedAt          DateTime?
+  approvedById        String?
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings Booking[]
 
   @@index([hostId])
   @@index([published])
+  @@index([status])
 }
 
 model Booking {

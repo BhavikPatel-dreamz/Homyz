@@ -553,39 +553,51 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               <div
                 key={st.key}
                 onClick={() => {
-                  if (st.key === "DOCUMENTS") setActiveStep(4);
-                  else if (st.key === "REGISTRATION") setActiveStep(1);
+                  if (st.key === "REGISTRATION") setActiveStep(1);
+                  else if (st.key === "SUBMITTED") setActiveStep(6);
+                  else if (st.key === "DOCUMENTS" || st.key === "COMPLIANCE") setActiveStep(4);
+                  else setActiveStep(6);
                 }}
-                className={`relative flex flex-col items-center justify-between rounded-2xl border p-3.5 text-center transition-all cursor-pointer hover:scale-102 ${
+                className={`relative flex flex-col items-center justify-between min-h-[115px] rounded-2xl border p-3 text-center transition-all cursor-pointer select-none hover:shadow-md ${
                   status === "completed"
-                    ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
+                    ? "border-emerald-500/30 bg-emerald-500/5"
                     : status === "action_required"
-                    ? "border-rose-500/50 bg-rose-500/10 text-rose-600 dark:text-rose-400 animate-pulse"
+                    ? "border-rose-500/50 bg-rose-500/10 animate-pulse"
                     : status === "in_progress"
-                    ? "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    ? "border-amber-500/40 bg-amber-500/10"
                     : status === "failed"
-                    ? "border-rose-500/50 bg-rose-500/10 text-rose-600"
-                    : "border-[var(--border)] bg-[var(--surface-secondary)]/50 text-[var(--muted-foreground)]"
+                    ? "border-rose-500/50 bg-rose-500/10"
+                    : "border-[var(--border)] bg-[var(--surface-secondary)]/50"
                 }`}
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold border shadow-2xs">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold border shadow-2xs ${
+                    status === "completed"
+                      ? "bg-emerald-500 text-white border-emerald-600"
+                      : status === "action_required"
+                      ? "bg-rose-500 text-white border-rose-600"
+                      : status === "in_progress"
+                      ? "bg-amber-500 text-white border-amber-600"
+                      : "bg-[var(--surface)] text-[var(--muted-foreground)] border-[var(--border)]"
+                  }`}
+                >
                   {status === "completed" ? "✓" : status === "action_required" ? "!" : status === "in_progress" ? "●" : idx + 1}
                 </div>
 
-                <span className="mt-2 text-[11px] font-bold leading-tight line-clamp-2">
+                <span className="mt-1.5 text-[11px] font-bold leading-tight text-[var(--foreground)]">
                   {st.label}
                 </span>
 
                 <span
-                  className={`mt-2 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ${
+                  className={`mt-1.5 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ${
                     status === "completed"
-                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                      ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
                       : status === "action_required"
-                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 font-black"
+                      ? "bg-rose-500/20 text-rose-800 dark:text-rose-300 font-black"
                       : status === "in_progress"
-                      ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                      ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
                       : status === "failed"
-                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300"
+                      ? "bg-rose-500/20 text-rose-800 dark:text-rose-300"
                       : "bg-[var(--muted)] text-[var(--muted-foreground)]"
                   }`}
                 >
@@ -741,8 +753,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         </div>
       )}
 
-      {/* Multi-Step Application Form (Visible in DRAFT / EDIT mode) */}
-      {(accountState === "DRAFT" || accountState === "ACTION_REQUIRED") && (
+      {/* Multi-Step Application Form */}
+      {(accountState === "DRAFT" || accountState === "ACTION_REQUIRED" || accountState === "SUBMITTED" || accountState === "IN_REVIEW") && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-8">
           {/* Stepper Tabs */}
           <div className="mb-8 flex flex-wrap gap-2 border-b border-[var(--border)] pb-4">

@@ -140,6 +140,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   const [verifReason, setVerifReason] = useState("");
   const [suspendReason, setSuspendReason] = useState("");
 
+  // Listing Review Modals State
+  const [selectedListingForReview, setSelectedListingForReview] = useState<any | null>(null);
+  const [showListingReviewModal, setShowListingReviewModal] = useState(false);
+  const [showListingReqChangesModal, setShowListingReqChangesModal] = useState(false);
+  const [showListingRejectModal, setShowListingRejectModal] = useState(false);
+  const [listingNotesInput, setListingNotesInput] = useState("");
+  const [listingRejectReasonInput, setListingRejectReasonInput] = useState("");
+
   const [pending, startTransition] = useTransition();
 
   const host = data.host;
@@ -597,6 +605,86 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       } catch {
         toast.error("Failed to update compliance status.");
         setShowUpdateCompModal(false);
+      }
+    });
+  }
+
+  async function handleApproveListing(listingId: string) {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "APPROVE_LISTING", listingId }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          toast.error(result.error?.message || "Failed to approve listing.");
+          return;
+        }
+        await refreshData();
+        setShowListingReviewModal(false);
+        toast.success("Listing approved and set to ACTIVE!");
+      } catch {
+        toast.error("Failed to approve listing.");
+      }
+    });
+  }
+
+  async function handleRequestListingChanges(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedListingForReview) return;
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "REQUEST_LISTING_CHANGES",
+            listingId: selectedListingForReview.id,
+            requestedChanges: listingNotesInput,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          toast.error(result.error?.message || "Failed to request changes.");
+          return;
+        }
+        await refreshData();
+        setShowListingReqChangesModal(false);
+        setShowListingReviewModal(false);
+        toast.success("Change request sent to Host.");
+      } catch {
+        toast.error("Failed to request changes.");
+      }
+    });
+  }
+
+  async function handleRejectListing(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedListingForReview) return;
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/v1/admin/hosts/${host.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "REJECT_LISTING",
+            listingId: selectedListingForReview.id,
+            reason: listingRejectReasonInput,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          toast.error(result.error?.message || "Failed to reject listing.");
+          return;
+        }
+        await refreshData();
+        setShowListingRejectModal(false);
+        setShowListingReviewModal(false);
+        toast.success("Listing rejected.");
+      } catch {
+        toast.error("Failed to reject listing.");
       }
     });
   }
@@ -1363,41 +1451,80 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <tr>
                   <th className="py-3.5 px-4">Listing Title</th>
+                  <th className="py-3.5 px-4">Type / Location</th>
                   <th className="py-3.5 px-4">Price / Night</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-center">Bookings Count</th>
-                  <th className="py-3.5 px-4">Created Date</th>
+                  <th className="py-3.5 px-4">Photos</th>
+                  <th className="py-3.5 px-4">Lifecycle Status</th>
+                  <th className="py-3.5 px-4 text-center">Bookings</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
                 {data.listings.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-[var(--muted-foreground)]">
-                      No listings published by this host.
+                    <td colSpan={7} className="py-8 text-center text-[var(--muted-foreground)]">
+                      No listings submitted or created by this host.
                     </td>
                   </tr>
                 ) : (
-                  paginatedListings.map((item) => (
-                    <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                      <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{item.title}</td>
-                      <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
-                      <td className="py-3.5 px-4">
-                        {item.published ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            Published
+                  paginatedListings.map((item) => {
+                    const status = item.status || (item.published ? "ACTIVE" : "DRAFT");
+                    const photosCount = Array.isArray(item.photos) ? item.photos.length : 0;
+                    return (
+                      <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-[var(--foreground)]">{item.title || "Untitled Listing"}</div>
+                          <div className="text-[10px] text-[var(--muted-foreground)] font-mono">ID: {item.id}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-[var(--foreground)]">{item.propertyType || item.hostingType || "Property"}</div>
+                          <div className="text-[10px] text-[var(--muted-foreground)]">{item.city || item.address || "Location Pending"}</div>
+                        </td>
+                        <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
+                        <td className="py-3.5 px-4 font-mono font-bold text-xs">
+                          <span className={photosCount >= 5 ? "text-emerald-600" : "text-amber-600"}>
+                            {photosCount} photos {photosCount < 5 ? "(Min 5 required)" : ""}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border border-[var(--border)]">
-                            Draft
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
-                      <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
-                        {new Date(item.createdAt).toLocaleDateString("en-US")}
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {status === "ACTIVE" || status === "APPROVED" ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                              Active / Approved
+                            </span>
+                          ) : status === "PENDING_REVIEW" ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
+                              Pending Review
+                            </span>
+                          ) : status === "CHANGES_REQUESTED" ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-orange-50 text-orange-800 border border-orange-300 dark:bg-orange-950/40 dark:text-orange-300">
+                              Changes Requested
+                            </span>
+                          ) : status === "REJECTED" ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300">
+                              Rejected
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-zinc-100 text-zinc-700 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300">
+                              Draft
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedListingForReview(item);
+                              setShowListingReviewModal(true);
+                            }}
+                            className="rounded-full bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-xs font-bold transition-all shadow-2xs"
+                          >
+                            Review & Manage
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -2030,6 +2157,323 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   className="rounded-full bg-sky-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-sky-700 disabled:opacity-50"
                 >
                   Update Status
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Admin Listing Review Modal */}
+      {showListingReviewModal && selectedListingForReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="w-full max-w-4xl max-h-[90vh] rounded-3xl bg-[var(--surface)] p-6 sm:p-8 shadow-2xl space-y-6 overflow-y-auto border border-[var(--border)] font-sans">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-[var(--border-subtle)] pb-4">
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-xl font-extrabold text-[var(--foreground)]">
+                    {selectedListingForReview.title || "Untitled Listing"}
+                  </h2>
+                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                    selectedListingForReview.status === "ACTIVE" || selectedListingForReview.status === "APPROVED"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : selectedListingForReview.status === "PENDING_REVIEW"
+                      ? "bg-amber-50 text-amber-800 border-amber-300"
+                      : selectedListingForReview.status === "CHANGES_REQUESTED"
+                      ? "bg-orange-50 text-orange-800 border-orange-300"
+                      : selectedListingForReview.status === "REJECTED"
+                      ? "bg-rose-50 text-rose-700 border-rose-200"
+                      : "bg-zinc-100 text-zinc-700 border-zinc-300"
+                  }`}>
+                    {selectedListingForReview.status || "DRAFT"}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)] font-mono mt-1">
+                  Listing ID: {selectedListingForReview.id} • Host: {host.name || host.email}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowListingReviewModal(false)}
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center justify-center text-sm font-bold border border-[var(--border-subtle)]"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Photos Gallery */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-extrabold text-[var(--foreground)]">
+                  Property Photos ({Array.isArray(selectedListingForReview.photos) ? selectedListingForReview.photos.length : 0})
+                </h3>
+                <span className={`text-xs font-bold ${
+                  (selectedListingForReview.photos?.length || 0) >= 5 ? "text-emerald-600" : "text-amber-600"
+                }`}>
+                  {(selectedListingForReview.photos?.length || 0) >= 5 ? "✓ Meets minimum 5 photos requirement" : "⚠️ Requires at least 5 photos for approval"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                {Array.isArray(selectedListingForReview.photos) && selectedListingForReview.photos.length > 0 ? (
+                  selectedListingForReview.photos.map((photoUrl: string, idx: number) => (
+                    <div key={idx} className="relative aspect-4/3 rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-zinc-100 dark:bg-zinc-900 group">
+                      <img src={photoUrl} alt={`Listing photo ${idx + 1}`} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded-md font-mono">
+                        #{idx + 1}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full p-6 text-center text-xs text-[var(--muted-foreground)] border border-dashed border-[var(--border)] rounded-2xl">
+                    No photos uploaded for this listing yet.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Grid details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              {/* Left Column: Property & Location */}
+              <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
+                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                  Property & Capacity Details
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Hosting Type</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.hostingType || "HOME"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Property Type</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.propertyType || "Apartment"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Guests Capacity</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.guests || 1} Guests</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Bedrooms / Beds / Baths</span>
+                    <span className="font-bold text-[var(--foreground)]">
+                      {selectedListingForReview.bedrooms || 1} Bed • {selectedListingForReview.beds || 1} Beds • {selectedListingForReview.bathrooms || 1} Bath
+                    </span>
+                  </div>
+                </div>
+
+                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                  Location Information
+                </h4>
+                <div className="space-y-1">
+                  <div>
+                    <span className="text-[var(--muted-foreground)]">Address: </span>
+                    <span className="font-semibold text-[var(--foreground)]">{selectedListingForReview.address || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)]">City / District / Zip: </span>
+                    <span className="font-semibold text-[var(--foreground)]">
+                      {[selectedListingForReview.city, selectedListingForReview.district, selectedListingForReview.postalCode, selectedListingForReview.country].filter(Boolean).join(", ") || "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Pricing & Descriptions */}
+              <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
+                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                  Financials, Policies & Rules
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Nightly Rate</span>
+                    <span className="font-extrabold text-base text-emerald-600">${(selectedListingForReview.price / 100).toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Cleaning Fee</span>
+                    <span className="font-bold text-[var(--foreground)]">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Check-in Method</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.checkInMethod || "SMART_LOCK"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Check-in Window</span>
+                    <span className="font-bold text-[var(--foreground)]">
+                      {selectedListingForReview.checkInStart || "15:00"} - {selectedListingForReview.checkInEnd || "22:00"} (Out: {selectedListingForReview.checkOutTime || "11:00"})
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Cancellation Policy</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.cancellationPolicy || "FLEXIBLE"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--muted-foreground)] block">Instant Booking</span>
+                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.instantBook !== false ? "Enabled ✓" : "Disabled ✕"}</span>
+                  </div>
+                </div>
+
+                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                  Description & Amenities
+                </h4>
+                <div className="space-y-2">
+                  <p className="text-[var(--foreground)] leading-relaxed line-clamp-3">
+                    {selectedListingForReview.description || "No description provided."}
+                  </p>
+                  {Array.isArray(selectedListingForReview.amenities) && selectedListingForReview.amenities.length > 0 && (
+                    <div className="pt-1">
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-bold block mb-1">Amenities ({selectedListingForReview.amenities.length}):</span>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedListingForReview.amenities.map((a: string, idx: number) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                            ✨ {a}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {Array.isArray(selectedListingForReview.houseRules) && selectedListingForReview.houseRules.length > 0 && (
+                    <div className="pt-1">
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-bold block mb-1">House Rules:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedListingForReview.houseRules.map((r: string, idx: number) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                            📌 {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Change Requests / Rejection Feedback History */}
+            {(selectedListingForReview.requestedChanges || selectedListingForReview.rejectionReason) && (
+              <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-900/50 text-xs space-y-1">
+                <span className="font-extrabold text-amber-900 dark:text-amber-300 block">
+                  Feedback / Action Notes:
+                </span>
+                {selectedListingForReview.requestedChanges && (
+                  <p className="text-amber-800 dark:text-amber-200">
+                    <strong className="font-bold">Requested Changes:</strong> {JSON.stringify(selectedListingForReview.requestedChanges)}
+                  </p>
+                )}
+                {selectedListingForReview.rejectionReason && (
+                  <p className="text-rose-700 dark:text-rose-300">
+                    <strong className="font-bold">Rejection Reason:</strong> {selectedListingForReview.rejectionReason}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleApproveListing(selectedListingForReview.id)}
+                  disabled={pending || (selectedListingForReview.photos?.length || 0) < 5}
+                  title={(selectedListingForReview.photos?.length || 0) < 5 ? "Minimum 5 photos required for approval" : ""}
+                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                >
+                  Approve & Activate Listing
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowListingReqChangesModal(true)}
+                  disabled={pending}
+                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                >
+                  Request Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowListingRejectModal(true)}
+                  disabled={pending}
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                >
+                  Reject Listing
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowListingReviewModal(false)}
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sub-modal: Request Listing Changes */}
+      {showListingReqChangesModal && selectedListingForReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
+            <h3 className="text-base font-bold text-[var(--foreground)]">Request Listing Changes</h3>
+            <form onSubmit={handleRequestListingChanges} className="space-y-3 text-xs">
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Provide clear instructions for the host regarding what details, photos, or pricing need revision:
+              </p>
+              <textarea
+                value={listingNotesInput}
+                onChange={(e) => setListingNotesInput(e.target.value)}
+                required
+                rows={4}
+                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-amber-500"
+                placeholder="e.g. Please upload at least 5 high-resolution interior photos and clarify property house rules."
+              />
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowListingReqChangesModal(false)}
+                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-extrabold hover:bg-amber-600 disabled:opacity-50"
+                >
+                  Send Change Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sub-modal: Reject Listing */}
+      {showListingRejectModal && selectedListingForReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
+            <h3 className="text-base font-bold text-[var(--foreground)]">Reject Listing Application</h3>
+            <form onSubmit={handleRejectListing} className="space-y-3 text-xs">
+              <p className="text-xs text-[var(--muted-foreground)]">
+                State the compliance or safety reason for rejecting this listing:
+              </p>
+              <textarea
+                value={listingRejectReasonInput}
+                onChange={(e) => setListingRejectReasonInput(e.target.value)}
+                required
+                rows={4}
+                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-rose-500"
+                placeholder="e.g. Listing violates local zoning laws / unverified ownership documentation."
+              />
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowListingRejectModal(false)}
+                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                >
+                  Confirm Rejection
                 </button>
               </div>
             </form>

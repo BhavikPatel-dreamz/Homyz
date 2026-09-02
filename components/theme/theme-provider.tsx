@@ -20,14 +20,14 @@ function getSystemTheme(): "light" | "dark" {
 }
 
 function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
     if (saved === "light" || saved === "dark" || saved === "system") {
       return saved;
     }
   } catch (e) {}
-  return "system";
+  return "light";
 }
 
 function applyThemeToDocument(resolved: "light" | "dark") {
@@ -43,14 +43,13 @@ function applyThemeToDocument(resolved: "light" | "dark") {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
   // Read theme on initial mount
   useEffect(() => {
     const stored = getStoredTheme();
-    const system = getSystemTheme();
-    const active = stored === "system" ? system : stored;
+    const active = stored === "dark" ? "dark" : "light";
 
     setThemeState(stored);
     setResolvedTheme(active);

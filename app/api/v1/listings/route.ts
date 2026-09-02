@@ -13,9 +13,9 @@ export const GET = apiHandler(async (req) => {
   return paginated(items, buildPagination(page, limit, total));
 });
 
-// POST /api/v1/listings — create a listing (HOST or ADMIN).
+// POST /api/v1/listings — create a listing draft (USER, HOST or ADMIN).
 export const POST = apiHandler(async (req) => {
-  const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+  const actor = await requireApiRole(req, [Role.USER, Role.HOST, Role.ADMIN]);
   const body = createListingSchema.parse(await req.json());
   const listing = await listingService.create(actor, body);
   return created(listing);
