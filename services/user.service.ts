@@ -46,13 +46,16 @@ async function updateProfile(
     image?: string;
     phone?: string;
     phoneVerified?: Date | null;
+    publicProfile?: any;
   } = {};
-  if (input.name !== undefined) data.name = input.name;
-  if (input.image !== undefined) data.image = input.image;
-  if (input.phone !== undefined) {
+  if (input.name) data.name = input.name;
+  if (input.image) data.image = input.image;
+  if (input.phone) {
     data.phone = input.phone;
-    // Re-verification required when the phone number changes.
     data.phoneVerified = null;
+  }
+  if (input.publicProfile !== undefined) {
+    data.publicProfile = input.publicProfile;
   }
 
   try {

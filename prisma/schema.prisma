@@ -126,6 +126,7 @@ model User {
   email         String?     @unique
   emailVerified DateTime?
   image         String?
+  publicProfile Json?       // Stores bio, prompts, stamps visibility, etc.
   // Local credentials + custom fields
   passwordHash  String?
   role          Role        @default(USER)

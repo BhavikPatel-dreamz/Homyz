@@ -18,6 +18,7 @@ export function toPublicUser(
     adminRole: u.adminRole ? { name: u.adminRole.name, slug: u.adminRole.slug } : null,
     phone: u.phone,
     image: u.image,
+    publicProfile: u.publicProfile as any, // Include publicProfile object
     emailVerified: u.emailVerified,
     phoneVerified: u.phoneVerified,
     createdAt: u.createdAt,
