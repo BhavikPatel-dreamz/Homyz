@@ -9,6 +9,7 @@ import {
   sendHostApplicationApprovalEmail,
   sendHostApplicationRejectionEmail,
 } from "@/lib/services/email";
+import { invalidateAdminDashboardCache, invalidateUserCache } from "@/lib/redis/invalidation";
 
 
 export type HostRegistrationStatusType =
@@ -992,12 +993,12 @@ async function ensureDefaultComplianceChecks(requestId: string) {
     where: { requestId },
   });
 
-  const existingKeys = new Set(existingChecks.map((c) => c.checkKey));
+  const existingKeys = new Set(existingChecks.map((c: any) => c.checkKey));
   const toCreate = STANDARD_COMPLIANCE_CHECKS.filter((check) => !existingKeys.has(check.key));
 
   if (toCreate.length > 0) {
     await prisma.hostComplianceCheck.createMany({
-      data: toCreate.map((c) => ({
+      data: toCreate.map((c: any) => ({
         requestId,
         checkKey: c.key,
         checkName: c.name,
@@ -1069,15 +1070,15 @@ async function getComplianceDetails(requestId: string) {
   });
 
   const totalChecks = checks.length;
-  const completedChecks = checks.filter((c) => c.status === "PASSED").length;
-  const pendingChecks = checks.filter((c) => c.status === "PENDING").length;
-  const failedChecks = checks.filter((c) => c.status === "FAILED").length;
-  const openIssuesCount = issues.filter((i) => i.status === "OPEN" || i.status === "UNDER_REVIEW").length;
+  const completedChecks = checks.filter((c: any) => c.status === "PASSED").length;
+  const pendingChecks = checks.filter((c: any) => c.status === "PENDING").length;
+  const failedChecks = checks.filter((c: any) => c.status === "FAILED").length;
+  const openIssuesCount = issues.filter((i: any) => i.status === "OPEN" || i.status === "UNDER_REVIEW").length;
 
   const now = new Date();
   const documentExpiries = req.documents
-    .filter((d) => d.expiryDate)
-    .map((d) => {
+    .filter((d: any) => d.expiryDate)
+    .map((d: any) => {
       const exp = new Date(d.expiryDate!);
       const diffTime = exp.getTime() - now.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -1157,8 +1158,8 @@ async function updateComplianceCheck(
     where: { requestId: check.requestId },
   });
 
-  const anyFailed = allChecks.some((c) => c.status === "FAILED");
-  const allPassed = allChecks.every((c) => c.status === "PASSED");
+  const anyFailed = allChecks.some((c: any) => c.status === "FAILED");
+  const allPassed = allChecks.every((c: any) => c.status === "PASSED");
 
   let newComplianceStatus = check.request.complianceStatus;
   if (anyFailed) {
@@ -1383,7 +1384,7 @@ async function validateApprovalEligibility(requestId: string) {
   }
 
   const hasDocuments = req.documents.length > 0;
-  const unverifiedDocs = req.documents.filter((d) => d.status !== "VERIFIED");
+  const unverifiedDocs = req.documents.filter((d: any) => d.status !== "VERIFIED");
   const documentsVerified = hasDocuments && unverifiedDocs.length === 0;
   if (!hasDocuments) {
     reasons.push("No verification documents submitted");
@@ -1393,14 +1394,14 @@ async function validateApprovalEligibility(requestId: string) {
 
   await ensureDefaultComplianceChecks(requestId);
   const updatedChecks = await prisma.hostComplianceCheck.findMany({ where: { requestId } });
-  const unpassedChecks = updatedChecks.filter((c) => c.status !== "PASSED");
+  const unpassedChecks = updatedChecks.filter((c: any) => c.status !== "PASSED");
   const complianceChecksPassed = unpassedChecks.length === 0;
   if (unpassedChecks.length > 0) {
     reasons.push(`${unpassedChecks.length} required compliance check(s) are incomplete or failed`);
   }
 
   const openCriticalIssues = req.complianceIssues.filter(
-    (i) => (i.severity === "HIGH" || i.severity === "CRITICAL") && (i.status === "OPEN" || i.status === "UNDER_REVIEW")
+    (i: any) => (i.severity === "HIGH" || i.severity === "CRITICAL") && (i.status === "OPEN" || i.status === "UNDER_REVIEW")
   );
   const noOpenCriticalIssues = openCriticalIssues.length === 0;
   if (openCriticalIssues.length > 0) {
@@ -1498,6 +1499,11 @@ async function approveApplication(actor: AuthUser, requestId: string) {
     applicantName: req.applicantName,
     applicationId: req.applicationId,
   });
+
+  await Promise.all([
+    invalidateAdminDashboardCache(),
+    invalidateUserCache(targetUser.id),
+  ]);
 
   return approvedReq;
 }

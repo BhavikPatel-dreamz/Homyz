@@ -13,7 +13,7 @@ export default async function AdminInvitationsPage() {
     adminService.listRoles(),
   ]);
 
-  const roleOptions = roles.map((r) => ({
+  const roleOptions = roles.map((r: any) => ({
     id: r.id,
     name: r.name,
     slug: r.slug,

@@ -4,6 +4,8 @@ import { auditService } from "@/services/audit.service";
 import { sendHostComplianceStatusEmail } from "@/lib/services/email";
 import type { AuthUser } from "@/lib/auth/types";
 import { UserStatus } from "@/generated/prisma/enums";
+import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
 
 export interface HostComplianceSummaryMetrics {
   totalActiveHosts: number;
@@ -99,107 +101,113 @@ function getDaysRemaining(expiryDate: Date | null): number | null {
  * Get summary cards metrics for host compliance.
  */
 export async function getComplianceDashboardMetrics(): Promise<HostComplianceSummaryMetrics> {
-  const activeHosts = await prisma.user.findMany({
-    where: { role: "HOST" },
-    select: { id: true, status: true },
-  });
+  return getOrSetCache(
+    keys.hostComplianceMetrics(),
+    async () => {
+      const activeHosts = await prisma.user.findMany({
+        where: { role: "HOST" },
+        select: { id: true, status: true },
+      });
 
-  const activeHostIds = activeHosts.map((h) => h.id);
+      const activeHostIds = activeHosts.map((h: any) => h.id);
 
-  const requests = await prisma.hostRegistrationRequest.findMany({
-    where: {
-      OR: [
-        { status: "APPROVED" },
-        { hostId: { in: activeHostIds } },
-      ],
+      const requests = await prisma.hostRegistrationRequest.findMany({
+        where: {
+          OR: [
+            { status: "APPROVED" },
+            { hostId: { in: activeHostIds } },
+          ],
+        },
+        select: {
+          id: true,
+          complianceStatus: true,
+          hostId: true,
+          status: true,
+          host: { select: { status: true } },
+        },
+      });
+
+      let totalActiveHosts = activeHosts.length || requests.length;
+      let compliantHosts = 0;
+      let compliancePending = 0;
+      let actionRequired = 0;
+      let nonCompliant = 0;
+      let suspendedForCompliance = activeHosts.filter((h: any) => h.status === "SUSPENDED").length;
+
+      requests.forEach((req: any) => {
+        const isHostSuspended = req.host?.status === "SUSPENDED";
+        if (isHostSuspended) {
+          nonCompliant++;
+          return;
+        }
+
+        switch (req.complianceStatus) {
+          case "COMPLIANT":
+            compliantHosts++;
+            break;
+          case "PENDING":
+          case "UNDER_REVIEW":
+            compliancePending++;
+            break;
+          case "ACTION_REQUIRED":
+            actionRequired++;
+            break;
+          case "NON_COMPLIANT":
+            nonCompliant++;
+            break;
+          default:
+            compliancePending++;
+            break;
+        }
+      });
+
+      // Calculate document expiry metrics
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const documents = await prisma.hostRegistrationDocument.findMany({
+        where: {
+          expiryDate: { not: null },
+          request: {
+            OR: [
+              { status: "APPROVED" },
+              { hostId: { in: activeHostIds } },
+            ],
+          },
+        },
+        select: {
+          id: true,
+          status: true,
+          expiryDate: true,
+        },
+      });
+
+      let documentsExpiringSoon = 0;
+      let documentsExpired = 0;
+
+      documents.forEach((doc: any) => {
+        if (!doc.expiryDate) return;
+        const exp = new Date(doc.expiryDate);
+        if (exp < now || doc.status === "EXPIRED") {
+          documentsExpired++;
+        } else if (exp <= thirtyDaysFromNow) {
+          documentsExpiringSoon++;
+        }
+      });
+
+      return {
+        totalActiveHosts,
+        compliantHosts,
+        compliancePending,
+        actionRequired,
+        nonCompliant,
+        documentsExpiringSoon,
+        documentsExpired,
+        suspendedForCompliance,
+      };
     },
-    select: {
-      id: true,
-      complianceStatus: true,
-      hostId: true,
-      status: true,
-      host: { select: { status: true } },
-    },
-  });
-
-  let totalActiveHosts = activeHosts.length || requests.length;
-  let compliantHosts = 0;
-  let compliancePending = 0;
-  let actionRequired = 0;
-  let nonCompliant = 0;
-  let suspendedForCompliance = activeHosts.filter((h) => h.status === "SUSPENDED").length;
-
-  requests.forEach((req) => {
-    const isHostSuspended = req.host?.status === "SUSPENDED";
-    if (isHostSuspended) {
-      nonCompliant++;
-      return;
-    }
-
-    switch (req.complianceStatus) {
-      case "COMPLIANT":
-        compliantHosts++;
-        break;
-      case "PENDING":
-      case "UNDER_REVIEW":
-        compliancePending++;
-        break;
-      case "ACTION_REQUIRED":
-        actionRequired++;
-        break;
-      case "NON_COMPLIANT":
-        nonCompliant++;
-        break;
-      default:
-        compliancePending++;
-        break;
-    }
-  });
-
-  // Calculate document expiry metrics
-  const now = new Date();
-  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-  const documents = await prisma.hostRegistrationDocument.findMany({
-    where: {
-      expiryDate: { not: null },
-      request: {
-        OR: [
-          { status: "APPROVED" },
-          { hostId: { in: activeHostIds } },
-        ],
-      },
-    },
-    select: {
-      id: true,
-      status: true,
-      expiryDate: true,
-    },
-  });
-
-  let documentsExpiringSoon = 0;
-  let documentsExpired = 0;
-
-  documents.forEach((doc) => {
-    if (!doc.expiryDate) return;
-    const exp = new Date(doc.expiryDate);
-    if (exp < now || doc.status === "EXPIRED") {
-      documentsExpired++;
-    } else if (exp <= thirtyDaysFromNow) {
-      documentsExpiringSoon++;
-    }
-  });
-
-  return {
-    totalActiveHosts,
-    compliantHosts,
-    compliancePending,
-    actionRequired,
-    nonCompliant,
-    documentsExpiringSoon,
-    documentsExpired,
-    suspendedForCompliance,
-  };
+    { ttl: 60 }
+  );
 }
 
 /**
@@ -279,12 +287,12 @@ export async function listHostComplianceRecords(options: ListHostComplianceOptio
     }),
   ]);
 
-  const items: HostComplianceItem[] = requests.map((req) => {
+  const items: HostComplianceItem[] = requests.map((req: any) => {
     const isSuspended = req.host?.status === "SUSPENDED";
     const effectiveComplianceStatus = isSuspended ? "SUSPENDED" : req.complianceStatus;
 
     // Process documents
-    const processedDocs: DocumentExpiryDetail[] = req.documents.map((doc) => {
+    const processedDocs: DocumentExpiryDetail[] = req.documents.map((doc: any) => {
       const daysRemaining = getDaysRemaining(doc.expiryDate);
       let expiryStatus: "VALID" | "EXPIRING_SOON" | "EXPIRED" | "NO_EXPIRY" = "NO_EXPIRY";
 
@@ -312,11 +320,11 @@ export async function listHostComplianceRecords(options: ListHostComplianceOptio
     });
 
     // Filter document status if requested
-    const expiringDocsCount = processedDocs.filter((d) => d.expiryStatus === "EXPIRING_SOON").length;
-    const expiredDocsCount = processedDocs.filter((d) => d.expiryStatus === "EXPIRED").length;
+    const expiringDocsCount = processedDocs.filter((d: any) => d.expiryStatus === "EXPIRING_SOON").length;
+    const expiredDocsCount = processedDocs.filter((d: any) => d.expiryStatus === "EXPIRED").length;
 
     // Process issues
-    const processedIssues: ComplianceIssueDetail[] = req.complianceIssues.map((iss) => ({
+    const processedIssues: ComplianceIssueDetail[] = req.complianceIssues.map((iss: any) => ({
       id: iss.id,
       issueType: iss.issueType,
       description: iss.description,
@@ -329,14 +337,14 @@ export async function listHostComplianceRecords(options: ListHostComplianceOptio
       resolutionNotes: iss.resolutionNotes,
     }));
 
-    const openIssues = processedIssues.filter((i) => i.status !== "RESOLVED");
+    const openIssues = processedIssues.filter((i: any) => i.status !== "RESOLVED");
     const openIssuesCount = openIssues.length;
-    const criticalIssuesCount = openIssues.filter((i) => i.severity === "CRITICAL" || i.severity === "HIGH").length;
+    const criticalIssuesCount = openIssues.filter((i: any) => i.severity === "CRITICAL" || i.severity === "HIGH").length;
 
     let highestRisk: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
-    if (openIssues.some((i) => i.severity === "CRITICAL")) highestRisk = "CRITICAL";
-    else if (openIssues.some((i) => i.severity === "HIGH")) highestRisk = "HIGH";
-    else if (openIssues.some((i) => i.severity === "MEDIUM")) highestRisk = "MEDIUM";
+    if (openIssues.some((i: any) => i.severity === "CRITICAL")) highestRisk = "CRITICAL";
+    else if (openIssues.some((i: any) => i.severity === "HIGH")) highestRisk = "HIGH";
+    else if (openIssues.some((i: any) => i.severity === "MEDIUM")) highestRisk = "MEDIUM";
 
     return {
       id: req.id,
@@ -365,12 +373,12 @@ export async function listHostComplianceRecords(options: ListHostComplianceOptio
   // Client-level filtering for riskLevel / documentStatus if requested
   let filteredItems = items;
   if (options.riskLevel && options.riskLevel !== "ALL") {
-    filteredItems = filteredItems.filter((it) => it.highestRisk === options.riskLevel);
+    filteredItems = filteredItems.filter((it: any) => it.highestRisk === options.riskLevel);
   }
   if (options.documentStatus === "EXPIRING_SOON") {
-    filteredItems = filteredItems.filter((it) => it.expiringDocsCount > 0);
+    filteredItems = filteredItems.filter((it: any) => it.expiringDocsCount > 0);
   } else if (options.documentStatus === "EXPIRED") {
-    filteredItems = filteredItems.filter((it) => it.expiredDocsCount > 0);
+    filteredItems = filteredItems.filter((it: any) => it.expiredDocsCount > 0);
   }
 
   return {
@@ -504,6 +512,8 @@ export async function requestHostReVerification(
     },
   });
 
+  await deleteCache(keys.hostComplianceMetrics());
+
   // Record audit log
   await auditService.record({
     actorId: actor.id,
@@ -568,7 +578,7 @@ export async function resolveComplianceIssue(
 
   // Check remaining open issues
   const remainingOpen = issue.request.complianceIssues.filter(
-    (i) => i.id !== issueId && i.status !== "RESOLVED"
+    (i: any) => i.id !== issueId && i.status !== "RESOLVED"
   );
 
   if (remainingOpen.length === 0) {

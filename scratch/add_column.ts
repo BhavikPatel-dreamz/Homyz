@@ -1,4 +1,4 @@
-import "dotenv/config";
+// @ts-ignore
 import { Client } from "pg";
 
 async function main() {
@@ -10,7 +10,7 @@ async function main() {
     await client.connect();
     await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "publicProfile" JSONB;`);
     console.log("Column publicProfile successfully added to User table in DB using pg!");
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error adding column:", err);
   } finally {
     await client.end();

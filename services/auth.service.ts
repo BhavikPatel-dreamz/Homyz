@@ -321,7 +321,7 @@ async function verifyOtp(
       where: { phone: input.identifier },
       select: { id: true },
     });
-    await deleteCache(...affected.map((u) => keys.userProfile(u.id)));
+    await deleteCache(...affected.map((u: any) => keys.userProfile(u.id)));
   }
   return { success: true, verified: true };
 }
