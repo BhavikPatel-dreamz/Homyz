@@ -301,6 +301,7 @@ export function HomyzAuthForm({
           <div className="w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
             <AuthHeading
+              title={authMode === "login" ? "Log in or sign up" : "Create an account"}
               onBack={() => {
                   if (otpSent) {
                     setOtpSent(false);
@@ -316,7 +317,7 @@ export function HomyzAuthForm({
             <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
               {authMode === "login" ? (
                 <>
-                  Already have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -327,7 +328,7 @@ export function HomyzAuthForm({
                     }}
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
-                    Log in
+                    Sign up
                   </button>
                 </>
               ) : (
@@ -399,7 +400,7 @@ export function HomyzAuthForm({
                         </div>
 
                         {/* Phone number (full width on mobile, flex-1 on sm+) */}
-                        <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full min-w-0">
+                        <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full min-w-0" suppressHydrationWarning>
                           <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
                             Phone number *
                           </label>
@@ -409,6 +410,7 @@ export function HomyzAuthForm({
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             placeholder="xxxx-xxx-xx-xxx"
                             required
+                            suppressHydrationWarning
                             className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
                         </div>
@@ -527,7 +529,7 @@ export function HomyzAuthForm({
                   )}
 
                   {/* Email address */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2" suppressHydrationWarning>
                     <label className={authLabelClass}>
                       Email address *
                     </label>
@@ -542,6 +544,7 @@ export function HomyzAuthForm({
                       placeholder="emailexample@gmail.com"
                       required
                       autoComplete="email"
+                      suppressHydrationWarning
                       className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
                     />
                     {fieldErrors.email && (
@@ -550,11 +553,11 @@ export function HomyzAuthForm({
                   </div>
 
                   {/* Password */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2" suppressHydrationWarning>
                     <label className={authLabelClass}>
                       Password *
                     </label>
-                    <div className="relative h-[56px]">
+                    <div className="relative h-[56px]" suppressHydrationWarning>
                       <input
                         type={showPassword ? "text" : "password"}
                         value={password}
@@ -566,6 +569,7 @@ export function HomyzAuthForm({
                         placeholder="••••••••••••"
                         required
                         autoComplete={authMode === "login" ? "current-password" : "new-password"}
+                        suppressHydrationWarning
                         className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
                       />
                       <button

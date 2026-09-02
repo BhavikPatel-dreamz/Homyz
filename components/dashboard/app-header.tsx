@@ -31,10 +31,15 @@ export function AppHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isHostRoute = pathname?.startsWith("/host") ?? false;
+
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/host/today", label: "Today", requireHost: true },
+    { href: "/host/calendar", label: "Calendar", requireHost: true },
+    { href: "/host/listings", label: "Your listings", requireHost: true },
+    { href: "/host/messages", label: "Messages", requireHost: true },
     { href: "/bookings", label: "Bookings" },
-    { href: "/host/listings", label: "My listings", requireHost: true },
     { href: "/host/onboarding", label: "Become a Host / Application" },
     { href: "/admin", label: "Admin", requireAdmin: true },
     { href: "/profile", label: "Profile" },
@@ -48,13 +53,13 @@ export function AppHeader() {
             <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[180px] xl:w-[200px]" priority />
           </Link>
 
-          <Link href="/dashboard" className="group absolute left-1/2 -translate-x-1/2">
+          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 -translate-x-1/2">
             <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform group-hover:scale-[1.03] sm:w-[150px] lg:w-[166px]" priority />
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-3" ref={menuRef}>
-            <Link href={role === "HOST" ? "/host/listings" : "/host/onboarding"} className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
-              {role === "HOST" ? "Switch to hosting" : "Become a host"}
+            <Link href={isHostRoute ? "/dashboard" : role === "HOST" ? "/host/listings" : "/host/onboarding"} className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              {isHostRoute ? "Switch to traveling" : role === "HOST" ? "Switch to hosting" : "Become a host"}
             </Link>
 
             {user ? (

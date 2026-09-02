@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { updateListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
+import { HostSubNav } from "@/components/host/host-sub-nav";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { EditorSidebar } from "./components/EditorSidebar";
@@ -139,6 +140,34 @@ const ARRIVAL_SECTIONS: SectionKey[] = [
   "check-in-method",
   "wifi-details",
   "house-manual",
+  "checkout-instructions",
+  "check-out-instructions",
+  "checkout",
+  "check-out",
+  "checkout-page",
+  "check-out-page",
+  "checkoutpage",
+  "guidebooks",
+  "guidebook",
+  "interaction-preferences",
+  "interactionpreferences",
+];
+
+const PREFERENCE_SECTIONS: SectionKey[] = [
+  "listing-status",
+  "listingstatus",
+  "language",
+  "languages",
+  "guest-requirements",
+  "guestrequirements",
+  "local-laws",
+  "locallaws",
+  "regulations",
+  "taxes",
+  "homyz-stays",
+  "homyzstays",
+  "remove-listing",
+  "removelisting",
 ];
 
 export function HostListingEditorClient({
@@ -152,14 +181,20 @@ export function HostListingEditorClient({
   const pathname = usePathname();
   const [listing, setListing] = useState<HostListingData>(initialListing);
   const [activeSection, setActiveSectionState] = useState<SectionKey>(initialSection || "propertyType");
-  const [editorTab, setEditorTab] = useState<"space" | "arrival">(
-    initialSection && ARRIVAL_SECTIONS.includes(initialSection) ? "arrival" : "space"
+  const [editorTab, setEditorTab] = useState<"space" | "arrival" | "preferences">(
+    initialSection && PREFERENCE_SECTIONS.includes(initialSection)
+      ? "preferences"
+      : initialSection && ARRIVAL_SECTIONS.includes(initialSection)
+      ? "arrival"
+      : "space"
   );
 
   const setActiveSection = useCallback(
     (newSection: SectionKey) => {
       setActiveSectionState(newSection);
-      if (ARRIVAL_SECTIONS.includes(newSection)) {
+      if (PREFERENCE_SECTIONS.includes(newSection)) {
+        setEditorTab("preferences");
+      } else if (ARRIVAL_SECTIONS.includes(newSection)) {
         setEditorTab("arrival");
       } else {
         setEditorTab("space");
@@ -182,7 +217,9 @@ export function HostListingEditorClient({
       const targetSec = slugToSection(slug);
       if (targetSec !== activeSection) {
         setActiveSectionState(targetSec);
-        if (ARRIVAL_SECTIONS.includes(targetSec)) {
+        if (PREFERENCE_SECTIONS.includes(targetSec)) {
+          setEditorTab("preferences");
+        } else if (ARRIVAL_SECTIONS.includes(targetSec)) {
           setEditorTab("arrival");
         } else {
           setEditorTab("space");
@@ -514,55 +551,7 @@ export function HostListingEditorClient({
       <HostHeader user={listing.host} />
 
       {/* 2. TOP NAV TABS (Matches Figma Tab Row: Today, Calendar, Listing, Messages 100%) */}
-      <div className="w-full bg-white border-b border-zinc-150 px-4 sm:px-8 py-3 shrink-0 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          {/* Today Tab */}
-          <Link
-            href="/host/today"
-            className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-200/90 bg-white px-5 py-2.5 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/50 transition-all shadow-2xs min-w-[76px]"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <rect x="5" y="4" width="14" height="16" rx="2" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
-            </svg>
-            <span className="text-[11px] font-medium text-zinc-700">Today</span>
-          </Link>
-
-          {/* Calendar Tab */}
-          <Link
-            href="/host/calendar"
-            className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-200/90 bg-white px-5 py-2.5 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/50 transition-all shadow-2xs min-w-[76px]"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <rect x="4" y="4" width="16" height="16" rx="2.5" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16 2v4M8 2v4M4 10h16" />
-            </svg>
-            <span className="text-[11px] font-medium text-zinc-700">Calendar</span>
-          </Link>
-
-          {/* Listing Tab (Active) */}
-          <Link
-            href={`/host/listings/${listing.id}`}
-            className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-[#FEE08B] text-zinc-950 font-bold px-5 py-2.5 transition-all shadow-2xs min-w-[76px] border border-amber-300"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4a1 1 0 011-1h2a1 1 0 011 1v4" />
-            </svg>
-            <span className="text-[11px] font-bold text-zinc-950">Listing</span>
-          </Link>
-
-          {/* Messages Tab */}
-          <Link
-            href="/host/messages"
-            className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-200/90 bg-white px-5 py-2.5 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/50 transition-all shadow-2xs min-w-[76px]"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="text-[11px] font-medium text-zinc-700">Messages</span>
-          </Link>
-        </div>
-      </div>
+      <HostSubNav activeTab="listing" listingId={listing.id} />
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
       <Container className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 py-6">
