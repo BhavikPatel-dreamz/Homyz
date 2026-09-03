@@ -97,8 +97,84 @@ async function changePassword(
   return { success: true };
 }
 
+async function getTripPhotos(userId: string) {
+  return prisma.tripPhoto.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function createTripPhotos(
+  userId: string,
+  photos: Array<{ url: string; caption?: string; location?: string; tags?: string[] }>
+) {
+  if (!photos.length) return [];
+  const created = await Promise.all(
+    photos.map((p) =>
+      prisma.tripPhoto.create({
+        data: {
+          userId,
+          url: p.url,
+          caption: p.caption || null,
+          location: p.location || null,
+          tags: p.tags || [],
+        },
+      })
+    )
+  );
+  return created;
+}
+
+async function updateTripPhoto(
+  userId: string,
+  photoId: string,
+  input: { caption?: string; location?: string; tags?: string[] }
+) {
+  const photo = await prisma.tripPhoto.findUnique({ where: { id: photoId } });
+  if (!photo) throw AppError.notFound("Trip photo not found");
+  if (photo.userId !== userId) {
+    throw AppError.forbidden("You do not have permission to modify this photo");
+  }
+
+  return prisma.tripPhoto.update({
+    where: { id: photoId },
+    data: {
+      ...(input.caption !== undefined && { caption: input.caption }),
+      ...(input.location !== undefined && { location: input.location }),
+      ...(input.tags !== undefined && { tags: input.tags }),
+    },
+  });
+}
+
+async function deleteTripPhoto(userId: string, photoId: string) {
+  const photo = await prisma.tripPhoto.findUnique({ where: { id: photoId } });
+  if (!photo) throw AppError.notFound("Trip photo not found");
+  if (photo.userId !== userId) {
+    throw AppError.forbidden("You do not have permission to delete this photo");
+  }
+
+  await prisma.tripPhoto.delete({ where: { id: photoId } });
+  return { success: true };
+}
+
+async function getUserStats(userId: string) {
+  const tripsCount = await prisma.booking.count({ where: { userId } });
+  const photosCount = await prisma.tripPhoto.count({ where: { userId } });
+  return {
+    trips: Math.max(tripsCount, photosCount),
+    likes: 0,
+    reviews: 0,
+  };
+}
+
 export const userService = {
   getById,
   updateProfile,
   changePassword,
+  getTripPhotos,
+  createTripPhotos,
+  updateTripPhoto,
+  deleteTripPhoto,
+  getUserStats,
 };
+

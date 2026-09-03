@@ -396,11 +396,11 @@ export function HomyzAuthForm({
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
-            {success && (
+            {/* {success && (
               <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="success">{success}</Alert>
               </div>
-            )}
+            )} */}
 
             {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
             <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
