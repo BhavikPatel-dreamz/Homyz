@@ -232,7 +232,20 @@ export function ProfileManagementClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
       setImageUrl(data.url);
-      setMsg({ tone: "success", text: "Avatar updated." });
+
+      const saveRes = await updateProfileAction({
+        image: data.url,
+        name: initial.name || null,
+        phone: initial.phone || null,
+        publicProfile: formDataState,
+      });
+
+      if (!saveRes.ok) {
+        throw new Error(saveRes.error || "Failed to save updated avatar.");
+      }
+
+      setMsg({ tone: "success", text: "Profile image updated and saved." });
+      router.refresh();
     } catch (err: any) {
       setMsg({ tone: "error", text: err.message || "Upload error" });
     } finally {
@@ -370,7 +383,6 @@ export function ProfileManagementClient({
                         value={formDataState.whereIWantToGo}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereIWantToGo", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.whereIWantToGo
                             ? "text-zinc-900 font-medium"
@@ -390,7 +402,6 @@ export function ProfileManagementClient({
                         value={formDataState.myWork}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("myWork", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.myWork ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
@@ -410,7 +421,6 @@ export function ProfileManagementClient({
                         value={formDataState.spendTooMuchTime}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("spendTooMuchTime", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.spendTooMuchTime
                             ? "text-zinc-900 font-medium"
@@ -430,7 +440,6 @@ export function ProfileManagementClient({
                         value={formDataState.pets}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("pets", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.pets ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
@@ -448,7 +457,6 @@ export function ProfileManagementClient({
                         value={formDataState.decadeBorn}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("decadeBorn", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.decadeBorn
                             ? "text-zinc-900 font-medium"
@@ -470,7 +478,6 @@ export function ProfileManagementClient({
                         value={formDataState.school}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("school", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.school ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
@@ -490,7 +497,6 @@ export function ProfileManagementClient({
                         value={formDataState.uselessSkill}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("uselessSkill", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.uselessSkill
                             ? "text-zinc-900 font-medium"
@@ -510,7 +516,6 @@ export function ProfileManagementClient({
                         value={formDataState.funFact}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("funFact", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.funFact ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
@@ -530,7 +535,6 @@ export function ProfileManagementClient({
                         value={formDataState.favoriteSong}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("favoriteSong", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.favoriteSong
                             ? "text-zinc-900 font-medium"
@@ -552,7 +556,6 @@ export function ProfileManagementClient({
                         value={formDataState.languages}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("languages", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
                         placeholder="Languages"
                       />
@@ -570,7 +573,6 @@ export function ProfileManagementClient({
                         value={formDataState.obsessedWith}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("obsessedWith", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.obsessedWith
                             ? "text-zinc-900 font-medium"
@@ -592,7 +594,6 @@ export function ProfileManagementClient({
                         value={formDataState.bioTitle}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("bioTitle", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className={`w-full text-xs bg-transparent focus:outline-none ${
                           formDataState.bioTitle
                             ? "text-zinc-900 font-medium"
@@ -614,7 +615,6 @@ export function ProfileManagementClient({
                         value={formDataState.whereILive}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereILive", e.target.value)}
-                        onBlur={() => onSubmit()}
                         className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
                         placeholder="Town, Country"
                       />

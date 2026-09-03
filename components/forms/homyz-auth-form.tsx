@@ -82,7 +82,7 @@ export function HomyzAuthForm({
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValidEmail = emailRegex.test(email.trim());
-  const isPasswordValid = authMode === "signup" 
+  const isPasswordValid = authMode === "signup"
     ? (hasMinLength && hasUppercase && hasNumber && repeatPassword === password)
     : password.length >= 1;
   const isNameValid = authMode === "signup" ? name.trim().length >= 1 : true;
@@ -348,13 +348,13 @@ export function HomyzAuthForm({
             <AuthHeading
               title={authMode === "login" ? "Log in or sign up" : "Log in or sign up"}
               onBack={() => {
-                  if (otpSent) {
-                    setOtpSent(false);
-                  } else if (inputMethod === "email") {
-                    setInputMethod("phone");
-                  } else {
-                    router.back();
-                  }
+                if (otpSent) {
+                  setOtpSent(false);
+                } else if (inputMethod === "email") {
+                  setInputMethod("phone");
+                } else {
+                  router.back();
+                }
               }}
             />
 
@@ -384,7 +384,11 @@ export function HomyzAuthForm({
             </div>
 
             {/* Mobile/Tablet Hero Image (between subtitle and form inputs, matches mobile.jpg 100%, hidden on lg+) */}
-            <AuthHeroImage mobile />
+            <AuthHeroImage
+              mobile
+              src={inputMethod === "email" ? "/images/user-authentication-email-password.webp" : undefined}
+              alt={inputMethod === "email" ? "Traveler carrying a backpack on a city street" : undefined}
+            />
 
             {/* Error / Success feedback */}
             {error && (
@@ -392,11 +396,11 @@ export function HomyzAuthForm({
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
-            {success && (
+            {/* {success && (
               <div className="mb-4 pl-0 sm:pl-13.5">
                 <Alert tone="success">{success}</Alert>
               </div>
-            )}
+            )} */}
 
             {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
             <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
@@ -533,7 +537,7 @@ export function HomyzAuthForm({
                           }}
                           placeholder="Jane Doe"
                           required
-                          className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                          className="brush-email-password-border h-[56px] w-full rounded-[8px] border bg-white px-4 font-['Poppins'] text-[15px] text-[#1F1F1F] outline-none placeholder:text-[#1F1F1F]/50 sm:text-[16px]"
                         />
                         {fieldErrors.name && (
                           <p className={authFieldErrorClass}>{fieldErrors.name}</p>
@@ -549,22 +553,22 @@ export function HomyzAuthForm({
                           <button
                             type="button"
                             onClick={() => setRole("USER")}
-                            className={`h-[52px] rounded-[12px] border text-sm font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                              role === "USER"
+                            aria-pressed={role === "USER"}
+                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "USER"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
-                            }`}
+                                : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                              }`}
                           >
                             Guest User
                           </button>
                           <button
                             type="button"
                             onClick={() => setRole("HOST")}
-                            className={`h-[52px] rounded-[12px] border text-sm font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                              role === "HOST"
+                            aria-pressed={role === "HOST"}
+                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
-                            }`}
+                                : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                              }`}
                           >
                             Property Host
                           </button>
@@ -652,7 +656,7 @@ export function HomyzAuthForm({
 
 
                     {authMode === "signup" && (
-                      <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-[11px] text-zinc-600 flex flex-col gap-1 mt-1">
+                      <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1">
                         <div className="font-semibold text-zinc-800 mb-0.5">Password Requirements:</div>
                         <div className="flex items-center gap-2">
                           <span className={hasMinLength ? "text-emerald-600 font-bold" : "text-zinc-400"}>
@@ -746,7 +750,10 @@ export function HomyzAuthForm({
           </div>
 
           {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
-          <AuthHeroImage />
+          <AuthHeroImage
+            src={inputMethod === "email" ? "/images/user-authentication-email-password.webp" : undefined}
+            alt={inputMethod === "email" ? "Traveler carrying a backpack on a city street" : undefined}
+          />
         </div>
       </main>
 
