@@ -187,7 +187,7 @@ export function AdminSidebar({
     .filter((group) => group.items.length > 0);
 
   const sidebarContent = (
-    <div className="flex h-full flex-col justify-between py-4 select-none bg-[var(--surface)] text-[var(--foreground)] border-r border-[var(--border)]">
+    <div className="flex h-full flex-col justify-between py-4 select-none bg-[var(--surface)] text-muted-foreground border-r border-[var(--border)]">
       {/* Brand Header */}
       <div>
         <div className="mb-6 px-3">
@@ -199,16 +199,16 @@ export function AdminSidebar({
                 className="flex items-center justify-center hover:scale-105 transition-transform"
                 title="Homyz Admin Overview"
               >
-                <HomyzLogo className="text-[var(--foreground)] shrink-0" size={26} />
+                <HomyzLogo className="text-muted-foreground shrink-0" size={26} />
               </Link>
             </div>
           ) : (
             /* Expanded State: Brand + Collapse Toggle Button */
             <div className="flex items-center justify-between px-1">
               <Link href="/admin" className="flex items-center gap-3 group overflow-hidden">
-                <HomyzLogo className="text-[var(--foreground)] group-hover:scale-105 transition-transform shrink-0" size={26} />
+                <HomyzLogo className="text-muted-foreground group-hover:scale-105 transition-transform shrink-0" size={26} />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-base font-black tracking-tight text-[var(--foreground)] leading-none">
+                  <span className="text-base font-black tracking-tight text-muted-foreground leading-none">
                     homyz
                   </span>
                   <span className="text-[10px] font-bold tracking-wider text-amber-600 dark:text-amber-400 uppercase mt-0.5 whitespace-nowrap">
@@ -220,7 +220,7 @@ export function AdminSidebar({
               <button
                 type="button"
                 onClick={() => setCollapsed((prev) => !prev)}
-                className="hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                className="hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors"
                 title="Collapse sidebar"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -243,7 +243,7 @@ export function AdminSidebar({
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.name)}
-                    className="flex items-center justify-between px-3 py-1 text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors w-full text-left uppercase"
+                    className="flex items-center justify-between px-3 py-1 text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors w-full text-left uppercase"
                   >
                     <span>{group.name}</span>
                     <svg
@@ -274,7 +274,7 @@ export function AdminSidebar({
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                               isActive
                                 ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
-                                : "text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+                                : "text-muted-foreground hover:bg-[var(--surface-secondary)]"
                             } ${collapsed ? "justify-center px-0 h-9" : ""}`}
                           >
                             {item.icon}
@@ -285,7 +285,7 @@ export function AdminSidebar({
 
                           {/* Hover Tooltip when Collapsed */}
                           {collapsed && (
-                            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+                            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
                               {item.label}
                             </div>
                           )}
@@ -303,7 +303,7 @@ export function AdminSidebar({
       {/* Sidebar Footer Info */}
       {!collapsed && (
         <div className="px-5 py-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--muted-foreground)] flex flex-col gap-0.5">
-          <p className="font-bold text-[var(--foreground)]">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
+          <p className="font-bold text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
           <p className="text-[10px]">Enterprise RBAC & Audit System</p>
         </div>
       )}

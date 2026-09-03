@@ -507,7 +507,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 type="button"
                 onClick={handleSaveDraft}
                 disabled={isSaving}
-                className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
+                className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
               >
                 {isSaving ? "Saving Draft..." : "Save Draft"}
               </button>
@@ -518,7 +518,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         {/* Progress Bar (Only for Draft or Submission flow) */}
         {accountState === "DRAFT" && (
           <div className="mt-6 border-t border-[var(--border)] pt-4">
-            <div className="flex items-center justify-between text-xs font-bold text-[var(--foreground)]">
+            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
               <span>Application Completion</span>
               <span>
                 {liveCompletedSections} / 6 sections completed ({liveProgressPercent}%)
@@ -584,7 +584,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   {status === "completed" ? "✓" : status === "action_required" ? "!" : status === "in_progress" ? "●" : idx + 1}
                 </div>
 
-                <span className="mt-1.5 text-[11px] font-bold leading-tight text-[var(--foreground)]">
+                <span className="mt-1.5 text-[11px] font-bold leading-tight text-muted-foreground">
                   {st.label}
                 </span>
 
@@ -635,7 +635,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Show rejected documents */}
               {application.documents.filter((d) => d.status === "REJECTED" || d.resubmissionRequested).map((doc) => (
                 <div key={doc.id} className="mt-3 rounded-2xl border border-rose-500/30 bg-[var(--surface)] p-3 text-xs">
-                  <p className="font-bold text-[var(--foreground)]">
+                  <p className="font-bold text-muted-foreground">
                     Document: <span className="text-rose-600 dark:text-rose-400">{doc.documentType.replace(/_/g, " ")}</span>
                   </p>
                   <p className="mt-0.5 text-[var(--muted-foreground)]">
@@ -686,15 +686,15 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-bold text-white shadow-lg">
             ✓
           </div>
-          <h2 className="mt-4 text-2xl font-extrabold text-[var(--foreground)]">Application Submitted Successfully!</h2>
+          <h2 className="mt-4 text-2xl font-extrabold text-muted-foreground">Application Submitted Successfully!</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
-            Your host registration application <strong className="text-[var(--foreground)]">{application.applicationId}</strong> has been received.
+            Your host registration application <strong className="text-muted-foreground">{application.applicationId}</strong> has been received.
           </p>
 
           <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-2xs">
             <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs">
               <span className="text-[var(--muted-foreground)]">Application ID:</span>
-              <span className="font-bold text-[var(--foreground)]">{application.applicationId}</span>
+              <span className="font-bold text-muted-foreground">{application.applicationId}</span>
             </div>
             <div className="flex justify-between border-b border-[var(--border)] py-2 text-xs">
               <span className="text-[var(--muted-foreground)]">Status:</span>
@@ -704,7 +704,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             </div>
             <div className="flex justify-between pt-2 text-xs">
               <span className="text-[var(--muted-foreground)]">Next Step:</span>
-              <span className="font-semibold text-[var(--foreground)]">Admin Review & Compliance</span>
+              <span className="font-semibold text-muted-foreground">Admin Review & Compliance</span>
             </div>
           </div>
 
@@ -784,44 +784,44 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 1: Personal Information */}
           {activeStep === 1 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-[var(--foreground)]">Step 1: Personal Information</h3>
+              <h3 className="text-lg font-bold text-muted-foreground">Step 1: Personal Information</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Full Legal Name *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Full Legal Name *</label>
                   <input
                     type="text"
                     name="applicantName"
                     value={formData.applicantName}
                     onChange={handleInputChange}
                     placeholder="e.g. John Smith"
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantName && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantName}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Email Address *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Email Address *</label>
                   <input
                     type="email"
                     name="applicantEmail"
                     value={formData.applicantEmail}
                     onChange={handleInputChange}
                     placeholder="e.g. john@example.com"
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantEmail && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantEmail}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Phone Number *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Phone Number *</label>
                   <input
                     type="tel"
                     name="applicantPhone"
                     value={formData.applicantPhone}
                     onChange={handleInputChange}
                     placeholder="e.g. +1 (555) 019-2834"
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantPhone && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantPhone}</p>}
                 </div>
@@ -842,16 +842,16 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 2: Business Information */}
           {activeStep === 2 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-[var(--foreground)]">Step 2: Business & Host Type</h3>
+              <h3 className="text-lg font-bold text-muted-foreground">Step 2: Business & Host Type</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Host Registration Type *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Host Registration Type *</label>
                   <select
                     name="registrationType"
                     value={formData.registrationType}
                     onChange={handleInputChange}
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   >
                     <option value="INDIVIDUAL">Individual Owner</option>
                     <option value="BUSINESS">Registered Business / LLC</option>
@@ -860,14 +860,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Business Name (Optional)</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Business Name (Optional)</label>
                   <input
                     type="text"
                     name="businessName"
                     value={formData.businessName}
                     onChange={handleInputChange}
                     placeholder="e.g. Apex Hospitality Group"
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -876,7 +876,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(1)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
@@ -894,24 +894,24 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 3: Address & Property Details */}
           {activeStep === 3 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-[var(--foreground)]">Step 3: Address & Property Information</h3>
+              <h3 className="text-lg font-bold text-muted-foreground">Step 3: Address & Property Information</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Primary Property / Operating Address *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Primary Property / Operating Address *</label>
                   <input
                     type="text"
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
                     placeholder="e.g. 100 Ocean Drive, Miami Beach, FL 33139"
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.location && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.location}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[var(--foreground)]">Number of Properties to List *</label>
+                  <label className="block text-xs font-bold text-muted-foreground">Number of Properties to List *</label>
                   <input
                     type="number"
                     name="propertyCount"
@@ -919,7 +919,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     max={500}
                     value={formData.propertyCount}
                     onChange={handleInputChange}
-                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.propertyCount && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.propertyCount}</p>}
                 </div>
@@ -929,7 +929,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(2)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
@@ -947,7 +947,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 4: Document Verification Upload */}
           {activeStep === 4 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-[var(--foreground)]">Step 4: Upload Verification Documents</h3>
+              <h3 className="text-lg font-bold text-muted-foreground">Step 4: Upload Verification Documents</h3>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Upload clear digital copies of your identity and property ownership documents (Accepted: PDF, PNG, JPG, WEBP. Max: 10MB per file).
               </p>
@@ -956,11 +956,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               <form onSubmit={handleDocumentUpload} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-4 sm:p-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold text-[var(--foreground)]">Select Document Type *</label>
+                    <label className="block text-xs font-bold text-muted-foreground">Select Document Type *</label>
                     <select
                       value={selectedDocType}
                       onChange={(e) => setSelectedDocType(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                     >
                       {DOCUMENT_TYPES_CONFIG.map((d) => (
                         <option key={d.value} value={d.value}>
@@ -971,12 +971,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[var(--foreground)]">Select File *</label>
+                    <label className="block text-xs font-bold text-muted-foreground">Select File *</label>
                     <input
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg,.webp"
                       onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] file:mr-3 file:rounded-xl file:border-0 file:bg-[#FBDE9B] file:px-3 file:py-1 file:text-xs file:font-bold file:text-[#291E05]"
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-[#FBDE9B] file:px-3 file:py-1 file:text-xs file:font-bold file:text-[#291E05]"
                     />
                   </div>
                 </div>
@@ -1011,7 +1011,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-[var(--foreground)]">{doc.documentType.replace(/_/g, " ")}</span>
+                          <span className="font-bold text-xs text-muted-foreground">{doc.documentType.replace(/_/g, " ")}</span>
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                               doc.status === "VERIFIED"
@@ -1039,7 +1039,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                           href={doc.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                          className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                         >
                           View
                         </a>
@@ -1060,7 +1060,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(3)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
@@ -1078,17 +1078,17 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 5: Notes & Additional Info */}
           {activeStep === 5 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-[var(--foreground)]">Step 5: Additional Information / Notes</h3>
+              <h3 className="text-lg font-bold text-muted-foreground">Step 5: Additional Information / Notes</h3>
 
               <div>
-                <label className="block text-xs font-bold text-[var(--foreground)]">Notes for Review Team (Optional)</label>
+                <label className="block text-xs font-bold text-muted-foreground">Notes for Review Team (Optional)</label>
                 <textarea
                   name="notes"
                   rows={4}
                   value={formData.notes}
                   onChange={handleInputChange}
                   placeholder="Mention any special details about your properties, hosting experience, or questions..."
-                  className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none"
+                  className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                 />
               </div>
 
@@ -1096,7 +1096,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(4)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
@@ -1115,7 +1115,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {activeStep === 6 && (
             <div className="space-y-6 animate-in fade-in">
               <div>
-                <h3 className="text-lg font-bold text-[var(--foreground)]">Step 6: Review Application Summary</h3>
+                <h3 className="text-lg font-bold text-muted-foreground">Step 6: Review Application Summary</h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   Review all information before submitting your application to the administrative team.
                 </p>
@@ -1187,14 +1187,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 1: Personal & Contact */}
                 <div className={`rounded-2xl border p-4 ${!formData.applicantName || !formData.applicantPhone ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-[var(--foreground)]">Personal & Contact</h4>
+                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">Personal & Contact</h4>
                     <button onClick={() => setActiveStep(1)} className="text-[11px] font-bold text-amber-600 hover:underline">
                       Edit
                     </button>
                   </div>
                   <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
                     <p className="flex items-center justify-between">
-                      <strong className="text-[var(--foreground)]">Name:</strong>
+                      <strong className="text-muted-foreground">Name:</strong>
                       {formData.applicantName.trim() ? (
                         <span>{formData.applicantName}</span>
                       ) : (
@@ -1204,7 +1204,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       )}
                     </p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-[var(--foreground)]">Email:</strong>
+                      <strong className="text-muted-foreground">Email:</strong>
                       {formData.applicantEmail.trim() ? (
                         <span>{formData.applicantEmail}</span>
                       ) : (
@@ -1214,7 +1214,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       )}
                     </p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-[var(--foreground)]">Phone:</strong>
+                      <strong className="text-muted-foreground">Phone:</strong>
                       {formData.applicantPhone.trim() ? (
                         <span>{formData.applicantPhone}</span>
                       ) : (
@@ -1229,17 +1229,17 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 2: Business & Properties */}
                 <div className={`rounded-2xl border p-4 ${!formData.location ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-[var(--foreground)]">Business & Properties</h4>
+                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">Business & Properties</h4>
                     <button onClick={() => setActiveStep(2)} className="text-[11px] font-bold text-amber-600 hover:underline">
                       Edit
                     </button>
                   </div>
                   <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
-                    <p className="flex items-center justify-between"><strong className="text-[var(--foreground)]">Host Type:</strong> <span>{formData.registrationType}</span></p>
-                    <p className="flex items-center justify-between"><strong className="text-[var(--foreground)]">Business:</strong> <span>{formData.businessName || "Individual"}</span></p>
-                    <p className="flex items-center justify-between"><strong className="text-[var(--foreground)]">Property Count:</strong> <span>{formData.propertyCount}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Host Type:</strong> <span>{formData.registrationType}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Business:</strong> <span>{formData.businessName || "Individual"}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Property Count:</strong> <span>{formData.propertyCount}</span></p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-[var(--foreground)]">Location:</strong>
+                      <strong className="text-muted-foreground">Location:</strong>
                       {formData.location.trim() ? (
                         <span>{formData.location}</span>
                       ) : (
@@ -1254,7 +1254,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 3: Uploaded Documents */}
                 <div className="sm:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/30 p-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-[var(--foreground)]">
+                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">
                       Uploaded Documents ({application.documents?.length || 0})
                     </h4>
                     <button onClick={() => setActiveStep(4)} className="text-[11px] font-bold text-amber-600 hover:underline">
@@ -1263,7 +1263,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {application.documents?.map((d) => (
-                      <span key={d.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-[var(--foreground)]">
+                      <span key={d.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-muted-foreground">
                         ✓ {d.documentType.replace(/_/g, " ")} ({d.fileName})
                       </span>
                     ))}
@@ -1285,7 +1285,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(5)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>

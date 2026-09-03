@@ -580,7 +580,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
-                <h2 className="text-lg font-extrabold text-[var(--foreground)]">
+                <h2 className="text-lg font-extrabold text-muted-foreground">
                   {editingListing ? `Edit Property: ${editingListing.title}` : "Create Property Listing"}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -590,7 +590,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               <button
                 type="button"
                 onClick={() => setShowEditorModal(false)}
-                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center justify-center font-bold text-sm"
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center font-bold text-sm"
               >
                 ✕
               </button>
@@ -612,7 +612,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
                     editorStep === s.step
                       ? "bg-emerald-600 text-white shadow-2xs"
-                      : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                      : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground"
                   }`}
                 >
                   {s.label}
@@ -626,36 +626,36 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block font-bold text-[var(--foreground)] mb-1">Listing Title *</label>
+                    <label className="block font-bold text-muted-foreground mb-1">Listing Title *</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       required
                       placeholder="e.g. Modern Luxury Beachfront Villa with Ocean Views"
-                      className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-emerald-500 font-medium"
+                      className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-emerald-500 font-medium"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[var(--foreground)] mb-1">Detailed Description *</label>
+                    <label className="block font-bold text-muted-foreground mb-1">Detailed Description *</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
                       rows={4}
                       placeholder="Describe what makes your property unique, nearby attractions, neighborhood ambiance, and special features..."
-                      className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-emerald-500"
+                      className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-emerald-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Hosting Category</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Hosting Category</label>
                       <select
                         value={formData.hostingType}
                         onChange={(e) => setFormData({ ...formData, hostingType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                       >
                         <option value="HOME">Residential Home</option>
                         <option value="EXPERIENCE">Experience</option>
@@ -664,11 +664,11 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Property Type</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Property Type</label>
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                       >
                         {PROPERTY_TYPES.map((pt) => (
                           <option key={pt} value={pt}>{pt}</option>
@@ -677,11 +677,11 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Listing Type</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Listing Type</label>
                       <select
                         value={formData.listingType}
                         onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none font-semibold"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                       >
                         {LISTING_TYPES.map((lt) => (
                           <option key={lt} value={lt}>{lt}</option>
@@ -697,61 +697,61 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Street Address *</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Street Address *</label>
                       <input
                         type="text"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         required
                         placeholder="e.g. 742 Evergreen Terrace"
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">City / Region *</label>
+                      <label className="block font-bold text-muted-foreground mb-1">City / Region *</label>
                       <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                         required
                         placeholder="e.g. Miami"
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">District / State</label>
+                      <label className="block font-bold text-muted-foreground mb-1">District / State</label>
                       <input
                         type="text"
                         value={formData.district}
                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                         placeholder="e.g. Florida"
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Postal Code</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Postal Code</label>
                       <input
                         type="text"
                         value={formData.postalCode}
                         onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                         placeholder="e.g. 33101"
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-[var(--foreground)] mb-1">Country</label>
+                      <label className="block font-bold text-muted-foreground mb-1">Country</label>
                       <input
                         type="text"
                         value={formData.country}
                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                         placeholder="e.g. United States"
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4">
-                    <h4 className="font-extrabold text-[var(--foreground)] mb-3">Property Capacity</h4>
+                    <h4 className="font-extrabold text-muted-foreground mb-3">Property Capacity</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Guests Capacity</label>
@@ -761,7 +761,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={50}
                           value={formData.guests}
                           onChange={(e) => setFormData({ ...formData, guests: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -772,7 +772,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={30}
                           value={formData.bedrooms}
                           onChange={(e) => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -783,7 +783,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={50}
                           value={formData.beds}
                           onChange={(e) => setFormData({ ...formData, beds: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -794,7 +794,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={20}
                           value={formData.bathrooms}
                           onChange={(e) => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                         />
                       </div>
                     </div>
@@ -807,7 +807,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-extrabold text-[var(--foreground)]">Property Photos Gallery</h4>
+                      <h4 className="font-extrabold text-muted-foreground">Property Photos Gallery</h4>
                       <p className="text-[11px] text-[var(--muted-foreground)]">
                         Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
                       </p>
@@ -862,7 +862,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           value={formData.newPhotoUrl}
                           onChange={(e) => setFormData({ ...formData, newPhotoUrl: e.target.value })}
                           placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
-                          className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                          className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                         />
                         <button
                           type="button"
@@ -913,7 +913,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-extrabold text-[var(--foreground)] mb-1">Property Amenities</h4>
+                    <h4 className="font-extrabold text-muted-foreground mb-1">Property Amenities</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)] mb-3">Select all amenities available to guests:</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {AMENITY_OPTIONS.map((item) => {
@@ -931,7 +931,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                             className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
                               isSelected
                                 ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-bold"
-                                : "border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)]"
+                                : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
                             }`}
                           >
                             <span className="text-base">{item.icon}</span>
@@ -943,13 +943,13 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-                    <h4 className="font-extrabold text-[var(--foreground)]">House Rules</h4>
+                    <h4 className="font-extrabold text-muted-foreground">House Rules</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)]">Select house rules for guests staying at your place:</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HOUSE_RULE_OPTIONS.map((rule) => {
                         const isChecked = formData.houseRules.includes(rule);
                         return (
-                          <label key={rule} className="flex items-center gap-2 p-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface)] text-xs text-[var(--foreground)] cursor-pointer">
+                          <label key={rule} className="flex items-center gap-2 p-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface)] text-xs text-muted-foreground cursor-pointer">
                             <input
                               type="checkbox"
                               checked={isChecked}
@@ -974,7 +974,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 5 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-extrabold text-[var(--foreground)] mb-3">Pricing & Fees</h4>
+                    <h4 className="font-extrabold text-muted-foreground mb-3">Pricing & Fees</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ($USD) *</label>
@@ -984,7 +984,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           value={formData.price / 100}
                           onChange={(e) => setFormData({ ...formData, price: Math.round(Number(e.target.value) * 100) })}
                           required
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-extrabold text-base outline-none text-emerald-600"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-extrabold text-base outline-none text-emerald-600"
                         />
                       </div>
                       <div>
@@ -994,7 +994,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           min={0}
                           value={(formData.weekendPrice || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, weekendPrice: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold outline-none"
                         />
                       </div>
                       <div>
@@ -1004,21 +1004,21 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           min={0}
                           value={(formData.cleaningFee || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, cleaningFee: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-bold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold outline-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
-                    <h4 className="font-extrabold text-[var(--foreground)]">Check-in Details & Policies</h4>
+                    <h4 className="font-extrabold text-muted-foreground">Check-in Details & Policies</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Check-in Method</label>
                         <select
                           value={formData.checkInMethod}
                           onChange={(e) => setFormData({ ...formData, checkInMethod: e.target.value })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-semibold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
                         >
                           {CHECK_IN_METHODS.map((m) => (
                             <option key={m.id} value={m.id}>{m.label}</option>
@@ -1032,14 +1032,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                             type="time"
                             value={formData.checkInStart}
                             onChange={(e) => setFormData({ ...formData, checkInStart: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                           />
                           <span>to</span>
                           <input
                             type="time"
                             value={formData.checkInEnd}
                             onChange={(e) => setFormData({ ...formData, checkInEnd: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                           />
                         </div>
                       </div>
@@ -1049,7 +1049,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           type="time"
                           value={formData.checkOutTime}
                           onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
                         />
                       </div>
                     </div>
@@ -1059,7 +1059,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       <select
                         value={formData.cancellationPolicy}
                         onChange={(e) => setFormData({ ...formData, cancellationPolicy: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] font-semibold outline-none"
+                        className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
                       >
                         {CANCELLATION_POLICIES.map((p) => (
                           <option key={p.id} value={p.id}>{p.label}</option>
@@ -1068,7 +1068,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div className="flex items-center gap-6 pt-2">
-                      <label className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.instantBook}
@@ -1098,7 +1098,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   type="button"
                   disabled={editorStep === 1}
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
-                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-bold text-[var(--foreground)] disabled:opacity-30"
+                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-bold text-muted-foreground disabled:opacity-30"
                 >
                   ← Back
                 </button>
@@ -1132,7 +1132,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       {showAvailabilityModal && selectedListingForCal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-extrabold text-[var(--foreground)]">
+            <h3 className="text-base font-extrabold text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1145,7 +1145,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   type="date"
                   value={blockedDateInput}
                   onChange={(e) => setBlockedDateInput(e.target.value)}
-                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-[var(--foreground)] outline-none font-bold"
+                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
                 />
                 <button
                   type="button"
@@ -1161,7 +1161,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               </div>
 
               <div className="space-y-2">
-                <span className="font-bold text-[var(--foreground)] block">Blocked Dates List ({tempBlockedDates.length})</span>
+                <span className="font-bold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                   {tempBlockedDates.length === 0 ? (
                     <p className="text-xs text-[var(--muted-foreground)] italic">No dates blocked.</p>
@@ -1186,7 +1186,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <button
                   type="button"
                   onClick={() => setShowAvailabilityModal(false)}
-                  className="rounded-full px-4 py-2 text-xs font-bold border border-[var(--border)] text-[var(--foreground)]"
+                  className="rounded-full px-4 py-2 text-xs font-bold border border-[var(--border)] text-muted-foreground"
                 >
                   Cancel
                 </button>

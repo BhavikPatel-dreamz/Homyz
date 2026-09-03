@@ -239,12 +239,12 @@ export function AdminPermissionMatrixManager({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Header breadcrumb & info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] mb-1">
-            <Link href="/admin/admins" className="hover:text-[var(--foreground)] underline">
+            <Link href="/admin/admins" className="hover:text-muted-foreground underline">
               Admin Management
             </Link>
             <span>/</span>
@@ -254,7 +254,7 @@ export function AdminPermissionMatrixManager({
             Manage Permissions: <span className="text-[var(--accent)]">{summary.adminName}</span>
           </h1>
           <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-            Configure granular permission overrides for <strong className="text-[var(--foreground)]">{summary.adminEmail}</strong>.
+            Configure granular permission overrides for <strong className="text-muted-foreground">{summary.adminEmail}</strong>.
           </p>
         </div>
 
@@ -285,7 +285,7 @@ export function AdminPermissionMatrixManager({
               <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Total Permissions
               </span>
-              <span className="text-2xl font-black mt-1 text-[var(--foreground)]">
+              <span className="text-2xl font-black mt-1 text-muted-foreground">
                 {summary.totalPermissions}
               </span>
             </div>
@@ -312,7 +312,7 @@ export function AdminPermissionMatrixManager({
               <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Inherited
               </span>
-              <span className="text-2xl font-black mt-1 text-[var(--foreground)]">
+              <span className="text-2xl font-black mt-1 text-muted-foreground">
                 {liveInherited}
               </span>
             </div>
@@ -336,7 +336,7 @@ export function AdminPermissionMatrixManager({
               <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Assigned Role
               </span>
-              <span className="text-xs font-black mt-1 text-[var(--foreground)] truncate">
+              <span className="text-xs font-black mt-1 text-muted-foreground truncate">
                 {summary.roleName}
               </span>
             </div>
@@ -350,7 +350,7 @@ export function AdminPermissionMatrixManager({
               className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-all whitespace-nowrap shadow-2xs ${
                 selectedModule === "ALL"
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                  : "border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+                  : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
               }`}
             >
               All Modules ({permissions.length})
@@ -366,7 +366,7 @@ export function AdminPermissionMatrixManager({
                   className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-all whitespace-nowrap shadow-2xs ${
                     isSelected
                       ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                      : "border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+                      : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
                   }`}
                 >
                   {m} ({count})
@@ -385,7 +385,7 @@ export function AdminPermissionMatrixManager({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search permissions or action name..."
-                  className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+                  className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-muted-foreground outline-none focus:border-[var(--accent)]"
                 />
                 <svg
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -400,7 +400,7 @@ export function AdminPermissionMatrixManager({
                   <button
                     type="button"
                     onClick={() => setSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
                     title="Clear search"
                     aria-label="Clear search"
                   >
@@ -418,8 +418,8 @@ export function AdminPermissionMatrixManager({
                   onClick={() => setViewMode("table")}
                   className={`px-3 py-1 text-xs font-extrabold rounded-full transition-all ${
                     viewMode === "table"
-                      ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                      ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                      : "text-[var(--muted-foreground)] hover:text-muted-foreground"
                   }`}
                 >
                   📊 Table Matrix
@@ -429,8 +429,8 @@ export function AdminPermissionMatrixManager({
                   onClick={() => setViewMode("modules")}
                   className={`px-3 py-1 text-xs font-extrabold rounded-full transition-all ${
                     viewMode === "modules"
-                      ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                      ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                      : "text-[var(--muted-foreground)] hover:text-muted-foreground"
                   }`}
                 >
                   🗂️ Module Cards
@@ -460,7 +460,7 @@ export function AdminPermissionMatrixManager({
               <button
                 type="button"
                 onClick={() => handleBulkStageEffect("INHERIT")}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
               >
                 Inherit
               </button>
@@ -468,7 +468,7 @@ export function AdminPermissionMatrixManager({
                 <button
                   type="button"
                   onClick={() => setSelectedSlugs([])}
-                  className="text-[11px] underline text-[var(--muted-foreground)] hover:text-[var(--foreground)] ml-1"
+                  className="text-[11px] underline text-[var(--muted-foreground)] hover:text-muted-foreground ml-1"
                 >
                   Clear Selection
                 </button>
@@ -497,7 +497,7 @@ export function AdminPermissionMatrixManager({
                   type="button"
                   onClick={handleCancelStaged}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                 >
                   Cancel
                 </button>
@@ -580,11 +580,11 @@ export function AdminPermissionMatrixManager({
                               className="h-4 w-4 rounded accent-[var(--accent)] cursor-pointer"
                             />
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">
+                          <td className="py-3.5 px-4 font-bold text-muted-foreground">
                             {p.module}
                           </td>
                           <td className="py-3.5 px-4">
-                            <div className="font-bold text-[var(--foreground)]">{p.action}</div>
+                            <div className="font-bold text-muted-foreground">{p.action}</div>
                             <div className="text-[11px] text-[var(--muted-foreground)] leading-tight">
                               {p.description}
                             </div>
@@ -600,8 +600,8 @@ export function AdminPermissionMatrixManager({
                                 onClick={() => handleStageChange(p.slug, "INHERIT")}
                                 className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
                                   stagedEffect === "INHERIT"
-                                    ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                                    ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                                    : "text-[var(--muted-foreground)] hover:text-muted-foreground"
                                 }`}
                                 title="Inherit role default permission"
                               >
@@ -676,7 +676,7 @@ export function AdminPermissionMatrixManager({
                     {/* Module Card Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
                       <div>
-                        <h3 className="font-extrabold text-sm uppercase tracking-wider text-[var(--foreground)]">
+                        <h3 className="font-extrabold text-sm uppercase tracking-wider text-muted-foreground">
                           {modName} Module
                         </h3>
                         <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -703,7 +703,7 @@ export function AdminPermissionMatrixManager({
                         <button
                           type="button"
                           onClick={() => handleBulkStageEffect("INHERIT", modSlugs)}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-2.5 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-2.5 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
                         >
                           Reset Module
                         </button>
@@ -727,7 +727,7 @@ export function AdminPermissionMatrixManager({
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <h4 className="font-bold text-xs text-[var(--foreground)]">{p.action}</h4>
+                                <h4 className="font-bold text-xs text-muted-foreground">{p.action}</h4>
                                 <p className="text-[11px] text-[var(--muted-foreground)] leading-snug mt-0.5">
                                   {p.description}
                                 </p>
@@ -807,7 +807,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowResetModal(true)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-4 py-2 text-xs font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-4 py-2 text-xs font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
               >
                 Reset to Role Defaults
               </button>
@@ -839,8 +839,8 @@ export function AdminPermissionMatrixManager({
       {/* SAVE CHANGES CONFIRMATION MODAL (Matching Host Permission Modal UI Exactly) */}
       {showSaveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Confirm Permission Changes
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -853,7 +853,7 @@ export function AdminPermissionMatrixManager({
               <ul className="mt-1 space-y-1 font-mono text-[11px] text-[var(--muted-foreground)] max-h-32 overflow-y-auto">
                 {changedSlugs.map((slug) => (
                   <li key={slug}>
-                    • {slug} → <strong className="text-[var(--foreground)]">{stagedOverrides[slug]}</strong>
+                    • {slug} → <strong className="text-muted-foreground">{stagedOverrides[slug]}</strong>
                   </li>
                 ))}
               </ul>
@@ -868,7 +868,7 @@ export function AdminPermissionMatrixManager({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Specify reason for changing permissions..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -877,7 +877,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowSaveModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -900,8 +900,8 @@ export function AdminPermissionMatrixManager({
       {/* RESET TO DEFAULTS CONFIRMATION MODAL (Matching Host Permission Modal UI Exactly) */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Reset Admin Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -922,7 +922,7 @@ export function AdminPermissionMatrixManager({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for resetting permissions..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -931,7 +931,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowResetModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -954,8 +954,8 @@ export function AdminPermissionMatrixManager({
       {/* SET ALL PERMISSIONS CONFIRMATION MODAL */}
       {showSetAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Grant All Administrative Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -976,7 +976,7 @@ export function AdminPermissionMatrixManager({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Specify administrative reason..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -985,7 +985,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowSetAllModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -1008,8 +1008,8 @@ export function AdminPermissionMatrixManager({
       {/* CLEAR ALL PERMISSIONS CONFIRMATION MODAL */}
       {showClearAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Revoke All Administrative Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1030,7 +1030,7 @@ export function AdminPermissionMatrixManager({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Specify reason for revoking all permissions..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -1039,7 +1039,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowClearAllModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>

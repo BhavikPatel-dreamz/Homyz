@@ -131,7 +131,7 @@ export function ActivityLogViewer({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
@@ -159,7 +159,7 @@ export function ActivityLogViewer({
       </div>
 
       {/* Immutability Banner */}
-      <div className="rounded-2xl border border-[var(--card-highlight-border)] bg-[var(--card-highlight)] p-4 text-xs text-[var(--foreground)] flex items-center gap-3">
+      <div className="rounded-2xl border border-[var(--card-highlight-border)] bg-[var(--card-highlight)] p-4 text-xs text-muted-foreground flex items-center gap-3">
         <svg className="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
@@ -180,7 +180,7 @@ export function ActivityLogViewer({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search actor, action, IP, description..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none"
@@ -195,7 +195,7 @@ export function ActivityLogViewer({
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -211,7 +211,7 @@ export function ActivityLogViewer({
             <select
               value={moduleFilter}
               onChange={(e) => setModuleFilter(e.target.value)}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none"
             >
               <option value="ALL">Module: All</option>
               {uniqueModules.map((m) => (
@@ -222,7 +222,7 @@ export function ActivityLogViewer({
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none max-w-[160px]"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none max-w-[160px]"
             >
               <option value="ALL">Action: All</option>
               {uniqueActions.map((a) => (
@@ -233,7 +233,7 @@ export function ActivityLogViewer({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none"
             >
               <option value="ALL">Status: All</option>
               <option value="SUCCESS">Success</option>
@@ -245,7 +245,7 @@ export function ActivityLogViewer({
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               title="From date"
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--foreground)] outline-none"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-muted-foreground outline-none"
             />
 
             <input
@@ -253,7 +253,7 @@ export function ActivityLogViewer({
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               title="To date"
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--foreground)] outline-none"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-muted-foreground outline-none"
             />
 
             {hasActiveFilters && (
@@ -316,12 +316,12 @@ export function ActivityLogViewer({
                       })}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap font-medium text-[var(--foreground)]">
+                    <td className="py-3.5 px-4 whitespace-nowrap font-medium text-muted-foreground">
                       {log.actorEmail || "System"}
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border)]">
                         {log.action}
                       </span>
                     </td>
@@ -330,7 +330,7 @@ export function ActivityLogViewer({
                       {log.resourceType} {log.resourceId ? `(#${log.resourceId.slice(-6)})` : ""}
                     </td>
 
-                    <td className="py-3.5 px-4 text-[var(--foreground)] max-w-xs truncate" title={log.description}>
+                    <td className="py-3.5 px-4 text-muted-foreground max-w-xs truncate" title={log.description}>
                       {log.description}
                     </td>
 
@@ -356,7 +356,7 @@ export function ActivityLogViewer({
                           e.stopPropagation();
                           setSelectedLog(log);
                         }}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                       >
                         Inspect
                       </button>
@@ -383,7 +383,7 @@ export function ActivityLogViewer({
               className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)]"
             >
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border)]">
                   {log.action}
                 </span>
                 <span
@@ -396,7 +396,7 @@ export function ActivityLogViewer({
                 </span>
               </div>
 
-              <p className="text-xs font-semibold text-[var(--foreground)] leading-snug">
+              <p className="text-xs font-semibold text-muted-foreground leading-snug">
                 {log.description}
               </p>
 
@@ -427,7 +427,7 @@ export function ActivityLogViewer({
       {/* Audit Event Details Drawer / Modal */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[var(--accent)] text-[var(--accent-foreground)]">
@@ -440,7 +440,7 @@ export function ActivityLogViewer({
               <button
                 type="button"
                 onClick={() => setSelectedLog(null)}
-                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground"
               >
                 ✕
               </button>
@@ -450,33 +450,33 @@ export function ActivityLogViewer({
               <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] block mb-1">
                 Event Description
               </label>
-              <p className="text-sm font-semibold text-[var(--foreground)] leading-relaxed">
+              <p className="text-sm font-semibold text-muted-foreground leading-relaxed">
                 {selectedLog.description}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 rounded-xl bg-[var(--surface-secondary)] p-3.5 text-xs text-[var(--foreground)] border border-[var(--border-subtle)]">
+            <div className="grid grid-cols-2 gap-3 rounded-xl bg-[var(--surface-secondary)] p-3.5 text-xs text-muted-foreground border border-[var(--border-subtle)]">
               <div>
                 <span className="text-[var(--muted-foreground)] text-[11px] block">Timestamp</span>
-                <span className="font-mono text-[var(--foreground)] font-medium" suppressHydrationWarning>
+                <span className="font-mono text-muted-foreground font-medium" suppressHydrationWarning>
                   {new Date(selectedLog.createdAt).toLocaleString("en-US")}
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] text-[11px] block">Actor Email</span>
-                <span className="font-medium text-[var(--foreground)] truncate block">
+                <span className="font-medium text-muted-foreground truncate block">
                   {selectedLog.actorEmail || "System"}
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] text-[11px] block">Module / Target</span>
-                <span className="font-medium text-[var(--foreground)]">
+                <span className="font-medium text-muted-foreground">
                   {selectedLog.resourceType} ({selectedLog.resourceId || "N/A"})
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] text-[11px] block">IP Address</span>
-                <span className="font-mono text-[var(--foreground)]">
+                <span className="font-mono text-muted-foreground">
                   {selectedLog.ip || "Unknown"}
                 </span>
               </div>
@@ -504,7 +504,7 @@ export function ActivityLogViewer({
               <button
                 type="button"
                 onClick={() => setSelectedLog(null)}
-                className="rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 px-5 py-2 text-xs font-bold shadow-2xs transition-colors"
+                className="rounded-full bg-[var(--primary)] text-primary-foreground hover:opacity-90 px-5 py-2 text-xs font-bold shadow-2xs transition-colors"
               >
                 Close Details
               </button>

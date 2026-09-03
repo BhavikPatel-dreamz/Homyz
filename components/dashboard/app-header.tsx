@@ -48,7 +48,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white text-zinc-900 "  suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6 border-b border-[#1F1F1F]" style={{ borderBottom: "1px solid #1F1F1F" }}>
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6 border-b-0 md:border-b md:border-[#1F1F1F]">
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
@@ -83,7 +83,7 @@ export function AppHeader() {
             <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform sm:w-[150px] lg:w-[166px]" priority />
           </Link>
 
-          <div className="ml-auto flex items-center gap-2.5 sm:gap-3" ref={menuRef}>
+          <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
             <Link href={isHostRoute ? "/dashboard" : role === "HOST" ? "/host/listings" : "/host/onboarding"} className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
               {isHostRoute ? "Switch to traveling" : role === "HOST" ? "Switch to hosting" : "Become a host"}
             </Link>

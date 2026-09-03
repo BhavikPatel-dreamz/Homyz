@@ -214,7 +214,7 @@ export function HostDocumentVerificationDashboard() {
   });
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
         <div>
@@ -233,7 +233,7 @@ export function HostDocumentVerificationDashboard() {
           <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
             Total Queue
           </span>
-          <p className="text-2xl font-black mt-1 text-[var(--foreground)]">{totalCount}</p>
+          <p className="text-2xl font-black mt-1 text-muted-foreground">{totalCount}</p>
         </div>
         <div className="rounded-2xl border border-amber-300/60 bg-amber-50/50 dark:bg-amber-950/30 p-3.5 shadow-2xs">
           <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
@@ -328,7 +328,7 @@ export function HostDocumentVerificationDashboard() {
                   <td className="py-3.5 px-4">
                     <Link
                       href={`/admin/hosts/onboarding/registration-requests/${doc.requestId}`}
-                      className="font-bold text-[var(--foreground)] hover:text-[var(--accent)] underline"
+                      className="font-bold text-muted-foreground hover:text-[var(--accent)] underline"
                     >
                       {doc.applicantName}
                     </Link>
@@ -336,13 +336,13 @@ export function HostDocumentVerificationDashboard() {
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
                       {doc.documentType.replace("_", " ")}
                     </span>
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <span className="font-semibold text-[var(--foreground)] truncate max-w-[180px] inline-block">
+                    <span className="font-semibold text-muted-foreground truncate max-w-[180px] inline-block">
                       {doc.fileName}
                     </span>
                     {doc.fileSize && (
@@ -380,7 +380,7 @@ export function HostDocumentVerificationDashboard() {
                       <button
                         type="button"
                         onClick={() => setPreviewDoc(doc)}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
                       >
                         Preview
                       </button>
@@ -417,7 +417,7 @@ export function HostDocumentVerificationDashboard() {
                           setResubmitModalOpen(true);
                         }}
                         disabled={pendingTransition}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-2.5 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-2.5 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
                       >
                         Request Resubmit
                       </button>
@@ -433,10 +433,10 @@ export function HostDocumentVerificationDashboard() {
       {/* PREVIEW DOCUMENT MODAL */}
       {previewDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in">
+          <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-bold text-[var(--foreground)]">
+                <h3 className="text-base font-bold text-muted-foreground">
                   Preview: {previewDoc.fileName}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -480,7 +480,7 @@ export function HostDocumentVerificationDashboard() {
       {/* REJECT MODAL */}
       {rejectModalOpen && targetDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-base font-bold">Reject Document: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Specify the reason why this document is being rejected.
@@ -536,7 +536,7 @@ export function HostDocumentVerificationDashboard() {
       {/* REQUEST RESUBMISSION MODAL */}
       {resubmitModalOpen && targetDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-base font-bold">Request Resubmission: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Send detailed instructions to the applicant for uploading an updated version of this document.

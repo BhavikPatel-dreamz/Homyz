@@ -50,9 +50,9 @@ export function AdminPagination({
       {/* Left: Item Range & Page Size Selector */}
       <div className="flex items-center gap-3">
         <span>
-          Showing <strong className="text-[var(--foreground)] font-semibold">{startItem}</strong> to{" "}
-          <strong className="text-[var(--foreground)] font-semibold">{endItem}</strong> of{" "}
-          <strong className="text-[var(--foreground)] font-semibold">{totalItems}</strong> {itemLabel}
+          Showing <strong className="text-muted-foreground font-semibold">{startItem}</strong> to{" "}
+          <strong className="text-muted-foreground font-semibold">{endItem}</strong> of{" "}
+          <strong className="text-muted-foreground font-semibold">{totalItems}</strong> {itemLabel}
         </span>
 
         {onPageSizeChange && (
@@ -61,7 +61,7 @@ export function AdminPagination({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] px-2 py-1 text-xs outline-none cursor-pointer hover:border-[var(--accent)] transition-colors"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] text-muted-foreground px-2 py-1 text-xs outline-none cursor-pointer hover:border-[var(--accent)] transition-colors"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -79,7 +79,7 @@ export function AdminPagination({
           type="button"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           aria-label="Previous page"
         >
           Previous
@@ -99,7 +99,7 @@ export function AdminPagination({
                 className={`min-w-[28px] h-7 rounded-lg text-xs font-semibold transition-all ${
                   currentPage === p
                     ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs"
-                    : "border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+                    : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
                 }`}
               >
                 {p}
@@ -108,7 +108,7 @@ export function AdminPagination({
           )}
         </div>
 
-        <span className="sm:hidden font-semibold text-[var(--foreground)] px-1">
+        <span className="sm:hidden font-semibold text-muted-foreground px-1">
           {currentPage} / {totalPages}
         </span>
 
@@ -116,7 +116,7 @@ export function AdminPagination({
           type="button"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+          className="inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           aria-label="Next page"
         >
           Next

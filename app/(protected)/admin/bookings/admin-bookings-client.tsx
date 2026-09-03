@@ -102,7 +102,7 @@ export function AdminBookingsClient({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
@@ -131,7 +131,7 @@ export function AdminBookingsClient({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">{summary.total}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-muted-foreground">{summary.total}</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">All time reservations</p>
         </div>
 
@@ -162,7 +162,7 @@ export function AdminBookingsClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search booking ID, listing, guest name, host..."
-            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all"
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all"
           />
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none"
@@ -177,7 +177,7 @@ export function AdminBookingsClient({
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
               title="Clear search"
               aria-label="Clear search"
             >
@@ -192,7 +192,7 @@ export function AdminBookingsClient({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--foreground)] outline-none"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-muted-foreground outline-none"
           >
             <option value="ALL">Status: All</option>
             <option value="CONFIRMED">Confirmed</option>
@@ -239,14 +239,14 @@ export function AdminBookingsClient({
                         #{booking.id.slice(-8)}
                       </td>
 
-                      <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">
+                      <td className="py-3.5 px-4 font-semibold text-muted-foreground">
                         <div className="flex flex-col">
                           <span className="truncate max-w-[200px]">{booking.listing.title}</span>
                           <span className="text-[10px] text-[var(--muted-foreground)] font-normal">Host: {booking.listing.host.name || booking.listing.host.email}</span>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 text-[var(--foreground)]">
+                      <td className="py-3.5 px-4 text-muted-foreground">
                         <div className="flex flex-col">
                           <span className="font-semibold">{booking.user.name || "Guest"}</span>
                           <span className="text-[10px] text-[var(--muted-foreground)]">{booking.user.email}</span>
@@ -257,7 +257,7 @@ export function AdminBookingsClient({
                         {new Date(booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} — {new Date(booking.endDate).toLocaleDateString([], { month: "short", day: "numeric" })} ({nights} nights)
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap font-bold text-[var(--foreground)] font-mono">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-bold text-muted-foreground font-mono">
                         ${totalPrice}
                       </td>
 
@@ -282,7 +282,7 @@ export function AdminBookingsClient({
                             e.stopPropagation();
                             setSelectedBooking(booking);
                           }}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                         >
                           Details
                         </button>
@@ -316,7 +316,7 @@ export function AdminBookingsClient({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{booking.id.slice(-8)}</span>
-                    <h3 className="font-bold text-xs text-[var(--foreground)] mt-0.5">{booking.listing.title}</h3>
+                    <h3 className="font-bold text-xs text-muted-foreground mt-0.5">{booking.listing.title}</h3>
                   </div>
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
@@ -334,11 +334,11 @@ export function AdminBookingsClient({
                 <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                   <div>
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Guest</span>
-                    <span className="font-medium text-[var(--foreground)]">{booking.user.name || "Guest"}</span>
+                    <span className="font-medium text-muted-foreground">{booking.user.name || "Guest"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Amount</span>
-                    <span className="font-bold text-[var(--foreground)] font-mono">${totalPrice}</span>
+                    <span className="font-bold text-muted-foreground font-mono">${totalPrice}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
@@ -355,7 +355,7 @@ export function AdminBookingsClient({
                       e.stopPropagation();
                       setSelectedBooking(booking);
                     }}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
                   >
                     View Details
                   </button>
@@ -384,10 +384,10 @@ export function AdminBookingsClient({
       {/* Booking Details Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-bold text-[var(--foreground)]">
+                <h3 className="text-base font-bold text-muted-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(selectedBooking.createdAt).toLocaleString()}</p>
@@ -404,14 +404,14 @@ export function AdminBookingsClient({
             <div className="flex flex-col gap-3 text-xs">
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex flex-col gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Property Information</span>
-                <p className="font-bold text-sm text-[var(--foreground)]">{selectedBooking.listing.title}</p>
+                <p className="font-bold text-sm text-muted-foreground">{selectedBooking.listing.title}</p>
                 <p className="text-[var(--muted-foreground)]">Host: {selectedBooking.listing.host.name || selectedBooking.listing.host.email}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Guest</span>
-                  <p className="font-bold text-[var(--foreground)]">{selectedBooking.user.name || "Guest"}</p>
+                  <p className="font-bold text-muted-foreground">{selectedBooking.user.name || "Guest"}</p>
                   <p className="text-[11px] text-[var(--muted-foreground)]">{selectedBooking.user.email}</p>
                 </div>
 
@@ -441,7 +441,7 @@ export function AdminBookingsClient({
               <button
                 type="button"
                 onClick={() => setSelectedBooking(null)}
-                className="rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] px-5 py-2 text-xs font-bold shadow-2xs"
+                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-bold shadow-2xs"
               >
                 Close
               </button>

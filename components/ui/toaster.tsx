@@ -67,10 +67,10 @@ function ToastCard({ item }: { item: ToastItem }) {
   };
 
   const borderTone = {
-    success: "border-emerald-500/40 bg-[var(--surface)] text-[var(--foreground)] shadow-xl shadow-emerald-900/10",
-    error: "border-rose-500/40 bg-[var(--surface)] text-[var(--foreground)] shadow-xl shadow-rose-900/10",
-    warning: "border-amber-500/40 bg-[var(--surface)] text-[var(--foreground)] shadow-xl shadow-amber-900/10",
-    info: "border-sky-500/40 bg-[var(--surface)] text-[var(--foreground)] shadow-xl shadow-sky-900/10",
+    success: "border-emerald-500/40 bg-[var(--surface)] text-muted-foreground shadow-xl shadow-emerald-900/10",
+    error: "border-rose-500/40 bg-[var(--surface)] text-muted-foreground shadow-xl shadow-rose-900/10",
+    warning: "border-amber-500/40 bg-[var(--surface)] text-muted-foreground shadow-xl shadow-amber-900/10",
+    info: "border-sky-500/40 bg-[var(--surface)] text-muted-foreground shadow-xl shadow-sky-900/10",
   };
 
   const progressTone = {
@@ -91,14 +91,14 @@ function ToastCard({ item }: { item: ToastItem }) {
       <div className="flex items-start gap-3">
         {iconMap[item.type]}
         <div className="flex-1 text-xs space-y-0.5 pr-2">
-          {item.title && <div className="font-extrabold text-[var(--foreground)]">{item.title}</div>}
-          <div className="font-semibold text-[var(--foreground)] leading-relaxed">{item.message}</div>
+          {item.title && <div className="font-extrabold text-muted-foreground">{item.title}</div>}
+          <div className="font-semibold text-muted-foreground leading-relaxed">{item.message}</div>
         </div>
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Close notification"
-          className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg transition-colors text-xs font-bold shrink-0"
+          className="text-[var(--muted-foreground)] hover:text-muted-foreground p-1 rounded-lg transition-colors text-xs font-bold shrink-0"
         >
           ✕
         </button>

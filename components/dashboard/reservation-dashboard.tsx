@@ -199,14 +199,14 @@ export function ReservationDashboard({
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-[#FBDE9B] dark:bg-[#f59e0b]" />
-                <h3 className="text-lg font-bold text-[var(--foreground)]">
+                <h3 className="text-lg font-bold text-muted-foreground">
                   Reservation Details
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedRes(null)}
-                className="rounded-full p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="rounded-full p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-muted-foreground transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -217,15 +217,15 @@ export function ReservationDashboard({
             <div className="py-5 flex flex-col gap-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Property</span>
-                <span className="font-bold text-[var(--foreground)]">{selectedRes.propertyName}</span>
+                <span className="font-bold text-muted-foreground">{selectedRes.propertyName}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Location</span>
-                <span className="font-semibold text-[var(--foreground)]">{selectedRes.location}</span>
+                <span className="font-semibold text-muted-foreground">{selectedRes.location}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Guest Name</span>
-                <span className="font-semibold text-[var(--foreground)]">{selectedRes.guestName || "Guest"}</span>
+                <span className="font-semibold text-muted-foreground">{selectedRes.guestName || "Guest"}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Status</span>
@@ -239,7 +239,7 @@ export function ReservationDashboard({
               <button
                 type="button"
                 onClick={() => setSelectedRes(null)}
-                className="rounded-full bg-[var(--primary)] px-5 py-2 text-xs font-bold text-[var(--primary-foreground)] hover:opacity-90 transition-opacity"
+                className="rounded-full bg-[var(--primary)] px-5 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 Close
               </button>

@@ -366,12 +366,12 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)] pb-12">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground pb-12">
       {/* Top Breadcrumb & Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-            <Link href="/admin/listings" className="hover:text-[var(--foreground)] font-semibold transition-colors">
+            <Link href="/admin/listings" className="hover:text-muted-foreground font-semibold transition-colors">
               ← Property Listings
             </Link>
             <span>/</span>
@@ -414,7 +414,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             disabled={isSaving}
             onClick={handleToggleFeature}
             className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all shadow-xs border ${
-              listing.isFeatured ? "bg-amber-500 text-zinc-950 border-amber-500" : "bg-[var(--surface-secondary)] text-[var(--foreground)] border-[var(--border)]"
+              listing.isFeatured ? "bg-amber-500 text-zinc-950 border-amber-500" : "bg-[var(--surface-secondary)] text-muted-foreground border-[var(--border)]"
             }`}
           >
             {listing.isFeatured ? "★ Featured Property" : "☆ Feature Property"}
@@ -479,7 +479,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
                 activeTab === tab.id
                   ? "bg-amber-500 text-zinc-950 font-black shadow-sm"
-                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground"
               }`}
             >
               <span>{tab.icon}</span>
@@ -526,12 +526,12 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
               <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
                 <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-bold">Total Bookings</span>
-                <span className="text-xl font-black text-[var(--foreground)] font-mono">{listing.bookingCount}</span>
+                <span className="text-xl font-black text-muted-foreground font-mono">{listing.bookingCount}</span>
               </div>
 
               <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
                 <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-bold">Capacity</span>
-                <span className="text-sm font-bold text-[var(--foreground)]">{listing.guests} Guests ({listing.bedrooms} Beds)</span>
+                <span className="text-sm font-bold text-muted-foreground">{listing.guests} Guests ({listing.bedrooms} Beds)</span>
               </div>
 
               <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
@@ -546,7 +546,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
           {/* Host & Audit Info Sidebar */}
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-6 shadow-2xs text-xs">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-[var(--foreground)] mb-3">Host Account Overview</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-3">Host Account Overview</h3>
               <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
                 {listing.host.image ? (
                   <img src={listing.host.image} alt={listing.host.name || ""} className="w-10 h-10 rounded-full object-cover" />
@@ -556,18 +556,18 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                   </div>
                 )}
                 <div className="flex flex-col">
-                  <span className="font-bold text-xs text-[var(--foreground)]">{listing.host.name || "Host"}</span>
+                  <span className="font-bold text-xs text-muted-foreground">{listing.host.name || "Host"}</span>
                   <span className="text-[10px] text-[var(--muted-foreground)]">{listing.host.email}</span>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-[var(--foreground)]">Audit History</h3>
-              <p><strong className="text-[var(--foreground)]">Created:</strong> {new Date(listing.createdAt).toLocaleString()}</p>
-              <p><strong className="text-[var(--foreground)]">Last Updated:</strong> {new Date(listing.updatedAt).toLocaleString()}</p>
-              {listing.approvedAt && <p><strong className="text-[var(--foreground)]">Approved At:</strong> {new Date(listing.approvedAt).toLocaleString()}</p>}
-              {listing.reviewer && <p><strong className="text-[var(--foreground)]">Reviewer Admin:</strong> {listing.reviewer.name} ({listing.reviewer.email})</p>}
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Audit History</h3>
+              <p><strong className="text-muted-foreground">Created:</strong> {new Date(listing.createdAt).toLocaleString()}</p>
+              <p><strong className="text-muted-foreground">Last Updated:</strong> {new Date(listing.updatedAt).toLocaleString()}</p>
+              {listing.approvedAt && <p><strong className="text-muted-foreground">Approved At:</strong> {new Date(listing.approvedAt).toLocaleString()}</p>}
+              {listing.reviewer && <p><strong className="text-muted-foreground">Reviewer Admin:</strong> {listing.reviewer.name} ({listing.reviewer.email})</p>}
             </div>
           </div>
         </div>
@@ -578,7 +578,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[var(--foreground)]">Property Basic Information & Capacity</h2>
+              <h2 className="text-lg font-black text-muted-foreground">Property Basic Information & Capacity</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Edit title, property type, category, address, and guest capacity.</p>
             </div>
             <button
@@ -593,31 +593,31 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className="block font-bold text-[var(--foreground)] mb-1">Property Title *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Property Title *</label>
               <input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] font-semibold outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-bold text-[var(--foreground)] mb-1">Detailed Property Description *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Detailed Property Description *</label>
               <textarea
                 rows={4}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground outline-none focus:border-amber-500"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Hosting Category</label>
+              <label className="block font-bold text-muted-foreground mb-1">Hosting Category</label>
               <select
                 value={editHostingType}
                 onChange={(e) => setEditHostingType(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] font-bold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-bold outline-none"
               >
                 <option value="HOME">Residential Home</option>
                 <option value="EXPERIENCE">Experience</option>
@@ -626,89 +626,89 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Property Type</label>
+              <label className="block font-bold text-muted-foreground mb-1">Property Type</label>
               <input
                 type="text"
                 value={editPropertyType}
                 onChange={(e) => setEditPropertyType(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none"
               />
             </div>
 
             <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Street Address</label>
+                <label className="block font-bold text-muted-foreground mb-1">Street Address</label>
                 <input
                   type="text"
                   value={editAddress}
                   onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-[var(--foreground)] outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">City / Region</label>
+                <label className="block font-bold text-muted-foreground mb-1">City / Region</label>
                 <input
                   type="text"
                   value={editCity}
                   onChange={(e) => setEditCity(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-[var(--foreground)] outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Country</label>
+                <label className="block font-bold text-muted-foreground mb-1">Country</label>
                 <input
                   type="text"
                   value={editCountry}
                   onChange={(e) => setEditCountry(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-[var(--foreground)] outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
                 />
               </div>
             </div>
 
             <div className="sm:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-4">
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Guests Capacity</label>
+                <label className="block font-bold text-muted-foreground mb-1">Guests Capacity</label>
                 <input
                   type="number"
                   min={1}
                   value={editGuests}
                   onChange={(e) => setEditGuests(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Bedrooms</label>
+                <label className="block font-bold text-muted-foreground mb-1">Bedrooms</label>
                 <input
                   type="number"
                   min={0}
                   value={editBedrooms}
                   onChange={(e) => setEditBedrooms(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Beds</label>
+                <label className="block font-bold text-muted-foreground mb-1">Beds</label>
                 <input
                   type="number"
                   min={1}
                   value={editBeds}
                   onChange={(e) => setEditBeds(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--foreground)] mb-1">Bathrooms</label>
+                <label className="block font-bold text-muted-foreground mb-1">Bathrooms</label>
                 <input
                   type="number"
                   min={1}
                   value={editBathrooms}
                   onChange={(e) => setEditBathrooms(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
               </div>
             </div>
@@ -721,7 +721,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[var(--foreground)]">Property Photos & Media Gallery</h2>
+              <h2 className="text-lg font-black text-muted-foreground">Property Photos & Media Gallery</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Upload image files directly or paste image URLs. Minimum 5 photos required for approval.</p>
             </div>
             <button
@@ -773,7 +773,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 value={newPhotoUrl}
                 onChange={(e) => setNewPhotoUrl(e.target.value)}
                 placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
-                className="flex-1 rounded-2xl border border-[var(--border)] p-3 bg-[var(--surface-secondary)] text-[var(--foreground)] outline-none focus:border-amber-500"
+                className="flex-1 rounded-2xl border border-[var(--border)] p-3 bg-[var(--surface-secondary)] text-muted-foreground outline-none focus:border-amber-500"
               />
               <button
                 type="button"
@@ -817,7 +817,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[var(--foreground)]">Property Amenities & House Rules</h2>
+              <h2 className="text-lg font-black text-muted-foreground">Property Amenities & House Rules</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Manage feature amenities chips and rules for guest stays.</p>
             </div>
             <button
@@ -832,7 +832,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="space-y-4">
             <div>
-              <h3 className="font-extrabold text-sm text-[var(--foreground)] mb-2">Amenities Selector</h3>
+              <h3 className="font-extrabold text-sm text-muted-foreground mb-2">Amenities Selector</h3>
               <div className="flex flex-wrap gap-2">
                 {COMMON_AMENITIES.map((am) => {
                   const active = editAmenities.includes(am);
@@ -855,7 +855,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div className="border-t border-[var(--border-subtle)] pt-4">
-              <h3 className="font-extrabold text-sm text-[var(--foreground)] mb-2">House Rules</h3>
+              <h3 className="font-extrabold text-sm text-muted-foreground mb-2">House Rules</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {HOUSE_RULE_OPTIONS.map((rule) => {
                   const active = editHouseRules.includes(rule);
@@ -867,7 +867,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                         setEditHouseRules(active ? editHouseRules.filter((r) => r !== rule) : [...editHouseRules, rule]);
                       }}
                       className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left text-xs transition-all ${
-                        active ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-300 font-bold" : "border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)]"
+                        active ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-300 font-bold" : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
                       }`}
                     >
                       <span>{active ? "✓" : "○"}</span>
@@ -886,7 +886,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[var(--foreground)]">Check-in, Policies & Calendar Availability</h2>
+              <h2 className="text-lg font-black text-muted-foreground">Check-in, Policies & Calendar Availability</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Manage check-in details, cancellation policies, and blocked calendar dates.</p>
             </div>
             <button
@@ -901,54 +901,54 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Check-in Method</label>
+              <label className="block font-bold text-muted-foreground mb-1">Check-in Method</label>
               <input
                 type="text"
                 value={editCheckInMethod}
                 onChange={(e) => setEditCheckInMethod(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Check-in Window</label>
+              <label className="block font-bold text-muted-foreground mb-1">Check-in Window</label>
               <div className="flex items-center gap-2">
                 <input
                   type="time"
                   value={editCheckInStart}
                   onChange={(e) => setEditCheckInStart(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
                 <span>to</span>
                 <input
                   type="time"
                   value={editCheckInEnd}
                   onChange={(e) => setEditCheckInEnd(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-[var(--foreground)] font-bold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-bold text-center"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Checkout Time</label>
+              <label className="block font-bold text-muted-foreground mb-1">Checkout Time</label>
               <input
                 type="time"
                 value={editCheckOutTime}
                 onChange={(e) => setEditCheckOutTime(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] font-bold text-center"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-bold text-center"
               />
             </div>
           </div>
 
           {/* Blocked Dates Manager */}
           <div className="border-t border-[var(--border-subtle)] pt-4 space-y-3">
-            <h3 className="font-extrabold text-sm text-[var(--foreground)]">Blocked Dates Calendar Manager ({editBlockedDates.length})</h3>
+            <h3 className="font-extrabold text-sm text-muted-foreground">Blocked Dates Calendar Manager ({editBlockedDates.length})</h3>
             <div className="flex gap-2">
               <input
                 type="date"
                 value={newBlockedDate}
                 onChange={(e) => setNewBlockedDate(e.target.value)}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-[var(--foreground)] font-bold"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-bold"
               />
               <button
                 type="button"
@@ -986,7 +986,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-[var(--foreground)]">Nightly Rates & Mandatory Fees</h2>
+              <h2 className="text-lg font-black text-muted-foreground">Nightly Rates & Mandatory Fees</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Configure standard price, weekend rates, cleaning fees, and security deposit.</p>
             </div>
             <button
@@ -1001,50 +1001,50 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-4">
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Nightly Rate ($ USD) *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Nightly Rate ($ USD) *</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editPrice}
                 onChange={(e) => setEditPrice(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-[var(--foreground)] font-mono font-extrabold text-emerald-600 outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-extrabold text-emerald-600 outline-none focus:border-amber-500"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Weekend Rate ($ USD)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Weekend Rate ($ USD)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editWeekendPrice}
                 onChange={(e) => setEditWeekendPrice(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-[var(--foreground)] font-mono font-bold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-bold outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Cleaning Fee ($ USD)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Cleaning Fee ($ USD)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editCleaningFee}
                 onChange={(e) => setEditCleaningFee(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-[var(--foreground)] font-mono font-bold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-bold outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-[var(--foreground)] mb-1">Security Deposit ($ USD)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Security Deposit ($ USD)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editSecurityDeposit}
                 onChange={(e) => setEditSecurityDeposit(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-[var(--foreground)] font-mono font-bold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-bold outline-none"
               />
             </div>
           </div>
@@ -1055,12 +1055,12 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {activeTab === "moderation" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="border-b border-[var(--border-subtle)] pb-4">
-            <h2 className="text-lg font-black text-[var(--foreground)]">Quality Moderation & Audit Review</h2>
+            <h2 className="text-lg font-black text-muted-foreground">Quality Moderation & Audit Review</h2>
             <p className="text-xs text-[var(--muted-foreground)] font-medium">Review quality standards, issue requested changes, or approve listing for live publication.</p>
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-5 space-y-3">
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-[var(--foreground)]">Listing Audit Checklist</h3>
+            <h3 className="font-extrabold text-xs uppercase tracking-wider text-muted-foreground">Listing Audit Checklist</h3>
             
             <div className="flex items-center justify-between">
               <span>Minimum 5 High Quality Photos:</span>
@@ -1076,13 +1076,13 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
           </div>
 
           <div>
-            <label className="block font-bold text-[var(--foreground)] mb-1">Feedback Note / Rejection Reason</label>
+            <label className="block font-bold text-muted-foreground mb-1">Feedback Note / Rejection Reason</label>
             <textarea
               rows={3}
               value={modReason}
               onChange={(e) => setModReason(e.target.value)}
               placeholder="Enter quality feedback instructions for the host..."
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] outline-none focus:border-amber-500"
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground outline-none focus:border-amber-500"
             />
           </div>
 
@@ -1125,17 +1125,17 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
                 ⚠️
               </div>
-              <h3 className="text-base font-extrabold text-[var(--foreground)]">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-extrabold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Are you sure you want to delete <strong className="text-[var(--foreground)]">{listing.title}</strong>? This action will permanently remove the property listing, associated settings, and cannot be undone.
+              Are you sure you want to delete <strong className="text-muted-foreground">{listing.title}</strong>? This action will permanently remove the property listing, associated settings, and cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
               <button
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-[var(--foreground)]"
+                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
               >
                 Cancel
               </button>

@@ -281,7 +281,7 @@ export function AdminUserTable({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Controls Bar: Search, Filters, Add Admin Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -292,7 +292,7 @@ export function AdminUserTable({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or email..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -307,7 +307,7 @@ export function AdminUserTable({
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -322,7 +322,7 @@ export function AdminUserTable({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -333,7 +333,7 @@ export function AdminUserTable({
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">All Roles</option>
             {availableRoles.map((r) => (
@@ -392,7 +392,7 @@ export function AdminUserTable({
                           {(u.name?.[0] || u.email?.[0] || "A").toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-[var(--foreground)]">
+                          <div className="font-semibold text-muted-foreground">
                             {u.name || "Unnamed Admin"}
                           </div>
                           <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{u.email}</div>
@@ -400,7 +400,7 @@ export function AdminUserTable({
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
                         {u.adminRole?.name || u.role}
                       </span>
                     </td>
@@ -427,7 +427,7 @@ export function AdminUserTable({
                           ⚠️ Needs Permission Setup
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border-subtle)]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
                           Individual Configuration
                         </span>
                       )}
@@ -492,7 +492,7 @@ export function AdminUserTable({
                               setEditRoleSlug(u.adminRole?.slug || "admin");
                             }}
                             disabled={isRowBusy}
-                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
                           >
                             Edit Role
                           </button>
@@ -566,7 +566,7 @@ export function AdminUserTable({
                     {(u.name?.[0] || u.email?.[0] || "A").toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-[var(--foreground)] text-sm">
+                    <h3 className="font-bold text-muted-foreground text-sm">
                       {u.name || "Unnamed Admin"}
                     </h3>
                     <p className="text-xs text-[var(--muted-foreground)] font-mono">{u.email}</p>
@@ -586,7 +586,7 @@ export function AdminUserTable({
               </div>
 
               <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)] pt-2 border-t border-[var(--border-subtle)]">
-                <span>Role: <strong className="text-[var(--foreground)]">{u.adminRole?.name || u.role}</strong></span>
+                <span>Role: <strong className="text-muted-foreground">{u.adminRole?.name || u.role}</strong></span>
                 <span>
                   {superAdmin ? (
                     <strong className="text-amber-700 dark:text-amber-300 font-extrabold">Full Access</strong>
@@ -632,7 +632,7 @@ export function AdminUserTable({
                       setEditRoleSlug(u.adminRole?.slug || "admin");
                     }}
                     disabled={isRowBusy}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)] disabled:opacity-50 cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-muted-foreground disabled:opacity-50 cursor-pointer"
                   >
                     Role
                   </button>
@@ -642,7 +642,7 @@ export function AdminUserTable({
                     type="button"
                     onClick={() => handleToggleStatus(u)}
                     disabled={isRowBusy}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-[var(--foreground)] disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-muted-foreground disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {isTogglingStatus && (
                       <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -680,15 +680,15 @@ export function AdminUserTable({
       {/* Modal 1: Add Administrator */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-extrabold text-[var(--foreground)]">
+              <h2 className="text-base font-extrabold text-muted-foreground">
                 Add New Administrator
               </h2>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-bold"
               >
                 ✕
               </button>
@@ -706,7 +706,7 @@ export function AdminUserTable({
                   onChange={(e) => setNewName(e.target.value)}
                   required
                   placeholder="e.g. Alex Walker"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -718,7 +718,7 @@ export function AdminUserTable({
                   onChange={(e) => setNewEmail(e.target.value)}
                   required
                   placeholder="alex@homyz.local"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -729,7 +729,7 @@ export function AdminUserTable({
                 <select
                   value={newRoleSlug}
                   onChange={(e) => setNewRoleSlug(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 >
                   {availableRoles.map((r) => (
                     <option key={r.slug} value={r.slug}>
@@ -744,7 +744,7 @@ export function AdminUserTable({
                   type="button"
                   onClick={() => setShowAddModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
@@ -767,8 +767,8 @@ export function AdminUserTable({
       {/* Modal 2: Edit Role */}
       {editUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h2 className="text-base font-extrabold text-[var(--foreground)] mb-1">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h2 className="text-base font-extrabold text-muted-foreground mb-1">
               Change Role for {editUser.name || editUser.email}
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mb-4">
@@ -783,7 +783,7 @@ export function AdminUserTable({
                 <select
                   value={editRoleSlug}
                   onChange={(e) => setEditRoleSlug(e.target.value)}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 >
                   {availableRoles.map((r) => (
                     <option key={r.slug} value={r.slug}>
@@ -798,7 +798,7 @@ export function AdminUserTable({
                   type="button"
                   onClick={() => setEditUser(null)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
@@ -821,7 +821,7 @@ export function AdminUserTable({
       {/* Modal 4: Delete Administrator Confirmation */}
       {deleteUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -829,7 +829,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                <h2 className="text-base font-extrabold text-muted-foreground">
                   Delete Administrator
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -839,14 +839,14 @@ export function AdminUserTable({
             </div>
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-[var(--foreground)]">{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
+              Are you sure you want to permanently delete <strong className="text-muted-foreground">{deleteUser.name || deleteUser.email}</strong> ({deleteUser.email})? All active sessions and administrator access will be revoked immediately. This action cannot be undone.
             </p>
 
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeleteUser(null)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
               >
                 Cancel
               </button>
@@ -866,7 +866,7 @@ export function AdminUserTable({
       {/* Modal 5: Suspend / Activate Administrator Confirmation */}
       {statusConfirmUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${
@@ -886,7 +886,7 @@ export function AdminUserTable({
                 )}
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                <h2 className="text-base font-extrabold text-muted-foreground">
                   {statusConfirmUser.targetStatus === "SUSPENDED" ? "Suspend Administrator" : "Activate Administrator"}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -899,7 +899,7 @@ export function AdminUserTable({
               {statusConfirmUser.targetStatus === "SUSPENDED" ? (
                 <>
                   Are you sure you want to suspend administrator{" "}
-                  <strong className="text-[var(--foreground)]">
+                  <strong className="text-muted-foreground">
                     {statusConfirmUser.user.name || statusConfirmUser.user.email}
                   </strong>{" "}
                   ({statusConfirmUser.user.email})? They will immediately lose administrative portal access and all active sessions will be terminated.
@@ -907,7 +907,7 @@ export function AdminUserTable({
               ) : (
                 <>
                   Are you sure you want to activate administrator{" "}
-                  <strong className="text-[var(--foreground)]">
+                  <strong className="text-muted-foreground">
                     {statusConfirmUser.user.name || statusConfirmUser.user.email}
                   </strong>{" "}
                   ({statusConfirmUser.user.email})? They will regain administrative portal access based on their assigned permissions.
@@ -920,7 +920,7 @@ export function AdminUserTable({
                 type="button"
                 onClick={() => setStatusConfirmUser(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -953,7 +953,7 @@ export function AdminUserTable({
       {/* Modal 6: Revoke Sessions Confirmation */}
       {revokeSessionsUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -961,7 +961,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                <h2 className="text-base font-extrabold text-muted-foreground">
                   Revoke Active Sessions
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -972,7 +972,7 @@ export function AdminUserTable({
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
               Are you sure you want to revoke all active sessions for{" "}
-              <strong className="text-[var(--foreground)]">
+              <strong className="text-muted-foreground">
                 {revokeSessionsUser.name || revokeSessionsUser.email}
               </strong>{" "}
               ({revokeSessionsUser.email})? The user will be immediately logged out of all active web and mobile sessions and will be required to authenticate again.
@@ -983,7 +983,7 @@ export function AdminUserTable({
                 type="button"
                 onClick={() => setRevokeSessionsUser(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

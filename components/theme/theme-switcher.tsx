@@ -66,8 +66,8 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
             title={`Switch to ${t.label} mode`}
             className={`flex h-7 w-7 items-center justify-center rounded-full transition-all ${
               mounted && theme === t.id
-                ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                : "text-[var(--muted-foreground)] hover:text-muted-foreground"
             }`}
           >
             {t.icon}
@@ -83,7 +83,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle theme menu"
-        className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] transition-all hover:border-[var(--muted-foreground)] hover:shadow-2xs"
+        className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:border-[var(--muted-foreground)] hover:shadow-2xs"
       >
         <span className="text-[var(--muted-foreground)]">{currentIcon}</span>
         <span className="capitalize">{mounted ? theme : "system"}</span>
@@ -105,7 +105,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
                 theme === t.id
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold"
-                  : "text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  : "text-muted-foreground hover:bg-[var(--muted)]"
               }`}
             >
               <span>{t.icon}</span>

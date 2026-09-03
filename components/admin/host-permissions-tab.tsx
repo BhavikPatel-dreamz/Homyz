@@ -203,13 +203,13 @@ export function HostPermissionsTab({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Suspended Host Warning Card */}
       {isSuspended && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/90 dark:bg-amber-950/40 dark:border-amber-900/50 p-4 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-3 shadow-2xs">
           <span className="text-base leading-none">⚠️</span>
           <div>
-            <strong className="block font-bold text-[var(--foreground)]">Host Account is SUSPENDED</strong>
+            <strong className="block font-bold text-muted-foreground">Host Account is SUSPENDED</strong>
             This host account is currently suspended. Backend authorization automatically enforces{" "}
             <strong>DENY</strong> for all host operations regardless of individual permission overrides until the account is unsuspended.
           </div>
@@ -221,7 +221,7 @@ export function HostPermissionsTab({
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Permissions</p>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
+            <span className="text-2xl font-extrabold tracking-tight text-muted-foreground">
               {summary.totalCount}
             </span>
             <span
@@ -278,7 +278,7 @@ export function HostPermissionsTab({
         {/* Header Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
           <div>
-            <h2 className="text-lg font-extrabold tracking-tight text-[var(--foreground)]">
+            <h2 className="text-lg font-extrabold tracking-tight text-muted-foreground">
               Host Access & Permission Management
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -298,7 +298,7 @@ export function HostPermissionsTab({
               type="button"
               onClick={() => setShowResetModal(true)}
               disabled={isPending}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all inline-flex items-center gap-2 disabled:opacity-50 shadow-2xs"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all inline-flex items-center gap-2 disabled:opacity-50 shadow-2xs"
             >
               {isPending && (
                 <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -334,7 +334,7 @@ export function HostPermissionsTab({
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 activeCategory === "all"
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
-                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-muted-foreground"
               }`}
             >
               All Categories ({permissions.length})
@@ -350,7 +350,7 @@ export function HostPermissionsTab({
                   className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
-                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface)] hover:text-muted-foreground"
                   }`}
                 >
                   {cat.name} ({count})
@@ -366,13 +366,13 @@ export function HostPermissionsTab({
               placeholder="Search permissions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] pl-3.5 pr-8 py-1.5 text-xs outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] text-muted-foreground pl-3.5 pr-8 py-1.5 text-xs outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -415,7 +415,7 @@ export function HostPermissionsTab({
               <button
                 type="button"
                 onClick={() => setSelectedSlugs([])}
-                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xs underline ml-2 font-bold"
+                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-xs underline ml-2 font-bold"
               >
                 Deselect
               </button>
@@ -511,7 +511,7 @@ export function HostPermissionsTab({
                       {/* Permission Info */}
                       <td className="py-3.5 px-4 align-middle">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-[var(--foreground)]">{perm.label}</span>
+                          <span className="font-bold text-muted-foreground">{perm.label}</span>
                           <span className="text-[10px] font-mono text-[var(--muted-foreground)] bg-[var(--surface-secondary)] px-2 py-0.5 rounded border border-[var(--border-subtle)]">
                             {perm.slug}
                           </span>
@@ -541,8 +541,8 @@ export function HostPermissionsTab({
                             onClick={() => handleSelectOverride(perm.slug, "INHERITED")}
                             className={`px-3 py-1 text-[11px] font-bold rounded-full transition-all ${
                               currentStagedEffect === "INHERITED"
-                                ? "bg-[var(--surface)] text-[var(--foreground)] shadow-2xs border border-[var(--border)]"
-                                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                                ? "bg-[var(--surface)] text-muted-foreground shadow-2xs border border-[var(--border)]"
+                                : "text-[var(--muted-foreground)] hover:text-muted-foreground"
                             }`}
                             title="Inherit default permission from Host role"
                           >
@@ -611,8 +611,8 @@ export function HostPermissionsTab({
       {/* SAVE CHANGES CONFIRMATION MODAL */}
       {showSaveConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Confirm Permission Changes
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -625,7 +625,7 @@ export function HostPermissionsTab({
               <ul className="mt-1 space-y-1 font-mono text-[11px] text-[var(--muted-foreground)] max-h-32 overflow-y-auto">
                 {changedSlugs.map((slug) => (
                   <li key={slug}>
-                    • {slug} → <strong className="text-[var(--foreground)]">{stagedOverrides[slug]}</strong>
+                    • {slug} → <strong className="text-muted-foreground">{stagedOverrides[slug]}</strong>
                   </li>
                 ))}
               </ul>
@@ -640,7 +640,7 @@ export function HostPermissionsTab({
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
                 placeholder="Specify reason for changing host permissions..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -649,7 +649,7 @@ export function HostPermissionsTab({
                 type="button"
                 onClick={() => setShowSaveConfirmModal(false)}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -672,8 +672,8 @@ export function HostPermissionsTab({
       {/* RESET TO DEFAULTS CONFIRMATION MODAL */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               Reset Host Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -695,7 +695,7 @@ export function HostPermissionsTab({
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
                 placeholder="Reason for resetting permissions..."
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 text-xs outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 text-xs outline-none focus:border-[var(--accent)]"
               />
             </div>
 
@@ -704,7 +704,7 @@ export function HostPermissionsTab({
                 type="button"
                 onClick={() => setShowResetModal(false)}
                 disabled={isPending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>

@@ -74,7 +74,7 @@ export function SessionManager({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by user, device, IP..."
-            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
           />
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -89,7 +89,7 @@ export function SessionManager({
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
               title="Clear search"
               aria-label="Clear search"
             >
@@ -101,7 +101,7 @@ export function SessionManager({
         </div>
 
         <span className="text-xs text-[var(--muted-foreground)]">
-          Total active sessions: <strong className="text-[var(--foreground)]">{sessions.length}</strong>
+          Total active sessions: <strong className="text-muted-foreground">{sessions.length}</strong>
         </span>
       </div>
 
@@ -130,7 +130,7 @@ export function SessionManager({
                 paginatedSessions.map((s) => (
                   <tr key={s.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[var(--foreground)]">
+                      <div className="font-semibold text-muted-foreground">
                         {s.userName || "User"}
                       </div>
                       <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</div>
@@ -145,7 +145,7 @@ export function SessionManager({
                         {s.type === "web" ? "Web Cookie" : "Mobile Bearer"}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-medium text-[var(--foreground)]">
+                    <td className="py-3.5 px-4 font-medium text-muted-foreground">
                       {s.deviceInfo}
                     </td>
                     <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">
@@ -191,7 +191,7 @@ export function SessionManager({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-bold text-xs text-[var(--foreground)]">
+                  <h3 className="font-bold text-xs text-muted-foreground">
                     {s.userName || "User"}
                   </h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{s.userEmail || s.userId}</p>
@@ -210,7 +210,7 @@ export function SessionManager({
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                 <div>
                   <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Device & OS</span>
-                  <span className="font-medium text-[var(--foreground)] truncate block">{s.deviceInfo}</span>
+                  <span className="font-medium text-muted-foreground truncate block">{s.deviceInfo}</span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">IP Address</span>
@@ -262,7 +262,7 @@ export function SessionManager({
       {/* Revoke Session Confirmation Modal */}
       {sessionToRevoke && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3 mb-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ export function SessionManager({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-[var(--foreground)]">
+                <h2 className="text-base font-extrabold text-muted-foreground">
                   Revoke Active Session
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -281,10 +281,10 @@ export function SessionManager({
 
             <p className="text-xs text-[var(--muted-foreground)] mb-5 leading-relaxed">
               Are you sure you want to revoke the session for{" "}
-              <strong className="text-[var(--foreground)]">
+              <strong className="text-muted-foreground">
                 {sessionToRevoke.userEmail || sessionToRevoke.userName || sessionToRevoke.userId}
               </strong>{" "}
-              on <strong className="text-[var(--foreground)]">{sessionToRevoke.deviceInfo}</strong> ({sessionToRevoke.ip || "Unknown IP"})? The user will be immediately signed out on that device.
+              on <strong className="text-muted-foreground">{sessionToRevoke.deviceInfo}</strong> ({sessionToRevoke.ip || "Unknown IP"})? The user will be immediately signed out on that device.
             </p>
 
             <div className="flex items-center justify-end gap-2">
@@ -292,7 +292,7 @@ export function SessionManager({
                 type="button"
                 onClick={() => setSessionToRevoke(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

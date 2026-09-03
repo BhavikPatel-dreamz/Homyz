@@ -24,12 +24,12 @@ function MetricCard({
     <div
       className={`rounded-2xl border p-5 shadow-2xs transition-all ${
         highlight
-          ? "border-amber-400/60 bg-amber-500/10 text-[var(--foreground)]"
-          : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)]"
+          ? "border-amber-400/60 bg-amber-500/10 text-muted-foreground"
+          : "border-[var(--border)] bg-[var(--surface)] text-muted-foreground"
       }`}
     >
       <p className="text-xs font-semibold text-[var(--muted-foreground)]">{label}</p>
-      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-muted-foreground">
         {value}
       </p>
       {subtitle && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{subtitle}</p>}
@@ -92,7 +92,7 @@ export function GuestManagementDashboard({
   }, [filteredGuests, currentPage, pageSize]);
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Page Title & Subtitle */}
       <div>
         <h1>
@@ -126,7 +126,7 @@ export function GuestManagementDashboard({
                 setCurrentPage(1);
               }}
               placeholder="Search guest by name, email, phone..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-9 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -144,7 +144,7 @@ export function GuestManagementDashboard({
                   setSearch("");
                   setCurrentPage(1);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -162,7 +162,7 @@ export function GuestManagementDashboard({
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -175,7 +175,7 @@ export function GuestManagementDashboard({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="createdAt">Joined Date</option>
             <option value="name">Guest Name</option>
@@ -186,7 +186,7 @@ export function GuestManagementDashboard({
           <button
             type="button"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
           >
             {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
           </button>
@@ -226,7 +226,7 @@ export function GuestManagementDashboard({
                         {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold text-[var(--foreground)]">
+                        <div className="font-semibold text-muted-foreground">
                           {guest.name || "Unnamed Guest"}
                         </div>
                         <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{guest.id}</div>
@@ -258,7 +258,7 @@ export function GuestManagementDashboard({
                   </td>
 
                   {/* Bookings Count */}
-                  <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">
+                  <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">
                     {guest.bookingsCount}
                   </td>
 
@@ -276,7 +276,7 @@ export function GuestManagementDashboard({
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/guests/${guest.id}`}
-                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-[var(--foreground)] font-bold transition-all inline-block shadow-2xs"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-bold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -299,7 +299,7 @@ export function GuestManagementDashboard({
                   {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-[var(--foreground)] text-xs">{guest.name || "Unnamed Guest"}</h3>
+                  <h3 className="font-bold text-muted-foreground text-xs">{guest.name || "Unnamed Guest"}</h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{guest.email}</p>
                 </div>
               </div>
@@ -314,13 +314,13 @@ export function GuestManagementDashboard({
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-bold text-[var(--foreground)]">{guest.bookingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-bold text-muted-foreground">{guest.bookingsCount}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-bold text-emerald-600 dark:text-emerald-400">${(guest.totalSpending / 100).toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-bold text-[var(--foreground)]" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>
+                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-bold text-muted-foreground" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -339,18 +339,18 @@ export function GuestManagementDashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-bold text-[var(--foreground)]">
+          <span className="font-bold text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>

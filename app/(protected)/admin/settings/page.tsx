@@ -6,7 +6,7 @@ export default async function AdminSettingsPage() {
   await requirePagePermission(PERMISSIONS.SETTINGS_VIEW);
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       <div className="border-b border-[var(--border)] pb-5">
         <h1>
           Admin Settings & Security
