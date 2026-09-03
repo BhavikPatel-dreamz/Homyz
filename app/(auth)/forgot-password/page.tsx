@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white font-sans text-[#1F1F1F] selection:bg-amber-100">
+    <div className="account-page flex min-h-screen w-full flex-col overflow-x-hidden bg-white font-sans text-[#1F1F1F] selection:bg-amber-100">
       <AppHeader />
 
       <main className="flex w-full flex-1 items-start justify-center px-4 py-6 sm:px-6 sm:py-8 lg:items-center lg:px-8 lg:py-14">
@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
             <div className="mb-2 flex flex-col gap-6 sm:flex-row sm:items-center">
               <Link
                 href="/login"
-                className="brush-back-border flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 sm:self-auto"
+                className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full border border-[#727272] bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 sm:self-auto"
                 aria-label="Go back to login"
               >
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

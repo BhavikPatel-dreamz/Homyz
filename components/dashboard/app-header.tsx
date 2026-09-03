@@ -46,9 +46,9 @@ export function AppHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white text-zinc-900" suppressHydrationWarning>
+    <header className="sticky top-0 z-40 w-full bg-white text-zinc-900 "  suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6">
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6 border-b border-[#1F1F1F]" style={{ borderBottom: "1px solid #1F1F1F" }}>
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
@@ -99,7 +99,7 @@ export function AppHeader() {
                 </svg>
               </Link>
             ) : (
-              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="no-brush-border hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Account">
+              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Account">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
@@ -158,7 +158,7 @@ export function AppHeader() {
                       className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/90 border border-zinc-200/60 transition-all group cursor-pointer"
                     >
                       <div className="pr-2">
-                        <p className="text-sm font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">Become a host</p>
+                        <p className="text-sm font-semibold text-zinc-900 group-hover:text-amber-600 transition-colors">Become a host</p>
                         <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">It&apos;s easy to start hosting and earn extra income.</p>
                       </div>
                       {/* Host Illustration matching Screenshot 3 */}
@@ -264,15 +264,6 @@ export function AppHeader() {
               </div>
             )}
           </div>
-
-          <Image
-            src="/images/brand/header-divider.svg"
-            alt=""
-            width={1516}
-            height={1}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-px w-full md:block"
-          />
         </div>
       </Container>
 

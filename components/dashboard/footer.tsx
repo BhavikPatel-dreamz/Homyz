@@ -141,7 +141,7 @@ export function Footer() {
               onClick={scrollToTop}
               title="Scroll to top"
               aria-label="Scroll to top"
-              className="brush-back-to-top-border absolute top-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-[#FBDE9B] text-[#291E05] hover:scale-110 transition-transform shadow-2xs dark:bg-[#f59e0b] dark:text-zinc-950"
+              className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-[#FBDE9B] text-[#291E05] hover:scale-110 transition-transform shadow-2xs dark:bg-[#f59e0b] dark:text-zinc-950"
             >
               <svg className="w-4 h-4 fill-current stroke-current" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
