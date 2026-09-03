@@ -365,7 +365,7 @@ export function PropertyDetailsViews({
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               placeholder="e.g. Modern Villa in Downtown"
-              className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 text-sm font-bold text-zinc-900 outline-none focus:border-zinc-900 transition-colors shadow-2xs"
+              className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 text-sm font-semibold text-[#1F1F1F] outline-none focus:border-zinc-900 transition-colors shadow-2xs"
             />
             <div className="flex justify-between items-center text-xs text-zinc-400 px-1">
               <span>50 characters maximum</span>

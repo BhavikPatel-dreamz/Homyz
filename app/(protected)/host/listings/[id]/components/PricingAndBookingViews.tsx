@@ -282,7 +282,7 @@ export function PricingAndBookingViews({
                   type="number"
                   value={minNights}
                   onChange={(e) => setMinNights(Number(e.target.value))}
-                  className="w-24 text-base font-bold text-zinc-900 outline-none bg-transparent"
+                  className="w-24 text-base font-semibold text-[#1F1F1F] outline-none bg-transparent"
                 />
                 <span className="text-xs text-zinc-400 font-normal">Minimum nights</span>
               </div>
@@ -293,7 +293,7 @@ export function PricingAndBookingViews({
                   type="number"
                   value={maxNights}
                   onChange={(e) => setMaxNights(Number(e.target.value))}
-                  className="w-24 text-base font-bold text-zinc-900 outline-none bg-transparent"
+                  className="w-24 text-base font-semibold text-[#1F1F1F] outline-none bg-transparent"
                 />
                 <span className="text-xs text-zinc-400 font-normal">Maximum nights</span>
               </div>

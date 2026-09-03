@@ -10,16 +10,19 @@ export function Footer() {
   };
 
   return (
-    <footer className="w-full border-t border-[var(--border)] bg-[var(--surface-secondary)]/60 text-muted-foreground transition-colors mt-auto">
-      <Container className="py-12">
+    <footer className="mt-auto w-full border-t border-[var(--border)] bg-[#F5F5F5] text-muted-foreground transition-colors">
+      <Container className="py-8 sm:py-12">
         {/* Columns Grid matching Reference Screenshot */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 relative">
+        <div className="relative grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <button type="button" onClick={scrollToTop} aria-label="Scroll to top" className="absolute right-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border border-[#D8B86F] bg-[#FCDF9C] text-[#727272] sm:hidden">
+            <span aria-hidden="true">⌃</span>
+          </button>
           {/* Column 1: Support */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+            <h4 className="text-sm font-medium text-[#1F1F1F] sm:text-xs sm:font-bold sm:uppercase sm:tracking-wider sm:text-muted-foreground">
               Support
             </h4>
-            <ul className="flex flex-col gap-2.5 text-xs text-[var(--muted-foreground)]">
+            <ul className="flex flex-col gap-2 text-xs text-[#3F3F3F] underline sm:gap-2.5 sm:text-[var(--muted-foreground)] sm:no-underline">
               <li>
                 <Link href="#" className="hover:text-muted-foreground hover:underline transition-colors">
                   Help Center
@@ -50,10 +53,10 @@ export function Footer() {
 
           {/* Column 2: Hosting */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+            <h4 className="text-sm font-medium text-[#1F1F1F] sm:text-xs sm:font-bold sm:uppercase sm:tracking-wider sm:text-muted-foreground">
               Hosting
             </h4>
-            <ul className="flex flex-col gap-2.5 text-xs text-[var(--muted-foreground)]">
+            <ul className="flex flex-col gap-2 text-xs text-[#3F3F3F] underline sm:gap-2.5 sm:text-[var(--muted-foreground)] sm:no-underline">
               <li>
                 <Link href="#" className="hover:text-muted-foreground hover:underline transition-colors">
                   Homyz your home
@@ -99,10 +102,10 @@ export function Footer() {
 
           {/* Column 3: Homyz */}
           <div className="flex flex-col gap-3 relative">
-            <h4 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+            <h4 className="text-sm font-medium text-[#1F1F1F] sm:text-xs sm:font-bold sm:uppercase sm:tracking-wider sm:text-muted-foreground">
               Homyz
             </h4>
-            <ul className="flex flex-col gap-2.5 text-xs text-[var(--muted-foreground)]">
+            <ul className="flex flex-col gap-2 text-xs text-[#3F3F3F] underline sm:gap-2.5 sm:text-[var(--muted-foreground)] sm:no-underline">
               <li>
                 <Link href="#" className="hover:text-muted-foreground hover:underline transition-colors">
                   2025 Summer Release
@@ -141,7 +144,7 @@ export function Footer() {
               onClick={scrollToTop}
               title="Scroll to top"
               aria-label="Scroll to top"
-              className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-[#FBDE9B] text-[#291E05] hover:scale-110 transition-transform shadow-2xs dark:bg-[#f59e0b] dark:text-zinc-950"
+              className="absolute top-0 right-0 hidden h-9 w-9 items-center justify-center rounded-full bg-[#FBDE9B] text-[#291E05] transition-transform hover:scale-110 sm:flex dark:bg-[#f59e0b] dark:text-zinc-950"
             >
               <svg className="w-4 h-4 fill-current stroke-current" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
@@ -151,15 +154,15 @@ export function Footer() {
         </div>
 
         {/* Divider & Bottom Section */}
-        <div className="mt-12 border-t border-[var(--border)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--muted-foreground)]">
+        <div className="mt-8 flex flex-col-reverse items-start justify-between gap-5 border-t border-[var(--border)] pt-4 text-xs text-[#3F3F3F] sm:mt-12 sm:flex-row sm:items-center sm:gap-4 sm:pt-6 sm:text-[var(--muted-foreground)]">
           <div className="flex flex-wrap items-center gap-4">
             <span>© 2026 Homyz, Inc.</span>
-            <span>·</span>
-            <Link href="#" className="hover:underline">Privacy</Link>
-            <span>·</span>
-            <Link href="#" className="hover:underline">Terms</Link>
-            <span>·</span>
-            <Link href="#" className="hover:underline">Sitemap</Link>
+            <span className="hidden sm:inline">·</span>
+            <Link href="#" className="hidden hover:underline sm:inline">Privacy</Link>
+            <span className="hidden sm:inline">·</span>
+            <Link href="#" className="hidden hover:underline sm:inline">Terms</Link>
+            <span className="hidden sm:inline">·</span>
+            <Link href="#" className="hidden hover:underline sm:inline">Sitemap</Link>
           </div>
 
           {/* Social Icons matching screenshot */}

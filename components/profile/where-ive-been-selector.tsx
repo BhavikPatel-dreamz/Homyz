@@ -258,7 +258,7 @@ export function WhereIveBeenSelector({
       {/* Top Header Row — Pixel Perfect Matching Reference Screenshot */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-[19px] font-bold text-[#27272A] tracking-tight mb-0.5">
+          <h3 className="text-[19px] font-semibold text-[#27272A] tracking-tight mb-0.5">
             Where I've been
           </h3>
           <p className="text-[#71717A] text-[13px] font-normal leading-relaxed">
@@ -273,7 +273,7 @@ export function WhereIveBeenSelector({
               type="button"
               onClick={openAddModal}
               disabled={pending}
-              className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-bold text-xs px-3.5 py-1.5 rounded-full transition-all shadow-2xs hover:scale-105 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="bg-[#FDE29B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-3.5 py-1.5 rounded-full transition-all shadow-2xs hover:scale-105 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className="text-sm font-extrabold leading-none">+</span>
               <span>Add Stamp</span>
@@ -400,7 +400,7 @@ export function WhereIveBeenSelector({
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-center">
-            <h4 className="text-base font-bold text-zinc-900 mb-2">Delete Travel Stamp?</h4>
+            <h4 className="text-base font-semibold text-[#1F1F1F] mb-2">Delete Travel Stamp?</h4>
             <p className="text-xs text-zinc-500 mb-6">
               Are you sure you want to remove this stamp from your collection?
             </p>
@@ -429,7 +429,7 @@ export function WhereIveBeenSelector({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
             <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
-              <h3 className="text-lg font-bold text-zinc-900">
+              <h3 className="text-lg font-semibold text-[#1F1F1F]">
                 {modalMode === "add" ? "Add Travel Stamp" : "Edit Travel Stamp"}
               </h3>
               <button

@@ -133,13 +133,14 @@ function StampCoffee() {
 }
 
 const IconSprig = () => (
-  <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center shrink-0 bg-white shadow-2xs">
-    <svg className="w-4 h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21V9" />
-      <path d="M12 13C9 13 7 10.5 7 7.5C9.5 7.5 12 9.5 12 13Z" />
-      <path d="M12 11C15 11 17 8.5 17 5.5C14.5 5.5 12 7.5 12 11Z" />
-      <circle cx="12" cy="4.5" r="1" fill="currentColor" />
-    </svg>
+  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] bg-white shadow-2xs">
+    <Image
+      src="/images/icons/post-bookings.svg"
+      alt=""
+      width={24}
+      height={24}
+      className="h-6 w-6 object-contain"
+    />
   </div>
 );
 
@@ -281,44 +282,46 @@ export function ProfileManagementClient({
 
   return (
     <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans py-8">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 md:px-8">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+      <div className="mx-auto w-full">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
           {/* ------------------------------------------------------------------ */}
           {/* LEFT SIDEBAR NAVIGATION                                           */}
           {/* ------------------------------------------------------------------ */}
           <GuestDashboardSidebar activeId="profile_management" />
 
           {/* ------------------------------------------------------------------ */}
-          {/* MAIN PROFILE MANAGEMENT WORKSPACE (SCREENSHOT 2)                  */}
+          {/* MAIN PROFILE MANAGEMENT WORKSPACE                */}
           {/* ------------------------------------------------------------------ */}
-          <main className="flex-1 flex flex-col max-w-3xl animate-in fade-in">
+          <main className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
             {msg && (
               <div className="mb-6">
                 <Alert tone={msg.tone}>{msg.text}</Alert>
               </div>
             )}
 
-            {/* 1. HERO AVATAR CARD & COMMUNITY NOTE (MATCHING SCREENSHOT 2) */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
-              <div className="relative w-44 h-44 rounded-3xl overflow-hidden border border-zinc-200 shadow-2xs shrink-0 bg-zinc-100">
-                {imageUrl ? (
-                  <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="176px" priority />
-                ) : (
-                  <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
-                    <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                  </div>
-                )}
+            {/* 1. HERO AVATAR CARD & COMMUNITY NOTE */}
+            <div className="mb-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+              <div className="relative h-66 w-90.5 max-w-[calc(100%-48px)] shrink-0">
+                <div className="relative h-full w-full overflow-hidden rounded-3xl border border-[#1F1F1F] bg-zinc-100 shadow-2xs">
+                  {imageUrl ? (
+                    <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="362px" priority />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">
+                      <svg className="h-20 w-20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 {isOwner && (
                   <>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="absolute bottom-2 right-2 bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 rounded-full px-3.5 py-1.5 text-xs font-bold shadow-md hover:scale-105 transition-transform flex items-center gap-1 cursor-pointer z-10"
+                      className="absolute -right-12 top-1/2 z-10 flex h-24 w-24 -translate-y-1/2 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-70"
                     >
-                      <IconPencil />
+                      <Image src="/images/icons/camera.svg" alt="" width={24} height={24} aria-hidden="true" />
                       <span>{uploading ? "..." : "Edit"}</span>
                     </button>
                     <input
@@ -332,10 +335,10 @@ export function ProfileManagementClient({
                 )}
               </div>
 
-              <div className="flex-1 max-w-md">
-                <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+              <div className="flex-1 max-w-md ml-15">
+                <p className="text-base text-[#727272] leading-relaxed font-normal">
                   Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
-                  <span className="font-bold text-zinc-900 underline cursor-pointer">Learn more</span>
+                  <span className="font-semibold underline cursor-pointer hover:text-black transition">Learn more</span>
                 </p>
               </div>
             </div>
@@ -345,7 +348,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("info")}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "info"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -357,7 +360,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("photos")}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "photos"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -369,7 +372,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("stamps")}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "stamps"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -381,7 +384,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("privacy")}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "privacy"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -391,23 +394,23 @@ export function ProfileManagementClient({
               </button>
             </div>
 
-            {/* TAB 1: PROFILE INFORMATION (PROMPT GRID MATCHING SCREENSHOT 2) */}
+            {/* TAB 1: PROFILE INFORMATION */}
             {activeMgmtTab === "info" && (
-              <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8">
-                {/* 2-COLUMN PROMPT GRID (EXACT MATCH TO SCREENSHOT 2) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7">
+              <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8 -mt-8">
+                {/* RESPONSIVE TWO-COLUMN PROMPT LIST */}
+                <div className="flex flex-wrap [&>div]:w-full [&>div]:py-6! md:[&>div:nth-child(odd)]:mr-12 md:[&>div:not(:last-child)]:w-[calc(50%-1.5rem)]">
                   {/* Item 0: Full Name */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         My full name
                       </span>
                       <input
                         value={name}
                         disabled={!isOwner}
                         onChange={(e) => setName(e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           name ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: Your full name"
@@ -415,17 +418,17 @@ export function ProfileManagementClient({
                     </div>
                   </div>
                   {/* Item 1 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         Where I've always wanted to go
                       </span>
                       <input
                         value={formDataState.whereIWantToGo}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereIWantToGo", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.whereIWantToGo
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -436,15 +439,15 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 2 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">My work</span>
+                      <span className="block text-basefont-normal text-[#727272]">My work</span>
                       <input
                         value={formDataState.myWork}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("myWork", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.myWork ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add your work"
@@ -453,17 +456,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 3 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         I spend too much time
                       </span>
                       <input
                         value={formDataState.spendTooMuchTime}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("spendTooMuchTime", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.spendTooMuchTime
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -474,15 +477,15 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 4 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">Pets</span>
+                      <span className="block text-basefont-normal text-[#727272]">Pets</span>
                       <input
                         value={formDataState.pets}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("pets", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.pets ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add pets"
@@ -491,15 +494,15 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 5 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">Decade I was born</span>
+                      <span className="block text-basefont-normal text-[#727272]">Decade I was born</span>
                       <input
                         value={formDataState.decadeBorn}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("decadeBorn", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.decadeBorn
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -510,17 +513,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 6 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         Where I went to school
                       </span>
                       <input
                         value={formDataState.school}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("school", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.school ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add school"
@@ -529,17 +532,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 7 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         My most useless skill
                       </span>
                       <input
                         value={formDataState.uselessSkill}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("uselessSkill", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.uselessSkill
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -550,15 +553,15 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 8 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">My fun fact</span>
+                      <span className="block text-basefont-normal text-[#727272]">My fun fact</span>
                       <input
                         value={formDataState.funFact}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("funFact", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.funFact ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: What's your fun fact?"
@@ -567,17 +570,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 9 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         My favorite song in high school
                       </span>
                       <input
                         value={formDataState.favoriteSong}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("favoriteSong", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.favoriteSong
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -588,10 +591,10 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 10 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         Languages I speak: {formDataState.languages || "English and Russian"}
                       </span>
                       <input
@@ -605,17 +608,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 11 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         I'm obsessed with
                       </span>
                       <input
                         value={formDataState.obsessedWith}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("obsessedWith", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.obsessedWith
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -626,17 +629,17 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 12 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                  <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         My biography title would be
                       </span>
                       <input
                         value={formDataState.bioTitle}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("bioTitle", e.target.value)}
-                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                        className={`w-full text-base bg-transparent focus:outline-none ${
                           formDataState.bioTitle
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -647,10 +650,10 @@ export function ProfileManagementClient({
                   </div>
 
                   {/* Item 13 */}
-                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80 md:col-span-2">
+                  <div className="flex items-center gap-3.5 border-b border-zinc-200/80 pb-2.5">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-xs font-semibold text-zinc-800">
+                      <span className="block text-basefont-normal text-[#727272]">
                         Where I live: {formDataState.whereILive || "Bucharest, Romania"}
                       </span>
                       <input
@@ -666,7 +669,7 @@ export function ProfileManagementClient({
 
                 {/* About me Textarea Box */}
                 <div className="mt-4">
-                  <h3 className="text-sm font-bold text-zinc-900 mb-3">About me</h3>
+                  <h3 className="text-sm font-semibold text-[#1F1F1F] mb-3">About me</h3>
                   <div className="rounded-xl border border-zinc-200/90 p-4 min-h-[100px] focus-within:border-zinc-400 transition-colors bg-white">
                     <textarea
                       value={formDataState.bio}
@@ -698,7 +701,7 @@ export function ProfileManagementClient({
               <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-zinc-900">Trip Photos Management</h3>
+                    <h3 className="text-lg font-semibold text-[#1F1F1F]">Trip Photos Management</h3>
                     <p className="text-xs text-zinc-500">Upload and curate your travel memories</p>
                   </div>
                   {isOwner && (
@@ -718,7 +721,7 @@ export function ProfileManagementClient({
                     <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
                       <IconCamera />
                     </div>
-                    <p className="text-base font-bold text-zinc-900">You can upload best images of your trip</p>
+                    <p className="text-base font-semibold text-[#1F1F1F]">You can upload best images of your trip</p>
                     <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
                       Select multiple photos, tag travel companions, add captions and locations.
                     </p>
@@ -726,7 +729,7 @@ export function ProfileManagementClient({
                       <button
                         type="button"
                         onClick={() => setUploadModalOpen(true)}
-                        className="bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 font-bold text-xs px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                        className="bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
                       >
                         Upload Photos
                       </button>
@@ -816,7 +819,7 @@ export function ProfileManagementClient({
             {activeMgmtTab === "privacy" && (
               <div className="flex flex-col gap-6">
                 <div>
-                  <h3 className="text-xl font-bold text-zinc-900">Privacy & Visibility Settings</h3>
+                  <h3 className="text-xl font-semibold text-[#1F1F1F]">Privacy & Visibility Settings</h3>
                   <p className="text-xs text-zinc-500 mt-1">Manage who can see your profile and travel history on Homyz.</p>
                 </div>
 
@@ -824,7 +827,7 @@ export function ProfileManagementClient({
                   {/* Row 1: Public Profile Visibility */}
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900">Public Profile Visibility</h4>
+                      <h4 className="text-sm font-semibold text-[#1F1F1F]">Public Profile Visibility</h4>
                       <p className="text-xs text-zinc-500 mt-0.5">Allow hosts and other guests to discover your profile</p>
                     </div>
 
@@ -865,7 +868,7 @@ export function ProfileManagementClient({
                   {/* Row 2: Show Travel Stamps ("Where I've Been") */}
                   <div className="flex items-center justify-between gap-4 pt-5 border-t border-zinc-100">
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900">Show Travel Stamps ("Where I've Been")</h4>
+                      <h4 className="text-sm font-semibold text-[#1F1F1F]">Show Travel Stamps ("Where I've Been")</h4>
                       <p className="text-xs text-zinc-500 mt-0.5">Display your collected country stamps publicly</p>
                     </div>
 
@@ -1210,7 +1213,7 @@ function EditTripPhotoModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
-          <h3 className="text-lg font-bold text-zinc-900">Edit Photo Details</h3>
+          <h3 className="text-lg font-semibold text-[#1F1F1F]">Edit Photo Details</h3>
           <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center cursor-pointer">
             ✕
           </button>
@@ -1314,7 +1317,7 @@ function DeleteTripPhotoModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
-        <h3 className="text-lg font-bold text-zinc-900 mb-2">Delete Trip Photo</h3>
+        <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">Delete Trip Photo</h3>
         <p className="text-xs text-zinc-500 mb-4">Are you sure you want to delete this trip photo?</p>
 
         {error && (

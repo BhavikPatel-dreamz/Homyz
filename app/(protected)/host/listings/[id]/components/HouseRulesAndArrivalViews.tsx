@@ -1320,7 +1320,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-zinc-400 block">Start time</span>
-              <span className="text-sm font-bold text-zinc-900 block">{checkInStart || "3:00 PM"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] block">{checkInStart || "3:00 PM"}</span>
             </div>
             <span className="text-zinc-600 text-base font-bold">›</span>
           </div>
@@ -1354,7 +1354,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-zinc-400 block">End time</span>
-              <span className="text-sm font-bold text-zinc-900 block">{checkInEnd || "Flexible"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] block">{checkInEnd || "Flexible"}</span>
             </div>
             <span className="text-zinc-600 text-base font-bold">›</span>
           </div>
@@ -1395,7 +1395,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-zinc-400 block">Select time</span>
-              <span className="text-sm font-bold text-zinc-900 block">{checkOutTime || "12:00 PM"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] block">{checkOutTime || "12:00 PM"}</span>
             </div>
             <span className="text-zinc-600 text-base font-bold">›</span>
           </div>
@@ -1525,7 +1525,7 @@ function CheckInMethodView({
       {/* Card 1: Selected Method Card (Matches Figma Screenshot 100%) */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-zinc-900">
+          <span className="text-sm font-semibold text-[#1F1F1F]">
             {checkInMethod === "SMART_LOCK" || checkInMethod === "Smart lock" ? "Smart lock" : checkInMethod || "Smart lock"}
           </span>
           <button
@@ -1573,7 +1573,7 @@ function CheckInMethodView({
 
       {/* Section 2: Check-in instructions (Matches Figma Screenshot 100%) */}
       <div className="pt-4 space-y-2">
-        <h2 className="text-sm font-bold text-zinc-900">Check-in instructions</h2>
+        <h2 className="text-sm font-semibold text-[#1F1F1F]">Check-in instructions</h2>
         <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
           {instructionsText}
         </p>

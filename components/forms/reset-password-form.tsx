@@ -51,7 +51,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
         <Link
           href="/forgot-password"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer"
+          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
         >
           Request New Reset Link →
         </Link>
@@ -83,7 +83,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
         <Link
           href="/admin/login"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
+          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
           Sign In to Admin Console →
         </Link>

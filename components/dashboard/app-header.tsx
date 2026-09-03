@@ -202,7 +202,7 @@ export function AppHeader() {
                     <Link
                       href="/login"
                       onClick={() => setMenuOpen(false)}
-                      className="block px-3.5 py-2.5 text-sm font-bold text-zinc-900 hover:bg-zinc-50 rounded-2xl transition-colors"
+                      className="block px-3.5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 rounded-2xl transition-colors"
                     >
                       Log in or sign up
                     </Link>
@@ -213,9 +213,9 @@ export function AppHeader() {
                   /* ------------------------------------------------------------- */
                   <div className="space-y-1">
                     <div className="border-b border-zinc-100 px-3.5 py-3 mb-1">
-                      <p className="text-sm font-bold text-zinc-900 truncate">{user.name || user.email}</p>
+                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
-                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-800">
+                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
                         {role || "USER"}
                       </span>
                     </div>
@@ -274,7 +274,7 @@ export function AppHeader() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
-              <h3 className="text-lg font-bold text-zinc-900">Languages &amp; currency</h3>
+              <h3 className="text-lg font-semibold text-[#1F1F1F]">Languages &amp; currency</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}

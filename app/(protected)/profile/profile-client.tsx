@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
+import { LogoutButton } from "@/components/admin/logout-button";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -48,13 +49,13 @@ export type UserStatsData = {
 
 type ProfileClientProps = {
   initial: ProfileData;
-  initialTripPhotos?: any[];
+  initialTripPhotos?: unknown[];
   initialStats?: UserStatsData;
   isOwner?: boolean;
 };
 
 const IconTranslate = () => (
-  <svg className="w-4 h-4 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg className="w-4.5 h-4.5 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1 4c-1.5 3-3.5 5.5-6 7m2-7c1.5 2 3.5 4.5 5 7m6 3l4-8 4 8m-7-2h6" />
   </svg>
 );
@@ -64,7 +65,6 @@ export function ProfileClient({
   initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
   isOwner = true,
 }: ProfileClientProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || "about_me";
 
@@ -72,29 +72,39 @@ export function ProfileClient({
   const years = initialStats.yearsOnHomyz || (initial.createdAt ? Math.max(1, new Date().getFullYear() - new Date(initial.createdAt).getFullYear()) : 4);
 
   return (
-    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans py-8">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 md:px-8">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-          {/* ------------------------------------------------------------------ */}
-          {/* LEFT SIDEBAR (EXACT MATCH TO SCREENSHOT 1)                         */}
-          {/* ------------------------------------------------------------------ */}
-          <GuestDashboardSidebar activeId={activeTabParam === "about_me" ? "about_me" : activeTabParam} />
+    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-10 lg:pb-28 lg:pt-[88px]">
+        <div className="mb-5 flex items-center justify-between lg:hidden">
+          <button type="button" onClick={() => history.back()} aria-label="Go back" className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          {isOwner && (
+            <Link href="/profile-management" className="flex h-10 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm text-[#1F1F1F]">
+              Edit
+            </Link>
+          )}
+        </div>
 
-          {/* ------------------------------------------------------------------ */}
-          {/* RIGHT CONTENT AREA ("About me" OVERVIEW - SCREENSHOT 1)           */}
-          {/* ------------------------------------------------------------------ */}
-          <main className="flex-1 flex flex-col max-w-3xl">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[390px_minmax(0,auto)] lg:gap-30 xl:grid-cols-[452px_auto] xl:gap-80">
+
+          <GuestDashboardSidebar
+            activeId={activeTabParam === "about_me" ? "about_me" : activeTabParam}
+          />
+
+          <main className="order-1 flex w-full max-w-[490px] flex-col lg:order-2 lg:pt-0">
             {activeTabParam === "about_me" ? (
               <div className="flex flex-col animate-in fade-in">
                 {/* 1. Header with Title & Yellow Edit Button */}
-                <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
-                    About me
+                <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
+                  <h2 className="text-[36px] leading-[1.1] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[42px] xl:text-[48px] xl:leading-[53px]">
+                    <span className="lg:hidden text-[20px] leading-7">My profile</span>
+                    <span className="hidden lg:inline">About me</span>
                   </h2>
                   {isOwner && (
                     <Link
                       href="/profile-management"
-                      className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-bold text-xs px-5 py-1.5 rounded-full transition-all shadow-2xs hover:scale-105"
+                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex"
                     >
                       Edit
                     </Link>
@@ -102,16 +112,16 @@ export function ProfileClient({
                 </div>
 
                 {/* 2. Profile Overview Card */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-1 mb-6">
+                <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
                   {/* Rounded rectangular profile image */}
-                  <div className="relative w-44 h-36 rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0 shadow-2xs">
+                  <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
                     {initial.image ? (
                       <Image
                         src={initial.image}
                         alt={initial.name || "User profile image"}
                         fill
                         className="object-cover"
-                        sizes="176px"
+                        sizes="(max-width: 639px) 124px, 233px"
                         priority
                       />
                     ) : (
@@ -124,37 +134,37 @@ export function ProfileClient({
                   </div>
 
                   {/* Name, Location & 3 Circular Stats */}
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      <h3 className="text-xl font-bold text-zinc-900">
-                        {initial.name || "Guest Member"}
+                  <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
+                    <div className="flex flex-col gap-1 sm:gap-2">
+                      <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
+                        {initial.name || "Name"}
                       </h3>
-                      <p className="text-xs font-semibold text-zinc-500 mt-0.5">
+                      <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
                         {pub.whereILive || "Town, Country"}
                       </p>
                     </div>
 
                     {/* 3 Circular Stats */}
-                    <div className="flex items-center gap-4 mt-1">
+                    <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
                       <div className="flex flex-col items-center">
-                        <div className="w-11 h-11 rounded-full border border-zinc-200/90 bg-white flex items-center justify-center text-sm font-extrabold text-zinc-900 shadow-2xs">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
                           {initialStats.trips || 12}
                         </div>
-                        <span className="text-[11px] font-semibold text-zinc-500 mt-1">Trips</span>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Trips</span>
                       </div>
 
                       <div className="flex flex-col items-center">
-                        <div className="w-11 h-11 rounded-full border border-zinc-200/90 bg-white flex items-center justify-center text-sm font-extrabold text-zinc-900 shadow-2xs">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
                           {initialStats.reviews || 10}
                         </div>
-                        <span className="text-[11px] font-semibold text-zinc-500 mt-1">Reviews</span>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Reviews</span>
                       </div>
 
                       <div className="flex flex-col items-center">
-                        <div className="w-11 h-11 rounded-full border border-zinc-200/90 bg-white flex items-center justify-center text-sm font-extrabold text-zinc-900 shadow-2xs">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
                           {years}
                         </div>
-                        <span className="text-[11px] font-semibold text-zinc-500 mt-1 text-center leading-tight">
+                        <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
                           Years on<br />Homyz
                         </span>
                       </div>
@@ -163,22 +173,22 @@ export function ProfileClient({
                 </div>
 
                 {/* Languages Row */}
-                <div className="flex items-center gap-2 text-xs font-medium text-zinc-700 py-3 border-t border-zinc-200/70">
-                  <IconTranslate />
+                <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
+                    <IconTranslate />
+                  </span>
                   <span>Speaks {pub.languages || "English and Russian"}</span>
                 </div>
 
                 {/* Where I've been Section (Public Profile - Only Selected Stamps, Hidden if stampsVisible === false) */}
-                {pub.stampsVisible !== false && (
+                {pub.stampsVisible !== false && pub.selectedStamps && pub.selectedStamps.length > 0 && (
                   <>
-                    <div className="flex flex-col gap-4 py-4 border-t border-zinc-200/70">
-                      <h3 className="text-xl font-bold text-zinc-900">Where I've been</h3>
+                    <div className="hidden flex-col gap-4 border-t border-zinc-200/70 py-4 lg:flex">
+                      <h3 className="text-xl font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
                       <p className="text-xs text-zinc-500 -mt-2">Places visited and travel stamps collected.</p>
                       
                       {(() => {
-                        const selectedIds = pub.selectedStamps && pub.selectedStamps.length > 0
-                          ? pub.selectedStamps
-                          : ["paris", "coffee"];
+                        const selectedIds = pub.selectedStamps || [];
                         const allStamps = [...BUILTIN_TRAVEL_STAMPS, ...(pub.customStamps || [])];
                         const visibleStamps = allStamps.filter((s) => selectedIds.includes(s.id));
 
@@ -196,43 +206,40 @@ export function ProfileClient({
                       })()}
                     </div>
 
-                    <div className="w-full border-b border-zinc-200/80 my-4" />
+                    <div className="my-4 hidden w-full border-b border-zinc-200/80 lg:block" />
                   </>
                 )}
 
                 {/* 3. My Reviews Section */}
-                <div className="flex flex-col gap-4 mt-2">
-                  <h3 className="text-xl font-bold text-zinc-900">My reviews</h3>
+                <div className="mt-8 hidden w-full max-w-[382px] flex-col gap-8 lg:flex">
+                  <h3 className="text-xl leading-7 font-medium text-[#1F1F1F]">My reviews</h3>
 
-                  <div className="flex flex-col gap-3 p-5 rounded-2xl bg-zinc-50/60 border border-zinc-200/80">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden border border-zinc-200 shrink-0 bg-zinc-200">
+                  <div className="flex flex-col items-start gap-3">
+                    <div className="relative h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-zinc-200">
                         <Image
                           src="/images/header-user-avatar.jpg"
                           alt="Reviewer avatar"
                           fill
                           className="object-cover"
-                          sizes="40px"
+                          sizes="60px"
                         />
-                      </div>
-                      <div>
-                        <div className="flex items-center text-amber-500 text-xs">
-                          ★★★★★
-                        </div>
-                        <p className="text-xs font-bold text-zinc-900">Sophia, Germany</p>
-                      </div>
                     </div>
 
-                    <p className="text-xs text-zinc-600 leading-relaxed">
+                    <div className="flex items-center gap-0.5 text-xl leading-5 text-[#1F1F1F]" aria-label="5 out of 5 stars">
+                      ★★★★★
+                    </div>
+
+                    <p className="text-base leading-6 font-normal text-[#727272]">
                       Lorem ipsum dolor sit amet consectetur. Fames quis facilisis dolor turpis lacus eu tellus faucibus. Blandit porttitor justo pretium ridiculus. Metus non in gravida tristique. Vitae iaculis suscipit enim el...{" "}
-                      <span className="font-bold text-zinc-900 underline cursor-pointer">read more</span>
+                    <span className="cursor-pointer font-normal text-[#727272] hover:text-[#1F1F1F] underline underline-offset-2 transition">read more</span>
                     </p>
+                  <p className="text-base leading-6 font-medium text-[#1D1D1D] ">Name, Country</p>
                   </div>
 
-                  <div className="mt-2">
+                  <div>
                     <button
                       type="button"
-                      className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 font-bold text-xs px-6 py-2.5 rounded-full transition-all shadow-2xs hover:scale-105 cursor-pointer"
+                    className="no-brush-border flex h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base leading-6 font-medium text-[#1F1F1F] transition-colors border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
                     >
                       Show review
                     </button>
@@ -257,7 +264,27 @@ export function ProfileClient({
             )}
           </main>
         </div>
-      </div>
+
+        <div className="mt-8 lg:hidden">
+          <div className="divide-y divide-[#D7D7D7] border-b border-[#D7D7D7]">
+            {[
+              ["Account setting", "/profile-management", "⚙"],
+              ["Help centre", "/help", "?"],
+              ["Refer a Host", "/host/refer", "♧"],
+              ["Find a co-Host", "/host/co-host", "♙"],
+              ["Gift Cards", "/gift-cards", "♧"],
+            ].map(([label, href, icon], index) => (
+              <Link key={label} href={href} className={`flex h-12 items-center gap-3 text-xs text-[#3F3F3F] ${index === 1 ? "mb-2" : ""}`}>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-base">{icon}</span>
+                <span>{label}</span>
+                <span className="ml-auto text-2xl font-light" aria-hidden="true">›</span>
+              </Link>
+            ))}
+          </div>
+          <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-xs !font-normal text-[#1F1F1F] underline">
+            Log out
+          </LogoutButton>
+        </div>
     </div>
   );
 }

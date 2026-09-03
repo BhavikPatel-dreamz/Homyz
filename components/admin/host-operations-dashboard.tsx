@@ -218,7 +218,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900">Host Lifecycle Conversion Funnel</h2>
+            <h2 className="text-lg font-semibold text-[#1F1F1F]">Host Lifecycle Conversion Funnel</h2>
             <p className="text-xs text-zinc-500 mt-0.5">End-to-end progression from intake registration to active host status</p>
           </div>
           <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
@@ -236,7 +236,7 @@ export function HostOperationsDashboard() {
                 </span>
               </div>
               <div className="my-3">
-                <div className="text-sm font-bold text-zinc-900">{st.stageName}</div>
+                <div className="text-sm font-semibold text-[#1F1F1F]">{st.stageName}</div>
                 <div className="text-2xl font-black text-amber-600 mt-1">{st.count}</div>
               </div>
               <div className="flex items-center justify-between text-xs pt-2 border-t border-zinc-100 text-zinc-500">
@@ -252,7 +252,7 @@ export function HostOperationsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* KPIs */}
         <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
-          <h2 className="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-3">Operational KPIs & Efficiency Rates</h2>
+          <h2 className="text-lg font-semibold text-[#1F1F1F] border-b border-zinc-100 pb-3">Operational KPIs & Efficiency Rates</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Approval Rate</div>
@@ -284,7 +284,7 @@ export function HostOperationsDashboard() {
         {/* Bottleneck Detection */}
         <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <h2 className="text-lg font-bold text-zinc-900">Bottleneck & SLA Detection</h2>
+            <h2 className="text-lg font-semibold text-[#1F1F1F]">Bottleneck & SLA Detection</h2>
             <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">Live SLA Monitor</span>
           </div>
 
@@ -292,7 +292,7 @@ export function HostOperationsDashboard() {
             {bottlenecks.map((b) => (
               <div key={b.stageKey} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-bold text-zinc-900">{b.stageName}</div>
+                  <div className="text-sm font-semibold text-[#1F1F1F]">{b.stageName}</div>
                   <div className="text-xs text-zinc-500 mt-1">
                     Applications Waiting: <span className="font-bold text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-bold text-amber-700">{b.avgWaitDays} days</span>
                   </div>
@@ -318,7 +318,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900">Unified Action Required Queue</h2>
+            <h2 className="text-lg font-semibold text-[#1F1F1F]">Unified Action Required Queue</h2>
             <p className="text-xs text-zinc-500">Centralized queue consolidating pending reviews, compliance issues, expired docs & re-verifications</p>
           </div>
 
@@ -449,7 +449,7 @@ export function HostOperationsDashboard() {
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900">Reviewer Workload & Balancing</h2>
+            <h2 className="text-lg font-semibold text-[#1F1F1F]">Reviewer Workload & Balancing</h2>
             <p className="text-xs text-zinc-500">Monitor individual admin workload, pending items, and SLA adherence</p>
           </div>
         </div>
@@ -501,13 +501,13 @@ export function HostOperationsDashboard() {
 
       {/* Regional & Geographic Analytics */}
       <div className="bg-white p-6 rounded-2xl border border-zinc-200/80 shadow-xs space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-3">Geographic / Regional Performance Analytics</h2>
+        <h2 className="text-lg font-semibold text-[#1F1F1F] border-b border-zinc-100 pb-3">Geographic / Regional Performance Analytics</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {geoMetrics.map((g) => (
             <div key={g.region} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/40 flex flex-col justify-between">
               <div>
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{g.region}</div>
-                <div className="text-xl font-bold text-zinc-900 mt-1">{g.totalApplications} Applications</div>
+                <div className="text-xl font-semibold text-[#1F1F1F] mt-1">{g.totalApplications} Applications</div>
               </div>
               <div className="flex items-center justify-between text-xs border-t border-zinc-200/60 pt-3 mt-3">
                 <span className="text-emerald-700 font-semibold">Approval Rate: {g.approvalRate}%</span>
