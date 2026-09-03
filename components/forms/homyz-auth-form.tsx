@@ -82,7 +82,7 @@ export function HomyzAuthForm({
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValidEmail = emailRegex.test(email.trim());
-  const isPasswordValid = authMode === "signup" 
+  const isPasswordValid = authMode === "signup"
     ? (hasMinLength && hasUppercase && hasNumber && repeatPassword === password)
     : password.length >= 1;
   const isNameValid = authMode === "signup" ? name.trim().length >= 1 : true;
@@ -348,13 +348,13 @@ export function HomyzAuthForm({
             <AuthHeading
               title={authMode === "login" ? "Log in or sign up" : "Log in or sign up"}
               onBack={() => {
-                  if (otpSent) {
-                    setOtpSent(false);
-                  } else if (inputMethod === "email") {
-                    setInputMethod("phone");
-                  } else {
-                    router.back();
-                  }
+                if (otpSent) {
+                  setOtpSent(false);
+                } else if (inputMethod === "email") {
+                  setInputMethod("phone");
+                } else {
+                  router.back();
+                }
               }}
             />
 
@@ -503,7 +503,7 @@ export function HomyzAuthForm({
                           onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                           placeholder="123456"
                           required
-                          className="w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
+                          className="brush-border-wide w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
                         />
                       </div>
                       <Button
@@ -554,11 +554,10 @@ export function HomyzAuthForm({
                             type="button"
                             onClick={() => setRole("USER")}
                             aria-pressed={role === "USER"}
-                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${
-                              role === "USER"
+                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "USER"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
                                 : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
-                            }`}
+                              }`}
                           >
                             Guest User
                           </button>
@@ -566,11 +565,10 @@ export function HomyzAuthForm({
                             type="button"
                             onClick={() => setRole("HOST")}
                             aria-pressed={role === "HOST"}
-                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${
-                              role === "HOST"
+                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
                                 : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
-                            }`}
+                              }`}
                           >
                             Property Host
                           </button>
