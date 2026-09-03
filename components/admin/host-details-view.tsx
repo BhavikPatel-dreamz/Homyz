@@ -10,6 +10,7 @@ import { AdminPagination } from "./admin-pagination";
 import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { adminDeleteListingAction } from "@/actions/admin/listingActions";
 
 export type HostDetailsDTO = HostDetailsData;
 
@@ -145,8 +146,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   const [showListingReviewModal, setShowListingReviewModal] = useState(false);
   const [showListingReqChangesModal, setShowListingReqChangesModal] = useState(false);
   const [showListingRejectModal, setShowListingRejectModal] = useState(false);
+  const [showDeleteListingModal, setShowDeleteListingModal] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<any | null>(null);
   const [listingNotesInput, setListingNotesInput] = useState("");
   const [listingRejectReasonInput, setListingRejectReasonInput] = useState("");
+  const [isDeletingListing, setIsDeletingListing] = useState(false);
 
   const [pending, startTransition] = useTransition();
 
@@ -687,6 +691,27 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         toast.error("Failed to reject listing.");
       }
     });
+  }
+
+  async function handleDeleteListing() {
+    if (!listingToDelete) return;
+    setIsDeletingListing(true);
+    try {
+      const res = await adminDeleteListingAction({ listingId: listingToDelete.id });
+      setIsDeletingListing(false);
+      if (res.ok) {
+        toast.success("Listing deleted successfully.");
+        setShowDeleteListingModal(false);
+        setShowListingReviewModal(false);
+        setListingToDelete(null);
+        await refreshData();
+      } else {
+        toast.error(res.error || "Failed to delete listing.");
+      }
+    } catch (err: any) {
+      setIsDeletingListing(false);
+      toast.error("Error deleting listing: " + err.message);
+    }
   }
 
   const onboardingProgressValue =
@@ -1511,16 +1536,28 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                         </td>
                         <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedListingForReview(item);
-                              setShowListingReviewModal(true);
-                            }}
-                            className="rounded-full bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-xs font-bold transition-all shadow-2xs"
-                          >
-                            Review & Manage
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedListingForReview(item);
+                                setShowListingReviewModal(true);
+                              }}
+                              className="rounded-full bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-xs font-bold transition-all shadow-2xs"
+                            >
+                              Review & Manage
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setListingToDelete(item);
+                                setShowDeleteListingModal(true);
+                              }}
+                              className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-xs font-bold transition-all shadow-2xs"
+                            >
+                              🗑 Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -2392,6 +2429,17 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 >
                   Reject Listing
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setListingToDelete(selectedListingForReview);
+                    setShowDeleteListingModal(true);
+                  }}
+                  disabled={pending || isDeletingListing}
+                  className="rounded-full bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                >
+                  🗑 Delete Listing
+                </button>
               </div>
               <button
                 type="button"
@@ -2477,6 +2525,44 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sub-modal: Delete Listing */}
+      {showDeleteListingModal && listingToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
+                ⚠️
+              </div>
+              <h3 className="text-base font-extrabold text-[var(--foreground)]">Permanently Delete Listing?</h3>
+            </div>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Are you sure you want to delete listing <strong className="text-[var(--foreground)]">{listingToDelete.title || listingToDelete.id}</strong>? This action is permanent and will remove all property settings and cached data.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
+              <button
+                type="button"
+                disabled={isDeletingListing}
+                onClick={() => {
+                  setShowDeleteListingModal(false);
+                  setListingToDelete(null);
+                }}
+                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-[var(--foreground)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingListing}
+                onClick={handleDeleteListing}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+              >
+                {isDeletingListing ? "Deleting..." : "Yes, Delete Permanently"}
+              </button>
+            </div>
           </div>
         </div>
       )}

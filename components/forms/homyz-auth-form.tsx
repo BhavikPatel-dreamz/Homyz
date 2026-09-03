@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useEffect, useTransition, type FormEvent } from "react";
 import { Alert, Button } from "../ui";
 import { registerAction } from "@/actions/auth/register";
 import { AppHeader } from "@/components/dashboard/app-header";
@@ -11,9 +11,21 @@ import { AuthHeading } from "@/components/auth/auth-heading";
 import { AuthHeroImage } from "@/components/auth/auth-hero-image";
 import { AuthMethodToggle } from "@/components/auth/auth-method-toggle";
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
+
 import type { AuthMode, AuthProviders, SocialProvider } from "@/components/auth/auth-form.types";
+
 import { authFieldErrorClass, authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
 import { Container } from "@/components/ui/container";
+
+
+import { getSafeCallbackUrl } from "@/lib/auth/redirect";
+import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
+
+
+
+
+
+
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
@@ -22,19 +34,6 @@ export interface HomyzAuthFormProps {
   providers?: AuthProviders;
 }
 
-const COUNTRY_CODES = [
-  { code: "+39", name: "Italy (+39)" },
-  { code: "+1", name: "United States (+1)" },
-  { code: "+44", name: "United Kingdom (+44)" },
-  { code: "+49", name: "Germany (+49)" },
-  { code: "+33", name: "France (+33)" },
-  { code: "+91", name: "India (+91)" },
-  { code: "+34", name: "Spain (+34)" },
-  { code: "+81", name: "Japan (+81)" },
-  { code: "+61", name: "Australia (+61)" },
-  { code: "+41", name: "Switzerland (+41)" },
-];
-
 export function HomyzAuthForm({
   initialMode = "login",
   callbackUrl = "/dashboard",
@@ -42,6 +41,11 @@ export function HomyzAuthForm({
   providers = {},
 }: HomyzAuthFormProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
   const [inputMethod, setInputMethod] = useState<"phone" | "email">("phone");
   const [showPassword, setShowPassword] = useState(false);
@@ -75,30 +79,47 @@ export function HomyzAuthForm({
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValidEmail = emailRegex.test(email.trim());
+  const isPasswordValid = authMode === "signup" 
+    ? (hasMinLength && hasUppercase && hasNumber && repeatPassword === password)
+    : password.length >= 1;
+  const isNameValid = authMode === "signup" ? name.trim().length >= 1 : true;
+  const isEmailFormValid = isValidEmail && isPasswordValid && isNameValid;
+
+  const cleanPhoneDigits = phoneNumber.replace(/\D/g, "");
+  const selectedPhoneCountry = getCountryByCallingCode(countryCode);
+  const minPhoneLen = selectedPhoneCountry?.minLength || 7;
+  const maxPhoneLen = selectedPhoneCountry?.maxLength || 15;
+  const isPhoneValid = cleanPhoneDigits.length >= minPhoneLen && cleanPhoneDigits.length <= maxPhoneLen;
+
+  const targetCallbackUrl = getSafeCallbackUrl(callbackUrl);
+
+
   async function handleSocialLogin(providerName: SocialProvider) {
     setError(null);
     setSuccess(null);
     try {
-      const res = await signIn(providerName, { callbackUrl, redirect: false });
+      const res = await signIn(providerName, { callbackUrl: targetCallbackUrl, redirect: false });
       if (res?.error) {
         const fallbackRes = await signIn("credentials", {
           provider: providerName,
           redirect: false,
         });
         if (fallbackRes?.ok) {
-          router.push(callbackUrl);
+          router.push(targetCallbackUrl);
           router.refresh();
           return;
         }
         setError(`Failed to authenticate with ${providerName}.`);
       } else if (res?.url) {
-        router.push(res.url);
+        router.push(getSafeCallbackUrl(res.url, targetCallbackUrl));
       } else {
-        router.push(callbackUrl);
+        router.push(targetCallbackUrl);
         router.refresh();
       }
     } catch {
-      router.push(callbackUrl);
+      router.push(targetCallbackUrl);
     }
   }
 
@@ -182,7 +203,7 @@ export function HomyzAuthForm({
           return;
         }
 
-        router.push(callbackUrl);
+        router.push(targetCallbackUrl);
         router.refresh();
       });
       return;
@@ -217,7 +238,7 @@ export function HomyzAuthForm({
       if (session?.user?.role === "ADMIN" || session?.user?.adminRoleSlug) {
         router.push("/admin");
       } else {
-        router.push(callbackUrl);
+        router.push(targetCallbackUrl);
       }
       router.refresh();
     });
@@ -229,12 +250,24 @@ export function HomyzAuthForm({
     setSuccess(null);
 
     const cleanNumber = phoneNumber.replace(/\D/g, "");
+    const country = getCountryByCallingCode(countryCode);
+    const minLen = country?.minLength || 7;
+    const maxLen = country?.maxLength || 15;
+
     if (!cleanNumber) {
-      setError("Please enter a valid phone number.");
+      setError("Phone number is required. Only digits are allowed.");
+      return;
+    }
+
+    if (cleanNumber.length < minLen || cleanNumber.length > maxLen) {
+      setError(
+        `Please enter a valid phone number for ${country?.name || "the selected country"}. It must contain between ${minLen} and ${maxLen} digits (e.g., ${country?.placeholder || "5XX XXX XXX"}).`
+      );
       return;
     }
 
     const fullPhone = `${countryCode}${cleanNumber}`;
+
 
     if (!otpSent) {
       startTransition(async () => {
@@ -245,21 +278,31 @@ export function HomyzAuthForm({
             body: JSON.stringify({
               identifier: fullPhone,
               channel: "SMS",
-              purpose: "LOGIN",
+              purpose: authMode === "signup" ? "PHONE_VERIFICATION" : "LOGIN",
             }),
           });
           const data = await res.json();
           if (!data.success) {
-            setError(data.error?.message || "Failed to send SMS verification code");
+            let msg = data.error?.message || "Failed to send SMS verification code";
+            if (authMode === "signup" && (msg.toLowerCase().includes("registered") || msg.toLowerCase().includes("exists") || res.status === 409)) {
+              msg = "This mobile number is already registered. Please log in instead.";
+            }
+            setError(msg);
             return;
           }
+
           setOtpSent(true);
-          const activeCode = data.data?.devCode || "123456";
-          setOtpMessage(`Verification code sent to ${fullPhone}. Your verification code is: ${activeCode}`);
+          const devCode = data.data?.devCode;
+          setOtpMessage(
+            devCode
+              ? `Verification code sent to ${fullPhone}. Your verification code is: ${devCode}`
+              : `Verification code sent to ${fullPhone}. Please enter the code below.`
+          );
         } catch {
           setError("Network error sending code. Please try again.");
         }
       });
+
     } else {
       // Verify OTP and create NextAuth session
       startTransition(async () => {
@@ -276,7 +319,7 @@ export function HomyzAuthForm({
           }
 
           setSuccess("Verification successful! Redirecting...");
-          router.push(callbackUrl);
+          router.push(targetCallbackUrl);
           router.refresh();
         } catch {
           setError("Verification failed. Please try again.");
@@ -284,6 +327,7 @@ export function HomyzAuthForm({
       });
     }
   }
+
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
@@ -367,7 +411,13 @@ export function HomyzAuthForm({
 
             {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
             <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
-              {inputMethod === "phone" ? (
+              {!mounted ? (
+                <div className="flex flex-col gap-4 animate-pulse py-2">
+                  <div className="h-[56px] bg-zinc-100 rounded-[8px] w-full" />
+                  <div className="h-[56px] bg-zinc-100 rounded-[8px] w-full" />
+                  <div className="h-[56px] bg-[#FCDF9C]/60 rounded-[30px] w-full" />
+                </div>
+              ) : inputMethod === "phone" ? (
                 /* ==================== PHONE FORM ==================== */
                 <form onSubmit={handlePhoneSubmit} className="flex flex-col gap-4 lg:gap-5" suppressHydrationWarning>
                   {!otpSent ? (
@@ -385,11 +435,13 @@ export function HomyzAuthForm({
                               onChange={(e) => setCountryCode(e.target.value)}
                               className="w-full h-full appearance-none rounded-[8px] border border-[#72727299] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
                             >
-                              {COUNTRY_CODES.map((c) => (
-                                <option key={c.code} value={c.code}>
-                                  {c.name}
+                              {COUNTRY_CODES.map((c, idx) => (
+                                <option key={`${c.iso2}-${c.code}-${idx}`} value={c.code}>
+                                  {c.flag} {c.name} ({c.code})
                                 </option>
                               ))}
+
+
                             </select>
                             <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
                               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -406,13 +458,15 @@ export function HomyzAuthForm({
                           </label>
                           <input
                             type="tel"
+                            inputMode="numeric"
                             value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="xxxx-xxx-xx-xxx"
+                            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                            placeholder={getCountryByCallingCode(countryCode)?.placeholder || "5XX XXX XXX"}
                             required
                             suppressHydrationWarning
                             className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
+
                         </div>
                       </div>
 
@@ -427,13 +481,15 @@ export function HomyzAuthForm({
                       {/* Continue Button (Height 56px, bg #FCDF9C, border #1F1F1F, radius 30px) */}
                       <Button
                         type="submit"
-                        disabled={pending}
+                        disabled={pending || !isPhoneValid}
                         fullWidth
                         isLoading={pending}
                         loadingText="Sending code..."
                       >
                         Continue
                       </Button>
+
+
                     </>
                   ) : (
                     /* OTP Verification */
@@ -594,6 +650,18 @@ export function HomyzAuthForm({
                       <p className={authFieldErrorClass}>{fieldErrors.password}</p>
                     )}
 
+                    {authMode === "login" && (
+                      <div className="flex justify-end pt-1">
+                        <Link
+                          href="/forgot-password"
+                          className="font-['Poppins'] text-xs sm:text-sm text-[#1F1F1F] hover:underline font-normal cursor-pointer"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                    )}
+
+
                     {authMode === "signup" && (
                       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-[11px] text-zinc-600 flex flex-col gap-1 mt-1">
                         <div className="font-semibold text-zinc-800 mb-0.5">Password Requirements:</div>
@@ -660,13 +728,14 @@ export function HomyzAuthForm({
                   {/* Continue Button */}
                   <Button
                     type="submit"
-                    disabled={pending}
+                    disabled={pending || !isEmailFormValid}
                     fullWidth
                     isLoading={pending}
                     className="mt-2"
                   >
                     Continue
                   </Button>
+
                 </form>
               )}
 

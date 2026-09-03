@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { updateListingAction } from "@/actions/host/listings";
+import { updateListingAction, deleteListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { RealMap } from "@/components/ui/real-map";
@@ -538,6 +538,21 @@ export function HostListingEditorClient({
     }
   }
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDeleteListing() {
+    setIsDeleting(true);
+    const res = await deleteListingAction(listing.id);
+    setIsDeleting(false);
+    if (res.ok) {
+      router.push("/host/listings");
+    } else {
+      setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to delete listing." });
+      setShowDeleteModal(false);
+    }
+  }
+
   const filteredCatalog = ALL_AMENITIES_CATALOG.filter((item) =>
     selectedCategory === "All" ? true : item.category === selectedCategory
   );
@@ -737,7 +752,35 @@ export function HostListingEditorClient({
             setIsPropertyInfoModalOpen={setIsPropertyInfoModalOpen}
           />
 
-
+          {(activeSection === "remove-listing" || activeSection === "removelisting") && (
+            <div className="rounded-3xl border border-rose-200 bg-rose-50/40 p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in">
+              <div className="flex items-center gap-3 text-rose-600">
+                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg">
+                  🗑️
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-zinc-900">Remove Property Listing</h2>
+                  <p className="text-xs text-zinc-600">Permanently delete your property listing from Homyz.</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white border border-rose-200 text-zinc-700 leading-relaxed space-y-2">
+                <p className="font-bold text-rose-700">Warning: Deletion is permanent!</p>
+                <p>
+                  Deleting <strong>{listing.title}</strong> will immediately remove the listing from public search, cancel active host settings, and clear all property data.
+                </p>
+              </div>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setShowDeleteModal(true)}
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-6 py-2.5 text-xs transition-all shadow-sm"
+                >
+                  Permanently Delete Listing
+                </button>
+              </div>
+            </div>
+          )}
 
         </main>
 
@@ -1112,6 +1155,40 @@ export function HostListingEditorClient({
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 border border-zinc-200 animate-in zoom-in-95 font-sans">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg">
+                ⚠️
+              </div>
+              <h3 className="text-base font-extrabold text-zinc-900">Permanently Delete Listing?</h3>
+            </div>
+            <p className="text-xs text-zinc-600 leading-relaxed">
+              Are you sure you want to delete <strong className="text-zinc-900">{listing.title}</strong>? This action will permanently remove your property listing and cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-100">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="rounded-full px-5 py-2 text-xs font-bold border border-zinc-300 hover:bg-zinc-50 text-zinc-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteListing}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

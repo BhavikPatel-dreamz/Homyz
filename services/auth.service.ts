@@ -25,6 +25,7 @@ import type { User } from "@/generated/prisma/client";
 import { Role } from "@/generated/prisma/enums";
 
 import { toPublicUser, type PublicUser } from "./mappers";
+import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
 
 // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -82,11 +83,11 @@ async function sendEmailVerification(emailAddr: string): Promise<void> {
 // ── Public service ──────────────────────────────────────────────────────────
 
 async function register(input: RegisterInput): Promise<PublicUser> {
-  const emailAddr = input.email.toLowerCase();
+  const emailAddr = normalizeEmail(input.email);
 
   const existing = await prisma.user.findUnique({ where: { email: emailAddr } });
   if (existing) {
-    throw AppError.conflict("An account with this email already exists");
+    throw AppError.conflict("An account with this email address already exists");
   }
 
   // SECURITY: role is whitelisted to USER | HOST by validation; enforce again
@@ -94,17 +95,24 @@ async function register(input: RegisterInput): Promise<PublicUser> {
   const role = input.role === "HOST" ? Role.HOST : Role.USER;
   const passwordHash = await hashPassword(input.password);
 
-  const user = await prisma.user.create({
-    data: {
-      email: emailAddr,
-      name: input.name ?? null,
-      passwordHash,
-      role,
-    },
-  });
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email: emailAddr,
+        name: input.name ?? null,
+        passwordHash,
+        role,
+      },
+    });
 
-  await sendEmailVerification(emailAddr);
-  return toPublicUser(user);
+    await sendEmailVerification(emailAddr);
+    return toPublicUser(user);
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      throw AppError.conflict("An account with this email address already exists");
+    }
+    throw err;
+  }
 }
 
 export type UserWithAdminDetails = User & {
@@ -230,10 +238,40 @@ async function resetPassword(
   return { success: true };
 }
 
-async function sendOtp(input: SendOtpInput): Promise<{ success: true }> {
+async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: string }> {
+  const isPhone = input.channel === "SMS" || input.purpose === "PHONE_VERIFICATION" || input.identifier.startsWith("+") || /^\d+$/.test(input.identifier.replace(/\D/g, ""));
+  const identifier = isPhone ? normalizePhone(input.identifier) : normalizeEmail(input.identifier);
+
+  if (isPhone && (input.purpose === "PHONE_VERIFICATION" || input.purpose === "LOGIN")) {
+    const cleanDigits = identifier.replace(/\D/g, "");
+    const possiblePhones = Array.from(new Set([
+      identifier,
+      input.identifier,
+      cleanDigits,
+      `+${cleanDigits}`,
+      `00${cleanDigits}`,
+    ]));
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { phone: { in: possiblePhones } },
+          ...(cleanDigits.length >= 7 ? [{ phone: { endsWith: cleanDigits.slice(-10) } }] : []),
+        ],
+      },
+    });
+
+    if (input.purpose === "PHONE_VERIFICATION" && existingUser) {
+      throw AppError.conflict("This mobile number is already registered. Please log in instead.");
+    }
+  }
+
+
+  assertLoginRateLimit(identifier);
+
   const cooldownSeconds = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS ?? 60);
   const recent = await prisma.otpCode.findFirst({
-    where: { identifier: input.identifier, purpose: input.purpose },
+    where: { identifier, purpose: input.purpose },
     orderBy: { createdAt: "desc" },
   });
   if (recent) {
@@ -253,7 +291,7 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true }> {
 
   await prisma.otpCode.create({
     data: {
-      identifier: input.identifier,
+      identifier,
       channel: input.channel,
       purpose: input.purpose,
       codeHash,
@@ -262,28 +300,32 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true }> {
   });
 
   if (input.channel === "SMS") {
-    await sms.sendOtpSms(input.identifier, code);
+    await sms.sendOtpSms(identifier, code);
   } else {
-    await email.sendOtpEmail(input.identifier, code);
+    await email.sendOtpEmail(identifier, code);
   }
   return {
     success: true,
     ...(process.env.NODE_ENV !== "production" ? { devCode: code } : {}),
-  } as { success: true; devCode?: string };
+  };
 }
 
 async function verifyOtp(
   input: VerifyOtpInput,
 ): Promise<{ success: true; verified: true }> {
+  const isPhone = input.purpose === "PHONE_VERIFICATION" || input.purpose === "LOGIN" || input.identifier.startsWith("+") || /^\d+$/.test(input.identifier.replace(/\D/g, ""));
+  const identifier = isPhone ? normalizePhone(input.identifier) : normalizeEmail(input.identifier);
+
   const maxAttempts = Number(process.env.OTP_MAX_ATTEMPTS ?? 5);
   const otp = await prisma.otpCode.findFirst({
     where: {
-      identifier: input.identifier,
-      purpose: input.purpose,
+      identifier,
+      purpose: input.purpose === "LOGIN" ? { in: ["LOGIN", "PHONE_VERIFICATION"] } : input.purpose,
       consumedAt: null,
     },
     orderBy: { createdAt: "desc" },
   });
+
   if (!otp) {
     throw AppError.badRequest("No active code. Please request a new one.");
   }
@@ -310,21 +352,20 @@ async function verifyOtp(
   });
 
   // Side effect: phone verification marks the matching user's phone verified.
-  if (input.purpose === "PHONE_VERIFICATION") {
+  if (input.purpose === "PHONE_VERIFICATION" || input.purpose === "LOGIN") {
     await prisma.user.updateMany({
-      where: { phone: input.identifier },
+      where: { phone: identifier },
       data: { phoneVerified: new Date() },
     });
-    // phone is @unique, so this matches at most one user. Resolve the id(s) and
-    // drop their cached profiles so phoneVerified isn't served stale.
     const affected = await prisma.user.findMany({
-      where: { phone: input.identifier },
+      where: { phone: identifier },
       select: { id: true },
     });
     await deleteCache(...affected.map((u: any) => keys.userProfile(u.id)));
   }
   return { success: true, verified: true };
 }
+
 
 // ── Mobile token flows ────────────────────────────────────────────────────────
 

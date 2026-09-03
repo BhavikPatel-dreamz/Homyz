@@ -11,6 +11,7 @@ import {
   adminToggleFeatureListingAction,
   adminToggleVisibilityAction,
   adminModerateListingQualityAction,
+  adminDeleteListingAction,
 } from "@/actions/admin/listingActions";
 
 export interface FullListingItem {
@@ -230,6 +231,28 @@ export function AdminListingsClient({
     const updated = { ...selectedListing, ...updatedItem };
     setSelectedListing(updated);
     setListings((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+  }
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<FullListingItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDeleteListing() {
+    if (!listingToDelete) return;
+    setIsDeleting(true);
+    const res = await adminDeleteListingAction({ listingId: listingToDelete.id });
+    setIsDeleting(false);
+    if (res.ok) {
+      setListings((prev) => prev.filter((l) => l.id !== listingToDelete.id));
+      if (selectedListing?.id === listingToDelete.id) {
+        setSelectedListing(null);
+      }
+      setFeedbackMsg({ type: "success", text: "Property listing deleted successfully." });
+      setShowDeleteModal(false);
+      setListingToDelete(null);
+    } else {
+      setFeedbackMsg({ type: "error", text: res.error || "Failed to delete listing." });
+    }
   }
 
   // Action handlers
@@ -640,13 +663,27 @@ export function AdminListingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <Link
-                          href={`/admin/listings/${item.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center justify-center rounded-full bg-amber-500 px-3.5 py-1 text-[11px] font-extrabold text-zinc-950 hover:bg-amber-400 transition-all shadow-xs"
-                        >
-                          Manage Listing →
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/listings/${item.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center justify-center rounded-full bg-amber-500 px-3.5 py-1 text-[11px] font-extrabold text-zinc-950 hover:bg-amber-400 transition-all shadow-xs"
+                          >
+                            Manage Listing →
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setListingToDelete(item);
+                              setShowDeleteModal(true);
+                            }}
+                            title="Delete Listing"
+                            className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-[11px] font-extrabold transition-all shadow-xs"
+                          >
+                            🗑 Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                 ))
@@ -811,6 +848,21 @@ export function AdminListingsClient({
                         className={`rounded-full px-4 py-1.5 text-xs font-extrabold transition-all ${selectedListing.isFeatured ? "bg-amber-500 text-zinc-950 shadow-xs" : "bg-zinc-700 text-zinc-200"}`}
                       >
                         {selectedListing.isFeatured ? "★ Featured Property" : "Not Featured"}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
+                      <span className="text-xs font-bold text-rose-600 dark:text-rose-400">Permanently Delete Listing</span>
+                      <button
+                        type="button"
+                        disabled={isSaving || isDeleting}
+                        onClick={() => {
+                          setListingToDelete(selectedListing);
+                          setShowDeleteModal(true);
+                        }}
+                        className="rounded-full px-4 py-1.5 text-xs font-extrabold transition-all bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
+                      >
+                        🗑 Delete Listing
                       </button>
                     </div>
                   </div>
@@ -1375,6 +1427,44 @@ export function AdminListingsClient({
                 className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-6 py-2 text-xs font-bold text-[var(--foreground)]"
               >
                 Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Listing Confirmation Modal */}
+      {showDeleteModal && listingToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
+                ⚠️
+              </div>
+              <h3 className="text-base font-extrabold text-[var(--foreground)]">Permanently Delete Listing?</h3>
+            </div>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Are you sure you want to delete <strong className="text-[var(--foreground)]">{listingToDelete.title}</strong> (ID: <span className="font-mono">{listingToDelete.id}</span>)? This action will permanently remove the listing, host listing data, and cache across the platform.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setListingToDelete(null);
+                }}
+                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-[var(--foreground)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteListing}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
               </button>
             </div>
           </div>

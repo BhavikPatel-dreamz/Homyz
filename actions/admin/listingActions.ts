@@ -8,6 +8,7 @@ import { assertRole } from "@/lib/permissions/authorize";
 import { prisma } from "@/lib/db/prisma";
 import { Role, ListingStatus } from "@/generated/prisma/enums";
 import { auditService } from "@/services/audit.service";
+import { listingService } from "@/services/listing.service";
 
 /**
  * 1. Admin Edit Property Details
@@ -303,5 +304,22 @@ export async function adminModerateListingQualityAction(input: {
 
     revalidatePath("/admin/listings");
     return updated;
+  });
+}
+
+/**
+ * 7. Admin Delete Listing
+ */
+export async function adminDeleteListingAction(input: { listingId: string }) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+
+    const result = await listingService.remove(actor, input.listingId);
+
+    revalidatePath("/admin/listings");
+    revalidatePath("/host/listings");
+    revalidatePath("/admin/hosts");
+    return result;
   });
 }

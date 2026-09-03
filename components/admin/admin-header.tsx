@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
-import { Container } from "@/components/ui/container";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -38,7 +37,7 @@ export function AdminHeader({
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)] backdrop-blur-md">
-      <Container className="flex h-16 items-center justify-between gap-4">
+      <div className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6">
 
         {/* Left Side: Sidebar Toggle & Breadcrumbs */}
         <div className="flex items-center gap-3 min-w-0">
@@ -217,7 +216,7 @@ export function AdminHeader({
           </div>
 
         </div>
-      </Container>
+      </div>
     </header>
   );
 }
