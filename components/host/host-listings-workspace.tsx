@@ -538,6 +538,20 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       <span className={`w-2 h-2 rounded-full ${isListed ? "bg-emerald-500" : "bg-rose-500"}`}></span>
                       {isListed ? "listed" : "action required"}
                     </div>
+
+                    {/* Delete Action Icon Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setListingToDelete(item);
+                        setShowDeleteModal(true);
+                      }}
+                      title="Delete Property Listing"
+                      className="absolute top-3 right-3 bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-7 h-7 font-bold"
+                    >
+                      🗑️
+                    </button>
                   </div>
 
                   {/* Below Card Information */}

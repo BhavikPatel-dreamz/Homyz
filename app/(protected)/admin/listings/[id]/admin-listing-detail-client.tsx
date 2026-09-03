@@ -10,6 +10,7 @@ import {
   adminToggleFeatureListingAction,
   adminToggleVisibilityAction,
   adminModerateListingQualityAction,
+  adminDeleteListingAction,
 } from "@/actions/admin/listingActions";
 
 export interface DetailListingData {
@@ -149,13 +150,28 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
   const [editCleaningFee, setEditCleaningFee] = useState((listing.cleaningFee || 0) / 100);
   const [editSecurityDeposit, setEditSecurityDeposit] = useState((listing.securityDeposit || 0) / 100);
 
-  // Moderation state
+  // Moderation & Delete state
   const [modReason, setModReason] = useState(listing.rejectionReason || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   function updateLocalListing(updated: Partial<DetailListingData>) {
     setListing((prev) => ({ ...prev, ...updated }));
+  }
+
+  async function handleDeleteListing() {
+    setIsDeleting(true);
+    const res = await adminDeleteListingAction({ listingId: listing.id });
+    setIsDeleting(false);
+    if (res.ok) {
+      setFeedbackMsg({ type: "success", text: "Property listing deleted successfully." });
+      router.push("/admin/listings");
+    } else {
+      setFeedbackMsg({ type: "error", text: res.error || "Failed to delete listing." });
+      setShowDeleteModal(false);
+    }
   }
 
   // Save Handlers
@@ -424,6 +440,15 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             }`}
           >
             {listing.published ? "✓ Published" : "Publish Listing"}
+          </button>
+
+          <button
+            type="button"
+            disabled={isSaving || isDeleting}
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 rounded-full text-xs font-extrabold transition-all shadow-xs bg-rose-600 hover:bg-rose-700 text-white"
+          >
+            🗑 Delete Listing
           </button>
         </div>
       </div>
@@ -1088,6 +1113,41 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             >
               Approve Listing
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Listing Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
+                ⚠️
+              </div>
+              <h3 className="text-base font-extrabold text-[var(--foreground)]">Permanently Delete Listing?</h3>
+            </div>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Are you sure you want to delete <strong className="text-[var(--foreground)]">{listing.title}</strong>? This action will permanently remove the property listing, associated settings, and cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-[var(--foreground)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteListing}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
+              </button>
+            </div>
           </div>
         </div>
       )}

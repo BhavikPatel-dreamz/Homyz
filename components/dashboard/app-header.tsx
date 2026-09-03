@@ -88,13 +88,21 @@ export function AppHeader() {
               {isHostRoute ? "Switch to traveling" : role === "HOST" ? "Switch to hosting" : "Become a host"}
             </Link>
 
-            {user ? (
-              <Link href="/profile" className="no-brush-border relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
-                <Image src={user.image || "/images/header-user-avatar.jpg"} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
+            {user?.image ? (
+              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
+                <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
+              </Link>
+            ) : user ? (
+              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Profile">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </Link>
             ) : (
-                <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="no-brush-border relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Account">
-                <Image src="/images/header-user-avatar.jpg" alt="Account" fill className="object-cover" sizes="36px" priority />
+              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="no-brush-border hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Account">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </button>
             )}
 

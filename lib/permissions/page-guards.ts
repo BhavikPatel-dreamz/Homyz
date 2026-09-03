@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
 import { isSuperAdmin, hasPermission } from "@/lib/permissions/permissions";
+import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 
 /**
  * Page/RSC guard: require an authenticated user or redirect to /login.
@@ -12,9 +13,8 @@ import { isSuperAdmin, hasPermission } from "@/lib/permissions/permissions";
 export async function requirePageUser(callbackUrl?: string): Promise<AuthUser> {
   const user = await getSessionUser();
   if (!user) {
-    const suffix = callbackUrl
-      ? `?callbackUrl=${encodeURIComponent(callbackUrl)}`
-      : "";
+    const safeUrl = callbackUrl ? getSafeCallbackUrl(callbackUrl) : null;
+    const suffix = safeUrl ? `?callbackUrl=${encodeURIComponent(safeUrl)}` : "";
     redirect(`/login${suffix}`);
   }
   if (user.status === "SUSPENDED") {
@@ -22,6 +22,7 @@ export async function requirePageUser(callbackUrl?: string): Promise<AuthUser> {
   }
   return user;
 }
+
 
 /**
  * Page/RSC guard: require one of `roles`. Unauthenticated → /login;

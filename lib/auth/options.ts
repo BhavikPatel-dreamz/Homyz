@@ -11,6 +11,7 @@ import { loginSchema } from "@/lib/validation/auth";
 import { authService } from "@/services/auth.service";
 import { auditService } from "@/services/audit.service";
 import type { Role } from "@/generated/prisma/enums";
+import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
 
 // Build the provider list from whatever credentials are present in the
 // environment. OAuth providers are only added when their keys are set, so the
@@ -35,15 +36,16 @@ function buildProviders(): NextAuthOptions["providers"] {
 
         // 1. Phone OTP Verification Sign-In
         if (credentials?.phone && credentials?.otpCode) {
+          const normalizedPhone = normalizePhone(credentials.phone);
           const verified = await authService.verifyOtp({
-            identifier: credentials.phone,
+            identifier: normalizedPhone,
             code: credentials.otpCode,
             purpose: "LOGIN",
           });
 
           if (verified.success) {
             let user = await prisma.user.findFirst({
-              where: { phone: credentials.phone },
+              where: { phone: normalizedPhone },
               include: {
                 adminRole: {
                   select: {
@@ -56,26 +58,45 @@ function buildProviders(): NextAuthOptions["providers"] {
             });
 
             if (!user) {
-              const cleanPhone = credentials.phone.replace(/\D/g, "");
-              user = await prisma.user.create({
-                data: {
-                  phone: credentials.phone,
-                  phoneVerified: new Date(),
-                  role: "USER",
-                  name: `Guest (${cleanPhone.slice(-4) || "User"})`,
-                  email: `user_${cleanPhone || Date.now()}@homyz.app`,
-                },
-                include: {
-                  adminRole: {
-                    select: {
-                      name: true,
-                      slug: true,
-                      permissions: { select: { permission: { select: { slug: true } } } },
+              const cleanDigits = normalizedPhone.replace(/\D/g, "");
+              const canonicalEmail = `user_${cleanDigits}@homyz.app`;
+              try {
+                user = await prisma.user.create({
+                  data: {
+                    phone: normalizedPhone,
+                    phoneVerified: new Date(),
+                    role: "USER",
+                    name: `Guest (${cleanDigits.slice(-4) || "User"})`,
+                    email: canonicalEmail,
+                  },
+                  include: {
+                    adminRole: {
+                      select: {
+                        name: true,
+                        slug: true,
+                        permissions: { select: { permission: { select: { slug: true } } } },
+                      },
                     },
                   },
-                },
-              });
+                });
+              } catch (err: any) {
+                // If concurrent request created the phone user simultaneously (P2002), fetch existing record
+                user = await prisma.user.findFirst({
+                  where: { phone: normalizedPhone },
+                  include: {
+                    adminRole: {
+                      select: {
+                        name: true,
+                        slug: true,
+                        permissions: { select: { permission: { select: { slug: true } } } },
+                      },
+                    },
+                  },
+                });
+              }
             }
+
+            if (!user) return null;
 
             const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
             const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
@@ -94,10 +115,10 @@ function buildProviders(): NextAuthOptions["providers"] {
           return null;
         }
 
-        // 2. Social Provider Fallback Sign-In
-        if (credentials?.provider) {
+        // 2. Social Provider Fallback Sign-In (Demo/Development Mode Only)
+        if (credentials?.provider && (process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SOCIAL === "true")) {
           const providerName = credentials.provider.toLowerCase();
-          const demoEmail = `${providerName}.user@homyz.app`;
+          const demoEmail = normalizeEmail(`${providerName}.user@homyz.app`);
           let user = await prisma.user.findUnique({
             where: { email: demoEmail },
             include: {
@@ -112,24 +133,41 @@ function buildProviders(): NextAuthOptions["providers"] {
           });
 
           if (!user) {
-            user = await prisma.user.create({
-              data: {
-                email: demoEmail,
-                name: `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`,
-                role: "USER",
-                emailVerified: new Date(),
-              },
-              include: {
-                adminRole: {
-                  select: {
-                    name: true,
-                    slug: true,
-                    permissions: { select: { permission: { select: { slug: true } } } },
+            try {
+              user = await prisma.user.create({
+                data: {
+                  email: demoEmail,
+                  name: `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`,
+                  role: "USER",
+                  emailVerified: new Date(),
+                },
+                include: {
+                  adminRole: {
+                    select: {
+                      name: true,
+                      slug: true,
+                      permissions: { select: { permission: { select: { slug: true } } } },
+                    },
                   },
                 },
-              },
-            });
+              });
+            } catch {
+              user = await prisma.user.findUnique({
+                where: { email: demoEmail },
+                include: {
+                  adminRole: {
+                    select: {
+                      name: true,
+                      slug: true,
+                      permissions: { select: { permission: { select: { slug: true } } } },
+                    },
+                  },
+                },
+              });
+            }
           }
+
+          if (!user) return null;
 
           const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
           const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
@@ -145,6 +183,7 @@ function buildProviders(): NextAuthOptions["providers"] {
             permissions: effectivePermissions,
           };
         }
+
 
         // 3. Email & Password Sign-In
         const parsed = loginSchema.safeParse(credentials);
@@ -248,9 +287,10 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // For OAuth sign-ins, allow linking and ensure user exists in DB
       if (account && account.provider !== "credentials" && profile?.email) {
+        const normalizedEmail = normalizeEmail(profile.email);
         try {
           const existingUser = await prisma.user.findUnique({
-            where: { email: profile.email },
+            where: { email: normalizedEmail },
           });
 
           if (existingUser) {

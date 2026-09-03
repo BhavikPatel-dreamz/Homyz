@@ -1,23 +1,27 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { LoginFormClient } from "./login-form-client";
+import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
-  const [user, { callbackUrl, error }] = await Promise.all([
+  const [user, { callbackUrl: rawCallbackUrl, error }] = await Promise.all([
     getSessionUser(),
     searchParams,
   ]);
+
+  const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/dashboard");
 
   if (user && user.status !== "SUSPENDED") {
     if (user.role === "ADMIN" || user.adminRoleSlug) {
       redirect("/admin");
     }
-    redirect(callbackUrl || "/dashboard");
+    redirect(safeCallbackUrl);
   }
+
 
   const errorMessage =
     error === "account_suspended" || user?.status === "SUSPENDED"
@@ -35,9 +39,10 @@ export default async function LoginPage({
   return (
     <LoginFormClient
       initialMode="login"
-      callbackUrl={callbackUrl || "/dashboard"}
+      callbackUrl={safeCallbackUrl}
       providers={providers}
       initialError={errorMessage}
     />
+
   );
 }

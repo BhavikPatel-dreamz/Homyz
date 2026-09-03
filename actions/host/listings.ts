@@ -42,6 +42,8 @@ export async function deleteListingAction(id: string) {
     if (!actor) throw AppError.unauthorized();
     const result = await listingService.remove(actor, id);
     revalidatePath("/host/listings");
+    revalidatePath("/admin/listings");
+    revalidatePath("/admin/hosts");
     return result;
   });
 }
@@ -129,3 +131,4 @@ export async function updateListingAvailabilityAction(id: string, blockedDates: 
     return listing;
   });
 }
+
