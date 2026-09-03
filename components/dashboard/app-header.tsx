@@ -48,18 +48,18 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white text-zinc-900 "  suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6 border-b-0 md:border-b md:border-[#1F1F1F]">
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-8 border-b-0 md:border-b md:border-[#1F1F1F]">
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
             aria-label="Homyz home"
           >
             <Image
-              src="/images/brand/homyz-logo-dark-v1.svg"
+              src="/images/brand/homyz-mobile-logo-dark-v1.svg"
               alt=""
               width={199}
               height={72}
-              className="h-[68px] w-[188px] max-w-none"
+              className="h-[49px] w-[57px] max-w-none"
               priority
             />
           </Link>
@@ -74,13 +74,13 @@ export function AppHeader() {
               alt="Stay like a homie."
               width={200}
               height={53}
-              className="h-auto w-[145px] transition-transform"
+              className="h-auto w-[149px] transition-transform"
               priority
             />
           </Link>
 
           <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
-            <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform sm:w-[150px] lg:w-[166px]" priority />
+            <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform md:w-[198px]" priority />
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
