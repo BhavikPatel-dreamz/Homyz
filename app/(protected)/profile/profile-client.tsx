@@ -180,9 +180,17 @@ export function ProfileClient({ initial }: ProfileClientProps) {
                     }`}
                 >
                   {tab.id === 'about' ? (
-                    <div className="w-7 h-7 rounded-full overflow-hidden relative shrink-0">
-                      <Image src={profileData.image || "/images/header-user-avatar.jpg"} alt="avatar" fill className="object-cover" sizes="28px" />
-                    </div>
+                    profileData.image ? (
+                      <div className="w-7 h-7 rounded-full overflow-hidden relative shrink-0">
+                        <Image src={profileData.image} alt="avatar" fill className="object-cover" sizes="28px" />
+                      </div>
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 shrink-0">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                      </div>
+                    )
                   ) : (
                     <div className="w-7 h-7 flex items-center justify-center shrink-0 opacity-70">
                       <tab.icon />
@@ -349,8 +357,16 @@ function ProfileEditForm({
 
       {/* Avatar Card Container with Strict Clearance (mb-12) */}
       <div className="mb-12 block">
-        <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden shadow-xs border border-zinc-200">
-          <Image src={imageUrl || "/images/header-user-avatar.jpg"} alt="avatar" fill className="object-cover" sizes="176px" />
+        <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden shadow-xs border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+          {imageUrl ? (
+            <Image src={imageUrl} alt="avatar" fill className="object-cover" sizes="176px" />
+          ) : (
+            <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+              <svg className="w-20 h-20 md:w-24 md:h-24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </div>
+          )}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
