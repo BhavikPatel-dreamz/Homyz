@@ -562,6 +562,76 @@ export class HostApplicationService {
 
     return { fileBuffer, mimeType, fileName: safeBaseName };
   }
+
+  /**
+   * Instantly convert user role to HOST and approve host application.
+   */
+  async convertToHost(user: AuthUser) {
+    // 1. Upgrade user role in DB
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        role: Role.HOST,
+        status: "ACTIVE",
+      },
+    });
+
+    // 2. Find or create host registration request and mark APPROVED
+    let req = await prisma.hostRegistrationRequest.findFirst({
+      where: {
+        OR: [{ hostId: user.id }, ...(user.email ? [{ applicantEmail: user.email }] : [])],
+      },
+    });
+
+    if (req) {
+      await prisma.hostRegistrationRequest.update({
+        where: { id: req.id },
+        data: {
+          status: "APPROVED",
+          onboardingStage: "COMPLETED",
+          complianceStatus: "COMPLIANT",
+          hostId: user.id,
+          approvedAt: new Date(),
+        },
+      });
+    } else {
+      const yearStr = new Date().getFullYear();
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const applicationId = `HOST-${yearStr}-${randomSuffix}`;
+
+      await prisma.hostRegistrationRequest.create({
+        data: {
+          applicationId,
+          applicantName: user.name || user.email || "Host User",
+          applicantEmail: user.email || "",
+          applicantPhone: (user as any).phone || "",
+          registrationType: "INDIVIDUAL",
+          propertyCount: 1,
+          location: "Global",
+          status: "APPROVED",
+          onboardingStage: "COMPLETED",
+          complianceStatus: "COMPLIANT",
+          hostId: user.id,
+          approvedAt: new Date(),
+        },
+      });
+    }
+
+    await auditService.record({
+      actorId: user.id,
+      actorEmail: user.email || "",
+      action: "USER_CONVERTED_TO_HOST",
+      resourceType: "User",
+      resourceId: user.id,
+      description: `User ${user.email} converted account to HOST role`,
+    });
+
+    return {
+      success: true,
+      user: updatedUser,
+      message: "Congratulations! Your account has been converted to a Host account.",
+    };
+  }
 }
 
 export const hostApplicationService = new HostApplicationService();

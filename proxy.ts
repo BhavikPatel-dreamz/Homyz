@@ -55,6 +55,8 @@ export async function proxy(request: NextRequest) {
   }
   if (
     pathname.startsWith("/host") &&
+    !pathname.startsWith("/host/onboarding") &&
+    !pathname.startsWith("/host/application") &&
     role !== "HOST" &&
     role !== "ADMIN"
   ) {
