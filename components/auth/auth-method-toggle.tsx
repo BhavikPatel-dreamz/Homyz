@@ -7,7 +7,7 @@ interface AuthMethodToggleProps {
 
 export function AuthMethodToggle({ inputMethod, onToggle }: AuthMethodToggleProps) {
   return (
-    <button type="button" onClick={onToggle} className="w-full h-[54px] sm:h-[56px] rounded-[30px] bg-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] active:border-[#1F1F1F] active:bg-[#F3F4F5] border border-[#1F1F1F] font-['Poppins'] font-medium text-[14px] sm:text-[18px] leading-[23px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer select-none">
+    <button type="button" onClick={onToggle} className="auth-action-button brush-button-border h-12 min-h-12 w-full rounded-[30px] bg-transparent py-0 hover:bg-[#F3F4F5] hover:text-[#1F1F1F] active:bg-[#F3F4F5] border font-['Poppins'] font-medium text-[16px] leading-[24px] text-[#1F1F1F] transition-all flex items-center justify-center cursor-pointer select-none sm:h-[56px] sm:min-h-[56px] sm:text-[18px]">
       {inputMethod === "phone" ? "Continue with email" : "Continue with phone"}
     </button>
   );

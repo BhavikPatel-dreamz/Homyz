@@ -1,9 +1,7 @@
-import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
-import { AppHeader } from "@/components/dashboard/app-header";
-import { HomyzLogo } from "@/components/ui/homyz-logo";
-import Image from "next/image";
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
+import { AppHeader } from "@/components/dashboard/app-header";
+import { AuthHeroImage } from "@/components/auth/auth-hero-image";
+import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
 
 export const metadata = {
   title: "Forgot Password | Homyz Enterprise Console",
@@ -12,66 +10,39 @@ export const metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-zinc-900 font-sans selection:bg-amber-100">
-      {/* Top Header matching login / auth pages */}
+    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white font-sans text-[#1F1F1F] selection:bg-amber-100">
       <AppHeader />
 
-      {/* Main Container */}
-      <Container as="main" className="flex-1 py-10 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          {/* Left Column: Form */}
-          <div className="lg:col-span-6 xl:col-span-5 w-full max-w-md mx-auto lg:mx-0 flex flex-col">
-            {/* Homyz Brand Logo (Identical to AppHeader logo) */}
-            <Link href="/" className="mb-6 flex items-center gap-2 group w-fit">
-              <HomyzLogo className="text-zinc-950 group-hover:scale-105 transition-transform shrink-0" size={32} />
-              <span className="text-2xl font-extrabold tracking-tight text-zinc-900">
-                homyz
-              </span>
-            </Link>
-
-            {/* Back Button + Heading */}
-            <div className="flex items-center gap-3 mb-1">
+      <main className="flex w-full flex-1 items-start justify-center px-4 py-6 sm:px-6 sm:py-8 lg:items-center lg:px-8 lg:py-14">
+        <div className="mx-auto flex w-full max-w-[1318px] flex-col items-center justify-between gap-8 lg:flex-row lg:gap-8 xl:gap-[56px]">
+          <div className="mx-auto flex w-full max-w-[538px] flex-col lg:mx-0 lg:w-1/2 lg:max-w-none xl:w-[643px]">
+            <div className="mb-2 flex flex-col gap-6 sm:flex-row sm:items-center">
               <Link
                 href="/login"
-                className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs shrink-0"
+                className="brush-back-border flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 sm:self-auto"
                 aria-label="Go back to login"
               >
-                ‹
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
               </Link>
-              <h1>
-                Forgot password?
-              </h1>
+              <h1 className="wrap-break-words">Forgot password?</h1>
             </div>
-            <p className="text-xs text-zinc-500 mb-6 leading-relaxed pl-10">
-              Enter your account&apos;s email address below and we&apos;ll send you a link to reset your password.
+
+            <p className="mb-2 pl-0 font-['Poppins'] text-[15px] font-normal leading-relaxed text-[#727272] sm:mb-4 sm:pl-13.5 sm:text-[17px] lg:mb-6 lg:text-[18px]">
+              Enter your account&apos;s email address and we&apos;ll send you a link to reset your password.
             </p>
 
-            <ForgotPasswordForm />
-          </div>
+            <AuthHeroImage mobile />
 
-          {/* Right Column: Hero Photo */}
-          <div className="hidden lg:flex lg:col-span-6 xl:col-span-7 items-center justify-center">
-            <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-xs border border-zinc-200">
-              <Image
-                src="/images/auth-traveler-street.jpg"
-                alt="Homyz Traveler"
-                fill
-                priority
-                sizes="(min-width: 1024px) 600px, 100vw"
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-300 mb-1">
-                  Account Security
-                </span>
-                <h2 className="text-xl font-bold">
-                  Fast &amp; Secure Password Recovery
-                </h2>
-              </div>
+            <div className="flex w-full max-w-[538px] flex-col pl-0 lg:pl-13.5">
+              <ForgotPasswordForm />
             </div>
           </div>
+
+          <AuthHeroImage />
         </div>
-      </Container>
+      </main>
     </div>
   );
 }

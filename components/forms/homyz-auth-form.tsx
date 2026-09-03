@@ -7,6 +7,7 @@ import { useState, useEffect, useTransition, type FormEvent } from "react";
 import { Alert, Button } from "../ui";
 import { registerAction } from "@/actions/auth/register";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { AuthHeroImage } from "@/components/auth/auth-hero-image";
 import { AuthMethodToggle } from "@/components/auth/auth-method-toggle";
@@ -345,7 +346,7 @@ export function HomyzAuthForm({
           <div className="w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
             <AuthHeading
-              title={authMode === "login" ? "Log in or sign up" : "Create an account"}
+              title={authMode === "login" ? "Log in or sign up" : "Log in or sign up"}
               onBack={() => {
                   if (otpSent) {
                     setOtpSent(false);
@@ -362,34 +363,22 @@ export function HomyzAuthForm({
               {authMode === "login" ? (
                 <>
                   Don&apos;t have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("signup");
-                      window.history.pushState(null, "", "/register");
-                      setError(null);
-                      setSuccess(null);
-                    }}
+                  <Link
+                    href="/register"
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Sign up
-                  </button>
+                  </Link>
                 </>
               ) : (
                 <>
                   Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode("login");
-                      window.history.pushState(null, "", "/login");
-                      setError(null);
-                      setSuccess(null);
-                    }}
+                  <Link
+                    href="/login"
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Log in
-                  </button>
+                  </Link>
                 </>
               )}
             </div>
@@ -433,7 +422,7 @@ export function HomyzAuthForm({
                             <select
                               value={countryCode}
                               onChange={(e) => setCountryCode(e.target.value)}
-                              className="w-full h-full appearance-none rounded-[8px] border border-[#72727299] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
+                              className="brush-border-responsive w-full h-full appearance-none rounded-[8px] border border-[#72727299] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
                             >
                               {COUNTRY_CODES.map((c, idx) => (
                                 <option key={`${c.iso2}-${c.code}-${idx}`} value={c.code}>
@@ -464,7 +453,7 @@ export function HomyzAuthForm({
                             placeholder={getCountryByCallingCode(countryCode)?.placeholder || "5XX XXX XXX"}
                             required
                             suppressHydrationWarning
-                            className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
+                            className="brush-border-wide w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
 
                         </div>
@@ -626,7 +615,7 @@ export function HomyzAuthForm({
                         required
                         autoComplete={authMode === "login" ? "current-password" : "new-password"}
                         suppressHydrationWarning
-                        className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                        className="brush-email-password-border w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
                       />
                       <button
                         type="button"
@@ -731,7 +720,7 @@ export function HomyzAuthForm({
                     disabled={pending || !isEmailFormValid}
                     fullWidth
                     isLoading={pending}
-                    className="mt-2"
+                    className="auth-action-button mt-2"
                   >
                     Continue
                   </Button>
@@ -740,13 +729,7 @@ export function HomyzAuthForm({
               )}
 
               {/* Divider (Frame 1996663724) */}
-              <div className="flex items-center gap-3 sm:gap-4 w-full my-1">
-                <div className="h-[1px] flex-1 bg-[#727272]" />
-                <span className="font-['Poppins'] font-normal text-[15px] sm:text-[16px] leading-[24px] text-[#1F1F1F]">
-                  or
-                </span>
-                <div className="h-[1px] flex-1 bg-[#727272]" />
-              </div>
+              <AuthDivider />
 
               {/* Social Buttons (Frame 1996663725 - Google, Apple, Facebook in 1 row) */}
               <SocialLoginButtons providers={providers} onLogin={handleSocialLogin} />
@@ -784,8 +767,9 @@ export function HomyzAuthForm({
                 <button
                   type="button"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="md:hidden w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                  className="brush-back-to-top-border md:hidden w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
                   title="Scroll to top"
+                  aria-label="Scroll to top"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -837,8 +821,9 @@ export function HomyzAuthForm({
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="hidden md:flex absolute right-0 top-0 w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="brush-back-to-top-border hidden md:flex absolute right-0 top-0 w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] items-center justify-center transition-all cursor-pointer shadow-xs"
               title="Scroll to top"
+              aria-label="Scroll to top"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />

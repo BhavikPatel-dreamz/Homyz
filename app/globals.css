@@ -94,8 +94,12 @@ html {
 
 body {
   background-color: var(--background);
-  color: var(--foreground);
+  color: #727272;
   font-family: var(--font-poppins), 'Poppins', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
   min-height: 100vh;
 }
 
@@ -212,4 +216,115 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/*
+ * Scalable Figma-exported outlines. Apply them globally because many legacy
+ * screens style native controls directly instead of using the shared classes.
+ */
+:where(
+  .brush-border,
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]):not([type="hidden"]):not([type="image"]),
+  select,
+  textarea
+) {
+  border-color: transparent !important;
+  background-image: url("/brush-border.svg") !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: calc(100% - 2px) calc(100% - 2px) !important;
+}
 
+.brush-border-wide {
+  background-image: url("/wide-brush-border.svg") !important;
+}
+
+.brush-border-responsive {
+  background-image: url("/wide-brush-border.svg") !important;
+}
+
+@media (min-width: 640px) {
+  .brush-border-responsive {
+    background-image: url("/brush-border.svg") !important;
+  }
+}
+
+:where(
+  .brush-email-password-border,
+  input[type="email"],
+  input[type="password"]
+) {
+  border-color: transparent !important;
+  background-image: url("/email-password-brush-border.svg") !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: calc(100% - 2px) calc(100% - 2px) !important;
+}
+
+/* Add `no-brush-border` to any button that should use only its Tailwind
+ * border/background utilities, including shared Button components. */
+:where(
+  .brush-button-border:not(.no-brush-border),
+  button:not([aria-label]):not(.no-brush-border),
+  input[type="button"]:not(.no-brush-border),
+  input[type="submit"]:not(.no-brush-border),
+  input[type="reset"]:not(.no-brush-border)
+) {
+  border-color: transparent !important;
+  border-width: 2px !important;
+  background-image: url("/button-brush-border.svg"), linear-gradient(transparent, transparent) !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: calc(100% - 2px) calc(100% - 2px), 100% 100% !important;
+  background-clip: border-box, padding-box !important;
+  background-origin: border-box, padding-box !important;
+}
+
+/* Keep the paired auth actions identical and render their 539 × 57 artwork
+ * against the complete control box, including at 320px viewport widths. */
+
+
+.social-google-border {
+  background-image: url("/social-google-border.svg"), linear-gradient(transparent, transparent) !important;
+}
+
+.social-apple-border {
+  background-image: url("/social-apple-border.svg"), linear-gradient(transparent, transparent) !important;
+}
+
+.social-facebook-border {
+  background-image: url("/social-facebook-border.svg"), linear-gradient(transparent, transparent) !important;
+}
+
+.brush-back-border,
+.brush-back-to-top-border {
+  border: 2px solid transparent !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: calc(100% - 2px) calc(100% - 2px), 100% 100% !important;
+  background-clip: border-box, padding-box !important;
+  background-origin: border-box, padding-box !important;
+}
+
+.brush-back-border {
+  background-image: url("/back-brush-border.svg"), linear-gradient(transparent, transparent) !important;
+}
+
+.brush-back-to-top-border {
+  background-image: url("/back-to-top-brush-border.svg"), linear-gradient(transparent, transparent) !important;
+}
+
+:where(
+  .brush-border,
+  .brush-border-wide,
+  .brush-border-responsive,
+  .brush-email-password-border,
+  .brush-button-border:not(.no-brush-border),
+  .brush-back-border,
+  .brush-back-to-top-border,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]):not([type="hidden"]):not([type="image"]),
+  select,
+  textarea,
+  button:not([aria-label]):not(.no-brush-border)
+):focus-visible {
+  outline: 0px solid var(--ring);
+  outline-offset: 0px;
+}
