@@ -48,7 +48,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white text-zinc-900" suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:border-b md:border-[#1F1F1F]/900 md:py-5 lg:py-6">
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-6">
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
@@ -64,23 +64,23 @@ export function AppHeader() {
             />
           </Link>
 
-          <Link href="/" className="hidden shrink-0 transition-opacity hover:opacity-80 md:block">
+          <Link href="/" className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label="Homyz home">
             <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[180px] xl:w-[200px]" priority />
           </Link>
 
-          <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden">
+          <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label="Homyz home">
             <Image
               src="/images/brand/homyz-logo-dark-v2.svg"
               alt="Stay like a homie."
               width={200}
               height={53}
-              className="h-auto w-[145px] transition-transform group-hover:scale-[1.03]"
+              className="h-auto w-[145px] transition-transform"
               priority
             />
           </Link>
 
-          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 hidden -translate-x-1/2 md:block">
-            <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform group-hover:scale-[1.03] sm:w-[150px] lg:w-[166px]" priority />
+          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
+            <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform sm:w-[150px] lg:w-[166px]" priority />
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-3" ref={menuRef}>
@@ -264,6 +264,15 @@ export function AppHeader() {
               </div>
             )}
           </div>
+
+          <Image
+            src="/images/brand/header-divider.svg"
+            alt=""
+            width={1516}
+            height={1}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-px w-full md:block"
+          />
         </div>
       </Container>
 
