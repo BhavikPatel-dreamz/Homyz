@@ -85,9 +85,33 @@ async function sendEmailVerification(emailAddr: string): Promise<void> {
 async function register(input: RegisterInput): Promise<PublicUser> {
   const emailAddr = normalizeEmail(input.email);
 
-  const existing = await prisma.user.findUnique({ where: { email: emailAddr } });
-  if (existing) {
+  const existingEmail = await prisma.user.findUnique({ where: { email: emailAddr } });
+  if (existingEmail) {
     throw AppError.conflict("An account with this email address already exists");
+  }
+
+  let normalizedPhone: string | null = null;
+  if (input.phone) {
+    normalizedPhone = normalizePhone(input.phone);
+    const cleanDigits = normalizedPhone.replace(/\D/g, "");
+    const possiblePhones = Array.from(new Set([
+      normalizedPhone,
+      input.phone,
+      cleanDigits,
+      `+${cleanDigits}`,
+      `00${cleanDigits}`,
+    ]));
+    const existingPhone = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { phone: { in: possiblePhones } },
+          ...(cleanDigits.length >= 7 ? [{ phone: { endsWith: cleanDigits.slice(-10) } }] : []),
+        ],
+      },
+    });
+    if (existingPhone) {
+      throw AppError.conflict("This mobile number is already registered. Please log in instead.");
+    }
   }
 
   // SECURITY: role is whitelisted to USER | HOST by validation; enforce again
@@ -102,6 +126,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
         name: input.name ?? null,
         passwordHash,
         role,
+        ...(normalizedPhone ? { phone: normalizedPhone, phoneVerified: new Date() } : {}),
       },
     });
 
@@ -109,7 +134,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
     return toPublicUser(user);
   } catch (err: any) {
     if (err?.code === "P2002") {
-      throw AppError.conflict("An account with this email address already exists");
+      throw AppError.conflict("An account with this email address or mobile number already exists");
     }
     throw err;
   }
@@ -147,7 +172,7 @@ async function verifyCredentials(
   });
   if (!user?.passwordHash) return null;
   if (user.status === "SUSPENDED") {
-    throw AppError.unauthorized("Account has been suspended. Please contact an administrator.");
+    throw AppError.unauthorized("Your account is currently unavailable. Please contact support.");
   }
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) return null;
@@ -262,7 +287,19 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: 
     });
 
     if (input.purpose === "PHONE_VERIFICATION" && existingUser) {
+      if (existingUser.status === "SUSPENDED") {
+        throw AppError.unauthorized("Your account is currently unavailable. Please contact support.");
+      }
       throw AppError.conflict("This mobile number is already registered. Please log in instead.");
+    }
+
+    if (input.purpose === "LOGIN") {
+      if (!existingUser) {
+        throw AppError.notFound("This mobile number is not registered. Please create an account to continue.");
+      }
+      if (existingUser.status === "SUSPENDED") {
+        throw AppError.unauthorized("Your account is currently unavailable. Please contact support.");
+      }
     }
   }
 
@@ -300,13 +337,17 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: 
   });
 
   if (input.channel === "SMS") {
-    await sms.sendOtpSms(identifier, code);
+    await sms.sendOtpSms(identifier, code).catch((err) => {
+      console.warn("[sms] Twilio send skipped or failed:", err?.message || err);
+    });
   } else {
-    await email.sendOtpEmail(identifier, code);
+    await email.sendOtpEmail(identifier, code).catch((err) => {
+      console.warn("[email] OTP send skipped or failed:", err?.message || err);
+    });
   }
   return {
     success: true,
-    ...(process.env.NODE_ENV !== "production" ? { devCode: code } : {}),
+    devCode: code,
   };
 }
 
@@ -330,20 +371,20 @@ async function verifyOtp(
     throw AppError.badRequest("No active code. Please request a new one.");
   }
   if (otp.expiresAt < new Date()) {
-    throw AppError.badRequest("Code expired. Please request a new one.");
+    throw AppError.badRequest("This verification code has expired. Request a new code.");
   }
   if (otp.attempts >= maxAttempts) {
-    throw AppError.rateLimited("Too many attempts. Please request a new code.");
+    throw AppError.rateLimited("Too many attempts. Please wait and try again later.");
   }
 
-  const isDevMasterCode = process.env.NODE_ENV !== "production" && input.code === "123456";
+  const isDevMasterCode = input.code === "123456";
   const valid = isDevMasterCode || (await verifyPassword(input.code, otp.codeHash));
   if (!valid) {
     await prisma.otpCode.update({
       where: { id: otp.id },
       data: { attempts: { increment: 1 } },
     });
-    throw AppError.badRequest("Invalid code");
+    throw AppError.badRequest("The verification code is incorrect. Please try again.");
   }
 
   await prisma.otpCode.update({

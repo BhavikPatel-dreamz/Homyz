@@ -37,82 +37,106 @@ function buildProviders(): NextAuthOptions["providers"] {
         // 1. Phone OTP Verification Sign-In
         if (credentials?.phone && credentials?.otpCode) {
           const normalizedPhone = normalizePhone(credentials.phone);
+          const cleanDigits = normalizedPhone.replace(/\D/g, "");
+          const possiblePhones = Array.from(new Set([
+            normalizedPhone,
+            credentials.phone,
+            cleanDigits,
+            `+${cleanDigits}`,
+            `00${cleanDigits}`,
+          ]));
+
           const verified = await authService.verifyOtp({
             identifier: normalizedPhone,
             code: credentials.otpCode,
             purpose: "LOGIN",
+          }).catch(async () => {
+            // Also attempt verification under PHONE_VERIFICATION purpose if LOGIN purpose OTP was issued for signup
+            return await authService.verifyOtp({
+              identifier: normalizedPhone,
+              code: credentials.otpCode,
+              purpose: "PHONE_VERIFICATION",
+            });
           });
 
-          if (verified.success) {
-            let user = await prisma.user.findFirst({
-              where: { phone: normalizedPhone },
-              include: {
-                adminRole: {
-                  select: {
-                    name: true,
-                    slug: true,
-                    permissions: { select: { permission: { select: { slug: true } } } },
-                  },
+          if (!verified?.success) {
+            return null;
+          }
+
+          let user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { phone: { in: possiblePhones } },
+                ...(cleanDigits.length >= 7 ? [{ phone: { endsWith: cleanDigits.slice(-10) } }] : []),
+              ],
+            },
+            include: {
+              adminRole: {
+                select: {
+                  name: true,
+                  slug: true,
+                  permissions: { select: { permission: { select: { slug: true } } } },
                 },
               },
-            });
+            },
+          });
 
-            if (!user) {
-              const cleanDigits = normalizedPhone.replace(/\D/g, "");
-              const canonicalEmail = `user_${cleanDigits}@homyz.app`;
-              try {
-                user = await prisma.user.create({
-                  data: {
-                    phone: normalizedPhone,
-                    phoneVerified: new Date(),
-                    role: "USER",
-                    name: `Guest (${cleanDigits.slice(-4) || "User"})`,
-                    email: canonicalEmail,
-                  },
-                  include: {
-                    adminRole: {
-                      select: {
-                        name: true,
-                        slug: true,
-                        permissions: { select: { permission: { select: { slug: true } } } },
-                      },
+          if (!user) {
+            const canonicalEmail = `user_${cleanDigits}@homyz.app`;
+            try {
+              user = await prisma.user.create({
+                data: {
+                  phone: normalizedPhone,
+                  phoneVerified: new Date(),
+                  role: "USER",
+                  name: `Guest (${cleanDigits.slice(-4) || "User"})`,
+                  email: canonicalEmail,
+                },
+                include: {
+                  adminRole: {
+                    select: {
+                      name: true,
+                      slug: true,
+                      permissions: { select: { permission: { select: { slug: true } } } },
                     },
                   },
-                });
-              } catch (err: any) {
-                // If concurrent request created the phone user simultaneously (P2002), fetch existing record
-                user = await prisma.user.findFirst({
-                  where: { phone: normalizedPhone },
-                  include: {
-                    adminRole: {
-                      select: {
-                        name: true,
-                        slug: true,
-                        permissions: { select: { permission: { select: { slug: true } } } },
-                      },
+                },
+              });
+            } catch (err: any) {
+              user = await prisma.user.findFirst({
+                where: { phone: normalizedPhone },
+                include: {
+                  adminRole: {
+                    select: {
+                      name: true,
+                      slug: true,
+                      permissions: { select: { permission: { select: { slug: true } } } },
                     },
                   },
-                });
-              }
+                },
+              });
             }
-
-            if (!user) return null;
-
-            const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
-            const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
-
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              role: user.role,
-              status: user.status,
-              adminRoleSlug: user.adminRole?.slug ?? null,
-              permissions: effectivePermissions,
-            };
           }
-          return null;
+
+          if (!user) return null;
+
+          if (user.status === "SUSPENDED") {
+            throw new Error("Your account is currently unavailable. Please contact support.");
+          }
+
+          const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+          const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            status: user.status,
+            adminRoleSlug: user.adminRole?.slug ?? null,
+            permissions: effectivePermissions,
+          };
         }
 
         // 2. Social Provider Fallback Sign-In (Demo/Development Mode Only)

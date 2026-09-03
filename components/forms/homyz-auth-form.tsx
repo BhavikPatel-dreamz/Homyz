@@ -170,11 +170,13 @@ export function HomyzAuthForm({
 
     if (authMode === "signup") {
       startTransition(async () => {
+        const fullPhone = phoneNumber ? `${countryCode}${phoneNumber.replace(/\D/g, "")}` : undefined;
         const res = await registerAction({
           name: name.trim(),
           email: trimmedEmail,
           password,
           role,
+          phone: fullPhone,
         });
 
         if (!res.ok) {
@@ -287,6 +289,8 @@ export function HomyzAuthForm({
             let msg = data.error?.message || "Failed to send SMS verification code";
             if (authMode === "signup" && (msg.toLowerCase().includes("registered") || msg.toLowerCase().includes("exists") || res.status === 409)) {
               msg = "This mobile number is already registered. Please log in instead.";
+            } else if (authMode === "login" && (msg.toLowerCase().includes("not registered") || res.status === 404)) {
+              msg = "This mobile number is not registered. Please create an account to continue.";
             }
             setError(msg);
             return;
@@ -300,12 +304,11 @@ export function HomyzAuthForm({
               : `Verification code sent to ${fullPhone}. Please enter the code below.`
           );
         } catch {
-          setError("Network error sending code. Please try again.");
+          setError("Unable to connect. Please check your internet connection and try again.");
         }
       });
 
     } else {
-      // Verify OTP and create NextAuth session
       startTransition(async () => {
         try {
           const res = await signIn("credentials", {
@@ -315,11 +318,17 @@ export function HomyzAuthForm({
           });
 
           if (!res || res.error) {
-            setError("Invalid or expired verification code.");
+            let msg = "The verification code is incorrect. Please try again.";
+            if (res?.error?.includes("not registered")) {
+              msg = "This mobile number is not registered. Please create an account to continue.";
+            } else if (res?.error?.includes("unavailable") || res?.error?.includes("contact support")) {
+              msg = "Your account is currently unavailable. Please contact support.";
+            }
+            setError(msg);
             return;
           }
 
-          setSuccess("Verification successful! Redirecting...");
+          setSuccess("Verification successful! Redirecting to dashboard...");
           router.push(targetCallbackUrl);
           router.refresh();
         } catch {
@@ -392,7 +401,7 @@ export function HomyzAuthForm({
 
             {/* Error / Success feedback */}
             {error && (
-              <div className="mb-4 pl-0 sm:pl-13.5">
+              <div className="mb-4 pl-0 sm:pl-13.5 flex flex-col gap-2.5">
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
@@ -557,8 +566,8 @@ export function HomyzAuthForm({
                             onClick={() => setRole("USER")}
                             aria-pressed={role === "USER"}
                             className={`flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "USER"
-                                ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                              ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
+                              : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                               }`}
                           >
                             Guest User
@@ -568,8 +577,8 @@ export function HomyzAuthForm({
                             onClick={() => setRole("HOST")}
                             aria-pressed={role === "HOST"}
                             className={`flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
-                                ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                              ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
+                              : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                               }`}
                           >
                             Property Host

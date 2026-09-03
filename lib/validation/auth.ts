@@ -14,6 +14,7 @@ export const registerSchema = z.object({
   email: z.string().trim().email({ message: "Please enter a valid email address" }),
   password: passwordSchema,
   role: z.enum(["USER", "HOST"]).default("USER"),
+  phone: z.string().trim().optional(),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
