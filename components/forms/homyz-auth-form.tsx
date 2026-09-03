@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { useState, useEffect, useTransition, type FormEvent } from "react";
 import { Alert, Button } from "../ui";
@@ -30,6 +30,7 @@ import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
+  initialInputMethod?: "phone" | "email";
   callbackUrl?: string;
   initialError?: string;
   providers?: AuthProviders;
@@ -37,18 +38,48 @@ export interface HomyzAuthFormProps {
 
 export function HomyzAuthForm({
   initialMode = "login",
+  initialInputMethod,
   callbackUrl = "/dashboard",
   initialError,
   providers = {},
 }: HomyzAuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
-  const [inputMethod, setInputMethod] = useState<"phone" | "email">("phone");
+
+  const searchParamMethod = searchParams?.get("method");
+  const effectiveInitialMethod: "phone" | "email" =
+    initialInputMethod || (searchParamMethod === "email" ? "email" : searchParamMethod === "phone" ? "phone" : "phone");
+
+  const [inputMethod, setInputMethod] = useState<"phone" | "email">(effectiveInitialMethod);
+
+  useEffect(() => {
+    const urlMethod = searchParams?.get("method");
+    if (urlMethod === "email" || urlMethod === "phone") {
+      setInputMethod(urlMethod);
+    } else if (initialInputMethod) {
+      setInputMethod(initialInputMethod);
+    }
+  }, [searchParams, initialInputMethod]);
+
+  const getAuthToggleHref = (targetMode: "login" | "signup") => {
+    const basePath = targetMode === "login" ? "/login" : "/register";
+    const params = new URLSearchParams();
+    if (inputMethod) {
+      params.set("method", inputMethod);
+    }
+    if (callbackUrl && callbackUrl !== "/dashboard") {
+      params.set("callbackUrl", callbackUrl);
+    }
+    const qs = params.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
+
   const [showPassword, setShowPassword] = useState(false);
 
   // Form states
@@ -373,7 +404,7 @@ export function HomyzAuthForm({
                 <>
                   Don&apos;t have an account?{" "}
                   <Link
-                    href="/register"
+                    href={getAuthToggleHref("signup")}
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Sign up
@@ -383,7 +414,7 @@ export function HomyzAuthForm({
                 <>
                   Already have an account?{" "}
                   <Link
-                    href="/login"
+                    href={getAuthToggleHref("login")}
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
                     Log in
@@ -395,7 +426,7 @@ export function HomyzAuthForm({
             {/* Mobile/Tablet Hero Image (between subtitle and form inputs, matches mobile.jpg 100%, hidden on lg+) */}
             <AuthHeroImage
               mobile
-              src={inputMethod === "email" ? "/images/user-authentication-email-password.webp" : undefined}
+              src={inputMethod === "email" ? "/images/auth-traveler-street.jpg" : undefined}
               alt={inputMethod === "email" ? "Traveler carrying a backpack on a city street" : undefined}
             />
 
@@ -720,15 +751,6 @@ export function HomyzAuthForm({
                     </div>
                   )}
 
-                  {authMode === "login" && (
-                    <div className="text-sm text-[#727272] font-normal">
-                      Forget password?{" "}
-                      <Link href="/forgot-password" className="underline text-[#1F1F1F] hover:opacity-80">
-                        reset password
-                      </Link>
-                    </div>
-                  )}
-
                   {/* Continue Button */}
                   <Button
                     type="submit"
@@ -762,7 +784,7 @@ export function HomyzAuthForm({
 
           {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
           <AuthHeroImage
-            src={inputMethod === "email" ? "/images/user-authentication-email-password.webp" : undefined}
+            src={inputMethod === "email" ? "/images/auth-traveler-street.jpg" : undefined}
             alt={inputMethod === "email" ? "Traveler carrying a backpack on a city street" : undefined}
           />
         </div>
