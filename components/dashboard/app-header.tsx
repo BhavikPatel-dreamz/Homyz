@@ -48,12 +48,38 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white text-zinc-900" suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper border-b border-[#1F1F1F]/900 w-full relative flex items-center justify-between py-5 lg:py-6">
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:border-b md:border-[#1F1F1F]/900 md:py-5 lg:py-6">
+          <Link
+            href="/"
+            className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
+            aria-label="Homyz home"
+          >
+            <Image
+              src="/images/brand/homyz-logo-dark-v1.svg"
+              alt=""
+              width={199}
+              height={72}
+              className="h-[68px] w-[188px] max-w-none"
+              priority
+            />
+          </Link>
+
           <Link href="/" className="hidden shrink-0 transition-opacity hover:opacity-80 md:block">
             <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[180px] xl:w-[200px]" priority />
           </Link>
 
-          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 -translate-x-1/2">
+          <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden">
+            <Image
+              src="/images/brand/homyz-logo-dark-v2.svg"
+              alt="Stay like a homie."
+              width={200}
+              height={53}
+              className="h-auto w-[145px] transition-transform group-hover:scale-[1.03]"
+              priority
+            />
+          </Link>
+
+          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 hidden -translate-x-1/2 md:block">
             <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform group-hover:scale-[1.03] sm:w-[150px] lg:w-[166px]" priority />
           </Link>
 
@@ -63,11 +89,11 @@ export function AppHeader() {
             </Link>
 
             {user ? (
-              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
+              <Link href="/profile" className="no-brush-border relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
                 <Image src={user.image || "/images/header-user-avatar.jpg"} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
               </Link>
             ) : (
-              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Account">
+                <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="no-brush-border relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Account">
                 <Image src="/images/header-user-avatar.jpg" alt="Account" fill className="object-cover" sizes="36px" priority />
               </button>
             )}
@@ -76,8 +102,8 @@ export function AppHeader() {
               <Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="h-6 w-6" />
             </button>
 
-            <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200" aria-label="Open menu" aria-expanded={menuOpen}>
-              <Image src="/images/icons/menu-icon.svg" alt="" width={16} height={14} className="h-[14px] w-4" />
+            <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 md:h-9 md:w-9" aria-label="Open menu" aria-expanded={menuOpen}>
+              <Image src="/images/icons/menu-icon.svg" alt="" width={18} height={16} className="h-4 w-[18px] md:h-[14px] md:w-4" />
             </button>
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}

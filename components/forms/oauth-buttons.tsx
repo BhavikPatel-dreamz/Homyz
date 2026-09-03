@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 
+import { AuthDivider } from "../auth/auth-divider";
 import { secondaryButtonClass } from "../ui";
 
 export type OAuthProviders = {
@@ -33,17 +34,13 @@ export function OAuthButtons({
         <button
           key={key}
           type="button"
-          className={secondaryButtonClass}
+          className={`${secondaryButtonClass} social-${key}-border`}
           onClick={() => signIn(key, { callbackUrl })}
         >
           {label}
         </button>
       ))}
-      <div className="my-2 flex items-center gap-3 text-xs text-zinc-400">
-        <span className="h-px flex-1 bg-zinc-200 " />
-        or
-        <span className="h-px flex-1 bg-zinc-200 " />
-      </div>
+      <AuthDivider />
     </div>
   );
 }

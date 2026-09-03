@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { forgotPasswordAction } from "@/actions/auth/forgotPassword";
+import { authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
+import { Alert } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 export function ForgotPasswordForm() {
   const [done, setDone] = useState(false);
@@ -40,21 +43,21 @@ export function ForgotPasswordForm() {
         </div>
 
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-zinc-950">
+          <h2 className="text-2xl font-semibold text-zinc-950">
             Check Your Email
           </h2>
-          <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+          <p className="mt-1.5 text-sm font-normal leading-6 text-[#727272]">
             If an account exists for <strong className="text-zinc-800">{emailVal}</strong>, we have sent password reset instructions to your inbox.
           </p>
         </div>
 
-        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-900 font-medium">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm font-normal leading-6 text-amber-900">
           Please check your spam or junk folder if you don&apos;t see the email within a few minutes.
         </div>
 
         <Link
-          href="/admin/login"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
+          href="/login"
+          className="auth-action-button brush-button-border box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium text-[#1F1F1F] transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] h-12 min-h-12 sm:h-[56px] sm:min-h-[56px] bg-[#FCDF9C] px-6 py-4 sm:text-lg text-base leading-6 active:border-[#1F1F1F] active:bg-[#F3F4F5] w-full"
         >
           ← Return to Sign In
         </Link>
@@ -63,15 +66,13 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex flex-col gap-5 lg:gap-6">
       {error && (
-        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium animate-in fade-in">
-          {error}
-        </div>
+        <Alert tone="error">{error}</Alert>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-xs font-semibold text-zinc-800">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="email" className={authLabelClass}>
           Email address *
         </label>
         <input
@@ -83,25 +84,25 @@ export function ForgotPasswordForm() {
           value={emailVal}
           onChange={(e) => setEmailVal(e.target.value)}
           placeholder="emailexample@gmail.com"
-          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+          className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
         />
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={pending || !emailVal.trim()}
-        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        fullWidth
+        isLoading={pending}
+        loadingText="Sending Reset Link…"
+        className="auth-action-button mt-2 h-12 min-h-12 py-0 sm:h-[57px] sm:min-h-[57px]"
       >
-        {pending && (
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
-        )}
-        <span>{pending ? "Sending Reset Link…" : "Send Reset Link"}</span>
-      </button>
+        Send Reset Link
+      </Button>
 
       <div className="text-center pt-2">
         <Link
           href="/login"
-          className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors underline"
+          className="font-['Poppins'] text-[14px] font-normal text-[#1F1F1F] underline transition-opacity hover:opacity-80 sm:text-[16px]"
         >
           Remember your password? Log in
         </Link>
