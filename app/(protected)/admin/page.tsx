@@ -27,7 +27,7 @@ function MetricCard({
       <p className="text-xs font-semibold text-[var(--muted-foreground)]">
         {label}
       </p>
-      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-muted-foreground">
         {value}
       </p>
       {subtitle && (
@@ -57,7 +57,7 @@ function ShortcutCard({
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-xs">
             {icon}
           </div>
-          <h2 className="text-sm font-bold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+          <h2 className="text-sm font-bold text-muted-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
             {title}
           </h2>
         </div>
@@ -87,7 +87,7 @@ export default async function AdminPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-8 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-8 font-sans text-muted-foreground">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
@@ -108,7 +108,7 @@ export default async function AdminPage() {
           </Link>
           <Link
             href="/admin/security"
-            className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-bold text-[var(--foreground)] transition-all"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-bold text-muted-foreground transition-all"
           >
             Security Center
           </Link>
@@ -146,7 +146,7 @@ export default async function AdminPage() {
               <span className="text-xs font-medium text-[var(--muted-foreground)]">Successful Logins</span>
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-[var(--foreground)]">
+            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
               {securityStats.successfulLogins24h}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Authenticated sessions</p>
@@ -161,7 +161,7 @@ export default async function AdminPage() {
                 }`}
               />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-[var(--foreground)]">
+            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
               {securityStats.failedLogins24h}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Throttled / rejected</p>
@@ -172,7 +172,7 @@ export default async function AdminPage() {
               <span className="text-xs font-medium text-[var(--muted-foreground)]">Privilege & Role Changes</span>
               <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-[var(--foreground)]">
+            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
               {securityStats.privilegeChanges7d}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">In last 7 days</p>
@@ -183,7 +183,7 @@ export default async function AdminPage() {
       {/* Administrator Accounts Table Section */}
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)]">
+          <h2 className="text-xl font-bold tracking-tight text-muted-foreground">
             Administrator Accounts
           </h2>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -266,7 +266,7 @@ export default async function AdminPage() {
                     >
                       {log.action}
                     </span>
-                    <p className="text-xs text-[var(--foreground)] font-semibold">
+                    <p className="text-xs text-muted-foreground font-semibold">
                       {log.description}
                     </p>
                   </div>

@@ -382,7 +382,7 @@ export function HostRegistrationRequestsTable() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Toast Feedback */}
       {feedback && (
         <Alert tone={feedback.tone}>
@@ -416,7 +416,7 @@ export function HostRegistrationRequestsTable() {
             type="button"
             onClick={() => fetchData()}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer disabled:opacity-50"
           >
             <svg className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -438,7 +438,7 @@ export function HostRegistrationRequestsTable() {
           }`}
         >
           <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider block">All Requests</span>
-          <p className="mt-1 text-2xl font-black text-[var(--foreground)]">{statusCounts.total}</p>
+          <p className="mt-1 text-2xl font-black text-muted-foreground">{statusCounts.total}</p>
         </button>
 
         <button
@@ -507,7 +507,7 @@ export function HostRegistrationRequestsTable() {
               placeholder="Search Host Name, Email, Phone, App ID..."
               value={search}
               onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] pl-10 pr-4 py-2.5 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] pl-10 pr-4 py-2.5 text-xs text-muted-foreground outline-none focus:border-[var(--accent)]"
             />
           </div>
 
@@ -516,7 +516,7 @@ export function HostRegistrationRequestsTable() {
             <select
               value={statusFilter}
               onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-[var(--foreground)] outline-none"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-muted-foreground outline-none"
             >
               <option value="ALL">All Application Statuses</option>
               <option value="PENDING">Pending Only</option>
@@ -531,7 +531,7 @@ export function HostRegistrationRequestsTable() {
             <select
               value={reviewerFilter}
               onChange={(e) => handleFilterChange(setReviewerFilter, e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-[var(--foreground)] outline-none"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-muted-foreground outline-none"
             >
               <option value="ALL">All Reviewers</option>
               <option value="UNASSIGNED">Unassigned Only</option>
@@ -548,7 +548,7 @@ export function HostRegistrationRequestsTable() {
             <select
               value={dateRangeFilter}
               onChange={(e) => handleFilterChange(setDateRangeFilter, e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-[var(--foreground)] outline-none"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-xs text-muted-foreground outline-none"
             >
               <option value="ALL">All Time</option>
               <option value="LAST_7_DAYS">Last 7 Days</option>
@@ -566,7 +566,7 @@ export function HostRegistrationRequestsTable() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs text-[var(--foreground)] outline-none"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs text-muted-foreground outline-none"
             >
               <option value="createdAt">Submission Date</option>
               <option value="updatedAt">Last Updated</option>
@@ -577,7 +577,7 @@ export function HostRegistrationRequestsTable() {
             <button
               type="button"
               onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors cursor-pointer"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface)] transition-colors cursor-pointer"
             >
               {sortOrder === "desc" ? "↓ Newest / Desc" : "↑ Oldest / Asc"}
             </button>
@@ -614,7 +614,7 @@ export function HostRegistrationRequestsTable() {
             <svg className="w-10 h-10 mx-auto text-[var(--muted-foreground)] opacity-50" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p className="font-bold text-sm text-[var(--foreground)]">No host registration requests found</p>
+            <p className="font-bold text-sm text-muted-foreground">No host registration requests found</p>
             <p>{isFilterActive ? "Try adjusting your search query or filters." : "No applications submitted yet."}</p>
             {isFilterActive && (
               <button onClick={handleClearFilters} className="mt-2 text-xs font-bold text-amber-600 underline cursor-pointer">
@@ -641,14 +641,14 @@ export function HostRegistrationRequestsTable() {
                   <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     {/* Application ID */}
                     <td className="py-3.5 px-4">
-                      <span className="font-mono text-xs font-extrabold text-[var(--foreground)]">
+                      <span className="font-mono text-xs font-extrabold text-muted-foreground">
                         {item.applicationId}
                       </span>
                     </td>
 
                     {/* Host Name & Email */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-[var(--foreground)]">{item.applicantName}</div>
+                      <div className="font-bold text-muted-foreground">{item.applicantName}</div>
                       <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{item.applicantEmail}</div>
                       {item.applicantPhone && (
                         <div className="text-[10px] text-[var(--muted-foreground)]">{item.applicantPhone}</div>
@@ -657,7 +657,7 @@ export function HostRegistrationRequestsTable() {
 
                     {/* Registration Type & Business Name */}
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[var(--foreground)]">{item.registrationType}</div>
+                      <div className="font-semibold text-muted-foreground">{item.registrationType}</div>
                       {item.businessName && (
                         <div className="text-[11px] text-[var(--muted-foreground)] truncate max-w-[160px]">{item.businessName}</div>
                       )}
@@ -677,7 +677,7 @@ export function HostRegistrationRequestsTable() {
                             {(item.assignedReviewer.name?.[0] || item.assignedReviewer.email?.[0] || "A").toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-[var(--foreground)] text-xs">
+                            <div className="font-bold text-muted-foreground text-xs">
                               {item.assignedReviewer.name || item.assignedReviewer.email}
                             </div>
                             <div className="text-[10px] text-[var(--muted-foreground)] font-mono">
@@ -694,7 +694,7 @@ export function HostRegistrationRequestsTable() {
 
                     {/* Submitted Date */}
                     <td className="py-3.5 px-4">
-                      <div className="text-[11px] text-[var(--foreground)] font-mono" suppressHydrationWarning>
+                      <div className="text-[11px] text-muted-foreground font-mono" suppressHydrationWarning>
                         {new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </div>
                       <div className="text-[10px] text-[var(--muted-foreground)] font-mono" suppressHydrationWarning>
@@ -721,7 +721,7 @@ export function HostRegistrationRequestsTable() {
                         <button
                           type="button"
                           onClick={() => handleOpenAssignModal(item)}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--foreground)] transition-colors cursor-pointer"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground transition-colors cursor-pointer"
                         >
                           {item.assignedReviewer ? "Reassign" : "Assign"}
                         </button>
@@ -773,7 +773,7 @@ export function HostRegistrationRequestsTable() {
           />
 
           {/* Drawer Panel */}
-          <div className="relative w-full max-w-3xl bg-[var(--surface)] text-[var(--foreground)] h-full shadow-2xl border-l border-[var(--border)] flex flex-col z-10 animate-in slide-in-from-right duration-200 overflow-y-auto p-6">
+          <div className="relative w-full max-w-3xl bg-[var(--surface)] text-muted-foreground h-full shadow-2xl border-l border-[var(--border)] flex flex-col z-10 animate-in slide-in-from-right duration-200 overflow-y-auto p-6">
             {drawerLoading ? (
               <div className="p-12 text-center text-xs text-[var(--muted-foreground)] my-auto space-y-2">
                 <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
@@ -797,10 +797,10 @@ export function HostRegistrationRequestsTable() {
       {/* ASSIGN REVIEWER MODAL */}
       {assignModalOpen && targetAssignItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">Assign Reviewer</h3>
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">Assign Reviewer</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Assign an authorized admin reviewer to application <strong className="text-[var(--foreground)]">{targetAssignItem.applicationId}</strong> ({targetAssignItem.applicantName}).
+              Assign an authorized admin reviewer to application <strong className="text-muted-foreground">{targetAssignItem.applicationId}</strong> ({targetAssignItem.applicantName}).
             </p>
 
             <form onSubmit={handleAssignSubmit} className="space-y-4 text-xs">
@@ -809,7 +809,7 @@ export function HostRegistrationRequestsTable() {
                 <select
                   value={selectedReviewerId}
                   onChange={(e) => setSelectedReviewerId(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 >
                   <option value="">-- Unassigned (No Reviewer) --</option>
                   {reviewers.map((r) => (
@@ -825,7 +825,7 @@ export function HostRegistrationRequestsTable() {
                   type="button"
                   onClick={() => setAssignModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -848,8 +848,8 @@ export function HostRegistrationRequestsTable() {
       {/* EDIT REQUEST MODAL */}
       {editModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">Edit Registration Information</h3>
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">Edit Registration Information</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Update application details for {selectedItem.applicationId}.
             </p>
@@ -862,7 +862,7 @@ export function HostRegistrationRequestsTable() {
                     type="text"
                     value={editForm.applicantName}
                     onChange={(e) => setEditForm({ ...editForm, applicantName: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -872,7 +872,7 @@ export function HostRegistrationRequestsTable() {
                     type="email"
                     value={editForm.applicantEmail}
                     onChange={(e) => setEditForm({ ...editForm, applicantEmail: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -885,7 +885,7 @@ export function HostRegistrationRequestsTable() {
                     type="text"
                     value={editForm.applicantPhone}
                     onChange={(e) => setEditForm({ ...editForm, applicantPhone: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   />
                 </div>
                 <div>
@@ -893,7 +893,7 @@ export function HostRegistrationRequestsTable() {
                   <select
                     value={editForm.registrationType}
                     onChange={(e) => setEditForm({ ...editForm, registrationType: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   >
                     <option value="INDIVIDUAL">INDIVIDUAL</option>
                     <option value="BUSINESS">BUSINESS</option>
@@ -909,7 +909,7 @@ export function HostRegistrationRequestsTable() {
                     type="text"
                     value={editForm.businessName}
                     onChange={(e) => setEditForm({ ...editForm, businessName: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   />
                 </div>
                 <div>
@@ -919,7 +919,7 @@ export function HostRegistrationRequestsTable() {
                     min={1}
                     value={editForm.propertyCount}
                     onChange={(e) => setEditForm({ ...editForm, propertyCount: parseInt(e.target.value) || 1 })}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   />
                 </div>
               </div>
@@ -930,7 +930,7 @@ export function HostRegistrationRequestsTable() {
                   type="text"
                   value={editForm.location}
                   onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 />
               </div>
 
@@ -940,7 +940,7 @@ export function HostRegistrationRequestsTable() {
                   rows={3}
                   value={editForm.notes}
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 />
               </div>
 
@@ -949,7 +949,7 @@ export function HostRegistrationRequestsTable() {
                   type="button"
                   onClick={() => setEditModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

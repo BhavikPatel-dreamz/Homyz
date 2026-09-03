@@ -331,7 +331,7 @@ export function HomyzAuthForm({
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
+    <div className="account-page min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
       {/* --------------------------------------------------------- */}
       {/* 1. TOP HEADER (Unified AppHeader)                          */}
       {/* --------------------------------------------------------- */}
@@ -340,10 +340,10 @@ export function HomyzAuthForm({
       {/* --------------------------------------------------------- */}
       {/* 2. MAIN FORM & HERO SECTION (Fully Responsive)             */}
       {/* --------------------------------------------------------- */}
-      <main className="flex-1 w-full flex items-center justify-center py-6 sm:py-8 lg:py-14 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-[1318px] flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-8 xl:gap-[56px] mx-auto">
+      <main className="flex-1 w-full flex items-center justify-center py-6 sm:py-8 lg:py-22.5 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1318px] flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-8 xl:gap-[56px] mx-auto">
           {/* Left Column: Form Area */}
-          <div className="w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
+          <div className="left-column lg:pt-2.5 w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
             <AuthHeading
               title={authMode === "login" ? "Log in or sign up" : "Log in or sign up"}
@@ -426,7 +426,7 @@ export function HomyzAuthForm({
                             <select
                               value={countryCode}
                               onChange={(e) => setCountryCode(e.target.value)}
-                              className="brush-border-responsive w-full h-full appearance-none rounded-[8px] border border-[#72727299] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
+                              className="w-full h-full appearance-none rounded-[8px] border border-[#727272] bg-white px-4 pr-10 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer"
                             >
                               {COUNTRY_CODES.map((c, idx) => (
                                 <option key={`${c.iso2}-${c.code}-${idx}`} value={c.code}>
@@ -457,7 +457,7 @@ export function HomyzAuthForm({
                             placeholder={getCountryByCallingCode(countryCode)?.placeholder || "5XX XXX XXX"}
                             required
                             suppressHydrationWarning
-                            className="brush-border-wide w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
+                            className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
 
                         </div>
@@ -478,6 +478,7 @@ export function HomyzAuthForm({
                         fullWidth
                         isLoading={pending}
                         loadingText="Sending code..."
+                        className="auth-action-button"
                       >
                         Continue
                       </Button>
@@ -503,7 +504,7 @@ export function HomyzAuthForm({
                           onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                           placeholder="123456"
                           required
-                          className="brush-border-wide w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
+                          className="w-full h-[56px] text-center tracking-widest text-lg font-mono rounded-[8px] border border-[#727272] bg-white p-4 text-[#1F1F1F] outline-none focus:border-[#1F1F1F]"
                         />
                       </div>
                       <Button
@@ -512,6 +513,7 @@ export function HomyzAuthForm({
                         fullWidth
                         isLoading={pending}
                         loadingText="Verifying..."
+                        className="auth-action-button"
                       >
                         Verify &amp; Continue
                       </Button>
@@ -537,7 +539,7 @@ export function HomyzAuthForm({
                           }}
                           placeholder="Jane Doe"
                           required
-                          className="brush-email-password-border h-[56px] w-full rounded-[8px] border bg-white px-4 font-['Poppins'] text-[15px] text-[#1F1F1F] outline-none placeholder:text-[#1F1F1F]/50 sm:text-[16px]"
+                          className="h-[56px] w-full rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-[15px] text-[#1F1F1F] outline-none placeholder:text-[#1F1F1F]/50 focus:border-[#1F1F1F] transition-colors sm:text-[16px]"
                         />
                         {fieldErrors.name && (
                           <p className={authFieldErrorClass}>{fieldErrors.name}</p>
@@ -554,9 +556,9 @@ export function HomyzAuthForm({
                             type="button"
                             onClick={() => setRole("USER")}
                             aria-pressed={role === "USER"}
-                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "USER"
+                            className={`flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "USER"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                                : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                               }`}
                           >
                             Guest User
@@ -565,9 +567,9 @@ export function HomyzAuthForm({
                             type="button"
                             onClick={() => setRole("HOST")}
                             aria-pressed={role === "HOST"}
-                            className={`no-brush-border flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
+                            className={`flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
                                 ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                                : "border-[#72727299] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                                : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                               }`}
                           >
                             Property Host
@@ -619,7 +621,7 @@ export function HomyzAuthForm({
                         required
                         autoComplete={authMode === "login" ? "current-password" : "new-password"}
                         suppressHydrationWarning
-                        className="brush-email-password-border w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                        className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
                       />
                       <button
                         type="button"
@@ -774,7 +776,7 @@ export function HomyzAuthForm({
                 <button
                   type="button"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="brush-back-to-top-border md:hidden w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                  className="md:hidden w-8 h-8 rounded-full border border-[#727272] bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
                   title="Scroll to top"
                   aria-label="Scroll to top"
                 >
@@ -828,7 +830,7 @@ export function HomyzAuthForm({
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="brush-back-to-top-border hidden md:flex absolute right-0 top-0 w-8 h-8 rounded-full bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="hidden md:flex absolute right-0 top-0 w-8 h-8 rounded-full border border-[#727272] bg-[#FCDF9C] hover:bg-[#f5d687] text-[#1F1F1F] items-center justify-center transition-all cursor-pointer shadow-xs"
               title="Scroll to top"
               aria-label="Scroll to top"
             >

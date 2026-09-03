@@ -74,7 +74,7 @@ export function LogoutButton({
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className={`rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] px-4 py-1.5 text-xs font-semibold text-[var(--foreground)] transition-all inline-flex items-center gap-2 disabled:opacity-50 ${className}`}
+          className={`rounded-full border border-[var(--border)] hover:bg-[var(--surface-secondary)] px-4 py-1.5 text-xs font-semibold text-muted-foreground transition-all inline-flex items-center gap-2 disabled:opacity-50 ${className}`}
         >
           {isLoggingOut && (
             <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />

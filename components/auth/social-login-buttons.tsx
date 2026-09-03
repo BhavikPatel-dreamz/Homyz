@@ -5,7 +5,7 @@ interface SocialLoginButtonsProps {
   onLogin: (provider: SocialProvider) => void;
 }
 
-const socialButtonClass = "h-[52px] sm:h-[56px] rounded-[30px] bg-[#E9EBFF] hover:bg-[#dce0fd] border border-[#1F1F1F] flex items-center justify-center gap-2 sm:gap-2.5 px-2 sm:px-3 font-['Poppins'] font-medium text-[14px] sm:text-[16px] xl:text-[18px] leading-[23px] text-[#1F1F1F] transition-all cursor-pointer shadow-xs select-none";
+const socialButtonClass = "h-[52px] sm:h-[56px] rounded-[30px] bg-[#E9EBFF] hover:bg-[#dce0fd] border border-[#727272] flex items-center justify-center gap-2 sm:gap-2.5 px-2 sm:px-3 font-['Poppins'] font-medium text-[14px] sm:text-[16px] xl:text-[18px] leading-[23px] text-[#1F1F1F] transition-all cursor-pointer shadow-xs select-none";
 
 export function SocialLoginButtons({ providers, onLogin }: SocialLoginButtonsProps) {
   return (
@@ -18,5 +18,5 @@ export function SocialLoginButtons({ providers, onLogin }: SocialLoginButtonsPro
 }
 
 function SocialButton({ provider, label, onLogin, children }: { provider: SocialProvider; label: string; onLogin: (provider: SocialProvider) => void; children: React.ReactNode }) {
-  return <button type="button" onClick={() => onLogin(provider)} className={`${socialButtonClass} social-${provider}-border`} title={`Continue with ${label}`}>{children}<span className="hidden sm:inline">{label}</span></button>;
+  return <button type="button" onClick={() => onLogin(provider)} className={socialButtonClass} title={`Continue with ${label}`}>{children}<span className="hidden sm:inline">{label}</span></button>;
 }

@@ -174,7 +174,7 @@ export function RoleMatrixManager({
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Role Cards List */}
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
@@ -205,7 +205,7 @@ export function RoleMatrixManager({
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold text-[var(--foreground)] text-sm">
+                <h3 className="font-bold text-muted-foreground text-sm">
                   {role.name}
                 </h3>
                 {isSuper ? (
@@ -214,7 +214,7 @@ export function RoleMatrixManager({
                   </span>
                 ) : (
                   role.isSystem && (
-                    <span className="text-[10px] font-bold bg-[var(--surface-secondary)] text-[var(--foreground)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
+                    <span className="text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
                       System
                     </span>
                   )
@@ -254,7 +254,7 @@ export function RoleMatrixManager({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-extrabold text-[var(--foreground)]">
+              <h2 className="text-base font-extrabold text-muted-foreground">
                 Role Matrix for: <span className="text-[var(--accent)]">{activeRole.name}</span>
               </h2>
               {isSuperRole ? (
@@ -277,14 +277,14 @@ export function RoleMatrixManager({
               <button
                 type="button"
                 onClick={selectAllGlobal}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--foreground)] transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all shadow-2xs"
               >
                 Select All
               </button>
               <button
                 type="button"
                 onClick={clearAllGlobal}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--foreground)] transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all shadow-2xs"
               >
                 Clear All
               </button>
@@ -319,7 +319,7 @@ export function RoleMatrixManager({
             return (
               <div key={moduleName} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--foreground)]">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
                     {moduleName} Module
                   </span>
                   {!isSuperRole && (
@@ -356,7 +356,7 @@ export function RoleMatrixManager({
                           className="mt-0.5 h-4 w-4 rounded accent-[var(--accent)]"
                         />
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-[var(--foreground)]">
+                          <span className="text-xs font-bold text-muted-foreground">
                             {perm.action}
                           </span>
                           <span className="text-[11px] text-[var(--muted-foreground)] leading-snug">
@@ -376,15 +376,15 @@ export function RoleMatrixManager({
       {/* Modal: Create Role */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-extrabold text-[var(--foreground)]">
+              <h2 className="text-base font-extrabold text-muted-foreground">
                 Create Administrative Role
               </h2>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-bold"
               >
                 ✕
               </button>
@@ -404,7 +404,7 @@ export function RoleMatrixManager({
                   }}
                   required
                   placeholder="e.g. Content Moderator"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -416,7 +416,7 @@ export function RoleMatrixManager({
                   onChange={(e) => setNewRoleSlug(e.target.value)}
                   required
                   placeholder="e.g. content_moderator"
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)] font-mono"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)] font-mono"
                 />
               </div>
 
@@ -427,7 +427,7 @@ export function RoleMatrixManager({
                   onChange={(e) => setNewRoleDesc(e.target.value)}
                   rows={3}
                   placeholder="Responsibilities and permission overview..."
-                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-2 text-xs outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -436,7 +436,7 @@ export function RoleMatrixManager({
                   type="button"
                   onClick={() => setShowCreateModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>

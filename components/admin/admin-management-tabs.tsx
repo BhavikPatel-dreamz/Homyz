@@ -14,7 +14,7 @@ export function AdminManagementTabs() {
         className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           !isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
-            : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
         }`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@ export function AdminManagementTabs() {
         className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
-            : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
         }`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

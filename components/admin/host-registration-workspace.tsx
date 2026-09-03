@@ -741,7 +741,7 @@ export function HostRegistrationWorkspace({
   const actionRequiredCount = documentSummary.pending + documentSummary.rejected;
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Toast Feedback */}
       {feedback && (
         <Alert tone={feedback.tone}>
@@ -769,7 +769,7 @@ export function HostRegistrationWorkspace({
               </span>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] mt-1">
-              Host: <strong className="text-[var(--foreground)]">{data.applicantName}</strong> ({data.applicantEmail})
+              Host: <strong className="text-muted-foreground">{data.applicantName}</strong> ({data.applicantEmail})
             </p>
           </div>
 
@@ -821,7 +821,7 @@ export function HostRegistrationWorkspace({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
               >
                 Close Workspace
               </button>
@@ -851,7 +851,7 @@ export function HostRegistrationWorkspace({
             <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
               Assigned Reviewer
             </span>
-            <div className="font-extrabold text-[var(--foreground)] pt-0.5">
+            <div className="font-extrabold text-muted-foreground pt-0.5">
               {data.assignedReviewer ? (data.assignedReviewer.name || data.assignedReviewer.email) : "Unassigned"}
             </div>
           </div>
@@ -873,8 +873,8 @@ export function HostRegistrationWorkspace({
           href={getTabHref("overview")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "overview"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           Overview
@@ -883,8 +883,8 @@ export function HostRegistrationWorkspace({
           href={getTabHref("applicant")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "applicant"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           Applicant Info
@@ -893,8 +893,8 @@ export function HostRegistrationWorkspace({
           href={getTabHref("property")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "property"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           Property & Business
@@ -903,8 +903,8 @@ export function HostRegistrationWorkspace({
           href={getTabHref("documents")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
             activeTab === "documents"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           <span>Documents</span>
@@ -917,12 +917,12 @@ export function HostRegistrationWorkspace({
           href={getTabHref("notes")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
             activeTab === "notes"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           <span>Review Notes</span>
-          <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 text-[var(--foreground)] px-2 py-0.2 text-[10px]">
+          <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 text-muted-foreground px-2 py-0.2 text-[10px]">
             {data.reviewNotes.length}
           </span>
         </Link>
@@ -930,8 +930,8 @@ export function HostRegistrationWorkspace({
           href={getTabHref("activity")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
             activeTab === "activity"
-              ? "border-[var(--accent)] text-[var(--foreground)]"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              ? "border-[var(--accent)] text-muted-foreground"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
           }`}
         >
           Review Activity ({data.activityLogs.length})
@@ -942,55 +942,55 @@ export function HostRegistrationWorkspace({
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
-            <h3 className="text-sm font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2">
+            <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
               Application Overview
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Application ID</span>
-                <span className="font-extrabold font-mono text-[var(--foreground)]">{data.applicationId}</span>
+                <span className="font-extrabold font-mono text-muted-foreground">{data.applicationId}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Onboarding Stage</span>
-                <span className="font-bold text-[var(--foreground)]">{data.onboardingStage}</span>
+                <span className="font-bold text-muted-foreground">{data.onboardingStage}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Submitted Date</span>
-                <span className="font-mono text-[var(--foreground)]">{new Date(data.createdAt).toLocaleString()}</span>
+                <span className="font-mono text-muted-foreground">{new Date(data.createdAt).toLocaleString()}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Last Updated</span>
-                <span className="font-mono text-[var(--foreground)]">{new Date(data.updatedAt).toLocaleString()}</span>
+                <span className="font-mono text-muted-foreground">{new Date(data.updatedAt).toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
-            <h3 className="text-sm font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2">
+            <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
               Reviewer Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Assigned Reviewer</span>
-                <span className="font-bold text-[var(--foreground)]">
+                <span className="font-bold text-muted-foreground">
                   {data.assignedReviewer ? (data.assignedReviewer.name || data.assignedReviewer.email) : "Unassigned"}
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Assigned At</span>
-                <span className="font-mono text-[var(--foreground)]">
+                <span className="font-mono text-muted-foreground">
                   {data.assignedAt ? new Date(data.assignedAt).toLocaleString() : "N/A"}
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Review Started By</span>
-                <span className="font-bold text-[var(--foreground)]">
+                <span className="font-bold text-muted-foreground">
                   {data.reviewedBy ? (data.reviewedBy.name || data.reviewedBy.email) : "Not started"}
                 </span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Review Started At</span>
-                <span className="font-mono text-[var(--foreground)]">
+                <span className="font-mono text-muted-foreground">
                   {data.reviewStartedAt ? new Date(data.reviewStartedAt).toLocaleString() : "N/A"}
                 </span>
               </div>
@@ -1002,29 +1002,29 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 2: APPLICANT INFORMATION */}
       {activeTab === "applicant" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Applicant Profile Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
-              <span className="font-extrabold text-[var(--foreground)] text-sm">{data.applicantName}</span>
+              <span className="font-extrabold text-muted-foreground text-sm">{data.applicantName}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
-              <span className="font-bold font-mono text-[var(--foreground)]">{data.applicantEmail}</span>
+              <span className="font-bold font-mono text-muted-foreground">{data.applicantEmail}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
-              <span className="font-bold text-[var(--foreground)]">{data.applicantPhone || "Not provided"}</span>
+              <span className="font-bold text-muted-foreground">{data.applicantPhone || "Not provided"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Linked Host Account</span>
-              <span className="font-bold text-[var(--foreground)]">{data.hostUser ? "Registered User" : "Pending Registration"}</span>
+              <span className="font-bold text-muted-foreground">{data.hostUser ? "Registered User" : "Pending Registration"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Account Creation Date</span>
-              <span className="font-mono text-[var(--foreground)]">
+              <span className="font-mono text-muted-foreground">
                 {data.hostUser ? new Date(data.hostUser.createdAt).toLocaleDateString() : "N/A"}
               </span>
             </div>
@@ -1035,31 +1035,31 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 3: PROPERTY & BUSINESS INFORMATION */}
       {activeTab === "property" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Property & Business Profile (Read-Only Intake)
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Registration Category</span>
-              <span className="font-extrabold text-[var(--foreground)] text-sm">{data.registrationType}</span>
+              <span className="font-extrabold text-muted-foreground text-sm">{data.registrationType}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Business / Entity Name</span>
-              <span className="font-bold text-[var(--foreground)]">{data.businessName || "Not provided"}</span>
+              <span className="font-bold text-muted-foreground">{data.businessName || "Not provided"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Estimated Property Count</span>
-              <span className="font-bold text-[var(--foreground)]">{data.propertyCount}</span>
+              <span className="font-bold text-muted-foreground">{data.propertyCount}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Property Location / Address</span>
-              <span className="font-bold text-[var(--foreground)]">{data.location || "Not specified"}</span>
+              <span className="font-bold text-muted-foreground">{data.location || "Not specified"}</span>
             </div>
           </div>
           {data.notes && (
             <div className="pt-3 border-t border-[var(--border-subtle)] space-y-1">
               <span className="text-[var(--muted-foreground)] block font-medium">Intake Description / Notes</span>
-              <p className="p-4 bg-[var(--surface-secondary)] rounded-xl border border-[var(--border)] text-xs text-[var(--foreground)]">
+              <p className="p-4 bg-[var(--surface-secondary)] rounded-xl border border-[var(--border)] text-xs text-muted-foreground">
                 {data.notes}
               </p>
             </div>
@@ -1073,14 +1073,14 @@ export function HostRegistrationWorkspace({
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="font-extrabold text-sm text-[var(--foreground)]">Document Verification Summary</h4>
+                <h4 className="font-extrabold text-sm text-muted-foreground">Document Verification Summary</h4>
                 <p className="text-[11px] text-[var(--muted-foreground)]">
                   Verify individual submitted files or request host re-submissions.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 font-mono text-xs">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border)] font-bold text-[var(--foreground)]">
+                <span className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border)] font-bold text-muted-foreground">
                   Required: {documentSummary.required}
                 </span>
                 <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold">
@@ -1109,7 +1109,7 @@ export function HostRegistrationWorkspace({
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
                     <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] font-mono text-[11px] font-black text-[var(--foreground)] uppercase">
+                      <span className="px-3 py-1 rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] font-mono text-[11px] font-black text-muted-foreground uppercase">
                         {doc.documentType.replace(/_/g, " ")}
                       </span>
                       {renderDocStatusBadge(doc.status)}
@@ -1119,7 +1119,7 @@ export function HostRegistrationWorkspace({
                       <button
                         type="button"
                         onClick={() => handlePreviewDocument(doc)}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--foreground)] transition-colors cursor-pointer"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground transition-colors cursor-pointer"
                       >
                         👁️ Preview
                       </button>
@@ -1160,21 +1160,21 @@ export function HostRegistrationWorkspace({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">File Name</span>
-                      <span className="font-bold text-[var(--foreground)] truncate block">{doc.fileName}</span>
+                      <span className="font-bold text-muted-foreground truncate block">{doc.fileName}</span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">Uploaded At</span>
-                      <span className="font-mono text-[var(--foreground)]">{new Date(doc.uploadedAt).toLocaleString()}</span>
+                      <span className="font-mono text-muted-foreground">{new Date(doc.uploadedAt).toLocaleString()}</span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">Expiry Date</span>
-                      <span className="font-mono text-[var(--foreground)]">
+                      <span className="font-mono text-muted-foreground">
                         {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : "N/A"}
                       </span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">File Size</span>
-                      <span className="font-mono text-[var(--foreground)]">
+                      <span className="font-mono text-muted-foreground">
                         {doc.fileSize ? `${(doc.fileSize / 1024 / 1024).toFixed(2)} MB` : "N/A"}
                       </span>
                     </div>
@@ -1190,7 +1190,7 @@ export function HostRegistrationWorkspace({
       {activeTab === "notes" && (
         <div className="space-y-6 text-xs">
           <form onSubmit={handleAddNote} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3 shadow-2xs">
-            <h4 className="font-extrabold text-sm text-[var(--foreground)]">Add Internal Reviewer Note</h4>
+            <h4 className="font-extrabold text-sm text-muted-foreground">Add Internal Reviewer Note</h4>
             <p className="text-[11px] text-[var(--muted-foreground)]">
               Internal notes are visible strictly to authorized administrators and reviewers.
             </p>
@@ -1199,7 +1199,7 @@ export function HostRegistrationWorkspace({
               placeholder="Record information mismatch, compliance notes, or clarification required..."
               value={newNoteContent}
               onChange={(e) => setNewNoteContent(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-3 outline-none"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-3 outline-none"
               required
             />
             <div className="flex justify-end">
@@ -1214,7 +1214,7 @@ export function HostRegistrationWorkspace({
           </form>
 
           <div className="space-y-3">
-            <h4 className="font-extrabold text-sm text-[var(--foreground)]">Internal Review Notes History</h4>
+            <h4 className="font-extrabold text-sm text-muted-foreground">Internal Review Notes History</h4>
             {data.reviewNotes.length === 0 ? (
               <div className="p-8 text-center text-[var(--muted-foreground)] bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
                 No internal review notes posted yet.
@@ -1223,10 +1223,10 @@ export function HostRegistrationWorkspace({
               data.reviewNotes.map((note) => (
                 <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-2 shadow-2xs">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-[var(--foreground)]">{note.authorName || note.authorEmail}</span>
+                    <span className="font-bold text-muted-foreground">{note.authorName || note.authorEmail}</span>
                     <span className="font-mono text-[var(--muted-foreground)]">{new Date(note.createdAt).toLocaleString()}</span>
                   </div>
-                  <p className="text-xs text-[var(--foreground)] whitespace-pre-wrap">{note.content}</p>
+                  <p className="text-xs text-muted-foreground whitespace-pre-wrap">{note.content}</p>
                 </div>
               ))
             )}
@@ -1237,7 +1237,7 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 7: REVIEW ACTIVITY & AUDIT LOG */}
       {activeTab === "activity" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Application Review Activity Trail (Audit Logs)
           </h3>
           {data.activityLogs.length === 0 ? (
@@ -1247,12 +1247,12 @@ export function HostRegistrationWorkspace({
               {data.activityLogs.map((log) => (
                 <div key={log.id} className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-[var(--foreground)] text-xs">{log.action}</span>
+                    <span className="font-extrabold text-muted-foreground text-xs">{log.action}</span>
                     <span className="text-[10px] font-mono text-[var(--muted-foreground)]">
                       {new Date(log.createdAt).toLocaleString("en-US")}
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--foreground)]">{log.description}</p>
+                  <p className="text-xs text-muted-foreground">{log.description}</p>
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Performed By: {log.actorEmail || "System"}</span>
                 </div>
               ))}
@@ -1264,7 +1264,7 @@ export function HostRegistrationWorkspace({
       {/* PREVIEW DOCUMENT MODAL */}
       {previewDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
                 <h3 className="text-base font-extrabold">{previewDoc.fileName}</h3>
@@ -1306,10 +1306,10 @@ export function HostRegistrationWorkspace({
       {/* REJECT DOCUMENT MODAL */}
       {rejectModalOpen && targetDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Reject Document</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Rejecting <strong className="text-[var(--foreground)]">{targetDoc.fileName}</strong> ({targetDoc.documentType}). The host will be notified by email.
+              Rejecting <strong className="text-muted-foreground">{targetDoc.fileName}</strong> ({targetDoc.documentType}). The host will be notified by email.
             </p>
 
             <form onSubmit={handleRejectSubmit} className="space-y-4 text-xs">
@@ -1318,7 +1318,7 @@ export function HostRegistrationWorkspace({
                 <select
                   value={rejectionReasonSelect}
                   onChange={(e) => setRejectionReasonSelect(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 >
                   {STANDARD_REJECTION_REASONS.map((r) => (
                     <option key={r} value={r}>
@@ -1336,7 +1336,7 @@ export function HostRegistrationWorkspace({
                     rows={3}
                     value={customRejectionReason}
                     onChange={(e) => setCustomRejectionReason(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -1347,7 +1347,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setRejectModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1367,10 +1367,10 @@ export function HostRegistrationWorkspace({
       {/* REQUEST RESUBMISSION MODAL */}
       {resubmitModalOpen && targetDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-amber-600">Request Document Re-submission</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Specify what is required for <strong className="text-[var(--foreground)]">{targetDoc.documentType}</strong>.
+              Specify what is required for <strong className="text-muted-foreground">{targetDoc.documentType}</strong>.
             </p>
 
             <form onSubmit={handleResubmitSubmit} className="space-y-4 text-xs">
@@ -1379,7 +1379,7 @@ export function HostRegistrationWorkspace({
                 <select
                   value={rejectionReasonSelect}
                   onChange={(e) => setRejectionReasonSelect(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 >
                   {STANDARD_REJECTION_REASONS.map((r) => (
                     <option key={r} value={r}>
@@ -1397,7 +1397,7 @@ export function HostRegistrationWorkspace({
                   placeholder="e.g. Please upload a clear copy of the identity document with all 4 corners visible."
                   value={resubmitInstructions}
                   onChange={(e) => setResubmitInstructions(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1407,7 +1407,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setResubmitModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1427,7 +1427,7 @@ export function HostRegistrationWorkspace({
       {/* CREATE COMPLIANCE ISSUE MODAL */}
       {createIssueModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Log Compliance Issue</h3>
 
             <form onSubmit={handleCreateIssueSubmit} className="space-y-4 text-xs">
@@ -1438,7 +1438,7 @@ export function HostRegistrationWorkspace({
                   placeholder="e.g. Identity Name Mismatch, Sanctions Alert, Invalid Tax ID"
                   value={newIssueType}
                   onChange={(e) => setNewIssueType(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1448,7 +1448,7 @@ export function HostRegistrationWorkspace({
                 <select
                   value={newIssueSeverity}
                   onChange={(e) => setNewIssueSeverity(e.target.value as any)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none font-bold"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-bold"
                 >
                   <option value="LOW">Low Severity</option>
                   <option value="MEDIUM">Medium Severity</option>
@@ -1464,7 +1464,7 @@ export function HostRegistrationWorkspace({
                   placeholder="Describe the discrepancy or compliance violation..."
                   value={newIssueDesc}
                   onChange={(e) => setNewIssueDesc(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1474,7 +1474,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setCreateIssueModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1494,7 +1494,7 @@ export function HostRegistrationWorkspace({
       {/* REQUEST ADDITIONAL INFO MODAL */}
       {requestInfoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-amber-600">Request Additional Information from Host</h3>
 
             <form onSubmit={handleRequestInfoSubmit} className="space-y-4 text-xs">
@@ -1505,7 +1505,7 @@ export function HostRegistrationWorkspace({
                   placeholder="e.g. Updated Business Registration Certificate or Proof of Address..."
                   value={infoRequiredText}
                   onChange={(e) => setInfoRequiredText(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1517,7 +1517,7 @@ export function HostRegistrationWorkspace({
                   placeholder="e.g. Current document submitted is blurry and expired."
                   value={infoReasonText}
                   onChange={(e) => setInfoReasonText(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1528,7 +1528,7 @@ export function HostRegistrationWorkspace({
                   type="date"
                   value={infoDeadlineDate}
                   onChange={(e) => setInfoDeadlineDate(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none font-mono"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-mono"
                 />
               </div>
 
@@ -1537,7 +1537,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setRequestInfoModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1557,7 +1557,7 @@ export function HostRegistrationWorkspace({
       {/* APPLICATION APPROVAL MODAL */}
       {approvalModalOpen && eligibilityResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-5">
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-5">
             <h3 className="text-xl font-black text-emerald-600">Final Application Approval Decision</h3>
 
             {eligibilityResult.eligible ? (
@@ -1581,7 +1581,7 @@ export function HostRegistrationWorkspace({
                     type="button"
                     onClick={() => setApprovalModalOpen(false)}
                     disabled={pendingTransition}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1611,7 +1611,7 @@ export function HostRegistrationWorkspace({
                   <button
                     type="button"
                     onClick={() => setApprovalModalOpen(false)}
-                    className="rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] px-5 py-2 font-bold text-[var(--foreground)] cursor-pointer"
+                    className="rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] px-5 py-2 font-bold text-muted-foreground cursor-pointer"
                   >
                     Close & Fix Issues
                   </button>
@@ -1625,7 +1625,7 @@ export function HostRegistrationWorkspace({
       {/* APPLICATION REJECTION MODAL */}
       {appRejectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Reject Host Application</h3>
 
             <form onSubmit={handleConfirmApplicationRejection} className="space-y-4 text-xs">
@@ -1634,7 +1634,7 @@ export function HostRegistrationWorkspace({
                 <select
                   value={appRejectReason}
                   onChange={(e) => setAppRejectReason(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none font-bold"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-bold"
                 >
                   {STANDARD_APPLICATION_REJECTION_REASONS.map((r) => (
                     <option key={r} value={r}>
@@ -1651,7 +1651,7 @@ export function HostRegistrationWorkspace({
                   placeholder="Provide specific explanation for the rejection..."
                   value={appRejectExplanation}
                   onChange={(e) => setAppRejectExplanation(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                 />
               </div>
 
@@ -1660,7 +1660,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setAppRejectModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1680,7 +1680,7 @@ export function HostRegistrationWorkspace({
       {/* REOPEN APPLICATION MODAL */}
       {reopenModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-indigo-600">Reopen Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Reopening will restore this application's status to <strong>In Review</strong> for further compliance investigation.
@@ -1694,7 +1694,7 @@ export function HostRegistrationWorkspace({
                   placeholder="State the operational or compliance reason for reopening..."
                   value={reopenReasonText}
                   onChange={(e) => setReopenReasonText(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                   required
                 />
               </div>
@@ -1704,7 +1704,7 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setReopenModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
                 >
                   Cancel
                 </button>

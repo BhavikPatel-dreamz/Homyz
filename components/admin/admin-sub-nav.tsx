@@ -62,7 +62,7 @@ export function AdminSubNav() {
                 className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)]"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                 }`}
               >
                 {link.label}

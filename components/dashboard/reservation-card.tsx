@@ -80,10 +80,10 @@ export function ReservationCard({
     >
       {/* Top Banner Details */}
       <div className="flex flex-col items-center w-full mb-3">
-        <span className="text-sm font-bold tracking-tight text-[var(--foreground)]">
+        <span className="text-sm font-bold tracking-tight text-[#1F1F1F]">
           {data.isToday ? timeHeader : dateText}
         </span>
-        <span className="text-xs text-[var(--muted-foreground)] mt-0.5 font-medium">
+        <span className="text-xs text-muted-foreground mt-0.5 font-medium">
           {statusSubtitle}
         </span>
       </div>
@@ -113,10 +113,10 @@ export function ReservationCard({
 
       {/* Property Name & Location */}
       <div className="flex flex-col items-center w-full mt-2">
-        <h3 className="text-xs font-bold text-[var(--foreground)] truncate max-w-[180px]">
+        <h3 className="text-sm font-bold text-[#1F1F1F] truncate max-w-[180px]">
           {data.propertyName || "Property Name"}
         </h3>
-        <p className="text-[11px] text-[var(--muted-foreground)] truncate max-w-[180px] mt-0.5">
+        <p className="text-sm text-muted-foreground truncate max-w-[180px] mt-0.5">
           {data.location || "Location, City"}
         </p>
       </div>

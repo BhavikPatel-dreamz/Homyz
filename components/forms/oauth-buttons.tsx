@@ -34,7 +34,7 @@ export function OAuthButtons({
         <button
           key={key}
           type="button"
-          className={`${secondaryButtonClass} social-${key}-border`}
+          className={secondaryButtonClass}
           onClick={() => signIn(key, { callbackUrl })}
         >
           {label}

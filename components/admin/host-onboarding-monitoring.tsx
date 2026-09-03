@@ -251,8 +251,8 @@ export function HostOnboardingMonitoring() {
             href={getTabHref("pipeline")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "pipeline"
-                ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                : "text-[var(--muted-foreground)] hover:text-muted-foreground"
             }`}
           >
             Pipeline View
@@ -261,8 +261,8 @@ export function HostOnboardingMonitoring() {
             href={getTabHref("table")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "table"
-                ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                : "text-[var(--muted-foreground)] hover:text-muted-foreground"
             }`}
           >
             All Applications ({total})
@@ -271,8 +271,8 @@ export function HostOnboardingMonitoring() {
             href={getTabHref("workload")}
             className={`px-4 py-2 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
               activeTab === "workload"
-                ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
+                : "text-[var(--muted-foreground)] hover:text-muted-foreground"
             }`}
           >
             Reviewer Workload
@@ -291,7 +291,7 @@ export function HostOnboardingMonitoring() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
             <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider block">Total In Onboarding</span>
-            <div className="text-2xl font-black text-[var(--foreground)] mt-1">{metrics.totalOnboarding}</div>
+            <div className="text-2xl font-black text-muted-foreground mt-1">{metrics.totalOnboarding}</div>
             <span className="text-[10px] text-[var(--muted-foreground)]">Across all active stages</span>
           </div>
 
@@ -334,7 +334,7 @@ export function HostOnboardingMonitoring() {
       {activeTab === "pipeline" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-extrabold text-[var(--foreground)] uppercase tracking-wide">
+            <h2 className="text-sm font-extrabold text-muted-foreground uppercase tracking-wide">
               Onboarding Pipeline Stages
             </h2>
             <span className="text-xs text-[var(--muted-foreground)]">Click any stage column header to view filtered applications list</span>
@@ -354,7 +354,7 @@ export function HostOnboardingMonitoring() {
               >
                 <div>
                   <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase block">Stage {st.order}</span>
-                  <span className="text-xs font-extrabold text-[var(--foreground)] line-clamp-2 mt-0.5">{st.label}</span>
+                  <span className="text-xs font-extrabold text-muted-foreground line-clamp-2 mt-0.5">{st.label}</span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)] w-full">
                   <span className="text-xs text-[var(--muted-foreground)] font-medium">Count</span>
@@ -392,7 +392,7 @@ export function HostOnboardingMonitoring() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="font-extrabold text-xs text-[var(--foreground)] block">{rec.applicantName}</span>
+                      <span className="font-extrabold text-xs text-muted-foreground block">{rec.applicantName}</span>
                       <span className="text-[11px] font-mono text-[var(--muted-foreground)] block">{rec.applicationId}</span>
                     </div>
                     <span
@@ -423,7 +423,7 @@ export function HostOnboardingMonitoring() {
 
                   <div className="flex items-center justify-between text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                     <span className="text-[var(--muted-foreground)]">
-                      Reviewer: <strong className="text-[var(--foreground)]">{rec.reviewer ? rec.reviewer.name || rec.reviewer.email : "Unassigned"}</strong>
+                      Reviewer: <strong className="text-muted-foreground">{rec.reviewer ? rec.reviewer.name || rec.reviewer.email : "Unassigned"}</strong>
                     </span>
                     {rec.isOverdue && (
                       <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-extrabold text-[10px] flex items-center gap-1">
@@ -460,7 +460,7 @@ export function HostOnboardingMonitoring() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -472,7 +472,7 @@ export function HostOnboardingMonitoring() {
                     setStageFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">All Stages</option>
                   <option value="REGISTRATION">1. Registration Submitted</option>
@@ -494,7 +494,7 @@ export function HostOnboardingMonitoring() {
                     setStatusFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="PENDING">Pending</option>
@@ -513,7 +513,7 @@ export function HostOnboardingMonitoring() {
                     setReviewerFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">All Reviewers</option>
                   <option value="UNASSIGNED">Unassigned Only</option>
@@ -528,7 +528,7 @@ export function HostOnboardingMonitoring() {
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)] text-xs font-semibold">
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer text-[var(--foreground)]">
+                <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
                   <input
                     type="checkbox"
                     checked={actionRequiredOnly}
@@ -541,7 +541,7 @@ export function HostOnboardingMonitoring() {
                   <span>Action Required Only</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer text-[var(--foreground)]">
+                <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
                   <input
                     type="checkbox"
                     checked={overdueOnly}
@@ -610,9 +610,9 @@ export function HostOnboardingMonitoring() {
                   ) : (
                     records.map((item) => (
                       <tr key={item.id} className="hover:bg-[var(--surface-secondary)]/50 transition-colors">
-                        <td className="py-3.5 px-4 font-mono font-bold text-[var(--foreground)]">{item.applicationId}</td>
+                        <td className="py-3.5 px-4 font-mono font-bold text-muted-foreground">{item.applicationId}</td>
                         <td className="py-3.5 px-4">
-                          <div className="font-extrabold text-[var(--foreground)]">{item.applicantName}</div>
+                          <div className="font-extrabold text-muted-foreground">{item.applicantName}</div>
                           <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{item.applicantEmail}</div>
                         </td>
                         <td className="py-3.5 px-4">
@@ -629,7 +629,7 @@ export function HostOnboardingMonitoring() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 min-w-[180px]">
-                          <div className="flex justify-between text-[10px] font-bold text-[var(--foreground)] mb-1">
+                          <div className="flex justify-between text-[10px] font-bold text-muted-foreground mb-1">
                             <span>{item.currentStageLabel}</span>
                             <span>{item.progressPercent}%</span>
                           </div>
@@ -651,7 +651,7 @@ export function HostOnboardingMonitoring() {
                         </td>
                         <td className="py-3.5 px-4">
                           {item.reviewer ? (
-                            <span className="font-bold text-[var(--foreground)]">{item.reviewer.name || item.reviewer.email}</span>
+                            <span className="font-bold text-muted-foreground">{item.reviewer.name || item.reviewer.email}</span>
                           ) : (
                             <span className="text-[var(--muted-foreground)] italic">Unassigned</span>
                           )}
@@ -699,7 +699,7 @@ export function HostOnboardingMonitoring() {
       {/* TAB CONTENT 3: REVIEWER WORKLOAD */}
       {activeTab === "workload" && (
         <div className="space-y-4">
-          <h2 className="text-sm font-extrabold text-[var(--foreground)] uppercase tracking-wide">
+          <h2 className="text-sm font-extrabold text-muted-foreground uppercase tracking-wide">
             Reviewer Workload & Capacity Breakdown
           </h2>
 
@@ -714,7 +714,7 @@ export function HostOnboardingMonitoring() {
                     {(w.reviewer.name || w.reviewer.email || "A")[0].toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-[var(--foreground)]">{w.reviewer.name || "Admin Reviewer"}</h3>
+                    <h3 className="font-extrabold text-sm text-muted-foreground">{w.reviewer.name || "Admin Reviewer"}</h3>
                     <p className="text-xs text-[var(--muted-foreground)] font-mono">{w.reviewer.email}</p>
                   </div>
                 </div>
@@ -722,7 +722,7 @@ export function HostOnboardingMonitoring() {
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[var(--border-subtle)] text-xs">
                   <div className="p-3 bg-[var(--surface-secondary)] rounded-xl">
                     <span className="text-[10px] text-[var(--muted-foreground)] font-bold block uppercase">Assigned Total</span>
-                    <span className="text-lg font-black text-[var(--foreground)]">{w.assignedCount}</span>
+                    <span className="text-lg font-black text-muted-foreground">{w.assignedCount}</span>
                   </div>
                   <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl">
                     <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold block uppercase">Pending Review</span>
@@ -752,7 +752,7 @@ export function HostOnboardingMonitoring() {
             <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
               <div>
                 <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block uppercase">Host Onboarding Tracker</span>
-                <h2 className="text-xl font-black text-[var(--foreground)]">{recordDetail?.applicantName || "Loading..."}</h2>
+                <h2 className="text-xl font-black text-muted-foreground">{recordDetail?.applicantName || "Loading..."}</h2>
                 <span className="text-xs font-mono text-[var(--muted-foreground)]">{recordDetail?.applicationId}</span>
               </div>
               <button
@@ -772,7 +772,7 @@ export function HostOnboardingMonitoring() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-[var(--surface-secondary)] rounded-2xl border border-[var(--border)]">
                   <div>
                     <span className="text-[10px] text-[var(--muted-foreground)] font-bold block uppercase">Overall Status</span>
-                    <span className="font-black text-sm text-[var(--foreground)]">{recordDetail.overallStatus}</span>
+                    <span className="font-black text-sm text-muted-foreground">{recordDetail.overallStatus}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-[var(--muted-foreground)] font-bold block uppercase">Current Stage</span>
@@ -780,11 +780,11 @@ export function HostOnboardingMonitoring() {
                   </div>
                   <div>
                     <span className="text-[10px] text-[var(--muted-foreground)] font-bold block uppercase">Progress</span>
-                    <span className="font-black text-sm text-[var(--foreground)]">{recordDetail.progressPercent}% ({recordDetail.completedStagesCount}/8)</span>
+                    <span className="font-black text-sm text-muted-foreground">{recordDetail.progressPercent}% ({recordDetail.completedStagesCount}/8)</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-[var(--muted-foreground)] font-bold block uppercase">Days in Stage</span>
-                    <span className={`font-black text-sm ${recordDetail.isOverdue ? "text-rose-600" : "text-[var(--foreground)]"}`}>
+                    <span className={`font-black text-sm ${recordDetail.isOverdue ? "text-rose-600" : "text-muted-foreground"}`}>
                       {recordDetail.daysInCurrentStage}d {recordDetail.isOverdue ? "(Overdue SLA)" : ""}
                     </span>
                   </div>
@@ -792,7 +792,7 @@ export function HostOnboardingMonitoring() {
 
                 {/* VISUAL ONBOARDING PROGRESS TRACKER (8 STAGES) */}
                 <div className="space-y-3">
-                  <h3 className="font-extrabold text-xs text-[var(--foreground)] uppercase tracking-wider">
+                  <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
                     Stage Progress Tracker
                   </h3>
 
@@ -859,7 +859,7 @@ export function HostOnboardingMonitoring() {
                       {recordDetail.actionsRequired.map((act: any, idx: number) => (
                         <div key={idx} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-rose-200 dark:border-rose-800 space-y-1">
                           <div className="flex justify-between items-start">
-                            <span className="font-extrabold text-xs text-[var(--foreground)]">{act.title}</span>
+                            <span className="font-extrabold text-xs text-muted-foreground">{act.title}</span>
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">
                               Assigned to: {act.assignedTo}
                             </span>
@@ -877,7 +877,7 @@ export function HostOnboardingMonitoring() {
 
                 {/* STAGE HISTORY / TIMELINE FROM AUDIT LOGS */}
                 <div className="space-y-3">
-                  <h3 className="font-extrabold text-xs text-[var(--foreground)] uppercase tracking-wider">
+                  <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
                     Onboarding Stage History & Timeline
                   </h3>
 
@@ -885,7 +885,7 @@ export function HostOnboardingMonitoring() {
                     {recordDetail.timeline.map((log: any) => (
                       <div key={log.id} className="relative space-y-0.5 text-xs">
                         <span className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-                        <div className="flex justify-between font-extrabold text-[var(--foreground)]">
+                        <div className="flex justify-between font-extrabold text-muted-foreground">
                           <span>{log.action.replace(/_/g, " ")}</span>
                           <span className="font-mono text-[10px] text-[var(--muted-foreground)]">
                             {new Date(log.timestamp).toLocaleString()}

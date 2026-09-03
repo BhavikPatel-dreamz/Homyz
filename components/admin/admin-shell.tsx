@@ -9,7 +9,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans antialiased">
+    <div className="flex min-h-screen w-full bg-[var(--background)] text-muted-foreground font-sans antialiased">
       {/* Left Collapsible Sidebar */}
       <AdminSidebar
         collapsed={collapsed}

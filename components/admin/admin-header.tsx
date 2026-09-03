@@ -45,7 +45,7 @@ export function AdminHeader({
           <button
             type="button"
             onClick={onOpenMobileSidebar}
-            className="md:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
+            className="md:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
             title="Open navigation menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ export function AdminHeader({
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-colors shadow-2xs"
+            className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground transition-colors shadow-2xs"
             title="Toggle sidebar collapse"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ export function AdminHeader({
               value={quickSearch}
               onChange={(e) => setQuickSearch(e.target.value)}
               placeholder="Search admin app..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-amber-500/20 transition-all"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-amber-500/20 transition-all"
             />
             <svg
               className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -96,7 +96,7 @@ export function AdminHeader({
               <button
                 type="button"
                 onClick={() => setQuickSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -110,7 +110,7 @@ export function AdminHeader({
           {/* Notifications Bell */}
           <button
             type="button"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-colors shadow-2xs"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground transition-colors shadow-2xs"
             title="Notifications"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export function AdminHeader({
                   <span>{user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "A"}</span>
                 )}
               </div>
-              <span className="hidden sm:inline-block text-xs font-bold text-[var(--foreground)] truncate max-w-[90px]">
+              <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground truncate max-w-[90px]">
                 {user?.name?.split(" ")[0] || "Admin"}
               </span>
               <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -168,7 +168,7 @@ export function AdminHeader({
                     )}
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <p className="text-xs font-bold text-[var(--foreground)] truncate">
+                    <p className="text-xs font-bold text-muted-foreground truncate">
                       {user?.name || "Homyz Admin"}
                     </p>
                     <p className="text-[11px] text-[var(--muted-foreground)] truncate">
@@ -185,7 +185,7 @@ export function AdminHeader({
                   <Link
                     href="/profile"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                   >
                     <svg className="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -196,7 +196,7 @@ export function AdminHeader({
                   <Link
                     href="/admin/security"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                   >
                     <svg className="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

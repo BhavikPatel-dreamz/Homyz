@@ -211,7 +211,7 @@ export function HostPhase1Dashboard({
   ];
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Title */}
       <div>
         <h1>
@@ -235,7 +235,7 @@ export function HostPhase1Dashboard({
               className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-[#291E05] text-[#FBDE9B] dark:bg-[#f59e0b] dark:text-zinc-950 shadow-2xs"
-                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border-subtle)]"
+                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground border border-[var(--border-subtle)]"
               }`}
             >
               <span>{tab.label}</span>
@@ -266,7 +266,7 @@ export function HostPhase1Dashboard({
                 setCurrentPage(1);
               }}
               placeholder="Search host by name, email, phone, host ID, application ID..."
-              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-4 text-xs text-[var(--foreground)] outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-4 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] transition-all shadow-2xs"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--muted-foreground)] pointer-events-none"
@@ -284,7 +284,7 @@ export function HostPhase1Dashboard({
                   setSearch("");
                   setCurrentPage(1);
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                 title="Clear search"
                 aria-label="Clear search"
               >
@@ -301,7 +301,7 @@ export function HostPhase1Dashboard({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs font-medium"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs font-medium"
             >
               <option value="createdAt">Joined Date</option>
               <option value="name">Host Name</option>
@@ -311,7 +311,7 @@ export function HostPhase1Dashboard({
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
             >
               {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
             </button>
@@ -326,7 +326,7 @@ export function HostPhase1Dashboard({
               setAccountStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">Account Status (All)</option>
             <option value="ACTIVE">Active</option>
@@ -341,7 +341,7 @@ export function HostPhase1Dashboard({
               setAppStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">App Status (All)</option>
             <option value="DRAFT">Draft</option>
@@ -357,7 +357,7 @@ export function HostPhase1Dashboard({
               setStageFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">Onboarding Stage (All)</option>
             <option value="REGISTRATION_SUBMITTED">Registration</option>
@@ -374,7 +374,7 @@ export function HostPhase1Dashboard({
               setVerifFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">Verification (All)</option>
             <option value="PENDING">Pending</option>
@@ -388,7 +388,7 @@ export function HostPhase1Dashboard({
               setComplianceFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground outline-none shadow-2xs"
           >
             <option value="ALL">Compliance (All)</option>
             <option value="PENDING">Pending</option>
@@ -431,7 +431,7 @@ export function HostPhase1Dashboard({
                         {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-[var(--foreground)] line-clamp-1">
+                        <div className="font-bold text-muted-foreground line-clamp-1">
                           {host.name || "Unnamed Host / Applicant"}
                         </div>
                         <div className="text-[11px] text-[var(--muted-foreground)] font-mono">
@@ -488,7 +488,7 @@ export function HostPhase1Dashboard({
                   </td>
 
                   {/* Listings Count */}
-                  <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">
+                  <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">
                     {host.listingsCount}
                   </td>
 
@@ -496,7 +496,7 @@ export function HostPhase1Dashboard({
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/hosts/${host.id}`}
-                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-[var(--foreground)] font-bold transition-all inline-block shadow-2xs"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-bold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -519,13 +519,13 @@ export function HostPhase1Dashboard({
                   {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-[var(--foreground)] text-xs">{host.name || "Unnamed Host"}</h3>
+                  <h3 className="font-bold text-muted-foreground text-xs">{host.name || "Unnamed Host"}</h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{host.email}</p>
                 </div>
               </div>
               <a
                 href={`/admin/hosts/${host.id}`}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--foreground)]"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground"
               >
                 Details
               </a>
@@ -533,7 +533,7 @@ export function HostPhase1Dashboard({
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-[var(--muted-foreground)]">Account:</span> <span className="font-bold text-[var(--foreground)]">{host.accountStatus}</span>
+                <span className="text-[var(--muted-foreground)]">Account:</span> <span className="font-bold text-muted-foreground">{host.accountStatus}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)]">Stage:</span> <span className="font-bold text-sky-600">{host.onboardingStageLabel}</span>
@@ -561,18 +561,18 @@ export function HostPhase1Dashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-bold text-[var(--foreground)]">
+          <span className="font-bold text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-[var(--foreground)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>

@@ -142,12 +142,12 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)] pb-12">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground pb-12">
       {/* Back Link */}
       <div>
         <Link
           href="/admin/guests"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors"
         >
           ← Back to Guest Registry
         </Link>
@@ -210,7 +210,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
-          <p className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--foreground)]">{metrics.totalBookings}</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight text-muted-foreground">{metrics.totalBookings}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Spending</p>
@@ -218,11 +218,11 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Joined Date</p>
-          <p className="mt-2 text-base font-extrabold tracking-tight text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</p>
+          <p className="mt-2 text-base font-extrabold tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Last Active</p>
-          <p className="mt-2 text-base font-extrabold tracking-tight text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleDateString("en-US")}</p>
+          <p className="mt-2 text-base font-extrabold tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleDateString("en-US")}</p>
         </div>
       </div>
 
@@ -238,8 +238,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
             href={getTabHref(tab.id)}
             className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
               activeTab === tab.id
-                ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
-                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "border-[var(--accent)] text-muted-foreground font-extrabold"
+                : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
             }`}
           >
             {tab.label}
@@ -252,7 +252,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-              <h2 className="text-base font-bold text-[var(--foreground)]">Personal & Contact Info</h2>
+              <h2 className="text-base font-bold text-muted-foreground">Personal & Contact Info</h2>
               <button
                 type="button"
                 onClick={() => setShowEditModal(true)}
@@ -268,37 +268,37 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
-                <span className="font-semibold text-[var(--foreground)]">{guest.name || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{guest.name || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
-                <span className="font-semibold text-[var(--foreground)]">{guest.email || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{guest.email || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
-                <span className="font-semibold text-[var(--foreground)]">{guest.phone || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{guest.phone || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Role</span>
-                <span className="font-semibold text-[var(--foreground)]">{guest.role}</span>
+                <span className="font-semibold text-muted-foreground">{guest.role}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Account Status</span>
-                <span className="font-semibold text-[var(--foreground)]">{guest.status}</span>
+                <span className="font-semibold text-muted-foreground">{guest.status}</span>
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
+            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Joined Date</span>
-                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleString("en-US")}</span>
+                <span className="font-semibold text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleString("en-US")}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Last Active Timestamp</span>
-                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleString("en-US")}</span>
+                <span className="font-semibold text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -331,10 +331,10 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
               ) : (
                 data.bookings.map((b) => (
                   <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-[var(--foreground)]">{b.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-[var(--foreground)]">{b.listingTitle}</td>
+                    <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-muted-foreground">{b.id}</td>
+                    <td className="py-3.5 px-4 font-semibold text-muted-foreground">{b.listingTitle}</td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[var(--foreground)]">{b.hostName || "Host"}</div>
+                      <div className="font-semibold text-muted-foreground">{b.hostName || "Host"}</div>
                       <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{b.hostEmail}</div>
                     </td>
                     <td className="py-3.5 px-4 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>{new Date(b.startDate).toLocaleDateString("en-US")}</td>
@@ -344,7 +344,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                         {b.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-muted-foreground">${(b.amount / 100).toFixed(2)}</td>
                   </tr>
                 ))
               )}
@@ -372,7 +372,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* Tab 3: ACTIVITY */}
       {activeTab === "activity" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">Guest Activity History Logs</h2>
+          <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Guest Activity History Logs</h2>
           {data.activity.length === 0 ? (
             <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">No recorded activity history for this guest.</p>
           ) : (
@@ -380,7 +380,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
               {data.activity.map((log) => (
                 <div key={log.id} className="flex items-start justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
                   <div>
-                    <span className="font-bold text-[var(--foreground)]">{log.action}</span>
+                    <span className="font-bold text-muted-foreground">{log.action}</span>
                     <p className="text-[var(--muted-foreground)] mt-0.5">{log.description}</p>
                     <span className="text-[11px] text-[var(--muted-foreground)] mt-1 block">Actor: {log.actorEmail || "System"}</span>
                   </div>
@@ -395,8 +395,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* EDIT GUEST MODAL */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">Edit Guest Profile</h3>
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">Edit Guest Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-bold mb-1">Full Name</label>
@@ -404,7 +404,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
@@ -414,7 +414,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none focus:border-[var(--accent)]"
                   required
                 />
               </div>
@@ -424,7 +424,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none focus:border-[var(--accent)]"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -433,7 +433,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
@@ -456,8 +456,8 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* SUSPEND / UNSUSPEND MODAL */}
       {showSuspendModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-[var(--foreground)]">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-muted-foreground">
               {guest.status === "SUSPENDED" ? "Unsuspend Guest Account" : "Suspend Guest Account"}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -475,7 +475,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}
                     placeholder="Reason for suspending guest..."
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] p-2.5 outline-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none"
                     required
                   />
                 </div>
@@ -486,7 +486,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                   type="button"
                   onClick={() => setShowSuspendModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
@@ -511,7 +511,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* DELETE GUEST MODAL */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-[var(--foreground)] p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
+          <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-rose-600">Delete Guest Account</h3>
             <div className="p-3 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50 rounded-xl text-xs text-rose-800 dark:text-rose-300">
               <strong className="block mb-1 font-bold">⚠️ Warning: Destructive Action</strong>
@@ -523,7 +523,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>

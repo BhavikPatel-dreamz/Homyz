@@ -377,7 +377,7 @@ export function HostComplianceDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
             <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider block">Active Hosts</span>
-            <div className="text-2xl font-black text-[var(--foreground)] mt-1">{metrics.totalActiveHosts}</div>
+            <div className="text-2xl font-black text-muted-foreground mt-1">{metrics.totalActiveHosts}</div>
             <span className="text-[9px] text-[var(--muted-foreground)] block truncate">Onboarded hosts</span>
           </div>
 
@@ -438,7 +438,7 @@ export function HostComplianceDashboard() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -450,7 +450,7 @@ export function HostComplianceDashboard() {
                 setComplianceStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">All Compliance Statuses</option>
               <option value="COMPLIANT">Compliant</option>
@@ -469,7 +469,7 @@ export function HostComplianceDashboard() {
                 setDocumentStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">All Documents</option>
               <option value="EXPIRING_SOON">Expiring Soon (30d)</option>
@@ -485,7 +485,7 @@ export function HostComplianceDashboard() {
                 setRiskLevelFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">All Risk Levels</option>
               <option value="LOW">Low Risk</option>
@@ -503,7 +503,7 @@ export function HostComplianceDashboard() {
                 setHostStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">All Account Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -568,7 +568,7 @@ export function HostComplianceDashboard() {
                   <tr key={item.id} className="hover:bg-[var(--surface-secondary)]/50 transition-colors">
                     {/* Host Info */}
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-[var(--foreground)]">{item.applicantName}</div>
+                      <div className="font-extrabold text-muted-foreground">{item.applicantName}</div>
                       <div className="text-[11px] font-mono text-[var(--muted-foreground)]">{item.applicantEmail}</div>
                       <div className="text-[10px] text-[var(--muted-foreground)]">{item.businessName || "Individual Host"}</div>
                     </td>
@@ -690,7 +690,7 @@ export function HostComplianceDashboard() {
                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
                   Host Compliance Monitoring Profile
                 </span>
-                <h2 className="text-lg font-black text-[var(--foreground)]">{selectedRecord.applicantName}</h2>
+                <h2 className="text-lg font-black text-muted-foreground">{selectedRecord.applicantName}</h2>
                 <p className="text-xs font-mono text-[var(--muted-foreground)]">{selectedRecord.applicantEmail}</p>
               </div>
 
@@ -742,7 +742,7 @@ export function HostComplianceDashboard() {
 
             {/* DOCUMENTS MONITORING LIST */}
             <div className="space-y-3">
-              <h3 className="font-extrabold text-xs text-[var(--foreground)] uppercase tracking-wider">
+              <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
                 Document Expiry & Verification Monitoring
               </h3>
               {selectedRecord.documents.length === 0 ? (
@@ -755,7 +755,7 @@ export function HostComplianceDashboard() {
                       className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/40 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-extrabold text-[var(--foreground)] block">{doc.documentType}</span>
+                        <span className="font-extrabold text-muted-foreground block">{doc.documentType}</span>
                         <span className="text-[11px] font-mono text-[var(--muted-foreground)] block">{doc.fileName}</span>
                         {doc.expiryDate && (
                           <span className="text-[10px] text-[var(--muted-foreground)] block mt-0.5">
@@ -787,7 +787,7 @@ export function HostComplianceDashboard() {
 
             {/* COMPLIANCE ISSUES LIST */}
             <div className="space-y-3">
-              <h3 className="font-extrabold text-xs text-[var(--foreground)] uppercase tracking-wider">
+              <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
                 Compliance Issues History ({selectedRecord.issues.length})
               </h3>
               {selectedRecord.issues.length === 0 ? (
@@ -800,7 +800,7 @@ export function HostComplianceDashboard() {
                       className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 space-y-2 text-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-[var(--foreground)]">{iss.issueType}</span>
+                        <span className="font-extrabold text-muted-foreground">{iss.issueType}</span>
                         <div className="flex items-center gap-2">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
@@ -825,7 +825,7 @@ export function HostComplianceDashboard() {
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-[var(--foreground)] whitespace-pre-wrap">{iss.description}</p>
+                      <p className="text-[11px] text-muted-foreground whitespace-pre-wrap">{iss.description}</p>
 
                       {iss.status !== "RESOLVED" && (
                         <div className="pt-2 border-t border-[var(--border-subtle)] flex justify-end">
@@ -863,7 +863,7 @@ export function HostComplianceDashboard() {
             onSubmit={handleRequestReVerification}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-[var(--foreground)]">Request Host Re-Verification</h3>
+            <h3 className="font-extrabold text-sm text-muted-foreground">Request Host Re-Verification</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               This will set host compliance status to <strong>ACTION_REQUIRED</strong> and notify {selectedRecord.applicantName} to provide updated documentation.
             </p>
@@ -873,7 +873,7 @@ export function HostComplianceDashboard() {
               placeholder="State the reason for re-verification (e.g. Business license expired, address audit)..."
               value={reVerifyReason}
               onChange={(e) => setReVerifyReason(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-[var(--foreground)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-muted-foreground"
               required
             />
 
@@ -904,7 +904,7 @@ export function HostComplianceDashboard() {
             onSubmit={handleCreateComplianceIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-[var(--foreground)]">Log Compliance Issue</h3>
+            <h3 className="font-extrabold text-sm text-muted-foreground">Log Compliance Issue</h3>
 
             <div>
               <label className="text-xs font-bold text-[var(--muted-foreground)] block mb-1">Issue Type</label>
@@ -912,7 +912,7 @@ export function HostComplianceDashboard() {
                 type="text"
                 value={newIssueType}
                 onChange={(e) => setNewIssueType(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-2.5 outline-none text-[var(--foreground)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-2.5 outline-none text-muted-foreground"
                 required
               />
             </div>
@@ -922,7 +922,7 @@ export function HostComplianceDashboard() {
               <select
                 value={newIssueSeverity}
                 onChange={(e) => setNewIssueSeverity(e.target.value as any)}
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-2.5 outline-none text-[var(--foreground)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-2.5 outline-none text-muted-foreground"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -938,7 +938,7 @@ export function HostComplianceDashboard() {
                 placeholder="Describe the compliance discrepancy or violation details..."
                 value={newIssueDesc}
                 onChange={(e) => setNewIssueDesc(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-[var(--foreground)]"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-muted-foreground"
                 required
               />
             </div>
@@ -970,14 +970,14 @@ export function HostComplianceDashboard() {
             onSubmit={handleResolveIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-[var(--foreground)]">Resolve Compliance Issue</h3>
+            <h3 className="font-extrabold text-sm text-muted-foreground">Resolve Compliance Issue</h3>
 
             <textarea
               rows={3}
               placeholder="Record resolution notes (e.g., Valid renewed document uploaded & verified)..."
               value={resolutionNotes}
               onChange={(e) => setResolutionNotes(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-[var(--foreground)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-muted-foreground"
               required
             />
 
@@ -1018,7 +1018,7 @@ export function HostComplianceDashboard() {
               placeholder="Mandatory suspension reason (e.g. Unresolved severe license issue)..."
               value={suspendReason}
               onChange={(e) => setSuspendReason(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-[var(--foreground)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs p-3 outline-none text-muted-foreground"
               required
             />
 
@@ -1053,7 +1053,7 @@ export function HostComplianceDashboard() {
               <span>Reactivate Host Account</span>
             </h3>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Are you sure you want to reactivate host <strong className="text-[var(--foreground)]">{unsuspendRecord.applicantName}</strong> ({unsuspendRecord.applicantEmail})? Account status will return to ACTIVE and compliance restrictions will be lifted.
+              Are you sure you want to reactivate host <strong className="text-muted-foreground">{unsuspendRecord.applicantName}</strong> ({unsuspendRecord.applicantEmail})? Account status will return to ACTIVE and compliance restrictions will be lifted.
             </p>
 
             <div className="flex justify-end gap-2 pt-2">

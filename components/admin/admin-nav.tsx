@@ -82,11 +82,11 @@ export function AdminNav() {
         {/* Left: Brand & Admin Tag */}
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-bold text-base">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-primary-foreground flex items-center justify-center font-bold text-base">
               H
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight text-[var(--foreground)]">
+              <span className="text-sm font-bold tracking-tight text-muted-foreground">
                 homyz
               </span>
               <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--accent)] -mt-1">
@@ -110,7 +110,7 @@ export function AdminNav() {
                 className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   isActive
                     ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)]"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                 }`}
               >
                 {item.label}
@@ -124,7 +124,7 @@ export function AdminNav() {
           {/* Link to view public app */}
           <Link
             href="/dashboard"
-            className="hidden md:inline-flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-full px-3 py-1.5 hover:bg-[var(--surface-secondary)] transition-colors"
+            className="hidden md:inline-flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-muted-foreground border border-[var(--border)] rounded-full px-3 py-1.5 hover:bg-[var(--surface-secondary)] transition-colors"
             title="View App Dashboard"
           >
             <span>View App</span>
@@ -146,7 +146,7 @@ export function AdminNav() {
           {user ? (
             <div className="hidden sm:flex items-center gap-2.5">
               <div className="flex flex-col text-right">
-                <span className="text-xs font-semibold text-[var(--foreground)]">
+                <span className="text-xs font-semibold text-muted-foreground">
                   {user.name || user.email?.split("@")[0]}
                 </span>
                 <span className="text-[10px] text-[var(--muted-foreground)]">
@@ -169,7 +169,7 @@ export function AdminNav() {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+            className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
             aria-label="Toggle navigation"
           >
             <svg
@@ -206,7 +206,7 @@ export function AdminNav() {
                   className={`rounded-xl px-3 py-2 text-xs font-medium ${
                     isActive
                       ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold"
-                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)]"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                   }`}
                 >
                   {item.label}
@@ -218,7 +218,7 @@ export function AdminNav() {
             <Link
               href="/dashboard"
               onClick={() => setMobileOpen(false)}
-              className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] underline"
+              className="text-xs text-[var(--muted-foreground)] hover:text-muted-foreground underline"
             >
               ← Go to App Dashboard
             </Link>

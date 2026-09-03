@@ -720,7 +720,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       : (host as any).progressPercent ?? (host as any).onboardingProgress ?? 0;
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-[var(--foreground)]">
+    <div className="flex flex-col gap-6 font-sans text-muted-foreground">
 
       {/* Header Info Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
@@ -858,7 +858,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-3xl font-black tracking-tight text-[var(--foreground)]">
+            <p className="text-3xl font-black tracking-tight text-muted-foreground">
               {metrics.totalListings}
             </p>
             <span className="text-xs font-semibold text-[var(--muted-foreground)]">Active Properties</span>
@@ -881,7 +881,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-3xl font-black tracking-tight text-[var(--foreground)]">
+            <p className="text-3xl font-black tracking-tight text-muted-foreground">
               {metrics.totalBookings}
             </p>
             <span className="text-xs font-semibold text-[var(--muted-foreground)]">Reservations</span>
@@ -921,8 +921,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             key={tab.id}
             href={getTabHref(tab.id)}
             className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
-                ? "border-[var(--accent)] text-[var(--foreground)] font-extrabold"
-                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                ? "border-[var(--accent)] text-muted-foreground font-extrabold"
+                : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
               }`}
           >
             {tab.label}
@@ -935,7 +935,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-muted-foreground">
                 Personal & Profile Info
               </h2>
               <button
@@ -953,51 +953,51 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.name || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{host.name || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.email || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{host.email || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.phone || "Not provided"}</span>
+                <span className="font-semibold text-muted-foreground">{host.phone || "Not provided"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Account Role</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.role}</span>
+                <span className="font-semibold text-muted-foreground">{host.role}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Account Status</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.status}</span>
+                <span className="font-semibold text-muted-foreground">{host.status}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Verification Status</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.verificationStatus}</span>
+                <span className="font-semibold text-muted-foreground">{host.verificationStatus}</span>
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Lifecycle & Timestamps
             </h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Application Status</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.applicationStatus}</span>
+                <span className="font-semibold text-muted-foreground">{host.applicationStatus}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Onboarding Stage</span>
-                <span className="font-semibold text-[var(--foreground)]">{host.onboardingStageLabel}</span>
+                <span className="font-semibold text-muted-foreground">{host.onboardingStageLabel}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Compliance Status</span>
-                <span className="font-semibold text-[var(--foreground)]">{data.compliance.complianceStatus}</span>
+                <span className="font-semibold text-muted-foreground">{data.compliance.complianceStatus}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Joined / Intake Date</span>
-                <span className="font-semibold text-[var(--foreground)] font-mono" suppressHydrationWarning>
+                <span className="font-semibold text-muted-foreground font-mono" suppressHydrationWarning>
                   {new Date(host.createdAt).toLocaleString("en-US")}
                 </span>
               </div>
@@ -1008,7 +1008,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 md:col-span-2">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h2 className="text-base font-bold text-[var(--foreground)]">Host Compliance & Onboarding Review</h2>
+                <h2 className="text-base font-bold text-muted-foreground">Host Compliance & Onboarding Review</h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">Verification assessment, document compliance checkpoints, and application status.</p>
               </div>
               <button
@@ -1023,7 +1023,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[var(--foreground)]">ID & Identity Check</span>
+                  <span className="font-semibold text-muted-foreground">ID & Identity Check</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                     host.verificationStatus === "APPROVED"
                       ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
@@ -1037,7 +1037,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[var(--foreground)]">Account Compliance</span>
+                  <span className="font-semibold text-muted-foreground">Account Compliance</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                     host.status === "ACTIVE"
                       ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
@@ -1051,7 +1051,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[var(--foreground)]">Onboarding Readiness</span>
+                  <span className="font-semibold text-muted-foreground">Onboarding Readiness</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                     host.status === "ACTIVE" && host.verificationStatus === "APPROVED"
                       ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
@@ -1075,25 +1075,25 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {activeTab === "onboarding" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Onboarding Workflow Details
             </h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Registration Type</span>
-                <span className="font-semibold text-[var(--foreground)]">{(host as any).registrationType || "INDIVIDUAL"}</span>
+                <span className="font-semibold text-muted-foreground">{(host as any).registrationType || "INDIVIDUAL"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Business Name</span>
-                <span className="font-semibold text-[var(--foreground)]">{(host as any).businessName || "Individual / N/A"}</span>
+                <span className="font-semibold text-muted-foreground">{(host as any).businessName || "Individual / N/A"}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Intended Property Count</span>
-                <span className="font-semibold text-[var(--foreground)]">{(host as any).propertyCount ?? 1}</span>
+                <span className="font-semibold text-muted-foreground">{(host as any).propertyCount ?? 1}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Assigned Reviewer</span>
-                <span className="font-semibold text-[var(--foreground)]">
+                <span className="font-semibold text-muted-foreground">
                   {(host as any).assignedReviewer?.name || (host as any).assignedReviewer?.email || "Unassigned"}
                 </span>
               </div>
@@ -1101,7 +1101,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Onboarding Stage Progress
             </h2>
             <div className="space-y-3">
@@ -1145,7 +1145,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 ) : (
                   data.documents.map((doc: any) => (
                     <tr key={doc.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{doc.documentType}</td>
+                      <td className="py-3.5 px-4 font-bold text-muted-foreground">{doc.documentType}</td>
                       <td className="py-3.5 px-4 font-mono text-[var(--muted-foreground)]">{doc.fileName}</td>
                       <td className="py-3.5 px-4">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${doc.status === "VERIFIED"
@@ -1225,7 +1225,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h2 className="text-base font-bold text-[var(--foreground)]">Host Compliance Summary</h2>
+                  <h2 className="text-base font-bold text-muted-foreground">Host Compliance Summary</h2>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${data.compliance.complianceStatus === "COMPLIANT"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300"
                       : data.compliance.complianceStatus === "NON_COMPLIANT"
@@ -1308,7 +1308,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
               <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
                 <span className="text-[11px] font-semibold text-[var(--muted-foreground)] block">Last Reviewed</span>
-                <span className="text-xs font-bold text-[var(--foreground)] block truncate" suppressHydrationWarning>
+                <span className="text-xs font-bold text-muted-foreground block truncate" suppressHydrationWarning>
                   {data.compliance.lastReviewedAt ? new Date(data.compliance.lastReviewedAt).toLocaleDateString("en-US") : "Not Reviewed"}
                 </span>
               </div>
@@ -1317,7 +1317,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
           {/* Compliance Checklist Table / Grid */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+            <h3 className="text-sm font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Standard Compliance Checklist
             </h3>
             {data.compliance.checks.length === 0 ? (
@@ -1328,7 +1328,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   <div key={c.id} className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-bold text-[var(--foreground)]">{c.checkName}</p>
+                        <p className="font-bold text-muted-foreground">{c.checkName}</p>
                         <p className="text-[10px] font-mono text-[var(--muted-foreground)]">{c.checkKey}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${c.status === "PASSED" || c.status === "COMPLIANT"
@@ -1402,7 +1402,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
           {/* Compliance Issues Section */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+            <h3 className="text-sm font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Compliance Issue Log
             </h3>
             {data.compliance.issues.length === 0 ? (
@@ -1421,7 +1421,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[var(--foreground)]">{i.issueType}</span>
+                        <span className="font-bold text-muted-foreground">{i.issueType}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${i.severity === "CRITICAL" ? "bg-rose-600 text-white" :
                             i.severity === "HIGH" ? "bg-rose-500 text-white" :
                               i.severity === "MEDIUM" ? "bg-amber-500 text-white" : "bg-zinc-500 text-white"
@@ -1437,7 +1437,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-[var(--foreground)]">{i.description}</p>
+                    <p className="text-[11px] text-muted-foreground">{i.description}</p>
 
                     {i.resolutionNotes && (
                       <p className="text-[11px] text-[var(--muted-foreground)] italic bg-[var(--surface)] p-2 rounded-lg border border-[var(--border-subtle)]">
@@ -1498,14 +1498,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     return (
                       <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-[var(--foreground)]">{item.title || "Untitled Listing"}</div>
+                          <div className="font-bold text-muted-foreground">{item.title || "Untitled Listing"}</div>
                           <div className="text-[10px] text-[var(--muted-foreground)] font-mono">ID: {item.id}</div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <div className="font-semibold text-[var(--foreground)]">{item.propertyType || item.hostingType || "Property"}</div>
+                          <div className="font-semibold text-muted-foreground">{item.propertyType || item.hostingType || "Property"}</div>
                           <div className="text-[10px] text-[var(--muted-foreground)]">{item.city || item.address || "Location Pending"}</div>
                         </td>
-                        <td className="py-3.5 px-4 text-[var(--foreground)] font-bold">${(item.price / 100).toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-muted-foreground font-bold">${(item.price / 100).toFixed(2)}</td>
                         <td className="py-3.5 px-4 font-mono font-bold text-xs">
                           <span className={photosCount >= 5 ? "text-emerald-600" : "text-amber-600"}>
                             {photosCount} photos {photosCount < 5 ? "(Min 5 required)" : ""}
@@ -1534,7 +1534,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-[var(--foreground)]">{item.bookingsCount}</td>
+                        <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">{item.bookingsCount}</td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
@@ -1608,15 +1608,15 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   paginatedBookings.map((b) => (
                     <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                       <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">{b.id}</td>
-                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">{b.listingTitle}</td>
+                      <td className="py-3.5 px-4 font-bold text-muted-foreground">{b.listingTitle}</td>
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-[var(--foreground)]">{b.guestName || "Guest"}</div>
+                        <div className="font-semibold text-muted-foreground">{b.guestName || "Guest"}</div>
                         <div className="text-[10px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "N/A"}</div>
                       </td>
                       <td className="py-3.5 px-4 text-[11px] font-mono" suppressHydrationWarning>
                         {new Date(b.startDate).toLocaleDateString("en-US")} - {new Date(b.endDate).toLocaleDateString("en-US")}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-[var(--foreground)]">${(b.amount / 100).toFixed(2)}</td>
+                      <td className="py-3.5 px-4 font-bold text-muted-foreground">${(b.amount / 100).toFixed(2)}</td>
                       <td className="py-3.5 px-4">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
                           {b.status}
@@ -1647,7 +1647,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tab 7: EARNINGS */}
       {activeTab === "earnings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-3">
+          <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Financial & Revenue Breakdown
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1657,11 +1657,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             </div>
             <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)] block">Total Reservations</span>
-              <span className="text-xl font-extrabold text-[var(--foreground)]">{metrics.totalBookings}</span>
+              <span className="text-xl font-extrabold text-muted-foreground">{metrics.totalBookings}</span>
             </div>
             <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)] block">Active Listings</span>
-              <span className="text-xl font-extrabold text-[var(--foreground)]">{metrics.totalListings}</span>
+              <span className="text-xl font-extrabold text-muted-foreground">{metrics.totalListings}</span>
             </div>
           </div>
         </div>
@@ -1672,7 +1672,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">Unified Host Activity & Audit Timeline</h2>
+              <h2 className="text-base font-bold text-muted-foreground">Unified Host Activity & Audit Timeline</h2>
               <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
                 Centralized chronological audit log capturing registrations, documents, compliance checks, approvals, and admin actions.
               </p>
@@ -1693,7 +1693,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 setActivityPage(1);
               }}
               placeholder="Search activity by action, description, or actor..."
-              className="px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs text-[var(--foreground)] outline-none focus:border-sky-500 w-full md:w-72"
+              className="px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-xs text-muted-foreground outline-none focus:border-sky-500 w-full md:w-72"
             />
 
             {/* Category Filter Pills */}
@@ -1738,13 +1738,13 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                               a.category === "DOCUMENTS" ? "bg-sky-500" :
                                 a.category === "SECURITY" ? "bg-rose-500" : "bg-indigo-500"
                           }`} />
-                        <span className="font-extrabold text-[var(--foreground)]">{a.action}</span>
+                        <span className="font-extrabold text-muted-foreground">{a.action}</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--surface)] text-[var(--muted-foreground)] border border-[var(--border-subtle)]">
                           {a.category}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-[var(--muted-foreground)] font-mono">
-                        <span className="font-semibold text-[var(--foreground)]">{a.actorDisplay}</span>
+                        <span className="font-semibold text-muted-foreground">{a.actorDisplay}</span>
                         <span suppressHydrationWarning>{new Date(a.createdAt).toLocaleString("en-US")}</span>
                       </div>
                     </div>
@@ -1807,7 +1807,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Edit Host Profile</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Edit Host Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Full Name</label>
@@ -1815,7 +1815,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div>
@@ -1824,7 +1824,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div>
@@ -1833,7 +1833,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
 
@@ -1861,7 +1861,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showSuspendModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">
+            <h3 className="text-base font-bold text-muted-foreground">
               {host.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1873,7 +1873,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <textarea
                   value={suspendReason}
                   onChange={(e) => setSuspendReason(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-xs text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-xs text-muted-foreground outline-none"
                   rows={3}
                   placeholder="Optional reason..."
                 />
@@ -1904,7 +1904,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showApproveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Approve Host Application</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Approve Host Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to approve the host application for <strong>{host.name || host.email}</strong>?
               This will set the user role to <strong>HOST</strong> and activate their account.
@@ -1933,7 +1933,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Reject Host Application</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Reject Host Application</h3>
             <form onSubmit={handleRejectApplication} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Provide a reason for rejecting this host application:
@@ -1942,7 +1942,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 rows={3}
                 placeholder="State why the application is rejected..."
               />
@@ -1970,7 +1970,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showActionReqModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Request Information / Action</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Request Information / Action</h3>
             <form onSubmit={handleRequestAction} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Specify what changes or missing documents the applicant needs to provide:
@@ -1979,7 +1979,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 value={actionNotes}
                 onChange={(e) => setActionNotes(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 rows={3}
                 placeholder="e.g. Please upload a clear photo of your Government ID and Business License."
               />
@@ -2007,7 +2007,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showDocRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Reject Document</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Reject Document</h3>
             <div className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Specify why this document is rejected:
@@ -2015,7 +2015,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <textarea
                 value={docRejectReason}
                 onChange={(e) => setDocRejectReason(e.target.value)}
-                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 rows={3}
                 placeholder="e.g. Document image is blurry, expired, or unreadable."
               />
@@ -2045,7 +2045,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showCreateIssueModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Log Compliance Issue</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Log Compliance Issue</h3>
             <form onSubmit={handleCreateComplianceIssue} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Issue Category</label>
@@ -2055,7 +2055,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   onChange={(e) => setIssueType(e.target.value)}
                   required
                   placeholder="e.g. IDENTITY_VERIFICATION, TAX_FORM_EXPIRED"
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div>
@@ -2063,7 +2063,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <select
                   value={issueSeverity}
                   onChange={(e) => setIssueSeverity(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
                 >
                   <option value="LOW">LOW</option>
                   <option value="MEDIUM">MEDIUM</option>
@@ -2079,7 +2079,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   required
                   rows={3}
                   placeholder="Detail the compliance violation or missing documentation requirement..."
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -2107,14 +2107,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showResolveIssueModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Resolve Compliance Issue</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Resolve Compliance Issue</h3>
             <form onSubmit={handleResolveComplianceIssue} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Resolution Decision</label>
                 <select
                   value={resolutionStatus}
                   onChange={(e) => setResolutionStatus(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
                 >
                   <option value="RESOLVED">RESOLVED (Issue Closed)</option>
                   <option value="REJECTED">REJECTED (Invalid / Dismissed)</option>
@@ -2127,7 +2127,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   rows={3}
                   placeholder="Provide resolution details or administrative audit notes..."
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -2155,14 +2155,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showUpdateCompModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Set Host Compliance Status</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Set Host Compliance Status</h3>
             <form onSubmit={handleUpdateComplianceStatus} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Compliance Status</label>
                 <select
                   value={newCompStatus}
                   onChange={(e) => setNewCompStatus(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
                 >
                   <option value="COMPLIANT">COMPLIANT</option>
                   <option value="NON_COMPLIANT">NON_COMPLIANT</option>
@@ -2177,7 +2177,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   onChange={(e) => setCompNotes(e.target.value)}
                   rows={3}
                   placeholder="Reason for compliance status modification..."
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-[var(--foreground)] outline-none"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -2208,7 +2208,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="flex items-start justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h2 className="text-xl font-extrabold text-[var(--foreground)]">
+                  <h2 className="text-xl font-extrabold text-muted-foreground">
                     {selectedListingForReview.title || "Untitled Listing"}
                   </h2>
                   <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
@@ -2232,7 +2232,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowListingReviewModal(false)}
-                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center justify-center text-sm font-bold border border-[var(--border-subtle)]"
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center text-sm font-bold border border-[var(--border-subtle)]"
               >
                 ✕
               </button>
@@ -2241,7 +2241,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             {/* Photos Gallery */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold text-[var(--foreground)]">
+                <h3 className="text-sm font-extrabold text-muted-foreground">
                   Property Photos ({Array.isArray(selectedListingForReview.photos) ? selectedListingForReview.photos.length : 0})
                 </h3>
                 <span className={`text-xs font-bold ${
@@ -2272,41 +2272,41 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
               {/* Left Column: Property & Location */}
               <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
-                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
                   Property & Capacity Details
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Hosting Type</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.hostingType || "HOME"}</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.hostingType || "HOME"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Property Type</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.propertyType || "Apartment"}</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.propertyType || "Apartment"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Guests Capacity</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.guests || 1} Guests</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.guests || 1} Guests</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Bedrooms / Beds / Baths</span>
-                    <span className="font-bold text-[var(--foreground)]">
+                    <span className="font-bold text-muted-foreground">
                       {selectedListingForReview.bedrooms || 1} Bed • {selectedListingForReview.beds || 1} Beds • {selectedListingForReview.bathrooms || 1} Bath
                     </span>
                   </div>
                 </div>
 
-                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
                   Location Information
                 </h4>
                 <div className="space-y-1">
                   <div>
                     <span className="text-[var(--muted-foreground)]">Address: </span>
-                    <span className="font-semibold text-[var(--foreground)]">{selectedListingForReview.address || "N/A"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.address || "N/A"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)]">City / District / Zip: </span>
-                    <span className="font-semibold text-[var(--foreground)]">
+                    <span className="font-semibold text-muted-foreground">
                       {[selectedListingForReview.city, selectedListingForReview.district, selectedListingForReview.postalCode, selectedListingForReview.country].filter(Boolean).join(", ") || "N/A"}
                     </span>
                   </div>
@@ -2315,7 +2315,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               {/* Right Column: Pricing & Descriptions */}
               <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
-                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
                   Financials, Policies & Rules
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
@@ -2325,33 +2325,33 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Cleaning Fee</span>
-                    <span className="font-bold text-[var(--foreground)]">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
+                    <span className="font-bold text-muted-foreground">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in Method</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.checkInMethod || "SMART_LOCK"}</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.checkInMethod || "SMART_LOCK"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in Window</span>
-                    <span className="font-bold text-[var(--foreground)]">
+                    <span className="font-bold text-muted-foreground">
                       {selectedListingForReview.checkInStart || "15:00"} - {selectedListingForReview.checkInEnd || "22:00"} (Out: {selectedListingForReview.checkOutTime || "11:00"})
                     </span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Cancellation Policy</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.cancellationPolicy || "FLEXIBLE"}</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.cancellationPolicy || "FLEXIBLE"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Instant Booking</span>
-                    <span className="font-bold text-[var(--foreground)]">{selectedListingForReview.instantBook !== false ? "Enabled ✓" : "Disabled ✕"}</span>
+                    <span className="font-bold text-muted-foreground">{selectedListingForReview.instantBook !== false ? "Enabled ✓" : "Disabled ✕"}</span>
                   </div>
                 </div>
 
-                <h4 className="font-extrabold text-[var(--foreground)] border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
                   Description & Amenities
                 </h4>
                 <div className="space-y-2">
-                  <p className="text-[var(--foreground)] leading-relaxed line-clamp-3">
+                  <p className="text-muted-foreground leading-relaxed line-clamp-3">
                     {selectedListingForReview.description || "No description provided."}
                   </p>
                   {Array.isArray(selectedListingForReview.amenities) && selectedListingForReview.amenities.length > 0 && (
@@ -2444,7 +2444,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowListingReviewModal(false)}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-secondary)]"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Close
               </button>
@@ -2457,7 +2457,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showListingReqChangesModal && selectedListingForReview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Request Listing Changes</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Request Listing Changes</h3>
             <form onSubmit={handleRequestListingChanges} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Provide clear instructions for the host regarding what details, photos, or pricing need revision:
@@ -2467,7 +2467,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 onChange={(e) => setListingNotesInput(e.target.value)}
                 required
                 rows={4}
-                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-amber-500"
+                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-amber-500"
                 placeholder="e.g. Please upload at least 5 high-resolution interior photos and clarify property house rules."
               />
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -2495,7 +2495,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showListingRejectModal && selectedListingForReview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
-            <h3 className="text-base font-bold text-[var(--foreground)]">Reject Listing Application</h3>
+            <h3 className="text-base font-bold text-muted-foreground">Reject Listing Application</h3>
             <form onSubmit={handleRejectListing} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 State the compliance or safety reason for rejecting this listing:
@@ -2505,7 +2505,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 onChange={(e) => setListingRejectReasonInput(e.target.value)}
                 required
                 rows={4}
-                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-[var(--foreground)] outline-none focus:border-rose-500"
+                className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-rose-500"
                 placeholder="e.g. Listing violates local zoning laws / unverified ownership documentation."
               />
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -2537,10 +2537,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
                 ⚠️
               </div>
-              <h3 className="text-base font-extrabold text-[var(--foreground)]">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-extrabold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Are you sure you want to delete listing <strong className="text-[var(--foreground)]">{listingToDelete.title || listingToDelete.id}</strong>? This action is permanent and will remove all property settings and cached data.
+              Are you sure you want to delete listing <strong className="text-muted-foreground">{listingToDelete.title || listingToDelete.id}</strong>? This action is permanent and will remove all property settings and cached data.
             </p>
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
               <button
@@ -2550,7 +2550,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   setShowDeleteListingModal(false);
                   setListingToDelete(null);
                 }}
-                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-[var(--foreground)]"
+                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
               >
                 Cancel
               </button>
