@@ -56,7 +56,15 @@ async function updateProfile(
     data.phoneVerified = null;
   }
   if (input.publicProfile !== undefined) {
-    data.publicProfile = input.publicProfile;
+    const pub = { ...input.publicProfile };
+    if (pub.selectedStamps && Array.isArray(pub.selectedStamps)) {
+      // Backend enforcement: remove duplicates & enforce max 10 stamps limit
+      pub.selectedStamps = Array.from(new Set(pub.selectedStamps as string[])).slice(0, 10);
+    }
+    if (pub.stampsVisible === undefined) {
+      pub.stampsVisible = true;
+    }
+    data.publicProfile = pub;
   }
 
   try {

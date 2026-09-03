@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
+import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -22,6 +24,9 @@ export type PublicProfileData = {
   whereILive?: string;
   bio?: string;
   stampsVisible?: boolean;
+  profileVisible?: boolean;
+  selectedStamps?: string[];
+  customStamps?: TravelStampItem[];
 };
 
 type ProfileData = {
@@ -163,8 +168,37 @@ export function ProfileClient({
                   <span>Speaks {pub.languages || "English and Russian"}</span>
                 </div>
 
-                {/* Divider Line */}
-                <div className="w-full border-b border-zinc-200/80 my-6" />
+                {/* Where I've been Section (Public Profile - Only Selected Stamps, Hidden if stampsVisible === false) */}
+                {pub.stampsVisible !== false && (
+                  <>
+                    <div className="flex flex-col gap-4 py-4 border-t border-zinc-200/70">
+                      <h3 className="text-xl font-bold text-zinc-900">Where I've been</h3>
+                      <p className="text-xs text-zinc-500 -mt-2">Places visited and travel stamps collected.</p>
+                      
+                      {(() => {
+                        const selectedIds = pub.selectedStamps && pub.selectedStamps.length > 0
+                          ? pub.selectedStamps
+                          : ["paris", "coffee"];
+                        const allStamps = [...BUILTIN_TRAVEL_STAMPS, ...(pub.customStamps || [])];
+                        const visibleStamps = allStamps.filter((s) => selectedIds.includes(s.id));
+
+                        if (visibleStamps.length === 0) {
+                          return <p className="text-xs text-zinc-400 italic">No public stamps selected yet.</p>;
+                        }
+
+                        return (
+                          <div className="flex items-center gap-8 overflow-x-auto py-3 scrollbar-none">
+                            {visibleStamps.map((stamp) => (
+                              <TravelStampGraphic key={stamp.id} stamp={stamp} size="md" />
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="w-full border-b border-zinc-200/80 my-4" />
+                  </>
+                )}
 
                 {/* 3. My Reviews Section */}
                 <div className="flex flex-col gap-4 mt-2">

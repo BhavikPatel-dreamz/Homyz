@@ -15,6 +15,7 @@ export async function updateProfileAction(input: unknown) {
     const data = updateProfileSchema.parse(input);
     const updated = await userService.updateProfile(actor.id, data);
     revalidatePath("/profile");
+    revalidatePath("/profile-management");
     return updated;
   });
 }

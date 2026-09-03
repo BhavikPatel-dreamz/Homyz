@@ -12,6 +12,9 @@ import {
 } from "@/actions/user/tripPhotos";
 import { Alert } from "@/components/ui";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
+import { LocationSearchInput } from "@/components/ui/location-search-input";
+import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -29,6 +32,8 @@ export type PublicProfileData = {
   whereILive?: string;
   bio?: string;
   stampsVisible?: boolean;
+  profileVisible?: boolean;
+  selectedStamps?: string[];
 };
 
 type ProfileData = {
@@ -157,6 +162,7 @@ export function ProfileManagementClient({
 
   const [msg, setMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [imageUrl, setImageUrl] = useState(initial.image || "");
+  const [name, setName] = useState(profileData.name || initial.name || "");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -191,6 +197,24 @@ export function ProfileManagementClient({
     setFormDataState((prev) => ({ ...prev, [field]: value }));
   };
 
+  const saveDirectProfileField = (fieldName: string, value: any) => {
+    if (!isOwner) return;
+    const nextPublicProfile = {
+      ...pub,
+      ...formDataState,
+      [fieldName]: value,
+    };
+    startTransition(async () => {
+      const res = await updateProfileAction({
+        publicProfile: nextPublicProfile,
+      });
+      if (res.ok && res.data) {
+        setProfileData(res.data as ProfileData);
+        router.refresh();
+      }
+    });
+  };
+
   const onSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     if (!isOwner) return;
@@ -198,7 +222,7 @@ export function ProfileManagementClient({
 
     const payload = {
       image: imageUrl || initial.image || null,
-      name: initial.name || null,
+      name: name || initial.name || null,
       phone: initial.phone || null,
       publicProfile: formDataState,
     };
@@ -372,6 +396,24 @@ export function ProfileManagementClient({
               <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8">
                 {/* 2-COLUMN PROMPT GRID (EXACT MATCH TO SCREENSHOT 2) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7">
+                  {/* Item 0: Full Name */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        My full name
+                      </span>
+                      <input
+                        value={name}
+                        disabled={!isOwner}
+                        onChange={(e) => setName(e.target.value)}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          name ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="edit: Your full name"
+                      />
+                    </div>
+                  </div>
                   {/* Item 1 */}
                   <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
@@ -750,75 +792,115 @@ export function ProfileManagementClient({
               </div>
             )}
 
-            {/* TAB 3: WHERE I'VE BEEN (STAMPS & VISIBILITY TOGGLE - SCREENSHOT 2) */}
+            {/* TAB 3: WHERE I'VE BEEN (STAMPS & VISIBILITY TOGGLE - Figma Compliant) */}
             {activeMgmtTab === "stamps" && (
-              <div className="flex flex-col gap-6">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-xl font-bold text-zinc-900">Where I've been</h3>
-                    {isOwner && (
-                      <div
-                        onClick={() => {
-                          const val = !formDataState.stampsVisible;
-                          handleInputChange("stampsVisible", val);
-                          setTimeout(() => onSubmit(), 100);
-                        }}
-                        className={`w-12 h-6 rounded-full relative cursor-pointer transition-colors ${
-                          stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300"
-                        }`}
-                        title="Toggle visibility on public profile"
-                      >
-                        <div
-                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-2xs ${
-                            stampsVisible ? "right-0.5" : "left-0.5"
-                          }`}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-zinc-500 text-xs">
-                    Pick the stamps you want other people to see on your profile.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-12 py-6 border-t border-b border-zinc-200/80 my-2">
-                  <StampParis />
-                  <StampCoffee />
-                </div>
-              </div>
+              <WhereIveBeenSelector
+                initialSelectedStamps={formDataState.selectedStamps || pub.selectedStamps || ["paris", "coffee"]}
+                initialStampsVisible={stampsVisible}
+                maxStamps={10}
+                isOwner={isOwner}
+                currentPublicProfile={pub}
+                onSaved={(updatedProfile) => {
+                  if (updatedProfile) {
+                    setFormDataState((prev) => ({
+                      ...prev,
+                      stampsVisible: updatedProfile.stampsVisible ?? prev.stampsVisible,
+                      selectedStamps: updatedProfile.selectedStamps ?? prev.selectedStamps,
+                    }));
+                  }
+                }}
+              />
             )}
 
             {/* TAB 4: PRIVACY & VISIBILITY */}
             {activeMgmtTab === "privacy" && (
               <div className="flex flex-col gap-6">
-                <h3 className="text-xl font-bold text-zinc-900">Privacy & Visibility Settings</h3>
-                <div className="p-5 rounded-2xl border border-zinc-200/90 bg-zinc-50/50 space-y-4">
-                  <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-zinc-900">Privacy & Visibility Settings</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Manage who can see your profile and travel history on Homyz.</p>
+                </div>
+
+                <div className="p-6 rounded-3xl border border-zinc-200/80 bg-white shadow-2xs space-y-6">
+                  {/* Row 1: Public Profile Visibility */}
+                  <div className="flex items-center justify-between gap-4">
                     <div>
                       <h4 className="text-sm font-bold text-zinc-900">Public Profile Visibility</h4>
-                      <p className="text-xs text-zinc-500">Allow hosts and other guests to discover your profile</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">Allow hosts and other guests to discover your profile</p>
                     </div>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Active</span>
+
+                    <div className="flex items-center gap-3">
+                      {/* Active/OFF Badge */}
+                      <span
+                        className={`text-xs font-bold px-3.5 py-1 rounded-full border transition-all ${
+                          (formDataState.profileVisible ?? true)
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                            : "bg-zinc-200 text-zinc-700 border-zinc-300"
+                        }`}
+                      >
+                        {(formDataState.profileVisible ?? true) ? "Active" : "OFF"}
+                      </span>
+
+                      {/* Interactive Red Toggle Switch */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = !(formDataState.profileVisible ?? true);
+                          setFormDataState((prev) => ({ ...prev, profileVisible: nextVal }));
+                          saveDirectProfileField("profileVisible", nextVal);
+                        }}
+                        className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer focus:outline-none ${
+                          (formDataState.profileVisible ?? true) ? "bg-[#FA595D]" : "bg-zinc-300"
+                        }`}
+                        title={(formDataState.profileVisible ?? true) ? "Make profile private" : "Make profile public"}
+                      >
+                        <div
+                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-xs ${
+                            (formDataState.profileVisible ?? true) ? "translate-x-[22px]" : "translate-x-[2px]"
+                          }`}
+                        />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-zinc-200/60">
+                  {/* Row 2: Show Travel Stamps ("Where I've Been") */}
+                  <div className="flex items-center justify-between gap-4 pt-5 border-t border-zinc-100">
                     <div>
                       <h4 className="text-sm font-bold text-zinc-900">Show Travel Stamps ("Where I've Been")</h4>
-                      <p className="text-xs text-zinc-500">Display your collected country stamps publicly</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">Display your collected country stamps publicly</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const val = !formDataState.stampsVisible;
-                        handleInputChange("stampsVisible", val);
-                        setTimeout(() => onSubmit(), 100);
-                      }}
-                      className={`text-xs font-bold px-4 py-1.5 rounded-full transition-colors ${
-                        stampsVisible ? "bg-[#FDE29B] text-zinc-900" : "bg-zinc-200 text-zinc-700"
-                      }`}
-                    >
-                      {stampsVisible ? "ON" : "OFF"}
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                      {/* Active/OFF Badge */}
+                      <span
+                        className={`text-xs font-bold px-3.5 py-1 rounded-full border transition-all ${
+                          stampsVisible
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                            : "bg-zinc-200 text-zinc-700 border-zinc-300"
+                        }`}
+                      >
+                        {stampsVisible ? "Active" : "OFF"}
+                      </span>
+
+                      {/* Interactive Red Toggle Switch matching screenshot */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = !stampsVisible;
+                          setFormDataState((prev) => ({ ...prev, stampsVisible: nextVal }));
+                          saveDirectProfileField("stampsVisible", nextVal);
+                        }}
+                        className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer focus:outline-none ${
+                          stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300"
+                        }`}
+                        title={stampsVisible ? "Hide stamps from public profile" : "Show stamps on public profile"}
+                      >
+                        <div
+                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-xs ${
+                            stampsVisible ? "translate-x-[22px]" : "translate-x-[2px]"
+                          }`}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -885,7 +967,7 @@ function MultiImageUploadModal({
   const [previews, setPreviews] = useState<string[]>([]);
   const [location, setLocation] = useState("");
   const [caption, setCaption] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
+  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -941,10 +1023,7 @@ function MultiImageUploadModal({
         uploadedUrls.push(data.url);
       }
 
-      const tags = tagsInput
-        .split(",")
-        .map((t) => t.trim().replace(/^@/, ""))
-        .filter(Boolean);
+      const tags = taggedUsers.map((u) => u.name || u.email || u.id);
 
       const payload = uploadedUrls.map((url) => ({
         url,
@@ -965,13 +1044,16 @@ function MultiImageUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
-          <h3 className="text-lg font-bold text-zinc-900">Upload Trip Photos</h3>
+          <div>
+            <h3 className="text-lg font-extrabold text-zinc-900 tracking-tight">Upload Trip Photos</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">Add your favorite travel memories</p>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center cursor-pointer"
+            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer"
           >
             ✕
           </button>
@@ -983,17 +1065,17 @@ function MultiImageUploadModal({
           </div>
         )}
 
-        <form onSubmit={handleUploadSubmit} className="space-y-4">
-          <p className="text-xs text-zinc-500">You can upload best images of your trip</p>
-
+        <form onSubmit={handleUploadSubmit} className="space-y-5">
+          {/* File Select Dropzone */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50/80 rounded-2xl p-6 text-center cursor-pointer transition-colors"
+            className="border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50/80 hover:bg-amber-50/20 rounded-2xl p-5 text-center cursor-pointer transition-all"
           >
-            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2">
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2 shadow-2xs">
               <IconCamera />
             </div>
             <p className="text-xs font-bold text-zinc-800">Select trip photos</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">You can upload best images of your trip (Max 10MB each)</p>
             <input
               type="file"
               multiple
@@ -1004,68 +1086,75 @@ function MultiImageUploadModal({
             />
           </div>
 
+          {/* Selected Photo Previews Grid */}
           {previews.length > 0 && (
-            <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-              {previews.map((src, i) => (
-                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200">
-                  <img src={src} alt="prev" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(i)}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white flex items-center justify-center text-[10px]"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+            <div>
+              <p className="text-xs font-bold text-zinc-800 mb-2">
+                Selected Photos ({previews.length})
+              </p>
+              <div className="grid grid-cols-4 gap-2.5 max-h-36 overflow-y-auto p-1 bg-zinc-50 rounded-2xl border border-zinc-200/80">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200 group">
+                    <img src={src} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/75 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] transition-colors cursor-pointer"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Paris, France"
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">Tag People</label>
-              <input
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="alex, sarah"
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
-              />
-            </div>
-          </div>
+          {/* Location & Tag People (2-Column Grid on Desktop) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <LocationSearchInput
+              value={location}
+              onChange={(val) => setLocation(val)}
+              disabled={uploading}
+            />
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">Caption</label>
-            <textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Caption..."
-              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs h-16 resize-none"
+            <TagPeopleInput
+              selectedUsers={taggedUsers}
+              onChange={(users) => setTaggedUsers(users)}
+              disabled={uploading}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+          {/* Caption Multiline Field with Character Counter */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-zinc-900">Caption</label>
+              <span className="text-[11px] font-semibold text-zinc-400">
+                {caption.length} / 300
+              </span>
+            </div>
+            <textarea
+              value={caption}
+              maxLength={300}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Tell the story behind this trip..."
+              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
+            />
+          </div>
+
+          {/* Action Footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-zinc-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100"
+              className="px-5 py-2.5 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading || selectedFiles.length === 0}
-              className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+              className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {uploading ? "Uploading..." : `Upload (${selectedFiles.length})`}
             </button>
@@ -1089,7 +1178,9 @@ function EditTripPhotoModal({
 }) {
   const [location, setLocation] = useState(photo.location || "");
   const [caption, setCaption] = useState(photo.caption || "");
-  const [tagsInput, setTagsInput] = useState((photo.tags || []).join(", "));
+  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>(
+    (photo.tags || []).map((t) => ({ id: t, name: t, email: null, image: null }))
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1099,10 +1190,7 @@ function EditTripPhotoModal({
     setError(null);
 
     try {
-      const tags = tagsInput
-        .split(",")
-        .map((t) => t.trim().replace(/^@/, ""))
-        .filter(Boolean);
+      const tags = taggedUsers.map((u) => u.name || u.email || u.id);
 
       const res = await updateTripPhotoAction(photo.id, {
         location: location.trim() || undefined,
@@ -1120,10 +1208,10 @@ function EditTripPhotoModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <h3 className="text-lg font-bold text-zinc-900">Edit Photo Details</h3>
-          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center">
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center cursor-pointer">
             ✕
           </button>
         </div>
@@ -1135,56 +1223,57 @@ function EditTripPhotoModal({
         )}
 
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-zinc-200">
+          <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
             <Image src={photo.url} alt="Photo" fill className="object-cover" />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">Location</label>
-            <input
-              type="text"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <LocationSearchInput
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
+              onChange={(val) => setLocation(val)}
+              disabled={saving}
+            />
+
+            <TagPeopleInput
+              selectedUsers={taggedUsers}
+              onChange={(users) => setTaggedUsers(users)}
+              disabled={saving}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">Tag People</label>
-            <input
-              type="text"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">Caption</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-zinc-900">Caption</label>
+              <span className="text-[11px] font-semibold text-zinc-400">
+                {caption.length} / 300
+              </span>
+            </div>
             <textarea
               value={caption}
+              maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs h-16 resize-none"
+              placeholder="Tell the story behind this trip..."
+              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+          <div className="flex items-center justify-between pt-3 border-t border-zinc-100">
             <button
               type="button"
               onClick={() => onDeleteTrigger(photo)}
-              className="text-xs font-bold text-rose-600 hover:underline"
+              className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
             >
               Delete Photo
             </button>
 
             <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100">
+              <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100 cursor-pointer">
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+                className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50 cursor-pointer shadow-2xs"
               >
                 {saving ? "Saving..." : "Save Details"}
               </button>

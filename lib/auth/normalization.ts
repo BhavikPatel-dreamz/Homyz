@@ -1,6 +1,9 @@
 /**
- * Canonical Normalization Utilities for Homyz Authentication
+ * Canonical Normalization & Validation Utilities for Homyz Authentication
+ * Powered by libphonenumber-js for strict international E.164 compliance.
  */
+import { parsePhoneNumberWithError, isValidPhoneNumber, isPossiblePhoneNumber, CountryCode } from "libphonenumber-js";
+import { COUNTRY_CODES } from "./country-codes";
 
 /**
  * Normalizes an email address to a canonical form:
@@ -17,7 +20,7 @@ export function normalizeEmail(email: string): string {
  * Handles:
  * - Localized formatting: spaces, dashes, parentheses, dots
  * - International prefix replacement: e.g. "0039" -> "+39"
- * - Raw digits with optional leading '+'
+ * - Country code prepending when raw digits are supplied without '+'
  *
  * Example transformations:
  * - "+1 (555) 234-5678" -> "+15552345678"
@@ -25,10 +28,9 @@ export function normalizeEmail(email: string): string {
  * - "+39-06-12345678"   -> "+390612345678"
  * - "966512345678"      -> "+966512345678"
  */
-export function normalizePhone(phone: string, defaultCountryCode = "+1"): string {
+export function normalizePhone(phone: string, defaultCountryCallingCode = "+1"): string {
   if (!phone) return "";
 
-  // Trim whitespace
   let cleaned = phone.trim();
 
   // Replace leading "00" with "+"
@@ -36,29 +38,50 @@ export function normalizePhone(phone: string, defaultCountryCode = "+1"): string
     cleaned = "+" + cleaned.slice(2);
   }
 
-  // Remove all non-digit characters except leading '+'
-  const hasPlus = cleaned.startsWith("+");
-  const digitsOnly = cleaned.replace(/\D/g, "");
+  // If phone already starts with '+', parse directly
+  if (cleaned.startsWith("+")) {
+    try {
+      const parsed = parsePhoneNumberWithError(cleaned);
+      return parsed.format("E.164");
+    } catch {
+      const digitsOnly = cleaned.replace(/\D/g, "");
+      return digitsOnly ? `+${digitsOnly}` : "";
+    }
+  }
 
+  const digitsOnly = cleaned.replace(/\D/g, "");
   if (!digitsOnly) return "";
 
-  if (hasPlus) {
-    return `+${digitsOnly}`;
+  // Check if digitsOnly starts with any known calling code in our country dataset
+  const callingCodes = COUNTRY_CODES.map((c) => c.code.replace(/\D/g, "")).sort((a, b) => b.length - a.length);
+  const matchingCode = callingCodes.find((code) => digitsOnly.startsWith(code));
+
+  if (matchingCode) {
+    cleaned = `+${digitsOnly}`;
+  } else {
+    const defaultDigits = defaultCountryCallingCode.replace(/\D/g, "");
+    cleaned = `+${defaultDigits}${digitsOnly}`;
   }
 
-  // If no leading '+' was provided, prepend default country code if missing
-  const defaultDigits = defaultCountryCode.replace(/\D/g, "");
-  if (digitsOnly.startsWith(defaultDigits)) {
-    return `+${digitsOnly}`;
+  try {
+    const parsed = parsePhoneNumberWithError(cleaned);
+    return parsed.format("E.164");
+  } catch {
+    return cleaned;
   }
-
-  return `+${digitsOnly}`;
 }
 
 /**
- * Validates whether a phone number matches basic E.164 structure (7 to 15 digits).
+ * Validates whether a phone number is a valid/possible international E.164 phone number.
  */
 export function isValidE164Phone(phone: string): boolean {
+  if (!phone) return false;
   const normalized = normalizePhone(phone);
-  return /^\+[1-9]\d{6,14}$/.test(normalized);
+  if (!normalized.startsWith("+")) return false;
+
+  try {
+    return isPossiblePhoneNumber(normalized) || isValidPhoneNumber(normalized);
+  } catch {
+    return /^\+[1-9]\d{6,14}$/.test(normalized);
+  }
 }
