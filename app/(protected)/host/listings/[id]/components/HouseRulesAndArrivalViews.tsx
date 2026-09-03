@@ -580,6 +580,38 @@ export function HouseRulesAndArrivalViews({
           handleSaveSection={handleSaveSection}
         />
       )}
+
+      {(activeSection === "local-laws" || activeSection === "locallaws") && (
+        <LocalLawsView
+          setActiveSection={setActiveSection}
+          isSaving={isSaving}
+          handleSaveSection={handleSaveSection}
+        />
+      )}
+
+      {activeSection === "regulations" && (
+        <RegulationsView
+          setActiveSection={setActiveSection}
+          isSaving={isSaving}
+          handleSaveSection={handleSaveSection}
+        />
+      )}
+
+      {activeSection === "taxes" && (
+        <TaxesView
+          setActiveSection={setActiveSection}
+          isSaving={isSaving}
+          handleSaveSection={handleSaveSection}
+        />
+      )}
+
+      {(activeSection === "homyz-stays" || activeSection === "homyzstays") && (
+        <HomyzStaysView
+          setActiveSection={setActiveSection}
+          isSaving={isSaving}
+          handleSaveSection={handleSaveSection}
+        />
+      )}
     </>
   );
 }
@@ -1606,6 +1638,446 @@ function CheckInMethodView({
             {isAddingInstructions ? "Save instructions" : "Add instructions"}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================= */
+/* LOCAL LAWS INNER COMPONENT (Matches Reference Figma Design 100%)  */
+/* ================================================================= */
+function LocalLawsView({
+  setActiveSection,
+  isSaving,
+  handleSaveSection,
+}: {
+  setActiveSection: (s: any) => void;
+  isSaving: boolean;
+  handleSaveSection: (key: any) => void;
+}) {
+  const [isSaved, setIsSaved] = React.useState(false);
+
+  return (
+    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+      {/* Header & Back Button */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+        >
+          ‹
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Local laws</h1>
+      </div>
+
+      {/* Paragraph 1 */}
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
+        Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt.
+      </p>
+
+      {/* Regulation Article Card Link */}
+      <div className="rounded-2xl border border-zinc-300/80 bg-white p-3.5 flex items-center gap-4 shadow-2xs hover:border-zinc-400 transition-all cursor-pointer group max-w-lg">
+        <div className="w-16 h-16 rounded-2xl bg-[#D4D4D8] border border-zinc-300/50 shrink-0" />
+        <div className="flex-1 space-y-0.5">
+          <span className="text-[10px] text-zinc-400 font-medium block">2 min read</span>
+          <h4 className="text-xs font-bold text-zinc-900 flex items-center gap-1.5 group-hover:text-zinc-700 transition-colors">
+            What hosting regulations apply to you
+            <span className="text-zinc-500 font-normal text-xs transition-transform group-hover:translate-x-0.5">›</span>
+          </h4>
+        </div>
+      </div>
+
+      {/* Paragraph 2 */}
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
+        Lorem ipsum massa eu tincidunt integer convallis consequat morbi ultrices adipiscing laoreet est ultrices donec quis lacus tortor enim nibh odio ipsum mattis est tristique mi gravida nunc dignissim lacus venenatis euismod viverra blandit tellus urna fermentum proin risus fringilla proin velit amet malesuada ut dignissim sem sem in elementum.
+      </p>
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-3 pt-3">
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => {
+            handleSaveSection("local-laws");
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
+          }}
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================= */
+/* REGULATIONS INNER COMPONENT (Matches Reference Figma Design 100%) */
+/* ================================================================= */
+function RegulationsView({
+  setActiveSection,
+  isSaving,
+  handleSaveSection,
+}: {
+  setActiveSection: (s: any) => void;
+  isSaving: boolean;
+  handleSaveSection: (key: any) => void;
+}) {
+  const [showDetails, setShowDetails] = React.useState(false);
+  const [isEditingReg, setIsEditingReg] = React.useState(false);
+  const [regNumber, setRegNumber] = React.useState("XXXXXXXX");
+  const [regAddress, setRegAddress] = React.useState("Address, Country");
+
+  if (showDetails) {
+    return (
+      <div className="animate-in fade-in pb-12 font-sans w-full max-w-4xl">
+        {/* Top Back Button */}
+        <div className="flex items-center justify-between pb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setShowDetails(false);
+              setIsEditingReg(false);
+            }}
+            className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+          >
+            ‹
+          </button>
+        </div>
+
+        {/* 2-Column Grid Layout: Left Content + Right Thumbs-Up Illustration */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-2">
+          {/* Left Content Column */}
+          <div className="md:col-span-7 space-y-6">
+            {/* Section 1: You're all set! */}
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                You&apos;re all set!
+              </h1>
+              <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
+                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsEditingReg(!isEditingReg)}
+                className="text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600 transition-colors pt-1 block cursor-pointer"
+              >
+                {isEditingReg ? "Done editing" : "Edit registration details"}
+              </button>
+            </div>
+
+            {/* Section 2: Registration details */}
+            <div className="space-y-4 pt-3">
+              <h2 className="text-xl font-bold tracking-tight text-zinc-900">
+                Registration details
+              </h2>
+              <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
+                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+              </p>
+
+              {/* Editable or Static Registration Fields */}
+              {isEditingReg ? (
+                <div className="space-y-3 pt-2 max-w-md bg-zinc-50 p-4 rounded-2xl border border-zinc-200">
+                  <div>
+                    <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                      Registration Number
+                    </label>
+                    <input
+                      type="text"
+                      value={regNumber}
+                      onChange={(e) => setRegNumber(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-500 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                      Address & Country
+                    </label>
+                    <input
+                      type="text"
+                      value={regAddress}
+                      onChange={(e) => setRegAddress(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-500 bg-white"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSaveSection("regulations");
+                      setIsEditingReg(false);
+                    }}
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  >
+                    Save Registration
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-1">
+                  <div>
+                    <p className="text-xs text-zinc-400 font-normal">XXXXXXXX</p>
+                    <p className="text-xs font-bold text-zinc-900">{regNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-400 font-normal">Address, Country</p>
+                    <p className="text-xs font-bold text-zinc-900">{regAddress}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Paragraph with Customer Support Link */}
+              <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2 max-w-md">
+                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.{" "}
+                <a
+                  href="#support"
+                  onClick={(e) => e.preventDefault()}
+                  className="underline text-zinc-900 font-semibold hover:text-zinc-600 transition-colors"
+                >
+                  customer support team
+                </a>
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column: Thumbs Up Sunburst Vector Illustration (Matches Figma 100%) */}
+          <div className="md:col-span-5 flex justify-center items-center pt-2 md:pt-0">
+            <div className="relative w-72 h-72 flex items-center justify-center">
+              {/* Floating Confetti Shapes matching Figma Design */}
+              <div className="absolute top-2 left-6 w-9 h-5 rounded-full bg-[#FDBA74] rotate-[-25deg] opacity-90" />
+              <div className="absolute top-12 right-8 w-4 h-3 rounded-full bg-[#FDE047] opacity-80" />
+              <div className="absolute top-16 right-4 w-3 h-2 rounded-full bg-[#FDBA74] opacity-80" />
+              <div className="absolute bottom-8 left-4 w-4 h-4 rounded-full bg-[#FDE047] opacity-90" />
+              <div className="absolute bottom-6 left-28 w-12 h-5 rounded-full bg-[#FDBA74] opacity-80" />
+
+              {/* Sunburst Rays + Hand Thumbs Up Vector SVG */}
+              <svg className="w-64 h-64" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Sunburst Rays */}
+                <g stroke="#3F3F46" strokeWidth="1.2" strokeLinecap="round">
+                  <line x1="100" y1="20" x2="100" y2="32" />
+                  <line x1="130" y1="26" x2="125" y2="37" />
+                  <line x1="155" y1="42" x2="146" y2="51" />
+                  <line x1="172" y1="68" x2="160" y2="74" />
+                  <line x1="178" y1="98" x2="165" y2="98" />
+                  <line x1="172" y1="128" x2="160" y2="122" />
+                  <line x1="155" y1="154" x2="146" y2="145" />
+                  <line x1="130" y1="170" x2="125" y2="159" />
+                  <line x1="100" y1="176" x2="100" y2="164" />
+                  <line x1="70" y1="170" x2="75" y2="159" />
+                  <line x1="45" y1="154" x2="54" y2="145" />
+                  <line x1="28" y1="128" x2="40" y2="122" />
+                  <line x1="22" y1="98" x2="35" y2="98" />
+                  <line x1="28" y1="68" x2="40" y2="74" />
+                  <line x1="45" y1="42" x2="54" y2="51" />
+                  <line x1="70" y1="26" x2="75" y2="37" />
+                </g>
+
+                {/* Hand Thumbs Up Outer Outline & Fill */}
+                <g>
+                  {/* Coral/Red Skin Tone Base */}
+                  <path
+                    d="M60 145 C65 140, 80 135, 95 110 C102 98, 106 80, 102 65 C98 52, 104 45, 110 46 C116 47, 118 58, 114 75 L118 78 C128 72, 138 72, 142 80 C144 84, 142 90, 136 94 C144 94, 148 100, 146 106 C144 112, 138 116, 130 118 C138 120, 142 126, 138 132 C134 138, 124 142, 110 142 C95 142, 85 148, 70 160 Z"
+                    fill="#F87171"
+                    stroke="#18181B"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* Darker Red Shadow Accent */}
+                  <path
+                    d="M75 130 C85 125, 105 110, 112 85 C114 78, 116 65, 110 52 C114 55, 116 65, 114 78 C118 74, 126 74, 132 80 C134 84, 132 90, 126 94 C134 94, 138 100, 136 106 C134 112, 128 116, 120 118 C128 120, 132 126, 128 132 C124 138, 114 142, 100 142 Z"
+                    fill="#EF4444"
+                  />
+
+                  {/* Finger Separation Curves */}
+                  <path d="M112 82 C122 82, 134 82, 138 88" stroke="#18181B" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M114 98 C124 98, 136 98, 140 102" stroke="#18181B" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M110 114 C120 114, 130 114, 134 118" stroke="#18181B" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M106 130 C116 130, 124 130, 128 134" stroke="#18181B" strokeWidth="2" strokeLinecap="round" />
+
+                  {/* White Gloss Highlights */}
+                  <path d="M104 55 C102 62, 104 72, 108 80" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="120" cy="85" r="2.5" fill="#FFFFFF" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+      {/* Header & Back Button */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+        >
+          ‹
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Regulations</h1>
+      </div>
+
+      {/* Top Description Paragraph */}
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
+        Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt.
+      </p>
+
+      {/* Registration Status Block */}
+      <div className="space-y-1.5 pt-2">
+        <h3 className="text-xs font-bold text-zinc-900">Your registration is complete</h3>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
+          You&apos;re all set! Your registration number is xxxxxxxx and is visible to guests on your listing.
+        </p>
+      </div>
+
+      {/* Action Button: View */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={() => setShowDetails(true)}
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          View
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================= */
+/* TAXES INNER COMPONENT                                             */
+/* ================================================================= */
+function TaxesView({
+  setActiveSection,
+  isSaving,
+  handleSaveSection,
+}: {
+  setActiveSection: (s: any) => void;
+  isSaving: boolean;
+  handleSaveSection: (key: any) => void;
+}) {
+  const [isSaved, setIsSaved] = React.useState(false);
+
+  return (
+    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+        >
+          ‹
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Taxes</h1>
+      </div>
+
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
+        Learn how local occupancy taxes and value-added tax (VAT) apply to your host earnings and how Homyz helps collect and remit taxes on eligible bookings.
+      </p>
+
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
+        <h3 className="text-xs font-bold text-zinc-900">Occupancy Tax Collection</h3>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+          Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 pt-4">
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => {
+            handleSaveSection("taxes");
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
+          }}
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================= */
+/* HOMYZ STAYS INNER COMPONENT                                       */
+/* ================================================================= */
+function HomyzStaysView({
+  setActiveSection,
+  isSaving,
+  handleSaveSection,
+}: {
+  setActiveSection: (s: any) => void;
+  isSaving: boolean;
+  handleSaveSection: (key: any) => void;
+}) {
+  const [isSaved, setIsSaved] = React.useState(false);
+
+  return (
+    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+        >
+          ‹
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Homyz.com stays</h1>
+      </div>
+
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
+        Learn how host contributions and community hosting initiatives help support local stays, emergency relief housing, and community experiences.
+      </p>
+
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
+        <h3 className="text-xs font-bold text-zinc-900">Community Housing Network</h3>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+          Opt in to share emergency housing or offer discounted stays for non-profit and community partners.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 pt-4">
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => {
+            handleSaveSection("homyz-stays");
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
+          }}
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("description")}
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

@@ -93,6 +93,27 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
+
+  const handleConvertToHost = async () => {
+    setIsConverting(true);
+    try {
+      const res = await fetch("/api/v1/host/application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "convert" }),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        throw new Error(payload.error?.message || "Failed to convert account to Host.");
+      }
+      toast.success("Congratulations! Your account has been converted to a Host account.");
+      window.location.href = "/host/listings";
+    } catch (err: any) {
+      toast.error(err.message || "Failed to convert account.");
+      setIsConverting(false);
+    }
+  };
 
   const [selectedDocType, setSelectedDocType] = useState<string>("GOVERNMENT_ID");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -503,14 +524,24 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
           <div className="flex items-center gap-3 shrink-0">
             {accountState === "DRAFT" && (
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={isSaving}
-                className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
-              >
-                {isSaving ? "Saving Draft..." : "Save Draft"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={isSaving || isConverting}
+                  className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
+                >
+                  {isSaving ? "Saving Draft..." : "Save Draft"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConvertToHost}
+                  disabled={isSaving || isConverting}
+                  className="inline-flex items-center rounded-full bg-[#FBDE9B] hover:bg-amber-400 px-5 py-2 text-xs font-extrabold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
+                >
+                  {isConverting ? "Converting Account..." : "⚡ Become a Host Now"}
+                </button>
+              </>
             )}
           </div>
         </div>

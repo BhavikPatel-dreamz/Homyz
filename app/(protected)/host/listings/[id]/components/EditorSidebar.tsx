@@ -814,58 +814,6 @@ export function EditorSidebar({
                   Add details
                 </p>
               </div>
-
-              {/* Card 8: Listing status */}
-              <div
-                onClick={() => setActiveSection("listing-status")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "listing-status" || activeSection === "listingstatus"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                <span className="text-xs font-bold text-zinc-900 block mb-1">
-                  Listing status
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  listed
-                </span>
-              </div>
-
-              {/* Card 9: Language */}
-              <div
-                onClick={() => setActiveSection("language")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "language" || activeSection === "languages"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
-                  Language
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  English
-                </p>
-              </div>
-
-              {/* Card 10: Guest requirements */}
-              <div
-                onClick={() => setActiveSection("guest-requirements")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "guest-requirements" || activeSection === "guestrequirements"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
-                  Guest requirements
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Profile photo not required
-                </p>
-              </div>
             </div>
           )}
         </div>

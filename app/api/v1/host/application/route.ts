@@ -20,6 +20,11 @@ export const POST = apiHandler(async (req) => {
     return ok(result);
   }
 
+  if (body.action === "convert") {
+    const result = await hostApplicationService.convertToHost(actor);
+    return ok(result);
+  }
+
   if (body.action === "submit") {
     const result = await hostApplicationService.submitApplication(actor, body);
     return created(result);
