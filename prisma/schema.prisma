@@ -165,14 +165,29 @@ model User {
   createdComplianceIssues HostComplianceIssue[] @relation("CreatedComplianceIssues")
   resolvedComplianceIssues HostComplianceIssue[] @relation("ResolvedComplianceIssues")
   createdInfoRequests HostInfoRequest[] @relation("CreatedInfoRequests")
-
-
-
+  tripPhotos         TripPhoto[]
 
   @@index([role])
   @@index([adminRoleId])
   @@index([status])
 }
+
+model TripPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  caption   String?
+  location  String?
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
 
 model Account {
   id                String  @id @default(cuid())

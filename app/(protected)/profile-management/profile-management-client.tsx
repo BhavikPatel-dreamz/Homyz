@@ -1,0 +1,1278 @@
+"use client";
+
+import React, { useState, useTransition, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { updateProfileAction } from "@/actions/user/updateProfile";
+import {
+  uploadTripPhotosAction,
+  updateTripPhotoAction,
+  deleteTripPhotoAction,
+} from "@/actions/user/tripPhotos";
+import { Alert } from "@/components/ui";
+import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+
+export type PublicProfileData = {
+  whereIWantToGo?: string;
+  myWork?: string;
+  spendTooMuchTime?: string;
+  pets?: string;
+  decadeBorn?: string;
+  school?: string;
+  uselessSkill?: string;
+  funFact?: string;
+  favoriteSong?: string;
+  languages?: string;
+  obsessedWith?: string;
+  bioTitle?: string;
+  whereILive?: string;
+  bio?: string;
+  stampsVisible?: boolean;
+};
+
+type ProfileData = {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  image: string | null;
+  email: string | null;
+  publicProfile?: PublicProfileData | null;
+};
+
+export type TripPhotoItem = {
+  id: string;
+  userId: string;
+  url: string;
+  caption: string | null;
+  location: string | null;
+  tags: string[];
+  createdAt: Date | string;
+};
+
+export type UserStatsData = {
+  trips: number;
+  likes: number;
+  reviews: number;
+};
+
+type ProfileManagementClientProps = {
+  initial: ProfileData;
+  initialTripPhotos?: TripPhotoItem[];
+  initialStats?: UserStatsData;
+  isOwner?: boolean;
+};
+
+// Hand-drawn Paris Eiffel Tower Stamp
+function StampParis() {
+  return (
+    <div className="flex flex-col items-center shrink-0">
+      <div className="relative w-36 h-36 flex items-center justify-center">
+        <svg className="w-full h-full" viewBox="0 0 160 160">
+          <circle cx="80" cy="88" r="54" fill="#FDE8EB" stroke="#A1A1AA" strokeWidth="1" strokeDasharray="3 3" />
+          <path id="parisArc" d="M 28,68 A 62,62 0 0,1 132,68" fill="none" />
+          <text className="text-[13px] fill-zinc-800" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <textPath href="#parisArc" startOffset="50%" textAnchor="middle">
+              stay like a homie.
+            </textPath>
+          </text>
+          <g stroke="#27272A" strokeWidth="1.75" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="80" y1="34" x2="80" y2="48" />
+            <circle cx="80" cy="33" r="1.5" fill="#27272A" />
+            <polygon points="76,48 84,48 82,72 78,72" />
+            <line x1="74" y1="72" x2="86" y2="72" />
+            <polygon points="76,72 84,72 87,105 73,105" />
+            <line x1="70" y1="105" x2="90" y2="105" />
+            <line x1="75" y1="88" x2="85" y2="88" />
+            <path d="M 73,105 L 63,142" />
+            <path d="M 87,105 L 97,142" />
+            <path d="M 69,142 C 72,120 88,120 91,142" />
+            <line x1="58" y1="142" x2="102" y2="142" />
+          </g>
+        </svg>
+      </div>
+      <span className="text-sm font-serif italic text-zinc-800 mt-1">Paris</span>
+    </div>
+  );
+}
+
+// Hand-drawn Coffee Moka Pot Stamp
+function StampCoffee() {
+  return (
+    <div className="flex flex-col items-center shrink-0">
+      <div className="relative w-36 h-36 flex items-center justify-center">
+        <svg className="w-full h-full" viewBox="0 0 160 160">
+          <circle cx="80" cy="88" r="54" fill="#EEF2FF" stroke="#A1A1AA" strokeWidth="1" strokeDasharray="3 3" />
+          <path id="coffeeArc" d="M 28,68 A 62,62 0 0,1 132,68" fill="none" />
+          <text className="text-[13px] fill-zinc-800" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <textPath href="#coffeeArc" startOffset="50%" textAnchor="middle">
+              stay like a homie.
+            </textPath>
+          </text>
+          <g stroke="#27272A" strokeWidth="1.75" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="80" cy="48" r="3" fill="#27272A" />
+            <path d="M 68,62 L 80,51 L 92,62 Z" />
+            <polygon points="68,62 92,62 88,92 72,92" />
+            <line x1="66" y1="92" x2="94" y2="92" />
+            <line x1="66" y1="96" x2="94" y2="96" />
+            <polygon points="72,96 88,96 92,134 68,134" />
+            <path d="M 92,68 C 108,70 108,110 90,115" />
+            <path d="M 68,66 L 58,76 L 68,84" />
+            <line x1="65" y1="134" x2="95" y2="134" />
+          </g>
+        </svg>
+      </div>
+      <span className="text-sm font-serif italic text-zinc-800 mt-1">Coffee</span>
+    </div>
+  );
+}
+
+const IconSprig = () => (
+  <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center shrink-0 bg-white shadow-2xs">
+    <svg className="w-4 h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21V9" />
+      <path d="M12 13C9 13 7 10.5 7 7.5C9.5 7.5 12 9.5 12 13Z" />
+      <path d="M12 11C15 11 17 8.5 17 5.5C14.5 5.5 12 7.5 12 11Z" />
+      <circle cx="12" cy="4.5" r="1" fill="currentColor" />
+    </svg>
+  </div>
+);
+
+const IconCamera = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" /></svg>;
+const IconPencil = () => <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>;
+const IconTrash = () => <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
+
+export function ProfileManagementClient({
+  initial,
+  initialTripPhotos = [],
+  initialStats = { trips: 12, likes: 0, reviews: 10 },
+  isOwner = true,
+}: ProfileManagementClientProps) {
+  const router = useRouter();
+  const [activeMgmtTab, setActiveMgmtTab] = useState<"info" | "photos" | "stamps" | "privacy">("info");
+
+  const [profileData, setProfileData] = useState<ProfileData>(initial);
+  const [tripPhotos, setTripPhotos] = useState<TripPhotoItem[]>(initialTripPhotos);
+  const [pending, startTransition] = useTransition();
+
+  const [msg, setMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [imageUrl, setImageUrl] = useState(initial.image || "");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Modals & States
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [editPhotoModal, setEditPhotoModal] = useState<TripPhotoItem | null>(null);
+  const [deletePhotoModal, setDeletePhotoModal] = useState<TripPhotoItem | null>(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState<TripPhotoItem | null>(null);
+
+  const pub = profileData.publicProfile || {};
+
+  const [formDataState, setFormDataState] = useState<PublicProfileData>({
+    whereIWantToGo: pub.whereIWantToGo || "",
+    myWork: pub.myWork || "",
+    spendTooMuchTime: pub.spendTooMuchTime || "",
+    pets: pub.pets || "",
+    decadeBorn: pub.decadeBorn || "",
+    school: pub.school || "",
+    uselessSkill: pub.uselessSkill || "",
+    funFact: pub.funFact || "",
+    favoriteSong: pub.favoriteSong || "",
+    languages: pub.languages || "English and Russian",
+    obsessedWith: pub.obsessedWith || "",
+    bioTitle: pub.bioTitle || "",
+    whereILive: pub.whereILive || "Bucharest, Romania",
+    bio: pub.bio || "Your profile's got star power—hosts and guests can check it out, helping Homyz stay awesome and trustworthy!",
+    stampsVisible: pub.stampsVisible !== false,
+  });
+
+  const handleInputChange = (field: keyof PublicProfileData, value: any) => {
+    if (!isOwner) return;
+    setFormDataState((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const onSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) e.preventDefault();
+    if (!isOwner) return;
+    setMsg(null);
+
+    const payload = {
+      image: imageUrl || initial.image || null,
+      name: initial.name || null,
+      phone: initial.phone || null,
+      publicProfile: formDataState,
+    };
+
+    startTransition(async () => {
+      const res = await updateProfileAction(payload);
+      if (!res.ok) {
+        setMsg({ tone: "error", text: res.error || "Failed to update profile." });
+        return;
+      }
+      setMsg({ tone: "success", text: "Profile changes saved successfully!" });
+      setProfileData(res.data as ProfileData);
+      router.refresh();
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isOwner) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setMsg(null);
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/v1/upload/listing-photo", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setImageUrl(data.url);
+      setMsg({ tone: "success", text: "Avatar updated." });
+    } catch (err: any) {
+      setMsg({ tone: "error", text: err.message || "Upload error" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const stampsVisible = formDataState.stampsVisible !== false;
+
+  return (
+    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans py-8">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+          {/* ------------------------------------------------------------------ */}
+          {/* LEFT SIDEBAR NAVIGATION                                           */}
+          {/* ------------------------------------------------------------------ */}
+          <GuestDashboardSidebar activeId="profile_management" />
+
+          {/* ------------------------------------------------------------------ */}
+          {/* MAIN PROFILE MANAGEMENT WORKSPACE (SCREENSHOT 2)                  */}
+          {/* ------------------------------------------------------------------ */}
+          <main className="flex-1 flex flex-col max-w-3xl animate-in fade-in">
+            {msg && (
+              <div className="mb-6">
+                <Alert tone={msg.tone}>{msg.text}</Alert>
+              </div>
+            )}
+
+            {/* 1. HERO AVATAR CARD & COMMUNITY NOTE (MATCHING SCREENSHOT 2) */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+              <div className="relative w-44 h-44 rounded-3xl overflow-hidden border border-zinc-200 shadow-2xs shrink-0 bg-zinc-100">
+                {imageUrl ? (
+                  <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="176px" priority />
+                ) : (
+                  <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+                    <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  </div>
+                )}
+                {isOwner && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="absolute bottom-2 right-2 bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 rounded-full px-3.5 py-1.5 text-xs font-bold shadow-md hover:scale-105 transition-transform flex items-center gap-1 cursor-pointer z-10"
+                    >
+                      <IconPencil />
+                      <span>{uploading ? "..." : "Edit"}</span>
+                    </button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="flex-1 max-w-md">
+                <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                  Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
+                  <span className="font-bold text-zinc-900 underline cursor-pointer">Learn more</span>
+                </p>
+              </div>
+            </div>
+
+            {/* 2. DEDICATED PROFILE MANAGEMENT TABS */}
+            <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setActiveMgmtTab("info")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeMgmtTab === "info"
+                    ? "bg-zinc-900 text-white shadow-2xs"
+                    : "text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Profile Information
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMgmtTab("photos")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeMgmtTab === "photos"
+                    ? "bg-zinc-900 text-white shadow-2xs"
+                    : "text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Trip Photos ({tripPhotos.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMgmtTab("stamps")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeMgmtTab === "stamps"
+                    ? "bg-zinc-900 text-white shadow-2xs"
+                    : "text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Where I've Been
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveMgmtTab("privacy")}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  activeMgmtTab === "privacy"
+                    ? "bg-zinc-900 text-white shadow-2xs"
+                    : "text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Privacy & Visibility
+              </button>
+            </div>
+
+            {/* TAB 1: PROFILE INFORMATION (PROMPT GRID MATCHING SCREENSHOT 2) */}
+            {activeMgmtTab === "info" && (
+              <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8">
+                {/* 2-COLUMN PROMPT GRID (EXACT MATCH TO SCREENSHOT 2) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7">
+                  {/* Item 1 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        Where I've always wanted to go
+                      </span>
+                      <input
+                        value={formDataState.whereIWantToGo}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("whereIWantToGo", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.whereIWantToGo
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="edit: Where have you always wanted to travel?"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 2 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">My work</span>
+                      <input
+                        value={formDataState.myWork}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("myWork", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.myWork ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="Add your work"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 3 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        I spend too much time
+                      </span>
+                      <input
+                        value={formDataState.spendTooMuchTime}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("spendTooMuchTime", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.spendTooMuchTime
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="Add an answer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 4 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">Pets</span>
+                      <input
+                        value={formDataState.pets}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("pets", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.pets ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="Add pets"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 5 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">Decade I was born</span>
+                      <input
+                        value={formDataState.decadeBorn}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("decadeBorn", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.decadeBorn
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="Add decade"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 6 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        Where I went to school
+                      </span>
+                      <input
+                        value={formDataState.school}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("school", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.school ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="Add school"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 7 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        My most useless skill
+                      </span>
+                      <input
+                        value={formDataState.uselessSkill}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("uselessSkill", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.uselessSkill
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="edit: What's your most useless skill?"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 8 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">My fun fact</span>
+                      <input
+                        value={formDataState.funFact}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("funFact", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.funFact ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="edit: What's your fun fact?"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 9 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        My favorite song in high school
+                      </span>
+                      <input
+                        value={formDataState.favoriteSong}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("favoriteSong", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.favoriteSong
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="edit: What was your favorite song in high school?"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 10 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        Languages I speak: {formDataState.languages || "English and Russian"}
+                      </span>
+                      <input
+                        value={formDataState.languages}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("languages", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
+                        placeholder="Languages"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 11 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        I'm obsessed with
+                      </span>
+                      <input
+                        value={formDataState.obsessedWith}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("obsessedWith", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.obsessedWith
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="What are you obsessed with?"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 12 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        My biography title would be
+                      </span>
+                      <input
+                        value={formDataState.bioTitle}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("bioTitle", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className={`w-full text-xs bg-transparent focus:outline-none ${
+                          formDataState.bioTitle
+                            ? "text-zinc-900 font-medium"
+                            : "text-zinc-400 font-normal"
+                        }`}
+                        placeholder="My biography title would be"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Item 13 */}
+                  <div className="flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80 md:col-span-2">
+                    <IconSprig />
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs font-semibold text-zinc-800">
+                        Where I live: {formDataState.whereILive || "Bucharest, Romania"}
+                      </span>
+                      <input
+                        value={formDataState.whereILive}
+                        disabled={!isOwner}
+                        onChange={(e) => handleInputChange("whereILive", e.target.value)}
+                        onBlur={() => onSubmit()}
+                        className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
+                        placeholder="Town, Country"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* About me Textarea Box */}
+                <div className="mt-4">
+                  <h3 className="text-sm font-bold text-zinc-900 mb-3">About me</h3>
+                  <div className="rounded-xl border border-zinc-200/90 p-4 min-h-[100px] focus-within:border-zinc-400 transition-colors bg-white">
+                    <textarea
+                      value={formDataState.bio}
+                      disabled={!isOwner}
+                      onChange={(e) => handleInputChange("bio", e.target.value)}
+                      onBlur={() => onSubmit()}
+                      className="w-full h-full bg-transparent resize-none text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none leading-relaxed"
+                      placeholder="Your profile's got star power—hosts and guests can check it out, helping Homyz stay awesome and trustworthy!"
+                    />
+                  </div>
+                </div>
+
+                {isOwner && (
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={pending}
+                      className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-8 py-3 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                    >
+                      {pending ? "Saving..." : "Save profile"}
+                    </button>
+                  </div>
+                )}
+              </form>
+            )}
+
+            {/* TAB 2: TRIP PHOTOS */}
+            {activeMgmtTab === "photos" && (
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-900">Trip Photos Management</h3>
+                    <p className="text-xs text-zinc-500">Upload and curate your travel memories</p>
+                  </div>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => setUploadModalOpen(true)}
+                      className="flex items-center gap-2 bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 px-5 py-2.5 rounded-full text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <IconCamera />
+                      <span>Upload Photos</span>
+                    </button>
+                  )}
+                </div>
+
+                {tripPhotos.length === 0 ? (
+                  <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
+                    <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
+                      <IconCamera />
+                    </div>
+                    <p className="text-base font-bold text-zinc-900">You can upload best images of your trip</p>
+                    <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
+                      Select multiple photos, tag travel companions, add captions and locations.
+                    </p>
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => setUploadModalOpen(true)}
+                        className="bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 font-bold text-xs px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                      >
+                        Upload Photos
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {tripPhotos.map((photo) => (
+                      <div
+                        key={photo.id}
+                        className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs"
+                      >
+                        <Image
+                          src={photo.url}
+                          alt={photo.caption || "Trip photo"}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                          sizes="(max-width: 640px) 100vw, 33vw"
+                          onClick={() => setLightboxPhoto(photo)}
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3.5 flex flex-col justify-between pointer-events-none">
+                          {isOwner && (
+                            <div className="flex justify-end gap-1.5 pointer-events-auto">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditPhotoModal(photo);
+                                }}
+                                className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-zinc-900 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
+                                title="Edit photo"
+                              >
+                                <IconPencil />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletePhotoModal(photo);
+                                }}
+                                className="w-8 h-8 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white text-rose-600 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
+                                title="Delete photo"
+                              >
+                                <IconTrash />
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="mt-auto">
+                            {photo.location && (
+                              <p className="text-xs font-bold text-white truncate">📍 {photo.location}</p>
+                            )}
+                            {photo.caption && (
+                              <p className="text-xs text-zinc-200 truncate mt-0.5">{photo.caption}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: WHERE I'VE BEEN (STAMPS & VISIBILITY TOGGLE - SCREENSHOT 2) */}
+            {activeMgmtTab === "stamps" && (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-xl font-bold text-zinc-900">Where I've been</h3>
+                    {isOwner && (
+                      <div
+                        onClick={() => {
+                          const val = !formDataState.stampsVisible;
+                          handleInputChange("stampsVisible", val);
+                          setTimeout(() => onSubmit(), 100);
+                        }}
+                        className={`w-12 h-6 rounded-full relative cursor-pointer transition-colors ${
+                          stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300"
+                        }`}
+                        title="Toggle visibility on public profile"
+                      >
+                        <div
+                          className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-2xs ${
+                            stampsVisible ? "right-0.5" : "left-0.5"
+                          }`}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-zinc-500 text-xs">
+                    Pick the stamps you want other people to see on your profile.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-12 py-6 border-t border-b border-zinc-200/80 my-2">
+                  <StampParis />
+                  <StampCoffee />
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: PRIVACY & VISIBILITY */}
+            {activeMgmtTab === "privacy" && (
+              <div className="flex flex-col gap-6">
+                <h3 className="text-xl font-bold text-zinc-900">Privacy & Visibility Settings</h3>
+                <div className="p-5 rounded-2xl border border-zinc-200/90 bg-zinc-50/50 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-900">Public Profile Visibility</h4>
+                      <p className="text-xs text-zinc-500">Allow hosts and other guests to discover your profile</p>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Active</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-zinc-200/60">
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-900">Show Travel Stamps ("Where I've Been")</h4>
+                      <p className="text-xs text-zinc-500">Display your collected country stamps publicly</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = !formDataState.stampsVisible;
+                        handleInputChange("stampsVisible", val);
+                        setTimeout(() => onSubmit(), 100);
+                      }}
+                      className={`text-xs font-bold px-4 py-1.5 rounded-full transition-colors ${
+                        stampsVisible ? "bg-[#FDE29B] text-zinc-900" : "bg-zinc-200 text-zinc-700"
+                      }`}
+                    >
+                      {stampsVisible ? "ON" : "OFF"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+
+      {/* MODALS */}
+      {uploadModalOpen && (
+        <MultiImageUploadModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploaded={(newPhotos) => {
+            setTripPhotos((prev) => [...newPhotos, ...prev]);
+            setUploadModalOpen(false);
+          }}
+        />
+      )}
+
+      {editPhotoModal && (
+        <EditTripPhotoModal
+          photo={editPhotoModal}
+          onClose={() => setEditPhotoModal(null)}
+          onSaved={(updated) => {
+            setTripPhotos((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+            setEditPhotoModal(null);
+          }}
+          onDeleteTrigger={(p) => {
+            setEditPhotoModal(null);
+            setDeletePhotoModal(p);
+          }}
+        />
+      )}
+
+      {deletePhotoModal && (
+        <DeleteTripPhotoModal
+          photo={deletePhotoModal}
+          onClose={() => setDeletePhotoModal(null)}
+          onDeleted={(deletedId) => {
+            setTripPhotos((prev) => prev.filter((p) => p.id !== deletedId));
+            setDeletePhotoModal(null);
+          }}
+        />
+      )}
+
+      {lightboxPhoto && (
+        <LightboxModal photo={lightboxPhoto} onClose={() => setLightboxPhoto(null)} />
+      )}
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------
+// MODAL COMPONENTS (UPLOAD, EDIT, DELETE, LIGHTBOX)
+// ------------------------------------------------------------------
+function MultiImageUploadModal({
+  onClose,
+  onUploaded,
+}: {
+  onClose: () => void;
+  onUploaded: (photos: TripPhotoItem[]) => void;
+}) {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [location, setLocation] = useState("");
+  const [caption, setCaption] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setError(null);
+
+    const validFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`File ${file.name} exceeds 10MB limit.`);
+        continue;
+      }
+      if (!file.type.startsWith("image/")) {
+        setError(`File ${file.name} is not an image.`);
+        continue;
+      }
+      validFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+    }
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeFile = (idx: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFiles.length) return;
+    setUploading(true);
+    setError(null);
+
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of selectedFiles) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/v1/upload/listing-photo", {
+          method: "POST",
+          body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Upload failed");
+        uploadedUrls.push(data.url);
+      }
+
+      const tags = tagsInput
+        .split(",")
+        .map((t) => t.trim().replace(/^@/, ""))
+        .filter(Boolean);
+
+      const payload = uploadedUrls.map((url) => ({
+        url,
+        location: location.trim() || undefined,
+        caption: caption.trim() || undefined,
+        tags,
+      }));
+
+      const res = await uploadTripPhotosAction(payload);
+      if (!res.ok) throw new Error(res.error || "Save trip photos failed");
+
+      onUploaded(res.data as TripPhotoItem[]);
+    } catch (err: any) {
+      setError(err.message || "Upload error");
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+        <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
+          <h3 className="text-lg font-bold text-zinc-900">Upload Trip Photos</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4">
+            <Alert tone="error">{error}</Alert>
+          </div>
+        )}
+
+        <form onSubmit={handleUploadSubmit} className="space-y-4">
+          <p className="text-xs text-zinc-500">You can upload best images of your trip</p>
+
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50/80 rounded-2xl p-6 text-center cursor-pointer transition-colors"
+          >
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2">
+              <IconCamera />
+            </div>
+            <p className="text-xs font-bold text-zinc-800">Select trip photos</p>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+            />
+          </div>
+
+          {previews.length > 0 && (
+            <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+              {previews.map((src, i) => (
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200">
+                  <img src={src} alt="prev" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white flex items-center justify-center text-[10px]"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 mb-1">Location</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Paris, France"
+                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 mb-1">Tag People</label>
+              <input
+                type="text"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="alex, sarah"
+                className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1">Caption</label>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Caption..."
+              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs h-16 resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={uploading || selectedFiles.length === 0}
+              className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+            >
+              {uploading ? "Uploading..." : `Upload (${selectedFiles.length})`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditTripPhotoModal({
+  photo,
+  onClose,
+  onSaved,
+  onDeleteTrigger,
+}: {
+  photo: TripPhotoItem;
+  onClose: () => void;
+  onSaved: (updated: TripPhotoItem) => void;
+  onDeleteTrigger: (p: TripPhotoItem) => void;
+}) {
+  const [location, setLocation] = useState(photo.location || "");
+  const [caption, setCaption] = useState(photo.caption || "");
+  const [tagsInput, setTagsInput] = useState((photo.tags || []).join(", "));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      const tags = tagsInput
+        .split(",")
+        .map((t) => t.trim().replace(/^@/, ""))
+        .filter(Boolean);
+
+      const res = await updateTripPhotoAction(photo.id, {
+        location: location.trim() || undefined,
+        caption: caption.trim() || undefined,
+        tags,
+      });
+
+      if (!res.ok) throw new Error(res.error || "Update photo failed");
+      onSaved(res.data as TripPhotoItem);
+    } catch (err: any) {
+      setError(err.message || "Save error");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+        <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
+          <h3 className="text-lg font-bold text-zinc-900">Edit Photo Details</h3>
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center">
+            ✕
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4">
+            <Alert tone="error">{error}</Alert>
+          </div>
+        )}
+
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-zinc-200">
+            <Image src={photo.url} alt="Photo" fill className="object-cover" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1">Tag People</label>
+            <input
+              type="text"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1">Caption</label>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs h-16 resize-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+            <button
+              type="button"
+              onClick={() => onDeleteTrigger(photo)}
+              className="text-xs font-bold text-rose-600 hover:underline"
+            >
+              Delete Photo
+            </button>
+
+            <div className="flex gap-2">
+              <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Details"}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DeleteTripPhotoModal({
+  photo,
+  onClose,
+  onDeleted,
+}: {
+  photo: TripPhotoItem;
+  onClose: () => void;
+  onDeleted: (id: string) => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+
+    try {
+      const res = await deleteTripPhotoAction(photo.id);
+      if (!res.ok) throw new Error(res.error || "Delete failed");
+      onDeleted(photo.id);
+    } catch (err: any) {
+      setError(err.message || "Deletion error");
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+        <h3 className="text-lg font-bold text-zinc-900 mb-2">Delete Trip Photo</h3>
+        <p className="text-xs text-zinc-500 mb-4">Are you sure you want to delete this trip photo?</p>
+
+        {error && (
+          <div className="mb-4">
+            <Alert tone="error">{error}</Alert>
+          </div>
+        )}
+
+        <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-zinc-200 mb-4">
+          <Image src={photo.url} alt="Photo" fill className="object-cover" />
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} disabled={deleting} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Confirm Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LightboxModal({
+  photo,
+  onClose,
+}: {
+  photo: TripPhotoItem;
+  onClose: () => void;
+}) {
+  return (
+    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer">
+      <div onClick={(e) => e.stopPropagation()} className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center cursor-default">
+        <button type="button" onClick={onClose} className="absolute -top-10 right-0 text-white text-sm font-bold">
+          ✕ Close
+        </button>
+        <div className="relative w-full h-[70vh] rounded-2xl overflow-hidden shadow-2xl">
+          <Image src={photo.url} alt="Photo" fill className="object-contain" priority />
+        </div>
+      </div>
+    </div>
+  );
+}
