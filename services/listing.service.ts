@@ -110,6 +110,14 @@ async function create(
     await assertHostPermission(actor.id, "listing.create");
   }
 
+  // Automatically promote regular USER to HOST role upon starting/creating a listing
+  if (actor.role === Role.USER) {
+    await prisma.user.update({
+      where: { id: actor.id },
+      data: { role: Role.HOST },
+    });
+  }
+
   // Ensure published is strictly false on creation unless Admin approves
   const listing = await prisma.listing.create({
     data: {
@@ -180,6 +188,14 @@ async function update(
 
   if (actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  // Automatically promote regular USER to HOST role upon updating a listing
+  if (actor.role === Role.USER) {
+    await prisma.user.update({
+      where: { id: actor.id },
+      data: { role: Role.HOST },
+    });
   }
 
   // Hosts cannot directly change status to ACTIVE or published to true

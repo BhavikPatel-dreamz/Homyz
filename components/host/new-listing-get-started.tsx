@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -53,6 +54,7 @@ const STEP_SLUGS = [
 export function NewListingGetStarted() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, update: updateSession } = useSession();
   const hostingType = searchParams.get("type") || "HOME";
   const urlStepParam = searchParams.get("step");
   const urlDraftId = searchParams.get("draftId");
@@ -203,6 +205,12 @@ export function NewListingGetStarted() {
         }
       }
 
+      // Automatically sync session role if user was converted from USER to HOST
+      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
+        await updateSession({ role: "HOST" });
+        router.refresh();
+      }
+
       setStep(nextStepIndex);
       updateUrlForStep(nextStepIndex, activeDraftId);
     } catch (err: any) {
@@ -220,6 +228,10 @@ export function NewListingGetStarted() {
     setIsSavingStep(true);
     try {
       await saveDraftAndGoToStep(18);
+      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
+        await updateSession({ role: "HOST" });
+        router.refresh();
+      }
       toast.success("Draft listing saved successfully!");
       router.push("/host/listings");
     } catch (err: any) {
