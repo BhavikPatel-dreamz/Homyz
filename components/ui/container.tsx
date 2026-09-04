@@ -5,5 +5,5 @@ export interface ContainerProps extends HTMLAttributes<HTMLElement> {
 }
 
 export function Container({ as: Component = "div", className = "", ...props }: ContainerProps) {
-  return <Component className={`mx-auto box-border w-full max-w-[1520px] px-4 sm:px-6 lg:px-10 ${className}`.trim()} {...props} />;
+  return <Component className={`mx-auto box-border w-full max-w-[1600px] px-4 sm:px-6 lg:px-10 ${className}`.trim()} {...props} />;
 }

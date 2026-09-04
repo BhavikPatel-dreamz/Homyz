@@ -10,7 +10,11 @@ import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { BecomeHostModal } from "@/components/host/become-host-modal";
 
-export function AppHeader() {
+type AppHeaderProps = {
+  showBottomBorder?: boolean;
+};
+
+export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user ?? null;
@@ -34,6 +38,10 @@ export function AppHeader() {
   }, []);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
+  const routeHasHeaderDivider = !["/", "/dashboard", "/profile", "/profile-management"].some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`),
+  );
+  const hasHeaderDivider = showBottomBorder ?? routeHasHeaderDivider;
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
@@ -48,9 +56,13 @@ export function AppHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white text-zinc-900 "  suppressHydrationWarning>
+    <header className="header sticky top-0 z-40 w-full bg-white text-[#1F1F1F]"  suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-8 border-b-0 md:border-b md:border-[rgba(31,31,31,0.9)]">
+        <div
+          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${
+            hasHeaderDivider ? "md:border-b md:border-[rgba(31,31,31,0.9)]" : ""
+          }`}
+        >
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
@@ -67,7 +79,7 @@ export function AppHeader() {
           </Link>
 
           <Link href="/" className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label="Homyz home">
-            <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[180px] xl:w-[200px]" priority />
+            <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
           </Link>
 
           <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label="Homyz home">
@@ -82,15 +94,15 @@ export function AppHeader() {
           </Link>
 
           {isHostRoute ? (
-            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-700 absolute left-1/2 -translate-x-1/2">
+            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-700 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <Link href="/host/today" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/today' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Today</Link>
               <Link href="/host/calendar" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/calendar' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Calendar</Link>
               <Link href="/host/listings" className={`hover:text-zinc-900 transition-colors ${pathname?.startsWith('/host/listings') ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Listing</Link>
               <Link href="/host/messages" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/messages' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Messages</Link>
             </nav>
           ) : (
-            <Link href="/" className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
-              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform md:w-[198px]" priority />
+            <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
+              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[125px] transition-transform md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]" priority />
             </Link>
           )}
 

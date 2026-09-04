@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { HeroSection } from "./hero-section";
 import { CategoryCarousel } from "./category-carousel";
 import { Footer } from "@/components/dashboard/footer";
 import { PropertyCardData } from "./property-card";
+import { Container } from "../ui";
 
 export function HomeView() {
-  const [searchFilter, setSearchFilter] = useState("");
-
   // Section 1: Popular home in Paris
   const parisCards: PropertyCardData[] = [
     {
@@ -395,37 +394,36 @@ export function HomeView() {
   ];
 
   return (
-    <div className="bg-[#FCFCFC] text-[#222222] font-sans antialiased min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       {/* App Header */}
       <AppHeader />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-[1440px] mx-auto px-6 lg:px-12 w-full pt-8 pb-16">
-        {/* Hero Section */}
-        <HeroSection
-          onSearch={(params) => {
-            setSearchFilter(params.destination);
-          }}
-        />
 
-        {/* Listing Sections Container */}
-        <div className="mt-14 space-y-16">
-          <CategoryCarousel title="Popular home in Paris" cards={parisCards} />
-          <CategoryCarousel title="Stay in Hamburg" cards={hamburgCards} />
-          <CategoryCarousel
-            title="Available in Berlin this weekend"
-            cards={berlinCards}
-          />
-          <CategoryCarousel
-            title="Available next month in Barcelona"
-            cards={barcelonaCards}
-          />
-          <CategoryCarousel title="Homes in Milan" cards={milanCards} />
-          <CategoryCarousel
-            title="Available next month in Lisbon"
-            cards={lisbonCards}
-          />
-        </div>
+      <main className="homepage-main mt-6 sm:mt-8 w-full flex-1 pb-16 sm:pb-[150px]">
+        <Container>
+          {/* Hero Section */}
+          <HeroSection />
+
+          {/* Listing Sections Container */}
+          <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
+            <CategoryCarousel title="Popular home in Paris" cards={parisCards} />
+            <CategoryCarousel title="Stay in Hamburg" cards={hamburgCards} />
+            <CategoryCarousel
+              title="Available in Berlin this weekend"
+              cards={berlinCards}
+            />
+            <CategoryCarousel
+              title="Available next month in Barcelona"
+              cards={barcelonaCards}
+            />
+            <CategoryCarousel title="Homes in Milan" cards={milanCards} />
+            <CategoryCarousel
+              title="Available next month in Lisbon"
+              cards={lisbonCards}
+            />
+          </div>
+        </Container>
       </main>
 
       {/* Existing Built Footer */}

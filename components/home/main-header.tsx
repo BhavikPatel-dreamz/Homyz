@@ -137,7 +137,7 @@ export function MainHeader() {
                   <Link
                     href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-2.5 text-xs font-bold text-gray-900 hover:bg-gray-50 rounded-xl transition"
+                    className="block px-3 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-gray-50 rounded-xl transition"
                   >
                     Log in
                   </Link>
