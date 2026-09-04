@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function HostListingEditorPage({ params, searchParams }: PageProps) {
-  const actor = await requirePageRole([Role.USER, Role.HOST, Role.ADMIN]);
+  const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
   const resolvedParams = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const listingId = resolvedParams.id;

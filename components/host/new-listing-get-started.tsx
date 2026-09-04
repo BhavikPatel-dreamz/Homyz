@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -14,24 +15,76 @@ import { StepPlaceType } from "./onboarding/step-place-type";
 import { StepLocationSearch } from "./onboarding/step-location-search";
 import { StepAddressConfirm } from "./onboarding/step-address-confirm";
 import { StepBasicsCounters } from "./onboarding/step-basics-counters";
+import { StepStandoutIntro } from "./onboarding/step-standout-intro";
+import { StepAmenities } from "./onboarding/step-amenities";
+import { StepPhotos } from "./onboarding/step-photos";
+import { StepPhotoManagement } from "./onboarding/step-photo-management";
+import { StepTitle } from "./onboarding/step-title";
+import { StepHighlights } from "./onboarding/step-highlights";
+import { StepDescription } from "./onboarding/step-description";
+import { StepFinishIntro } from "./onboarding/step-finish-intro";
+import { StepPrice } from "./onboarding/step-price";
+import { StepWeekendPrice } from "./onboarding/step-weekend-price";
+import { StepDiscounts } from "./onboarding/step-discounts";
+import { StepSafety } from "./onboarding/step-safety";
+
+// Step Slugs for URL query parameter mapping
+const STEP_SLUGS = [
+  "overview",        // Step 0
+  "intro",           // Step 1
+  "category",        // Step 2
+  "place-type",      // Step 3
+  "location",        // Step 4
+  "address",         // Step 5
+  "basics",          // Step 6
+  "standout",        // Step 7
+  "amenities",       // Step 8
+  "photos",          // Step 9
+  "photos-review",   // Step 10
+  "title",           // Step 11
+  "highlights",      // Step 12
+  "description",     // Step 13
+  "finish-intro",    // Step 14
+  "price",           // Step 15
+  "weekend-price",   // Step 16
+  "discounts",       // Step 17
+  "safety",          // Step 18
+];
 
 export function NewListingGetStarted() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, update: updateSession } = useSession();
   const hostingType = searchParams.get("type") || "HOME";
+  const urlStepParam = searchParams.get("step");
+  const urlDraftId = searchParams.get("draftId");
 
-  // Step 0: Overview
-  // Step 1: Intro ("Tell us about your place")
-  // Step 2: Category selection grid
-  // Step 3: Space type selection
-  // Step 4: Location pin search map
-  // Step 5: Address confirmation form + Map preview
-  // Step 6: Property basics counters (Guests, Bedrooms, Beds, Bathrooms)
-  const [step, setStep] = useState<number>(0);
+  // Determine initial step based on URL query parameter (?step=category or ?step=2)
+  const getInitialStep = (): number => {
+    if (!urlStepParam) return 0;
+    const slugIdx = STEP_SLUGS.indexOf(urlStepParam.toLowerCase());
+    if (slugIdx !== -1) return slugIdx;
+    const num = parseInt(urlStepParam, 10);
+    if (!isNaN(num) && num >= 0 && num < STEP_SLUGS.length) return num;
+    return 0;
+  };
+
+  const [step, setStep] = useState<number>(getInitialStep);
+  const [draftId, setDraftId] = useState<string | null>(urlDraftId || null);
+  const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
 
   // Selections & States
   const [selectedCategory, setSelectedCategory] = useState<string>("House");
   const [selectedPlaceType, setSelectedPlaceType] = useState<string>("Entire place");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(["Wifi"]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [title, setTitle] = useState<string>("");
+  const [selectedHighlights, setSelectedHighlights] = useState<string[]>(["Peaceful", "Unique"]);
+  const [description, setDescription] = useState<string>("");
+  const [price, setPrice] = useState<number>(241);
+  const [weekendPrice, setWeekendPrice] = useState<number>(291);
+  const [selectedDiscounts, setSelectedDiscounts] = useState<string[]>(["new_listing"]);
+  const [selectedSafety, setSelectedSafety] = useState<string[]>([]);
 
   // Location & Address States
   const [country, setCountry] = useState<string>("Saudi Arabia - SA");
@@ -51,7 +104,141 @@ export function NewListingGetStarted() {
   const [beds, setBeds] = useState<number>(1);
   const [bathrooms, setBathrooms] = useState<number>(1);
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Sync state step with URL search parameters
+  const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null) => {
+    const currentDraft = activeDraftId !== undefined ? activeDraftId : draftId;
+    const slug = STEP_SLUGS[stepIdx] || "overview";
+    const params = new URLSearchParams();
+    params.set("type", hostingType);
+    params.set("step", slug);
+    if (currentDraft) {
+      params.set("draftId", currentDraft);
+    }
+    const newUrl = `/host/listings/new?${params.toString()}`;
+    window.history.pushState(null, "", newUrl);
+  }, [draftId, hostingType]);
+
+  // Handle URL changes when browser back/forward buttons are clicked
+  useEffect(() => {
+    const handlePopState = () => {
+      const sp = new URLSearchParams(window.location.search);
+      const st = sp.get("step");
+      if (st) {
+        const idx = STEP_SLUGS.indexOf(st.toLowerCase());
+        if (idx !== -1) setStep(idx);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Direct step navigation without saving
+  const goToStep = (targetStep: number) => {
+    setStep(targetStep);
+    updateUrlForStep(targetStep);
+  };
+
+  // Auto-Save current wizard progress to DB and transition to next step
+  const saveDraftAndGoToStep = async (nextStepIndex: number) => {
+    setIsSavingStep(true);
+    try {
+      const fullAddressStr = [streetAddress, aptFloorBldg, district, city, country]
+        .filter(Boolean)
+        .join(", ");
+
+      const finalDescription = description.trim()
+        ? description.trim()
+        : selectedHighlights.length > 0
+        ? `You'll have a great time at this ${selectedHighlights.join(" and ").toLowerCase()} place.`
+        : "";
+
+      const payload = {
+        title: title.trim() || `Draft ${selectedCategory}`,
+        description: finalDescription,
+        price: price || 241,
+        weekendPrice: weekendPrice || 291,
+        hostingType: hostingType.toUpperCase(),
+        propertyType: selectedCategory,
+        listingType: selectedPlaceType,
+        address: fullAddressStr || streetAddress || "Main Street",
+        city: city || "Riyadh",
+        district: district || "",
+        postalCode: postalCode || "",
+        country: country || "Saudi Arabia",
+        latitude: coords.lat,
+        longitude: coords.lng,
+        guests,
+        bedrooms,
+        beds,
+        bathrooms,
+        amenities: selectedAmenities,
+        photos: photos,
+        highlights: selectedHighlights,
+        discounts: selectedDiscounts,
+        safetyDisclosures: selectedSafety,
+        published: false,
+      };
+
+      let activeDraftId = draftId;
+
+      if (activeDraftId) {
+        // Update existing listing draft in database
+        const res = await fetch(`/api/v1/listings/${activeDraftId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          console.warn("Failed to patch listing draft:", await res.text());
+        }
+      } else {
+        // Create new listing draft in database
+        const res = await fetch("/api/v1/listings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.ok && (data.data?.id || data.id)) {
+          activeDraftId = data.data?.id || data.id;
+          setDraftId(activeDraftId);
+        }
+      }
+
+      // Automatically sync session role if user was converted from USER to HOST
+      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
+        await updateSession({ role: "HOST" });
+        router.refresh();
+      }
+
+      setStep(nextStepIndex);
+      updateUrlForStep(nextStepIndex, activeDraftId);
+    } catch (err: any) {
+      console.error("Auto-save listing error:", err);
+      // Proceed to next step even if network glitch occurs
+      setStep(nextStepIndex);
+      updateUrlForStep(nextStepIndex);
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  // Final Draft Completion & Redirect to Host Listings
+  const handleFinalSaveAndFinish = async () => {
+    setIsSavingStep(true);
+    try {
+      await saveDraftAndGoToStep(18);
+      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
+        await updateSession({ role: "HOST" });
+        router.refresh();
+      }
+      toast.success("Draft listing saved successfully!");
+      router.push("/host/listings");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save listing.");
+      setIsSavingStep(false);
+    }
+  };
 
   const categories: PropertyCategory[] = [
     {
@@ -294,49 +481,34 @@ export function NewListingGetStarted() {
     }
   };
 
-  // Final Draft Creation Handler
-  const handleCreateDraftAndFinish = async () => {
-    setIsLoading(true);
-    try {
-      const fullAddressStr = [streetAddress, aptFloorBldg, district, city, country]
-        .filter(Boolean)
-        .join(", ");
+  const handleToggleAmenity = (id: string) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
-      const res = await fetch("/api/v1/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: `Draft ${selectedCategory}`,
-          description: "",
-          price: 15000,
-          hostingType: hostingType.toUpperCase(),
-          propertyType: selectedCategory,
-          listingType: selectedPlaceType,
-          address: fullAddressStr || streetAddress || "Main Street",
-          city: city || "Riyadh",
-          country: country || "Saudi Arabia",
-          latitude: coords.lat,
-          longitude: coords.lng,
-          guests,
-          bedrooms,
-          beds,
-          bathrooms,
-          published: false,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to create draft listing");
+  const handleToggleHighlight = (id: string) => {
+    setSelectedHighlights((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
       }
+      if (prev.length >= 2) {
+        return [prev[1], id];
+      }
+      return [...prev, id];
+    });
+  };
 
-      toast.success("Draft listing created successfully!");
-      const listingId = data.data?.id || data.id;
-      router.push(`/host/listings/${listingId}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create listing.");
-      setIsLoading(false);
-    }
+  const handleToggleDiscount = (id: string) => {
+    setSelectedDiscounts((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleSafety = (id: string) => {
+    setSelectedSafety((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -345,10 +517,14 @@ export function NewListingGetStarted() {
       <AppHeader />
 
       {/* Step 0: Overview */}
-      {step === 0 && <StepOverview onGetStarted={() => setStep(1)} />}
+      {step === 0 && (
+        <StepOverview onGetStarted={() => saveDraftAndGoToStep(1)} isLoading={isSavingStep} />
+      )}
 
       {/* Step 1: Intro */}
-      {step === 1 && <StepIntro onBack={() => setStep(0)} onNext={() => setStep(2)} />}
+      {step === 1 && (
+        <StepIntro onBack={() => goToStep(0)} onNext={() => saveDraftAndGoToStep(2)} isLoading={isSavingStep} />
+      )}
 
       {/* Step 2: Category Selector */}
       {step === 2 && (
@@ -356,8 +532,9 @@ export function NewListingGetStarted() {
           categories={categories}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
-          onBack={() => setStep(1)}
-          onNext={() => setStep(3)}
+          onBack={() => goToStep(1)}
+          onNext={() => saveDraftAndGoToStep(3)}
+          isLoading={isSavingStep}
         />
       )}
 
@@ -367,8 +544,9 @@ export function NewListingGetStarted() {
           placeTypes={placeTypes}
           selectedPlaceType={selectedPlaceType}
           onSelectPlaceType={setSelectedPlaceType}
-          onBack={() => setStep(2)}
-          onNext={() => setStep(4)}
+          onBack={() => goToStep(2)}
+          onNext={() => saveDraftAndGoToStep(4)}
+          isLoading={isSavingStep}
         />
       )}
 
@@ -386,8 +564,9 @@ export function NewListingGetStarted() {
           }}
           onSelectSuggestion={handleSelectSuggestion}
           onLocationChange={handleLocationChange}
-          onBack={() => setStep(3)}
-          onNext={() => setStep(5)}
+          onBack={() => goToStep(3)}
+          onNext={() => saveDraftAndGoToStep(5)}
+          isLoading={isSavingStep}
         />
       )}
 
@@ -412,8 +591,9 @@ export function NewListingGetStarted() {
           setShowSpecificLocation={setShowSpecificLocation}
           coords={coords}
           onLocationChange={handleLocationChange}
-          onBack={() => setStep(4)}
-          onNext={() => setStep(6)}
+          onBack={() => goToStep(4)}
+          onNext={() => saveDraftAndGoToStep(6)}
+          isLoading={isSavingStep}
         />
       )}
 
@@ -428,9 +608,146 @@ export function NewListingGetStarted() {
           setBeds={setBeds}
           bathrooms={bathrooms}
           setBathrooms={setBathrooms}
-          onBack={() => setStep(5)}
-          onNext={handleCreateDraftAndFinish}
-          isLoading={isLoading}
+          onBack={() => goToStep(5)}
+          onNext={() => saveDraftAndGoToStep(7)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 7: "Make your place to stand out" Intro Screen (Step 2 section badge) */}
+      {step === 7 && (
+        <StepStandoutIntro
+          onBack={() => goToStep(6)}
+          onNext={() => saveDraftAndGoToStep(8)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 8: Amenities Selection ("Tell guests what your place has to offer") */}
+      {step === 8 && (
+        <StepAmenities
+          selectedAmenities={selectedAmenities}
+          onToggleAmenity={handleToggleAmenity}
+          onBack={() => goToStep(7)}
+          onNext={() => saveDraftAndGoToStep(9)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 9: Photos Upload ("Add some photos of your house") */}
+      {step === 9 && (
+        <StepPhotos
+          photos={photos}
+          onUpdatePhotos={setPhotos}
+          onBack={() => goToStep(8)}
+          onNext={() => saveDraftAndGoToStep(10)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 10: Photos Management ("Cool ! How does this look?") */}
+      {step === 10 && (
+        <StepPhotoManagement
+          photos={photos}
+          onUpdatePhotos={setPhotos}
+          onBack={() => goToStep(9)}
+          onNext={() => saveDraftAndGoToStep(11)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 11: Listing Title ("Now, it’s time to give your house a title") */}
+      {step === 11 && (
+        <StepTitle
+          title={title}
+          onChangeTitle={setTitle}
+          onBack={() => goToStep(10)}
+          onNext={() => saveDraftAndGoToStep(12)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 12: House Highlights ("Let’s describe your house") */}
+      {step === 12 && (
+        <StepHighlights
+          selectedHighlights={selectedHighlights}
+          onToggleHighlight={handleToggleHighlight}
+          onBack={() => goToStep(11)}
+          onNext={() => {
+            if (!description && selectedHighlights.length > 0) {
+              setDescription(`You'll have a great time at this ${selectedHighlights.join(" and ").toLowerCase()} place.`);
+            }
+            saveDraftAndGoToStep(13);
+          }}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 13: Description Text ("Create your description") */}
+      {step === 13 && (
+        <StepDescription
+          description={description}
+          onChangeDescription={setDescription}
+          onBack={() => goToStep(12)}
+          onNext={() => saveDraftAndGoToStep(14)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 14: Finish Intro ("Finish up and publish") */}
+      {step === 14 && (
+        <StepFinishIntro
+          onBack={() => goToStep(13)}
+          onNext={() => saveDraftAndGoToStep(15)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 15: Base Pricing ("Now, set a weekday base price") */}
+      {step === 15 && (
+        <StepPrice
+          price={price}
+          onChangePrice={(val) => {
+            setPrice(val);
+            setWeekendPrice(Math.round(val * 1.2074));
+          }}
+          onBack={() => goToStep(14)}
+          onNext={() => saveDraftAndGoToStep(16)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 16: Weekend Base Pricing ("Set a weekend price") */}
+      {step === 16 && (
+        <StepWeekendPrice
+          weekdayPrice={price}
+          weekendPrice={weekendPrice}
+          onChangeWeekendPrice={setWeekendPrice}
+          onBack={() => goToStep(15)}
+          onNext={() => saveDraftAndGoToStep(17)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 17: Discounts ("Add discounts") */}
+      {step === 17 && (
+        <StepDiscounts
+          selectedDiscounts={selectedDiscounts}
+          onToggleDiscount={handleToggleDiscount}
+          onBack={() => goToStep(16)}
+          onNext={() => saveDraftAndGoToStep(18)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 18: Safety ("Share safety details") */}
+      {step === 18 && (
+        <StepSafety
+          selectedSafety={selectedSafety}
+          onToggleSafety={handleToggleSafety}
+          onBack={() => goToStep(17)}
+          onNext={handleFinalSaveAndFinish}
+          isLoading={isSavingStep}
         />
       )}
 

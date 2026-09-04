@@ -25,11 +25,13 @@ export function BecomeHostModal({
   // Step 2: "Welcome back, [Name] - Start a new listing"
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedType, setSelectedType] = useState<HostingTypeOption>(initialType);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
   // Reset to Step 1 whenever modal opens
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      setIsNavigating(false);
     }
   }, [isOpen]);
 
@@ -48,12 +50,14 @@ export function BecomeHostModal({
 
   // Step 2 Action 1: Create a new listing
   const handleCreateNew = () => {
+    setIsNavigating(true);
     onClose();
     router.push(`/host/listings/new?type=${selectedType}`);
   };
 
   // Step 2 Action 2: Create from an existing listing
   const handleCreateFromExisting = () => {
+    setIsNavigating(true);
     onClose();
     if (user?.role === "HOST" || user?.role === "ADMIN") {
       router.push(`/host/listings?mode=duplicate&type=${selectedType}`);
@@ -170,14 +174,14 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-bold text-zinc-700 transition-colors"
+              className="px-6 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-bold text-zinc-700 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleStep1Next}
-              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors"
+              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
             >
               Next
             </button>
@@ -185,7 +189,7 @@ export function BecomeHostModal({
         </div>
       )}
 
-      {/* STEP 2: Welcome back, [Name] - Start a new listing (Matches Reference Screenshot 2) */}
+      {/* STEP 2: Welcome back, [Name] - Start a new listing */}
       {step === 2 && (
         <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
           {/* Header Controls: Back Button & Close Button */}
@@ -193,7 +197,7 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Back to step 1"
               title="Back"
             >
@@ -205,7 +209,7 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -224,13 +228,14 @@ export function BecomeHostModal({
             </p>
           </div>
 
-          {/* Options List with Separators (Matches Screenshot 2 layout) */}
+          {/* Options List with Separators */}
           <div className="border-t border-b border-zinc-100 divide-y divide-zinc-100 my-2">
             {/* Option 1: Create a new listing */}
             <button
               type="button"
               onClick={handleCreateNew}
-              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer"
+              disabled={isNavigating}
+              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors shrink-0">
@@ -251,7 +256,8 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={handleCreateFromExisting}
-              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer"
+              disabled={isNavigating}
+              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors shrink-0">

@@ -6,7 +6,7 @@ import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
 
 export default async function HostMessagesPage() {
-  await requirePageRole([Role.USER, Role.HOST, Role.ADMIN]);
+  await requirePageRole([Role.HOST, Role.ADMIN]);
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 font-sans flex flex-col selection:bg-[#FEE08B] selection:text-zinc-900">
