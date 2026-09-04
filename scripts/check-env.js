@@ -75,7 +75,19 @@ const definitions = [
   { key: 'APPLE_CLIENT_ID', required: false, default: '', description: 'Apple OAuth Client ID' },
   { key: 'APPLE_CLIENT_SECRET', required: false, default: '', description: 'Apple OAuth Client Secret' },
 
-  // 7. Seed Admin Credentials
+  // 7. AWS S3 media (optional in development)
+  { key: 'S3_BUCKET', required: false, default: '', description: 'S3 bucket for uploads' },
+  { key: 'S3_REGION', required: false, default: '', description: 'S3 region' },
+  { key: 'S3_PUBLIC_BASE_URL', required: false, default: '', description: 'Public CDN/S3 base URL' },
+  { key: 'AWS_REGION', required: false, default: '', description: 'AWS region (instance role / SDK default)' },
+  { key: 'AWS_ACCESS_KEY_ID', required: false, default: '', description: 'AWS access key (prefer instance role in production)' },
+  { key: 'AWS_SECRET_ACCESS_KEY', required: false, default: '', description: 'AWS secret key (prefer instance role in production)' },
+  { key: 'NEXT_SERVER_ACTIONS_ENCRYPTION_KEY', required: false, default: '', description: 'Shared Server Action encryption key for multi-instance' },
+  { key: 'SERVER_ACTION_ALLOWED_ORIGINS', required: false, default: '', description: 'Extra Server Action origins (Docker build-time)' },
+  { key: 'PORT', required: false, default: '3000', description: 'Listen port' },
+  { key: 'HOSTNAME', required: false, default: '0.0.0.0', description: 'Listen hostname' },
+
+  // 8. Seed Admin Credentials
   { key: 'ADMIN_EMAIL', required: false, default: 'admin@homyz.local', description: 'Seed Script Admin Email' },
   { key: 'ADMIN_PASSWORD', required: false, default: 'ChangeMe!123', description: 'Seed Script Admin Password' },
 ];

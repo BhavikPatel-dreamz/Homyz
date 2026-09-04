@@ -3,9 +3,7 @@ import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/api/handler";
 import { getReadiness } from "@/lib/health";
 
-// GET /api/v1/health — readiness probe (same payload as /api/ready).
-// Load balancers should use GET /api/health (no database). This route still
-// checks Postgres; Redis remaining optional never fails the probe.
+// GET /api/ready — readiness (Postgres required, Redis optional).
 export const GET = apiHandler(async () => {
   const result = await getReadiness();
   return NextResponse.json(

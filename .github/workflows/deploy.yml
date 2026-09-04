@@ -11,10 +11,11 @@ concurrency:
 env:
   VPS_APP_PATH: "/var/www/html/Homyz"
   PM2_PROCESS_NAME: "Homyz"
+  NODE_VERSION: "20"
 
 jobs:
   # 1. Validate on GitHub's own runner FIRST — nothing on the server is touched yet.
-  #    No malware scan here (keeps CI fast). Scan runs on the VPS after sync.
+  #    Scan before install/build. If the scan fails, skip the GitHub build and deploy.
   validate:
     name: Validate
     runs-on: ubuntu-latest
@@ -23,14 +24,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Virus / malware scan
+        run: |
+          set -euo pipefail
+          bash .githooks/pre-commit --ci
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
 
       - name: Build
         env:
@@ -38,14 +53,116 @@ jobs:
           NEXTAUTH_SECRET: github-actions-ci-secret
           JWT_ACCESS_SECRET: github-actions-ci-secret
           JWT_REFRESH_SECRET: github-actions-ci-secret
+          APP_URL: ${{ vars.APP_URL || 'http://localhost:3000' }}
+          NEXTAUTH_URL: ${{ vars.APP_URL || 'http://localhost:3000' }}
         run: npm run build:ci
 
-  # 2. Only runs if validate succeeded. Deploys + builds on the VPS.
-  #    Malware scan runs after sync, before install.
-  deploy:
-    name: Deploy
+  migrate:
+    name: Prisma migrate deploy
     needs: [validate]
-    if: ${{ needs.validate.result == 'success' }}
+    if: ${{ needs.validate.result == 'success' && vars.RUN_DB_MIGRATE == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Apply migrations (non-destructive prisma migrate deploy only)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:migrate:deploy
+
+  docker:
+    name: Docker image → ECR
+    needs: [validate]
+    if: ${{ needs.validate.result == 'success' && vars.ECR_REPOSITORY != '' && vars.ECR_REGISTRY != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Image metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          SHA="${GITHUB_SHA}"
+          IMAGE="${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}"
+          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_latest=${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}
+            ${{ steps.meta.outputs.image_latest }}
+          build-args: |
+            APP_URL=${{ vars.APP_URL }}
+            NEXTAUTH_URL=${{ vars.APP_URL }}
+            SERVER_ACTION_ALLOWED_ORIGINS=${{ vars.SERVER_ACTION_ALLOWED_ORIGINS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-ec2:
+    name: Deploy EC2 (Docker)
+    needs: [docker]
+    if: ${{ needs.docker.result == 'success' && vars.ENABLE_DOCKER_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Copy release scripts and start new container
+        env:
+          SSH_HOST: ${{ secrets.EC2_SSH_HOST }}
+          SSH_USER: ${{ secrets.EC2_SSH_USER }}
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOMYZ_IMAGE: ${{ needs.docker.outputs.image }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_HOST}" ] || [ -z "${SSH_USER}" ] || [ -z "${SSH_KEY}" ]; then
+            echo "EC2_SSH_HOST / EC2_SSH_USER / EC2_SSH_KEY are required when ENABLE_DOCKER_DEPLOY=true"
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${SSH_KEY}" > ~/.ssh/ec2.pem
+          chmod 600 ~/.ssh/ec2.pem
+          SSH=(ssh -i ~/.ssh/ec2.pem -o StrictHostKeyChecking=accept-new "${SSH_USER}@${SSH_HOST}")
+          SCP=(scp -i ~/.ssh/ec2.pem -o StrictHostKeyChecking=accept-new)
+          "${SSH[@]}" "mkdir -p /opt/homyz/scripts/deploy"
+          "${SCP[@]}" scripts/deploy/release.sh scripts/deploy/rollback.sh \
+            "${SSH_USER}@${SSH_HOST}:/opt/homyz/scripts/deploy/"
+          "${SCP[@]}" docker-compose.prod.yml "${SSH_USER}@${SSH_HOST}:/opt/homyz/"
+          "${SSH[@]}" "chmod +x /opt/homyz/scripts/deploy/*.sh"
+          "${SSH[@]}" "HOMYZ_IMAGE='${HOMYZ_IMAGE}' AWS_REGION='${AWS_REGION}' APP_DIR=/opt/homyz bash /opt/homyz/scripts/deploy/release.sh"
+
+  # Legacy VPS + PM2 path. Disabled when ENABLE_DOCKER_DEPLOY=true.
+  deploy:
+    name: Deploy (PM2 VPS)
+    needs: [validate]
+    if: ${{ needs.validate.result == 'success' && vars.ENABLE_DOCKER_DEPLOY != 'true' }}
     runs-on: [self-hosted]
     steps:
       - name: Capture Current Release

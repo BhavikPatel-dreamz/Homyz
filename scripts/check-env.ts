@@ -121,6 +121,18 @@ export const envSchema = z.object({
   APPLE_CLIENT_ID: z.string().optional(),
   APPLE_CLIENT_SECRET: z.string().optional(),
 
+  // AWS S3 media (optional in development; required for durable uploads in Docker/multi-EC2)
+  S3_BUCKET: z.string().optional(),
+  S3_REGION: z.string().optional(),
+  S3_PUBLIC_BASE_URL: z.string().optional(),
+  AWS_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: z.string().optional(),
+  SERVER_ACTION_ALLOWED_ORIGINS: z.string().optional(),
+  PORT: z.string().optional(),
+  HOSTNAME: z.string().optional(),
+
   // Seed Admin Account Settings
   ADMIN_EMAIL: z.string().email().default("admin@homyz.local"),
   ADMIN_PASSWORD: z.string().min(8).default("ChangeMe!123"),
@@ -158,7 +170,7 @@ export function validateEnv() {
   console.log(`• JWT_REFRESH_SECRET:              [CONFIGURED] (${data.JWT_REFRESH_SECRET.length} chars)`);
   console.log(`• ACCESS_TOKEN_TTL:                ${data.ACCESS_TOKEN_TTL} seconds`);
   console.log(`• REFRESH_TOKEN_TTL:               ${data.REFRESH_TOKEN_TTL} seconds`);
-  console.log(`• REDIS Cache:                     ${data.REDIS_URL ? "ENABLED (" + data.REDIS_URL + ")" : "DISABLED (Fallback to DB)"}`);
+  console.log(`• REDIS Cache:                     ${data.REDIS_URL ? "ENABLED" : "DISABLED (Fallback to DB)"}`);
   console.log(`• LOGIN_RATE_LIMIT_MAX:            ${data.LOGIN_RATE_LIMIT_MAX} max attempts`);
   console.log(`• LOGIN_RATE_LIMIT_WINDOW_SECONDS: ${data.LOGIN_RATE_LIMIT_WINDOW_SECONDS} seconds`);
   console.log(`• OTP_RESEND_COOLDOWN_SECONDS:     ${data.OTP_RESEND_COOLDOWN_SECONDS} seconds`);
@@ -170,6 +182,7 @@ export function validateEnv() {
   console.log(`• FACEBOOK OAuth:                  ${data.FACEBOOK_CLIENT_ID ? "ENABLED" : "DISABLED"}`);
   console.log(`• APPLE OAuth:                     ${data.APPLE_CLIENT_ID ? "ENABLED" : "DISABLED"}`);
   console.log(`• Seed Admin Account:              ${data.ADMIN_EMAIL}`);
+  console.log(`• S3 Media:                        ${data.S3_BUCKET ? "ENABLED" : "DISABLED (local disk)"}`);
   console.log("-------------------------------------------------\n");
 
   return data;

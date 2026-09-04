@@ -1,0 +1,65 @@
+# Production-oriented Compose for a single EC2 host behind an AWS ALB.
+#
+#   AWS ALB (443) → EC2:3000 → this `app` container → Neon (DATABASE_URL)
+#                                                    → S3 (S3_BUCKET)
+#                                                    → Redis (optional profile)
+#
+# Do not run Postgres here. Neon is current; RDS later is the same DATABASE_URL.
+# Redis is optional: `docker compose --profile redis -f docker-compose.prod.yml up -d`
+#
+# Image comes from ECR in production (`HOMYZ_IMAGE`). Secrets stay in `.env` on the host.
+
+name: homyz
+
+services:
+  app:
+    image: ${HOMYZ_IMAGE:-homyz:local}
+    container_name: homyz-app
+    restart: unless-stopped
+    stop_grace_period: 30s
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  redis:
+    image: redis:7-alpine
+    container_name: homyz-redis
+    profiles: ["redis"]
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "no"]
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"

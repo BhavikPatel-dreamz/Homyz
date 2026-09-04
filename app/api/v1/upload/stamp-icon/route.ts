@@ -1,17 +1,7 @@
 import { NextResponse } from "next/server";
 import path from "path";
-import fs from "fs/promises";
 import { getSessionUser } from "@/lib/auth/session";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "stamp-icons");
-
-async function ensureUploadDir() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (err) {
-    console.error("Failed to create stamp-icons upload dir:", err);
-  }
-}
+import { savePublicMedia } from "@/lib/storage/media";
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +17,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No image file provided." }, { status: 400 });
     }
 
-    // Validate image format
     const allowedExts = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
     const fileExt = path.extname(file.name)?.toLowerCase() || ".png";
     if (!allowedExts.includes(fileExt)) {
@@ -39,23 +28,23 @@ export async function POST(req: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    await ensureUploadDir();
-
     const fileName = `stamp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${fileExt}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
-
-    await fs.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/stamp-icons/${fileName}`;
+    const contentType = file.type || "image/png";
+    const saved = await savePublicMedia({
+      kind: "stamp-icons",
+      fileName,
+      body: buffer,
+      contentType,
+    });
 
     return NextResponse.json({
       success: true,
-      url: publicUrl,
-      fileName,
+      url: saved.url,
+      fileName: saved.fileName,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Stamp icon upload error:", err);
-    return NextResponse.json({ error: err.message || "Failed to upload stamp icon." }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Failed to upload stamp icon.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

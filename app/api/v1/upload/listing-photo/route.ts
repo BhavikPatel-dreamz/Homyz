@@ -1,17 +1,7 @@
 import { NextResponse } from "next/server";
 import path from "path";
-import fs from "fs/promises";
 import { getSessionUser } from "@/lib/auth/session";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "listing-photos");
-
-async function ensureUploadDir() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (err) {
-    console.error("Failed to create listing-photos upload dir:", err);
-  }
-}
+import { savePublicMedia } from "@/lib/storage/media";
 
 export async function POST(req: Request) {
   try {
@@ -30,27 +20,28 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    await ensureUploadDir();
-
     const fileExt = path.extname(file.name) || ".jpg";
     const cleanExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"].includes(fileExt.toLowerCase())
       ? fileExt.toLowerCase()
       : ".jpg";
 
     const fileName = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${cleanExt}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
-
-    await fs.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/listing-photos/${fileName}`;
+    const contentType = file.type || "image/jpeg";
+    const saved = await savePublicMedia({
+      kind: "listing-photos",
+      fileName,
+      body: buffer,
+      contentType,
+    });
 
     return NextResponse.json({
       success: true,
-      url: publicUrl,
-      fileName,
+      url: saved.url,
+      fileName: saved.fileName,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Listing photo upload error:", err);
-    return NextResponse.json({ error: err.message || "Failed to upload photo." }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Failed to upload photo.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

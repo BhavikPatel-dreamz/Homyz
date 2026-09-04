@@ -1,11 +1,11 @@
 import path from "node:path";
-import fs from "node:fs/promises";
 import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import { auditService } from "./audit.service";
 import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
 import { sendHostApplicationSubmittedEmail } from "@/lib/services/email";
+import { readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
 
 export const REQUIRED_HOST_DOCUMENT_TYPES = [
   "GOVERNMENT_ID",
@@ -38,15 +38,6 @@ export interface SubmitHostApplicationInput {
   notes?: string;
 }
 
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads", "host-documents");
-
-async function ensureUploadsDir() {
-  try {
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
-  } catch (err) {
-    console.error("Failed to create uploads directory:", err);
-  }
-}
 
 export class HostApplicationService {
   /**
@@ -371,13 +362,14 @@ export class HostApplicationService {
       throw AppError.badRequest("Invalid file type. Allowed formats: PDF, JPEG, PNG, WEBP.");
     }
 
-    await ensureUploadsDir();
-
     const fileExt = path.extname(file.fileName) || (file.mimeType === "application/pdf" ? ".pdf" : ".jpg");
     const safeBaseName = `${req.applicationId}_${documentType.toLowerCase()}_${Date.now()}${fileExt}`;
-    const filePath = path.join(UPLOADS_DIR, safeBaseName);
-
-    await fs.writeFile(filePath, file.buffer);
+    await savePrivateMedia({
+      kind: "host-documents",
+      fileName: safeBaseName,
+      body: file.buffer,
+      contentType: file.mimeType,
+    });
 
     const relativeUrl = `/api/v1/host/application/documents/file/${safeBaseName}`;
 
@@ -527,13 +519,6 @@ export class HostApplicationService {
    */
   async getSecureDocumentFile(user: AuthUser, fileName: string) {
     const safeBaseName = path.basename(fileName);
-    const filePath = path.join(UPLOADS_DIR, safeBaseName);
-
-    try {
-      await fs.access(filePath);
-    } catch {
-      throw AppError.notFound("Requested document file not found.");
-    }
 
     // Ownership check via DB
     const doc = await prisma.hostRegistrationDocument.findFirst({
@@ -552,7 +537,13 @@ export class HostApplicationService {
       }
     }
 
-    const fileBuffer = await fs.readFile(filePath);
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await readPrivateMedia("host-documents", safeBaseName);
+    } catch {
+      throw AppError.notFound("Requested document file not found.");
+    }
+
     const ext = path.extname(safeBaseName).toLowerCase();
     let mimeType = "application/octet-stream";
     if (ext === ".pdf") mimeType = "application/pdf";
