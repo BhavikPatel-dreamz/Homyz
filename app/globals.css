@@ -153,6 +153,13 @@ body {
   animation: shimmer 1.5s infinite ease-in-out;
 }
 
+/* Custom handwriting tagline */
+.tagline-cursive {
+  font-family: var(--font-caveat), 'Caveat', 'Reenie Beanie', 'Segoe Script', cursive;
+  font-size: 1.85rem;
+  letter-spacing: 0.5px;
+}
+
 /* Custom scrollbars */
 .custom-scrollbar::-webkit-scrollbar,
 .no-scrollbar::-webkit-scrollbar {

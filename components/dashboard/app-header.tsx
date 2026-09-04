@@ -79,7 +79,7 @@ export function AppHeader() {
             />
           </Link>
 
-          <Link href={isHostRoute ? "/host/listings" : "/dashboard"} className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
+          <Link href="/" className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
             <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform md:w-[198px]" priority />
           </Link>
 

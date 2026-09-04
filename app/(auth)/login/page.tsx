@@ -6,12 +6,14 @@ import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string; method?: string }>;
 }) {
-  const [user, { callbackUrl: rawCallbackUrl, error }] = await Promise.all([
+  const [user, resolvedParams] = await Promise.all([
     getSessionUser(),
     searchParams,
   ]);
+
+  const { callbackUrl: rawCallbackUrl, error, method } = resolvedParams || {};
 
   const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/dashboard");
 
@@ -21,7 +23,6 @@ export default async function LoginPage({
     }
     redirect(safeCallbackUrl);
   }
-
 
   const errorMessage =
     error === "account_suspended" || user?.status === "SUSPENDED"
@@ -36,13 +37,15 @@ export default async function LoginPage({
     apple: true,
   };
 
+  const initialInputMethod = method === "email" ? "email" : method === "phone" ? "phone" : undefined;
+
   return (
     <LoginFormClient
       initialMode="login"
+      initialInputMethod={initialInputMethod}
       callbackUrl={safeCallbackUrl}
       providers={providers}
       initialError={errorMessage}
     />
-
   );
 }
