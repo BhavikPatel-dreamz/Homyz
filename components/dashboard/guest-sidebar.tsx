@@ -26,7 +26,7 @@ export function GuestDashboardSidebar({
 
   return (
     <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[390px] xl:w-[452px]">
-      <h1 className="mb-7 hidden text-[36px] leading-[1.1] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[42px] lg:block xl:mb-10 xl:text-[48px] xl:leading-[53px]">
+      <h1 className="mb-7 hidden tracking-[-0.02em] text-[#1F1F1F] lg:block xl:mb-10">
         My profile
       </h1>
 
@@ -41,8 +41,10 @@ export function GuestDashboardSidebar({
             <Link
               key={item.id}
               href={item.href}
-              className={`group relative isolate flex min-h-[128px] flex-col items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] px-2 py-4 text-center text-[14px] leading-5 font-normal shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-colors lg:h-[72px] lg:min-h-0 lg:w-full lg:flex-row lg:justify-start lg:gap-5 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-b lg:border-[#D7D7D7] lg:px-0 lg:py-0 lg:text-left lg:text-[15px] lg:leading-6 lg:font-medium lg:shadow-none xl:h-[88px] xl:gap-6 xl:text-[20px] xl:leading-7 ${
-                item.id === "about_me" ? "hidden lg:flex" : "flex"
+              className={`group relative isolate min-h-[142px] flex-col items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] px-2 py-4 text-center text-[16px] leading-5 font-normal shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-colors lg:h-[72px] lg:min-h-0 lg:w-full lg:flex-row lg:justify-start lg:gap-5 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-b lg:border-[#D7D7D7] lg:px-0 lg:py-0 lg:text-left lg:text-[15px] lg:leading-6 lg:font-medium lg:shadow-none xl:h-[88px] xl:gap-6 xl:text-[20px] xl:leading-7 ${
+                ["about_me", "upcoming_trips", "past_bookings"].includes(item.id)
+                  ? "hidden lg:flex"
+                  : "flex"
               } ${
                 isActive
                   ? "bg-white text-[#1F1F1F] lg:bg-transparent lg:border-b-transparent"
@@ -96,7 +98,7 @@ export function GuestDashboardSidebar({
                   </span>
                 )}
               </div>
-              <span className="max-w-[120px] whitespace-normal lg:max-w-none lg:truncate lg:whitespace-nowrap lg:ml-0 ml-4">{item.label}</span>
+              <span className="max-w-[120px] whitespace-normal lg:max-w-none lg:truncate lg:whitespace-nowrap">{item.label}</span>
             </Link>
           );
         })}

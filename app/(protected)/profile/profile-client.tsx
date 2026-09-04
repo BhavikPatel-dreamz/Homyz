@@ -60,6 +60,37 @@ const IconTranslate = () => (
   </svg>
 );
 
+const MobileAccountIcon = ({ type }: { type: string }) => {
+  const commonProps = {
+    className: "h-5 w-5",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (type === "settings") {
+    return <svg {...commonProps}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15 1.7 1.7 0 0 0 3.08 14H3v-4h.08A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63 1.7 1.7 0 0 0 10 3.08V3h4v.08A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9 1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z" /></svg>;
+  }
+
+  if (type === "help") {
+    return <svg {...commonProps}><circle cx="12" cy="12" r="9" /><path d="M9.8 9a2.4 2.4 0 1 1 3.05 2.32c-.85.28-.85.85-.85 1.68M12 17h.01" /></svg>;
+  }
+
+  if (type === "cohost") {
+    return <svg {...commonProps}><circle cx="12" cy="8" r="3" /><path d="M7.5 19v-1.5a4.5 4.5 0 0 1 9 0V19M9 12.5 7 11l-2 2 2 2" /></svg>;
+  }
+
+  if (type === "gift") {
+    return <svg {...commonProps}><rect x="4" y="10" width="16" height="10" rx="1" /><path d="M3 7h18v3H3zM12 7v13M12 7H8.5A2.5 2.5 0 1 1 11 4.5L12 7Zm0 0h3.5A2.5 2.5 0 1 0 13 4.5L12 7Z" /></svg>;
+  }
+
+  return <svg {...commonProps}><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15.5a4.5 4.5 0 0 1 6.5 3.5" /></svg>;
+};
+
 export function ProfileClient({
   initial,
   initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
@@ -86,18 +117,18 @@ export function ProfileClient({
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[390px_minmax(0,auto)] lg:gap-30 xl:grid-cols-[452px_auto] xl:gap-80">
+      <div className="grid grid-cols-1 lg:grid-cols-[390px_minmax(0,auto)] gap-30 xl:grid-cols-[452px_auto]">
 
           <GuestDashboardSidebar
             activeId={activeTabParam === "about_me" ? "about_me" : activeTabParam}
           />
 
-          <main className="order-1 flex w-full max-w-[490px] flex-col lg:order-2 lg:pt-0">
+          <main className="order-1 flex w-full flex-col lg:order-2 lg:pt-0">
             {activeTabParam === "about_me" ? (
               <div className="flex flex-col animate-in fade-in">
                 {/* 1. Header with Title & Yellow Edit Button */}
                 <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
-                  <h2 className="text-[36px] leading-[1.1] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[42px] xl:text-[48px] xl:leading-[53px]">
+                  <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
                     <span className="lg:hidden text-[20px] leading-7">My profile</span>
                     <span className="hidden lg:inline">About me</span>
                   </h2>
@@ -266,22 +297,32 @@ export function ProfileClient({
         </div>
 
         <div className="mt-8 lg:hidden">
-          <div className="divide-y divide-[#D7D7D7] border-b border-[#D7D7D7]">
+          <div>
             {[
-              ["Account setting", "/profile-management", "⚙"],
-              ["Help centre", "/help", "?"],
-              ["Refer a Host", "/host/refer", "♧"],
-              ["Find a co-Host", "/host/co-host", "♙"],
-              ["Gift Cards", "/gift-cards", "♧"],
+              ["Account setting", "/profile-management", "settings"],
+              ["Help centre", "/help", "help"],
+              ["Refer a Host", "/host/refer", "refer"],
+              ["Find a co-Host", "/host/co-host", "cohost"],
+              ["Gift Cards", "/gift-cards", "gift"],
             ].map(([label, href, icon], index) => (
-              <Link key={label} href={href} className={`flex h-12 items-center gap-3 text-xs text-[#3F3F3F] ${index === 1 ? "mb-2" : ""}`}>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-base">{icon}</span>
+              <Link
+                key={label}
+                href={href}
+                className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${
+                  index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
+                } ${index === 4 ? "border-b border-[#D7D7D7]" : ""}`}
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                  <MobileAccountIcon type={icon} />
+                </span>
                 <span>{label}</span>
-                <span className="ml-auto text-2xl font-light" aria-hidden="true">›</span>
+                <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
               </Link>
             ))}
           </div>
-          <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-xs !font-normal text-[#1F1F1F] underline">
+          <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
             Log out
           </LogoutButton>
         </div>

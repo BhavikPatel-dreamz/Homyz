@@ -44,9 +44,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
 
       {/* Hero Content & Search Bar */}
       <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl">
-        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-normal text-gray-900 leading-tight mb-8 tracking-tight font-sans">
+        <h1 className="mb-8 tracking-tight text-gray-900">
           Book cozy stays<br />
-          <span className="font-medium">that feel like home</span>
+          <span>that feel like home</span>
         </h1>
 
         {/* Floating Search Container */}
