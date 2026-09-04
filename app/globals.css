@@ -104,30 +104,36 @@ body {
 }
 
 @layer base {
-  h1 {
+  h1,
+  h2 {
     font-family: var(--font-poppins), sans-serif;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 500;
-    line-height: 34px;
+    line-height: 30px;
     color: #1f1f1f;
   }
 
   @media (min-width: 640px) {
-    h1 {
-      font-size: 36px;
+    h1,
+    h2 {
+      font-size: 28px;
+      line-height: 36px;
     }
   }
 
   @media (min-width: 1024px) {
-    h1 {
-      font-size: 42px;
-      line-height: 53px;
+    h1,
+    h2 {
+      font-size: 32px;
+      line-height: 40px;
     }
   }
 
   @media (min-width: 1280px) {
-    h1 {
-      font-size: 48px;
+    h1,
+    h2 {
+      font-size: 36px;
+      line-height: 44px;
     }
   }
 }

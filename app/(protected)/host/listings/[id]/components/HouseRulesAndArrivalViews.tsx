@@ -644,7 +644,7 @@ function CheckOutInstructionsView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Check-out instructions</h1>
+        <h1 className="tracking-tight text-zinc-900">Check-out instructions</h1>
       </div>
 
       {/* Description text matching screenshot 100% */}
@@ -717,7 +717,7 @@ function GuidebooksView({
           >
             ‹
           </button>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Create a guidebooks</h1>
+          <h1 className="tracking-tight text-zinc-900">Create a guidebooks</h1>
         </div>
 
         {/* Plus (+) Button on the right of header */}
@@ -836,7 +836,7 @@ function InteractionPreferencesView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Interaction with guests</h1>
+        <h1 className="tracking-tight text-zinc-900">Interaction with guests</h1>
       </div>
 
       {/* Description */}
@@ -932,7 +932,7 @@ function ListingStatusView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Listing status</h1>
+        <h1 className="tracking-tight text-zinc-900">Listing status</h1>
       </div>
 
       {/* Modern House Illustration (Matching Figma Screenshot 100%) */}
@@ -1066,7 +1066,7 @@ function LanguagesView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Languages</h1>
+        <h1 className="tracking-tight text-zinc-900">Languages</h1>
       </div>
 
       {/* Description Text matching Figma 100% */}
@@ -1201,7 +1201,7 @@ function GuestRequirementsView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Guest requirements</h1>
+        <h1 className="tracking-tight text-zinc-900">Guest requirements</h1>
       </div>
 
       {/* Toggle Row: Require a profile photo */}
@@ -1668,7 +1668,7 @@ function LocalLawsView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Local laws</h1>
+        <h1 className="tracking-tight text-zinc-900">Local laws</h1>
       </div>
 
       {/* Paragraph 1 */}
@@ -1760,7 +1760,7 @@ function RegulationsView({
           <div className="md:col-span-7 space-y-6">
             {/* Section 1: You're all set! */}
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 className="tracking-tight text-zinc-900">
                 You&apos;re all set!
               </h1>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
@@ -1925,7 +1925,7 @@ function RegulationsView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Regulations</h1>
+        <h1 className="tracking-tight text-zinc-900">Regulations</h1>
       </div>
 
       {/* Top Description Paragraph */}
@@ -1979,7 +1979,7 @@ function TaxesView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Taxes</h1>
+        <h1 className="tracking-tight text-zinc-900">Taxes</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
@@ -2043,7 +2043,7 @@ function HomyzStaysView({
         >
           ‹
         </button>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Homyz.com stays</h1>
+        <h1 className="tracking-tight text-zinc-900">Homyz.com stays</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">

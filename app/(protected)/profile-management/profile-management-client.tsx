@@ -281,7 +281,7 @@ export function ProfileManagementClient({
   const stampsVisible = formDataState.stampsVisible !== false;
 
   return (
-    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans py-8">
+    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans sm:py-8">
       <div className="mx-auto w-full">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
           {/* ------------------------------------------------------------------ */}
@@ -335,7 +335,7 @@ export function ProfileManagementClient({
                 )}
               </div>
 
-              <div className="flex-1 max-w-md ml-15">
+              <div className="flex-1 max-w-md sm:ml-15">
                 <p className="text-base text-[#727272] leading-relaxed font-normal">
                   Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
                   <span className="font-semibold underline cursor-pointer hover:text-black transition">Learn more</span>

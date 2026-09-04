@@ -13,29 +13,10 @@ env:
   PM2_PROCESS_NAME: "Homyz"
 
 jobs:
-  security-scan:
-    name: Virus / malware scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-      - name: Run malware indicator + scanner
-        run: |
-          set -euo pipefail
-          bash .githooks/pre-commit --ci
-          echo "Security scan passed — build/deploy may continue."
-
-  build:
-    name: Build
-    needs: security-scan
-    if: ${{ needs.security-scan.result == 'success' }}
+  # 1. Validate on GitHub's own runner FIRST — nothing on the server is touched yet.
+  #    No malware scan here (keeps CI fast). Scan runs on the VPS after sync.
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -57,12 +38,14 @@ jobs:
           NEXTAUTH_SECRET: github-actions-ci-secret
           JWT_ACCESS_SECRET: github-actions-ci-secret
           JWT_REFRESH_SECRET: github-actions-ci-secret
-        run: npm run build
+        run: npm run build:ci
 
+  # 2. Only runs if validate succeeded. Deploys + builds on the VPS.
+  #    Malware scan runs after sync, before install.
   deploy:
     name: Deploy
-    needs: [security-scan, build]
-    if: ${{ needs.security-scan.result == 'success' && needs.build.result == 'success' }}
+    needs: [validate]
+    if: ${{ needs.validate.result == 'success' }}
     runs-on: [self-hosted]
     steps:
       - name: Capture Current Release
@@ -110,7 +93,7 @@ jobs:
           git reset --hard "${{ env.PREV_SHA }}"
           echo "Scan failed — working tree restored to ${PREV_SHA}. Deploy skipped."
 
-      - name: Build
+      - name: Build on server
         run: |
           set -euo pipefail
           cd "${{ env.VPS_APP_PATH }}"

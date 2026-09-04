@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body
-        className={`${poppins.className} min-h-full flex flex-col text-muted-foreground`}
+        className={`${poppins.className} min-h-full flex flex-col text-muted-foreground bg-white`}
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
