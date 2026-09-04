@@ -10,6 +10,7 @@ interface StepPlaceTypeProps {
   onSelectPlaceType: (id: string) => void;
   onBack: () => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 export function StepPlaceType({
@@ -18,6 +19,7 @@ export function StepPlaceType({
   onSelectPlaceType,
   onBack,
   onNext,
+  isLoading = false,
 }: StepPlaceTypeProps) {
   return (
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
@@ -78,7 +80,7 @@ export function StepPlaceType({
         </div>
       </div>
 
-      <StepProgressFooter currentStep={2} onBack={onBack} onNext={onNext} />
+      <StepProgressFooter currentStep={2} onBack={onBack} onNext={onNext} isLoading={isLoading} />
     </main>
   );
 }

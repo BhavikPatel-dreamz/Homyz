@@ -16,6 +16,7 @@ interface StepLocationSearchProps {
   onLocationChange: (lat: number, lng: number, details?: any) => void;
   onBack: () => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 export function StepLocationSearch({
@@ -29,6 +30,7 @@ export function StepLocationSearch({
   onLocationChange,
   onBack,
   onNext,
+  isLoading = false,
 }: StepLocationSearchProps) {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -123,7 +125,7 @@ export function StepLocationSearch({
         </div>
       </div>
 
-      <StepProgressFooter currentStep={3} onBack={onBack} onNext={onNext} />
+      <StepProgressFooter currentStep={3} onBack={onBack} onNext={onNext} isLoading={isLoading} />
     </main>
   );
 }

@@ -57,6 +57,8 @@ export function StepPhotos({
     onUpdatePhotos(allPhotos);
     setIsUploading(false);
     setIsModalOpen(false);
+    // Directly navigate to "Cool ! How does this look?" screen
+    onNext();
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -161,7 +163,7 @@ export function StepPhotos({
         )}
       </div>
 
-      {/* Upload Modal (Matches Images 2 & 3) */}
+      {/* Upload Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative flex flex-col items-center text-center">
@@ -183,7 +185,7 @@ export function StepPhotos({
                 : "Choose at least 5 photos"}
             </h2>
 
-            {/* Drop Zone Area (Dashed Box) */}
+            {/* Drop Zone Area */}
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -191,7 +193,7 @@ export function StepPhotos({
               className="w-full border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center bg-zinc-50/60 transition-colors cursor-pointer"
             >
               {filePreviews.length === 0 ? (
-                /* Empty Dropzone State (Image 2) */
+                /* Empty Dropzone State */
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-zinc-900 shadow-2xs">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
@@ -201,7 +203,7 @@ export function StepPhotos({
                   <span className="text-xs font-bold text-zinc-700">Drop files here</span>
                 </div>
               ) : (
-                /* Photo Grid Previews State inside Modal (Image 3) */
+                /* Photo Grid Previews State inside Modal */
                 <div className="grid grid-cols-3 gap-2.5 w-full">
                   {filePreviews.map((url, idx) => (
                     <div key={idx} className="relative rounded-xl overflow-hidden aspect-square border border-zinc-200 group">
@@ -263,9 +265,19 @@ export function StepPhotos({
           type="button"
           onClick={onNext}
           disabled={isLoading}
-          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
-          {isLoading ? "Loading..." : "Next"}
+          {isLoading ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-zinc-900 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Loading...</span>
+            </>
+          ) : (
+            "Next"
+          )}
         </button>
       </div>
     </main>

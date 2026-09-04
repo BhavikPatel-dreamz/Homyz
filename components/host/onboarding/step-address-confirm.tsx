@@ -26,6 +26,7 @@ interface StepAddressConfirmProps {
   onLocationChange: (lat: number, lng: number, details?: any) => void;
   onBack: () => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 export function StepAddressConfirm({
@@ -49,6 +50,7 @@ export function StepAddressConfirm({
   onLocationChange,
   onBack,
   onNext,
+  isLoading = false,
 }: StepAddressConfirmProps) {
   return (
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
@@ -185,7 +187,7 @@ export function StepAddressConfirm({
         </div>
       </div>
 
-      <StepProgressFooter currentStep={4} onBack={onBack} onNext={onNext} />
+      <StepProgressFooter currentStep={4} onBack={onBack} onNext={onNext} isLoading={isLoading} />
     </main>
   );
 }
