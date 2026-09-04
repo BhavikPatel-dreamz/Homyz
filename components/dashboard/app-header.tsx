@@ -48,7 +48,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white text-zinc-900 "  suppressHydrationWarning>
       <Container>
-        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-8 border-b-0 md:border-b md:border-[#1F1F1F]">
+        <div className="header-wrapper relative flex min-h-[120px] w-full items-center justify-between py-0 md:min-h-0 md:py-5 lg:py-8 border-b-0 md:border-b md:border-[rgba(31,31,31,0.9)]">
           <Link
             href="/"
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"

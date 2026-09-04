@@ -348,7 +348,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("info")}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "info"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -360,7 +360,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("photos")}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "photos"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -372,7 +372,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("stamps")}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "stamps"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -384,7 +384,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("privacy")}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
                   activeMgmtTab === "privacy"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -411,7 +411,7 @@ export function ProfileManagementClient({
                         disabled={!isOwner}
                         onChange={(e) => setName(e.target.value)}
                         className={`w-full text-base bg-transparent focus:outline-none ${
-                          name ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                          name ? "text-[#1f1f1f] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: Your full name"
                       />
@@ -601,7 +601,7 @@ export function ProfileManagementClient({
                         value={formDataState.languages}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("languages", e.target.value)}
-                        className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
+                        className="w-full text-lg bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
                         placeholder="Languages"
                       />
                     </div>
@@ -660,7 +660,7 @@ export function ProfileManagementClient({
                         value={formDataState.whereILive}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereILive", e.target.value)}
-                        className="w-full text-xs bg-transparent text-zinc-900 font-medium focus:outline-none"
+                        className="w-full text-lg bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
                         placeholder="Town, Country"
                       />
                     </div>
@@ -669,14 +669,14 @@ export function ProfileManagementClient({
 
                 {/* About me Textarea Box */}
                 <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-[#1F1F1F] mb-3">About me</h3>
-                  <div className="rounded-xl border border-zinc-200/90 p-4 min-h-[100px] focus-within:border-zinc-400 transition-colors bg-white">
+                  <h3 className="text-lg font-medium text-[#1F1F1F] mb-3">About me</h3>
+                  <div className="rounded-lg border border-[#727272] p-6 min-h-[100px] focus-within:border-zinc-400 transition-colors bg-white">
                     <textarea
                       value={formDataState.bio}
                       disabled={!isOwner}
                       onChange={(e) => handleInputChange("bio", e.target.value)}
                       onBlur={() => onSubmit()}
-                      className="w-full h-full bg-transparent resize-none text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none leading-relaxed"
+                      className="w-full h-full bg-transparent resize-none font-normal text-base text-[#727272] placeholder-[#1f1f1f80 focus:outline-none leading-relaxed"
                       placeholder="Your profile's got star power—hosts and guests can check it out, helping Homyz stay awesome and trustworthy!"
                     />
                   </div>
@@ -687,7 +687,7 @@ export function ProfileManagementClient({
                     <button
                       type="submit"
                       disabled={pending}
-                      className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-8 py-3 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                      className="hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
                     >
                       {pending ? "Saving..." : "Save profile"}
                     </button>
