@@ -1,0 +1,29 @@
+# Runs the same security hook as local pre-commit.
+# Git cannot enable local commit hooks from a pull (that would be RCE).
+# This job is the check that always runs after push / PR with no developer setup.
+# A failing scan marks the GitHub check failed so required-status
+# and the deploy workflow can skip later jobs.
+name: Security pre-commit scan
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+jobs:
+  scan:
+    name: Virus / malware scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run malware indicator + scanner
+        run: |
+          set -euo pipefail
+          bash .githooks/pre-commit --ci
+          echo "Security scan passed."

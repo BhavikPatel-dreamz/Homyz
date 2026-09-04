@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "bash -c 'if [ \"${VERCEL:-}\" = \"1\" ] || [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then bash .githooks/pre-commit --ci; fi' && next build",
     "start": "next start",
+    "security:scan": "bash .githooks/pre-commit --ci",
+    "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && bash .githooks/pre-commit --install || true",
     "lint": "eslint",
     "check-env": "node scripts/check-env.js",
     "db:generate": "prisma generate",
