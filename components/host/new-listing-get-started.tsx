@@ -14,24 +14,32 @@ import { StepPlaceType } from "./onboarding/step-place-type";
 import { StepLocationSearch } from "./onboarding/step-location-search";
 import { StepAddressConfirm } from "./onboarding/step-address-confirm";
 import { StepBasicsCounters } from "./onboarding/step-basics-counters";
+import { StepStandoutIntro } from "./onboarding/step-standout-intro";
+import { StepAmenities } from "./onboarding/step-amenities";
+import { StepPhotos } from "./onboarding/step-photos";
 
 export function NewListingGetStarted() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hostingType = searchParams.get("type") || "HOME";
 
-  // Step 0: Overview
-  // Step 1: Intro ("Tell us about your place")
+  // Step 0: Overview ("It's easy to get started on Homyz")
+  // Step 1: Intro ("Step 1: Tell us about your place")
   // Step 2: Category selection grid
   // Step 3: Space type selection
   // Step 4: Location pin search map
   // Step 5: Address confirmation form + Map preview
   // Step 6: Property basics counters (Guests, Bedrooms, Beds, Bathrooms)
+  // Step 7: Intro ("Step 2: Make your place to stand out")
+  // Step 8: Amenities selection ("Tell guests what your place has to offer")
+  // Step 9: Photos upload ("Add some photos of your house")
   const [step, setStep] = useState<number>(0);
 
   // Selections & States
   const [selectedCategory, setSelectedCategory] = useState<string>("House");
   const [selectedPlaceType, setSelectedPlaceType] = useState<string>("Entire place");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(["Wifi"]);
+  const [photos, setPhotos] = useState<string[]>([]);
 
   // Location & Address States
   const [country, setCountry] = useState<string>("Saudi Arabia - SA");
@@ -294,6 +302,12 @@ export function NewListingGetStarted() {
     }
   };
 
+  const handleToggleAmenity = (id: string) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
   // Final Draft Creation Handler
   const handleCreateDraftAndFinish = async () => {
     setIsLoading(true);
@@ -321,6 +335,8 @@ export function NewListingGetStarted() {
           bedrooms,
           beds,
           bathrooms,
+          amenities: selectedAmenities,
+          images: photos,
           published: false,
         }),
       });
@@ -429,6 +445,34 @@ export function NewListingGetStarted() {
           bathrooms={bathrooms}
           setBathrooms={setBathrooms}
           onBack={() => setStep(5)}
+          onNext={() => setStep(7)}
+        />
+      )}
+
+      {/* Step 7: "Make your place to stand out" Intro Screen (Step 2 section badge) */}
+      {step === 7 && (
+        <StepStandoutIntro
+          onBack={() => setStep(6)}
+          onNext={() => setStep(8)}
+        />
+      )}
+
+      {/* Step 8: Amenities Selection ("Tell guests what your place has to offer") */}
+      {step === 8 && (
+        <StepAmenities
+          selectedAmenities={selectedAmenities}
+          onToggleAmenity={handleToggleAmenity}
+          onBack={() => setStep(7)}
+          onNext={() => setStep(9)}
+        />
+      )}
+
+      {/* Step 9: Photos Upload ("Add some photos of your house") */}
+      {step === 9 && (
+        <StepPhotos
+          photos={photos}
+          onUpdatePhotos={setPhotos}
+          onBack={() => setStep(8)}
           onNext={handleCreateDraftAndFinish}
           isLoading={isLoading}
         />
