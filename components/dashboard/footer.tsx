@@ -10,7 +10,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-auto w-full bg-[#F3F4F5] text-black transition-colors">
+    <footer className="footer mt-auto w-full bg-[#F3F4F5] text-black transition-colors">
       <Container>
         <div className="border-t border-[rgba(31,31,31,0.9)] pt-8 sm:pt-12 pb-6">
           {/* Columns Grid */}
