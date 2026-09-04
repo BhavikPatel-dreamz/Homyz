@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
+import { BecomeHostModal } from "@/components/host/become-host-modal";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function AppHeader() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
+  const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English (US)");
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -79,14 +81,37 @@ export function AppHeader() {
             />
           </Link>
 
-          <Link href="/" className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
-            <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform md:w-[198px]" priority />
-          </Link>
+          {isHostRoute ? (
+            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-700 absolute left-1/2 -translate-x-1/2">
+              <Link href="/host/today" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/today' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Today</Link>
+              <Link href="/host/calendar" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/calendar' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Calendar</Link>
+              <Link href="/host/listings" className={`hover:text-zinc-900 transition-colors ${pathname?.startsWith('/host/listings') ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Listing</Link>
+              <Link href="/host/messages" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/messages' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Messages</Link>
+            </nav>
+          ) : (
+            <Link href="/" className="group absolute left-1/2 hidden -translate-x-1/2 md:block" aria-label="Homyz home">
+              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[130px] transition-transform md:w-[198px]" priority />
+            </Link>
+          )}
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
-            <Link href={isHostRoute ? "/dashboard" : role === "HOST" ? "/host/listings" : "/host/onboarding"} className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
-              {isHostRoute ? "Switch to traveling" : role === "HOST" ? "Switch to hosting" : "Become a host"}
-            </Link>
+            {isHostRoute ? (
+              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+                Switch to traveling
+              </Link>
+            ) : role === "HOST" ? (
+              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+                Switch to hosting
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setBecomeHostModalOpen(true)}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
+              >
+                Become a host
+              </button>
+            )}
 
             {user?.image ? (
               <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
@@ -152,10 +177,13 @@ export function AppHeader() {
                     <div className="my-2 border-t border-zinc-100" />
 
                     {/* Become a host Card Banner with Host Illustration */}
-                    <Link
-                      href="/host/onboarding"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/90 border border-zinc-200/60 transition-all group cursor-pointer"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setBecomeHostModalOpen(true);
+                      }}
+                      className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/90 border border-zinc-200/60 transition-all group cursor-pointer text-left"
                     >
                       <div className="pr-2">
                         <p className="text-sm font-semibold text-zinc-900 group-hover:text-amber-600 transition-colors">Become a host</p>
@@ -174,7 +202,7 @@ export function AppHeader() {
                           <rect x="21" y="44" width="5" height="3" rx="1.5" fill="#2B2D42" />
                         </svg>
                       </div>
-                    </Link>
+                    </button>
 
                     <div className="my-2 border-t border-zinc-100" />
 
@@ -338,6 +366,12 @@ export function AppHeader() {
           </div>
         </div>
       )}
+
+      {/* Become A Host Modal ("What would you like to host?") */}
+      <BecomeHostModal
+        isOpen={becomeHostModalOpen}
+        onClose={() => setBecomeHostModalOpen(false)}
+      />
     </header>
   );
 }

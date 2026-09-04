@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 
 export interface HostDocItem {
@@ -69,6 +69,12 @@ const DOCUMENT_TYPES_CONFIG = [
 
 export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspaceProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const hostingTypeParam = searchParams ? searchParams.get("type") : null;
+  const hostingTypeLabel = hostingTypeParam
+    ? hostingTypeParam.charAt(0).toUpperCase() + hostingTypeParam.slice(1).toLowerCase()
+    : null;
+
   const [appState, setAppState] = useState(initialData);
 
   const { application, progress, accountState, message } = appState;
@@ -506,10 +512,15 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 sm:p-8 backdrop-blur-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-[#FBDE9B] px-3 py-1 text-xs font-extrabold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
                 Host Onboarding Portal
               </span>
+              {hostingTypeLabel && (
+                <span className="rounded-full bg-zinc-900 text-white px-3 py-1 text-xs font-bold shadow-xs">
+                  Hosting Type: {hostingTypeLabel}
+                </span>
+              )}
               <span className="text-xs font-medium text-[var(--muted-foreground)]">
                 Application ID: {application.applicationId}
               </span>

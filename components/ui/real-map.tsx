@@ -8,6 +8,7 @@ interface LocationDetails {
   district?: string;
   postalCode?: string;
   country?: string;
+  formattedAddress?: string;
 }
 
 interface RealMapProps {
@@ -65,6 +66,7 @@ export function RealMap({
           const districtName = a.suburb || a.neighbourhood || a.city_district || "";
           const postalCodeStr = a.postcode || "";
           const countryName = a.country || "";
+          const fullAddress = data.display_name || [streetAddress, districtName, cityName, countryName].filter(Boolean).join(", ");
 
           isInternalUpdateRef.current = true;
 
@@ -75,6 +77,7 @@ export function RealMap({
               district: districtName,
               postalCode: postalCodeStr,
               country: countryName,
+              formattedAddress: fullAddress,
             });
           }
         } else if (onLocationChange) {
