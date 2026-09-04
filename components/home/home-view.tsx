@@ -400,7 +400,7 @@ export function HomeView() {
 
       {/* Main Content */}
 
-      <main className="homepage-main mt-6 sm:mt-8 w-full flex-1 pb-16 sm:pb-[150px]">
+      <main className="homepage-main sm:mt-8 w-full flex-1 pb-16 sm:pb-[150px]">
         <Container>
           {/* Hero Section */}
           <HeroSection />
