@@ -100,6 +100,7 @@ export function toBookingDTO(
       ? {
           id: b.listing.id,
           title: b.listing.title,
+          photos: b.listing.photos,
           description: b.listing.description,
           price: b.listing.price,
         }

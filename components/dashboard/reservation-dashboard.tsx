@@ -182,7 +182,7 @@ export function ReservationDashboard({
           description="Try adjusting your search criteria or switching filter tabs."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}

@@ -97,7 +97,7 @@ export function LocationSearchInput({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search a place... (e.g. Paris, France)"
-          className={`w-full pl-9 pr-9 py-2.5 rounded-2xl border bg-white text-xs text-zinc-900 placeholder-zinc-400 transition-all shadow-2xs ${
+          className={`w-full pl-9 pr-9 py-2.5 rounded-2xl border bg-white text-xs text-zinc-900 placeholder-zinc-400 transition-all shadow-2xs min-h-[46px] ${
             isOpen ? "border-amber-400 ring-2 ring-amber-400/20" : "border-zinc-200 hover:border-zinc-300"
           } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />

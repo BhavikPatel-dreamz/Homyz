@@ -257,7 +257,7 @@ export function WhereIveBeenSelector({
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header Row — Pixel Perfect Matching Reference Screenshot */}
-      <div className="flex items-start justify-between">
+      <div className="flex sm:flex-nowrap flex-wrap items-start justify-between">
         <div>
           <h3 className="text-[19px] font-semibold text-[#27272A] tracking-tight mb-0.5">
             Where I've been
@@ -276,7 +276,7 @@ export function WhereIveBeenSelector({
               disabled={pending}
               className="bg-[#FDE29B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-3.5 py-1.5 rounded-full transition-all shadow-2xs hover:scale-105 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <span className="text-sm font-extrabold leading-none">+</span>
+              <span className="text-sm font-bold leading-none">+</span>
               <span>Add Stamp</span>
             </button>
           )}

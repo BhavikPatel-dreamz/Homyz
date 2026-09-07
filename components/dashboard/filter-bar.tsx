@@ -69,7 +69,7 @@ export function FilterBar({
             placeholder="Search by property, guest name, or location..."
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-xs font-medium text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors"
+            className="w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-xs font-medium text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]"
           />
         </div>
 
@@ -78,7 +78,7 @@ export function FilterBar({
           <select
             value={filters.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="w-full sm:w-auto appearance-none rounded-2xl border border-[var(--border)] bg-[var(--surface)] pl-4 pr-9 py-2 text-xs font-semibold text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors cursor-pointer"
+            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-4 pr-9 py-2 text-xs font-semibold text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors cursor-pointer min-h-[46px]"
           >
             <option value="ALL">All Statuses</option>
             <option value="CONFIRMED">Confirmed</option>

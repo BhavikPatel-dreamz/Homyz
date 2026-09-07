@@ -294,6 +294,16 @@ export function ProfileManagementClient({
           {/* MAIN PROFILE MANAGEMENT WORKSPACE                */}
           {/* ------------------------------------------------------------------ */}
           <main className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="Go back"
+              className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 sm:hidden"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
+                <path d="m14 5-7 7 7 7" />
+              </svg>
+            </button>
             {msg && (
               <div className="mb-6">
                 <Alert tone={msg.tone}>{msg.text}</Alert>
@@ -301,11 +311,11 @@ export function ProfileManagementClient({
             )}
 
             {/* 1. HERO AVATAR CARD & COMMUNITY NOTE */}
-            <div className="mb-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-              <div className="relative h-66 w-90.5 max-w-[calc(100%-48px)] shrink-0">
-                <div className="relative h-full w-full overflow-hidden rounded-3xl border border-[#1F1F1F] bg-zinc-100 shadow-2xs">
+            <div className="mb-8 flex flex-col items-start gap-7 sm:flex-row sm:items-center sm:gap-6">
+              <div className={`profile-avtar-card relative mt-5 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}>
+                <div className="relative h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
                   {imageUrl ? (
-                    <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="362px" priority />
+                    <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="(max-width: 639px) 220px, 362px" priority />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">
                       <svg className="h-20 w-20" fill="currentColor" viewBox="0 0 24 24">
@@ -320,7 +330,7 @@ export function ProfileManagementClient({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="absolute -right-12 top-1/2 z-10 flex h-24 w-24 -translate-y-1/2 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-70"
+                      className="absolute -bottom-8 left-1/2 z-10 flex h-[52px] w-[110px] -translate-x-1/2 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:w-24 sm:translate-x-0 sm:-translate-y-1/2"
                     >
                       <Image src="/images/icons/camera.svg" alt="" width={24} height={24} aria-hidden="true" />
                       <span>{uploading ? "..." : "Edit"}</span>
@@ -337,6 +347,7 @@ export function ProfileManagementClient({
               </div>
 
               <div className="flex-1 max-w-md sm:ml-15">
+                <h1 className="mb-4 text-[26px] font-semibold leading-tight text-[#1F1F1F] sm:hidden">My profile</h1>
                 <p className="text-base text-[#727272] leading-relaxed font-normal">
                   Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
                   <span className="font-semibold underline cursor-pointer hover:text-black transition">Learn more</span>
@@ -349,7 +360,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("info")}
-                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeMgmtTab === "info"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -361,7 +372,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("photos")}
-                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeMgmtTab === "photos"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -373,7 +384,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("stamps")}
-                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeMgmtTab === "stamps"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -385,7 +396,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setActiveMgmtTab("privacy")}
-                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeMgmtTab === "privacy"
                     ? "bg-zinc-900 text-white shadow-2xs"
                     : "text-zinc-600 hover:bg-zinc-100"
@@ -399,7 +410,7 @@ export function ProfileManagementClient({
             {activeMgmtTab === "info" && (
               <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8 -mt-8">
                 {/* RESPONSIVE TWO-COLUMN PROMPT LIST */}
-                <div className="flex flex-wrap [&>div]:w-full [&>div]:py-6! md:[&>div:nth-child(odd)]:mr-12 md:[&>div:not(:last-child)]:w-[calc(50%-1.5rem)]">
+                <div className="flex flex-wrap [&>div]:w-full md:[&>div]:py-6! [&>div]:py-3! md:[&>div:nth-child(odd)]:mr-12 md:[&>div:not(:last-child)]:w-[calc(50%-1.5rem)]">
                   {/* Item 0: Full Name */}
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
@@ -700,7 +711,7 @@ export function ProfileManagementClient({
             {/* TAB 2: TRIP PHOTOS */}
             {activeMgmtTab === "photos" && (
               <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between">
+                <div className="flex sm:flex-nowrap flex-wrap sm:gap-0 gap-3 items-center sm:justify-between justify-center">
                   <div>
                     <h3 className="text-lg font-semibold text-[#1F1F1F]">Trip Photos Management</h3>
                     <p className="text-xs text-zinc-500">Upload and curate your travel memories</p>
@@ -709,7 +720,7 @@ export function ProfileManagementClient({
                     <button
                       type="button"
                       onClick={() => setUploadModalOpen(true)}
-                      className="flex items-center gap-2 bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 px-5 py-2.5 rounded-full text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                      className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
                     >
                       <IconCamera />
                       <span>Upload Photos</span>
@@ -730,7 +741,7 @@ export function ProfileManagementClient({
                       <button
                         type="button"
                         onClick={() => setUploadModalOpen(true)}
-                        className="bg-[#FDF0CD] hover:bg-[#FCDF9C] text-zinc-900 font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                        className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
                       >
                         Upload Photos
                       </button>

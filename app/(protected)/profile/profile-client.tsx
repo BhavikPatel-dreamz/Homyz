@@ -117,13 +117,13 @@ export function ProfileClient({
           )}
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[390px_minmax(0,auto)] gap-30 xl:grid-cols-[452px_auto]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
           <GuestDashboardSidebar
             activeId={activeTabParam === "about_me" ? "about_me" : activeTabParam}
           />
 
-          <main className="order-1 flex w-full flex-col lg:order-2 lg:pt-0">
+          <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
             {activeTabParam === "about_me" ? (
               <div className="flex flex-col animate-in fade-in">
                 {/* 1. Header with Title & Yellow Edit Button */}
@@ -287,7 +287,7 @@ export function ProfileClient({
                 </p>
                 <Link
                   href="/profile"
-                  className="bg-[#FDE29B] text-zinc-900 font-bold px-6 py-2 rounded-full hover:bg-[#FCD885] transition-colors text-xs"
+                  className="bg-[#FDE29B] text-zinc-900 font-medium px-6 py-2 rounded-full hover:bg-[#FCD885] transition-colors text-xs"
                 >
                   Back to About me
                 </Link>
