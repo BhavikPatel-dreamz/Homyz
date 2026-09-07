@@ -232,7 +232,7 @@ export function HostPhase1Dashboard({
               key={tab.key}
               href={getTabHref(tab.key)}
               onClick={() => setCurrentPage(1)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-[#291E05] text-[#FBDE9B] dark:bg-[#f59e0b] dark:text-zinc-950 shadow-2xs"
                   : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground border border-[var(--border-subtle)]"
@@ -311,7 +311,7 @@ export function HostPhase1Dashboard({
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
             >
               {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
             </button>
@@ -427,11 +427,11 @@ export function HostPhase1Dashboard({
                   {/* Host Name & Email */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
+                      <div className="h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs shrink-0 shadow-2xs">
                         {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-muted-foreground line-clamp-1">
+                        <div className="font-semibold text-muted-foreground line-clamp-1">
                           {host.name || "Unnamed Host / Applicant"}
                         </div>
                         <div className="text-[11px] text-[var(--muted-foreground)] font-mono">
@@ -444,15 +444,15 @@ export function HostPhase1Dashboard({
                   {/* Account Status */}
                   <td className="py-3.5 px-4">
                     {host.accountStatus === "ACTIVE" ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
                         Active
                       </span>
                     ) : host.accountStatus === "SUSPENDED" ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
                         Suspended
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs">
                         {host.accountStatus || "Pending"}
                       </span>
                     )}
@@ -460,14 +460,14 @@ export function HostPhase1Dashboard({
 
                   {/* Application Status */}
                   <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-extrabold border bg-zinc-100 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-semibold border bg-zinc-100 text-zinc-800 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700">
                       {host.applicationStatus || "N/A"}
                     </span>
                   </td>
 
                   {/* Onboarding Stage */}
                   <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60">
                       {host.onboardingStageLabel}
                     </span>
                   </td>
@@ -475,7 +475,7 @@ export function HostPhase1Dashboard({
                   {/* Compliance Status */}
                   <td className="py-3.5 px-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                         host.complianceStatus === "COMPLIANT"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                           : host.complianceStatus === "ACTION_REQUIRED"
@@ -488,7 +488,7 @@ export function HostPhase1Dashboard({
                   </td>
 
                   {/* Listings Count */}
-                  <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">
+                  <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">
                     {host.listingsCount}
                   </td>
 
@@ -496,7 +496,7 @@ export function HostPhase1Dashboard({
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/hosts/${host.id}`}
-                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-bold transition-all inline-block shadow-2xs"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -515,17 +515,17 @@ export function HostPhase1Dashboard({
           <div key={host.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
+                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs">
                   {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-muted-foreground text-xs">{host.name || "Unnamed Host"}</h3>
+                  <h3 className="font-semibold text-muted-foreground text-xs">{host.name || "Unnamed Host"}</h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{host.email}</p>
                 </div>
               </div>
               <a
                 href={`/admin/hosts/${host.id}`}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-muted-foreground"
               >
                 Details
               </a>
@@ -533,16 +533,16 @@ export function HostPhase1Dashboard({
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-[var(--muted-foreground)]">Account:</span> <span className="font-bold text-muted-foreground">{host.accountStatus}</span>
+                <span className="text-[var(--muted-foreground)]">Account:</span> <span className="font-semibold text-muted-foreground">{host.accountStatus}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Stage:</span> <span className="font-bold text-sky-600">{host.onboardingStageLabel}</span>
+                <span className="text-[var(--muted-foreground)]">Stage:</span> <span className="font-semibold text-sky-600">{host.onboardingStageLabel}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Compliance:</span> <span className="font-bold">{host.complianceStatus}</span>
+                <span className="text-[var(--muted-foreground)]">Compliance:</span> <span className="font-semibold">{host.complianceStatus}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Listings:</span> <span className="font-bold">{host.listingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Listings:</span> <span className="font-semibold">{host.listingsCount}</span>
               </div>
             </div>
           </div>
@@ -561,18 +561,18 @@ export function HostPhase1Dashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-bold text-muted-foreground">
+          <span className="font-semibold text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>

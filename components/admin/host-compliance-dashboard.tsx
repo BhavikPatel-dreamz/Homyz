@@ -355,7 +355,7 @@ export function HostComplianceDashboard() {
           type="button"
           onClick={handleRunExpirationAudit}
           disabled={auditing}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 self-start md:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50 self-start md:self-auto"
         >
           {auditing ? (
             <>
@@ -377,50 +377,50 @@ export function HostComplianceDashboard() {
       {metrics && (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider block">Active Hosts</span>
+            <span className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider block">Active Hosts</span>
             <div className="text-2xl font-black text-muted-foreground mt-1">{metrics.totalActiveHosts}</div>
             <span className="text-[9px] text-[var(--muted-foreground)] block truncate">Onboarded hosts</span>
           </div>
 
           <div className="rounded-2xl border border-emerald-300 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Compliant</span>
+            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Compliant</span>
             <div className="text-2xl font-black text-emerald-900 dark:text-emerald-300 mt-1">{metrics.compliantHosts}</div>
             <span className="text-[9px] text-emerald-700/80 dark:text-emerald-400/80 block truncate">Fully verified</span>
           </div>
 
           <div className="rounded-2xl border border-amber-300 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Pending Review</span>
+            <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Pending Review</span>
             <div className="text-2xl font-black text-amber-900 dark:text-amber-300 mt-1">{metrics.compliancePending}</div>
             <span className="text-[9px] text-amber-700/80 dark:text-amber-400/80 block truncate">Under review</span>
           </div>
 
           <div className="rounded-2xl border border-rose-300 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">Action Required</span>
+            <span className="text-[10px] font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">Action Required</span>
             <div className="text-2xl font-black text-rose-900 dark:text-rose-300 mt-1">{metrics.actionRequired}</div>
             <span className="text-[9px] text-rose-700/80 dark:text-rose-400/80 block truncate">Attention needed</span>
           </div>
 
           <div className="rounded-2xl border border-purple-300 dark:border-purple-900 bg-purple-50/50 dark:bg-purple-950/20 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider block">Non-Compliant</span>
+            <span className="text-[10px] font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider block">Non-Compliant</span>
             <div className="text-2xl font-black text-purple-900 dark:text-purple-300 mt-1">{metrics.nonCompliant}</div>
             <span className="text-[9px] text-purple-700/80 dark:text-purple-400/80 block truncate">Violations</span>
           </div>
 
           <div className="rounded-2xl border border-amber-400 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider block">Docs Expiring</span>
+            <span className="text-[10px] font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider block">Docs Expiring</span>
             <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-1">{metrics.documentsExpiringSoon}</div>
             <span className="text-[9px] text-amber-800/80 dark:text-amber-300/80 block truncate">Within 30 days</span>
           </div>
 
           <div className="rounded-2xl border border-rose-400 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider block">Docs Expired</span>
+            <span className="text-[10px] font-semibold text-rose-800 dark:text-rose-300 uppercase tracking-wider block">Docs Expired</span>
             <div className="text-2xl font-black text-rose-950 dark:text-rose-200 mt-1">{metrics.documentsExpired}</div>
             <span className="text-[9px] text-rose-800/80 dark:text-rose-300/80 block truncate">Overdue updates</span>
           </div>
 
           <div className="rounded-2xl border border-zinc-400 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 p-4 shadow-2xs">
-            <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">Suspended</span>
-            <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{metrics.suspendedForCompliance}</div>
+            <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">Suspended</span>
+            <div className="text-2xl font-black text-[#1F1F1F] dark:text-zinc-100 mt-1">{metrics.suspendedForCompliance}</div>
             <span className="text-[9px] text-zinc-600 dark:text-zinc-400 block truncate">Blocked hosts</span>
           </div>
         </div>
@@ -430,7 +430,7 @@ export function HostComplianceDashboard() {
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-3 shadow-2xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <div>
-            <label className="text-[11px] font-bold text-[var(--muted-foreground)] block mb-1">Search Host</label>
+            <label className="text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">Search Host</label>
             <input
               type="text"
               placeholder="Host name, email, ID..."
@@ -444,7 +444,7 @@ export function HostComplianceDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-[var(--muted-foreground)] block mb-1">Compliance Status</label>
+            <label className="text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">Compliance Status</label>
             <select
               value={complianceStatusFilter}
               onChange={(e) => {
@@ -463,7 +463,7 @@ export function HostComplianceDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-[var(--muted-foreground)] block mb-1">Document Status</label>
+            <label className="text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">Document Status</label>
             <select
               value={documentStatusFilter}
               onChange={(e) => {
@@ -479,7 +479,7 @@ export function HostComplianceDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-[var(--muted-foreground)] block mb-1">Risk Severity</label>
+            <label className="text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">Risk Severity</label>
             <select
               value={riskLevelFilter}
               onChange={(e) => {
@@ -497,7 +497,7 @@ export function HostComplianceDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-[var(--muted-foreground)] block mb-1">Host Account Status</label>
+            <label className="text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">Host Account Status</label>
             <select
               value={hostStatusFilter}
               onChange={(e) => {
@@ -525,7 +525,7 @@ export function HostComplianceDashboard() {
                 setHostStatusFilter("ALL");
                 setPage(1);
               }}
-              className="text-xs font-extrabold text-rose-600 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
             >
               Clear All Filters
             </button>
@@ -538,7 +538,7 @@ export function HostComplianceDashboard() {
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-extrabold uppercase tracking-wider">
+              <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
                 <th className="py-3.5 px-4">Host</th>
                 <th className="py-3.5 px-4">Compliance</th>
                 <th className="py-3.5 px-4">Documents</th>
@@ -569,7 +569,7 @@ export function HostComplianceDashboard() {
                   <tr key={item.id} className="hover:bg-[var(--surface-secondary)]/50 transition-colors">
                     {/* Host Info */}
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-muted-foreground">{item.applicantName}</div>
+                      <div className="font-semibold text-muted-foreground">{item.applicantName}</div>
                       <div className="text-[11px] font-mono text-[var(--muted-foreground)]">{item.applicantEmail}</div>
                       <div className="text-[10px] text-[var(--muted-foreground)]">{item.businessName || "Individual Host"}</div>
                     </td>
@@ -577,7 +577,7 @@ export function HostComplianceDashboard() {
                     {/* Compliance Status */}
                     <td className="py-3.5 px-4">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide inline-block ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide inline-block ${
                           item.complianceStatus === "COMPLIANT"
                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                             : item.complianceStatus === "SUSPENDED" || item.complianceStatus === "NON_COMPLIANT"
@@ -600,7 +600,7 @@ export function HostComplianceDashboard() {
                           ⏱️ {item.expiringDocsCount} Expiring Soon
                         </span>
                       ) : (
-                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                           ✓ All Documents Valid ({item.documents.length})
                         </span>
                       )}
@@ -609,7 +609,7 @@ export function HostComplianceDashboard() {
                     {/* Compliance Issues */}
                     <td className="py-3.5 px-4">
                       {item.openIssuesCount > 0 ? (
-                        <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 text-[10px] font-bold">
+                        <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 text-[10px] font-semibold">
                           {item.openIssuesCount} Open Issue(s)
                         </span>
                       ) : (
@@ -620,7 +620,7 @@ export function HostComplianceDashboard() {
                     {/* Risk Level */}
                     <td className="py-3.5 px-4">
                       <span
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${
                           item.highestRisk === "CRITICAL"
                             ? "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 animate-pulse"
                             : item.highestRisk === "HIGH"
@@ -637,7 +637,7 @@ export function HostComplianceDashboard() {
                     {/* Host User Status */}
                     <td className="py-3.5 px-4">
                       <span
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${
                           item.hostUser?.status === "SUSPENDED"
                             ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
                             : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
@@ -656,7 +656,7 @@ export function HostComplianceDashboard() {
                             setSelectedRecord(item);
                             setDrawerOpen(true);
                           }}
-                          className="px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:hover:bg-indigo-900 dark:text-indigo-300 text-xs font-extrabold cursor-pointer"
+                          className="px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:hover:bg-indigo-900 dark:text-indigo-300 text-xs font-semibold cursor-pointer"
                         >
                           View Compliance
                         </button>
@@ -688,7 +688,7 @@ export function HostComplianceDashboard() {
           <div className="w-full max-w-2xl bg-[var(--surface)] h-full overflow-y-auto p-6 space-y-6 shadow-2xl border-l border-[var(--border)]">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
               <div>
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
+                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
                   Host Compliance Monitoring Profile
                 </span>
                 <h2 className="text-lg font-black text-muted-foreground">{selectedRecord.applicantName}</h2>
@@ -709,7 +709,7 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setReVerifyModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold cursor-pointer shadow-xs"
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold cursor-pointer shadow-xs"
               >
                 Request Re-Verification
               </button>
@@ -717,7 +717,7 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setCreateIssueModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold cursor-pointer shadow-xs"
+                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold cursor-pointer shadow-xs"
               >
                 Log Compliance Issue
               </button>
@@ -726,7 +726,7 @@ export function HostComplianceDashboard() {
                 <button
                   type="button"
                   onClick={() => handleUnsuspendHost(selectedRecord)}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold cursor-pointer shadow-xs"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-xs"
                 >
                   Reactivate Host
                 </button>
@@ -734,7 +734,7 @@ export function HostComplianceDashboard() {
                 <button
                   type="button"
                   onClick={() => setSuspendModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold cursor-pointer shadow-xs"
+                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold cursor-pointer shadow-xs"
                 >
                   Suspend Host
                 </button>
@@ -743,7 +743,7 @@ export function HostComplianceDashboard() {
 
             {/* DOCUMENTS MONITORING LIST */}
             <div className="space-y-3">
-              <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
+              <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
                 Document Expiry & Verification Monitoring
               </h3>
               {selectedRecord.documents.length === 0 ? (
@@ -756,7 +756,7 @@ export function HostComplianceDashboard() {
                       className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/40 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-extrabold text-muted-foreground block">{doc.documentType}</span>
+                        <span className="font-semibold text-muted-foreground block">{doc.documentType}</span>
                         <span className="text-[11px] font-mono text-[var(--muted-foreground)] block">{doc.fileName}</span>
                         {doc.expiryDate && (
                           <span className="text-[10px] text-[var(--muted-foreground)] block mt-0.5">
@@ -788,7 +788,7 @@ export function HostComplianceDashboard() {
 
             {/* COMPLIANCE ISSUES LIST */}
             <div className="space-y-3">
-              <h3 className="font-extrabold text-xs text-muted-foreground uppercase tracking-wider">
+              <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
                 Compliance Issues History ({selectedRecord.issues.length})
               </h3>
               {selectedRecord.issues.length === 0 ? (
@@ -801,7 +801,7 @@ export function HostComplianceDashboard() {
                       className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 space-y-2 text-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-muted-foreground">{iss.issueType}</span>
+                        <span className="font-semibold text-muted-foreground">{iss.issueType}</span>
                         <div className="flex items-center gap-2">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
@@ -836,7 +836,7 @@ export function HostComplianceDashboard() {
                               setSelectedIssueId(iss.id);
                               setResolveIssueModalOpen(true);
                             }}
-                            className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] cursor-pointer"
+                            className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10px] cursor-pointer"
                           >
                             Resolve Issue
                           </button>
@@ -864,7 +864,7 @@ export function HostComplianceDashboard() {
             onSubmit={handleRequestReVerification}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-muted-foreground">Request Host Re-Verification</h3>
+            <h3 className="font-semibold text-sm text-muted-foreground">Request Host Re-Verification</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               This will set host compliance status to <strong>ACTION_REQUIRED</strong> and notify {selectedRecord.applicantName} to provide updated documentation.
             </p>
@@ -882,14 +882,14 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setReVerifyModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={pendingTransition || !reVerifyReason.trim()}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs cursor-pointer shadow-xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50"
               >
                 Send Request
               </button>
@@ -905,10 +905,10 @@ export function HostComplianceDashboard() {
             onSubmit={handleCreateComplianceIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-muted-foreground">Log Compliance Issue</h3>
+            <h3 className="font-semibold text-sm text-muted-foreground">Log Compliance Issue</h3>
 
             <div>
-              <label className="text-xs font-bold text-[var(--muted-foreground)] block mb-1">Issue Type</label>
+              <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1">Issue Type</label>
               <input
                 type="text"
                 value={newIssueType}
@@ -919,7 +919,7 @@ export function HostComplianceDashboard() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[var(--muted-foreground)] block mb-1">Risk Severity</label>
+              <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1">Risk Severity</label>
               <select
                 value={newIssueSeverity}
                 onChange={(e) => setNewIssueSeverity(e.target.value as any)}
@@ -933,7 +933,7 @@ export function HostComplianceDashboard() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[var(--muted-foreground)] block mb-1">Description</label>
+              <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1">Description</label>
               <textarea
                 rows={3}
                 placeholder="Describe the compliance discrepancy or violation details..."
@@ -948,14 +948,14 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setCreateIssueModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={pendingTransition || !newIssueDesc.trim()}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs cursor-pointer shadow-xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50"
               >
                 Create Issue
               </button>
@@ -971,7 +971,7 @@ export function HostComplianceDashboard() {
             onSubmit={handleResolveIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-muted-foreground">Resolve Compliance Issue</h3>
+            <h3 className="font-semibold text-sm text-muted-foreground">Resolve Compliance Issue</h3>
 
             <textarea
               rows={3}
@@ -986,14 +986,14 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setResolveIssueModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={pendingTransition || !resolutionNotes.trim()}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs cursor-pointer shadow-xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50"
               >
                 Confirm Resolution
               </button>
@@ -1009,7 +1009,7 @@ export function HostComplianceDashboard() {
             onSubmit={handleSuspendHost}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
           >
-            <h3 className="font-extrabold text-sm text-rose-600 dark:text-rose-400">⚠️ Suspend Host for Compliance Violations</h3>
+            <h3 className="font-semibold text-sm text-rose-600 dark:text-rose-400">⚠️ Suspend Host for Compliance Violations</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               This action will change host account status to <strong>SUSPENDED</strong> and compliance status to <strong>NON_COMPLIANT</strong>. Existing listings and bookings will be preserved.
             </p>
@@ -1027,14 +1027,14 @@ export function HostComplianceDashboard() {
               <button
                 type="button"
                 onClick={() => setSuspendModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={pendingTransition || !suspendReason.trim()}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs cursor-pointer shadow-xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50"
               >
                 Confirm Host Suspension
               </button>
@@ -1047,7 +1047,7 @@ export function HostComplianceDashboard() {
       {unsuspendModalOpen && unsuspendRecord && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
-            <h3 className="font-extrabold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -1065,7 +1065,7 @@ export function HostComplianceDashboard() {
                   setUnsuspendRecord(null);
                 }}
                 disabled={pendingTransition}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1073,7 +1073,7 @@ export function HostComplianceDashboard() {
                 type="button"
                 onClick={confirmUnsuspendHost}
                 disabled={pendingTransition}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs cursor-pointer shadow-xs disabled:opacity-50 inline-flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50 inline-flex items-center gap-1.5"
               >
                 {pendingTransition && (
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />

@@ -385,7 +385,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
   const pausedCount = initialListings.filter((l) => l.isPaused).length;
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 font-sans flex flex-col selection:bg-[#FEE08B]">
+    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B]">
       {/* ── 1. TOP HEADER (Matches Figma Screenshot Header) ── */}
       <HostHeader />
       <HostSubNav activeTab="listing" />
@@ -394,7 +394,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       <main className="max-w-6xl mx-auto w-full px-6 sm:px-10 py-10 flex-1 space-y-8">
         {/* Toast Alert */}
         {toastMsg && (
-          <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold transition-all ${
+          <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${
             toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
           }`}>
             {toastMsg.text}
@@ -413,7 +413,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               type="button"
               onClick={handleOpenCreate}
               disabled={pending}
-              className="inline-flex sm:hidden items-center justify-center w-8 h-8 rounded-full bg-[#FEE08B] text-zinc-900 font-bold text-sm shadow-xs"
+              className="inline-flex sm:hidden items-center justify-center w-8 h-8 rounded-full bg-[#FEE08B] text-[#1F1F1F] font-normal text-sm shadow-xs"
               title="Create New Listing"
             >
               +
@@ -422,7 +422,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               type="button"
               onClick={handleOpenCreate}
               disabled={pending}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-5 py-2.5 transition-all shadow-2xs active:scale-95"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-5 py-2.5 transition-all shadow-2xs active:scale-95"
             >
               + Create New Listing
             </button>
@@ -448,7 +448,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-zinc-900">Property name</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
               </div>
             </div>
@@ -466,7 +466,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-zinc-900">Property name</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-zinc-900">Property name</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
               </div>
             </div>
@@ -502,7 +502,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-zinc-900">Property name</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
               </div>
             </div>
@@ -529,7 +529,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-zinc-400 text-xl font-bold">
+                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-zinc-400 text-xl font-semibold">
                         🏡
                       </div>
                     )}
@@ -549,7 +549,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                         setShowDeleteModal(true);
                       }}
                       title="Delete Property Listing"
-                      className="absolute top-3 right-3 bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-7 h-7 font-bold"
+                      className="absolute top-3 right-3 bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-7 h-7 font-semibold"
                     >
                       🗑️
                     </button>
@@ -557,7 +557,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
                   {/* Below Card Information */}
                   <div>
-                    <h3 className="font-bold text-sm text-zinc-900 truncate">
+                    <h3 className="font-semibold text-sm text-[#1F1F1F] truncate">
                       {item.title || "Property name"}
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5 truncate">
@@ -581,7 +581,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
-                <h2 className="text-lg font-extrabold text-muted-foreground">
+                <h2 className="text-lg font-semibold text-muted-foreground">
                   {editingListing ? `Edit Property: ${editingListing.title}` : "Create Property Listing"}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -591,14 +591,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               <button
                 type="button"
                 onClick={() => setShowEditorModal(false)}
-                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center font-bold text-sm"
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center font-semibold text-sm"
               >
                 ✕
               </button>
             </div>
 
             {/* Wizard Steps Navigation Bar */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-[var(--border-subtle)] text-xs font-bold scrollbar-none">
+            <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-[var(--border-subtle)] text-xs font-semibold scrollbar-none">
               {[
                 { step: 1, label: "1. Basic Info" },
                 { step: 2, label: "2. Location & Capacity" },
@@ -627,7 +627,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block font-bold text-muted-foreground mb-1">Listing Title *</label>
+                    <label className="block font-semibold text-muted-foreground mb-1">Listing Title *</label>
                     <input
                       type="text"
                       value={formData.title}
@@ -639,7 +639,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   </div>
 
                   <div>
-                    <label className="block font-bold text-muted-foreground mb-1">Detailed Description *</label>
+                    <label className="block font-semibold text-muted-foreground mb-1">Detailed Description *</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -652,7 +652,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">Hosting Category</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Hosting Category</label>
                       <select
                         value={formData.hostingType}
                         onChange={(e) => setFormData({ ...formData, hostingType: e.target.value })}
@@ -665,7 +665,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">Property Type</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Property Type</label>
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
@@ -678,7 +678,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">Listing Type</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Listing Type</label>
                       <select
                         value={formData.listingType}
                         onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
@@ -698,7 +698,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block font-bold text-muted-foreground mb-1">Street Address *</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Street Address *</label>
                       <input
                         type="text"
                         value={formData.address}
@@ -709,7 +709,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">City / Region *</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">City / Region *</label>
                       <input
                         type="text"
                         value={formData.city}
@@ -720,7 +720,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">District / State</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">District / State</label>
                       <input
                         type="text"
                         value={formData.district}
@@ -730,7 +730,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">Postal Code</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Postal Code</label>
                       <input
                         type="text"
                         value={formData.postalCode}
@@ -740,7 +740,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-muted-foreground mb-1">Country</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">Country</label>
                       <input
                         type="text"
                         value={formData.country}
@@ -752,7 +752,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4">
-                    <h4 className="font-extrabold text-muted-foreground mb-3">Property Capacity</h4>
+                    <h4 className="font-semibold text-muted-foreground mb-3">Property Capacity</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Guests Capacity</label>
@@ -762,7 +762,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={50}
                           value={formData.guests}
                           onChange={(e) => setFormData({ ...formData, guests: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -773,7 +773,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={30}
                           value={formData.bedrooms}
                           onChange={(e) => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -784,7 +784,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={50}
                           value={formData.beds}
                           onChange={(e) => setFormData({ ...formData, beds: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                         />
                       </div>
                       <div>
@@ -795,7 +795,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           max={20}
                           value={formData.bathrooms}
                           onChange={(e) => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                         />
                       </div>
                     </div>
@@ -808,12 +808,12 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-extrabold text-muted-foreground">Property Photos Gallery</h4>
+                      <h4 className="font-semibold text-muted-foreground">Property Photos Gallery</h4>
                       <p className="text-[11px] text-[var(--muted-foreground)]">
                         Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
                       </p>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold ${
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                       formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
                     }`}>
                       {formData.photos.length} / 5 photos minimum
@@ -823,7 +823,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   {/* Add photo File Upload & URL input */}
                   <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-bold px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
+                      <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
                         <span>📁 Choose & Upload File</span>
                         <input
                           type="file"
@@ -875,7 +875,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                               newPhotoUrl: "",
                             });
                           }}
-                          className="rounded-xl bg-emerald-600 text-white font-bold px-4 py-2 hover:bg-emerald-700 transition-all shrink-0"
+                          className="rounded-xl bg-emerald-600 text-white font-semibold px-4 py-2 hover:bg-emerald-700 transition-all shrink-0"
                         >
                           + Add URL
                         </button>
@@ -895,7 +895,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                               const updated = formData.photos.filter((_, i) => i !== idx);
                               setFormData({ ...formData, photos: updated });
                             }}
-                            className="bg-rose-600 text-white rounded-full p-1.5 text-xs font-bold"
+                            className="bg-rose-600 text-white rounded-full p-1.5 text-xs font-semibold"
                             title="Remove Photo"
                           >
                             🗑 Remove
@@ -914,7 +914,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-extrabold text-muted-foreground mb-1">Property Amenities</h4>
+                    <h4 className="font-semibold text-muted-foreground mb-1">Property Amenities</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)] mb-3">Select all amenities available to guests:</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {AMENITY_OPTIONS.map((item) => {
@@ -931,7 +931,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                             }}
                             className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
                               isSelected
-                                ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-bold"
+                                ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold"
                                 : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
                             }`}
                           >
@@ -944,7 +944,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-                    <h4 className="font-extrabold text-muted-foreground">House Rules</h4>
+                    <h4 className="font-semibold text-muted-foreground">House Rules</h4>
                     <p className="text-[11px] text-[var(--muted-foreground)]">Select house rules for guests staying at your place:</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HOUSE_RULE_OPTIONS.map((rule) => {
@@ -975,7 +975,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               {editorStep === 5 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-extrabold text-muted-foreground mb-3">Pricing & Fees</h4>
+                    <h4 className="font-semibold text-muted-foreground mb-3">Pricing & Fees</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ($USD) *</label>
@@ -985,7 +985,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           value={formData.price / 100}
                           onChange={(e) => setFormData({ ...formData, price: Math.round(Number(e.target.value) * 100) })}
                           required
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-extrabold text-base outline-none text-emerald-600"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold text-base outline-none text-emerald-600"
                         />
                       </div>
                       <div>
@@ -995,7 +995,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           min={0}
                           value={(formData.weekendPrice || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, weekendPrice: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
                         />
                       </div>
                       <div>
@@ -1005,14 +1005,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           min={0}
                           value={(formData.cleaningFee || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, cleaningFee: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-bold outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
-                    <h4 className="font-extrabold text-muted-foreground">Check-in Details & Policies</h4>
+                    <h4 className="font-semibold text-muted-foreground">Check-in Details & Policies</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Check-in Method</label>
@@ -1033,14 +1033,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                             type="time"
                             value={formData.checkInStart}
                             onChange={(e) => setFormData({ ...formData, checkInStart: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                           />
                           <span>to</span>
                           <input
                             type="time"
                             value={formData.checkInEnd}
                             onChange={(e) => setFormData({ ...formData, checkInEnd: e.target.value })}
-                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                            className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                           />
                         </div>
                       </div>
@@ -1050,7 +1050,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                           type="time"
                           value={formData.checkOutTime}
                           onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-bold text-center outline-none"
+                          className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                         />
                       </div>
                     </div>
@@ -1069,7 +1069,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     </div>
 
                     <div className="flex items-center gap-6 pt-2">
-                      <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.instantBook}
@@ -1079,7 +1079,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                         <span>Enable Instant Booking</span>
                       </label>
 
-                      <label className="flex items-center gap-2 text-xs font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.isPaused}
@@ -1099,7 +1099,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   type="button"
                   disabled={editorStep === 1}
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
-                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-bold text-muted-foreground disabled:opacity-30"
+                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground disabled:opacity-30"
                 >
                   ← Back
                 </button>
@@ -1109,7 +1109,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     <button
                       type="button"
                       onClick={() => setEditorStep((prev) => Math.min(5, prev + 1))}
-                      className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-extrabold hover:opacity-90 transition-all"
+                      className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-semibold hover:opacity-90 transition-all"
                     >
                       Next Step →
                     </button>
@@ -1117,7 +1117,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     <button
                       type="submit"
                       disabled={pending}
-                      className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-extrabold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
+                      className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-semibold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
                     >
                       {editingListing ? "Save Changes" : "Create Listing Draft"}
                     </button>
@@ -1133,7 +1133,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       {showAvailabilityModal && selectedListingForCal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-extrabold text-muted-foreground">
+            <h3 className="text-base font-semibold text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1146,7 +1146,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   type="date"
                   value={blockedDateInput}
                   onChange={(e) => setBlockedDateInput(e.target.value)}
-                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
+                  className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                 />
                 <button
                   type="button"
@@ -1155,25 +1155,25 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     setTempBlockedDates([...tempBlockedDates, blockedDateInput].sort());
                     setBlockedDateInput("");
                   }}
-                  className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-bold px-4 py-2"
+                  className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2"
                 >
                   Block Date
                 </button>
               </div>
 
               <div className="space-y-2">
-                <span className="font-bold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
+                <span className="font-semibold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                   {tempBlockedDates.length === 0 ? (
                     <p className="text-xs text-[var(--muted-foreground)] italic">No dates blocked.</p>
                   ) : (
                     tempBlockedDates.map((dateStr) => (
-                      <div key={dateStr} className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)] font-mono font-bold">
+                      <div key={dateStr} className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)] font-mono font-semibold">
                         <span>📅 {dateStr}</span>
                         <button
                           type="button"
                           onClick={() => setTempBlockedDates(tempBlockedDates.filter((d) => d !== dateStr))}
-                          className="text-rose-600 font-extrabold text-xs"
+                          className="text-rose-600 font-semibold text-xs"
                         >
                           Unblock
                         </button>
@@ -1187,14 +1187,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 <button
                   type="button"
                   onClick={() => setShowAvailabilityModal(false)}
-                  className="rounded-full px-4 py-2 text-xs font-bold border border-[var(--border)] text-muted-foreground"
+                  className="rounded-full px-4 py-2 text-xs font-semibold border border-[var(--border)] text-muted-foreground"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-extrabold hover:bg-emerald-700 disabled:opacity-50"
+                  className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
                 >
                   Save Availability
                 </button>
@@ -1208,7 +1208,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       {showDeleteModal && listingToDelete && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-bold text-rose-600">Delete Property Listing?</h3>
+            <h3 className="text-base font-semibold text-rose-600">Delete Property Listing?</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
             </p>
@@ -1216,7 +1216,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
               >
                 Cancel
               </button>
@@ -1224,7 +1224,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 type="button"
                 onClick={handleDeleteListing}
                 disabled={pending}
-                className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
               >
                 Permanently Delete
               </button>

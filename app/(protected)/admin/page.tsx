@@ -27,7 +27,7 @@ function MetricCard({
       <p className="text-xs font-semibold text-[var(--muted-foreground)]">
         {label}
       </p>
-      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-muted-foreground">
+      <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
         {value}
       </p>
       {subtitle && (
@@ -54,10 +54,10 @@ function ShortcutCard({
     <Link href={href} className="group block">
       <div className="h-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)] hover:shadow-md">
         <div className="flex items-center gap-3 mb-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-xs">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold text-xs">
             {icon}
           </div>
-          <h2 className="text-sm font-bold text-muted-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+          <h2 className="text-sm font-semibold text-muted-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
             {title}
           </h2>
         </div>
@@ -102,13 +102,13 @@ export default async function AdminPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/admin/admins"
-            className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 text-xs font-bold text-[var(--accent-foreground)] transition-all shadow-2xs"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs"
           >
             + Add Admin
           </Link>
           <Link
             href="/admin/security"
-            className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-bold text-muted-foreground transition-all"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-4 py-2 text-xs font-semibold text-muted-foreground transition-all"
           >
             Security Center
           </Link>
@@ -117,7 +117,7 @@ export default async function AdminPage() {
 
       {/* Platform Metric Grid */}
       <div>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
           Platform Metrics
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -137,7 +137,7 @@ export default async function AdminPage() {
 
       {/* Security Health Metrics */}
       <div>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
           Security & Access (24h)
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -146,7 +146,7 @@ export default async function AdminPage() {
               <span className="text-xs font-medium text-[var(--muted-foreground)]">Successful Logins</span>
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
+            <p className="mt-2 text-3xl font-semibold text-muted-foreground">
               {securityStats.successfulLogins24h}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Authenticated sessions</p>
@@ -161,7 +161,7 @@ export default async function AdminPage() {
                 }`}
               />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
+            <p className="mt-2 text-3xl font-semibold text-muted-foreground">
               {securityStats.failedLogins24h}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">Throttled / rejected</p>
@@ -172,7 +172,7 @@ export default async function AdminPage() {
               <span className="text-xs font-medium text-[var(--muted-foreground)]">Privilege & Role Changes</span>
               <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-muted-foreground">
+            <p className="mt-2 text-3xl font-semibold text-muted-foreground">
               {securityStats.privilegeChanges7d}
             </p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)]">In last 7 days</p>
@@ -183,7 +183,7 @@ export default async function AdminPage() {
       {/* Administrator Accounts Table Section */}
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-muted-foreground">
+          <h2 className="text-xl font-semibold tracking-tight text-muted-foreground">
             Administrator Accounts
           </h2>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -199,7 +199,7 @@ export default async function AdminPage() {
 
       {/* Quick Navigation Modules */}
       <div>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
           Administrative Modules
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -233,12 +233,12 @@ export default async function AdminPage() {
       {/* Recent Activity Log Stream */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
             Recent Audit Events
           </h2>
           <Link
             href="/admin/activity-logs"
-            className="text-xs font-bold text-amber-600 hover:underline dark:text-amber-400"
+            className="text-xs font-semibold text-amber-600 hover:underline dark:text-amber-400"
           >
             View all logs →
           </Link>
@@ -258,7 +258,7 @@ export default async function AdminPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                         log.status === "FAILURE"
                           ? "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
                           : "bg-[var(--accent)] text-[var(--accent-foreground)]"

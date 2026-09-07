@@ -108,7 +108,7 @@ export function TagPeopleInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <label htmlFor={inputId} className="block text-xs font-bold text-zinc-900 mb-1.5">
+      <label htmlFor={inputId} className="block text-xs font-semibold text-[#1F1F1F] mb-1.5">
         Tag People
       </label>
 
@@ -135,7 +135,7 @@ export function TagPeopleInput({
                 <Image src={user.image} alt={user.name || "User"} fill className="object-cover" sizes="16px" />
               </span>
             ) : (
-              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[9px] font-bold flex items-center justify-center shrink-0">
+              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[9px] font-semibold flex items-center justify-center shrink-0">
                 {(user.name || user.email || "U")[0].toUpperCase()}
               </span>
             )}
@@ -143,7 +143,7 @@ export function TagPeopleInput({
             <button
               type="button"
               onClick={(e) => handleRemoveUser(user.id, e)}
-              className="w-3.5 h-3.5 rounded-full hover:bg-zinc-300 text-zinc-500 hover:text-zinc-900 flex items-center justify-center text-[11px] leading-none transition-colors cursor-pointer"
+              className="w-3.5 h-3.5 rounded-full hover:bg-zinc-300 text-zinc-500 hover:text-[#1F1F1F] flex items-center justify-center text-[11px] leading-none transition-colors cursor-pointer"
               title="Remove tag"
             >
               ✕
@@ -166,7 +166,7 @@ export function TagPeopleInput({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={selectedUsers.length === 0 ? "Search people to tag..." : "Add more..."}
-            className="flex-1 min-w-[120px] bg-transparent text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none py-1"
+            className="flex-1 min-w-[120px] bg-transparent text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none py-1"
           />
         )}
       </div>
@@ -206,7 +206,7 @@ export function TagPeopleInput({
                     isSelected
                       ? "opacity-50 bg-zinc-50 cursor-default"
                       : isActive
-                      ? "bg-amber-50 text-zinc-900 font-medium"
+                      ? "bg-amber-50 text-[#1F1F1F] font-medium"
                       : "hover:bg-zinc-50 text-zinc-800"
                   }`}
                 >
@@ -216,12 +216,12 @@ export function TagPeopleInput({
                         <Image src={user.image} alt={user.name || "User"} fill className="object-cover" sizes="28px" />
                       </div>
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 font-semibold text-xs flex items-center justify-center shrink-0">
                         {(user.name || user.email || "U")[0].toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-bold text-zinc-900 truncate">{user.name || "Guest Member"}</p>
+                      <p className="font-semibold text-[#1F1F1F] truncate">{user.name || "Guest Member"}</p>
                       {user.email && (
                         <p className="text-[11px] text-zinc-400 truncate">
                           @{user.email.split("@")[0]}
@@ -231,7 +231,7 @@ export function TagPeopleInput({
                   </div>
 
                   {isSelected && (
-                    <span className="text-[11px] font-bold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">
                       Tagged
                     </span>
                   )}

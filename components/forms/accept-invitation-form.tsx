@@ -69,7 +69,7 @@ export function AcceptInvitationForm({
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-zinc-950">
+          <h2 className="text-2xl font-semibold text-zinc-950">
             Account Activated!
           </h2>
           <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
@@ -78,7 +78,7 @@ export function AcceptInvitationForm({
         </div>
 
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 font-medium">
-          Admin account for <strong className="font-bold">{email}</strong> is now active.
+          Admin account for <strong className="font-semibold">{email}</strong> is now active.
         </div>
 
         <Link
@@ -101,15 +101,15 @@ export function AcceptInvitationForm({
 
       {/* Invitation Details Info Card */}
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 flex items-center gap-3.5 shadow-2xs">
-        <div className="h-10 w-10 rounded-full bg-zinc-900 text-white font-extrabold flex items-center justify-center text-sm shrink-0">
+        <div className="h-10 w-10 rounded-full bg-zinc-900 text-white font-semibold flex items-center justify-center text-sm shrink-0">
           {(name?.[0] || email?.[0] || "A").toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-0.5">
-            <div className="text-xs font-bold text-zinc-900 truncate">
+            <div className="text-xs font-semibold text-[#1F1F1F] truncate">
               {name || "Administrator"}
             </div>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
               Role: {roleName}
             </span>
           </div>
@@ -131,7 +131,7 @@ export function AcceptInvitationForm({
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
             placeholder="••••••••••••"
           />
           <button
@@ -167,14 +167,14 @@ export function AcceptInvitationForm({
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
           placeholder="••••••••••••"
         />
       </div>
 
       {/* Live Complexity Checklist */}
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
-        <div className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">
+        <div className="font-semibold text-zinc-700 uppercase tracking-wider text-[10px]">
           Password Requirements:
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -185,7 +185,7 @@ export function AcceptInvitationForm({
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{minLength ? "✓" : "○"}</span> At least 8 characters
+            <span className="font-semibold">{minLength ? "✓" : "○"}</span> At least 8 characters
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -194,7 +194,7 @@ export function AcceptInvitationForm({
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
+            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -203,7 +203,7 @@ export function AcceptInvitationForm({
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
+            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
           </div>
           {confirmPassword ? (
             <div
@@ -213,7 +213,7 @@ export function AcceptInvitationForm({
                   : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              <span className="font-bold">{matches ? "✓" : "✕"}</span> Passwords match
+              <span className="font-semibold">{matches ? "✓" : "✕"}</span> Passwords match
             </div>
           ) : (
             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
@@ -227,7 +227,7 @@ export function AcceptInvitationForm({
       <button
         type="submit"
         disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
       >
         {pending && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />

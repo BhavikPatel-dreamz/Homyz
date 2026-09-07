@@ -69,7 +69,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-zinc-950">
+          <h2 className="text-2xl font-semibold text-zinc-950">
             Password Reset Successful!
           </h2>
           <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
@@ -113,7 +113,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
             placeholder="••••••••••••"
           />
           <button
@@ -149,14 +149,14 @@ export function ResetPasswordForm({ token }: { token: string }) {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
           placeholder="••••••••••••"
         />
       </div>
 
       {/* Complexity Checklist */}
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
-        <div className="font-bold text-zinc-700 uppercase tracking-wider text-[10px]">
+        <div className="font-semibold text-zinc-700 uppercase tracking-wider text-[10px]">
           Password Requirements:
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -167,7 +167,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{minLength ? "✓" : "○"}</span> At least 8 characters
+            <span className="font-semibold">{minLength ? "✓" : "○"}</span> At least 8 characters
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -176,7 +176,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
+            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -185,7 +185,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-bold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
+            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
           </div>
           {confirmPassword ? (
             <div
@@ -195,7 +195,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              <span className="font-bold">{matches ? "✓" : "✕"}</span> Passwords match
+              <span className="font-semibold">{matches ? "✓" : "✕"}</span> Passwords match
             </div>
           ) : (
             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
@@ -208,7 +208,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
       >
         {pending && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />

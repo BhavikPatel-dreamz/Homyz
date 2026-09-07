@@ -261,7 +261,7 @@ export function AdminPermissionMatrixManager({
 
         <Link
           href="/admin/admins"
-          className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold hover:bg-[var(--surface-secondary)] transition-all shadow-2xs self-start sm:self-auto"
+          className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold hover:bg-[var(--surface-secondary)] transition-all shadow-2xs self-start sm:self-auto"
         >
           ← Back to Admins
         </Link>
@@ -270,7 +270,7 @@ export function AdminPermissionMatrixManager({
       {/* Super Admin System Protection Banner */}
       {summary.isSuperAdmin ? (
         <div className="rounded-2xl border border-amber-300/80 bg-amber-50 dark:bg-amber-950/40 p-5 text-amber-900 dark:text-amber-200 shadow-2xs flex flex-col gap-2">
-          <div className="flex items-center gap-2.5 font-extrabold text-sm">
+          <div className="flex items-center gap-2.5 font-semibold text-sm">
             <span className="text-base">🛡️</span>
             <span>Super Admin System Role</span>
           </div>
@@ -283,7 +283,7 @@ export function AdminPermissionMatrixManager({
           {/* Summary Metric Cards Banner */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Total Permissions
               </span>
               <span className="text-2xl font-black mt-1 text-muted-foreground">
@@ -292,7 +292,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/50 dark:bg-emerald-950/30 p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
                 Allowed
               </span>
               <span className="text-2xl font-black mt-1 text-emerald-900 dark:text-emerald-200">
@@ -301,7 +301,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div className="rounded-2xl border border-rose-300/60 bg-rose-50/50 dark:bg-rose-950/30 p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-rose-800 dark:text-rose-300 uppercase tracking-wider">
                 Denied
               </span>
               <span className="text-2xl font-black mt-1 text-rose-900 dark:text-rose-200">
@@ -310,7 +310,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Inherited
               </span>
               <span className="text-2xl font-black mt-1 text-muted-foreground">
@@ -319,11 +319,11 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Admin Status
               </span>
               <span
-                className={`mt-1.5 inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                className={`mt-1.5 inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                   summary.adminStatus === "SUSPENDED"
                     ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
                     : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
@@ -334,7 +334,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                 Assigned Role
               </span>
               <span className="text-xs font-black mt-1 text-muted-foreground truncate">
@@ -348,7 +348,7 @@ export function AdminPermissionMatrixManager({
             <button
               type="button"
               onClick={() => setSelectedModule("ALL")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-all whitespace-nowrap shadow-2xs ${
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap shadow-2xs ${
                 selectedModule === "ALL"
                   ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
                   : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
@@ -364,7 +364,7 @@ export function AdminPermissionMatrixManager({
                   key={m}
                   type="button"
                   onClick={() => setSelectedModule(m)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-all whitespace-nowrap shadow-2xs ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all whitespace-nowrap shadow-2xs ${
                     isSelected
                       ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
                       : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
@@ -417,7 +417,7 @@ export function AdminPermissionMatrixManager({
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`px-3 py-1 text-xs font-extrabold rounded-full transition-all ${
+                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                     viewMode === "table"
                       ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
                       : "text-[var(--muted-foreground)] hover:text-muted-foreground"
@@ -428,7 +428,7 @@ export function AdminPermissionMatrixManager({
                 <button
                   type="button"
                   onClick={() => setViewMode("modules")}
-                  className={`px-3 py-1 text-xs font-extrabold rounded-full transition-all ${
+                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
                     viewMode === "modules"
                       ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
                       : "text-[var(--muted-foreground)] hover:text-muted-foreground"
@@ -441,27 +441,27 @@ export function AdminPermissionMatrixManager({
 
             {/* Quick Bulk Staging Buttons */}
             <div className="flex flex-wrap items-center gap-1.5 self-start md:self-auto">
-              <span className="text-[11px] font-bold text-[var(--muted-foreground)] mr-1">
+              <span className="text-[11px] font-semibold text-[var(--muted-foreground)] mr-1">
                 {selectedSlugs.length > 0 ? `Selected (${selectedSlugs.length}):` : "Bulk Filtered:"}
               </span>
               <button
                 type="button"
                 onClick={() => handleBulkStageEffect("ALLOW")}
-                className="rounded-full border border-emerald-300/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-3 py-1 text-[11px] font-bold hover:bg-emerald-100 transition-all shadow-2xs"
+                className="rounded-full border border-emerald-300/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-3 py-1 text-[11px] font-semibold hover:bg-emerald-100 transition-all shadow-2xs"
               >
                 Allow
               </button>
               <button
                 type="button"
                 onClick={() => handleBulkStageEffect("DENY")}
-                className="rounded-full border border-rose-300/80 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-3 py-1 text-[11px] font-bold hover:bg-rose-100 transition-all shadow-2xs"
+                className="rounded-full border border-rose-300/80 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-3 py-1 text-[11px] font-semibold hover:bg-rose-100 transition-all shadow-2xs"
               >
                 Deny
               </button>
               <button
                 type="button"
                 onClick={() => handleBulkStageEffect("INHERIT")}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-3 py-1 text-[11px] font-semibold hover:opacity-80 transition-all shadow-2xs"
               >
                 Inherit
               </button>
@@ -481,7 +481,7 @@ export function AdminPermissionMatrixManager({
           {unsavedCount > 0 && (
             <div className="rounded-2xl border border-amber-300/80 bg-amber-50 dark:bg-amber-950/40 p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
               <div className="flex items-center gap-2">
-                <span className="text-amber-800 dark:text-amber-300 font-extrabold text-xs">
+                <span className="text-amber-800 dark:text-amber-300 font-semibold text-xs">
                   ⚠️ {unsavedCount} unsaved permission change{unsavedCount > 1 ? "s" : ""} staged.
                 </span>
               </div>
@@ -498,7 +498,7 @@ export function AdminPermissionMatrixManager({
                   type="button"
                   onClick={handleCancelStaged}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                 >
                   Cancel
                 </button>
@@ -581,11 +581,11 @@ export function AdminPermissionMatrixManager({
                               className="h-4 w-4 rounded accent-[var(--accent)] cursor-pointer"
                             />
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-muted-foreground">
+                          <td className="py-3.5 px-4 font-semibold text-muted-foreground">
                             {p.module}
                           </td>
                           <td className="py-3.5 px-4">
-                            <div className="font-bold text-muted-foreground">{p.action}</div>
+                            <div className="font-semibold text-muted-foreground">{p.action}</div>
                             <div className="text-[11px] text-[var(--muted-foreground)] leading-tight">
                               {p.description}
                             </div>
@@ -599,7 +599,7 @@ export function AdminPermissionMatrixManager({
                               <button
                                 type="button"
                                 onClick={() => handleStageChange(p.slug, "INHERIT")}
-                                className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                                className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all cursor-pointer ${
                                   stagedEffect === "INHERIT"
                                     ? "bg-[var(--surface)] text-muted-foreground shadow-xs"
                                     : "text-[var(--muted-foreground)] hover:text-muted-foreground"
@@ -611,7 +611,7 @@ export function AdminPermissionMatrixManager({
                               <button
                                 type="button"
                                 onClick={() => handleStageChange(p.slug, "ALLOW")}
-                                className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                                className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all cursor-pointer ${
                                   stagedEffect === "ALLOW"
                                     ? "bg-emerald-600 text-white shadow-xs"
                                     : "text-[var(--muted-foreground)] hover:text-emerald-700 dark:hover:text-emerald-300"
@@ -623,7 +623,7 @@ export function AdminPermissionMatrixManager({
                               <button
                                 type="button"
                                 onClick={() => handleStageChange(p.slug, "DENY")}
-                                className={`px-2.5 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                                className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all cursor-pointer ${
                                   stagedEffect === "DENY"
                                     ? "bg-rose-600 text-white shadow-xs"
                                     : "text-[var(--muted-foreground)] hover:text-rose-700 dark:hover:text-rose-300"
@@ -637,7 +637,7 @@ export function AdminPermissionMatrixManager({
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex flex-col items-end gap-0.5">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs ${
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold shadow-2xs ${
                                   liveAllowed
                                     ? "bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300"
                                     : "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300"
@@ -677,7 +677,7 @@ export function AdminPermissionMatrixManager({
                     {/* Module Card Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
                       <div>
-                        <h3 className="font-extrabold text-sm uppercase tracking-wider text-muted-foreground">
+                        <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">
                           {modName} Module
                         </h3>
                         <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -686,25 +686,25 @@ export function AdminPermissionMatrixManager({
                       </div>
 
                       <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                        <span className="text-[11px] font-bold text-[var(--muted-foreground)] mr-1">Module:</span>
+                        <span className="text-[11px] font-semibold text-[var(--muted-foreground)] mr-1">Module:</span>
                         <button
                           type="button"
                           onClick={() => handleBulkStageEffect("ALLOW", modSlugs)}
-                          className="rounded-full border border-emerald-300/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 text-[11px] font-bold hover:bg-emerald-100 transition-all shadow-2xs"
+                          className="rounded-full border border-emerald-300/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 text-[11px] font-semibold hover:bg-emerald-100 transition-all shadow-2xs"
                         >
                           Allow All
                         </button>
                         <button
                           type="button"
                           onClick={() => handleBulkStageEffect("DENY", modSlugs)}
-                          className="rounded-full border border-rose-300/80 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-2.5 py-1 text-[11px] font-bold hover:bg-rose-100 transition-all shadow-2xs"
+                          className="rounded-full border border-rose-300/80 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-2.5 py-1 text-[11px] font-semibold hover:bg-rose-100 transition-all shadow-2xs"
                         >
                           Deny All
                         </button>
                         <button
                           type="button"
                           onClick={() => handleBulkStageEffect("INHERIT", modSlugs)}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-2.5 py-1 text-[11px] font-bold hover:opacity-80 transition-all shadow-2xs"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-2.5 py-1 text-[11px] font-semibold hover:opacity-80 transition-all shadow-2xs"
                         >
                           Reset Module
                         </button>
@@ -728,13 +728,13 @@ export function AdminPermissionMatrixManager({
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <h4 className="font-bold text-xs text-muted-foreground">{p.action}</h4>
+                                <h4 className="font-semibold text-xs text-muted-foreground">{p.action}</h4>
                                 <p className="text-[11px] text-[var(--muted-foreground)] leading-snug mt-0.5">
                                   {p.description}
                                 </p>
                               </div>
                               <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                                   liveAllowed
                                     ? "bg-emerald-100/90 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                                     : "bg-rose-100/90 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
@@ -749,7 +749,7 @@ export function AdminPermissionMatrixManager({
                                 <button
                                   type="button"
                                   onClick={() => handleStageChange(p.slug, "INHERIT")}
-                                  className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
                                     stagedEffect === "INHERIT" ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "text-[var(--muted-foreground)]"
                                   }`}
                                 >
@@ -758,7 +758,7 @@ export function AdminPermissionMatrixManager({
                                 <button
                                   type="button"
                                   onClick={() => handleStageChange(p.slug, "ALLOW")}
-                                  className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
                                     stagedEffect === "ALLOW" ? "bg-emerald-600 text-white" : "text-[var(--muted-foreground)]"
                                   }`}
                                 >
@@ -767,7 +767,7 @@ export function AdminPermissionMatrixManager({
                                 <button
                                   type="button"
                                   onClick={() => handleStageChange(p.slug, "DENY")}
-                                  className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
                                     stagedEffect === "DENY" ? "bg-rose-600 text-white" : "text-[var(--muted-foreground)]"
                                   }`}
                                 >
@@ -792,7 +792,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowSetAllModal(true)}
                 disabled={pending}
-                className="rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-4 py-2 text-xs font-bold hover:bg-emerald-100 transition-all shadow-2xs disabled:opacity-50"
+                className="rounded-full border border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-4 py-2 text-xs font-semibold hover:bg-emerald-100 transition-all shadow-2xs disabled:opacity-50"
               >
                 ✓ Set All Permissions
               </button>
@@ -800,7 +800,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowClearAllModal(true)}
                 disabled={pending}
-                className="rounded-full border border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 px-4 py-2 text-xs font-bold hover:bg-rose-100 transition-all shadow-2xs disabled:opacity-50"
+                className="rounded-full border border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 px-4 py-2 text-xs font-semibold hover:bg-rose-100 transition-all shadow-2xs disabled:opacity-50"
               >
                 ✕ Clear All Permissions
               </button>
@@ -808,7 +808,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowResetModal(true)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-4 py-2 text-xs font-bold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground px-4 py-2 text-xs font-semibold hover:opacity-80 transition-all shadow-2xs disabled:opacity-50"
               >
                 Reset to Role Defaults
               </button>
@@ -817,7 +817,7 @@ export function AdminPermissionMatrixManager({
             <div className="flex items-center gap-2 self-end sm:self-auto">
               <Link
                 href="/admin/admins"
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold hover:bg-[var(--surface-secondary)] transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold hover:bg-[var(--surface-secondary)] transition-all"
               >
                 Cancel
               </Link>
@@ -841,7 +841,7 @@ export function AdminPermissionMatrixManager({
       {showSaveModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">
+            <h3 className="text-lg font-semibold text-muted-foreground">
               Confirm Permission Changes
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -861,7 +861,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+              <label className="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">
                 Reason / Administrative Note (Optional)
               </label>
               <textarea
@@ -878,7 +878,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowSaveModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -886,7 +886,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={handleConfirmSave}
                 disabled={pending}
-                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-semibold text-[var(--accent-foreground)] shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
                 {pending && (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -902,7 +902,7 @@ export function AdminPermissionMatrixManager({
       {showResetModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">
+            <h3 className="text-lg font-semibold text-muted-foreground">
               Reset Admin Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -915,7 +915,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+              <label className="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">
                 Reason / Note (Optional)
               </label>
               <textarea
@@ -932,7 +932,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowResetModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -940,7 +940,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 font-semibold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
                 {pending && (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -956,7 +956,7 @@ export function AdminPermissionMatrixManager({
       {showSetAllModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">
+            <h3 className="text-lg font-semibold text-muted-foreground">
               Grant All Administrative Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -969,7 +969,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+              <label className="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">
                 Reason / Note (Optional)
               </label>
               <textarea
@@ -986,7 +986,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowSetAllModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -994,7 +994,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={handleConfirmSetAll}
                 disabled={pending}
-                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-2 font-semibold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
                 {pending && (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -1010,7 +1010,7 @@ export function AdminPermissionMatrixManager({
       {showClearAllModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">
+            <h3 className="text-lg font-semibold text-muted-foreground">
               Revoke All Administrative Permissions
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1023,7 +1023,7 @@ export function AdminPermissionMatrixManager({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--muted-foreground)] mb-1">
+              <label className="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">
                 Reason / Note (Optional)
               </label>
               <textarea
@@ -1040,7 +1040,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={() => setShowClearAllModal(false)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
               >
                 Cancel
               </button>
@@ -1048,7 +1048,7 @@ export function AdminPermissionMatrixManager({
                 type="button"
                 onClick={handleConfirmClearAll}
                 disabled={pending}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 font-extrabold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-5 py-2 font-semibold text-white shadow-2xs inline-flex items-center gap-2 disabled:opacity-50 transition-all"
               >
                 {pending && (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />

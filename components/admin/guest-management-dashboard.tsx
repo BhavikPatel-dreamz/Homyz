@@ -29,7 +29,7 @@ function MetricCard({
       }`}
     >
       <p className="text-xs font-semibold text-[var(--muted-foreground)]">{label}</p>
-      <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-muted-foreground">
+      <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-muted-foreground">
         {value}
       </p>
       {subtitle && <p className="mt-1 text-xs text-[var(--muted-foreground)]">{subtitle}</p>}
@@ -186,7 +186,7 @@ export function GuestManagementDashboard({
           <button
             type="button"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
           >
             {sortOrder === "asc" ? "↑ ASC" : "↓ DESC"}
           </button>
@@ -222,7 +222,7 @@ export function GuestManagementDashboard({
                   {/* Guest Name */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
+                      <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs">
                         {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                       </div>
                       <div>
@@ -247,23 +247,23 @@ export function GuestManagementDashboard({
                   {/* Status Badge */}
                   <td className="py-3.5 px-4">
                     {guest.status === "ACTIVE" ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
                         Suspended
                       </span>
                     )}
                   </td>
 
                   {/* Bookings Count */}
-                  <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">
+                  <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">
                     {guest.bookingsCount}
                   </td>
 
                   {/* Total Spending */}
-                  <td className="py-3.5 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                  <td className="py-3.5 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
                     ${(guest.totalSpending / 100).toFixed(2)}
                   </td>
 
@@ -276,7 +276,7 @@ export function GuestManagementDashboard({
                   <td className="py-3.5 px-4 text-right">
                     <a
                       href={`/admin/guests/${guest.id}`}
-                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-bold transition-all inline-block shadow-2xs"
+                      className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs"
                     >
                       View Details
                     </a>
@@ -295,15 +295,15 @@ export function GuestManagementDashboard({
           <div key={guest.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold flex items-center justify-center text-xs">
+                <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs">
                   {(guest.name?.[0] || guest.email?.[0] || "G").toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-muted-foreground text-xs">{guest.name || "Unnamed Guest"}</h3>
+                  <h3 className="font-semibold text-muted-foreground text-xs">{guest.name || "Unnamed Guest"}</h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] font-mono">{guest.email}</p>
                 </div>
               </div>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                 guest.status === "ACTIVE"
                   ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
                   : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50"
@@ -314,13 +314,13 @@ export function GuestManagementDashboard({
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border-subtle)]">
               <div>
-                <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-bold text-muted-foreground">{guest.bookingsCount}</span>
+                <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-semibold text-muted-foreground">{guest.bookingsCount}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-bold text-emerald-600 dark:text-emerald-400">${(guest.totalSpending / 100).toFixed(2)}</span>
+                <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-semibold text-emerald-600 dark:text-emerald-400">${(guest.totalSpending / 100).toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-bold text-muted-foreground" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>
+                <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-semibold text-muted-foreground" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>
               </div>
             </div>
           </div>
@@ -339,18 +339,18 @@ export function GuestManagementDashboard({
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Previous
           </button>
-          <span className="font-bold text-muted-foreground">
+          <span className="font-semibold text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
           >
             Next
           </button>

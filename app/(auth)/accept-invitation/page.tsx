@@ -30,7 +30,7 @@ export default async function AcceptInvitationPage({
           </p>
           <Link
             href="/admin/login"
-            className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-bold text-zinc-900 transition-colors shadow-2xs"
+            className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
           >
             ← Return to Sign In
           </Link>
@@ -69,7 +69,7 @@ export default async function AcceptInvitationPage({
           <div className="pt-2">
             <Link
               href="/admin/login"
-              className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-bold text-zinc-900 transition-colors shadow-2xs"
+              className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
             >
               Go to Sign In →
             </Link>
@@ -80,13 +80,13 @@ export default async function AcceptInvitationPage({
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-zinc-900 font-sans flex flex-col justify-center">
+    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-[#1F1F1F] font-sans flex flex-col justify-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         {/* Left Column: Setup Form */}
         <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center">
           {/* Header */}
           <div className="mb-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-3">
               🛡️ Homyz Admin Setup
             </span>
             <h1>
@@ -117,10 +117,10 @@ export default async function AcceptInvitationPage({
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-300 mb-1">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-amber-300 mb-1">
                 Enterprise Administration
               </span>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-semibold">
                 Secure Access & Infrastructure Management
               </h2>
             </div>

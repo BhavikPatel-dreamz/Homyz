@@ -726,7 +726,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Header Info Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-5">
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold flex items-center justify-center text-xl shadow-2xs">
+          <div className="h-14 w-14 rounded-2xl bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xl shadow-2xs">
             {(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}
           </div>
           <div>
@@ -737,7 +737,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${host.status === "ACTIVE"
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${host.status === "ACTIVE"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                     : host.status === "SUSPENDED"
                       ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300"
@@ -748,12 +748,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </span>
 
               {/* Application Status Badge */}
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-800 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-800 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700">
                 App: {host.applicationStatus}
               </span>
 
               {/* Onboarding Stage Badge */}
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950/40 dark:text-sky-300">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950/40 dark:text-sky-300">
                 Stage: {host.onboardingStageLabel}
               </span>
             </div>
@@ -771,7 +771,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowApproveModal(true)}
-                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-extrabold text-white transition-all shadow-2xs"
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition-all shadow-2xs"
               >
                 Approve Application
               </button>
@@ -779,7 +779,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowActionReqModal(true)}
-                className="rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-extrabold text-zinc-950 transition-all shadow-2xs"
+                className="rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-semibold text-zinc-950 transition-all shadow-2xs"
               >
                 Request Updates
               </button>
@@ -787,7 +787,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowRejectModal(true)}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-extrabold text-white transition-all shadow-2xs"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-semibold text-white transition-all shadow-2xs"
               >
                 Reject App
               </button>
@@ -797,7 +797,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           <button
             type="button"
             onClick={() => setShowSuspendModal(true)}
-            className={`rounded-full px-4 py-2 text-xs font-bold transition-all border shadow-2xs ${host.status === "SUSPENDED"
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-all border shadow-2xs ${host.status === "SUSPENDED"
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
                 : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
               }`}
@@ -808,7 +808,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           <button
             type="button"
             onClick={() => setShowDeleteModal(true)}
-            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold text-white transition-all shadow-2xs"
+            className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-semibold text-white transition-all shadow-2xs"
           >
             Delete Host
           </button>
@@ -820,7 +820,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         {/* Onboarding Progress Card */}
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs hover:shadow-xs transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold tracking-wider uppercase text-[var(--muted-foreground)]">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--muted-foreground)]">
               Onboarding Progress
             </span>
             <div className="h-9 w-9 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-200/50 dark:border-sky-800/40">
@@ -833,7 +833,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <p className="text-3xl font-black tracking-tight text-sky-600 dark:text-sky-400">
               {onboardingProgressValue}%
             </p>
-            <span className="text-xs font-bold text-[var(--muted-foreground)]">
+            <span className="text-xs font-semibold text-[var(--muted-foreground)]">
               {onboardingProgressValue === 100 ? "Completed ✓" : `${(host as any).completedStepsCount ?? 1}/7 Steps`}
             </span>
           </div>
@@ -849,7 +849,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         {/* Listings Owned Card */}
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs hover:shadow-xs transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold tracking-wider uppercase text-[var(--muted-foreground)]">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--muted-foreground)]">
               Listings Owned
             </span>
             <div className="h-9 w-9 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-200/50 dark:border-violet-800/40">
@@ -872,7 +872,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         {/* Total Bookings Card */}
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs hover:shadow-xs transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold tracking-wider uppercase text-[var(--muted-foreground)]">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--muted-foreground)]">
               Total Bookings
             </span>
             <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-200/50 dark:border-indigo-800/40">
@@ -895,7 +895,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         {/* Total Earnings Card */}
         <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs hover:shadow-xs transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold tracking-wider uppercase text-[var(--muted-foreground)]">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--muted-foreground)]">
               Total Earnings
             </span>
             <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/40">
@@ -921,8 +921,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           <Link
             key={tab.id}
             href={getTabHref(tab.id)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
-                ? "border-[var(--accent)] text-muted-foreground font-extrabold"
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                ? "border-[var(--accent)] text-muted-foreground font-semibold"
                 : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
               }`}
           >
@@ -936,7 +936,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-              <h2 className="text-base font-bold text-muted-foreground">
+              <h2 className="text-base font-semibold text-muted-foreground">
                 Personal & Profile Info
               </h2>
               <button
@@ -980,7 +980,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Lifecycle & Timestamps
             </h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
@@ -1009,13 +1009,13 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 md:col-span-2">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h2 className="text-base font-bold text-muted-foreground">Host Compliance & Onboarding Review</h2>
+                <h2 className="text-base font-semibold text-muted-foreground">Host Compliance & Onboarding Review</h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">Verification assessment, document compliance checkpoints, and application status.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowVerifModal(true)}
-                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3.5 py-1.5 text-xs font-bold text-[var(--accent-foreground)] transition-colors shadow-2xs"
+                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3.5 py-1.5 text-xs font-semibold text-[var(--accent-foreground)] transition-colors shadow-2xs"
               >
                 Change Verification Status
               </button>
@@ -1025,7 +1025,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-muted-foreground">ID & Identity Check</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                     host.verificationStatus === "APPROVED"
                       ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                       : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
@@ -1039,7 +1039,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-muted-foreground">Account Compliance</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                     host.status === "ACTIVE"
                       ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                       : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
@@ -1053,7 +1053,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-muted-foreground">Onboarding Readiness</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                     host.status === "ACTIVE" && host.verificationStatus === "APPROVED"
                       ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
                       : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
@@ -1076,7 +1076,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {activeTab === "onboarding" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Onboarding Workflow Details
             </h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
@@ -1102,13 +1102,13 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+            <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Onboarding Stage Progress
             </h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold">Stage: {host.onboardingStageLabel}</span>
-                <span className="font-extrabold text-sky-600">{onboardingProgressValue}%</span>
+                <span className="font-semibold text-sky-600">{onboardingProgressValue}%</span>
               </div>
               <div className="w-full h-2.5 rounded-full bg-[var(--surface-secondary)] overflow-hidden">
                 <div
@@ -1146,10 +1146,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 ) : (
                   data.documents.map((doc: any) => (
                     <tr key={doc.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-muted-foreground">{doc.documentType}</td>
+                      <td className="py-3.5 px-4 font-semibold text-muted-foreground">{doc.documentType}</td>
                       <td className="py-3.5 px-4 font-mono text-[var(--muted-foreground)]">{doc.fileName}</td>
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${doc.status === "VERIFIED"
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${doc.status === "VERIFIED"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : doc.status === "REJECTED"
                               ? "bg-rose-50 text-rose-700 border-rose-200"
@@ -1170,7 +1170,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                             href={doc.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sky-600 hover:underline font-bold mr-1"
+                            className="text-sky-600 hover:underline font-semibold mr-1"
                           >
                             View
                           </a>
@@ -1180,7 +1180,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                             type="button"
                             onClick={() => handleDocumentVerify(doc.id, "VERIFIED")}
                             disabled={loadingDocId !== null || pending}
-                            className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {loadingDocId === doc.id ? (
                               <>
@@ -1203,7 +1203,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                               setShowDocRejectModal(true);
                             }}
                             disabled={loadingDocId !== null || pending}
-                            className="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Reject ✕
                           </button>
@@ -1226,8 +1226,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h2 className="text-base font-bold text-muted-foreground">Host Compliance Summary</h2>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${data.compliance.complianceStatus === "COMPLIANT"
+                  <h2 className="text-base font-semibold text-muted-foreground">Host Compliance Summary</h2>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${data.compliance.complianceStatus === "COMPLIANT"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300"
                       : data.compliance.complianceStatus === "NON_COMPLIANT"
                         ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300"
@@ -1246,14 +1246,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   <button
                     type="button"
                     onClick={() => setShowCreateIssueModal(true)}
-                    className="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 text-xs font-bold transition-colors border border-rose-200 dark:border-rose-800"
+                    className="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 text-xs font-semibold transition-colors border border-rose-200 dark:border-rose-800"
                   >
                     + Log Issue
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowUpdateCompModal(true)}
-                    className="px-3 py-1.5 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/20 text-xs font-bold transition-colors border border-sky-200 dark:border-sky-800"
+                    className="px-3 py-1.5 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/20 text-xs font-semibold transition-colors border border-sky-200 dark:border-sky-800"
                   >
                     Set Status
                   </button>
@@ -1271,7 +1271,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   {data.compliance.eligibility?.eligible ? "✓" : "⚠️"}
                 </span>
                 <div className="space-y-1">
-                  <span className="font-extrabold block text-xs uppercase tracking-wider">
+                  <span className="font-semibold block text-xs uppercase tracking-wider">
                     {data.compliance.eligibility?.eligible ? "Application Ready for Approval" : "Approval Currently Blocked"}
                   </span>
                   {data.compliance.eligibility?.eligible ? (
@@ -1291,25 +1291,25 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
                 <span className="text-[11px] font-semibold text-[var(--muted-foreground)] block">Checks Passed</span>
-                <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+                <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
                   {data.compliance.summary?.completedChecks || 0} / {data.compliance.summary?.totalChecks || 0}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
                 <span className="text-[11px] font-semibold text-[var(--muted-foreground)] block">Checks Pending</span>
-                <span className="text-lg font-extrabold text-amber-600 dark:text-amber-400">
+                <span className="text-lg font-semibold text-amber-600 dark:text-amber-400">
                   {data.compliance.summary?.pendingChecks || 0}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
                 <span className="text-[11px] font-semibold text-[var(--muted-foreground)] block">Open Issues</span>
-                <span className="text-lg font-extrabold text-rose-600 dark:text-rose-400">
+                <span className="text-lg font-semibold text-rose-600 dark:text-rose-400">
                   {data.compliance.summary?.openIssuesCount || 0}
                 </span>
               </div>
               <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
                 <span className="text-[11px] font-semibold text-[var(--muted-foreground)] block">Last Reviewed</span>
-                <span className="text-xs font-bold text-muted-foreground block truncate" suppressHydrationWarning>
+                <span className="text-xs font-semibold text-muted-foreground block truncate" suppressHydrationWarning>
                   {data.compliance.lastReviewedAt ? new Date(data.compliance.lastReviewedAt).toLocaleDateString("en-US") : "Not Reviewed"}
                 </span>
               </div>
@@ -1318,7 +1318,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
           {/* Compliance Checklist Table / Grid */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Standard Compliance Checklist
             </h3>
             {data.compliance.checks.length === 0 ? (
@@ -1329,10 +1329,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   <div key={c.id} className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-bold text-muted-foreground">{c.checkName}</p>
+                        <p className="font-semibold text-muted-foreground">{c.checkName}</p>
                         <p className="text-[10px] font-mono text-[var(--muted-foreground)]">{c.checkKey}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${c.status === "PASSED" || c.status === "COMPLIANT"
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${c.status === "PASSED" || c.status === "COMPLIANT"
                           ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
                           : c.status === "FAILED"
                             ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300"
@@ -1357,7 +1357,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                               type="button"
                               onClick={() => handleComplianceCheckUpdate(c.id, "PASSED")}
                               disabled={loadingCheckId !== null || pending}
-                              className="px-2.5 py-1 text-[10px] font-extrabold rounded-md bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {loadingCheckId === `${c.id}_PASSED` ? (
                                 <>
@@ -1377,7 +1377,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                               type="button"
                               onClick={() => handleComplianceCheckUpdate(c.id, "FAILED")}
                               disabled={loadingCheckId !== null || pending}
-                              className="px-2.5 py-1 text-[10px] font-extrabold rounded-md bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-rose-600 hover:bg-rose-700 active:scale-95 text-white transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {loadingCheckId === `${c.id}_FAILED` ? (
                                 <>
@@ -1403,7 +1403,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
           {/* Compliance Issues Section */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
               Compliance Issue Log
             </h3>
             {data.compliance.issues.length === 0 ? (
@@ -1422,15 +1422,15 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-muted-foreground">{i.issueType}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${i.severity === "CRITICAL" ? "bg-rose-600 text-white" :
+                        <span className="font-semibold text-muted-foreground">{i.issueType}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${i.severity === "CRITICAL" ? "bg-rose-600 text-white" :
                             i.severity === "HIGH" ? "bg-rose-500 text-white" :
                               i.severity === "MEDIUM" ? "bg-amber-500 text-white" : "bg-zinc-500 text-white"
                           }`}>
                           {i.severity}
                         </span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${i.status === "RESOLVED"
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${i.status === "RESOLVED"
                           ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
                           : "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300"
                         }`}>
@@ -1455,7 +1455,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                             setSelectedIssueId(i.id);
                             setShowResolveIssueModal(true);
                           }}
-                          className="px-2.5 py-1 rounded-md bg-emerald-600 text-white text-[10px] font-extrabold hover:bg-emerald-700 transition-colors"
+                          className="px-2.5 py-1 rounded-md bg-emerald-600 text-white text-[10px] font-semibold hover:bg-emerald-700 transition-colors"
                         >
                           Resolve Issue ✓
                         </button>
@@ -1499,43 +1499,43 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     return (
                       <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-muted-foreground">{item.title || "Untitled Listing"}</div>
+                          <div className="font-semibold text-muted-foreground">{item.title || "Untitled Listing"}</div>
                           <div className="text-[10px] text-[var(--muted-foreground)] font-mono">ID: {item.id}</div>
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="font-semibold text-muted-foreground">{item.propertyType || item.hostingType || "Property"}</div>
                           <div className="text-[10px] text-[var(--muted-foreground)]">{item.city || item.address || "Location Pending"}</div>
                         </td>
-                        <td className="py-3.5 px-4 text-muted-foreground font-bold">${(item.price / 100).toFixed(2)}</td>
-                        <td className="py-3.5 px-4 font-mono font-bold text-xs">
+                        <td className="py-3.5 px-4 text-muted-foreground font-semibold">${(item.price / 100).toFixed(2)}</td>
+                        <td className="py-3.5 px-4 font-mono font-semibold text-xs">
                           <span className={photosCount >= 5 ? "text-emerald-600" : "text-amber-600"}>
                             {photosCount} photos {photosCount < 5 ? "(Min 5 required)" : ""}
                           </span>
                         </td>
                         <td className="py-3.5 px-4">
                           {status === "ACTIVE" || status === "APPROVED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
                               Active / Approved
                             </span>
                           ) : status === "PENDING_REVIEW" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
                               Pending Review
                             </span>
                           ) : status === "CHANGES_REQUESTED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-orange-50 text-orange-800 border border-orange-300 dark:bg-orange-950/40 dark:text-orange-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-50 text-orange-800 border border-orange-300 dark:bg-orange-950/40 dark:text-orange-300">
                               Changes Requested
                             </span>
                           ) : status === "REJECTED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300">
                               Rejected
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-zinc-100 text-zinc-700 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300">
                               Draft
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-muted-foreground">{item.bookingsCount}</td>
+                        <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">{item.bookingsCount}</td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
@@ -1544,7 +1544,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                                 setSelectedListingForReview(item);
                                 setShowListingReviewModal(true);
                               }}
-                              className="rounded-full bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-xs font-bold transition-all shadow-2xs"
+                              className="rounded-full bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 text-xs font-semibold transition-all shadow-2xs"
                             >
                               Review & Manage
                             </button>
@@ -1554,7 +1554,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                                 setListingToDelete(item);
                                 setShowDeleteListingModal(true);
                               }}
-                              className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-xs font-bold transition-all shadow-2xs"
+                              className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-xs font-semibold transition-all shadow-2xs"
                             >
                               🗑 Delete
                             </button>
@@ -1609,7 +1609,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   paginatedBookings.map((b) => (
                     <tr key={b.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                       <td className="py-3.5 px-4 font-mono text-[11px] text-[var(--muted-foreground)]">{b.id}</td>
-                      <td className="py-3.5 px-4 font-bold text-muted-foreground">{b.listingTitle}</td>
+                      <td className="py-3.5 px-4 font-semibold text-muted-foreground">{b.listingTitle}</td>
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-muted-foreground">{b.guestName || "Guest"}</div>
                         <div className="text-[10px] text-[var(--muted-foreground)] font-mono">{b.guestEmail || "N/A"}</div>
@@ -1617,9 +1617,9 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                       <td className="py-3.5 px-4 text-[11px] font-mono" suppressHydrationWarning>
                         {new Date(b.startDate).toLocaleDateString("en-US")} - {new Date(b.endDate).toLocaleDateString("en-US")}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-muted-foreground">${(b.amount / 100).toFixed(2)}</td>
+                      <td className="py-3.5 px-4 font-semibold text-muted-foreground">${(b.amount / 100).toFixed(2)}</td>
                       <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                           {b.status}
                         </span>
                       </td>
@@ -1648,21 +1648,21 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {/* Tab 7: EARNINGS */}
       {activeTab === "earnings" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-bold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+          <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Financial & Revenue Breakdown
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)] block">Confirmed Earnings</span>
-              <span className="text-xl font-extrabold text-emerald-600">${(metrics.totalEarnings / 100).toFixed(2)}</span>
+              <span className="text-xl font-semibold text-emerald-600">${(metrics.totalEarnings / 100).toFixed(2)}</span>
             </div>
             <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)] block">Total Reservations</span>
-              <span className="text-xl font-extrabold text-muted-foreground">{metrics.totalBookings}</span>
+              <span className="text-xl font-semibold text-muted-foreground">{metrics.totalBookings}</span>
             </div>
             <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)] block">Active Listings</span>
-              <span className="text-xl font-extrabold text-muted-foreground">{metrics.totalListings}</span>
+              <span className="text-xl font-semibold text-muted-foreground">{metrics.totalListings}</span>
             </div>
           </div>
         </div>
@@ -1673,7 +1673,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-base font-bold text-muted-foreground">Unified Host Activity & Audit Timeline</h2>
+              <h2 className="text-base font-semibold text-muted-foreground">Unified Host Activity & Audit Timeline</h2>
               <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
                 Centralized chronological audit log capturing registrations, documents, compliance checks, approvals, and admin actions.
               </p>
@@ -1707,7 +1707,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     setActivityCategory(cat);
                     setActivityPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all whitespace-nowrap border ${activityCategory === cat
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap border ${activityCategory === cat
                       ? "bg-sky-600 text-white border-sky-600 shadow-2xs"
                       : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border-subtle)] hover:border-[var(--border)]"
                     }`}
@@ -1739,8 +1739,8 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                               a.category === "DOCUMENTS" ? "bg-sky-500" :
                                 a.category === "SECURITY" ? "bg-rose-500" : "bg-indigo-500"
                           }`} />
-                        <span className="font-extrabold text-muted-foreground">{a.action}</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--surface)] text-[var(--muted-foreground)] border border-[var(--border-subtle)]">
+                        <span className="font-semibold text-muted-foreground">{a.action}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--surface)] text-[var(--muted-foreground)] border border-[var(--border-subtle)]">
                           {a.category}
                         </span>
                       </div>
@@ -1757,17 +1757,17 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                         <button
                           type="button"
                           onClick={() => setExpandedActivityId(isExpanded ? null : a.id)}
-                          className="text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1"
+                          className="text-[10px] font-semibold text-sky-600 hover:underline flex items-center gap-1"
                         >
                           {isExpanded ? "Hide Details ▲" : "View Details & Diffs ▼"}
                         </button>
 
                         {isExpanded && (
                           <div className="mt-2 p-3 rounded-xl bg-[var(--surface)] border border-[var(--border-subtle)] space-y-1.5 font-mono text-[11px]">
-                            {a.before && <div><span className="text-rose-500 font-bold">Before:</span> {JSON.stringify(a.before)}</div>}
-                            {a.after && <div><span className="text-emerald-500 font-bold">After:</span> {JSON.stringify(a.after)}</div>}
-                            {a.reason && <div><span className="text-amber-500 font-bold">Reason:</span> {a.reason}</div>}
-                            {a.ip && <div><span className="text-[var(--muted-foreground)] font-bold">IP:</span> {a.ip}</div>}
+                            {a.before && <div><span className="text-rose-500 font-semibold">Before:</span> {JSON.stringify(a.before)}</div>}
+                            {a.after && <div><span className="text-emerald-500 font-semibold">After:</span> {JSON.stringify(a.after)}</div>}
+                            {a.reason && <div><span className="text-amber-500 font-semibold">Reason:</span> {a.reason}</div>}
+                            {a.ip && <div><span className="text-[var(--muted-foreground)] font-semibold">IP:</span> {a.ip}</div>}
                           </div>
                         )}
                       </div>
@@ -1808,7 +1808,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showEditModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Edit Host Profile</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Edit Host Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Full Name</label>
@@ -1842,14 +1842,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-extrabold disabled:opacity-50"
+                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-semibold disabled:opacity-50"
                 >
                   Save Profile
                 </button>
@@ -1862,7 +1862,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showSuspendModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">
+            <h3 className="text-base font-semibold text-muted-foreground">
               {host.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1884,7 +1884,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowSuspendModal(false)}
-                className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
               >
                 Cancel
               </button>
@@ -1892,7 +1892,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 type="button"
                 onClick={handleSuspendSubmit}
                 disabled={pending}
-                className={`rounded-full px-4 py-1.5 text-xs font-extrabold text-white ${host.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold text-white ${host.status === "SUSPENDED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
                   }`}
               >
                 Confirm {host.status === "SUSPENDED" ? "Unsuspend" : "Suspend"}
@@ -1905,7 +1905,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showApproveModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Approve Host Application</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Approve Host Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to approve the host application for <strong>{host.name || host.email}</strong>?
               This will set the user role to <strong>HOST</strong> and activate their account.
@@ -1914,7 +1914,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowApproveModal(false)}
-                className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
               >
                 Cancel
               </button>
@@ -1922,7 +1922,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 type="button"
                 onClick={handleApproveApplication}
                 disabled={pending}
-                className="rounded-full bg-emerald-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-emerald-700 disabled:opacity-50"
+                className="rounded-full bg-emerald-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
               >
                 Confirm Approval
               </button>
@@ -1934,7 +1934,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showRejectModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Reject Host Application</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Reject Host Application</h3>
             <form onSubmit={handleRejectApplication} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Provide a reason for rejecting this host application:
@@ -1951,14 +1951,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowRejectModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
                 >
                   Confirm Rejection
                 </button>
@@ -1971,7 +1971,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showActionReqModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Request Information / Action</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Request Information / Action</h3>
             <form onSubmit={handleRequestAction} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Specify what changes or missing documents the applicant needs to provide:
@@ -1988,14 +1988,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowActionReqModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-extrabold hover:bg-amber-600 disabled:opacity-50"
+                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-semibold hover:bg-amber-600 disabled:opacity-50"
                 >
                   Send Action Request
                 </button>
@@ -2008,7 +2008,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showDocRejectModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Reject Document</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Reject Document</h3>
             <div className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Specify why this document is rejected:
@@ -2024,7 +2024,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowDocRejectModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
@@ -2032,7 +2032,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="button"
                   onClick={() => selectedDocId && handleDocumentVerify(selectedDocId, "REJECTED", docRejectReason)}
                   disabled={pending}
-                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
                 >
                   Reject Document
                 </button>
@@ -2046,7 +2046,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showCreateIssueModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Log Compliance Issue</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Log Compliance Issue</h3>
             <form onSubmit={handleCreateComplianceIssue} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Issue Category</label>
@@ -2064,7 +2064,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <select
                   value={issueSeverity}
                   onChange={(e) => setIssueSeverity(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                 >
                   <option value="LOW">LOW</option>
                   <option value="MEDIUM">MEDIUM</option>
@@ -2087,14 +2087,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowCreateIssueModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
                 >
                   Log Issue
                 </button>
@@ -2108,14 +2108,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showResolveIssueModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Resolve Compliance Issue</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Resolve Compliance Issue</h3>
             <form onSubmit={handleResolveComplianceIssue} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Resolution Decision</label>
                 <select
                   value={resolutionStatus}
                   onChange={(e) => setResolutionStatus(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                 >
                   <option value="RESOLVED">RESOLVED (Issue Closed)</option>
                   <option value="REJECTED">REJECTED (Invalid / Dismissed)</option>
@@ -2135,14 +2135,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowResolveIssueModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-emerald-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-emerald-700 disabled:opacity-50"
+                  className="rounded-full bg-emerald-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
                 >
                   Save Resolution
                 </button>
@@ -2156,14 +2156,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showUpdateCompModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-muted-foreground">Set Host Compliance Status</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Set Host Compliance Status</h3>
             <form onSubmit={handleUpdateComplianceStatus} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[var(--muted-foreground)] font-medium mb-1">Compliance Status</label>
                 <select
                   value={newCompStatus}
                   onChange={(e) => setNewCompStatus(e.target.value as any)}
-                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-bold"
+                  className="w-full rounded-lg border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                 >
                   <option value="COMPLIANT">COMPLIANT</option>
                   <option value="NON_COMPLIANT">NON_COMPLIANT</option>
@@ -2185,14 +2185,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowUpdateCompModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-sky-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-sky-700 disabled:opacity-50"
+                  className="rounded-full bg-sky-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-sky-700 disabled:opacity-50"
                 >
                   Update Status
                 </button>
@@ -2209,10 +2209,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="flex items-start justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h2 className="text-xl font-extrabold text-muted-foreground">
+                  <h2 className="text-xl font-semibold text-muted-foreground">
                     {selectedListingForReview.title || "Untitled Listing"}
                   </h2>
-                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
                     selectedListingForReview.status === "ACTIVE" || selectedListingForReview.status === "APPROVED"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : selectedListingForReview.status === "PENDING_REVIEW"
@@ -2233,7 +2233,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowListingReviewModal(false)}
-                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center text-sm font-bold border border-[var(--border-subtle)]"
+                className="h-8 w-8 rounded-full bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground flex items-center justify-center text-sm font-semibold border border-[var(--border-subtle)]"
               >
                 ✕
               </button>
@@ -2242,10 +2242,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             {/* Photos Gallery */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold text-muted-foreground">
+                <h3 className="text-sm font-semibold text-muted-foreground">
                   Property Photos ({Array.isArray(selectedListingForReview.photos) ? selectedListingForReview.photos.length : 0})
                 </h3>
-                <span className={`text-xs font-bold ${
+                <span className={`text-xs font-semibold ${
                   (selectedListingForReview.photos?.length || 0) >= 5 ? "text-emerald-600" : "text-amber-600"
                 }`}>
                   {(selectedListingForReview.photos?.length || 0) >= 5 ? "✓ Meets minimum 5 photos requirement" : "⚠️ Requires at least 5 photos for approval"}
@@ -2273,31 +2273,31 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
               {/* Left Column: Property & Location */}
               <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
-                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
                   Property & Capacity Details
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Hosting Type</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.hostingType || "HOME"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.hostingType || "HOME"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Property Type</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.propertyType || "Apartment"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.propertyType || "Apartment"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Guests Capacity</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.guests || 1} Guests</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.guests || 1} Guests</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Bedrooms / Beds / Baths</span>
-                    <span className="font-bold text-muted-foreground">
+                    <span className="font-semibold text-muted-foreground">
                       {selectedListingForReview.bedrooms || 1} Bed • {selectedListingForReview.beds || 1} Beds • {selectedListingForReview.bathrooms || 1} Bath
                     </span>
                   </div>
                 </div>
 
-                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
                   Location Information
                 </h4>
                 <div className="space-y-1">
@@ -2316,39 +2316,39 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
               {/* Right Column: Pricing & Descriptions */}
               <div className="space-y-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
-                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-2 text-xs uppercase tracking-wider">
                   Financials, Policies & Rules
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Nightly Rate</span>
-                    <span className="font-extrabold text-base text-emerald-600">${(selectedListingForReview.price / 100).toFixed(2)}</span>
+                    <span className="font-semibold text-base text-emerald-600">${(selectedListingForReview.price / 100).toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Cleaning Fee</span>
-                    <span className="font-bold text-muted-foreground">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
+                    <span className="font-semibold text-muted-foreground">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in Method</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.checkInMethod || "SMART_LOCK"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.checkInMethod || "SMART_LOCK"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in Window</span>
-                    <span className="font-bold text-muted-foreground">
+                    <span className="font-semibold text-muted-foreground">
                       {selectedListingForReview.checkInStart || "15:00"} - {selectedListingForReview.checkInEnd || "22:00"} (Out: {selectedListingForReview.checkOutTime || "11:00"})
                     </span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Cancellation Policy</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.cancellationPolicy || "FLEXIBLE"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.cancellationPolicy || "FLEXIBLE"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Instant Booking</span>
-                    <span className="font-bold text-muted-foreground">{selectedListingForReview.instantBook !== false ? "Enabled ✓" : "Disabled ✕"}</span>
+                    <span className="font-semibold text-muted-foreground">{selectedListingForReview.instantBook !== false ? "Enabled ✓" : "Disabled ✕"}</span>
                   </div>
                 </div>
 
-                <h4 className="font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
+                <h4 className="font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pt-2 pb-2 text-xs uppercase tracking-wider">
                   Description & Amenities
                 </h4>
                 <div className="space-y-2">
@@ -2357,10 +2357,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   </p>
                   {Array.isArray(selectedListingForReview.amenities) && selectedListingForReview.amenities.length > 0 && (
                     <div className="pt-1">
-                      <span className="text-[10px] text-[var(--muted-foreground)] font-bold block mb-1">Amenities ({selectedListingForReview.amenities.length}):</span>
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-semibold block mb-1">Amenities ({selectedListingForReview.amenities.length}):</span>
                       <div className="flex flex-wrap gap-1">
                         {selectedListingForReview.amenities.map((a: string, idx: number) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
                             ✨ {a}
                           </span>
                         ))}
@@ -2369,10 +2369,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   )}
                   {Array.isArray(selectedListingForReview.houseRules) && selectedListingForReview.houseRules.length > 0 && (
                     <div className="pt-1">
-                      <span className="text-[10px] text-[var(--muted-foreground)] font-bold block mb-1">House Rules:</span>
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-semibold block mb-1">House Rules:</span>
                       <div className="flex flex-wrap gap-1">
                         {selectedListingForReview.houseRules.map((r: string, idx: number) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
                             📌 {r}
                           </span>
                         ))}
@@ -2386,17 +2386,17 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
             {/* Change Requests / Rejection Feedback History */}
             {(selectedListingForReview.requestedChanges || selectedListingForReview.rejectionReason) && (
               <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-900/50 text-xs space-y-1">
-                <span className="font-extrabold text-amber-900 dark:text-amber-300 block">
+                <span className="font-semibold text-amber-900 dark:text-amber-300 block">
                   Feedback / Action Notes:
                 </span>
                 {selectedListingForReview.requestedChanges && (
                   <p className="text-amber-800 dark:text-amber-200">
-                    <strong className="font-bold">Requested Changes:</strong> {JSON.stringify(selectedListingForReview.requestedChanges)}
+                    <strong className="font-semibold">Requested Changes:</strong> {JSON.stringify(selectedListingForReview.requestedChanges)}
                   </p>
                 )}
                 {selectedListingForReview.rejectionReason && (
                   <p className="text-rose-700 dark:text-rose-300">
-                    <strong className="font-bold">Rejection Reason:</strong> {selectedListingForReview.rejectionReason}
+                    <strong className="font-semibold">Rejection Reason:</strong> {selectedListingForReview.rejectionReason}
                   </p>
                 )}
               </div>
@@ -2410,7 +2410,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   onClick={() => handleApproveListing(selectedListingForReview.id)}
                   disabled={pending || (selectedListingForReview.photos?.length || 0) < 5}
                   title={(selectedListingForReview.photos?.length || 0) < 5 ? "Minimum 5 photos required for approval" : ""}
-                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-2xs"
                 >
                   Approve & Activate Listing
                 </button>
@@ -2418,7 +2418,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="button"
                   onClick={() => setShowListingReqChangesModal(true)}
                   disabled={pending}
-                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 text-xs font-semibold transition-all shadow-2xs"
                 >
                   Request Changes
                 </button>
@@ -2426,7 +2426,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   type="button"
                   onClick={() => setShowListingRejectModal(true)}
                   disabled={pending}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-semibold transition-all shadow-2xs"
                 >
                   Reject Listing
                 </button>
@@ -2437,7 +2437,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                     setShowDeleteListingModal(true);
                   }}
                   disabled={pending || isDeletingListing}
-                  className="rounded-full bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 text-xs font-extrabold transition-all shadow-2xs"
+                  className="rounded-full bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 text-xs font-semibold transition-all shadow-2xs"
                 >
                   🗑 Delete Listing
                 </button>
@@ -2445,7 +2445,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               <button
                 type="button"
                 onClick={() => setShowListingReviewModal(false)}
-                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)]"
+                className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)]"
               >
                 Close
               </button>
@@ -2458,7 +2458,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showListingReqChangesModal && selectedListingForReview && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
-            <h3 className="text-base font-bold text-muted-foreground">Request Listing Changes</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Request Listing Changes</h3>
             <form onSubmit={handleRequestListingChanges} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 Provide clear instructions for the host regarding what details, photos, or pricing need revision:
@@ -2475,14 +2475,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowListingReqChangesModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-extrabold hover:bg-amber-600 disabled:opacity-50"
+                  className="rounded-full bg-amber-500 text-zinc-950 px-4 py-1.5 text-xs font-semibold hover:bg-amber-600 disabled:opacity-50"
                 >
                   Send Change Request
                 </button>
@@ -2496,7 +2496,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
       {showListingRejectModal && selectedListingForReview && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
-            <h3 className="text-base font-bold text-muted-foreground">Reject Listing Application</h3>
+            <h3 className="text-base font-semibold text-muted-foreground">Reject Listing Application</h3>
             <form onSubmit={handleRejectListing} className="space-y-3 text-xs">
               <p className="text-xs text-[var(--muted-foreground)]">
                 State the compliance or safety reason for rejecting this listing:
@@ -2513,14 +2513,14 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <button
                   type="button"
                   onClick={() => setShowListingRejectModal(false)}
-                  className="rounded-full px-4 py-1.5 text-xs font-bold border border-[var(--border)]"
+                  className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-extrabold hover:bg-rose-700 disabled:opacity-50"
+                  className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
                 >
                   Confirm Rejection
                 </button>
@@ -2535,10 +2535,10 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
                 ⚠️
               </div>
-              <h3 className="text-base font-extrabold text-muted-foreground">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-semibold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
               Are you sure you want to delete listing <strong className="text-muted-foreground">{listingToDelete.title || listingToDelete.id}</strong>? This action is permanent and will remove all property settings and cached data.
@@ -2551,7 +2551,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                   setShowDeleteListingModal(false);
                   setListingToDelete(null);
                 }}
-                className="rounded-full px-5 py-2 text-xs font-bold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
+                className="rounded-full px-5 py-2 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
               >
                 Cancel
               </button>
@@ -2559,7 +2559,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 type="button"
                 disabled={isDeletingListing}
                 onClick={handleDeleteListing}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
               >
                 {isDeletingListing ? "Deleting..." : "Yes, Delete Permanently"}
               </button>

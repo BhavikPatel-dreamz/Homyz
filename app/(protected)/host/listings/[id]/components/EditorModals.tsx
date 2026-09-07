@@ -64,13 +64,13 @@ export function EditorModals({
             <button
               type="button"
               onClick={() => setIsAddCoHostModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Add your co-host's info</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add your co-host's info</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 We will text or email them the invite
               </p>
@@ -79,7 +79,7 @@ export function EditorModals({
             <div className="space-y-4">
               <div className="grid grid-cols-5 gap-3">
                 <div className="col-span-2 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">
+                  <label className="block text-xs font-semibold text-zinc-800">
                     Country code *
                   </label>
                   <div className="relative">
@@ -105,7 +105,7 @@ export function EditorModals({
                 </div>
 
                 <div className="col-span-3 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">
+                  <label className="block text-xs font-semibold text-zinc-800">
                     Phone number *
                   </label>
                   <input
@@ -126,7 +126,7 @@ export function EditorModals({
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-zinc-800">
+                <label className="block text-xs font-semibold text-zinc-800">
                   Email
                 </label>
                 <input
@@ -143,7 +143,7 @@ export function EditorModals({
               <button
                 type="button"
                 onClick={() => setIsAddCoHostModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -168,7 +168,7 @@ export function EditorModals({
                   setCoHostPhone("");
                   setIsAddCoHostModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Next
               </button>
@@ -186,13 +186,13 @@ export function EditorModals({
             <button
               type="button"
               onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
                 Are you sure you want to turn off Instant book ?
               </h3>
               <p className="text-xs text-zinc-500 font-normal">
@@ -210,7 +210,7 @@ export function EditorModals({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You may get fewer bookings</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You may get fewer bookings</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -224,7 +224,7 @@ export function EditorModals({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You'll need to review every booking request</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -238,7 +238,7 @@ export function EditorModals({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You'll need to respond to each request in 24 hours</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -252,7 +252,7 @@ export function EditorModals({
               <button
                 type="button"
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -263,7 +263,7 @@ export function EditorModals({
                   setBookingMethod("approve");
                   setIsTurnOffInstantBookModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Turn Instant Book off
               </button>
@@ -281,13 +281,13 @@ export function EditorModals({
             <button
               type="button"
               onClick={() => setIsCustomMessageModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Add a custom message</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add a custom message</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Send a welcoming message automatically when guests instant book your space.
               </p>
@@ -305,14 +305,14 @@ export function EditorModals({
               <button
                 type="button"
                 onClick={() => setIsCustomMessageModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => setIsCustomMessageModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save Message
               </button>
@@ -330,13 +330,13 @@ export function EditorModals({
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Additional house rules</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Additional house rules</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Share any specific requirements or guidelines guests must follow.
               </p>
@@ -354,14 +354,14 @@ export function EditorModals({
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save Rules
               </button>

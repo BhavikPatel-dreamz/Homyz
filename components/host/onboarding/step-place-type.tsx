@@ -24,7 +24,7 @@ export function StepPlaceType({
   return (
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
       <div className="max-w-2xl mx-auto w-full flex flex-col items-center my-auto">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 tracking-tight text-center leading-tight mb-10">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight text-center leading-tight mb-10">
           What type of place will guests have?
         </h1>
 
@@ -54,7 +54,7 @@ export function StepPlaceType({
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-zinc-900 tracking-tight">
+                    <h3 className="text-lg font-semibold text-[#1F1F1F] tracking-tight">
                       {pt.title}
                     </h3>
                     <p className="mt-1.5 text-xs sm:text-sm font-medium text-zinc-500 leading-relaxed max-w-lg">

@@ -14,7 +14,7 @@ export default function Forbidden() {
       </p>
       <Link
         href="/dashboard"
-        className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
+        className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-[#1F1F1F]"
       >
         Back to dashboard
       </Link>

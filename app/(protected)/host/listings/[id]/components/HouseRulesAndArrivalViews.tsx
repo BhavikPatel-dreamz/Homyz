@@ -106,12 +106,12 @@ export function HouseRulesAndArrivalViews({
           <div className="divide-y divide-zinc-200/80 pt-2">
             {/* Row 1: Pets allowed */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Pets allowed</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Pets allowed</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setPetsAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     petsAllowed === false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -122,7 +122,7 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setPetsAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     petsAllowed === true
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -136,10 +136,10 @@ export function HouseRulesAndArrivalViews({
             {/* Row 2: Maximum number of pets allowed */}
             <div className="py-3.5 flex items-start justify-between gap-4">
               <div className="space-y-1 max-w-sm">
-                <h4 className="font-bold text-xs text-zinc-900">Maximum number of pets allowed</h4>
+                <h4 className="font-semibold text-xs text-[#1F1F1F]">Maximum number of pets allowed</h4>
                 <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
                   Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
-                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-zinc-900">
+                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-[#1F1F1F]">
                     learn more
                   </a>
                 </p>
@@ -148,14 +148,14 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setPetsAllowed(false)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
                 >
                   ✕
                 </button>
                 <button
                   type="button"
                   onClick={() => setPetsAllowed(true)}
-                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-bold text-zinc-950 cursor-pointer shadow-2xs"
+                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-semibold text-zinc-950 cursor-pointer shadow-2xs"
                 >
                   ✓
                 </button>
@@ -164,20 +164,20 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 3: Maximum number of pets */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Maximum number of pets</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Maximum number of pets</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {}}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   -
                 </button>
-                <span className="text-xs font-bold text-zinc-900 min-w-[12px] text-center">1</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] min-w-[12px] text-center">1</span>
                 <button
                   type="button"
                   onClick={() => {}}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   +
                 </button>
@@ -186,12 +186,12 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 4: Events allowed */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Events allowed</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Events allowed</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setEventsAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     eventsAllowed === false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -202,7 +202,7 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setEventsAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     eventsAllowed !== false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -215,12 +215,12 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 5: Smoking, vaping, e-cigarettes allowed */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Smoking, vaping, e-cigarettes allowed</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Smoking, vaping, e-cigarettes allowed</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setSmokingAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     smokingAllowed === false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -231,7 +231,7 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setSmokingAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     smokingAllowed !== false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -244,12 +244,12 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 6: Quiet hours */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Quiet hours</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Quiet hours</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setQuietHours(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     quietHours !== false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -260,7 +260,7 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setQuietHours(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
                     quietHours === false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
@@ -273,17 +273,17 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 7: Commercial photography and filming allowed */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Commercial photography and filming allowed</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Commercial photography and filming allowed</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-bold text-zinc-950 cursor-pointer shadow-2xs"
+                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-semibold text-zinc-950 cursor-pointer shadow-2xs"
                 >
                   ✕
                 </button>
                 <button
                   type="button"
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
                 >
                   ✓
                 </button>
@@ -292,20 +292,20 @@ export function HouseRulesAndArrivalViews({
 
             {/* Row 8: Number of quest */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900">Number of quest</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Number of quest</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setMaxGuestsCount(Math.max(1, (maxGuestsCount || 1) - 1))}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   -
                 </button>
-                <span className="text-xs font-bold text-zinc-900 min-w-[12px] text-center">{maxGuestsCount || 1}</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] min-w-[12px] text-center">{maxGuestsCount || 1}</span>
                 <button
                   type="button"
                   onClick={() => setMaxGuestsCount((maxGuestsCount || 1) + 1)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-bold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                 >
                   +
                 </button>
@@ -315,17 +315,17 @@ export function HouseRulesAndArrivalViews({
             {/* Row 9: Check-in and check-out times */}
             <div className="py-3.5 flex items-start justify-between gap-4">
               <div className="space-y-1 max-w-sm">
-                <h4 className="font-bold text-xs text-zinc-900">Check-in and check-out times</h4>
+                <h4 className="font-semibold text-xs text-[#1F1F1F]">Check-in and check-out times</h4>
                 <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
                   Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
-                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-zinc-900">
+                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-[#1F1F1F]">
                     learn more
                   </a>
                 </p>
               </div>
               <button
                 type="button"
-                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-bold transition-all cursor-pointer shrink-0 pt-0.5"
+                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0 pt-0.5"
               >
                 ›
               </button>
@@ -334,13 +334,13 @@ export function HouseRulesAndArrivalViews({
             {/* Row 10: Additional rules */}
             <div className="py-3.5 flex items-center justify-between gap-4">
               <div className="space-y-0.5">
-                <h4 className="font-bold text-xs text-zinc-900">Additional rules</h4>
+                <h4 className="font-semibold text-xs text-[#1F1F1F]">Additional rules</h4>
                 <p className="text-[11px] text-zinc-400 font-normal">Share anything else you expect from guests.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(true)}
-                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-bold transition-all cursor-pointer shrink-0"
+                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0"
               >
                 ›
               </button>
@@ -353,7 +353,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("house-rules")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -429,24 +429,24 @@ export function HouseRulesAndArrivalViews({
 
           <div className="space-y-5 pt-2">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-900">Wifi network name</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Wifi network name</label>
               <input
                 type="text"
                 value={wifiNetwork}
                 onChange={(e) => setWifiNetwork(e.target.value)}
                 placeholder="wifi network name"
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-900">Wifi password</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Wifi password</label>
               <input
                 type="text"
                 value={wifiPassword}
                 onChange={(e) => setWifiPassword(e.target.value)}
                 placeholder="wifi password"
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
           </div>
@@ -456,7 +456,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -489,7 +489,7 @@ export function HouseRulesAndArrivalViews({
               value={houseManual}
               onChange={(e) => setHouseManual(e.target.value)}
               placeholder="Enter your house manual instructions..."
-              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
             />
           </div>
 
@@ -498,7 +498,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -644,7 +644,7 @@ function CheckOutInstructionsView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Check-out instructions</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Check-out instructions</h1>
       </div>
 
       {/* Description text matching screenshot 100% */}
@@ -659,7 +659,7 @@ function CheckOutInstructionsView({
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Add specific check-out instructions for your guests..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
           />
         </div>
       )}
@@ -676,9 +676,9 @@ function CheckOutInstructionsView({
               setIsAdding(true);
             }
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
         >
-          <span className="text-sm font-bold">+</span>
+          <span className="text-sm font-semibold">+</span>
           {isAdding ? "Save instructions" : "Add instructions"}
         </button>
       </div>
@@ -717,14 +717,14 @@ function GuidebooksView({
           >
             ‹
           </button>
-          <h1 className="tracking-tight text-zinc-900">Create a guidebooks</h1>
+          <h1 className="tracking-tight text-[#1F1F1F]">Create a guidebooks</h1>
         </div>
 
         {/* Plus (+) Button on the right of header */}
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-bold transition-all cursor-pointer shadow-2xs"
+          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold transition-all cursor-pointer shadow-2xs"
         >
           +
         </button>
@@ -738,7 +738,7 @@ function GuidebooksView({
         <a
           href="#"
           onClick={(e) => e.preventDefault()}
-          className="text-xs font-bold text-zinc-900 underline hover:text-zinc-700 block"
+          className="text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-700 block"
         >
           Read our content policy
         </a>
@@ -746,13 +746,13 @@ function GuidebooksView({
 
       {isAdding && (
         <div className="p-4 rounded-2xl border border-zinc-200 bg-white space-y-3 shadow-2xs animate-in fade-in">
-          <h3 className="text-xs font-bold text-zinc-900">Add New Guidebook</h3>
+          <h3 className="text-xs font-semibold text-[#1F1F1F]">Add New Guidebook</h3>
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="e.g. Favorite Neighborhood Restaurants"
-            className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+            className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
           />
           <div className="flex justify-end gap-2">
             <button
@@ -772,7 +772,7 @@ function GuidebooksView({
                   handleSaveSection("arrival-guide");
                 }
               }}
-              className="px-4 py-1.5 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-bold text-zinc-950 shadow-2xs"
+              className="px-4 py-1.5 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs"
             >
               Save
             </button>
@@ -793,7 +793,7 @@ function GuidebooksView({
               📖
             </div>
             <div>
-              <h4 className="text-xs font-bold text-zinc-900 line-clamp-2">{gb.title}</h4>
+              <h4 className="text-xs font-semibold text-[#1F1F1F] line-clamp-2">{gb.title}</h4>
               <p className="text-[10px] text-zinc-500 font-medium">{gb.itemsCount} recommendations</p>
             </div>
           </div>
@@ -836,7 +836,7 @@ function InteractionPreferencesView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Interaction with guests</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Interaction with guests</h1>
       </div>
 
       {/* Description */}
@@ -858,7 +858,7 @@ function InteractionPreferencesView({
                   : "bg-white border-zinc-200 hover:border-zinc-300 text-zinc-600"
               }`}
             >
-              <span className={`leading-snug pr-4 ${isActive ? "text-zinc-900 font-bold" : "text-zinc-600"}`}>
+              <span className={`leading-snug pr-4 ${isActive ? "text-[#1F1F1F] font-semibold" : "text-zinc-600"}`}>
                 {option}
               </span>
 
@@ -889,7 +889,7 @@ function InteractionPreferencesView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -897,7 +897,7 @@ function InteractionPreferencesView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -932,7 +932,7 @@ function ListingStatusView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Listing status</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Listing status</h1>
       </div>
 
       {/* Modern House Illustration (Matching Figma Screenshot 100%) */}
@@ -971,7 +971,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-bold text-xs text-zinc-900">Listed</h3>
+          <h3 className="font-semibold text-xs text-[#1F1F1F]">Listed</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Lorem ipsum feugiat donec porta aliquam sed blandit consectetur mauris eget augue.
           </p>
@@ -986,7 +986,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-bold text-xs text-zinc-900">Unlisted</h3>
+          <h3 className="font-semibold text-xs text-[#1F1F1F]">Unlisted</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Lorem ipsum feugiat donec porta aliquam sed blandit consectetur mauris eget augue.
           </p>
@@ -1003,7 +1003,7 @@ function ListingStatusView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -1011,7 +1011,7 @@ function ListingStatusView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -1066,7 +1066,7 @@ function LanguagesView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Languages</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Languages</h1>
       </div>
 
       {/* Description Text matching Figma 100% */}
@@ -1079,7 +1079,7 @@ function LanguagesView({
         {selectedLanguages.map((lang) => (
           <div
             key={lang}
-            className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-250 text-zinc-900 text-xs font-bold px-4 py-2 rounded-full shadow-2xs"
+            className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-250 text-[#1F1F1F] text-xs font-semibold px-4 py-2 rounded-full shadow-2xs"
           >
             <span>{lang}</span>
             {selectedLanguages.length > 1 && (
@@ -1088,7 +1088,7 @@ function LanguagesView({
                 onClick={() =>
                   setSelectedLanguages(selectedLanguages.filter((l) => l !== lang))
                 }
-                className="text-zinc-400 hover:text-zinc-700 font-bold"
+                className="text-zinc-400 hover:text-zinc-700 font-semibold"
               >
                 ✕
               </button>
@@ -1101,11 +1101,11 @@ function LanguagesView({
       {isAdding && (
         <div className="p-5 rounded-2xl border border-zinc-200 bg-white space-y-4 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-zinc-900">Select a language</h3>
+            <h3 className="text-xs font-semibold text-[#1F1F1F]">Select a language</h3>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="text-zinc-400 hover:text-zinc-600 font-bold text-xs cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-600 font-semibold text-xs cursor-pointer"
             >
               ✕
             </button>
@@ -1116,7 +1116,7 @@ function LanguagesView({
             value={searchLang}
             onChange={(e) => setSearchLang(e.target.value)}
             placeholder="Search language..."
-            className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+            className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
           />
 
           <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
@@ -1134,7 +1134,7 @@ function LanguagesView({
                       setSelectedLanguages([...selectedLanguages, lang]);
                     }
                   }}
-                  className={`p-3 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center justify-between ${
+                  className={`p-3 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between ${
                     isSelected ? "bg-[#FEF9EC] text-zinc-950 border border-amber-300" : "hover:bg-zinc-50 text-zinc-700"
                   }`}
                 >
@@ -1152,7 +1152,7 @@ function LanguagesView({
                 handleSaveSection("language");
                 setIsAdding(false);
               }}
-              className="px-5 py-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-bold text-zinc-950 shadow-2xs cursor-pointer"
+              className="px-5 py-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs cursor-pointer"
             >
               Done
             </button>
@@ -1165,9 +1165,9 @@ function LanguagesView({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
         >
-          <span className="text-sm font-bold">+</span>
+          <span className="text-sm font-semibold">+</span>
           Add a language
         </button>
       </div>
@@ -1201,13 +1201,13 @@ function GuestRequirementsView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Guest requirements</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Guest requirements</h1>
       </div>
 
       {/* Toggle Row: Require a profile photo */}
       <div className="flex items-start justify-between gap-6 pt-1">
         <div className="space-y-1 max-w-md">
-          <h3 className="text-xs font-bold text-zinc-900">Require a profile photo</h3>
+          <h3 className="text-xs font-semibold text-[#1F1F1F]">Require a profile photo</h3>
           <p className="text-xs text-zinc-500 font-normal leading-relaxed">
             Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
             <a href="#" className="underline font-medium text-zinc-700 hover:text-zinc-950">
@@ -1234,20 +1234,20 @@ function GuestRequirementsView({
 
       {/* Bulleted Requirements Section */}
       <div className="space-y-2.5 pt-1">
-        <h3 className="text-xs font-bold text-zinc-900">
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">
           All Homyz guests are requires to:
         </h3>
         <ul className="space-y-2 text-xs text-zinc-500 font-normal">
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 font-bold">•</span>
+            <span className="text-zinc-400 font-semibold">•</span>
             <span>Provide a confirmed email address and phone number</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 font-bold">•</span>
+            <span className="text-zinc-400 font-semibold">•</span>
             <span>Provide payment information</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 font-bold">•</span>
+            <span className="text-zinc-400 font-semibold">•</span>
             <span>Agree to your house rules</span>
           </li>
         </ul>
@@ -1263,7 +1263,7 @@ function GuestRequirementsView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -1271,7 +1271,7 @@ function GuestRequirementsView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -1354,7 +1354,7 @@ function CheckInCheckOutView({
               <span className="text-[11px] font-medium text-zinc-400 block">Start time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] block">{checkInStart || "3:00 PM"}</span>
             </div>
-            <span className="text-zinc-600 text-base font-bold">›</span>
+            <span className="text-zinc-600 text-base font-semibold">›</span>
           </div>
 
           {editingStart && (
@@ -1366,7 +1366,7 @@ function CheckInCheckOutView({
                   handleSaveSection("arrival-guide");
                   setEditingStart(false);
                 }}
-                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-bold text-zinc-900 bg-white outline-none cursor-pointer"
+                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-semibold text-[#1F1F1F] bg-white outline-none cursor-pointer"
               >
                 {timesList.map((t) => (
                   <option key={t} value={t}>
@@ -1388,7 +1388,7 @@ function CheckInCheckOutView({
               <span className="text-[11px] font-medium text-zinc-400 block">End time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] block">{checkInEnd || "Flexible"}</span>
             </div>
-            <span className="text-zinc-600 text-base font-bold">›</span>
+            <span className="text-zinc-600 text-base font-semibold">›</span>
           </div>
 
           {editingEnd && (
@@ -1400,7 +1400,7 @@ function CheckInCheckOutView({
                   handleSaveSection("arrival-guide");
                   setEditingEnd(false);
                 }}
-                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-bold text-zinc-900 bg-white outline-none cursor-pointer"
+                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-semibold text-[#1F1F1F] bg-white outline-none cursor-pointer"
               >
                 {timesList.map((t) => (
                   <option key={t} value={t}>
@@ -1429,7 +1429,7 @@ function CheckInCheckOutView({
               <span className="text-[11px] font-medium text-zinc-400 block">Select time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] block">{checkOutTime || "12:00 PM"}</span>
             </div>
-            <span className="text-zinc-600 text-base font-bold">›</span>
+            <span className="text-zinc-600 text-base font-semibold">›</span>
           </div>
 
           {editingCheckOut && (
@@ -1441,7 +1441,7 @@ function CheckInCheckOutView({
                   handleSaveSection("arrival-guide");
                   setEditingCheckOut(false);
                 }}
-                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-bold text-zinc-900 bg-white outline-none cursor-pointer"
+                className="w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-semibold text-[#1F1F1F] bg-white outline-none cursor-pointer"
               >
                 {timesList.map((t) => (
                   <option key={t} value={t}>
@@ -1499,7 +1499,7 @@ function DirectionsView({
           value={directions}
           onChange={(e) => setDirections?.(e.target.value)}
           placeholder="Add directions, parking instructions, or landmark references..."
-          className="w-full rounded-2xl border border-zinc-200/90 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+          className="w-full rounded-2xl border border-zinc-200/90 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
         />
       </div>
 
@@ -1509,7 +1509,7 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -1582,7 +1582,7 @@ function CheckInMethodView({
                   handleSaveSection("arrival-guide");
                   setIsEditingMethod(false);
                 }}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs font-bold ${
+                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs font-semibold ${
                   checkInMethod === method
                     ? "bg-[#FEF9EC] border-amber-300 text-zinc-950"
                     : "bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700"
@@ -1599,7 +1599,7 @@ function CheckInMethodView({
 
         <div className="flex items-center justify-between cursor-pointer pt-1">
           <span className="text-xs text-zinc-500 font-medium">Will be send it before the check-in</span>
-          <span className="text-zinc-600 text-base font-bold">›</span>
+          <span className="text-zinc-600 text-base font-semibold">›</span>
         </div>
       </div>
 
@@ -1616,7 +1616,7 @@ function CheckInMethodView({
               rows={4}
               value={instructionsText}
               onChange={(e) => setInstructionsText(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
             />
           </div>
         )}
@@ -1632,9 +1632,9 @@ function CheckInMethodView({
                 setIsAddingInstructions(true);
               }
             }}
-            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
           >
-            <span className="text-sm font-bold">+</span>
+            <span className="text-sm font-semibold">+</span>
             {isAddingInstructions ? "Save instructions" : "Add instructions"}
           </button>
         </div>
@@ -1668,7 +1668,7 @@ function LocalLawsView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Local laws</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Local laws</h1>
       </div>
 
       {/* Paragraph 1 */}
@@ -1681,7 +1681,7 @@ function LocalLawsView({
         <div className="w-16 h-16 rounded-2xl bg-[#D4D4D8] border border-zinc-300/50 shrink-0" />
         <div className="flex-1 space-y-0.5">
           <span className="text-[10px] text-zinc-400 font-medium block">2 min read</span>
-          <h4 className="text-xs font-bold text-zinc-900 flex items-center gap-1.5 group-hover:text-zinc-700 transition-colors">
+          <h4 className="text-xs font-semibold text-[#1F1F1F] flex items-center gap-1.5 group-hover:text-zinc-700 transition-colors">
             What hosting regulations apply to you
             <span className="text-zinc-500 font-normal text-xs transition-transform group-hover:translate-x-0.5">›</span>
           </h4>
@@ -1703,7 +1703,7 @@ function LocalLawsView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -1760,7 +1760,7 @@ function RegulationsView({
           <div className="md:col-span-7 space-y-6">
             {/* Section 1: You're all set! */}
             <div className="space-y-2">
-              <h1 className="tracking-tight text-zinc-900">
+              <h1 className="tracking-tight text-[#1F1F1F]">
                 You&apos;re all set!
               </h1>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
@@ -1769,7 +1769,7 @@ function RegulationsView({
               <button
                 type="button"
                 onClick={() => setIsEditingReg(!isEditingReg)}
-                className="text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600 transition-colors pt-1 block cursor-pointer"
+                className="text-xs font-semibold text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600 transition-colors pt-1 block cursor-pointer"
               >
                 {isEditingReg ? "Done editing" : "Edit registration details"}
               </button>
@@ -1777,7 +1777,7 @@ function RegulationsView({
 
             {/* Section 2: Registration details */}
             <div className="space-y-4 pt-3">
-              <h2 className="text-xl font-bold tracking-tight text-zinc-900">
+              <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
                 Registration details
               </h2>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
@@ -1788,25 +1788,25 @@ function RegulationsView({
               {isEditingReg ? (
                 <div className="space-y-3 pt-2 max-w-md bg-zinc-50 p-4 rounded-2xl border border-zinc-200">
                   <div>
-                    <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
                       Registration Number
                     </label>
                     <input
                       type="text"
                       value={regNumber}
                       onChange={(e) => setRegNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-500 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-[#1F1F1F] focus:outline-none focus:border-zinc-500 bg-white"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                    <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
                       Address & Country
                     </label>
                     <input
                       type="text"
                       value={regAddress}
                       onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-500 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-[#1F1F1F] focus:outline-none focus:border-zinc-500 bg-white"
                     />
                   </div>
                   <button
@@ -1815,7 +1815,7 @@ function RegulationsView({
                       handleSaveSection("regulations");
                       setIsEditingReg(false);
                     }}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                   >
                     Save Registration
                   </button>
@@ -1824,11 +1824,11 @@ function RegulationsView({
                 <div className="space-y-3 pt-1">
                   <div>
                     <p className="text-xs text-zinc-400 font-normal">XXXXXXXX</p>
-                    <p className="text-xs font-bold text-zinc-900">{regNumber}</p>
+                    <p className="text-xs font-semibold text-[#1F1F1F]">{regNumber}</p>
                   </div>
                   <div>
                     <p className="text-xs text-zinc-400 font-normal">Address, Country</p>
-                    <p className="text-xs font-bold text-zinc-900">{regAddress}</p>
+                    <p className="text-xs font-semibold text-[#1F1F1F]">{regAddress}</p>
                   </div>
                 </div>
               )}
@@ -1839,7 +1839,7 @@ function RegulationsView({
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
-                  className="underline text-zinc-900 font-semibold hover:text-zinc-600 transition-colors"
+                  className="underline text-[#1F1F1F] font-semibold hover:text-zinc-600 transition-colors"
                 >
                   customer support team
                 </a>
@@ -1925,7 +1925,7 @@ function RegulationsView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Regulations</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Regulations</h1>
       </div>
 
       {/* Top Description Paragraph */}
@@ -1935,7 +1935,7 @@ function RegulationsView({
 
       {/* Registration Status Block */}
       <div className="space-y-1.5 pt-2">
-        <h3 className="text-xs font-bold text-zinc-900">Your registration is complete</h3>
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">Your registration is complete</h3>
         <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
           You&apos;re all set! Your registration number is xxxxxxxx and is visible to guests on your listing.
         </p>
@@ -1946,7 +1946,7 @@ function RegulationsView({
         <button
           type="button"
           onClick={() => setShowDetails(true)}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           View
         </button>
@@ -1979,7 +1979,7 @@ function TaxesView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Taxes</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Taxes</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
@@ -1987,7 +1987,7 @@ function TaxesView({
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-bold text-zinc-900">Occupancy Tax Collection</h3>
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">Occupancy Tax Collection</h3>
         <p className="text-xs text-zinc-500 font-normal leading-relaxed">
           Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.
         </p>
@@ -2002,7 +2002,7 @@ function TaxesView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -2043,7 +2043,7 @@ function HomyzStaysView({
         >
           ‹
         </button>
-        <h1 className="tracking-tight text-zinc-900">Homyz.com stays</h1>
+        <h1 className="tracking-tight text-[#1F1F1F]">Homyz.com stays</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
@@ -2051,7 +2051,7 @@ function HomyzStaysView({
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-bold text-zinc-900">Community Housing Network</h3>
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">Community Housing Network</h3>
         <p className="text-xs text-zinc-500 font-normal leading-relaxed">
           Opt in to share emergency housing or offer discounted stays for non-profit and community partners.
         </p>
@@ -2066,7 +2066,7 @@ function HomyzStaysView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>

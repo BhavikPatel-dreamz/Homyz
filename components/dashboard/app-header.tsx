@@ -96,14 +96,16 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
           {isHostRoute ? (
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-700 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-              <Link href="/host/today" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/today' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Today</Link>
-              <Link href="/host/calendar" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/calendar' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Calendar</Link>
-              <Link href="/host/listings" className={`hover:text-zinc-900 transition-colors ${pathname?.startsWith('/host/listings') ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Listing</Link>
-              <Link href="/host/messages" className={`hover:text-zinc-900 transition-colors ${pathname === '/host/messages' ? 'text-zinc-900 font-bold border-b-2 border-zinc-900 pb-1' : ''}`}>Messages</Link>
+              <Link href="/host/today" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/today' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Today</Link>
+              <Link href="/host/calendar" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/calendar' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Calendar</Link>
+              <Link href="/host/listings" className={`hover:text-[#1F1F1F] transition-colors ${pathname?.startsWith('/host/listings') ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Listing</Link>
+              <Link href="/host/messages" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/messages' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Messages</Link>
             </nav>
           ) : (
             <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
-              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" width={199} height={72} className="h-auto w-[125px] transition-transform md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]" priority />
+              <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
+                <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
+              </span>
             </Link>
           )}
 
@@ -154,7 +156,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
             {menuOpen && (
-              <div className="absolute right-0 top-full w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-zinc-900 max-h-[calc(100vh-80px)] overflow-y-auto">
+              <div className="absolute right-0 top-full w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-[#1F1F1F] max-h-[calc(100vh-80px)] overflow-y-auto">
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
@@ -199,7 +201,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/90 border border-zinc-200/60 transition-all group cursor-pointer text-left"
                     >
                       <div className="pr-2">
-                        <p className="text-sm font-semibold text-zinc-900 group-hover:text-amber-600 transition-colors">Become a host</p>
+                        <p className="text-sm font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">Become a host</p>
                         <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">It&apos;s easy to start hosting and earn extra income.</p>
                       </div>
                       {/* Host Illustration matching Screenshot 3 */}
@@ -271,7 +273,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                             href={item.href}
                             onClick={() => setMenuOpen(false)}
                             className={`flex items-center px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${pathname === item.href
-                              ? "bg-amber-100 text-amber-950 font-bold"
+                              ? "bg-amber-100 text-amber-950 font-semibold"
                               : "text-zinc-800 hover:bg-zinc-50"
                               }`}
                           >
@@ -313,7 +315,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
         <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95 my-auto mx-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">Languages &amp; currency</h3>
               <button
@@ -328,7 +330,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
             <div className="space-y-6">
               {/* Language Selection */}
               <div>
-                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">Language</label>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Language</label>
                 <div className="grid grid-cols-2 gap-2">
                   {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Hindi"].map((lang) => (
                     <button
@@ -336,7 +338,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       type="button"
                       onClick={() => setSelectedLang(lang)}
                       className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${selectedLang === lang
-                        ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
+                        ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                         }`}
                     >
@@ -348,7 +350,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
               {/* Currency Selection */}
               <div>
-                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">Currency</label>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Currency</label>
                 <div className="grid grid-cols-3 gap-2">
                   {["USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
                     <button
@@ -356,7 +358,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       type="button"
                       onClick={() => setSelectedCurrency(curr)}
                       className={`p-3 rounded-2xl border text-xs font-semibold text-center transition-all cursor-pointer ${selectedCurrency === curr
-                        ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
+                        ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                         }`}
                     >

@@ -89,7 +89,7 @@ export function GuestsSafetyView({
             className="flex items-center justify-between pt-3 cursor-pointer group"
           >
             <div className="space-y-0.5">
-              <h4 className="text-xs font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">
+              <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Safety considerations
               </h4>
               <p className="text-[11px] text-zinc-400 font-normal">
@@ -98,7 +98,7 @@ export function GuestsSafetyView({
                   : "Add details"}
               </p>
             </div>
-            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-bold">›</span>
+            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-semibold">›</span>
           </div>
 
           {/* 2. Safety devices */}
@@ -107,7 +107,7 @@ export function GuestsSafetyView({
             className="flex items-center justify-between pt-5 cursor-pointer group"
           >
             <div className="space-y-0.5">
-              <h4 className="text-xs font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">
+              <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Safety devices
               </h4>
               <p className="text-[11px] text-zinc-400 font-normal">
@@ -118,7 +118,7 @@ export function GuestsSafetyView({
                   : "Add details"}
               </p>
             </div>
-            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-bold">›</span>
+            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-semibold">›</span>
           </div>
 
           {/* 3. Property info */}
@@ -127,7 +127,7 @@ export function GuestsSafetyView({
             className="flex items-center justify-between pt-5 cursor-pointer group"
           >
             <div className="space-y-0.5">
-              <h4 className="text-xs font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">
+              <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Property info
               </h4>
               <p className="text-[11px] text-zinc-400 font-normal">
@@ -136,7 +136,7 @@ export function GuestsSafetyView({
                   : "Add details"}
               </p>
             </div>
-            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-bold">›</span>
+            <span className="text-zinc-400 group-hover:text-zinc-700 text-sm font-semibold">›</span>
           </div>
         </div>
       </div>
@@ -148,13 +148,13 @@ export function GuestsSafetyView({
             <button
               type="button"
               onClick={() => setIsSafetyConsiderationsModalOpen?.(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Safety considerations</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Safety considerations</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Select any specific considerations guests should know about.
               </p>
@@ -196,7 +196,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={() => setIsSafetyConsiderationsModalOpen?.(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -206,7 +206,7 @@ export function GuestsSafetyView({
                   setIsSafetyConsiderationsModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save
               </button>
@@ -222,13 +222,13 @@ export function GuestsSafetyView({
             <button
               type="button"
               onClick={() => setIsSafetyDevicesModalOpen?.(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Safety devices</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Safety devices</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Manage installed safety devices at your space.
               </p>
@@ -236,7 +236,7 @@ export function GuestsSafetyView({
 
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between p-3.5 rounded-2xl border border-zinc-200 bg-white">
-                <span className="text-xs font-bold text-zinc-900">Smoke alarm installed</span>
+                <span className="text-xs font-semibold text-[#1F1F1F]">Smoke alarm installed</span>
                 <button
                   type="button"
                   onClick={() => setSmokeAlarm(!smokeAlarm)}
@@ -249,7 +249,7 @@ export function GuestsSafetyView({
               </div>
 
               <div className="flex items-center justify-between p-3.5 rounded-2xl border border-zinc-200 bg-white">
-                <span className="text-xs font-bold text-zinc-900">Carbon monoxide alarm installed</span>
+                <span className="text-xs font-semibold text-[#1F1F1F]">Carbon monoxide alarm installed</span>
                 <button
                   type="button"
                   onClick={() => setCarbonMonoxideAlarm(!carbonMonoxideAlarm)}
@@ -262,7 +262,7 @@ export function GuestsSafetyView({
               </div>
 
               <div className="flex items-center justify-between p-3.5 rounded-2xl border border-zinc-200 bg-white">
-                <span className="text-xs font-bold text-zinc-900">First aid kit available</span>
+                <span className="text-xs font-semibold text-[#1F1F1F]">First aid kit available</span>
                 <button
                   type="button"
                   onClick={() => setFirstAidKit?.(!firstAidKit)}
@@ -275,7 +275,7 @@ export function GuestsSafetyView({
               </div>
 
               <div className="flex items-center justify-between p-3.5 rounded-2xl border border-zinc-200 bg-white">
-                <span className="text-xs font-bold text-zinc-900">Fire extinguisher available</span>
+                <span className="text-xs font-semibold text-[#1F1F1F]">Fire extinguisher available</span>
                 <button
                   type="button"
                   onClick={() => setFireExtinguisher?.(!fireExtinguisher)}
@@ -292,7 +292,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={() => setIsSafetyDevicesModalOpen?.(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -302,7 +302,7 @@ export function GuestsSafetyView({
                   setIsSafetyDevicesModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save
               </button>
@@ -318,13 +318,13 @@ export function GuestsSafetyView({
             <button
               type="button"
               onClick={() => setIsPropertyInfoModalOpen?.(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Property info</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Property info</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Select any specific characteristics about your space.
               </p>
@@ -365,7 +365,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={() => setIsPropertyInfoModalOpen?.(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -375,7 +375,7 @@ export function GuestsSafetyView({
                   setIsPropertyInfoModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save
               </button>

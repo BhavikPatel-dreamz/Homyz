@@ -154,7 +154,7 @@ export function PropertyDetailsViews({
                 onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
               >
                 <div className="space-y-0.5">
-                  <h3 className="font-bold text-xs text-zinc-900">Listing description</h3>
+                  <h3 className="font-semibold text-xs text-[#1F1F1F]">Listing description</h3>
                   <span className="text-[11px] text-zinc-400 font-normal block">
                     {editDescription ? `${500 - editDescription.length}/500 available` : "295/500 available"}
                   </span>
@@ -188,7 +188,7 @@ export function PropertyDetailsViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleSaveSection("description")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -203,12 +203,12 @@ export function PropertyDetailsViews({
                 className="flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">Your property</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Your property</h4>
                   <p className="text-[11px] text-zinc-400 font-normal">
                     {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : "Add details"}
                   </p>
                 </div>
-                <span className="text-zinc-400 text-sm font-bold">{openDescAccordion === "property" ? "⌄" : "›"}</span>
+                <span className="text-zinc-400 text-sm font-semibold">{openDescAccordion === "property" ? "⌄" : "›"}</span>
               </div>
 
               {openDescAccordion === "property" && (
@@ -224,7 +224,7 @@ export function PropertyDetailsViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleSaveSection("description")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -239,12 +239,12 @@ export function PropertyDetailsViews({
                 className="flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">Guest access</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Guest access</h4>
                   <p className="text-[11px] text-zinc-400 font-normal">
                     {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : "Add details"}
                   </p>
                 </div>
-                <span className="text-zinc-400 text-sm font-bold">{openDescAccordion === "access" ? "⌄" : "›"}</span>
+                <span className="text-zinc-400 text-sm font-semibold">{openDescAccordion === "access" ? "⌄" : "›"}</span>
               </div>
 
               {openDescAccordion === "access" && (
@@ -260,7 +260,7 @@ export function PropertyDetailsViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleSaveSection("description")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -275,12 +275,12 @@ export function PropertyDetailsViews({
                 className="flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">Interaction with guests</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Interaction with guests</h4>
                   <p className="text-[11px] text-zinc-400 font-normal">
                     {interactionDetails ? interactionDetails.slice(0, 40) + "..." : "Add details"}
                   </p>
                 </div>
-                <span className="text-zinc-400 text-sm font-bold">{openDescAccordion === "interaction" ? "⌄" : "›"}</span>
+                <span className="text-zinc-400 text-sm font-semibold">{openDescAccordion === "interaction" ? "⌄" : "›"}</span>
               </div>
 
               {openDescAccordion === "interaction" && (
@@ -296,7 +296,7 @@ export function PropertyDetailsViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleSaveSection("description")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -311,12 +311,12 @@ export function PropertyDetailsViews({
                 className="flex items-center justify-between cursor-pointer select-none"
               >
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">Other details to note</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Other details to note</h4>
                   <p className="text-[11px] text-zinc-400 font-normal">
                     {otherDetails ? otherDetails.slice(0, 40) + "..." : "Add details"}
                   </p>
                 </div>
-                <span className="text-zinc-400 text-sm font-bold">{openDescAccordion === "other" ? "⌄" : "›"}</span>
+                <span className="text-zinc-400 text-sm font-semibold">{openDescAccordion === "other" ? "⌄" : "›"}</span>
               </div>
 
               {openDescAccordion === "other" && (
@@ -332,7 +332,7 @@ export function PropertyDetailsViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => handleSaveSection("description")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -376,7 +376,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("title")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Title"}
             </button>
@@ -396,7 +396,8 @@ export function PropertyDetailsViews({
               onClick={() => setActiveSection("description")}
               className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
             >
-              ‹
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
             </button>
             <h1>Property type</h1>
           </div>
@@ -404,7 +405,7 @@ export function PropertyDetailsViews({
           <div className="space-y-5 pt-1">
             {/* 1. Which is most like your place? */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-800">Which is most like your place?</label>
+              <label className="block text-xs font-semibold text-zinc-800">Which is most like your place?</label>
               <div className="relative">
                 <select
                   value={whichIsMostLike}
@@ -428,7 +429,7 @@ export function PropertyDetailsViews({
 
             {/* 2. Property type */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-zinc-800">Property type</label>
+              <label className="block text-xs font-semibold text-zinc-800">Property type</label>
               <div className="relative">
                 <select
                   value={editPropertyType}
@@ -454,7 +455,7 @@ export function PropertyDetailsViews({
 
             {/* 3. Listing type */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-zinc-800">Listing type</label>
+              <label className="block text-xs font-semibold text-zinc-800">Listing type</label>
               <div className="relative">
                 <select
                   value={editListingType}
@@ -478,7 +479,7 @@ export function PropertyDetailsViews({
 
             {/* 4. How many floors are in the building */}
             <div className="flex items-center justify-between py-1">
-              <label className="text-xs font-bold text-zinc-800">How many floors are in the building</label>
+              <label className="text-xs font-semibold text-zinc-800">How many floors are in the building</label>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -487,7 +488,7 @@ export function PropertyDetailsViews({
                 >
                   -
                 </button>
-                <span className="w-5 text-center text-xs font-bold text-zinc-900">{buildingFloors}</span>
+                <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors}</span>
                 <button
                   type="button"
                   onClick={() => setBuildingFloors?.(buildingFloors + 1)}
@@ -500,7 +501,7 @@ export function PropertyDetailsViews({
 
             {/* 5. Which floor is the listing on? */}
             <div className="flex items-center justify-between py-1">
-              <label className="text-xs font-bold text-zinc-800">Which floor is the listing on?</label>
+              <label className="text-xs font-semibold text-zinc-800">Which floor is the listing on?</label>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -509,7 +510,7 @@ export function PropertyDetailsViews({
                 >
                   -
                 </button>
-                <span className="w-5 text-center text-xs font-bold text-zinc-900">{listingFloor}</span>
+                <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{listingFloor}</span>
                 <button
                   type="button"
                   onClick={() => setListingFloor?.(listingFloor + 1)}
@@ -522,7 +523,7 @@ export function PropertyDetailsViews({
 
             {/* 6. Year built */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-800">Year built</label>
+              <label className="block text-xs font-semibold text-zinc-800">Year built</label>
               <div className="relative">
                 <select
                   value={yearBuilt}
@@ -545,7 +546,7 @@ export function PropertyDetailsViews({
             <div className="space-y-1">
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-2 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">Property size</label>
+                  <label className="block text-xs font-semibold text-zinc-800">Property size</label>
                   <input
                     type="text"
                     value={propertySize}
@@ -555,7 +556,7 @@ export function PropertyDetailsViews({
                   />
                 </div>
                 <div className="col-span-1 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">Unit</label>
+                  <label className="block text-xs font-semibold text-zinc-800">Unit</label>
                   <div className="relative">
                     <select
                       value={propertySizeUnit}
@@ -582,20 +583,20 @@ export function PropertyDetailsViews({
             {/* 8. Your category block */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start pt-6 border-t border-zinc-200/80 mt-4">
               <div className="sm:col-span-7 space-y-2">
-                <h3 className="font-bold text-sm text-zinc-900">Your category</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Your category</h3>
                 <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                   Lorem ipsum aliquam dignissim sollicitudin libero odio pulvinar fringilla sagittis facilisi erat tempor morbi proin sit pellentesque lacus in facilisis est purus aliquet mauris massa duis placerat tincidunt neque vulputate.
                 </p>
                 <a
                   href="#"
                   onClick={(e) => e.preventDefault()}
-                  className="text-xs font-bold text-zinc-900 underline hover:text-amber-600 inline-block pt-1"
+                  className="text-xs font-semibold text-[#1F1F1F] underline hover:text-amber-600 inline-block pt-1"
                 >
                   Learn more
                 </a>
               </div>
               <div className="sm:col-span-5 rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 flex items-center justify-center text-center h-full min-h-[100px]">
-                <p className="text-xs font-bold text-zinc-600 leading-snug">
+                <p className="text-xs font-semibold text-zinc-600 leading-snug">
                   *Your listing isn't part of a part yet.
                 </p>
               </div>
@@ -607,7 +608,7 @@ export function PropertyDetailsViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("propertyType")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] border border-transparent hover:border-[#1F1F1F] text-[#1F1F1F] font-medium text-base px-8 py-2.5 transition-all cursor-pointer"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -636,7 +637,7 @@ export function PropertyDetailsViews({
               -
             </button>
 
-            <div className="w-16 h-16 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-2xl font-extrabold text-zinc-950 shadow-xs">
+            <div className="w-16 h-16 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-2xl font-semibold text-zinc-950 shadow-xs">
               {editGuests}
             </div>
 
@@ -655,7 +656,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("guests")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -699,7 +700,7 @@ export function PropertyDetailsViews({
               <button
                 type="button"
                 onClick={() => setActiveSection(activeSection === "add-amenities" ? "amenities" : "add-amenities")}
-                className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-bold cursor-pointer shadow-2xs transition-all"
+                className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold cursor-pointer shadow-2xs transition-all"
               >
                 {activeSection === "add-amenities" ? "✕" : "+"}
               </button>
@@ -784,15 +785,15 @@ export function PropertyDetailsViews({
                         <div className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs group-hover:border-zinc-300">
                           {item.icon}
                         </div>
-                        <span className="font-bold text-xs text-zinc-900">{item.name}</span>
+                        <span className="font-semibold text-xs text-[#1F1F1F]">{item.name}</span>
                       </div>
 
                       {isSelected ? (
-                        <div className="w-6 h-6 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-zinc-950 font-bold text-xs shadow-2xs">
+                        <div className="w-6 h-6 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-zinc-950 font-semibold text-xs shadow-2xs">
                           ✓
                         </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-bold shadow-2xs transition-all">
+                        <div className="w-6 h-6 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all">
                           +
                         </div>
                       )}
@@ -806,7 +807,7 @@ export function PropertyDetailsViews({
                 <button
                   type="button"
                   onClick={() => setActiveSection("amenities")}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   Done
                 </button>
@@ -844,7 +845,7 @@ export function PropertyDetailsViews({
                         {meta.icon}
                       </div>
                       <div className="flex-1 min-w-0 pt-0.5 space-y-0.5">
-                        <h4 className="font-bold text-xs text-zinc-900 tracking-tight">{am}</h4>
+                        <h4 className="font-semibold text-xs text-[#1F1F1F] tracking-tight">{am}</h4>
                         {meta.desc && (
                           <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
                             {meta.desc}
@@ -869,7 +870,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("amenities")}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -902,7 +903,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("accessibility")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Done"}
             </button>
@@ -967,7 +968,7 @@ export function PropertyDetailsViews({
                           {feature.icon}
                         </div>
                         <div className="space-y-1">
-                          <h3 className="font-bold text-xs text-zinc-900">{feature.name}</h3>
+                          <h3 className="font-semibold text-xs text-[#1F1F1F]">{feature.name}</h3>
                           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed max-w-md">
                             {feature.desc}
                           </p>
@@ -978,7 +979,7 @@ export function PropertyDetailsViews({
                       <button
                         type="button"
                         onClick={() => setExpandedAccessibility?.(null)}
-                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-xs font-bold shrink-0 shadow-2xs transition-all cursor-pointer"
+                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                       >
                         -
                       </button>
@@ -1022,7 +1023,7 @@ export function PropertyDetailsViews({
                         }`}>
                           {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
-                        <span className="font-bold text-xs text-zinc-900">I don't have this feature</span>
+                        <span className="font-semibold text-xs text-[#1F1F1F]">I don't have this feature</span>
                       </div>
 
                       {/* Option 2: I have this feature */}
@@ -1047,7 +1048,7 @@ export function PropertyDetailsViews({
                         }`}>
                           {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
-                        <span className="font-bold text-xs text-zinc-900">I have this feature</span>
+                        <span className="font-semibold text-xs text-[#1F1F1F]">I have this feature</span>
                       </div>
                     </div>
                   </div>
@@ -1067,13 +1068,13 @@ export function PropertyDetailsViews({
                     <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300">
                       {feature.icon}
                     </div>
-                    <span className="font-bold text-xs text-zinc-900 tracking-tight">{feature.name}</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F] tracking-tight">{feature.name}</span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setExpandedAccessibility?.(isExpanded ? null : feature.id)}
-                    className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                    className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                   >
                     +
                   </button>
@@ -1088,7 +1089,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("accessibility")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>

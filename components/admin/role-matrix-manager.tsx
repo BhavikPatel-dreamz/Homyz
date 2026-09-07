@@ -178,13 +178,13 @@ export function RoleMatrixManager({
     <div className="flex flex-col gap-6 font-sans text-muted-foreground">
       {/* Role Cards List */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
           Configured Administrative Roles
         </h2>
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-1.5 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs cursor-pointer"
+          className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-1.5 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs cursor-pointer"
         >
           + Create Custom Role
         </button>
@@ -206,16 +206,16 @@ export function RoleMatrixManager({
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold text-muted-foreground text-sm">
+                <h3 className="font-semibold text-muted-foreground text-sm">
                   {role.name}
                 </h3>
                 {isSuper ? (
-                  <span className="text-[10px] font-extrabold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 px-2 py-0.5 rounded-full">
                     Super Admin
                   </span>
                 ) : (
                   role.isSystem && (
-                    <span className="text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
+                    <span className="text-[10px] font-semibold bg-[var(--surface-secondary)] text-muted-foreground px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
                       System
                     </span>
                   )
@@ -239,7 +239,7 @@ export function RoleMatrixManager({
                       e.stopPropagation();
                       handleDeleteRole(role);
                     }}
-                    className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
+                    className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline"
                   >
                     Delete role
                   </button>
@@ -255,11 +255,11 @@ export function RoleMatrixManager({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-extrabold text-muted-foreground">
+              <h2 className="text-base font-semibold text-muted-foreground">
                 Role Matrix for: <span className="text-[var(--accent)]">{activeRole.name}</span>
               </h2>
               {isSuperRole ? (
-                <span className="text-[10px] font-extrabold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 px-2.5 py-0.5 rounded-full">
                   🛡️ Fixed System Role
                 </span>
               ) : (
@@ -278,14 +278,14 @@ export function RoleMatrixManager({
               <button
                 type="button"
                 onClick={selectAllGlobal}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all shadow-2xs"
               >
                 Select All
               </button>
               <button
                 type="button"
                 onClick={clearAllGlobal}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all shadow-2xs"
               >
                 Clear All
               </button>
@@ -306,7 +306,7 @@ export function RoleMatrixManager({
 
         {/* Super Admin Immutable Alert Notice */}
         {isSuperRole && (
-          <div className="mt-6 rounded-2xl border border-amber-300/80 bg-amber-50 dark:bg-amber-950/40 p-4 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-2">
+          <div className="mt-6 rounded-2xl border border-amber-300/80 bg-amber-50 dark:bg-amber-950/40 p-4 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2">
             <span>🛡️ Super Admin permissions are immutable and cannot be modified or unassigned.</span>
           </div>
         )}
@@ -320,14 +320,14 @@ export function RoleMatrixManager({
             return (
               <div key={moduleName} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {moduleName} Module
                   </span>
                   {!isSuperRole && (
                     <button
                       type="button"
                       onClick={() => toggleAllModulePermissions(moduleName)}
-                      className="text-[11px] font-bold text-[var(--accent)] hover:underline"
+                      className="text-[11px] font-semibold text-[var(--accent)] hover:underline"
                     >
                       {allChecked ? "Uncheck module" : "Check module"}
                     </button>
@@ -357,7 +357,7 @@ export function RoleMatrixManager({
                           className="mt-0.5 h-4 w-4 rounded accent-[var(--accent)]"
                         />
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-muted-foreground">
+                          <span className="text-xs font-semibold text-muted-foreground">
                             {perm.action}
                           </span>
                           <span className="text-[11px] text-[var(--muted-foreground)] leading-snug">
@@ -379,13 +379,13 @@ export function RoleMatrixManager({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-extrabold text-muted-foreground">
+              <h2 className="text-base font-semibold text-muted-foreground">
                 Create Administrative Role
               </h2>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-semibold"
               >
                 ✕
               </button>
@@ -393,7 +393,7 @@ export function RoleMatrixManager({
 
             <form onSubmit={handleCreateRole} className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">Role Name *</label>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">Role Name *</label>
                 <input
                   type="text"
                   value={newRoleName}
@@ -410,7 +410,7 @@ export function RoleMatrixManager({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">Slug *</label>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">Slug *</label>
                 <input
                   type="text"
                   value={newRoleSlug}
@@ -422,7 +422,7 @@ export function RoleMatrixManager({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">Description</label>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">Description</label>
                 <textarea
                   value={newRoleDesc}
                   onChange={(e) => setNewRoleDesc(e.target.value)}
@@ -437,14 +437,14 @@ export function RoleMatrixManager({
                   type="button"
                   onClick={() => setShowCreateModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
                 >
                   {pending && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />

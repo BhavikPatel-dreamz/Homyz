@@ -82,7 +82,7 @@ export function AdminBreadcrumb() {
               </svg>
             )}
             {isLast ? (
-              <span className="font-bold text-muted-foreground">{item.label}</span>
+              <span className="font-semibold text-muted-foreground">{item.label}</span>
             ) : (
               <Link href={item.href} className="hover:text-muted-foreground transition-colors">
                 {item.label}

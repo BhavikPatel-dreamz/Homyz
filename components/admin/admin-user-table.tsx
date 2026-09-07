@@ -348,7 +348,7 @@ export function AdminUserTable({
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs self-start sm:self-auto cursor-pointer"
+          className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-4 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs self-start sm:self-auto cursor-pointer"
         >
           + Add Administrator
         </button>
@@ -389,7 +389,7 @@ export function AdminUserTable({
                   <tr key={u.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold flex items-center justify-center text-xs shadow-2xs">
+                        <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-xs shadow-2xs">
                           {(u.name?.[0] || u.email?.[0] || "A").toUpperCase()}
                         </div>
                         <div>
@@ -401,13 +401,13 @@ export function AdminUserTable({
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
                         {u.adminRole?.name || u.role}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold shadow-2xs ${
                           u.status === "SUSPENDED"
                             ? "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60"
                             : isPendingSetup
@@ -420,15 +420,15 @@ export function AdminUserTable({
                     </td>
                     <td className="py-3.5 px-4">
                       {superAdmin ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300">
                           🛡️ Super Admin (Full Access)
                         </span>
                       ) : isPendingSetup ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300">
                           ⚠️ Needs Permission Setup
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--surface-secondary)] text-muted-foreground border border-[var(--border-subtle)]">
                           Individual Configuration
                         </span>
                       )}
@@ -456,14 +456,14 @@ export function AdminUserTable({
                         {!superAdmin ? (
                           <Link
                             href={`/admin/admins/${u.id}/permissions`}
-                            className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs"
+                            className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-3 py-1 text-[11px] font-semibold transition-all shadow-2xs"
                             title="Configure individual permissions matrix"
                           >
                             Manage Permissions
                           </Link>
                         ) : (
                           <span
-                            className="rounded-full border border-amber-200 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2.5 py-1 text-[10px] font-extrabold cursor-not-allowed opacity-80"
+                            className="rounded-full border border-amber-200 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2.5 py-1 text-[10px] font-semibold cursor-not-allowed opacity-80"
                             title="Super Admin has fixed full access"
                           >
                             Fixed Access
@@ -475,7 +475,7 @@ export function AdminUserTable({
                             type="button"
                             onClick={() => handleActivateAdmin(u)}
                             disabled={isRowBusy}
-                            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
+                            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
                             title="Verify configured permissions and activate account"
                           >
                             {isActivating && (
@@ -493,7 +493,7 @@ export function AdminUserTable({
                               setEditRoleSlug(u.adminRole?.slug || "admin");
                             }}
                             disabled={isRowBusy}
-                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+                            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
                           >
                             Edit Role
                           </button>
@@ -504,7 +504,7 @@ export function AdminUserTable({
                             type="button"
                             onClick={() => handleToggleStatus(u)}
                             disabled={isRowBusy}
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer ${
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs inline-flex items-center gap-1.5 disabled:opacity-50 cursor-pointer ${
                               u.status === "SUSPENDED"
                                 ? "bg-emerald-100/90 text-emerald-800 border border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300"
                                 : "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300"
@@ -527,7 +527,7 @@ export function AdminUserTable({
                           type="button"
                           onClick={() => handleRevokeSessions(u)}
                           disabled={isRowBusy}
-                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
+                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer"
                           title="Revoke Sessions"
                         >
                           {isRevoking && (
@@ -563,18 +563,18 @@ export function AdminUserTable({
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold flex items-center justify-center text-sm shadow-2xs">
+                  <div className="h-9 w-9 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold flex items-center justify-center text-sm shadow-2xs">
                     {(u.name?.[0] || u.email?.[0] || "A").toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-muted-foreground text-sm">
+                    <h3 className="font-semibold text-muted-foreground text-sm">
                       {u.name || "Unnamed Admin"}
                     </h3>
                     <p className="text-xs text-[var(--muted-foreground)] font-mono">{u.email}</p>
                   </div>
                 </div>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs ${
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold shadow-2xs ${
                     u.status === "SUSPENDED"
                       ? "bg-rose-100/90 text-rose-800 border border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300"
                       : isPendingSetup
@@ -590,9 +590,9 @@ export function AdminUserTable({
                 <span>Role: <strong className="text-muted-foreground">{u.adminRole?.name || u.role}</strong></span>
                 <span>
                   {superAdmin ? (
-                    <strong className="text-amber-700 dark:text-amber-300 font-extrabold">Full Access</strong>
+                    <strong className="text-amber-700 dark:text-amber-300 font-semibold">Full Access</strong>
                   ) : isPendingSetup ? (
-                    <span className="text-amber-800 dark:text-amber-300 font-bold">Needs Setup</span>
+                    <span className="text-amber-800 dark:text-amber-300 font-semibold">Needs Setup</span>
                   ) : (
                     <span>Individual Matrix</span>
                   )}
@@ -603,12 +603,12 @@ export function AdminUserTable({
                 {!superAdmin ? (
                   <Link
                     href={`/admin/admins/${u.id}/permissions`}
-                    className="rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-center text-[10px] font-extrabold shadow-2xs"
+                    className="rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 text-center text-[10px] font-semibold shadow-2xs"
                   >
                     Manage Permissions
                   </Link>
                 ) : (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 px-2.5 py-1 text-[10px] font-bold">
+                  <span className="rounded-full border border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 px-2.5 py-1 text-[10px] font-semibold">
                     Fixed Super Access
                   </span>
                 )}
@@ -617,7 +617,7 @@ export function AdminUserTable({
                     type="button"
                     onClick={() => handleActivateAdmin(u)}
                     disabled={isRowBusy}
-                    className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[10px] font-extrabold shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[10px] font-semibold shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {isActivating && (
                       <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -633,7 +633,7 @@ export function AdminUserTable({
                       setEditRoleSlug(u.adminRole?.slug || "admin");
                     }}
                     disabled={isRowBusy}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-muted-foreground disabled:opacity-50 cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-semibold text-muted-foreground disabled:opacity-50 cursor-pointer"
                   >
                     Role
                   </button>
@@ -643,7 +643,7 @@ export function AdminUserTable({
                     type="button"
                     onClick={() => handleToggleStatus(u)}
                     disabled={isRowBusy}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-bold text-muted-foreground disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-semibold text-muted-foreground disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {isTogglingStatus && (
                       <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -683,13 +683,13 @@ export function AdminUserTable({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-extrabold text-muted-foreground">
+              <h2 className="text-base font-semibold text-muted-foreground">
                 Add New Administrator
               </h2>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-bold"
+                className="text-[var(--muted-foreground)] hover:text-muted-foreground text-sm font-semibold"
               >
                 ✕
               </button>
@@ -700,7 +700,7 @@ export function AdminUserTable({
 
             <form onSubmit={handleCreateAdmin} className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">Name *</label>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">Name *</label>
                 <input
                   type="text"
                   value={newName}
@@ -712,7 +712,7 @@ export function AdminUserTable({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">Email *</label>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">Email *</label>
                 <input
                   type="email"
                   value={newEmail}
@@ -724,7 +724,7 @@ export function AdminUserTable({
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">
                   Assign Administrative Role *
                 </label>
                 <select
@@ -745,14 +745,14 @@ export function AdminUserTable({
                   type="button"
                   onClick={() => setShowAddModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
                 >
                   {pending && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -769,7 +769,7 @@ export function AdminUserTable({
       {editUser && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h2 className="text-base font-extrabold text-muted-foreground mb-1">
+            <h2 className="text-base font-semibold text-muted-foreground mb-1">
               Change Role for {editUser.name || editUser.email}
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mb-4">
@@ -778,7 +778,7 @@ export function AdminUserTable({
 
             <form onSubmit={handleUpdateRole} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-[var(--muted-foreground)]">
+                <label className="text-xs font-semibold text-[var(--muted-foreground)]">
                   Role
                 </label>
                 <select
@@ -799,14 +799,14 @@ export function AdminUserTable({
                   type="button"
                   onClick={() => setEditUser(null)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-extrabold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs inline-flex items-center gap-2 disabled:opacity-50"
                 >
                   {pending && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -830,7 +830,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-muted-foreground">
+                <h2 className="text-base font-semibold text-muted-foreground">
                   Delete Administrator
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -847,7 +847,7 @@ export function AdminUserTable({
               <button
                 type="button"
                 onClick={() => setDeleteUser(null)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
               >
                 Cancel
               </button>
@@ -887,7 +887,7 @@ export function AdminUserTable({
                 )}
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-muted-foreground">
+                <h2 className="text-base font-semibold text-muted-foreground">
                   {statusConfirmUser.targetStatus === "SUSPENDED" ? "Suspend Administrator" : "Activate Administrator"}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -921,7 +921,7 @@ export function AdminUserTable({
                 type="button"
                 onClick={() => setStatusConfirmUser(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -962,7 +962,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-muted-foreground">
+                <h2 className="text-base font-semibold text-muted-foreground">
                   Revoke Active Sessions
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -984,7 +984,7 @@ export function AdminUserTable({
                 type="button"
                 onClick={() => setRevokeSessionsUser(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

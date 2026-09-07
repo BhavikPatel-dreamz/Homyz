@@ -605,49 +605,49 @@ export function HostRegistrationWorkspace({
     switch (status) {
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-900/50">
             <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
             Pending Intake
           </span>
         );
       case "IN_REVIEW":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
             In Review
           </span>
         );
       case "WAITING_FOR_DOCUMENTS":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-200 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-200 dark:border-amber-800">
             <span className="h-2 w-2 rounded-full bg-amber-600 animate-ping" />
             Waiting for Documents
           </span>
         );
       case "DOCUMENTS_UNDER_REVIEW":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-900/50">
             <span className="h-2 w-2 rounded-full bg-indigo-500" />
             Documents Under Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             Approved
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900/50">
             <span className="h-2 w-2 rounded-full bg-rose-500" />
             Rejected
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
             {status}
           </span>
         );
@@ -676,13 +676,13 @@ export function HostRegistrationWorkspace({
         );
       case "UNDER_REVIEW":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300">
             ⏳ Under Review
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-zinc-100 text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-300">
             Pending Intake
           </span>
         );
@@ -705,13 +705,13 @@ export function HostRegistrationWorkspace({
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-zinc-100 text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-300">
             Expired
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300">
             ⏳ Pending Review
           </span>
         );
@@ -722,7 +722,7 @@ export function HostRegistrationWorkspace({
     return (
       <div className="p-12 text-center text-xs text-[var(--muted-foreground)] space-y-3">
         <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
-        <p className="font-bold">Loading application review workspace...</p>
+        <p className="font-semibold">Loading application review workspace...</p>
       </div>
     );
   }
@@ -730,8 +730,8 @@ export function HostRegistrationWorkspace({
   if (error || !data) {
     return (
       <div className="p-8 text-center text-xs text-rose-600 space-y-3">
-        <p className="font-bold text-sm">{error || "Application not found"}</p>
-        <button onClick={fetchDetails} className="underline font-bold cursor-pointer">
+        <p className="font-semibold text-sm">{error || "Application not found"}</p>
+        <button onClick={fetchDetails} className="underline font-semibold cursor-pointer">
           Retry
         </button>
       </div>
@@ -765,7 +765,7 @@ export function HostRegistrationWorkspace({
               </h1>
               {renderStatusBadge(data.status)}
               {complianceData && renderComplianceBadge(complianceData.complianceStatus)}
-              <span className="text-xs font-bold text-[var(--muted-foreground)]">
+              <span className="text-xs font-semibold text-[var(--muted-foreground)]">
                 Submitted {new Date(data.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </span>
             </div>
@@ -781,7 +781,7 @@ export function HostRegistrationWorkspace({
                 type="button"
                 onClick={handleOpenApprovalModal}
                 disabled={pendingTransition}
-                className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-extrabold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 ✓ Approve Application
               </button>
@@ -792,7 +792,7 @@ export function HostRegistrationWorkspace({
                 type="button"
                 onClick={() => setAppRejectModalOpen(true)}
                 disabled={pendingTransition}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 text-xs font-extrabold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 ✕ Reject Application
               </button>
@@ -802,7 +802,7 @@ export function HostRegistrationWorkspace({
               type="button"
               onClick={() => setRequestInfoModalOpen(true)}
               disabled={pendingTransition}
-              className="rounded-full border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800 px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              className="rounded-full border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800 px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
             >
               📩 Request Additional Info
             </button>
@@ -812,7 +812,7 @@ export function HostRegistrationWorkspace({
                 type="button"
                 onClick={() => setReopenModalOpen(true)}
                 disabled={pendingTransition}
-                className="rounded-full border border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800 px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                className="rounded-full border border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800 px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
               >
                 🔄 Reopen Application
               </button>
@@ -822,7 +822,7 @@ export function HostRegistrationWorkspace({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
               >
                 Close Workspace
               </button>
@@ -833,35 +833,35 @@ export function HostRegistrationWorkspace({
         {/* 4 Summary Metric Columns */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
               Application Status
             </span>
             <div className="pt-0.5">{renderStatusBadge(data.status)}</div>
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
               Compliance State
             </span>
-            <div className="pt-0.5 font-bold">
+            <div className="pt-0.5 font-semibold">
               {complianceData ? renderComplianceBadge(complianceData.complianceStatus) : "Loading..."}
             </div>
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
               Assigned Reviewer
             </span>
-            <div className="font-extrabold text-muted-foreground pt-0.5">
+            <div className="font-semibold text-muted-foreground pt-0.5">
               {data.assignedReviewer ? (data.assignedReviewer.name || data.assignedReviewer.email) : "Unassigned"}
             </div>
           </div>
 
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
               Verification Progress
             </span>
-            <div className="pt-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="pt-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
               {documentSummary.verified} of {documentSummary.required} Verified
             </div>
           </div>
@@ -869,7 +869,7 @@ export function HostRegistrationWorkspace({
       </div>
 
       {/* WORKSPACE NAVIGATION TABS */}
-      <div className="flex items-center gap-1 border-b border-[var(--border-subtle)] overflow-x-auto text-xs font-bold">
+      <div className="flex items-center gap-1 border-b border-[var(--border-subtle)] overflow-x-auto text-xs font-semibold">
         <Link
           href={getTabHref("overview")}
           className={`px-4 py-2.5 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
@@ -943,17 +943,17 @@ export function HostRegistrationWorkspace({
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
-            <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
+            <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
               Application Overview
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Application ID</span>
-                <span className="font-extrabold font-mono text-muted-foreground">{data.applicationId}</span>
+                <span className="font-semibold font-mono text-muted-foreground">{data.applicationId}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Onboarding Stage</span>
-                <span className="font-bold text-muted-foreground">{data.onboardingStage}</span>
+                <span className="font-semibold text-muted-foreground">{data.onboardingStage}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Submitted Date</span>
@@ -967,13 +967,13 @@ export function HostRegistrationWorkspace({
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
-            <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
+            <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-2">
               Reviewer Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Assigned Reviewer</span>
-                <span className="font-bold text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">
                   {data.assignedReviewer ? (data.assignedReviewer.name || data.assignedReviewer.email) : "Unassigned"}
                 </span>
               </div>
@@ -985,7 +985,7 @@ export function HostRegistrationWorkspace({
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Review Started By</span>
-                <span className="font-bold text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">
                   {data.reviewedBy ? (data.reviewedBy.name || data.reviewedBy.email) : "Not started"}
                 </span>
               </div>
@@ -1003,25 +1003,25 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 2: APPLICANT INFORMATION */}
       {activeTab === "applicant" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Applicant Profile Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Full Name</span>
-              <span className="font-extrabold text-muted-foreground text-sm">{data.applicantName}</span>
+              <span className="font-semibold text-muted-foreground text-sm">{data.applicantName}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Email Address</span>
-              <span className="font-bold font-mono text-muted-foreground">{data.applicantEmail}</span>
+              <span className="font-semibold font-mono text-muted-foreground">{data.applicantEmail}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Phone Number</span>
-              <span className="font-bold text-muted-foreground">{data.applicantPhone || "Not provided"}</span>
+              <span className="font-semibold text-muted-foreground">{data.applicantPhone || "Not provided"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Linked Host Account</span>
-              <span className="font-bold text-muted-foreground">{data.hostUser ? "Registered User" : "Pending Registration"}</span>
+              <span className="font-semibold text-muted-foreground">{data.hostUser ? "Registered User" : "Pending Registration"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Account Creation Date</span>
@@ -1036,25 +1036,25 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 3: PROPERTY & BUSINESS INFORMATION */}
       {activeTab === "property" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Property & Business Profile (Read-Only Intake)
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Registration Category</span>
-              <span className="font-extrabold text-muted-foreground text-sm">{data.registrationType}</span>
+              <span className="font-semibold text-muted-foreground text-sm">{data.registrationType}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Business / Entity Name</span>
-              <span className="font-bold text-muted-foreground">{data.businessName || "Not provided"}</span>
+              <span className="font-semibold text-muted-foreground">{data.businessName || "Not provided"}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Estimated Property Count</span>
-              <span className="font-bold text-muted-foreground">{data.propertyCount}</span>
+              <span className="font-semibold text-muted-foreground">{data.propertyCount}</span>
             </div>
             <div>
               <span className="text-[var(--muted-foreground)] block font-medium">Property Location / Address</span>
-              <span className="font-bold text-muted-foreground">{data.location || "Not specified"}</span>
+              <span className="font-semibold text-muted-foreground">{data.location || "Not specified"}</span>
             </div>
           </div>
           {data.notes && (
@@ -1074,23 +1074,23 @@ export function HostRegistrationWorkspace({
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="font-extrabold text-sm text-muted-foreground">Document Verification Summary</h4>
+                <h4 className="font-semibold text-sm text-muted-foreground">Document Verification Summary</h4>
                 <p className="text-[11px] text-[var(--muted-foreground)]">
                   Verify individual submitted files or request host re-submissions.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 font-mono text-xs">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border)] font-bold text-muted-foreground">
+                <span className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border)] font-semibold text-muted-foreground">
                   Required: {documentSummary.required}
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold">
                   Verified: {documentSummary.verified}
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 font-semibold">
                   Pending: {documentSummary.pending}
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 font-semibold">
                   Rejected: {documentSummary.rejected}
                 </span>
               </div>
@@ -1120,7 +1120,7 @@ export function HostRegistrationWorkspace({
                       <button
                         type="button"
                         onClick={() => handlePreviewDocument(doc)}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground transition-colors cursor-pointer"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors cursor-pointer"
                       >
                         👁️ Preview
                       </button>
@@ -1130,7 +1130,7 @@ export function HostRegistrationWorkspace({
                           type="button"
                           onClick={() => handleVerifyDocument(doc)}
                           disabled={pendingTransition}
-                          className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-xs font-extrabold transition-colors cursor-pointer disabled:opacity-50"
+                          className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                         >
                           ✓ Verify
                         </button>
@@ -1141,7 +1141,7 @@ export function HostRegistrationWorkspace({
                           type="button"
                           onClick={() => handleOpenRejectModal(doc)}
                           disabled={pendingTransition}
-                          className="rounded-full border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-3 py-1 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                          className="rounded-full border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-3 py-1 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                         >
                           ✕ Reject
                         </button>
@@ -1151,7 +1151,7 @@ export function HostRegistrationWorkspace({
                         type="button"
                         onClick={() => handleOpenResubmitModal(doc)}
                         disabled={pendingTransition}
-                        className="rounded-full border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 px-3 py-1 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                        className="rounded-full border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 px-3 py-1 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                       >
                         🔄 Request Re-submission
                       </button>
@@ -1161,7 +1161,7 @@ export function HostRegistrationWorkspace({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">File Name</span>
-                      <span className="font-bold text-muted-foreground truncate block">{doc.fileName}</span>
+                      <span className="font-semibold text-muted-foreground truncate block">{doc.fileName}</span>
                     </div>
                     <div>
                       <span className="text-[var(--muted-foreground)] block font-medium">Uploaded At</span>
@@ -1191,7 +1191,7 @@ export function HostRegistrationWorkspace({
       {activeTab === "notes" && (
         <div className="space-y-6 text-xs">
           <form onSubmit={handleAddNote} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3 shadow-2xs">
-            <h4 className="font-extrabold text-sm text-muted-foreground">Add Internal Reviewer Note</h4>
+            <h4 className="font-semibold text-sm text-muted-foreground">Add Internal Reviewer Note</h4>
             <p className="text-[11px] text-[var(--muted-foreground)]">
               Internal notes are visible strictly to authorized administrators and reviewers.
             </p>
@@ -1207,7 +1207,7 @@ export function HostRegistrationWorkspace({
               <button
                 type="submit"
                 disabled={pendingTransition || !newNoteContent.trim()}
-                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
+                className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer"
               >
                 Post Review Note
               </button>
@@ -1215,7 +1215,7 @@ export function HostRegistrationWorkspace({
           </form>
 
           <div className="space-y-3">
-            <h4 className="font-extrabold text-sm text-muted-foreground">Internal Review Notes History</h4>
+            <h4 className="font-semibold text-sm text-muted-foreground">Internal Review Notes History</h4>
             {data.reviewNotes.length === 0 ? (
               <div className="p-8 text-center text-[var(--muted-foreground)] bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
                 No internal review notes posted yet.
@@ -1224,7 +1224,7 @@ export function HostRegistrationWorkspace({
               data.reviewNotes.map((note) => (
                 <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 space-y-2 shadow-2xs">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-muted-foreground">{note.authorName || note.authorEmail}</span>
+                    <span className="font-semibold text-muted-foreground">{note.authorName || note.authorEmail}</span>
                     <span className="font-mono text-[var(--muted-foreground)]">{new Date(note.createdAt).toLocaleString()}</span>
                   </div>
                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">{note.content}</p>
@@ -1238,7 +1238,7 @@ export function HostRegistrationWorkspace({
       {/* TAB CONTENT 7: REVIEW ACTIVITY & AUDIT LOG */}
       {activeTab === "activity" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 text-xs">
-          <h3 className="text-sm font-extrabold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">
             Application Review Activity Trail (Audit Logs)
           </h3>
           {data.activityLogs.length === 0 ? (
@@ -1248,7 +1248,7 @@ export function HostRegistrationWorkspace({
               {data.activityLogs.map((log) => (
                 <div key={log.id} className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-muted-foreground text-xs">{log.action}</span>
+                    <span className="font-semibold text-muted-foreground text-xs">{log.action}</span>
                     <span className="text-[10px] font-mono text-[var(--muted-foreground)]">
                       {new Date(log.createdAt).toLocaleString("en-US")}
                     </span>
@@ -1268,7 +1268,7 @@ export function HostRegistrationWorkspace({
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-extrabold">{previewDoc.fileName}</h3>
+                <h3 className="text-base font-semibold">{previewDoc.fileName}</h3>
                 <span className="text-xs text-[var(--muted-foreground)] font-mono">{previewDoc.documentType}</span>
               </div>
               <button
@@ -1285,12 +1285,12 @@ export function HostRegistrationWorkspace({
                   <img src={securePreviewUrl} alt={previewDoc.fileName} className="max-h-[500px] object-contain rounded-lg" />
                 ) : (
                   <div className="text-center space-y-3 text-white">
-                    <p className="text-sm font-bold">Document File Ready for Preview</p>
+                    <p className="text-sm font-semibold">Document File Ready for Preview</p>
                     <a
                       href={securePreviewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block rounded-full bg-amber-400 text-black px-5 py-2 font-bold text-xs"
+                      className="inline-block rounded-full bg-amber-400 text-black px-5 py-2 font-semibold text-xs"
                     >
                       Open Secure Document Link
                     </a>
@@ -1308,14 +1308,14 @@ export function HostRegistrationWorkspace({
       {rejectModalOpen && targetDoc && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-rose-600">Reject Document</h3>
+            <h3 className="text-lg font-semibold text-rose-600">Reject Document</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Rejecting <strong className="text-muted-foreground">{targetDoc.fileName}</strong> ({targetDoc.documentType}). The host will be notified by email.
             </p>
 
             <form onSubmit={handleRejectSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Standard Rejection Reason</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Standard Rejection Reason</label>
                 <select
                   value={rejectionReasonSelect}
                   onChange={(e) => setRejectionReasonSelect(e.target.value)}
@@ -1332,7 +1332,7 @@ export function HostRegistrationWorkspace({
 
               {rejectionReasonSelect === "Other" && (
                 <div>
-                  <label className="block font-bold text-[var(--muted-foreground)] mb-1">Specify Custom Reason</label>
+                  <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Specify Custom Reason</label>
                   <textarea
                     rows={3}
                     value={customRejectionReason}
@@ -1348,14 +1348,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setRejectModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-extrabold shadow-2xs transition-colors cursor-pointer"
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-semibold shadow-2xs transition-colors cursor-pointer"
                 >
                   Confirm Rejection
                 </button>
@@ -1369,14 +1369,14 @@ export function HostRegistrationWorkspace({
       {resubmitModalOpen && targetDoc && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-amber-600">Request Document Re-submission</h3>
+            <h3 className="text-lg font-semibold text-amber-600">Request Document Re-submission</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Specify what is required for <strong className="text-muted-foreground">{targetDoc.documentType}</strong>.
             </p>
 
             <form onSubmit={handleResubmitSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Rejection / Defect Reason</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Rejection / Defect Reason</label>
                 <select
                   value={rejectionReasonSelect}
                   onChange={(e) => setRejectionReasonSelect(e.target.value)}
@@ -1392,7 +1392,7 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Re-submission Instructions</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Re-submission Instructions</label>
                 <textarea
                   rows={3}
                   placeholder="e.g. Please upload a clear copy of the identity document with all 4 corners visible."
@@ -1408,14 +1408,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setResubmitModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 font-extrabold shadow-2xs transition-colors cursor-pointer"
+                  className="rounded-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 font-semibold shadow-2xs transition-colors cursor-pointer"
                 >
                   Send Re-submission Request
                 </button>
@@ -1429,11 +1429,11 @@ export function HostRegistrationWorkspace({
       {createIssueModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-rose-600">Log Compliance Issue</h3>
+            <h3 className="text-lg font-semibold text-rose-600">Log Compliance Issue</h3>
 
             <form onSubmit={handleCreateIssueSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Issue Category / Title</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Issue Category / Title</label>
                 <input
                   type="text"
                   placeholder="e.g. Identity Name Mismatch, Sanctions Alert, Invalid Tax ID"
@@ -1445,11 +1445,11 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Severity Level</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Severity Level</label>
                 <select
                   value={newIssueSeverity}
                   onChange={(e) => setNewIssueSeverity(e.target.value as any)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-bold"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-semibold"
                 >
                   <option value="LOW">Low Severity</option>
                   <option value="MEDIUM">Medium Severity</option>
@@ -1459,7 +1459,7 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Detailed Description</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Detailed Description</label>
                 <textarea
                   rows={3}
                   placeholder="Describe the discrepancy or compliance violation..."
@@ -1475,14 +1475,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setCreateIssueModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-extrabold shadow-2xs transition-colors cursor-pointer"
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-semibold shadow-2xs transition-colors cursor-pointer"
                 >
                   Record Issue
                 </button>
@@ -1496,11 +1496,11 @@ export function HostRegistrationWorkspace({
       {requestInfoModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-amber-600">Request Additional Information from Host</h3>
+            <h3 className="text-lg font-semibold text-amber-600">Request Additional Information from Host</h3>
 
             <form onSubmit={handleRequestInfoSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Information Required</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Information Required</label>
                 <textarea
                   rows={2}
                   placeholder="e.g. Updated Business Registration Certificate or Proof of Address..."
@@ -1512,7 +1512,7 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Reason for Request</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Reason for Request</label>
                 <textarea
                   rows={2}
                   placeholder="e.g. Current document submitted is blurry and expired."
@@ -1524,7 +1524,7 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Response Deadline (Optional)</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Response Deadline (Optional)</label>
                 <input
                   type="date"
                   value={infoDeadlineDate}
@@ -1538,14 +1538,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setRequestInfoModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 font-extrabold shadow-2xs transition-colors cursor-pointer"
+                  className="rounded-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 font-semibold shadow-2xs transition-colors cursor-pointer"
                 >
                   Send Request & Email Host
                 </button>
@@ -1564,7 +1564,7 @@ export function HostRegistrationWorkspace({
             {eligibilityResult.eligible ? (
               <div className="space-y-4 text-xs">
                 <div className="p-4 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-xl border border-emerald-300 space-y-2">
-                  <p className="font-bold text-sm">✓ All Approval & Compliance Requirements Met!</p>
+                  <p className="font-semibold text-sm">✓ All Approval & Compliance Requirements Met!</p>
                   <ul className="list-disc pl-4 space-y-1">
                     <li>Applicant profile complete</li>
                     <li>Required documents verified</li>
@@ -1582,7 +1582,7 @@ export function HostRegistrationWorkspace({
                     type="button"
                     onClick={() => setApprovalModalOpen(false)}
                     disabled={pendingTransition}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1599,7 +1599,7 @@ export function HostRegistrationWorkspace({
             ) : (
               <div className="space-y-4 text-xs">
                 <div className="p-4 bg-rose-50 text-rose-900 dark:bg-rose-950/60 dark:text-rose-300 rounded-xl border border-rose-300 space-y-2">
-                  <p className="font-bold text-sm">✕ Approval Blocked: Missing Requirements</p>
+                  <p className="font-semibold text-sm">✕ Approval Blocked: Missing Requirements</p>
                   <p>The following requirements must be resolved before this application can be approved:</p>
                   <ul className="list-disc pl-5 space-y-1 font-semibold text-rose-800 dark:text-rose-300">
                     {eligibilityResult.reasons.map((r: string, i: number) => (
@@ -1612,7 +1612,7 @@ export function HostRegistrationWorkspace({
                   <button
                     type="button"
                     onClick={() => setApprovalModalOpen(false)}
-                    className="rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] px-5 py-2 font-bold text-muted-foreground cursor-pointer"
+                    className="rounded-full bg-[var(--surface-secondary)] border border-[var(--border)] px-5 py-2 font-semibold text-muted-foreground cursor-pointer"
                   >
                     Close & Fix Issues
                   </button>
@@ -1627,15 +1627,15 @@ export function HostRegistrationWorkspace({
       {appRejectModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-rose-600">Reject Host Application</h3>
+            <h3 className="text-lg font-semibold text-rose-600">Reject Host Application</h3>
 
             <form onSubmit={handleConfirmApplicationRejection} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Primary Rejection Reason</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Primary Rejection Reason</label>
                 <select
                   value={appRejectReason}
                   onChange={(e) => setAppRejectReason(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-bold"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground p-2.5 outline-none font-semibold"
                 >
                   {STANDARD_APPLICATION_REJECTION_REASONS.map((r) => (
                     <option key={r} value={r}>
@@ -1646,7 +1646,7 @@ export function HostRegistrationWorkspace({
               </div>
 
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Additional Explanation (Included in Host Email)</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Additional Explanation (Included in Host Email)</label>
                 <textarea
                   rows={3}
                   placeholder="Provide specific explanation for the rejection..."
@@ -1661,14 +1661,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setAppRejectModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-extrabold shadow-2xs cursor-pointer"
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 font-semibold shadow-2xs cursor-pointer"
                 >
                   Confirm Rejection & Notify Host
                 </button>
@@ -1682,14 +1682,14 @@ export function HostRegistrationWorkspace({
       {reopenModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-lg font-bold text-indigo-600">Reopen Application</h3>
+            <h3 className="text-lg font-semibold text-indigo-600">Reopen Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Reopening will restore this application's status to <strong>In Review</strong> for further compliance investigation.
             </p>
 
             <form onSubmit={handleConfirmReopen} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[var(--muted-foreground)] mb-1">Reason for Reopening</label>
+                <label className="block font-semibold text-[var(--muted-foreground)] mb-1">Reason for Reopening</label>
                 <textarea
                   rows={3}
                   placeholder="State the operational or compliance reason for reopening..."
@@ -1705,14 +1705,14 @@ export function HostRegistrationWorkspace({
                   type="button"
                   onClick={() => setReopenModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 font-extrabold shadow-2xs cursor-pointer"
+                  className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 font-semibold shadow-2xs cursor-pointer"
                 >
                   Confirm Reopen Application
                 </button>

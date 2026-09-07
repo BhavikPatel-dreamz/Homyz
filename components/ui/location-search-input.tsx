@@ -76,7 +76,7 @@ export function LocationSearchInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <label htmlFor={inputId} className="block text-xs font-bold text-zinc-900 mb-1.5">
+      <label htmlFor={inputId} className="block text-xs font-semibold text-[#1F1F1F] mb-1.5">
         Location
       </label>
 
@@ -97,7 +97,7 @@ export function LocationSearchInput({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search a place... (e.g. Paris, France)"
-          className={`w-full pl-9 pr-9 py-2.5 rounded-2xl border bg-white text-xs text-zinc-900 placeholder-zinc-400 transition-all shadow-2xs min-h-[46px] ${
+          className={`w-full pl-9 pr-9 py-2.5 rounded-2xl border bg-white text-xs text-[#1F1F1F] placeholder-zinc-400 transition-all shadow-2xs min-h-[46px] ${
             isOpen ? "border-amber-400 ring-2 ring-amber-400/20" : "border-zinc-200 hover:border-zinc-300"
           } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
@@ -143,19 +143,19 @@ export function LocationSearchInput({
                   onClick={() => handleSelect(dest)}
                   className={`px-3.5 py-2 flex items-center gap-2.5 text-xs transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-amber-100 text-amber-900 font-bold"
+                      ? "bg-amber-100 text-amber-900 font-semibold"
                       : isActive
-                      ? "bg-amber-50 text-zinc-900 font-medium"
+                      ? "bg-amber-50 text-[#1F1F1F] font-medium"
                       : "hover:bg-zinc-50 text-zinc-800"
                   }`}
                 >
                   <span className="text-zinc-400 text-xs shrink-0">📍</span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-zinc-900 truncate">{dest.locationName}</p>
+                    <p className="font-semibold text-[#1F1F1F] truncate">{dest.locationName}</p>
                     <p className="text-[11px] text-zinc-400 truncate">{dest.formattedAddress}</p>
                   </div>
                   {dest.countryCode && (
-                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
                       {dest.countryCode}
                     </span>
                   )}

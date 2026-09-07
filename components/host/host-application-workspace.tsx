@@ -513,11 +513,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-[#FBDE9B] px-3 py-1 text-xs font-extrabold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
+              <span className="rounded-full bg-[#FBDE9B] px-3 py-1 text-xs font-semibold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
                 Host Onboarding Portal
               </span>
               {hostingTypeLabel && (
-                <span className="rounded-full bg-zinc-900 text-white px-3 py-1 text-xs font-bold shadow-xs">
+                <span className="rounded-full bg-zinc-900 text-white px-3 py-1 text-xs font-semibold shadow-xs">
                   Hosting Type: {hostingTypeLabel}
                 </span>
               )}
@@ -540,7 +540,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={isSaving || isConverting}
-                  className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
+                  className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
                 >
                   {isSaving ? "Saving Draft..." : "Save Draft"}
                 </button>
@@ -548,7 +548,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleConvertToHost}
                   disabled={isSaving || isConverting}
-                  className="inline-flex items-center rounded-full bg-[#FBDE9B] hover:bg-amber-400 px-5 py-2 text-xs font-extrabold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
+                  className="inline-flex items-center rounded-full bg-[#FBDE9B] hover:bg-amber-400 px-5 py-2 text-xs font-semibold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
                 >
                   {isConverting ? "Converting Account..." : "⚡ Become a Host Now"}
                 </button>
@@ -560,7 +560,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         {/* Progress Bar (Only for Draft or Submission flow) */}
         {accountState === "DRAFT" && (
           <div className="mt-6 border-t border-[var(--border)] pt-4">
-            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
               <span>Application Completion</span>
               <span>
                 {liveCompletedSections} / 6 sections completed ({liveProgressPercent}%)
@@ -579,10 +579,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {/* Onboarding Stage Tracker (Visible on all states) */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
             Onboarding Workflow Progress
           </h2>
-          <span className="rounded-full bg-amber-500/10 px-3 py-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+          <span className="rounded-full bg-amber-500/10 px-3 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
             Stage: {(application.onboardingStage || accountState).replace(/_/g, " ")}
           </span>
         </div>
@@ -613,7 +613,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 }`}
               >
                 <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold border shadow-2xs ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold border shadow-2xs ${
                     status === "completed"
                       ? "bg-emerald-500 text-white border-emerald-600"
                       : status === "action_required"
@@ -626,12 +626,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   {status === "completed" ? "✓" : status === "action_required" ? "!" : status === "in_progress" ? "●" : idx + 1}
                 </div>
 
-                <span className="mt-1.5 text-[11px] font-bold leading-tight text-muted-foreground">
+                <span className="mt-1.5 text-[11px] font-semibold leading-tight text-muted-foreground">
                   {st.label}
                 </span>
 
                 <span
-                  className={`mt-1.5 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ${
+                  className={`mt-1.5 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase ${
                     status === "completed"
                       ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
                       : status === "action_required"
@@ -667,7 +667,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               !
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-rose-700 dark:text-rose-400">
+              <h3 className="text-lg font-semibold text-rose-700 dark:text-rose-400">
                 Action Required on Your Application
               </h3>
               <p className="mt-1 text-xs text-rose-600 dark:text-rose-300">
@@ -677,7 +677,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Show rejected documents */}
               {application.documents.filter((d) => d.status === "REJECTED" || d.resubmissionRequested).map((doc) => (
                 <div key={doc.id} className="mt-3 rounded-2xl border border-rose-500/30 bg-[var(--surface)] p-3 text-xs">
-                  <p className="font-bold text-muted-foreground">
+                  <p className="font-semibold text-muted-foreground">
                     Document: <span className="text-rose-600 dark:text-rose-400">{doc.documentType.replace(/_/g, " ")}</span>
                   </p>
                   <p className="mt-0.5 text-[var(--muted-foreground)]">
@@ -694,7 +694,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Show info requests */}
               {application.infoRequests.filter((i) => i.status === "PENDING").map((info) => (
                 <div key={info.id} className="mt-3 rounded-2xl border border-amber-500/30 bg-[var(--surface)] p-3 text-xs">
-                  <p className="font-bold text-amber-600 dark:text-amber-400">Information Required: {info.informationRequired}</p>
+                  <p className="font-semibold text-amber-600 dark:text-amber-400">Information Required: {info.informationRequired}</p>
                   <p className="mt-0.5 text-[var(--muted-foreground)]">Reason: {info.reason}</p>
                 </div>
               ))}
@@ -703,7 +703,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(4)}
-                  className="rounded-full bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-rose-700"
+                  className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-rose-700"
                 >
                   Upload New Document
                 </button>
@@ -712,7 +712,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleResubmit}
                   disabled={isResubmitting}
-                  className="rounded-full bg-[#FBDE9B] px-4 py-2 text-xs font-extrabold text-[#291E05] shadow-xs hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-4 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {isResubmitting ? "Resubmitting..." : "Resubmit Application"}
                 </button>
@@ -725,10 +725,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {/* Confirmation Screen After Submission */}
       {(accountState === "SUBMITTED" || submittedSuccess) && accountState !== "APPROVED" && accountState !== "ACTION_REQUIRED" && (
         <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center backdrop-blur-md">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-bold text-white shadow-lg">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-semibold text-white shadow-lg">
             ✓
           </div>
-          <h2 className="mt-4 text-2xl font-extrabold text-muted-foreground">Application Submitted Successfully!</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-muted-foreground">Application Submitted Successfully!</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
             Your host registration application <strong className="text-muted-foreground">{application.applicationId}</strong> has been received.
           </p>
@@ -736,11 +736,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-2xs">
             <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs">
               <span className="text-[var(--muted-foreground)]">Application ID:</span>
-              <span className="font-bold text-muted-foreground">{application.applicationId}</span>
+              <span className="font-semibold text-muted-foreground">{application.applicationId}</span>
             </div>
             <div className="flex justify-between border-b border-[var(--border)] py-2 text-xs">
               <span className="text-[var(--muted-foreground)]">Status:</span>
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
                 {application.status || "Submitted / In Review"}
               </span>
             </div>
@@ -759,17 +759,17 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {/* Approved Host Card */}
       {accountState === "APPROVED" && (
         <div className="rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-bold text-white shadow-lg">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-semibold text-white shadow-lg">
             🎉
           </div>
-          <h2 className="mt-4 text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">Host Application Approved!</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">Host Application Approved!</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
             Your host account is fully activated. You can now start creating and publishing listings on Homyz.
           </p>
           <div className="mt-6 flex justify-center gap-4">
             <Link
               href="/host/listings"
-              className="rounded-full bg-[#FBDE9B] px-6 py-2.5 text-xs font-extrabold text-[#291E05] shadow-md transition-all hover:scale-102 dark:bg-amber-500 dark:text-zinc-950"
+              className="rounded-full bg-[#FBDE9B] px-6 py-2.5 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 dark:bg-amber-500 dark:text-zinc-950"
             >
               Go to Host Portal & Listings
             </Link>
@@ -780,10 +780,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {/* Rejected Application Card */}
       {accountState === "REJECTED" && (
         <div className="rounded-3xl border border-rose-500/40 bg-rose-500/10 p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-500 text-2xl font-bold text-white shadow-lg">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-500 text-2xl font-semibold text-white shadow-lg">
             ✕
           </div>
-          <h2 className="mt-4 text-2xl font-extrabold text-rose-700 dark:text-rose-400">Application Not Approved</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-rose-700 dark:text-rose-400">Application Not Approved</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
             We are unable to approve your application at this time.
           </p>
@@ -812,7 +812,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 key={st.num}
                 type="button"
                 onClick={() => setActiveStep(st.num)}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                   activeStep === st.num
                     ? "bg-[#FBDE9B] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
@@ -826,11 +826,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 1: Personal Information */}
           {activeStep === 1 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-muted-foreground">Step 1: Personal Information</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">Step 1: Personal Information</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Full Legal Name *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Full Legal Name *</label>
                   <input
                     type="text"
                     name="applicantName"
@@ -843,7 +843,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Email Address *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Email Address *</label>
                   <input
                     type="email"
                     name="applicantEmail"
@@ -856,7 +856,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Phone Number *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Phone Number *</label>
                   <input
                     type="tel"
                     name="applicantPhone"
@@ -873,7 +873,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={handleNextFromStep1}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-extrabold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   Next: Business Info →
                 </button>
@@ -884,11 +884,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 2: Business Information */}
           {activeStep === 2 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-muted-foreground">Step 2: Business & Host Type</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">Step 2: Business & Host Type</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Host Registration Type *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Host Registration Type *</label>
                   <select
                     name="registrationType"
                     value={formData.registrationType}
@@ -902,7 +902,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Business Name (Optional)</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Business Name (Optional)</label>
                   <input
                     type="text"
                     name="businessName"
@@ -918,14 +918,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(1)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveStep(3)}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-extrabold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   Next: Address & Property →
                 </button>
@@ -936,11 +936,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 3: Address & Property Details */}
           {activeStep === 3 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-muted-foreground">Step 3: Address & Property Information</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">Step 3: Address & Property Information</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-muted-foreground">Primary Property / Operating Address *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Primary Property / Operating Address *</label>
                   <input
                     type="text"
                     name="location"
@@ -953,7 +953,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-muted-foreground">Number of Properties to List *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">Number of Properties to List *</label>
                   <input
                     type="number"
                     name="propertyCount"
@@ -971,14 +971,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(2)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleNextFromStep3}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-extrabold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   Next: Documents Upload →
                 </button>
@@ -989,7 +989,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 4: Document Verification Upload */}
           {activeStep === 4 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-muted-foreground">Step 4: Upload Verification Documents</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">Step 4: Upload Verification Documents</h3>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Upload clear digital copies of your identity and property ownership documents (Accepted: PDF, PNG, JPG, WEBP. Max: 10MB per file).
               </p>
@@ -998,7 +998,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               <form onSubmit={handleDocumentUpload} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-4 sm:p-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground">Select Document Type *</label>
+                    <label className="block text-xs font-semibold text-muted-foreground">Select Document Type *</label>
                     <select
                       value={selectedDocType}
                       onChange={(e) => setSelectedDocType(e.target.value)}
@@ -1013,12 +1013,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground">Select File *</label>
+                    <label className="block text-xs font-semibold text-muted-foreground">Select File *</label>
                     <input
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg,.webp"
                       onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-[#FBDE9B] file:px-3 file:py-1 file:text-xs file:font-bold file:text-[#291E05]"
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-[#FBDE9B] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#291E05]"
                     />
                   </div>
                 </div>
@@ -1027,7 +1027,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   <button
                     type="submit"
                     disabled={isUploading || !selectedFile}
-                    className="rounded-full bg-[#FBDE9B] px-5 py-2 text-xs font-extrabold text-[#291E05] shadow-xs hover:bg-amber-400 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
+                    className="rounded-full bg-[#FBDE9B] px-5 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                   >
                     {isUploading ? "Uploading..." : "Upload Document"}
                   </button>
@@ -1039,7 +1039,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
               {/* Uploaded Documents List */}
               <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
                   Uploaded Documents ({application.documents?.length || 0})
                 </h4>
 
@@ -1053,9 +1053,9 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-muted-foreground">{doc.documentType.replace(/_/g, " ")}</span>
+                          <span className="font-semibold text-xs text-muted-foreground">{doc.documentType.replace(/_/g, " ")}</span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                               doc.status === "VERIFIED"
                                 ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                                 : doc.status === "REJECTED"
@@ -1102,14 +1102,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(3)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={handleNextFromStep4}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-extrabold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   Next: Notes →
                 </button>
@@ -1120,10 +1120,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 5: Notes & Additional Info */}
           {activeStep === 5 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-bold text-muted-foreground">Step 5: Additional Information / Notes</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">Step 5: Additional Information / Notes</h3>
 
               <div>
-                <label className="block text-xs font-bold text-muted-foreground">Notes for Review Team (Optional)</label>
+                <label className="block text-xs font-semibold text-muted-foreground">Notes for Review Team (Optional)</label>
                 <textarea
                   name="notes"
                   rows={4}
@@ -1138,14 +1138,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(4)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveStep(6)}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-extrabold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   Review & Submit →
                 </button>
@@ -1157,7 +1157,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {activeStep === 6 && (
             <div className="space-y-6 animate-in fade-in">
               <div>
-                <h3 className="text-lg font-bold text-muted-foreground">Step 6: Review Application Summary</h3>
+                <h3 className="text-lg font-semibold text-muted-foreground">Step 6: Review Application Summary</h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   Review all information before submitting your application to the administrative team.
                 </p>
@@ -1166,7 +1166,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Validation Warning Alert Banner if any required fields are missing */}
               {Object.keys(fieldErrors).length > 0 && (
                 <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-5 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400 text-sm">
+                  <div className="flex items-center gap-2 font-semibold text-rose-700 dark:text-rose-400 text-sm">
                     <span>⚠️ Cannot Submit Application — Missing Required Fields</span>
                   </div>
                   <p className="mt-1 text-rose-600 dark:text-rose-300">
@@ -1176,7 +1176,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.applicantName && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Full Legal Name is required</span>
-                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Edit Step 1 →
                         </button>
                       </li>
@@ -1184,7 +1184,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.applicantEmail && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Valid Email Address is required</span>
-                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Edit Step 1 →
                         </button>
                       </li>
@@ -1192,7 +1192,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.applicantPhone && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Phone Number is required</span>
-                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Edit Step 1 →
                         </button>
                       </li>
@@ -1200,7 +1200,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.location && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Operating Address / Location is required</span>
-                        <button type="button" onClick={() => setActiveStep(3)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(3)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Edit Step 3 →
                         </button>
                       </li>
@@ -1208,7 +1208,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.governmentId && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Government Issued ID document is required</span>
-                        <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Upload in Step 4 →
                         </button>
                       </li>
@@ -1216,7 +1216,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     {fieldErrors.proofOfAddress && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
                         <span>• Proof of Address document is required</span>
-                        <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-rose-700">
+                        <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
                           Upload in Step 4 →
                         </button>
                       </li>
@@ -1229,8 +1229,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 1: Personal & Contact */}
                 <div className={`rounded-2xl border p-4 ${!formData.applicantName || !formData.applicantPhone ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">Personal & Contact</h4>
-                    <button onClick={() => setActiveStep(1)} className="text-[11px] font-bold text-amber-600 hover:underline">
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">Personal & Contact</h4>
+                    <button onClick={() => setActiveStep(1)} className="text-[11px] font-semibold text-amber-600 hover:underline">
                       Edit
                     </button>
                   </div>
@@ -1240,7 +1240,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {formData.applicantName.trim() ? (
                         <span>{formData.applicantName}</span>
                       ) : (
-                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
                           Missing (Required)
                         </span>
                       )}
@@ -1250,7 +1250,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {formData.applicantEmail.trim() ? (
                         <span>{formData.applicantEmail}</span>
                       ) : (
-                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
                           Missing (Required)
                         </span>
                       )}
@@ -1260,7 +1260,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {formData.applicantPhone.trim() ? (
                         <span>{formData.applicantPhone}</span>
                       ) : (
-                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
                           Missing (Required)
                         </span>
                       )}
@@ -1271,8 +1271,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 2: Business & Properties */}
                 <div className={`rounded-2xl border p-4 ${!formData.location ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">Business & Properties</h4>
-                    <button onClick={() => setActiveStep(2)} className="text-[11px] font-bold text-amber-600 hover:underline">
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">Business & Properties</h4>
+                    <button onClick={() => setActiveStep(2)} className="text-[11px] font-semibold text-amber-600 hover:underline">
                       Edit
                     </button>
                   </div>
@@ -1285,7 +1285,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {formData.location.trim() ? (
                         <span>{formData.location}</span>
                       ) : (
-                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+                        <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
                           Missing (Required)
                         </span>
                       )}
@@ -1296,10 +1296,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 3: Uploaded Documents */}
                 <div className="sm:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/30 p-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase text-muted-foreground">
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">
                       Uploaded Documents ({application.documents?.length || 0})
                     </h4>
-                    <button onClick={() => setActiveStep(4)} className="text-[11px] font-bold text-amber-600 hover:underline">
+                    <button onClick={() => setActiveStep(4)} className="text-[11px] font-semibold text-amber-600 hover:underline">
                       Manage Documents
                     </button>
                   </div>
@@ -1310,12 +1310,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       </span>
                     ))}
                     {(!application.documents || !application.documents.some((d) => d.documentType === "GOVERNMENT_ID")) && (
-                      <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-bold text-rose-500">
+                      <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold text-rose-500">
                         ✕ Missing: Government ID (Required)
                       </span>
                     )}
                     {(!application.documents || !application.documents.some((d) => d.documentType === "PROOF_OF_ADDRESS")) && (
-                      <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-bold text-rose-500">
+                      <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold text-rose-500">
                         ✕ Missing: Proof of Address (Required)
                       </span>
                     )}
@@ -1327,7 +1327,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(5)}
-                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--muted)]"
+                  className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
                   ← Back
                 </button>
@@ -1335,7 +1335,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleSubmitApplication}
                   disabled={isSubmitting}
-                  className="rounded-full bg-[#FBDE9B] px-8 py-3 text-xs font-extrabold text-[#291E05] shadow-md transition-all hover:scale-102 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FBDE9B] px-8 py-3 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {isSubmitting ? "Submitting Application..." : "Submit Application"}
                 </button>

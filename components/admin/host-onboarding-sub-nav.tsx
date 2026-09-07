@@ -70,7 +70,7 @@ export function HostOnboardingSubNav() {
               href={tab.href}
               className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs transition-all ${
                 isActive
-                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
+                  ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
                   : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground font-semibold"
               }`}
             >

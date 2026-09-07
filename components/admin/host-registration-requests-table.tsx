@@ -347,35 +347,35 @@ export function HostRegistrationRequestsTable() {
     switch (status) {
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
             Pending
           </span>
         );
       case "IN_REVIEW":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
             In Review
           </span>
         );
       case "APPROVED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Approved
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
             Rejected
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
             {status}
           </span>
         );
@@ -417,7 +417,7 @@ export function HostRegistrationRequestsTable() {
             type="button"
             onClick={() => fetchData()}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer disabled:opacity-50"
           >
             <svg className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -438,7 +438,7 @@ export function HostRegistrationRequestsTable() {
               : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
           }`}
         >
-          <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider block">All Requests</span>
+          <span className="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider block">All Requests</span>
           <p className="mt-1 text-2xl font-black text-muted-foreground">{statusCounts.total}</p>
         </button>
 
@@ -451,7 +451,7 @@ export function HostRegistrationRequestsTable() {
               : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
           }`}
         >
-          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Pending</span>
+          <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Pending</span>
           <p className="mt-1 text-2xl font-black text-amber-800 dark:text-amber-300">{statusCounts.pending}</p>
         </button>
 
@@ -464,7 +464,7 @@ export function HostRegistrationRequestsTable() {
               : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
           }`}
         >
-          <span className="text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider block">In Review</span>
+          <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider block">In Review</span>
           <p className="mt-1 text-2xl font-black text-blue-800 dark:text-blue-300">{statusCounts.inReview}</p>
         </button>
 
@@ -477,7 +477,7 @@ export function HostRegistrationRequestsTable() {
               : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
           }`}
         >
-          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Approved</span>
+          <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Approved</span>
           <p className="mt-1 text-2xl font-black text-emerald-800 dark:text-emerald-300">{statusCounts.approved}</p>
         </button>
 
@@ -490,7 +490,7 @@ export function HostRegistrationRequestsTable() {
               : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)]"
           }`}
         >
-          <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">Rejected</span>
+          <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">Rejected</span>
           <p className="mt-1 text-2xl font-black text-rose-800 dark:text-rose-300">{statusCounts.rejected}</p>
         </button>
       </div>
@@ -563,7 +563,7 @@ export function HostRegistrationRequestsTable() {
         {/* Second Row: Sorting & Clear Filters */}
         <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)] flex-wrap text-xs">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-bold text-[var(--muted-foreground)]">Sort By:</span>
+            <span className="font-semibold text-[var(--muted-foreground)]">Sort By:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -588,7 +588,7 @@ export function HostRegistrationRequestsTable() {
             <button
               type="button"
               onClick={handleClearFilters}
-              className="text-xs font-bold text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200 underline cursor-pointer"
+              className="text-xs font-semibold text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200 underline cursor-pointer"
             >
               Clear All Filters
             </button>
@@ -605,7 +605,7 @@ export function HostRegistrationRequestsTable() {
           </div>
         ) : error ? (
           <div className="p-8 text-center text-xs text-rose-600 space-y-2">
-            <p className="font-bold">{error}</p>
+            <p className="font-semibold">{error}</p>
             <button onClick={fetchData} className="underline text-xs cursor-pointer">
               Retry
             </button>
@@ -615,10 +615,10 @@ export function HostRegistrationRequestsTable() {
             <svg className="w-10 h-10 mx-auto text-[var(--muted-foreground)] opacity-50" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p className="font-bold text-sm text-muted-foreground">No host registration requests found</p>
+            <p className="font-semibold text-sm text-muted-foreground">No host registration requests found</p>
             <p>{isFilterActive ? "Try adjusting your search query or filters." : "No applications submitted yet."}</p>
             {isFilterActive && (
-              <button onClick={handleClearFilters} className="mt-2 text-xs font-bold text-amber-600 underline cursor-pointer">
+              <button onClick={handleClearFilters} className="mt-2 text-xs font-semibold text-amber-600 underline cursor-pointer">
                 Clear Filters
               </button>
             )}
@@ -642,14 +642,14 @@ export function HostRegistrationRequestsTable() {
                   <tr key={item.id} className="hover:bg-[var(--surface-secondary)] transition-colors">
                     {/* Application ID */}
                     <td className="py-3.5 px-4">
-                      <span className="font-mono text-xs font-extrabold text-muted-foreground">
+                      <span className="font-mono text-xs font-semibold text-muted-foreground">
                         {item.applicationId}
                       </span>
                     </td>
 
                     {/* Host Name & Email */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-muted-foreground">{item.applicantName}</div>
+                      <div className="font-semibold text-muted-foreground">{item.applicantName}</div>
                       <div className="text-[11px] text-[var(--muted-foreground)] font-mono">{item.applicantEmail}</div>
                       {item.applicantPhone && (
                         <div className="text-[10px] text-[var(--muted-foreground)]">{item.applicantPhone}</div>
@@ -674,11 +674,11 @@ export function HostRegistrationRequestsTable() {
                     <td className="py-3.5 px-4">
                       {item.assignedReviewer ? (
                         <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-[10px] flex items-center justify-center">
+                          <div className="h-6 w-6 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold text-[10px] flex items-center justify-center">
                             {(item.assignedReviewer.name?.[0] || item.assignedReviewer.email?.[0] || "A").toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-muted-foreground text-xs">
+                            <div className="font-semibold text-muted-foreground text-xs">
                               {item.assignedReviewer.name || item.assignedReviewer.email}
                             </div>
                             <div className="text-[10px] text-[var(--muted-foreground)] font-mono">
@@ -712,7 +712,7 @@ export function HostRegistrationRequestsTable() {
                             type="button"
                             onClick={() => handleStartReview(item)}
                             disabled={pendingTransition}
-                            className="rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1 text-[11px] font-bold dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50 transition-colors cursor-pointer"
+                            className="rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1 text-[11px] font-semibold dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50 transition-colors cursor-pointer"
                           >
                             Start Review
                           </button>
@@ -722,7 +722,7 @@ export function HostRegistrationRequestsTable() {
                         <button
                           type="button"
                           onClick={() => handleOpenAssignModal(item)}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground transition-colors cursor-pointer"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors cursor-pointer"
                         >
                           {item.assignedReviewer ? "Reassign" : "Assign"}
                         </button>
@@ -731,7 +731,7 @@ export function HostRegistrationRequestsTable() {
                         <button
                           type="button"
                           onClick={() => handleOpenDetails(item.id)}
-                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3 py-1 text-[11px] font-extrabold text-[var(--accent-foreground)] shadow-2xs transition-colors cursor-pointer"
+                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3 py-1 text-[11px] font-semibold text-[var(--accent-foreground)] shadow-2xs transition-colors cursor-pointer"
                         >
                           View
                         </button>
@@ -799,14 +799,14 @@ export function HostRegistrationRequestsTable() {
       {assignModalOpen && targetAssignItem && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">Assign Reviewer</h3>
+            <h3 className="text-lg font-semibold text-muted-foreground">Assign Reviewer</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Assign an authorized admin reviewer to application <strong className="text-muted-foreground">{targetAssignItem.applicationId}</strong> ({targetAssignItem.applicantName}).
             </p>
 
             <form onSubmit={handleAssignSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Select Reviewer</label>
+                <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Select Reviewer</label>
                 <select
                   value={selectedReviewerId}
                   onChange={(e) => setSelectedReviewerId(e.target.value)}
@@ -826,14 +826,14 @@ export function HostRegistrationRequestsTable() {
                   type="button"
                   onClick={() => setAssignModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer inline-flex items-center gap-2"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
                   {pendingTransition && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -850,7 +850,7 @@ export function HostRegistrationRequestsTable() {
       {editModalOpen && selectedItem && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-bold text-muted-foreground">Edit Registration Information</h3>
+            <h3 className="text-lg font-semibold text-muted-foreground">Edit Registration Information</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Update application details for {selectedItem.applicationId}.
             </p>
@@ -858,7 +858,7 @@ export function HostRegistrationRequestsTable() {
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Applicant Name</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Applicant Name</label>
                   <input
                     type="text"
                     value={editForm.applicantName}
@@ -868,7 +868,7 @@ export function HostRegistrationRequestsTable() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Email Address</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Email Address</label>
                   <input
                     type="email"
                     value={editForm.applicantEmail}
@@ -881,7 +881,7 @@ export function HostRegistrationRequestsTable() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Phone Number</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Phone Number</label>
                   <input
                     type="text"
                     value={editForm.applicantPhone}
@@ -890,7 +890,7 @@ export function HostRegistrationRequestsTable() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Registration Category</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Registration Category</label>
                   <select
                     value={editForm.registrationType}
                     onChange={(e) => setEditForm({ ...editForm, registrationType: e.target.value })}
@@ -905,7 +905,7 @@ export function HostRegistrationRequestsTable() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Business Name</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Business Name</label>
                   <input
                     type="text"
                     value={editForm.businessName}
@@ -914,7 +914,7 @@ export function HostRegistrationRequestsTable() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[var(--muted-foreground)] font-bold mb-1">Property Count</label>
+                  <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Property Count</label>
                   <input
                     type="number"
                     min={1}
@@ -926,7 +926,7 @@ export function HostRegistrationRequestsTable() {
               </div>
 
               <div>
-                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Location</label>
+                <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Location</label>
                 <input
                   type="text"
                   value={editForm.location}
@@ -936,7 +936,7 @@ export function HostRegistrationRequestsTable() {
               </div>
 
               <div>
-                <label className="block text-[var(--muted-foreground)] font-bold mb-1">Notes / Description</label>
+                <label className="block text-[var(--muted-foreground)] font-semibold mb-1">Notes / Description</label>
                 <textarea
                   rows={3}
                   value={editForm.notes}
@@ -950,14 +950,14 @@ export function HostRegistrationRequestsTable() {
                   type="button"
                   onClick={() => setEditModalOpen(false)}
                   disabled={pendingTransition}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pendingTransition}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-extrabold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer inline-flex items-center gap-2"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2 font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50 transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
                   {pendingTransition && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />

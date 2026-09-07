@@ -85,7 +85,7 @@ export function EditorSidebar({
       <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
         {/* Header Title (Matches Figma: "Edit preferences" when gear active, else "Listing editor") */}
         <div className="flex items-center justify-between pb-3 shrink-0">
-          <h2 className="text-xl font-extrabold tracking-tight text-zinc-900">
+          <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
             {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
           </h2>
         </div>
@@ -98,7 +98,7 @@ export function EditorSidebar({
               setEditorTab("space");
               setActiveSection("description");
             }}
-            className={`rounded-full font-extrabold text-xs px-4 py-1.5 transition-all cursor-pointer ${
+            className={`rounded-full font-semibold text-xs px-4 py-1.5 transition-all cursor-pointer ${
               editorTab === "space"
                 ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
@@ -113,7 +113,7 @@ export function EditorSidebar({
               setEditorTab("arrival");
               setActiveSection("arrival-guide");
             }}
-            className={`rounded-full font-bold text-xs px-4 py-1.5 transition-all cursor-pointer ${
+            className={`rounded-full font-semibold text-xs px-4 py-1.5 transition-all cursor-pointer ${
               editorTab === "arrival"
                 ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
@@ -139,7 +139,7 @@ export function EditorSidebar({
         </div>
 
         {/* Scrollable Sidebar Content Body */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1.5 space-y-3 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 custom-scrollbar">
           {/* Preferences Cards Stack */}
           {editorTab === "preferences" ? (
             <div className="space-y-3">
@@ -152,7 +152,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-1">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-1">
                   Listing status
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
@@ -170,7 +170,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Language
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -187,7 +187,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Guest requirements
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -204,7 +204,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Local laws
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -221,7 +221,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Regulations
                 </span>
               </div>
@@ -235,7 +235,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Taxes
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -252,7 +252,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Homyz.com stays
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -269,7 +269,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Remove listing
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -282,12 +282,11 @@ export function EditorSidebar({
               {/* Photo Card Stack Preview (Only shown under "Your space") */}
               <div
                 onClick={() => setActiveSection("photos")}
-                className="relative cursor-pointer group my-2 pr-3 pt-2"
+                className="relative cursor-pointer group my-2 p-3"
               >
-                <div className="absolute inset-0 translate-x-2.5 -translate-y-1 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
                 <div className="absolute inset-0 translate-x-1.25 -translate-y-0.5 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
 
-                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-zinc-300 bg-zinc-100 shadow-xs flex items-center justify-center">
+                <div className="relative aspect-[16/7] rounded-2xl overflow-hidden border border-zinc-300 bg-zinc-100 shadow-xs flex items-center justify-center">
                   {editPhotos.length > 0 ? (
                     <img
                       src={editPhotos[0]}
@@ -300,7 +299,7 @@ export function EditorSidebar({
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
-                    <span className="bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-extrabold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
+                    <span className="bg-white/95 backdrop-blur-md text-[#1F1F1F] text-[11px] font-semibold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
                       {editPhotos.length || 14} photos
                     </span>
                   </div>
@@ -315,10 +314,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Title
                 </span>
-                <span className="text-xs font-bold text-zinc-900 block truncate">
+                <span className="text-xs font-semibold text-[#1F1F1F] block truncate">
                   {editTitle || "Property Name"}
                 </span>
               </div>
@@ -332,10 +331,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Property type
                 </span>
-                <span className="text-xs font-bold text-zinc-900 block">
+                <span className="text-xs font-semibold text-[#1F1F1F] block">
                   {editListingType} · {editPropertyType}
                 </span>
               </div>
@@ -349,11 +348,11 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Pricing
                 </span>
                 <div className="text-xs text-zinc-800 space-y-0.5">
-                  <p className="font-bold text-zinc-900">SR{editPrice} per night</p>
+                  <p className="font-semibold text-[#1F1F1F]">SR{editPrice} per night</p>
                   <p className="text-[11px] text-zinc-500">{weeklyDiscount}% weekly discount</p>
                   <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
                 </div>
@@ -368,11 +367,11 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Availability
                 </span>
                 <div className="text-xs text-zinc-800 space-y-0.5">
-                  <p className="font-bold text-zinc-900">
+                  <p className="font-semibold text-[#1F1F1F]">
                     {minNights}-{maxNights} night stays
                   </p>
                   <p className="text-[11px] text-zinc-500">Same day advance notice</p>
@@ -389,10 +388,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Number of guests
                 </span>
-                <span className="text-xs font-bold text-zinc-900 block">
+                <span className="text-xs font-semibold text-[#1F1F1F] block">
                   {editGuests} guests
                 </span>
               </div>
@@ -406,7 +405,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Description
                 </span>
                 <p className="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
@@ -423,7 +422,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-1">
                   Amenities
                 </span>
                 <div className="space-y-1.5 text-xs text-zinc-800">
@@ -434,7 +433,7 @@ export function EditorSidebar({
                     </div>
                   ))}
                   {editAmenities.length > 3 && (
-                    <span className="text-[10px] font-bold text-zinc-400 block pt-0.5">
+                    <span className="text-[10px] font-semibold text-zinc-400 block pt-0.5">
                       +{editAmenities.length - 3} more
                     </span>
                   )}
@@ -450,7 +449,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
                   Accessibility features
                 </span>
                 <span className="text-xs text-zinc-400 font-medium">Add details</span>
@@ -465,7 +464,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-2">Location</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2">Location</span>
                 <RealMap
                   address={editAddress}
                   city={editCity}
@@ -489,7 +488,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-3">About the host</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-3">About the host</span>
 
                 <div className="flex items-center justify-between">
                   {/* Left Column: Avatar + Name + Superhost badge */}
@@ -504,7 +503,7 @@ export function EditorSidebar({
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <h4 className="text-xs font-bold text-zinc-900 leading-tight">
+                    <h4 className="text-xs font-semibold text-[#1F1F1F] leading-tight">
                       {listing.host?.name || "Host Name"}
                     </h4>
                     <span className="text-[10px] text-zinc-500 font-medium">Superhost</span>
@@ -513,19 +512,19 @@ export function EditorSidebar({
                   {/* Right Column: 3 Stat Rows with Dividers */}
                   <div className="flex-1 pl-4 flex flex-col justify-center space-y-1.5">
                     <div className="pb-1.5 border-b border-zinc-200/80 text-center">
-                      <span className="text-xs font-extrabold text-zinc-900 block leading-tight">
+                      <span className="text-xs font-semibold text-[#1F1F1F] block leading-tight">
                         24
                       </span>
                       <span className="text-[10px] text-zinc-500 font-medium">reviews</span>
                     </div>
                     <div className="pb-1.5 border-b border-zinc-200/80 text-center flex flex-col items-center">
-                      <span className="text-xs font-extrabold text-zinc-900 leading-tight flex items-center justify-center gap-0.5">
+                      <span className="text-xs font-semibold text-[#1F1F1F] leading-tight flex items-center justify-center gap-0.5">
                         4.98 <span className="text-amber-500 text-[10px]">★</span>
                       </span>
                       <span className="text-[10px] text-zinc-500 font-medium">rating</span>
                     </div>
                     <div className="text-center">
-                      <span className="text-xs font-extrabold text-zinc-900 block leading-tight">
+                      <span className="text-xs font-semibold text-[#1F1F1F] block leading-tight">
                         5
                       </span>
                       <span className="text-[10px] text-zinc-500 font-medium">years hosting</span>
@@ -546,9 +545,9 @@ export function EditorSidebar({
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-zinc-900 block">Co-host</span>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block">Co-host</span>
                   {coHostsList.length > 0 && (
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
                       {coHostsList.length} Added
                     </span>
                   )}
@@ -575,7 +574,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Booking settings
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -592,7 +591,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-2">House rules</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2">House rules</span>
                 <div className="space-y-1 text-[11px] text-zinc-600 font-medium">
                   <div className="flex items-center gap-2">
                     <span>🕒</span>
@@ -606,7 +605,7 @@ export function EditorSidebar({
                     <span>👥</span>
                     <span>{maxGuestsCount || editGuests || 2} guest maximum</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400 pt-0.5 font-bold">+3 more</p>
+                  <p className="text-[10px] text-zinc-400 pt-0.5 font-semibold">+3 more</p>
                 </div>
               </div>
 
@@ -619,7 +618,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-2.5">Guests safety</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2.5">Guests safety</span>
                 <div className="space-y-2 text-[11px] text-zinc-700 font-medium">
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs">
@@ -655,7 +654,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Cancellation policy
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">{cancellationPolicy}</p>
@@ -670,7 +669,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Custom link
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -690,7 +689,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-in method
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -707,7 +706,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Wifi details
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -724,7 +723,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   House manual
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -741,7 +740,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-2">House rules</span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2">House rules</span>
                 <div className="space-y-1 text-[11px] text-zinc-600 font-medium">
                   <div className="flex items-center gap-2">
                     <span>🕒</span>
@@ -755,7 +754,7 @@ export function EditorSidebar({
                     <span>👥</span>
                     <span>{maxGuestsCount || editGuests || 2} guest maximum</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400 pt-0.5 font-bold">+3 more</p>
+                  <p className="text-[10px] text-zinc-400 pt-0.5 font-semibold">+3 more</p>
                 </div>
               </div>
 
@@ -771,7 +770,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-out instructions
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
@@ -788,7 +787,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Guidebooks
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal line-clamp-2 leading-relaxed">
@@ -807,7 +806,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-bold text-zinc-900 block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Interaction preferences
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">

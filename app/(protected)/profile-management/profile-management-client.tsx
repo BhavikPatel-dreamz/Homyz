@@ -439,7 +439,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("whereIWantToGo", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.whereIWantToGo
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: Where have you always wanted to travel?"
@@ -457,7 +457,7 @@ export function ProfileManagementClient({
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("myWork", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
-                          formDataState.myWork ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                          formDataState.myWork ? "text-[#1F1F1F] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add your work"
                       />
@@ -477,7 +477,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("spendTooMuchTime", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.spendTooMuchTime
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add an answer"
@@ -495,7 +495,7 @@ export function ProfileManagementClient({
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("pets", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
-                          formDataState.pets ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                          formDataState.pets ? "text-[#1F1F1F] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add pets"
                       />
@@ -513,7 +513,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("decadeBorn", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.decadeBorn
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add decade"
@@ -533,7 +533,7 @@ export function ProfileManagementClient({
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("school", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
-                          formDataState.school ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                          formDataState.school ? "text-[#1F1F1F] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add school"
                       />
@@ -553,7 +553,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("uselessSkill", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.uselessSkill
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: What's your most useless skill?"
@@ -571,7 +571,7 @@ export function ProfileManagementClient({
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("funFact", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
-                          formDataState.funFact ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
+                          formDataState.funFact ? "text-[#1F1F1F] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: What's your fun fact?"
                       />
@@ -591,7 +591,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("favoriteSong", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.favoriteSong
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: What was your favorite song in high school?"
@@ -629,7 +629,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("obsessedWith", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.obsessedWith
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="What are you obsessed with?"
@@ -650,7 +650,7 @@ export function ProfileManagementClient({
                         onChange={(e) => handleInputChange("bioTitle", e.target.value)}
                         className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.bioTitle
-                            ? "text-zinc-900 font-medium"
+                            ? "text-[#1F1F1F] font-medium"
                             : "text-zinc-400 font-normal"
                         }`}
                         placeholder="My biography title would be"
@@ -769,7 +769,7 @@ export function ProfileManagementClient({
                                   e.stopPropagation();
                                   setEditPhotoModal(photo);
                                 }}
-                                className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-zinc-900 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
+                                className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-[#1F1F1F] flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
                                 title="Edit photo"
                               >
                                 <IconPencil />
@@ -790,7 +790,7 @@ export function ProfileManagementClient({
 
                           <div className="mt-auto">
                             {photo.location && (
-                              <p className="text-xs font-bold text-white truncate">📍 {photo.location}</p>
+                              <p className="text-xs font-semibold text-white truncate">📍 {photo.location}</p>
                             )}
                             {photo.caption && (
                               <p className="text-xs text-zinc-200 truncate mt-0.5">{photo.caption}</p>
@@ -843,7 +843,7 @@ export function ProfileManagementClient({
                     <div className="flex items-center gap-3">
                       {/* Active/OFF Badge */}
                       <span
-                        className={`text-xs font-bold px-3.5 py-1 rounded-full border transition-all ${
+                        className={`text-xs font-semibold px-3.5 py-1 rounded-full border transition-all ${
                           (formDataState.profileVisible ?? true)
                             ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                             : "bg-zinc-200 text-zinc-700 border-zinc-300"
@@ -884,7 +884,7 @@ export function ProfileManagementClient({
                     <div className="flex items-center gap-3">
                       {/* Active/OFF Badge */}
                       <span
-                        className={`text-xs font-bold px-3.5 py-1 rounded-full border transition-all ${
+                        className={`text-xs font-semibold px-3.5 py-1 rounded-full border transition-all ${
                           stampsVisible
                             ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                             : "bg-zinc-200 text-zinc-700 border-zinc-300"
@@ -1077,10 +1077,10 @@ function MultiImageUploadModal({
 
   return (
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
-            <h3 className="text-lg font-extrabold text-zinc-900 tracking-tight">Upload Trip Photos</h3>
+            <h3 className="text-lg font-semibold text-[#1F1F1F] tracking-tight">Upload Trip Photos</h3>
             <p className="text-xs text-zinc-500 mt-0.5">Add your favorite travel memories</p>
           </div>
           <button
@@ -1107,7 +1107,7 @@ function MultiImageUploadModal({
             <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2 shadow-2xs">
               <IconCamera />
             </div>
-            <p className="text-xs font-bold text-zinc-800">Select trip photos</p>
+            <p className="text-xs font-semibold text-zinc-800">Select trip photos</p>
             <p className="text-[11px] text-zinc-400 mt-0.5">You can upload best images of your trip (Max 10MB each)</p>
             <input
               type="file"
@@ -1122,7 +1122,7 @@ function MultiImageUploadModal({
           {/* Selected Photo Previews Grid */}
           {previews.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-zinc-800 mb-2">
+              <p className="text-xs font-semibold text-zinc-800 mb-2">
                 Selected Photos ({previews.length})
               </p>
               <div className="grid grid-cols-4 gap-2.5 max-h-36 overflow-y-auto p-1 bg-zinc-50 rounded-2xl border border-zinc-200/80">
@@ -1161,7 +1161,7 @@ function MultiImageUploadModal({
           {/* Caption Multiline Field with Character Counter */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-zinc-900">Caption</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Caption</label>
               <span className="text-[11px] font-semibold text-zinc-400">
                 {caption.length} / 300
               </span>
@@ -1171,7 +1171,7 @@ function MultiImageUploadModal({
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Tell the story behind this trip..."
-              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
+              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
 
@@ -1180,14 +1180,14 @@ function MultiImageUploadModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading || selectedFiles.length === 0}
-              className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-semibold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {uploading ? "Uploading..." : `Upload (${selectedFiles.length})`}
             </button>
@@ -1241,7 +1241,7 @@ function EditTripPhotoModal({
 
   return (
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <h3 className="text-lg font-semibold text-[#1F1F1F]">Edit Photo Details</h3>
           <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center cursor-pointer">
@@ -1276,7 +1276,7 @@ function EditTripPhotoModal({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-zinc-900">Caption</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Caption</label>
               <span className="text-[11px] font-semibold text-zinc-400">
                 {caption.length} / 300
               </span>
@@ -1286,7 +1286,7 @@ function EditTripPhotoModal({
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Tell the story behind this trip..."
-              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
+              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
 
@@ -1294,19 +1294,19 @@ function EditTripPhotoModal({
             <button
               type="button"
               onClick={() => onDeleteTrigger(photo)}
-              className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
             >
               Delete Photo
             </button>
 
             <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100 cursor-pointer">
+              <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100 cursor-pointer">
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-[#FDE29B] hover:bg-[#FCD885] text-zinc-900 text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50 cursor-pointer shadow-2xs"
+                className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-semibold px-6 py-2 rounded-full disabled:opacity-50 cursor-pointer shadow-2xs"
               >
                 {saving ? "Saving..." : "Save Details"}
               </button>
@@ -1346,7 +1346,7 @@ function DeleteTripPhotoModal({
 
   return (
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
         <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">Delete Trip Photo</h3>
         <p className="text-xs text-zinc-500 mb-4">Are you sure you want to delete this trip photo?</p>
 
@@ -1361,14 +1361,14 @@ function DeleteTripPhotoModal({
         </div>
 
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} disabled={deleting} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-600 hover:bg-zinc-100">
+          <button type="button" onClick={onClose} disabled={deleting} className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100">
             Cancel
           </button>
           <button
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-6 py-2 rounded-full disabled:opacity-50"
+            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-6 py-2 rounded-full disabled:opacity-50"
           >
             {deleting ? "Deleting..." : "Confirm Delete"}
           </button>
@@ -1388,7 +1388,7 @@ function LightboxModal({
   return (
     <ModalOverlay onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer">
       <div onClick={(e) => e.stopPropagation()} className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center cursor-default">
-        <button type="button" onClick={onClose} className="absolute -top-10 right-0 text-white text-sm font-bold">
+        <button type="button" onClick={onClose} className="absolute -top-10 right-0 text-white text-sm font-semibold">
           ✕ Close
         </button>
         <div className="relative w-full h-[70vh] rounded-2xl overflow-hidden shadow-2xl">

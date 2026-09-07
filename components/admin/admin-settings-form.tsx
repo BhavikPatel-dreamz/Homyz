@@ -56,7 +56,7 @@ export function AdminSettingsForm() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 font-sans text-muted-foreground">
       {/* Change Password Card */}
       <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-        <h2 className="text-base font-bold text-muted-foreground mb-1">
+        <h2 className="text-base font-semibold text-muted-foreground mb-1">
           Change Administrator Password
         </h2>
         <p className="text-xs text-[var(--muted-foreground)] mb-6">
@@ -162,29 +162,29 @@ export function AdminSettingsForm() {
 
           {/* Password policy indicator */}
           <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 text-[11px] text-[var(--muted-foreground)] flex flex-col gap-1.5 border border-[var(--border-subtle)]">
-            <div className="font-bold text-muted-foreground mb-0.5">
+            <div className="font-semibold text-muted-foreground mb-0.5">
               Password Requirements:
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasMinLength ? "text-emerald-600 font-extrabold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasMinLength ? "✓" : "○"}
               </span>
               <span>Minimum 8 characters</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasUppercase ? "text-emerald-600 font-extrabold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasUppercase ? "✓" : "○"}
               </span>
               <span>At least one uppercase letter (A-Z)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={hasNumber ? "text-emerald-600 font-extrabold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
                 {hasNumber ? "✓" : "○"}
               </span>
               <span>At least one number (0-9)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={passwordsMatch ? "text-emerald-600 font-extrabold" : "text-[var(--muted-foreground)] opacity-40"}>
+              <span className={passwordsMatch ? "text-emerald-600 font-semibold" : "text-[var(--muted-foreground)] opacity-40"}>
                 {passwordsMatch ? "✓" : "○"}
               </span>
               <span>Passwords match</span>
@@ -195,7 +195,7 @@ export function AdminSettingsForm() {
             <button
               type="submit"
               disabled={pending || !hasMinLength || !hasUppercase || !hasNumber || !passwordsMatch}
-              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-bold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2"
+              className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-6 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-2"
             >
               {pending && (
                 <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -208,7 +208,7 @@ export function AdminSettingsForm() {
 
       {/* Security Policies Sidebar */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs flex flex-col gap-4 text-xs">
-        <h3 className="text-sm font-bold text-muted-foreground">
+        <h3 className="text-sm font-semibold text-muted-foreground">
           Environment & Security Parameters
         </h3>
 

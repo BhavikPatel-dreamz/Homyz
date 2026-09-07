@@ -108,7 +108,7 @@ export function HostAndLocationViews({
 
             {/* Title & Description */}
             <div className="space-y-2 max-w-sm">
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Invite a co-host</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">Invite a co-host</h2>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed">
                 A co-host can help you with everything from managing your calendar to welcoming guests.
               </p>
@@ -118,7 +118,7 @@ export function HostAndLocationViews({
                   e.preventDefault();
                   setIsAddCoHostModalOpen(true);
                 }}
-                className="text-xs font-bold text-zinc-900 underline hover:text-zinc-700 block pt-0.5"
+                className="text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-700 block pt-0.5"
               >
                 Learn more about
               </a>
@@ -128,7 +128,7 @@ export function HostAndLocationViews({
             <button
               type="button"
               onClick={() => setIsAddCoHostModalOpen(true)}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-9 py-3 shadow-2xs transition-all cursor-pointer mt-2"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-9 py-3 shadow-2xs transition-all cursor-pointer mt-2"
             >
               Get started
             </button>
@@ -137,16 +137,16 @@ export function HostAndLocationViews({
           {/* Invited Co-hosts list */}
           {coHostsList.length > 0 && (
             <div className="space-y-3 pt-4 border-t border-zinc-200/80">
-              <h3 className="font-bold text-xs text-zinc-900">Invited Co-hosts ({coHostsList.length})</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Invited Co-hosts ({coHostsList.length})</h3>
               <div className="space-y-2.5">
                 {coHostsList.map((ch) => (
                   <div key={ch.id} className="flex items-center justify-between p-4 rounded-2xl border border-zinc-200 bg-white shadow-2xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center font-bold text-amber-800 text-xs">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center font-semibold text-amber-800 text-xs">
                         CH
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-zinc-900">{ch.email || ch.phone}</p>
+                        <p className="text-xs font-semibold text-[#1F1F1F]">{ch.email || ch.phone}</p>
                         <p className="text-[10px] text-zinc-400">{ch.status} · {ch.dateAdded}</p>
                       </div>
                     </div>
@@ -199,7 +199,7 @@ export function HostAndLocationViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("photos")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Photo Tour"}
             </button>
@@ -300,7 +300,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Address</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Address</h3>
               <p className="text-[11px] text-zinc-400 font-normal">
                 {editAddress || editCity || editCountry
                   ? `${editAddress}, ${editCity}, ${editCountry}`
@@ -316,7 +316,7 @@ function LocationAccordionView({
             <div className="px-5 pb-5 pt-1 space-y-4 border-t border-zinc-100 animate-in fade-in">
               <div className="space-y-3 pt-2">
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-zinc-700">Street address</label>
+                  <label className="block text-[11px] font-semibold text-zinc-700">Street address</label>
                   <input
                     type="text"
                     value={editAddress}
@@ -328,7 +328,7 @@ function LocationAccordionView({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-zinc-700">City</label>
+                    <label className="block text-[11px] font-semibold text-zinc-700">City</label>
                     <input
                       type="text"
                       value={editCity}
@@ -339,7 +339,7 @@ function LocationAccordionView({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-zinc-700">Country</label>
+                    <label className="block text-[11px] font-semibold text-zinc-700">Country</label>
                     <input
                       type="text"
                       value={editCountry}
@@ -359,7 +359,7 @@ function LocationAccordionView({
                     handleSaveSection("location");
                     setOpenAccordion(null);
                   }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -382,7 +382,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Location sharing</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Location sharing</h3>
               <p className="text-[11px] text-zinc-400 font-normal">
                 Show listing's specific location
               </p>
@@ -395,7 +395,7 @@ function LocationAccordionView({
               {/* Toggle 1: Show your specific location */}
               <div className="flex items-start justify-between gap-4 pt-2">
                 <div className="space-y-1 max-w-md">
-                  <h4 className="font-bold text-xs text-zinc-900">Show your specific location</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Show your specific location</h4>
                   <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
                     Lorem ipsum massa pellentesque enim lobortis mattis elit lorem morbi viverra nec congue tempus et pellentesque nibh lobortis et mi placerat iaculis habitasse ac.
                   </p>
@@ -418,7 +418,7 @@ function LocationAccordionView({
               {/* Toggle 2: Address privacy for cancellation */}
               <div className="flex items-start justify-between gap-4 border-t border-zinc-100 pt-4">
                 <div className="space-y-1 max-w-md">
-                  <h4 className="font-bold text-xs text-zinc-900">Address privacy for cancellation</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Address privacy for cancellation</h4>
                   <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
                     Lorem ipsum massa pellentesque enim lobortis mattis elit lorem morbi viverra nec congue tempus et pellentesque nibh lobortis et mi placerat iaculis habitasse ac.
                   </p>
@@ -447,7 +447,7 @@ function LocationAccordionView({
                     handleSaveSection("location");
                     setOpenAccordion(null);
                   }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -470,7 +470,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Location features</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Location features</h3>
               <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
             </div>
             <span className="text-zinc-400 text-xs font-semibold">›</span>
@@ -482,7 +482,7 @@ function LocationAccordionView({
                 {/* Feature 1 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Beach access</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Beach access</span>
                     <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
                   </div>
                   <button
@@ -505,7 +505,7 @@ function LocationAccordionView({
                 {/* Feature 2 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Resort access</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Resort access</span>
                     <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
                   </div>
                   <button
@@ -528,7 +528,7 @@ function LocationAccordionView({
                 {/* Feature 3 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Lake access</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Lake access</span>
                     <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
                   </div>
                   <button
@@ -551,7 +551,7 @@ function LocationAccordionView({
                 {/* Feature 4 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Ski-in/ski-out</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Ski-in/ski-out</span>
                     <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
                   </div>
                   <button
@@ -574,7 +574,7 @@ function LocationAccordionView({
                 {/* Feature 5 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Laundromat nearby</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Laundromat nearby</span>
                   </div>
                   <button
                     type="button"
@@ -599,7 +599,7 @@ function LocationAccordionView({
                 {/* Feature 6 */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Waterfront</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Waterfront</span>
                     <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
                   </div>
                   <button
@@ -622,7 +622,7 @@ function LocationAccordionView({
                 {/* Feature 7: Private entrance */}
                 <div className="flex items-center justify-between col-span-2 pt-1 border-t border-zinc-100">
                   <div className="space-y-0.5">
-                    <span className="font-bold text-xs text-zinc-900">Private entrance</span>
+                    <span className="font-semibold text-xs text-[#1F1F1F]">Private entrance</span>
                     <p className="text-[11px] text-zinc-400 font-normal">An entrance that's only available to guests</p>
                   </div>
                   <button
@@ -655,7 +655,7 @@ function LocationAccordionView({
                     handleSaveSection("location");
                     setOpenAccordion(null);
                   }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -678,7 +678,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Neighborhood description</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Neighborhood description</h3>
               <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
             </div>
             <span className="text-zinc-400 text-xs font-semibold">›</span>
@@ -695,7 +695,7 @@ function LocationAccordionView({
                 <button
                   type="button"
                   onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   Save
                 </button>
@@ -718,7 +718,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Getting around</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Getting around</h3>
               <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
             </div>
             <span className="text-zinc-400 text-xs font-semibold">›</span>
@@ -735,7 +735,7 @@ function LocationAccordionView({
                 <button
                   type="button"
                   onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   Save
                 </button>
@@ -758,7 +758,7 @@ function LocationAccordionView({
             className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
           >
             <div className="space-y-0.5">
-              <h3 className="font-bold text-xs text-zinc-900">Scenic views</h3>
+              <h3 className="font-semibold text-xs text-[#1F1F1F]">Scenic views</h3>
               <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
             </div>
             <span className="text-zinc-400 text-xs font-semibold">
@@ -784,7 +784,7 @@ function LocationAccordionView({
                   const isChecked = Boolean(scenicViews[viewName]);
                   return (
                     <div key={viewName} className="flex items-center justify-between py-0.5">
-                      <span className="font-bold text-xs text-zinc-800 tracking-tight">{viewName}</span>
+                      <span className="font-semibold text-xs text-zinc-800 tracking-tight">{viewName}</span>
                       <button
                         type="button"
                         onClick={() => setScenicViews({ ...scenicViews, [viewName]: !isChecked })}
@@ -812,7 +812,7 @@ function LocationAccordionView({
                     handleSaveSection("location");
                     setOpenAccordion(null);
                   }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -912,7 +912,7 @@ export function AboutHostFullView({
           />
           <button
             type="button"
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-4 py-1.5 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-4 py-1.5 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
           >
             <span>📷</span>
             <span>Edit</span>
@@ -923,7 +923,7 @@ export function AboutHostFullView({
         <div className="pt-2 space-y-1 text-xs text-zinc-500 font-normal leading-relaxed">
           <p>
             Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
-            <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-zinc-700 hover:text-zinc-900">
+            <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-zinc-700 hover:text-[#1F1F1F]">
               Learn more
             </a>
           </p>
@@ -944,7 +944,7 @@ export function AboutHostFullView({
 
       {/* 3. About me Card */}
       <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 space-y-2.5 shadow-2xs">
-        <h3 className="font-bold text-xs text-zinc-900">About me</h3>
+        <h3 className="font-semibold text-xs text-[#1F1F1F]">About me</h3>
         <textarea
           rows={3}
           value={aboutText}
@@ -957,7 +957,7 @@ export function AboutHostFullView({
       {/* 4. Where I've been Card */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-sm text-zinc-900">Where I've been</h3>
+          <h3 className="font-semibold text-sm text-[#1F1F1F]">Where I've been</h3>
           <button
             type="button"
             onClick={() => setWhereBeenStamp(!whereBeenStamp)}
@@ -980,13 +980,13 @@ export function AboutHostFullView({
           <div className="w-32 h-32 rounded-full border-2 border-dashed border-rose-300 p-2 flex flex-col items-center justify-center text-center bg-rose-50/30">
             <span className="text-xs font-serif tracking-widest text-zinc-700">stay like a homyz</span>
             <span className="text-2xl pt-1">🗼</span>
-            <span className="text-xs font-bold text-zinc-900 tracking-wider">Paris</span>
+            <span className="text-xs font-semibold text-[#1F1F1F] tracking-wider">Paris</span>
           </div>
         </div>
 
         <button
           type="button"
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
         >
           Edit travel stamp
         </button>
@@ -994,7 +994,7 @@ export function AboutHostFullView({
 
       {/* 5. My interests Card */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-5 shadow-2xs">
-        <h3 className="font-bold text-sm text-zinc-900">My interests</h3>
+        <h3 className="font-semibold text-sm text-[#1F1F1F]">My interests</h3>
 
         <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
           {interestList.map((interest) => (
@@ -1010,7 +1010,7 @@ export function AboutHostFullView({
         <button
           type="button"
           onClick={() => setIsEditingInterests(!isEditingInterests)}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
         >
           Edit interests
         </button>

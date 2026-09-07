@@ -15,7 +15,7 @@ export default async function ResetPasswordPage({
   const { token } = await searchParams;
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-zinc-900 font-sans flex flex-col justify-center">
+    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-[#1F1F1F] font-sans flex flex-col justify-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         {/* Left Column: Form */}
         <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center">
@@ -30,7 +30,7 @@ export default async function ResetPasswordPage({
               <span className="text-2xl font-black tracking-tight text-zinc-950 leading-none">
                 homyz
               </span>
-              <span className="text-[10px] font-extrabold tracking-wider text-amber-700 uppercase mt-1">
+              <span className="text-[10px] font-semibold tracking-wider text-amber-700 uppercase mt-1">
                 Account Recovery
               </span>
             </div>
@@ -59,10 +59,10 @@ export default async function ResetPasswordPage({
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-8 text-white">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-300 mb-1">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-amber-300 mb-1">
                 Account Protection
               </span>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-semibold">
                 Enhanced Credential Encryption
               </h2>
             </div>

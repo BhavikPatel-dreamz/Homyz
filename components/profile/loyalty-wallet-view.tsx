@@ -264,7 +264,7 @@ export function LoyaltyWalletView() {
                 <span className="text-xs text-[#727272]">{tx.date} • {tx.category}</span>
               </div>
               <span
-                className={`text-sm font-bold ${
+                className={`text-sm font-semibold ${
                   tx.points > 0 ? "text-emerald-700" : "text-zinc-700"
                 }`}
               >

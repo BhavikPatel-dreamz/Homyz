@@ -194,7 +194,7 @@ export function HostOperationsDashboard() {
       {/* Summary Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { label: "Total Hosts", val: metrics?.totalHosts, color: "text-zinc-900", bg: "bg-zinc-50" },
+          { label: "Total Hosts", val: metrics?.totalHosts, color: "text-[#1F1F1F]", bg: "bg-zinc-50" },
           { label: "New Applications", val: metrics?.newApplications, color: "text-indigo-600", bg: "bg-indigo-50/40" },
           { label: "Pending Reviews", val: metrics?.pendingReviews, color: "text-amber-600", bg: "bg-amber-50/40" },
           { label: "Documents Pending", val: metrics?.documentsPending, color: "text-blue-600", bg: "bg-blue-50/40" },
@@ -230,7 +230,7 @@ export function HostOperationsDashboard() {
           {funnel.map((st, i) => (
             <div key={st.stageKey} className="relative p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-white border border-zinc-200/70 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-400">0{i + 1}</span>
+                <span className="text-xs font-semibold text-zinc-400">0{i + 1}</span>
                 <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
                   ~{st.avgTimeHours}h avg
                 </span>
@@ -256,27 +256,27 @@ export function HostOperationsDashboard() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Approval Rate</div>
-              <div className="text-xl font-bold text-emerald-600 mt-1">{kpis?.approvalRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-emerald-600 mt-1">{kpis?.approvalRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Rejection Rate</div>
-              <div className="text-xl font-bold text-rose-600 mt-1">{kpis?.rejectionRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-rose-600 mt-1">{kpis?.rejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Doc Rejection Rate</div>
-              <div className="text-xl font-bold text-amber-600 mt-1">{kpis?.documentRejectionRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-amber-600 mt-1">{kpis?.documentRejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Compliance Failure Rate</div>
-              <div className="text-xl font-bold text-violet-600 mt-1">{kpis?.complianceFailureRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-violet-600 mt-1">{kpis?.complianceFailureRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Re-Verification Rate</div>
-              <div className="text-xl font-bold text-blue-600 mt-1">{kpis?.reVerificationRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-blue-600 mt-1">{kpis?.reVerificationRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
               <div className="text-xs text-zinc-500">Suspension Rate</div>
-              <div className="text-xl font-bold text-red-600 mt-1">{kpis?.suspensionRate ?? 0}%</div>
+              <div className="text-xl font-semibold text-red-600 mt-1">{kpis?.suspensionRate ?? 0}%</div>
             </div>
           </div>
         </div>
@@ -294,12 +294,12 @@ export function HostOperationsDashboard() {
                 <div>
                   <div className="text-sm font-semibold text-[#1F1F1F]">{b.stageName}</div>
                   <div className="text-xs text-zinc-500 mt-1">
-                    Applications Waiting: <span className="font-bold text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-bold text-amber-700">{b.avgWaitDays} days</span>
+                    Applications Waiting: <span className="font-semibold text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-semibold text-amber-700">{b.avgWaitDays} days</span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                     b.status === "EXCEEDED" ? "bg-rose-100 text-rose-800 border border-rose-300" :
                     b.status === "WARNING" ? "bg-amber-100 text-amber-800 border border-amber-300" :
                     "bg-emerald-100 text-emerald-800 border border-emerald-300"
@@ -404,7 +404,7 @@ export function HostOperationsDashboard() {
                 filteredQueue.map((item) => (
                   <tr key={item.id} className="hover:bg-zinc-50/70 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-zinc-900">{item.hostName}</div>
+                      <div className="font-semibold text-[#1F1F1F]">{item.hostName}</div>
                       <div className="text-xs text-zinc-400 font-mono">{item.applicationId}</div>
                     </td>
                     <td className="px-4 py-3">
@@ -417,7 +417,7 @@ export function HostOperationsDashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         item.priority === "CRITICAL" ? "bg-rose-100 text-rose-800 border border-rose-200" :
                         item.priority === "HIGH" ? "bg-amber-100 text-amber-800 border border-amber-200" :
                         item.priority === "MEDIUM" ? "bg-blue-100 text-blue-800 border border-blue-200" :
@@ -461,7 +461,7 @@ export function HostOperationsDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">Workload Balancing Recommendation</div>
+              <div className="text-xs font-semibold text-amber-900 uppercase tracking-wider">Workload Balancing Recommendation</div>
               <div className="text-sm text-amber-800 mt-0.5">{workloadData.recommendation}</div>
             </div>
           </div>
@@ -484,13 +484,13 @@ export function HostOperationsDashboard() {
               {workloadData?.reviewers.map((rev) => (
                 <tr key={rev.reviewerId} className="hover:bg-zinc-50/70 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-zinc-900">{rev.name}</div>
+                    <div className="font-semibold text-[#1F1F1F]">{rev.name}</div>
                     <div className="text-xs text-zinc-400">{rev.email}</div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-zinc-900">{rev.assigned}</td>
-                  <td className="px-4 py-3 font-bold text-amber-600">{rev.pending}</td>
-                  <td className="px-4 py-3 font-bold text-rose-600">{rev.overdue}</td>
-                  <td className="px-4 py-3 font-bold text-emerald-600">{rev.completed}</td>
+                  <td className="px-4 py-3 font-semibold text-[#1F1F1F]">{rev.assigned}</td>
+                  <td className="px-4 py-3 font-semibold text-amber-600">{rev.pending}</td>
+                  <td className="px-4 py-3 font-semibold text-rose-600">{rev.overdue}</td>
+                  <td className="px-4 py-3 font-semibold text-emerald-600">{rev.completed}</td>
                   <td className="px-4 py-3 text-xs text-zinc-500">~{rev.avgReviewTimeHours}h</td>
                 </tr>
               ))}

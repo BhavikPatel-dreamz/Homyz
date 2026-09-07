@@ -310,7 +310,7 @@ export function AdminInvitationsTable({
         <button
           type="button"
           onClick={() => setShowInviteModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] font-extrabold text-xs rounded-full shadow-2xs transition-all shrink-0 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] font-semibold text-xs rounded-full shadow-2xs transition-all shrink-0 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -354,7 +354,7 @@ export function AdminInvitationsTable({
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[11px] font-bold border border-[var(--border-subtle)]">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[11px] font-semibold border border-[var(--border-subtle)]">
                         {inv.adminRoleName || inv.role}
                       </span>
                     </td>
@@ -380,7 +380,7 @@ export function AdminInvitationsTable({
                           type="button"
                           onClick={() => handleResend(inv)}
                           disabled={pending || actionLoadingId === `${inv.id}_resend`}
-                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                          className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
                           {actionLoadingId === `${inv.id}_resend` && (
                             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -395,7 +395,7 @@ export function AdminInvitationsTable({
                           type="button"
                           onClick={() => handleRevoke(inv)}
                           disabled={pending || actionLoadingId === `${inv.id}_revoke`}
-                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                          className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-[11px] font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                         >
                           {actionLoadingId === `${inv.id}_revoke` && (
                             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -409,7 +409,7 @@ export function AdminInvitationsTable({
                         type="button"
                         onClick={() => setSelectedDetails(inv)}
                         disabled={pending}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                       >
                         Details
                       </button>
@@ -436,7 +436,7 @@ export function AdminInvitationsTable({
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="font-bold text-xs text-muted-foreground">{inv.name || "Administrator"}</h3>
+                  <h3 className="font-semibold text-xs text-muted-foreground">{inv.name || "Administrator"}</h3>
                   <p className="text-xs text-[var(--muted-foreground)] font-mono">{inv.email}</p>
                 </div>
                 {getStatusBadge(inv.status)}
@@ -445,7 +445,7 @@ export function AdminInvitationsTable({
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-[var(--border-subtle)]">
                 <div>
                   <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Role</span>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[10px] font-bold border border-[var(--border-subtle)]">
+                  <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[var(--surface-secondary)] text-muted-foreground text-[10px] font-semibold border border-[var(--border-subtle)]">
                     {inv.adminRoleName || inv.role}
                   </span>
                 </div>
@@ -467,7 +467,7 @@ export function AdminInvitationsTable({
                     type="button"
                     onClick={() => handleResend(inv)}
                     disabled={pending || actionLoadingId === `${inv.id}_resend`}
-                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-2.5 py-1 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {actionLoadingId === `${inv.id}_resend` && (
                       <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -480,7 +480,7 @@ export function AdminInvitationsTable({
                     type="button"
                     onClick={() => handleRevoke(inv)}
                     disabled={pending || actionLoadingId === `${inv.id}_revoke`}
-                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-bold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
+                    className="rounded-full border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50 px-2.5 py-1 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 inline-flex items-center gap-1 cursor-pointer"
                   >
                     {actionLoadingId === `${inv.id}_revoke` && (
                       <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -492,7 +492,7 @@ export function AdminInvitationsTable({
                   type="button"
                   onClick={() => setSelectedDetails(inv)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs cursor-pointer"
                 >
                   Details
                 </button>
@@ -518,7 +518,7 @@ export function AdminInvitationsTable({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[var(--surface)] text-muted-foreground border border-[var(--border)] rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-muted-foreground">
+              <h2 className="text-xl font-semibold text-muted-foreground">
                 Invite New Administrator
               </h2>
               <button
@@ -594,14 +594,14 @@ export function AdminInvitationsTable({
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-extrabold shadow-2xs transition-all disabled:opacity-50"
+                  className="rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-5 py-2 text-xs font-semibold shadow-2xs transition-all disabled:opacity-50"
                 >
                   {pending ? "Sending Invitation…" : "Send Invitation Email"}
                 </button>
@@ -617,7 +617,7 @@ export function AdminInvitationsTable({
           <div className="bg-[var(--surface)] text-muted-foreground border border-[var(--border)] rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border-subtle)]">
               <div>
-                <h2 className="text-lg font-bold text-muted-foreground">
+                <h2 className="text-lg font-semibold text-muted-foreground">
                   Invitation Details
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] font-mono">{selectedDetails.id}</p>
@@ -684,7 +684,7 @@ export function AdminInvitationsTable({
               <button
                 type="button"
                 onClick={() => setSelectedDetails(null)}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
               >
                 Close
               </button>
@@ -704,7 +704,7 @@ export function AdminInvitationsTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-muted-foreground">
+                <h2 className="text-base font-semibold text-muted-foreground">
                   Revoke Administrator Invitation
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -724,7 +724,7 @@ export function AdminInvitationsTable({
                 type="button"
                 onClick={() => setRevokeConfirmInv(null)}
                 disabled={pending}
-                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -82,11 +82,11 @@ export function AdminNav() {
         {/* Left: Brand & Admin Tag */}
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-primary-foreground flex items-center justify-center font-bold text-base">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-primary-foreground flex items-center justify-center font-semibold text-base">
               H
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight text-muted-foreground">
+              <span className="text-sm font-semibold tracking-tight text-muted-foreground">
                 homyz
               </span>
               <span className="text-[10px] uppercase font-semibold tracking-wider text-[var(--accent)] -mt-1">
@@ -109,7 +109,7 @@ export function AdminNav() {
                 href={item.href}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs"
+                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                 }`}
               >
@@ -205,7 +205,7 @@ export function AdminNav() {
                   onClick={() => setMobileOpen(false)}
                   className={`rounded-xl px-3 py-2 text-xs font-medium ${
                     isActive
-                      ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold"
+                      ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"
                   }`}
                 >

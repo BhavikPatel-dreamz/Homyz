@@ -101,11 +101,11 @@ export function StepPhotoManagement({
         {/* Top Header Bar with Title & Plus (+) Button */}
         <div className="flex items-center justify-between w-full mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F] tracking-tight">
               Cool ! How does this look?
             </h1>
-            <p className="text-xs font-medium text-zinc-500 mt-1">
-              Drag photos to reorder or click <span className="font-bold text-zinc-700">+</span> to add more. ({photos.length} photos selected)
+            <p className="text-xs font-normal text-[#727272] mt-1">
+              Drag photos to reorder or click <span className="font-semibold text-zinc-700">+</span> to add more. ({photos.length} photos selected)
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export function StepPhotoManagement({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-10 h-10 rounded-full border border-zinc-300 hover:border-zinc-500 bg-white flex items-center justify-center text-zinc-700 hover:text-zinc-900 transition-colors shadow-2xs cursor-pointer shrink-0"
+            className="w-10 h-10 rounded-full border border-zinc-300 hover:border-zinc-500 bg-white flex items-center justify-center text-zinc-700 hover:text-[#1F1F1F] transition-colors shadow-2xs cursor-pointer shrink-0"
             title="Add more photos"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
@@ -149,21 +149,21 @@ export function StepPhotoManagement({
               {photos[0] ? (
                 <>
                   <img src={photos[0]} alt="Cover Photo" className="w-full h-full object-cover" />
-                  <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xs">
+                  <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-xs">
                     Cover photo
                   </span>
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between p-4">
                     <button
                       type="button"
                       onClick={() => triggerReplace(0)}
-                      className="bg-white/90 text-zinc-900 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-white transition-colors cursor-pointer"
+                      className="bg-white/90 text-[#1F1F1F] text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-white transition-colors cursor-pointer"
                     >
                       Replace
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(0)}
-                      className="w-8 h-8 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold transition-colors cursor-pointer"
                       title="Remove photo"
                     >
                       ✕
@@ -177,7 +177,7 @@ export function StepPhotoManagement({
                   className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-100/70 transition-colors"
                 >
                   <CameraPlaceholder />
-                  <span className="mt-2 text-xs font-bold text-zinc-600">Click to add cover photo</span>
+                  <span className="mt-2 text-xs font-semibold text-zinc-600">Click to add cover photo</span>
                 </button>
               )}
             </div>
@@ -200,14 +200,14 @@ export function StepPhotoManagement({
                           <button
                             type="button"
                             onClick={() => handleSetCoverPhoto(slotIdx)}
-                            className="bg-white/90 text-zinc-900 text-[10px] font-bold px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
+                            className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
                           >
                             Make cover
                           </button>
                           <button
                             type="button"
                             onClick={() => handleRemovePhoto(slotIdx)}
-                            className="w-6 h-6 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                            className="w-6 h-6 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold transition-colors cursor-pointer"
                             title="Remove photo"
                           >
                             ✕
@@ -216,7 +216,7 @@ export function StepPhotoManagement({
                         <button
                           type="button"
                           onClick={() => triggerReplace(slotIdx)}
-                          className="bg-white/90 text-zinc-900 text-[11px] font-bold py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
+                          className="bg-white/90 text-[#1F1F1F] text-[11px] font-semibold py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
                         >
                           Replace
                         </button>
@@ -240,7 +240,7 @@ export function StepPhotoManagement({
         {/* Additional Photos Section (If more than 5 photos uploaded) */}
         {extraPhotos.length > 0 && (
           <div className="w-full mt-4">
-            <h3 className="text-sm font-bold text-zinc-800 mb-3">Additional photos ({extraPhotos.length})</h3>
+            <h3 className="text-sm font-semibold text-zinc-800 mb-3">Additional photos ({extraPhotos.length})</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
               {extraPhotos.map((url, idx) => {
                 const actualIdx = idx + 5;
@@ -255,14 +255,14 @@ export function StepPhotoManagement({
                         <button
                           type="button"
                           onClick={() => handleSetCoverPhoto(actualIdx)}
-                          className="bg-white/90 text-zinc-900 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-white cursor-pointer"
+                          className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold px-2 py-0.5 rounded-md hover:bg-white cursor-pointer"
                         >
                           Make cover
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemovePhoto(actualIdx)}
-                          className="w-5 h-5 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-bold cursor-pointer"
+                          className="w-5 h-5 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold cursor-pointer"
                         >
                           ✕
                         </button>
@@ -270,7 +270,7 @@ export function StepPhotoManagement({
                       <button
                         type="button"
                         onClick={() => triggerReplace(actualIdx)}
-                        className="bg-white/90 text-zinc-900 text-[10px] font-bold py-0.5 px-2 rounded-md hover:bg-white cursor-pointer self-start"
+                        className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold py-0.5 px-2 rounded-md hover:bg-white cursor-pointer self-start"
                       >
                         Replace
                       </button>
@@ -284,8 +284,8 @@ export function StepPhotoManagement({
                 onClick={() => fileInputRef.current?.click()}
                 className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center aspect-square text-zinc-500 cursor-pointer transition-colors"
               >
-                <span className="text-2xl font-bold mb-1">+</span>
-                <span className="text-[11px] font-bold">Add photo</span>
+                <span className="text-2xl font-semibold mb-1">+</span>
+                <span className="text-[11px] font-semibold">Add photo</span>
               </button>
             </div>
           </div>
@@ -297,7 +297,7 @@ export function StepPhotoManagement({
         <button
           type="button"
           onClick={onBack}
-          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-bold text-zinc-800 transition-colors cursor-pointer"
+          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
         >
           Back
         </button>
@@ -305,11 +305,11 @@ export function StepPhotoManagement({
           type="button"
           onClick={onNext}
           disabled={isLoading}
-          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
           {isLoading ? (
             <>
-              <svg className="animate-spin h-4 w-4 text-zinc-900 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>

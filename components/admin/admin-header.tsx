@@ -123,7 +123,7 @@ export function AdminHeader({
           <button
             type="button"
             onClick={() => setMode(mode === "hosting" ? "traveling" : "hosting")}
-            className="hidden xl:inline-flex whitespace-nowrap items-center rounded-full border border-amber-300/80 bg-[var(--card-highlight)] hover:opacity-90 px-3.5 py-1.5 text-xs font-bold text-[var(--accent-foreground)] shadow-2xs transition-all"
+            className="hidden xl:inline-flex whitespace-nowrap items-center rounded-full border border-amber-300/80 bg-[var(--card-highlight)] hover:opacity-90 px-3.5 py-1.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs transition-all"
           >
             Switch to {mode === "hosting" ? "traveling" : "hosting"}
           </button>
@@ -140,14 +140,14 @@ export function AdminHeader({
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] p-1 pr-3 hover:border-[var(--muted-foreground)] transition-all shadow-2xs"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-xs overflow-hidden">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold text-xs overflow-hidden">
                 {user?.image ? (
                   <img src={user.image} alt={user.name || "User"} className="h-full w-full object-cover" />
                 ) : (
                   <span>{user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "A"}</span>
                 )}
               </div>
-              <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground truncate max-w-[90px]">
+              <span className="hidden sm:inline-block text-xs font-semibold text-muted-foreground truncate max-w-[90px]">
                 {user?.name?.split(" ")[0] || "Admin"}
               </span>
               <svg className="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -160,7 +160,7 @@ export function AdminHeader({
               <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95">
                 {/* User Info Header */}
                 <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] pb-3 mb-2.5 px-1">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-sm overflow-hidden">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold text-sm overflow-hidden">
                     {user?.image ? (
                       <img src={user.image} alt={user.name || "User"} className="h-full w-full object-cover" />
                     ) : (
@@ -168,13 +168,13 @@ export function AdminHeader({
                     )}
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <p className="text-xs font-bold text-muted-foreground truncate">
+                    <p className="text-xs font-semibold text-muted-foreground truncate">
                       {user?.name || "Homyz Admin"}
                     </p>
                     <p className="text-[11px] text-[var(--muted-foreground)] truncate">
                       {user?.email || "admin@homyz.local"}
                     </p>
-                    <span className="mt-1 inline-block rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-0.5 text-[10px] font-extrabold w-fit">
+                    <span className="mt-1 inline-block rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] px-2 py-0.5 text-[10px] font-semibold w-fit">
                       {role || "ADMIN"}
                     </span>
                   </div>

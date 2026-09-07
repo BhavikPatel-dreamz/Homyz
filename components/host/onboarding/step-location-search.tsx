@@ -67,7 +67,7 @@ export function StepLocationSearch({
   return (
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
       <div className="max-w-3xl mx-auto w-full flex flex-col items-center text-center my-auto">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 tracking-tight leading-tight mb-4">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-4">
           Where’s your place located?
         </h1>
         <p className="text-sm sm:text-base font-medium text-zinc-500 max-w-xl leading-relaxed mb-8">
@@ -87,7 +87,7 @@ export function StepLocationSearch({
                 placeholder="Add your location"
                 value={searchQuery}
                 onChange={(e) => handleInputChange(e.target.value)}
-                className="w-full text-sm font-semibold text-zinc-900 bg-transparent outline-none placeholder:text-zinc-400"
+                className="w-full text-sm font-semibold text-[#1F1F1F] bg-transparent outline-none placeholder:text-zinc-400"
               />
               {isSearching && (
                 <span className="w-4 h-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin shrink-0" />

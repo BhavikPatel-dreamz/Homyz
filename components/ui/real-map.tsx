@@ -248,14 +248,14 @@ export function RealMap({
 
       {/* Geocoding Loading Indicator */}
       {isLoadingGeocode && (
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 text-[11px] font-bold text-zinc-700 shadow-xs z-10 flex items-center gap-2">
+        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 text-[11px] font-semibold text-zinc-700 shadow-xs z-10 flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
           Updating address details...
         </div>
       )}
 
       {/* Zoom Controls Overlay (Top Right - Matches Figma Layout) */}
-      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs border border-zinc-200 rounded-lg shadow-md flex flex-col items-center divide-y divide-zinc-200 text-xs font-bold text-zinc-800 z-10">
+      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs border border-zinc-200 rounded-lg shadow-md flex flex-col items-center divide-y divide-zinc-200 text-xs font-semibold text-zinc-800 z-10">
         <button
           type="button"
           onClick={handleZoomIn}

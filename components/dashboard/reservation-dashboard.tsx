@@ -216,7 +216,7 @@ export function ReservationDashboard({
               <h2 id={`bookings-year-${year}`} className="text-xl font-semibold leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
                 {year}
               </h2>
-              <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {items.map((item) => (
                   <ReservationCard key={item.id} data={item} onSelect={setSelectedRes} />
                 ))}
@@ -225,7 +225,7 @@ export function ReservationDashboard({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}
@@ -283,7 +283,7 @@ export function ReservationDashboard({
               <button
                 type="button"
                 onClick={() => setSelectedRes(null)}
-                className="rounded-full bg-[var(--primary)] px-5 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity"
+                className="rounded-full bg-[var(--primary)] px-5 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 Close
               </button>

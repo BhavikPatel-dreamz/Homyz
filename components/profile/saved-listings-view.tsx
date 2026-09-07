@@ -98,7 +98,7 @@ export function SavedListingsView() {
               onClick={() => setCategoryFilter(cat.id)}
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
                 categoryFilter === cat.id
-                  ? "bg-white text-[#1F1F1F] shadow-2xs font-bold"
+                  ? "bg-white text-[#1F1F1F] shadow-2xs font-semibold"
                   : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
             >

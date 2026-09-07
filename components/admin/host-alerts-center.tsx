@@ -111,7 +111,7 @@ export function HostAlertsCenter() {
             }`}
           >
             <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{item.label}</div>
-            <div className={`text-xl font-bold mt-1 ${item.color}`}>{item.count}</div>
+            <div className={`text-xl font-semibold mt-1 ${item.color}`}>{item.count}</div>
           </button>
         ))}
       </div>
@@ -170,7 +170,7 @@ export function HostAlertsCenter() {
             >
               <div className="space-y-1 max-w-2xl">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                     alert.severity === "CRITICAL" ? "bg-rose-100 text-rose-800" :
                     alert.severity === "HIGH" ? "bg-amber-100 text-amber-800" :
                     "bg-blue-100 text-blue-800"

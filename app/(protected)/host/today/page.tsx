@@ -9,7 +9,7 @@ export default async function HostTodayPage() {
   await requirePageRole([Role.HOST, Role.ADMIN]);
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 font-sans flex flex-col selection:bg-[#FEE08B] selection:text-zinc-900">
+    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]">
       {/* TOP HEADER */}
       <HostHeader />
 

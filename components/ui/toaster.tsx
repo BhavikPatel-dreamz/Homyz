@@ -91,14 +91,14 @@ function ToastCard({ item }: { item: ToastItem }) {
       <div className="flex items-start gap-3">
         {iconMap[item.type]}
         <div className="flex-1 text-xs space-y-0.5 pr-2">
-          {item.title && <div className="font-extrabold text-muted-foreground">{item.title}</div>}
+          {item.title && <div className="font-semibold text-muted-foreground">{item.title}</div>}
           <div className="font-semibold text-muted-foreground leading-relaxed">{item.message}</div>
         </div>
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Close notification"
-          className="text-[var(--muted-foreground)] hover:text-muted-foreground p-1 rounded-lg transition-colors text-xs font-bold shrink-0"
+          className="text-[var(--muted-foreground)] hover:text-muted-foreground p-1 rounded-lg transition-colors text-xs font-semibold shrink-0"
         >
           ✕
         </button>

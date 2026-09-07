@@ -212,7 +212,7 @@ export function AdminSidebar({
                   <span className="text-base font-black tracking-tight text-muted-foreground leading-none">
                     homyz
                   </span>
-                  <span className="text-[10px] font-bold tracking-wider text-amber-600 dark:text-amber-400 uppercase mt-0.5 whitespace-nowrap">
+                  <span className="text-[10px] font-semibold tracking-wider text-amber-600 dark:text-amber-400 uppercase mt-0.5 whitespace-nowrap">
                     Admin Panel
                   </span>
                 </div>
@@ -244,7 +244,7 @@ export function AdminSidebar({
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.name)}
-                    className="flex items-center justify-between px-3 py-1 text-[10px] font-bold tracking-widest text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors w-full text-left uppercase"
+                    className="flex items-center justify-between px-3 py-1 text-[10px] font-semibold tracking-widest text-[var(--muted-foreground)] hover:text-muted-foreground transition-colors w-full text-left uppercase"
                   >
                     <span>{group.name}</span>
                     <svg
@@ -274,7 +274,7 @@ export function AdminSidebar({
                             onClick={() => setMobileOpen(false)}
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                               isActive
-                                ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-extrabold shadow-2xs"
+                                ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
                                 : "text-muted-foreground hover:bg-[var(--surface-secondary)]"
                             } ${collapsed ? "justify-center px-0 h-9" : ""}`}
                           >
@@ -304,7 +304,7 @@ export function AdminSidebar({
       {/* Sidebar Footer Info */}
       {!collapsed && (
         <div className="px-5 py-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--muted-foreground)] flex flex-col gap-0.5">
-          <p className="font-bold text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
+          <p className="font-semibold text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
           <p className="text-[10px]">Enterprise RBAC & Audit System</p>
         </div>
       )}

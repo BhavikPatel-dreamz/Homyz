@@ -76,7 +76,7 @@ export function StepPhotos({
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
       <div className="max-w-4xl mx-auto w-full flex flex-col items-center text-center my-auto">
         {/* Main Title & Subtitle */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 tracking-tight leading-tight mb-2">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
           Add some photos of your house
         </h1>
         <p className="text-sm font-medium text-zinc-500 mb-10">
@@ -118,7 +118,7 @@ export function StepPhotos({
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="px-7 py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-bold text-zinc-900 shadow-xs transition-colors cursor-pointer"
+              className="px-7 py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors cursor-pointer"
             >
               Add photos
             </button>
@@ -136,14 +136,14 @@ export function StepPhotos({
                 >
                   <img src={url} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
                   {idx === 0 && (
-                    <span className="absolute top-3 left-3 bg-zinc-900/80 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                    <span className="absolute top-3 left-3 bg-zinc-900/80 backdrop-blur-xs text-white text-[11px] font-semibold px-3 py-1 rounded-full">
                       Cover photo
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={() => handleRemovePhoto(idx)}
-                    className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-bold transition-colors shadow-xs opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold transition-colors shadow-xs opacity-0 group-hover:opacity-100 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -157,7 +157,7 @@ export function StepPhotos({
                 className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center p-4 transition-colors aspect-4/3 cursor-pointer"
               >
                 <span className="text-2xl text-zinc-400 mb-1">+</span>
-                <span className="text-xs font-bold text-zinc-600">Add more</span>
+                <span className="text-xs font-semibold text-zinc-600">Add more</span>
               </button>
             </div>
           </div>
@@ -180,7 +180,7 @@ export function StepPhotos({
             </button>
 
             {/* Modal Header Title */}
-            <h2 className="text-lg sm:text-xl font-extrabold text-zinc-900 mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-[#1F1F1F] mb-6">
               {filePreviews.length === 0
                 ? "You can upload best 5 images of your place"
                 : "Choose at least 5 photos"}
@@ -196,12 +196,12 @@ export function StepPhotos({
               {filePreviews.length === 0 ? (
                 /* Empty Dropzone State */
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-zinc-900 shadow-2xs">
+                  <div className="w-12 h-12 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-[#1F1F1F] shadow-2xs">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                     </svg>
                   </div>
-                  <span className="text-xs font-bold text-zinc-700">Drop files here</span>
+                  <span className="text-xs font-semibold text-zinc-700">Drop files here</span>
                 </div>
               ) : (
                 /* Photo Grid Previews State inside Modal */
@@ -215,7 +215,7 @@ export function StepPhotos({
                           e.stopPropagation();
                           handleRemoveModalPreview(idx);
                         }}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] font-bold"
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] font-semibold"
                       >
                         ✕
                       </button>
@@ -223,7 +223,7 @@ export function StepPhotos({
                   ))}
                   {filePreviews.length < 5 && (
                     <div className="rounded-xl border border-dashed border-zinc-300 bg-white flex flex-col items-center justify-center aspect-square text-zinc-400">
-                      <span className="text-lg font-bold">+</span>
+                      <span className="text-lg font-semibold">+</span>
                     </div>
                   )}
                 </div>
@@ -235,7 +235,7 @@ export function StepPhotos({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="w-full py-3 rounded-full border border-zinc-300 text-sm font-bold text-zinc-700 hover:bg-zinc-100 transition-colors mt-6 cursor-pointer"
+                className="w-full py-3 rounded-full border border-zinc-300 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors mt-6 cursor-pointer"
               >
                 Cancel
               </button>
@@ -244,7 +244,7 @@ export function StepPhotos({
                 type="button"
                 onClick={handleConfirmUpload}
                 disabled={isUploading}
-                className="w-full py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors mt-6 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors mt-6 cursor-pointer disabled:opacity-50"
               >
                 {isUploading ? "Uploading..." : "Upload"}
               </button>
@@ -258,7 +258,7 @@ export function StepPhotos({
         <button
           type="button"
           onClick={onBack}
-          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-bold text-zinc-800 transition-colors cursor-pointer"
+          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
         >
           Back
         </button>
@@ -266,11 +266,11 @@ export function StepPhotos({
           type="button"
           onClick={onNext}
           disabled={isLoading}
-          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
           {isLoading ? (
             <>
-              <svg className="animate-spin h-4 w-4 text-zinc-900 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>

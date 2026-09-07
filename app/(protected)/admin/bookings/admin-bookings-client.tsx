@@ -119,7 +119,7 @@ export function AdminBookingsClient({
           type="button"
           onClick={exportCSV}
           disabled={filtered.length === 0}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-bold transition-all shadow-2xs shrink-0 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] px-4 py-2 text-xs font-semibold transition-all shadow-2xs shrink-0 disabled:opacity-50"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -132,25 +132,25 @@ export function AdminBookingsClient({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Bookings</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-muted-foreground">{summary.total}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold text-muted-foreground">{summary.total}</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">All time reservations</p>
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Confirmed</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{summary.confirmed}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold text-emerald-600 dark:text-emerald-400">{summary.confirmed}</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Active & completed</p>
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Pending Approval</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-600 dark:text-amber-400">{summary.pending}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold text-amber-600 dark:text-amber-400">{summary.pending}</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Awaiting host action</p>
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Cancelled</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-rose-600 dark:text-rose-400">{summary.cancelled}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-semibold text-rose-600 dark:text-rose-400">{summary.cancelled}</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Cancelled reservations</p>
         </div>
       </div>
@@ -236,7 +236,7 @@ export function AdminBookingsClient({
                       className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
                       onClick={() => setSelectedBooking(booking)}
                     >
-                      <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-[var(--muted-foreground)] font-bold">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-[var(--muted-foreground)] font-semibold">
                         #{booking.id.slice(-8)}
                       </td>
 
@@ -258,13 +258,13 @@ export function AdminBookingsClient({
                         {new Date(booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} — {new Date(booking.endDate).toLocaleDateString([], { month: "short", day: "numeric" })} ({nights} nights)
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap font-bold text-muted-foreground font-mono">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono">
                         ${totalPrice}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                             booking.status === "CONFIRMED"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                               : booking.status === "CANCELLED"
@@ -283,7 +283,7 @@ export function AdminBookingsClient({
                             e.stopPropagation();
                             setSelectedBooking(booking);
                           }}
-                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all"
                         >
                           Details
                         </button>
@@ -317,10 +317,10 @@ export function AdminBookingsClient({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{booking.id.slice(-8)}</span>
-                    <h3 className="font-bold text-xs text-muted-foreground mt-0.5">{booking.listing.title}</h3>
+                    <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{booking.listing.title}</h3>
                   </div>
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                       booking.status === "CONFIRMED"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
                         : booking.status === "CANCELLED"
@@ -339,7 +339,7 @@ export function AdminBookingsClient({
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Amount</span>
-                    <span className="font-bold text-muted-foreground font-mono">${totalPrice}</span>
+                    <span className="font-semibold text-muted-foreground font-mono">${totalPrice}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
@@ -356,7 +356,7 @@ export function AdminBookingsClient({
                       e.stopPropagation();
                       setSelectedBooking(booking);
                     }}
-                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
+                    className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] transition-all shadow-2xs"
                   >
                     View Details
                   </button>
@@ -388,7 +388,7 @@ export function AdminBookingsClient({
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-bold text-muted-foreground">
+                <h3 className="text-base font-semibold text-muted-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(selectedBooking.createdAt).toLocaleString()}</p>
@@ -404,21 +404,21 @@ export function AdminBookingsClient({
 
             <div className="flex flex-col gap-3 text-xs">
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex flex-col gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">Property Information</span>
-                <p className="font-bold text-sm text-muted-foreground">{selectedBooking.listing.title}</p>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">Property Information</span>
+                <p className="font-semibold text-sm text-muted-foreground">{selectedBooking.listing.title}</p>
                 <p className="text-[var(--muted-foreground)]">Host: {selectedBooking.listing.host.name || selectedBooking.listing.host.email}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Guest</span>
-                  <p className="font-bold text-muted-foreground">{selectedBooking.user.name || "Guest"}</p>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Guest</span>
+                  <p className="font-semibold text-muted-foreground">{selectedBooking.user.name || "Guest"}</p>
                   <p className="text-[11px] text-[var(--muted-foreground)]">{selectedBooking.user.email}</p>
                 </div>
 
                 <div className="rounded-xl bg-[var(--surface-secondary)] p-3 border border-[var(--border-subtle)]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Status</span>
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--accent)] text-[var(--accent-foreground)]">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Status</span>
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--accent)] text-[var(--accent-foreground)]">
                     {selectedBooking.status}
                   </span>
                 </div>
@@ -427,11 +427,11 @@ export function AdminBookingsClient({
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex justify-between items-center font-mono">
                 <div>
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Check-in / Check-out</span>
-                  <span className="font-bold">{new Date(selectedBooking.startDate).toLocaleDateString()} → {new Date(selectedBooking.endDate).toLocaleDateString()}</span>
+                  <span className="font-semibold">{new Date(selectedBooking.startDate).toLocaleDateString()} → {new Date(selectedBooking.endDate).toLocaleDateString()}</span>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Total Amount</span>
-                  <span className="text-base font-extrabold text-amber-600 dark:text-amber-400">
+                  <span className="text-base font-semibold text-amber-600 dark:text-amber-400">
                     ${((selectedBooking.listing.price / 100) * getDurationNights(selectedBooking.startDate, selectedBooking.endDate)).toFixed(2)}
                   </span>
                 </div>
@@ -442,7 +442,7 @@ export function AdminBookingsClient({
               <button
                 type="button"
                 onClick={() => setSelectedBooking(null)}
-                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-bold shadow-2xs"
+                className="rounded-full bg-[var(--primary)] text-primary-foreground px-5 py-2 text-xs font-semibold shadow-2xs"
               >
                 Close
               </button>

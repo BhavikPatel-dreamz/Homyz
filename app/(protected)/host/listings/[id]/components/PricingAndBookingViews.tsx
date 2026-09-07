@@ -106,7 +106,7 @@ export function PricingAndBookingViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("pricing")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -116,7 +116,7 @@ export function PricingAndBookingViews({
             {/* 1. Nightly Price Card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-zinc-900">Nightly price</span>
+                <span className="font-semibold text-xs text-[#1F1F1F]">Nightly price</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
                   <button
@@ -137,20 +137,20 @@ export function PricingAndBookingViews({
 
               {/* Price Display / Input */}
               <div className="flex items-baseline gap-2 pt-1">
-                <span className="text-2xl font-extrabold text-zinc-900 tracking-tight">SR</span>
+                <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
                 <input
                   type="number"
                   value={editPrice || ""}
                   onChange={(e) => setEditPrice(Number(e.target.value))}
                   placeholder="100"
-                  className="w-full text-2xl font-extrabold text-zinc-900 tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                  className="w-full text-2xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
                 />
               </div>
             </div>
 
             {/* 2. Custom weekend price */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-900">Custom weekend price</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Custom weekend price</label>
               <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 flex items-center justify-between shadow-2xs">
                 <div className="flex items-baseline gap-1.5 flex-1">
                   <input
@@ -161,7 +161,7 @@ export function PricingAndBookingViews({
                       setWeekendPrice?.(isNaN(val) ? 0 : val);
                     }}
                     placeholder="XX"
-                    className="w-full text-sm font-bold text-zinc-400 focus:text-zinc-900 outline-none bg-transparent placeholder:text-zinc-400 font-mono"
+                    className="w-full text-sm font-semibold text-zinc-400 focus:text-[#1F1F1F] outline-none bg-transparent placeholder:text-zinc-400 font-mono"
                   />
                 </div>
                 <button
@@ -169,7 +169,7 @@ export function PricingAndBookingViews({
                   onClick={() => {
                     if (!weekendPrice) setWeekendPrice?.(120);
                   }}
-                  className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-xs font-bold shadow-2xs transition-all cursor-pointer shrink-0"
+                  className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all cursor-pointer shrink-0"
                 >
                   +
                 </button>
@@ -178,12 +178,12 @@ export function PricingAndBookingViews({
 
             {/* 3. Discounts section */}
             <div className="space-y-3 pt-1">
-              <label className="block text-xs font-bold text-zinc-900">Discounts</label>
+              <label className="block text-xs font-semibold text-[#1F1F1F]">Discounts</label>
 
               {/* Weekly discount card */}
               <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-extrabold text-zinc-400 tracking-wider uppercase block">
+                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
                     WEEKLY - FOR 7+ NIGHTS
                   </span>
                   <div className="flex items-baseline gap-1">
@@ -192,9 +192,9 @@ export function PricingAndBookingViews({
                       value={weeklyDiscount || ""}
                       onChange={(e) => setWeeklyDiscount(Number(e.target.value))}
                       placeholder="5"
-                      className="w-12 text-lg font-extrabold text-zinc-900 outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
+                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
                     />
-                    <span className="text-lg font-extrabold text-zinc-900">%</span>
+                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
                   </div>
                 </div>
                 <span className="text-xs text-zinc-400 font-mono">
@@ -205,7 +205,7 @@ export function PricingAndBookingViews({
               {/* Monthly discount card */}
               <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-extrabold text-zinc-400 tracking-wider uppercase block">
+                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
                     MONTHLY - FOR 28+ NIGHTS
                   </span>
                   <div className="flex items-baseline gap-1">
@@ -214,9 +214,9 @@ export function PricingAndBookingViews({
                       value={monthlyDiscount || ""}
                       onChange={(e) => setMonthlyDiscount(Number(e.target.value))}
                       placeholder="10"
-                      className="w-12 text-lg font-extrabold text-zinc-900 outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
+                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
                     />
-                    <span className="text-lg font-extrabold text-zinc-900">%</span>
+                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
                   </div>
                 </div>
                 <span className="text-xs text-zinc-400 font-mono">
@@ -228,7 +228,7 @@ export function PricingAndBookingViews({
             {/* 4. Calendar notice card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 hover:bg-zinc-100/80 p-4 flex items-center gap-3 shadow-2xs transition-all cursor-pointer">
               <span className="text-lg">🏪</span>
-              <span className="font-bold text-xs text-zinc-900">Find more discounts and fees in the calendar</span>
+              <span className="font-semibold text-xs text-[#1F1F1F]">Find more discounts and fees in the calendar</span>
             </div>
 
             {/* Save Button */}
@@ -237,7 +237,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("pricing")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -274,7 +274,7 @@ export function PricingAndBookingViews({
           <div className="space-y-6 pt-1">
             {/* 1. Trip length */}
             <div className="space-y-2.5">
-              <label className="block text-xs font-bold text-zinc-800">Trip length</label>
+              <label className="block text-xs font-semibold text-zinc-800">Trip length</label>
 
               {/* Minimum nights box */}
               <div className="relative rounded-2xl border border-zinc-300 bg-white px-4 py-3 shadow-2xs flex items-center justify-between">
@@ -302,7 +302,7 @@ export function PricingAndBookingViews({
             {/* 2. Advance notice */}
             <div className="space-y-2">
               <div>
-                <label className="block text-xs font-bold text-zinc-800">Advance notice</label>
+                <label className="block text-xs font-semibold text-zinc-800">Advance notice</label>
                 <p className="text-[11px] text-zinc-400 font-normal pt-0.5">
                   *How much notice do you need between a guest's booking and their arrival?
                 </p>
@@ -357,7 +357,7 @@ export function PricingAndBookingViews({
             {/* 3. Allow requests for the same day */}
             <div className="flex items-center justify-between pt-2">
               <div className="space-y-0.5">
-                <h4 className="font-bold text-xs text-zinc-800">Allow requests for the same day</h4>
+                <h4 className="font-semibold text-xs text-zinc-800">Allow requests for the same day</h4>
                 <p className="text-[11px] text-zinc-400 font-normal">
                   You'll review and approve each reservation request.
                 </p>
@@ -379,7 +379,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("availability")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -412,7 +412,7 @@ export function PricingAndBookingViews({
             {/* Card 1: Use instant book */}
             <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 space-y-4 shadow-2xs">
               <div className="space-y-1">
-                <h3 className="font-bold text-sm text-zinc-900">Use instant book</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Use instant book</h3>
                 <p className="text-xs text-zinc-500 font-normal">
                   Lorem ipsum lectus at libero iaculis semper donec enim lorem.
                 </p>
@@ -424,7 +424,7 @@ export function PricingAndBookingViews({
                 {/* Left Column: Require a good track record */}
                 <div className="space-y-2">
                   <div className="space-y-0.5">
-                    <h4 className="font-bold text-xs text-zinc-900">Require a good track record</h4>
+                    <h4 className="font-semibold text-xs text-[#1F1F1F]">Require a good track record</h4>
                     <p className="text-[11px] text-zinc-400 font-normal">Lorem ipsum integer habitant</p>
                   </div>
                   <button
@@ -440,13 +440,13 @@ export function PricingAndBookingViews({
                 <div className="space-y-2">
                   <div className="flex items-start justify-between">
                     <div className="space-y-0.5">
-                      <h4 className="font-bold text-xs text-zinc-900">Add a custom message</h4>
+                      <h4 className="font-semibold text-xs text-[#1F1F1F]">Add a custom message</h4>
                       <p className="text-[11px] text-zinc-400 font-normal">Lorem ipsum integer habitant</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setIsCustomMessageModalOpen(true)}
-                      className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-bold transition-all cursor-pointer shrink-0"
+                      className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0"
                     >
                       ›
                     </button>
@@ -461,7 +461,7 @@ export function PricingAndBookingViews({
               className="rounded-2xl bg-white border border-zinc-200/90 p-5 flex items-center justify-between shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
             >
               <div className="space-y-0.5">
-                <h3 className="font-bold text-sm text-zinc-900">Approve all bookings</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Approve all bookings</h3>
                 <p className="text-xs text-zinc-500 font-normal">Always review reservation requests</p>
               </div>
 
@@ -478,7 +478,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("booking-settings")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -499,8 +499,8 @@ export function PricingAndBookingViews({
             </span>
 
             {/* homyz/ slug input field */}
-            <div className="flex items-center justify-center text-4xl sm:text-5xl font-bold text-zinc-900 tracking-tight">
-              <span className="text-zinc-900">homyz/</span>
+            <div className="flex items-center justify-center text-4xl sm:text-5xl font-semibold text-[#1F1F1F] tracking-tight">
+              <span className="text-[#1F1F1F]">homyz/</span>
               <input
                 type="text"
                 value={customSlug}
@@ -508,7 +508,7 @@ export function PricingAndBookingViews({
                   setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                 }
                 placeholder=""
-                className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-zinc-900 font-bold min-w-[20px] max-w-[280px]"
+                className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[20px] max-w-[280px]"
                 autoFocus
               />
             </div>
@@ -518,7 +518,7 @@ export function PricingAndBookingViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("custom-link")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -609,7 +609,7 @@ function CancellationPolicyView({
       <div className="space-y-5 pt-2">
         {/* -------- Card 1: Short-term stays -------- */}
         <div className="rounded-2xl bg-white border border-zinc-200/90 p-6 space-y-4 shadow-2xs">
-          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-bold px-3 py-1 rounded-md inline-block">
+          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-semibold px-3 py-1 rounded-md inline-block">
             Short-term stays
           </span>
 
@@ -623,12 +623,12 @@ function CancellationPolicyView({
           <div className="flex items-center justify-between pt-1">
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-zinc-400 block">Your policy</span>
-              <span className="font-bold text-sm text-zinc-900 block">{selectedShortPolicy}</span>
+              <span className="font-semibold text-sm text-[#1F1F1F] block">{selectedShortPolicy}</span>
             </div>
             <button
               type="button"
               onClick={() => setEditingShortTerm((v) => !v)}
-              className={`rounded-full font-bold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
+              className={`rounded-full font-semibold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
                 editingShortTerm
                   ? "bg-zinc-900 text-white hover:bg-zinc-800"
                   : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950"
@@ -653,7 +653,7 @@ function CancellationPolicyView({
                         : "bg-white border-zinc-200 hover:border-zinc-300"
                     }`}
                   >
-                    <h4 className="font-bold text-xs text-zinc-900 mb-1.5">{policy.title}</h4>
+                    <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
                     <ul className="space-y-0.5">
                       {policy.bullets.map((b, i) => (
                         <li key={i} className="flex items-start gap-1.5">
@@ -675,7 +675,7 @@ function CancellationPolicyView({
                     handleSaveSection("cancellation-policy");
                     setEditingShortTerm(false);
                   }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -696,14 +696,14 @@ function CancellationPolicyView({
           {/* Non-refundable option */}
           <div className="flex items-start justify-between pt-2">
             <div className="space-y-1 max-w-sm">
-              <h4 className="font-bold text-xs text-zinc-900">Non-refundable option</h4>
+              <h4 className="font-semibold text-xs text-[#1F1F1F]">Non-refundable option</h4>
               <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
                 Guests can pay 10% less in exchange for you keeping full payout if they cancel.
               </p>
               <a
                 href="#"
                 onClick={(e) => e.preventDefault()}
-                className="underline font-semibold text-zinc-900 text-[11px] block pt-0.5"
+                className="underline font-semibold text-[#1F1F1F] text-[11px] block pt-0.5"
               >
                 Learn more
               </a>
@@ -722,7 +722,7 @@ function CancellationPolicyView({
 
         {/* -------- Card 2: Long-term stays -------- */}
         <div className="rounded-2xl bg-white border border-zinc-200/90 p-6 space-y-4 shadow-2xs">
-          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-bold px-3 py-1 rounded-md inline-block">
+          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-semibold px-3 py-1 rounded-md inline-block">
             Long-term stays
           </span>
 
@@ -736,12 +736,12 @@ function CancellationPolicyView({
           <div className="flex items-center justify-between pt-1">
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-zinc-400 block">Your policy</span>
-              <span className="font-bold text-sm text-zinc-900 block">{longTermPolicy}</span>
+              <span className="font-semibold text-sm text-[#1F1F1F] block">{longTermPolicy}</span>
             </div>
             <button
               type="button"
               onClick={() => setEditingLongTerm((v) => !v)}
-              className={`rounded-full font-bold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
+              className={`rounded-full font-semibold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
                 editingLongTerm
                   ? "bg-zinc-900 text-white hover:bg-zinc-800"
                   : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950"
@@ -766,7 +766,7 @@ function CancellationPolicyView({
                         : "bg-white border-zinc-200 hover:border-zinc-300"
                     }`}
                   >
-                    <h4 className="font-bold text-xs text-zinc-900 mb-1.5">{policy.title}</h4>
+                    <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
                     <ul className="space-y-0.5">
                       {policy.bullets.map((b, i) => (
                         <li key={i} className="flex items-start gap-1.5">
@@ -783,7 +783,7 @@ function CancellationPolicyView({
                 <button
                   type="button"
                   onClick={() => setEditingLongTerm(false)}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-extrabold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   Save
                 </button>

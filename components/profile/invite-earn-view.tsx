@@ -55,7 +55,7 @@ export function InviteEarnView({ user }: { user?: { name?: string | null; id?: s
             <span className="truncate font-mono text-xs sm:text-sm text-[#1F1F1F] select-all">
               {referralLink}
             </span>
-            <span className="ml-2 shrink-0 rounded-md bg-[#FFF8E8] px-2 py-0.5 font-mono text-[11px] font-bold text-[#1F1F1F]">
+            <span className="ml-2 shrink-0 rounded-md bg-[#FFF8E8] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#1F1F1F]">
               {referralCode}
             </span>
           </div>

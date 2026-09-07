@@ -11,7 +11,7 @@ export function AdminManagementTabs() {
     <div className="flex border-b border-[var(--border-subtle)] mb-6">
       <Link
         href="/admin/admins"
-        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           !isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
             : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
@@ -24,7 +24,7 @@ export function AdminManagementTabs() {
       </Link>
       <Link
         href="/admin/admins/invitations"
-        className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
+        className={`px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-colors -mb-px flex items-center gap-2 ${
           isInvitations
             ? "border-[var(--accent)] text-[var(--accent)]"
             : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"

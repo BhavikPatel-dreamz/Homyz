@@ -43,7 +43,7 @@ export function MainHeader() {
         {/* Center Logo */}
         <div className="w-1/3 flex items-center justify-center">
           <Link
-            className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-[#111111] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-[#111111] hover:opacity-90 transition-opacity"
             href="/"
           >
             <svg
@@ -106,7 +106,7 @@ export function MainHeader() {
               {user ? (
                 <div className="space-y-1">
                   <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                    <p className="text-sm font-bold text-gray-900 truncate">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
                       {user.name || user.email}
                     </p>
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -169,7 +169,7 @@ export function MainHeader() {
         <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 text-gray-900 relative">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-              <h3 className="text-base font-bold text-gray-900">Language &amp; Region</h3>
+              <h3 className="text-base font-semibold text-gray-900">Language &amp; Region</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}
@@ -181,7 +181,7 @@ export function MainHeader() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
                   Select Language
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -193,7 +193,7 @@ export function MainHeader() {
                         onClick={() => setSelectedLang(lang)}
                         className={`p-2.5 rounded-xl border text-xs font-medium text-left transition cursor-pointer ${
                           selectedLang === lang
-                            ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
+                            ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                         }`}
                       >
@@ -205,7 +205,7 @@ export function MainHeader() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
                   Select Currency
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -217,7 +217,7 @@ export function MainHeader() {
                         onClick={() => setSelectedCurrency(curr)}
                         className={`p-2.5 rounded-xl border text-xs font-medium text-center transition cursor-pointer ${
                           selectedCurrency === curr
-                            ? "border-amber-400 bg-amber-50 text-amber-950 font-bold"
+                            ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                         }`}
                       >

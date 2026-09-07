@@ -80,7 +80,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-zinc-900 font-sans flex flex-col justify-center">
+    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-[#1F1F1F] font-sans flex flex-col justify-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         {/* Left Column: Form Area */}
         <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center">
@@ -95,7 +95,7 @@ export function AdminLoginForm() {
               <span className="text-2xl font-black tracking-tight text-zinc-950 leading-none">
                 homyz
               </span>
-              <span className="text-[10px] font-extrabold tracking-wider text-amber-700 uppercase mt-1">
+              <span className="text-[10px] font-semibold tracking-wider text-amber-700 uppercase mt-1">
                 Admin Console
               </span>
             </div>
@@ -143,7 +143,7 @@ export function AdminLoginForm() {
                 placeholder="emailexample@gmail.com"
                 required
                 autoComplete="email"
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
               />
             </div>
 
@@ -155,7 +155,7 @@ export function AdminLoginForm() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-zinc-500 hover:text-zinc-900"
+                  className="text-xs text-zinc-500 hover:text-[#1F1F1F]"
                 >
                   Forget password? <span className="underline">reset password</span>
                 </Link>
@@ -171,7 +171,7 @@ export function AdminLoginForm() {
                   placeholder="••••••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
                 />
                 <button
                   type="button"
@@ -197,7 +197,7 @@ export function AdminLoginForm() {
             <button
               type="submit"
               disabled={pending}
-              className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {pending ? "Signing in..." : "Sign in"}
             </button>

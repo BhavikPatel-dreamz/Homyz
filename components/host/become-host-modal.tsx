@@ -91,7 +91,7 @@ export function BecomeHostModal({
           </button>
 
           {/* Modal Header Title */}
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 text-center tracking-tight mb-8">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F] text-center tracking-tight mb-8">
             What would you like to host?
           </h2>
 
@@ -103,7 +103,7 @@ export function BecomeHostModal({
               onClick={() => setSelectedType("HOME")}
               className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
                 selectedType === "HOME"
-                  ? "border-zinc-900 ring-1 ring-zinc-900 shadow-md bg-white"
+                ? "border-zinc-500 ring-[#FCDF9C] shadow-md bg-white"
                   : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
               }`}
             >
@@ -120,7 +120,7 @@ export function BecomeHostModal({
                   <rect x="25" y="25" width="4.5" height="4.5" rx="1" fill="#FFEDC2" stroke="#4A3E3D" strokeWidth="1" />
                 </svg>
               </div>
-              <span className="text-base font-bold text-zinc-900">Home</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">Home</span>
             </button>
 
             {/* Option 2: Experience */}
@@ -129,8 +129,8 @@ export function BecomeHostModal({
               onClick={() => setSelectedType("EXPERIENCE")}
               className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
                 selectedType === "EXPERIENCE"
-                  ? "border-zinc-900 ring-1 ring-zinc-900 shadow-md bg-white"
-                  : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
+                ? "border-zinc-500 ring-[#FCDF9C] shadow-md bg-white"
+                : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
               }`}
             >
               {/* Experience Icon */}
@@ -142,7 +142,7 @@ export function BecomeHostModal({
                   <path d="M 8 40 C 18 35, 38 35, 48 40 C 48 42, 8 42, 8 40 Z" fill="#7BAA9C" />
                 </svg>
               </div>
-              <span className="text-base font-bold text-zinc-900">Experience</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">Experience</span>
             </button>
 
             {/* Option 3: Service */}
@@ -151,8 +151,8 @@ export function BecomeHostModal({
               onClick={() => setSelectedType("SERVICE")}
               className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
                 selectedType === "SERVICE"
-                  ? "border-zinc-900 ring-1 ring-zinc-900 shadow-md bg-white"
-                  : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
+                ? "border-zinc-500 ring-[#FCDF9C] shadow-md bg-white"
+                : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
               }`}
             >
               {/* Service Icon */}
@@ -166,7 +166,7 @@ export function BecomeHostModal({
                   <path d="M 33.5 18 L 35 19.5 L 38.5 16" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span className="text-base font-bold text-zinc-900">Service</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">Service</span>
             </button>
           </div>
 
@@ -175,14 +175,14 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-bold text-zinc-700 transition-colors cursor-pointer"
+              className="px-6 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-700 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleStep1Next}
-              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-extrabold text-zinc-900 shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
             >
               Next
             </button>
@@ -221,7 +221,7 @@ export function BecomeHostModal({
 
           {/* Modal Header Titles */}
           <div className="px-2 mb-6">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#1F1F1F] tracking-tight">
               Welcome back, <span className="capitalize">{displayName}</span>
             </h2>
             <p className="text-sm font-medium text-zinc-500 mt-1">
@@ -239,16 +239,16 @@ export function BecomeHostModal({
               className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors shrink-0">
+                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                 </div>
-                <span className="text-base font-semibold text-zinc-900 group-hover:text-zinc-950 transition-colors">
+                <span className="text-base font-semibold text-[#1F1F1F] group-hover:text-zinc-950 transition-colors">
                   Create a new listing
                 </span>
               </div>
-              <svg className="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#1F1F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </button>
@@ -261,16 +261,16 @@ export function BecomeHostModal({
               className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-zinc-900 transition-colors shrink-0">
+                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v2.25A2.25 2.25 0 0113.5 21.75h-9a2.25 2.25 0 01-2.25-2.25v-9A2.25 2.25 0 014.5 8.25h2.25m6 0H19.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9a2.25 2.25 0 012.25-2.25z" />
                   </svg>
                 </div>
-                <span className="text-base font-semibold text-zinc-900 group-hover:text-zinc-950 transition-colors">
+                <span className="text-base font-semibold text-[#1F1F1F] group-hover:text-zinc-950 transition-colors">
                   Create from an existing listing
                 </span>
               </div>
-              <svg className="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#1F1F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </button>

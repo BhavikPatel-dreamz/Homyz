@@ -76,30 +76,31 @@ export function HostSubNav({ activeTab: explicitActiveTab, listingId }: HostSubN
   ];
 
   return (
-    <div className="w-full bg-white border-b border-zinc-200/80 px-4 sm:px-8 py-3.5 shrink-0 select-none">
-      <div className="max-w-7xl mx-auto flex items-center gap-3.5">
+    <div className="w-full min-w-0 bg-white border-b border-zinc-200/80 px-3 py-3 shrink-0 select-none sm:px-8 sm:py-3.5">
+      <nav aria-label="Host navigation" className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto overscroll-x-contain p-1 sm:flex-wrap sm:gap-3.5">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-1.5 rounded-[22px] px-4 py-2.5 min-w-[76px] sm:min-w-[82px] h-[74px] transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
+              aria-current={isActive ? "page" : undefined}
+              className={`flex flex-1 shrink-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-2 min-w-[64px] h-[66px] sm:flex-none sm:rounded-[22px] sm:px-4 sm:py-2.5 sm:min-w-[82px] sm:h-[74px] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
                 isActive
-                  ? "bg-[#FDE29B] border border-amber-300/90 text-zinc-950 font-bold"
-                  : "bg-white border border-zinc-200 text-zinc-600 font-medium hover:border-zinc-300 hover:bg-zinc-50/80 hover:text-zinc-900"
+                  ? "bg-[#FDE29B] border border-amber-300/90 text-zinc-950 font-semibold"
+                  : "bg-white border border-zinc-200 text-zinc-600 font-medium hover:border-zinc-300 hover:bg-zinc-50/80 hover:text-[#1F1F1F]"
               }`}
             >
               <div className={isActive ? "text-zinc-950" : "text-zinc-500"}>
                 {tab.icon}
               </div>
-              <span className={`text-[12px] leading-none ${isActive ? "font-bold text-zinc-950" : "font-medium text-zinc-600"}`}>
+              <span className={`whitespace-nowrap text-[11px] sm:text-[12px] leading-none ${isActive ? "font-medium text-zinc-950" : "font-medium text-zinc-600"}`}>
                 {tab.label}
               </span>
             </Link>
           );
         })}
-      </div>
+      </nav>
     </div>
   );
 }

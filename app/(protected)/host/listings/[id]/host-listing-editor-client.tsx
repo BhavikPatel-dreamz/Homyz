@@ -561,7 +561,7 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className="min-h-screen bg-white text-zinc-900 font-sans flex flex-col selection:bg-[#FEE08B] selection:text-zinc-900"
+      className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]"
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       <HostHeader user={listing.host} />
@@ -577,7 +577,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         <main className="lg:col-span-7 xl:col-span-7 flex flex-col space-y-6 pb-12">
           {feedbackMsg && (
-            <div className={`p-4 rounded-2xl text-xs font-bold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
+            <div className={`p-4 rounded-2xl text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
               {feedbackMsg.text}
             </div>
           )}
@@ -756,16 +756,16 @@ export function HostListingEditorClient({
           {(activeSection === "remove-listing" || activeSection === "removelisting") && (
             <div className="rounded-3xl border border-rose-200 bg-rose-50/40 p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in">
               <div className="flex items-center gap-3 text-rose-600">
-                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg">
+                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-semibold text-lg">
                   🗑️
                 </div>
                 <div>
-                  <h2 className="text-base font-extrabold text-zinc-900">Remove Property Listing</h2>
+                  <h2 className="text-base font-semibold text-[#1F1F1F]">Remove Property Listing</h2>
                   <p className="text-xs text-zinc-600">Permanently delete your property listing from Homyz.</p>
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-rose-200 text-zinc-700 leading-relaxed space-y-2">
-                <p className="font-bold text-rose-700">Warning: Deletion is permanent!</p>
+                <p className="font-semibold text-rose-700">Warning: Deletion is permanent!</p>
                 <p>
                   Deleting <strong>{listing.title}</strong> will immediately remove the listing from public search, cancel active host settings, and clear all property data.
                 </p>
@@ -775,7 +775,7 @@ export function HostListingEditorClient({
                   type="button"
                   disabled={isDeleting}
                   onClick={() => setShowDeleteModal(true)}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-6 py-2.5 text-xs transition-all shadow-sm"
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-sm"
                 >
                   Permanently Delete Listing
                 </button>
@@ -838,14 +838,14 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsAddCoHostModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Add your co-host's info</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add your co-host's info</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 We will text or email them the invite
               </p>
@@ -856,7 +856,7 @@ export function HostListingEditorClient({
               {/* Country Code + Phone Row */}
               <div className="grid grid-cols-5 gap-3">
                 <div className="col-span-2 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">
+                  <label className="block text-xs font-semibold text-zinc-800">
                     Country code *
                   </label>
                   <div className="relative">
@@ -882,7 +882,7 @@ export function HostListingEditorClient({
                 </div>
 
                 <div className="col-span-3 space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800">
+                  <label className="block text-xs font-semibold text-zinc-800">
                     Phone number *
                   </label>
                   <input
@@ -905,7 +905,7 @@ export function HostListingEditorClient({
 
               {/* Email Input */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-zinc-800">
+                <label className="block text-xs font-semibold text-zinc-800">
                   Email
                 </label>
                 <input
@@ -923,7 +923,7 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsAddCoHostModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -948,7 +948,7 @@ export function HostListingEditorClient({
                   setCoHostPhone("");
                   setIsAddCoHostModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Next
               </button>
@@ -966,14 +966,14 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
                 Are you sure you want to turn off Instant book ?
               </h3>
               <p className="text-xs text-zinc-500 font-normal">
@@ -993,7 +993,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You may get fewer bookings</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You may get fewer bookings</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -1008,7 +1008,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You'll need to review every booking request</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -1023,7 +1023,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-xs text-zinc-900">You'll need to respond to each request in 24 hours</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Lorem ipsum varius cursus a est ut consequat id elit.
                   </p>
@@ -1038,7 +1038,7 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -1049,7 +1049,7 @@ export function HostListingEditorClient({
                   setBookingMethod("approve");
                   setIsTurnOffInstantBookModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Turn Instant Book off
               </button>
@@ -1067,13 +1067,13 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsCustomMessageModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Add a custom message</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add a custom message</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Send a welcoming message automatically when guests instant book your space.
               </p>
@@ -1091,14 +1091,14 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsCustomMessageModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => setIsCustomMessageModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save Message
               </button>
@@ -1116,13 +1116,13 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-bold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-bold text-xl tracking-tight text-zinc-900">Additional house rules</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Additional house rules</h3>
               <p className="text-xs text-zinc-500 font-normal">
                 Share any specific requirements or guidelines guests must follow.
               </p>
@@ -1140,14 +1140,14 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-bold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
                 Save Rules
               </button>
@@ -1161,20 +1161,20 @@ export function HostListingEditorClient({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 border border-zinc-200 animate-in zoom-in-95 font-sans">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg">
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-semibold text-lg">
                 ⚠️
               </div>
-              <h3 className="text-base font-extrabold text-zinc-900">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-semibold text-[#1F1F1F]">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Are you sure you want to delete <strong className="text-zinc-900">{listing.title}</strong>? This action will permanently remove your property listing and cannot be undone.
+              Are you sure you want to delete <strong className="text-[#1F1F1F]">{listing.title}</strong>? This action will permanently remove your property listing and cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-100">
               <button
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-5 py-2 text-xs font-bold border border-zinc-300 hover:bg-zinc-50 text-zinc-700"
+                className="rounded-full px-5 py-2 text-xs font-semibold border border-zinc-300 hover:bg-zinc-50 text-zinc-700"
               >
                 Cancel
               </button>
@@ -1182,7 +1182,7 @@ export function HostListingEditorClient({
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteListing}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold transition-all shadow-sm"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
               >
                 {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
               </button>

@@ -98,7 +98,7 @@ export function AdminPagination({
                 onClick={() => onPageChange(p)}
                 className={`min-w-[28px] h-7 rounded-lg text-xs font-semibold transition-all ${
                   currentPage === p
-                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs"
+                    ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
                     : "border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)]"
                 }`}
               >

@@ -699,26 +699,26 @@ export function HomyzAuthForm({
                       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1">
                         <div className="font-semibold text-zinc-800 mb-0.5">Password Requirements:</div>
                         <div className="flex items-center gap-2">
-                          <span className={hasMinLength ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                          <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
                             {hasMinLength ? "✓" : "○"}
                           </span>
-                          <span className={hasMinLength ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                          <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
                             Minimum 8 characters
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={hasUppercase ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                          <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
                             {hasUppercase ? "✓" : "○"}
                           </span>
-                          <span className={hasUppercase ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                          <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
                             At least one uppercase letter (A-Z)
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={hasNumber ? "text-emerald-600 font-bold" : "text-zinc-400"}>
+                          <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
                             {hasNumber ? "✓" : "○"}
                           </span>
-                          <span className={hasNumber ? "text-zinc-900 font-medium" : "text-zinc-500"}>
+                          <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
                             At least one number (0-9)
                           </span>
                         </div>

@@ -56,7 +56,7 @@ export function StepAddressConfirm({
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
       <div className="max-w-2xl mx-auto w-full flex flex-col items-start my-auto">
         {/* Title & Subtitle */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 tracking-tight leading-tight mb-2">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
           Confirm your address
         </h1>
         <p className="text-sm font-medium text-zinc-500 mb-8">
@@ -70,7 +70,7 @@ export function StepAddressConfirm({
             <select
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="w-full px-4 pt-5 pb-2 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-semibold text-zinc-900 bg-white appearance-none cursor-pointer"
+              className="w-full px-4 pt-7 pb-2 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-semibold text-[#1F1F1F] bg-white appearance-none cursor-pointer"
             >
               <option value="Saudi Arabia - SA">Saudi Arabia - SA</option>
               <option value="United Arab Emirates - AE">United Arab Emirates - AE</option>
@@ -95,7 +95,7 @@ export function StepAddressConfirm({
             placeholder="Short address (if applicable)"
             value={shortAddress}
             onChange={(e) => setShortAddress(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
 
           {/* Apt, floor, bldg */}
@@ -104,7 +104,7 @@ export function StepAddressConfirm({
             placeholder="Apt, floor, bldg (if applicable)"
             value={aptFloorBldg}
             onChange={(e) => setAptFloorBldg(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
 
           {/* Street address */}
@@ -113,7 +113,7 @@ export function StepAddressConfirm({
             placeholder="Street address"
             value={streetAddress}
             onChange={(e) => setStreetAddress(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
 
           {/* District */}
@@ -122,7 +122,7 @@ export function StepAddressConfirm({
             placeholder="District (if applicable)"
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
 
           {/* Postal code */}
@@ -131,7 +131,7 @@ export function StepAddressConfirm({
             placeholder="Postal code"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
 
           {/* City / Town */}
@@ -140,14 +140,14 @@ export function StepAddressConfirm({
             placeholder="City / Town"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-medium text-zinc-900 bg-white placeholder:text-zinc-400 transition-colors"
+            className="w-full px-4 py-3.5 rounded-2xl border border-zinc-300 focus:border-zinc-900 outline-none text-sm font-normal text-[#1F1F1F] bg-white placeholder:text-zinc-400 transition-colors"
           />
         </div>
 
         {/* Show Specific Location Toggle Bar */}
         <div className="w-full py-4 border-t border-zinc-100 mb-6">
           <div className="flex items-center justify-between gap-4 mb-2">
-            <h3 className="text-base font-bold text-zinc-900">
+            <h3 className="text-base font-semibold text-[#1F1F1F]">
               Show your specific location
             </h3>
             <button
@@ -166,7 +166,7 @@ export function StepAddressConfirm({
           </div>
           <p className="text-xs font-medium text-zinc-500 leading-relaxed max-w-xl">
             Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.{" "}
-            <button type="button" className="font-bold underline text-zinc-800 hover:text-zinc-900 cursor-pointer">
+            <button type="button" className="font-semibold underline text-zinc-800 hover:text-[#1F1F1F] cursor-pointer">
               Learn more
             </button>
           </p>
