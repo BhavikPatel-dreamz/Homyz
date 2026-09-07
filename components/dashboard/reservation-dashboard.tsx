@@ -97,15 +97,25 @@ const SAMPLE_RESERVATIONS: ReservationCardData[] = [
 
 export function ReservationDashboard({
   initialReservations = [],
+  initialTab = "today",
+  onTabChange,
 }: {
   initialReservations?: ReservationCardData[];
+  initialTab?: FilterOptions["tab"];
+  onTabChange?: (tab: FilterOptions["tab"]) => void;
 }) {
   const [filters, setFilters] = useState<FilterOptions>({
-    tab: "today",
+    tab: initialTab,
     search: "",
     status: "ALL",
     dateRange: "ALL",
   });
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setFilters((prev) => (prev.tab === initialTab ? prev : { ...prev, tab: initialTab }));
+    }
+  }, [initialTab]);
 
   const [selectedRes, setSelectedRes] = useState<ReservationCardData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -156,9 +166,27 @@ export function ReservationDashboard({
     });
   }, [combinedData, filters]);
 
+  const pastYearGroups = useMemo(() => {
+    if (filters.tab !== "past") return [];
+    const groups = new Map<number, ReservationCardData[]>();
+    const sorted = [...filteredItems].sort(
+      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+    );
+    for (const item of sorted) {
+      const year = new Date(item.startDate).getUTCFullYear();
+      const group = groups.get(year) ?? [];
+      group.push(item);
+      groups.set(year, group);
+    }
+    return Array.from(groups, ([year, items]) => ({ year, items }));
+  }, [filteredItems, filters.tab]);
+
   const handleFilterChange = (updated: Partial<FilterOptions>) => {
     setLoading(true);
     setFilters((prev) => ({ ...prev, ...updated }));
+    if (updated.tab && onTabChange) {
+      onTabChange(updated.tab);
+    }
     setTimeout(() => setLoading(false), 200);
   };
 
@@ -181,8 +209,23 @@ export function ReservationDashboard({
           title={`No ${filters.tab} reservations`}
           description="Try adjusting your search criteria or switching filter tabs."
         />
+      ) : filters.tab === "past" ? (
+        <div className="flex flex-col gap-14 sm:gap-16">
+          {pastYearGroups.map(({ year, items }) => (
+            <section key={year} aria-labelledby={`bookings-year-${year}`}>
+              <h2 id={`bookings-year-${year}`} className="mb-7 text-xl font-semibold leading-7 text-[#1F1F1F] sm:mb-9 sm:text-2xl">
+                {year}
+              </h2>
+              <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                {items.map((item) => (
+                  <ReservationCard key={item.id} data={item} onSelect={setSelectedRes} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}

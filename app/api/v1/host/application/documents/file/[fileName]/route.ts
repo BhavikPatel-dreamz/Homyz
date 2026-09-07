@@ -13,7 +13,7 @@ export const GET = apiHandler(async (req, ctx) => {
     fileName
   );
 
-  return new NextResponse(fileBuffer, {
+  return new NextResponse(new Uint8Array(fileBuffer), {
     status: 200,
     headers: {
       "Content-Type": mimeType,

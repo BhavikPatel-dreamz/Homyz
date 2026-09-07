@@ -1,13 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import { GuestDashboardSidebar, GUEST_NAV_ITEMS } from "@/components/dashboard/guest-sidebar";
 import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { LogoutButton } from "@/components/admin/logout-button";
+import { ReservationDashboard } from "@/components/dashboard/reservation-dashboard";
+import { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { LoyaltyWalletView } from "@/components/profile/loyalty-wallet-view";
+import { InviteEarnView } from "@/components/profile/invite-earn-view";
+import { SavedListingsView } from "@/components/profile/saved-listings-view";
+import { SupportChatView } from "@/components/profile/support-chat-view";
+import { NotificationsView } from "@/components/profile/notifications-view";
+import { ProfileManagementClient } from "@/app/(protected)/profile-management/profile-management-client";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -51,6 +59,7 @@ type ProfileClientProps = {
   initial: ProfileData;
   initialTripPhotos?: unknown[];
   initialStats?: UserStatsData;
+  initialReservations?: ReservationCardData[];
   isOwner?: boolean;
 };
 
@@ -91,13 +100,47 @@ const MobileAccountIcon = ({ type }: { type: string }) => {
   return <svg {...commonProps}><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15.5a4.5 4.5 0 0 1 6.5 3.5" /></svg>;
 };
 
+function normalizeTabId(tab: string | null | undefined): string {
+  if (!tab || tab === "about_me") return "about_me";
+  if (tab === "upcoming" || tab === "upcoming_trips") return "upcoming_trips";
+  if (tab === "past" || tab === "past_bookings") return "past_bookings";
+  return tab;
+}
+
 export function ProfileClient({
   initial,
+  initialTripPhotos = [],
   initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
+  initialReservations = [],
   isOwner = true,
 }: ProfileClientProps) {
   const searchParams = useSearchParams();
-  const activeTabParam = searchParams.get("tab") || "about_me";
+
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    normalizeTabId(searchParams.get("tab"))
+  );
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    setActiveTab(normalizeTabId(tabParam));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setActiveTab(normalizeTabId(params.get("tab")));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleSelectTab = (tabId: string) => {
+    const normalized = normalizeTabId(tabId);
+    setActiveTab(normalized);
+    const item = GUEST_NAV_ITEMS.find((n) => n.id === normalized || n.id === tabId);
+    const href = item ? item.href : normalized === "about_me" ? "/profile" : `/profile?tab=${normalized}`;
+    window.history.pushState(null, "", href);
+  };
 
   const pub = initial.publicProfile || {};
   const years = initialStats.yearsOnHomyz || (initial.createdAt ? Math.max(1, new Date().getFullYear() - new Date(initial.createdAt).getFullYear()) : 4);
@@ -105,26 +148,43 @@ export function ProfileClient({
   return (
     <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-10 lg:pb-28 lg:pt-[88px]">
         <div className="mb-5 flex items-center justify-between lg:hidden">
-          <button type="button" onClick={() => history.back()} aria-label="Go back" className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]">
+          <button
+            type="button"
+            onClick={() => {
+              if (activeTab !== "about_me") {
+                handleSelectTab("about_me");
+              } else {
+                history.back();
+              }
+            }}
+            aria-label="Go back"
+            className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
+          >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
           {isOwner && (
-            <Link href="/profile-management" className="flex h-10 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm text-[#1F1F1F]">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("profile_management")}
+              className="flex h-10 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm text-[#1F1F1F]"
+            >
               Edit
-            </Link>
+            </button>
           )}
         </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
           <GuestDashboardSidebar
-            activeId={activeTabParam === "about_me" ? "about_me" : activeTabParam}
+            activeId={activeTab}
+            onSelectTab={handleSelectTab}
+            avatarUrl={initial.image}
           />
 
           <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
-            {activeTabParam === "about_me" ? (
+            {activeTab === "about_me" && (
               <div className="flex flex-col animate-in fade-in">
                 {/* 1. Header with Title & Yellow Edit Button */}
                 <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
@@ -133,12 +193,13 @@ export function ProfileClient({
                     <span className="hidden lg:inline">About me</span>
                   </h2>
                   {isOwner && (
-                    <Link
-                      href="/profile-management"
-                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex"
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab("profile_management")}
+                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
                     >
                       Edit
-                    </Link>
+                    </button>
                   )}
                 </div>
 
@@ -277,21 +338,63 @@ export function ProfileClient({
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-zinc-200 rounded-3xl my-4">
-                <h3 className="text-xl font-bold text-zinc-800 mb-2">
-                  Guest Dashboard Workspace
-                </h3>
-                <p className="text-xs text-zinc-500 max-w-sm mb-4">
-                  Manage your bookings, saved listings, wallet points and account settings.
-                </p>
-                <Link
-                  href="/profile"
-                  className="bg-[#FDE29B] text-zinc-900 font-medium px-6 py-2 rounded-full hover:bg-[#FCD885] transition-colors text-xs"
-                >
-                  Back to About me
-                </Link>
+            )}
+
+            {(activeTab === "upcoming_trips" || activeTab === "upcoming") && (
+              <div className="flex flex-col animate-in fade-in">
+                <ReservationDashboard
+                  initialReservations={initialReservations}
+                  initialTab="upcoming"
+                  onTabChange={(filterTab) => {
+                    if (filterTab === "past") handleSelectTab("past_bookings");
+                    else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                  }}
+                />
               </div>
+            )}
+
+            {(activeTab === "past_bookings" || activeTab === "past") && (
+              <div className="flex flex-col animate-in fade-in">
+                <ReservationDashboard
+                  initialReservations={initialReservations}
+                  initialTab="past"
+                  onTabChange={(filterTab) => {
+                    if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                    else if (filterTab === "past") handleSelectTab("past_bookings");
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === "loyalty" && (
+              <LoyaltyWalletView />
+            )}
+
+            {activeTab === "invite" && (
+              <InviteEarnView user={initial} />
+            )}
+
+            {activeTab === "saved" && (
+              <SavedListingsView />
+            )}
+
+            {activeTab === "profile_management" && (
+              <ProfileManagementClient
+                initial={initial}
+                initialTripPhotos={initialTripPhotos as any}
+                initialStats={initialStats}
+                isOwner={isOwner}
+                embedded={true}
+                onCancel={() => handleSelectTab("about_me")}
+              />
+            )}
+
+            {activeTab === "support" && (
+              <SupportChatView user={initial} />
+            )}
+
+            {activeTab === "notifications" && (
+              <NotificationsView />
             )}
           </main>
         </div>
@@ -299,28 +402,46 @@ export function ProfileClient({
         <div className="mt-8 lg:hidden">
           <div>
             {[
-              ["Account setting", "/profile-management", "settings"],
+              ["Account setting", "profile_management", "settings"],
               ["Help centre", "/help", "help"],
               ["Refer a Host", "/host/refer", "refer"],
               ["Find a co-Host", "/host/co-host", "cohost"],
               ["Gift Cards", "/gift-cards", "gift"],
-            ].map(([label, href, icon], index) => (
-              <Link
-                key={label}
-                href={href}
-                className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${
-                  index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
-                } ${index === 4 ? "border-b border-[#D7D7D7]" : ""}`}
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
-                  <MobileAccountIcon type={icon} />
-                </span>
-                <span>{label}</span>
-                <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </Link>
-            ))}
+            ].map(([label, target, icon], index) => {
+              const isTab = target === "profile_management";
+              return isTab ? (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleSelectTab("profile_management")}
+                  className="flex w-full items-center gap-3 py-1.5 text-sm text-[#3F3F3F]"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                    <MobileAccountIcon type={icon} />
+                  </span>
+                  <span>{label}</span>
+                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              ) : (
+                <Link
+                  key={label}
+                  href={target}
+                  className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${
+                    index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
+                  } ${index === 4 ? "border-b border-[#D7D7D7]" : ""}`}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                    <MobileAccountIcon type={icon} />
+                  </span>
+                  <span>{label}</span>
+                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </Link>
+              );
+            })}
           </div>
           <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
             Log out

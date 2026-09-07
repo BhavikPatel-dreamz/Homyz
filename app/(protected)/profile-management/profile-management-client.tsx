@@ -67,6 +67,8 @@ type ProfileManagementClientProps = {
   initialTripPhotos?: TripPhotoItem[];
   initialStats?: UserStatsData;
   isOwner?: boolean;
+  embedded?: boolean;
+  onCancel?: () => void;
 };
 
 // Hand-drawn Paris Eiffel Tower Stamp
@@ -154,6 +156,8 @@ export function ProfileManagementClient({
   initialTripPhotos = [],
   initialStats = { trips: 12, likes: 0, reviews: 10 },
   isOwner = true,
+  embedded = false,
+  onCancel,
 }: ProfileManagementClientProps) {
   const router = useRouter();
   const [activeMgmtTab, setActiveMgmtTab] = useState<"info" | "photos" | "stamps" | "privacy">("info");
@@ -281,29 +285,29 @@ export function ProfileManagementClient({
 
   const stampsVisible = formDataState.stampsVisible !== false;
 
-  return (
-    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans sm:py-8">
-      <div className="mx-auto w-full">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
-          {/* ------------------------------------------------------------------ */}
-          {/* LEFT SIDEBAR NAVIGATION                                           */}
-          {/* ------------------------------------------------------------------ */}
-          <GuestDashboardSidebar activeId="profile_management" />
-
-          {/* ------------------------------------------------------------------ */}
-          {/* MAIN PROFILE MANAGEMENT WORKSPACE                */}
-          {/* ------------------------------------------------------------------ */}
-          <main className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              aria-label="Go back"
-              className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 sm:hidden"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
-                <path d="m14 5-7 7 7 7" />
-              </svg>
-            </button>
+  const managementWorkspace = (
+    <div className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => (onCancel ? onCancel() : router.back())}
+          aria-label="Go back"
+          className={`flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 ${embedded ? "" : "sm:hidden"}`}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
+            <path d="m14 5-7 7 7 7" />
+          </svg>
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-xs font-semibold text-[#727272] hover:text-[#1F1F1F] underline underline-offset-2 transition-colors"
+          >
+            Back to About me
+          </button>
+        )}
+      </div>
             {msg && (
               <div className="mb-6">
                 <Alert tone={msg.tone}>{msg.text}</Alert>
@@ -920,11 +924,11 @@ export function ProfileManagementClient({
                 </div>
               </div>
             )}
-          </main>
-        </div>
-      </div>
+    </div>
+  );
 
-      {/* MODALS */}
+  const modals = (
+    <>
       {uploadModalOpen && (
         <MultiImageUploadModal
           onClose={() => setUploadModalOpen(false)}
@@ -964,6 +968,27 @@ export function ProfileManagementClient({
       {lightboxPhoto && (
         <LightboxModal photo={lightboxPhoto} onClose={() => setLightboxPhoto(null)} />
       )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="w-full min-w-0">
+        {managementWorkspace}
+        {modals}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans sm:py-8">
+      <div className="mx-auto w-full">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+          <GuestDashboardSidebar activeId="profile_management" />
+          {managementWorkspace}
+        </div>
+      </div>
+      {modals}
     </div>
   );
 }
