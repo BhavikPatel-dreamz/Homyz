@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -1119,7 +1120,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
       {/* Delete Listing Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
@@ -1149,7 +1150,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

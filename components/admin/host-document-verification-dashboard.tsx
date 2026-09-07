@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
@@ -432,7 +433,7 @@ export function HostDocumentVerificationDashboard() {
 
       {/* PREVIEW DOCUMENT MODAL */}
       {previewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
@@ -474,12 +475,12 @@ export function HostDocumentVerificationDashboard() {
               )}
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REJECT MODAL */}
       {rejectModalOpen && targetDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-base font-bold">Reject Document: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -530,12 +531,12 @@ export function HostDocumentVerificationDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REQUEST RESUBMISSION MODAL */}
       {resubmitModalOpen && targetDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-base font-bold">Request Resubmission: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -571,7 +572,7 @@ export function HostDocumentVerificationDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

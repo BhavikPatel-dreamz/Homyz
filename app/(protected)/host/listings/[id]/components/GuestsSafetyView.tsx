@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React from "react";
 
 interface GuestsSafetyViewProps {
@@ -142,7 +143,7 @@ export function GuestsSafetyView({
 
       {/* MODAL 1: SAFETY CONSIDERATIONS */}
       {isSafetyConsiderationsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -211,12 +212,12 @@ export function GuestsSafetyView({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 2: SAFETY DEVICES */}
       {isSafetyDevicesModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -307,12 +308,12 @@ export function GuestsSafetyView({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 3: PROPERTY INFO */}
       {isPropertyInfoModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -380,7 +381,7 @@ export function GuestsSafetyView({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

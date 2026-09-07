@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useTransition, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -1046,7 +1047,7 @@ function MultiImageUploadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
@@ -1164,7 +1165,7 @@ function MultiImageUploadModal({
           </div>
         </form>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
 
@@ -1210,7 +1211,7 @@ function EditTripPhotoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <h3 className="text-lg font-semibold text-[#1F1F1F]">Edit Photo Details</h3>
@@ -1284,7 +1285,7 @@ function EditTripPhotoModal({
           </div>
         </form>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
 
@@ -1315,7 +1316,7 @@ function DeleteTripPhotoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
         <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">Delete Trip Photo</h3>
         <p className="text-xs text-zinc-500 mb-4">Are you sure you want to delete this trip photo?</p>
@@ -1344,7 +1345,7 @@ function DeleteTripPhotoModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
 
@@ -1356,7 +1357,7 @@ function LightboxModal({
   onClose: () => void;
 }) {
   return (
-    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer">
+    <ModalOverlay onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer">
       <div onClick={(e) => e.stopPropagation()} className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center cursor-default">
         <button type="button" onClick={onClose} className="absolute -top-10 right-0 text-white text-sm font-bold">
           ✕ Close
@@ -1365,6 +1366,6 @@ function LightboxModal({
           <Image src={photo.url} alt="Photo" fill className="object-contain" priority />
         </div>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React from "react";
 
 interface EditorModalsProps {
@@ -58,7 +59,7 @@ export function EditorModals({
       {/* GLOBAL MODAL: ADD YOUR CO-HOST'S INFO */}
       {/* --------------------------------------------------------- */}
       {isAddCoHostModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -173,14 +174,14 @@ export function EditorModals({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK */}
       {/* --------------------------------------------------------- */}
       {isTurnOffInstantBookModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -268,14 +269,14 @@ export function EditorModals({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: ADD A CUSTOM MESSAGE */}
       {/* --------------------------------------------------------- */}
       {isCustomMessageModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -317,14 +318,14 @@ export function EditorModals({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: EDIT ADDITIONAL HOUSE RULES */}
       {/* --------------------------------------------------------- */}
       {isEditingAdditionalRulesModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -366,7 +367,7 @@ export function EditorModals({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

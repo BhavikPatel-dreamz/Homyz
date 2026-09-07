@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef } from "react";
 
 interface StepPhotosProps {
@@ -165,7 +166,7 @@ export function StepPhotos({
 
       {/* Upload Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <ModalOverlay className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative flex flex-col items-center text-center">
             {/* Close Button (X) */}
             <button
@@ -249,7 +250,7 @@ export function StepPhotos({
               </button>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Bottom Action Footer Bar */}

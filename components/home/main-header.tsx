@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -165,7 +166,7 @@ export function MainHeader() {
 
       {/* Language Modal */}
       {langModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 text-gray-900 relative">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
               <h3 className="text-base font-bold text-gray-900">Language &amp; Region</h3>
@@ -238,7 +239,7 @@ export function MainHeader() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </header>
   );

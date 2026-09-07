@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -323,7 +324,7 @@ export function AdminSidebar({
 
       {/* Mobile Drawer (Slide-out) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
+        <ModalOverlay className="fixed inset-0 z-50 flex md:hidden">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileOpen(false)}
@@ -331,7 +332,7 @@ export function AdminSidebar({
           <div className="relative flex w-4/5 max-w-xs flex-1 flex-col shadow-2xl animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

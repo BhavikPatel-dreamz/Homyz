@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -153,7 +154,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-2.5 w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-zinc-900 max-h-[calc(100vh-80px)] overflow-y-auto">
+              <div className="absolute right-0 top-full w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-zinc-900 max-h-[calc(100vh-80px)] overflow-y-auto">
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
@@ -311,7 +312,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
       {/* LANGUAGES & CURRENCY MODAL (Screen Centered Overlay)          */}
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-zinc-900 relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">Languages &amp; currency</h3>
@@ -376,7 +377,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Become A Host Modal ("What would you like to host?") */}

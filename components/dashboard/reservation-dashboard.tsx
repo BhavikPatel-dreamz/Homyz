@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useMemo } from "react";
 import { ReservationCard, ReservationCardData } from "./reservation-card";
 import { FilterBar, FilterOptions } from "./filter-bar";
@@ -194,12 +195,12 @@ export function ReservationDashboard({
 
       {/* Selected Reservation Details Drawer / Modal */}
       {selectedRes && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-[#FBDE9B] dark:bg-[#f59e0b]" />
-                <h3 className="text-lg font-bold text-muted-foreground">
+                <span className="h-3 w-3 rounded-full bg-[#FCDF9C] dark:bg-[#f59e0b]" />
+                <h3 className="text-lg font-semibold text-black">
                   Reservation Details
                 </h3>
               </div>
@@ -217,19 +218,19 @@ export function ReservationDashboard({
             <div className="py-5 flex flex-col gap-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Property</span>
-                <span className="font-bold text-muted-foreground">{selectedRes.propertyName}</span>
+                <span className="font-semibold text-[#1F1F1F]">{selectedRes.propertyName}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Location</span>
-                <span className="font-semibold text-muted-foreground">{selectedRes.location}</span>
+                <span className="font-semibold text-[#1F1F1F]">{selectedRes.location}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Guest Name</span>
-                <span className="font-semibold text-muted-foreground">{selectedRes.guestName || "Guest"}</span>
+                <span className="font-semibold text-[#1F1F1F]">{selectedRes.guestName || "Guest"}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Status</span>
-                <span className="rounded-full bg-[#FBDE9B] px-3 py-0.5 text-xs font-extrabold text-[#291E05] dark:bg-[#f59e0b] dark:text-zinc-950">
+                <span className="rounded-full bg-[#FBDE9B] px-3 py-0.5 text-xs font-semibold text-[#291E05] dark:bg-[#f59e0b] dark:text-zinc-950">
                   {selectedRes.status || "CONFIRMED"}
                 </span>
               </div>
@@ -245,7 +246,7 @@ export function ReservationDashboard({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

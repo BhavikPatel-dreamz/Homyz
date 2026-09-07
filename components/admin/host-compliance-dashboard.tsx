@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
@@ -683,7 +684,7 @@ export function HostComplianceDashboard() {
 
       {/* COMPLIANCE DETAIL DRAWER */}
       {drawerOpen && selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
           <div className="w-full max-w-2xl bg-[var(--surface)] h-full overflow-y-auto p-6 space-y-6 shadow-2xl border-l border-[var(--border)]">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
               <div>
@@ -853,12 +854,12 @@ export function HostComplianceDashboard() {
               )}
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 1: REQUEST RE-VERIFICATION */}
       {reVerifyModalOpen && selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleRequestReVerification}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
@@ -894,12 +895,12 @@ export function HostComplianceDashboard() {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 2: CREATE COMPLIANCE ISSUE */}
       {createIssueModalOpen && selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateComplianceIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
@@ -960,12 +961,12 @@ export function HostComplianceDashboard() {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 3: RESOLVE ISSUE */}
       {resolveIssueModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleResolveIssue}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
@@ -998,12 +999,12 @@ export function HostComplianceDashboard() {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 4: SUSPEND HOST */}
       {suspendModalOpen && selectedRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleSuspendHost}
             className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl"
@@ -1039,12 +1040,12 @@ export function HostComplianceDashboard() {
               </button>
             </div>
           </form>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* MODAL 5: UNSUSPEND / REACTIVATE HOST */}
       {unsuspendModalOpen && unsuspendRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <h3 className="font-extrabold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1081,7 +1082,7 @@ export function HostComplianceDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

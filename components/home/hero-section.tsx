@@ -1,18 +1,57 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
+
+const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
+const mobileGuestRows = [
+  { key: "adults", label: "Adults", description: "Ages 13 or above" },
+  { key: "children", label: "Children", description: "Ages 2 – 12" },
+  { key: "infants", label: "Infants", description: "Under 2" },
+  { key: "pets", label: "Pets", description: "Bringing a service animal?" },
+] as const;
 
 interface HeroSectionProps {
-  onSearch?: (searchParams: { destination: string; checkIn: string; checkOut: string; guests: string }) => void;
+  onSearch?: (searchParams: { destination: string; checkIn: string; checkOut: string; guests: string; datePreferences?: DatePreferences; guestDetails?: typeof emptyMobileGuests }) => void;
 }
 
 export function HeroSection({ onSearch }: HeroSectionProps) {
   const [destination, setDestination] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guestPickerOpen, setGuestPickerOpen] = useState(false);
-  const [guestCount, setGuestCount] = useState(1);
+  const [desktopPanel, setDesktopPanel] = useState<"where" | "checkIn" | "checkOut" | "who" | null>(null);
+  const desktopSearchRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (!desktopPanel) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!desktopSearchRef.current?.contains(event.target as Node)) setDesktopPanel(null);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        desktopSearchRef.current?.querySelector<HTMLElement>('[aria-expanded="true"]')?.focus();
+        setDesktopPanel(null);
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [desktopPanel]);
+  const [mobileGuests, setMobileGuests] = useState(emptyMobileGuests);
+  const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
+  const mobileGuestSummary = [
+    mobileGuestCount ? `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}` : "",
+    mobileGuests.infants ? `${mobileGuests.infants} infant${mobileGuests.infants === 1 ? "" : "s"}` : "",
+    mobileGuests.pets ? `${mobileGuests.pets} pet${mobileGuests.pets === 1 ? "" : "s"}` : "",
+  ].filter(Boolean).join(", ");
+  const [datePreferences, setDatePreferences] = useState<DatePreferences>(initialDatePreferences);
+  const destinationListRef = useRef<HTMLDivElement>(null);
+  const [destinationScroll, setDestinationScroll] = useState(0);
 
   // Mobile search popup state
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -24,15 +63,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
     }
   }, []);
 
-  // Prevent body and html scroll when mobile search modal is open
+  // Close mobile search with Escape; ModalOverlay owns background scroll locking.
   useEffect(() => {
     if (!isMobileSearchOpen) return;
-
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -43,31 +76,25 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMobileSearchOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch) {
-      onSearch({
-        destination,
-        checkIn,
-        checkOut,
-        guests: `${guestCount} guest${guestCount > 1 ? "s" : ""}`,
-      });
-    }
+    handleMobileSubmit();
+    setDesktopPanel(null);
   };
 
   const handleMobileSubmit = () => {
     if (onSearch) {
       onSearch({
         destination,
-        checkIn,
-        checkOut,
-        guests: `${guestCount} guest${guestCount > 1 ? "s" : ""}`,
+        checkIn: datePreferences.mode === "dates" ? checkIn : "",
+        checkOut: datePreferences.mode === "dates" ? checkOut : "",
+        datePreferences,
+        guests: `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}`,
+        guestDetails: { ...mobileGuests },
       });
     }
     setIsMobileSearchOpen(false);
@@ -82,6 +109,159 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       handleMobileSubmit();
     }
   };
+
+  const destinationSuggestions = (
+    <>
+              {/* Scrollable suggestions */}
+              <div className="relative flex items-center justify-between">
+                <div
+                  ref={destinationListRef}
+                  onScroll={(event) => {
+                    const list = event.currentTarget;
+                    const scrollableHeight = list.scrollHeight - list.clientHeight;
+                    setDestinationScroll(scrollableHeight > 0 ? (list.scrollTop / scrollableHeight) * 100 : 0);
+                  }}
+                  className="no-scrollbar max-h-30 w-full space-y-2.5 overflow-y-auto pr-5"
+                >
+                  {/* Recent searches */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDestination("Recent searches");
+                      setActiveStep("when");
+                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    }}
+                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                      >
+                        <path d="M12 3a2 2 0 0 0-2 2v6.5a1.5 1.5 0 0 1-3 0V9a1 1 0 0 0-2 0v5a6 6 0 0 0 12 0v-4a1 1 0 0 0-2 0v2.5a1.5 1.5 0 0 1-3 0V6a1 1 0 0 0-2 0" />
+                        <path d="M6 17h11" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-medium text-[#1f1f1f]">Recent searches</div>
+                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
+                    </div>
+                  </button>
+
+                  {/* Nearby */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDestination("Nearby");
+                      setActiveStep("when");
+                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    }}
+                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                      >
+                        <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-medium text-[#1f1f1f]">Nearby</div>
+                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
+                    </div>
+                  </button>
+
+                  {/* Suggested destinations */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDestination("Suggested destinations");
+                      setActiveStep("when");
+                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    }}
+                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                      >
+                        <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
+                        <circle cx="12" cy="8" r="2" />
+                        <path d="M6 19a7 7 0 0 0 12 0" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-medium text-[#1f1f1f]">Suggested destinations</div>
+                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
+                    </div>
+                  </button>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step="any"
+                  value={destinationScroll}
+                  aria-label="Scroll suggested destinations"
+                  aria-orientation="vertical"
+                  className="destination-scrollbar"
+                  onChange={(event) => {
+                    const list = destinationListRef.current;
+                    if (!list) return;
+                    const progress = Number(event.target.value);
+                    list.scrollTop = (progress / 100) * (list.scrollHeight - list.clientHeight);
+                    setDestinationScroll(progress);
+                  }}
+                />
+              </div>
+    </>
+  );
+
+  const guestOptions = (
+                <div className="mt-1 divide-y divide-[#aaa]">
+                  {mobileGuestRows.map(({ key, label, description }) => (
+                    <div key={key} className="flex items-center justify-between gap-3 py-5 last:pb-0">
+                      <div className="min-w-0">
+                        <p className="text-[15px] text-[#1f1f1f]">{label}</p>
+                        <p className={`mt-1 text-[14px] leading-[1.5] text-[#777] ${key === "pets" ? "max-w-[145px] underline underline-offset-4" : ""}`}>
+                          {description}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button type="button" aria-label={`Remove ${label.toLowerCase()}`}
+                          disabled={mobileGuests[key] === 0}
+                          onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: Math.max(0, counts[key] - 1) }))}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] disabled:border-[#aaa] disabled:text-[#999] hover:bg-white disabled:hover:bg-transparent">
+                          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M5 12h14" /></svg>
+                        </button>
+                        <span aria-live="polite" aria-label={`${label}: ${mobileGuests[key]}`} className="min-w-3 text-center text-[16px] tabular-nums">{mobileGuests[key]}</span>
+                        <button type="button" aria-label={`Add ${label.toLowerCase()}`}
+                          onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: counts[key] + 1 }))}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] hover:bg-white">
+                          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M5 12h14M12 5v14" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+  );
 
   return (
     <>
@@ -113,6 +293,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             type="button"
             onClick={() => {
               setActiveStep("where");
+              setDesktopPanel(null);
               setIsMobileSearchOpen(true);
             }}
             className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform active:scale-[0.99] cursor-pointer"
@@ -141,9 +322,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       </div>
 
       {/* Desktop / Tablet Hero Section (screens >= md) */}
-      <section className="relative hidden md:flex min-h-[410px] w-full items-center overflow-hidden rounded-[32px] bg-[#ddd] sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px]">
+      <section className="relative z-20 hidden md:flex min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px]">
         {/* Background Travel Imagery */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden rounded-[32px] lg:rounded-[60px]">
           <Image
             alt="Traveler with backpack planning journey"
             className="object-cover"
@@ -162,115 +343,63 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
           </h1>
 
           {/* Floating Search Container */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative grid h-[62px] w-full max-w-[768px] grid-cols-[1.28fr_1fr_1fr_1.43fr] items-center rounded-full bg-white shadow-[0_2px_7px_rgba(0,0,0,.08)] lg:grid-cols-[205px_161px_170px_1fr]"
-          >
-            {/* Where */}
-            <div className="min-w-0 cursor-pointer pl-6 pr-3 lg:pl-[33px]">
-              <span className="block text-[16px] font-normal leading-[20px] text-[#1f1f1f]">Where</span>
-              <input
-                className="mt-px w-full truncate border-none bg-transparent p-0 text-[14px] leading-[20px] text-[#727272] placeholder-[#727272] focus:outline-none focus:ring-0"
-                placeholder="Search destinations"
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-              />
+          <form ref={desktopSearchRef} onSubmit={handleSearchSubmit}
+            className="relative grid h-[62px] w-full max-w-[768px] grid-cols-[1.28fr_1fr_1fr_1.43fr] items-center rounded-full bg-white shadow-[0_2px_7px_rgba(0,0,0,.08)]">
+            <div className={`flex h-full min-w-0 flex-col justify-center rounded-full px-5 ${desktopPanel === "where" ? "bg-[#fcdf9c]" : ""}`}>
+              <label htmlFor="desktop-destination" className="text-[16px] leading-5">Where</label>
+              <input id="desktop-destination" type="text" placeholder="Search destinations" value={destination}
+                aria-controls="desktop-search-panel"
+                onFocus={() => setDesktopPanel("where")} onClick={() => setDesktopPanel("where")}
+                onChange={(event) => setDestination(event.target.value)}
+                className="w-full truncate bg-transparent text-[14px] text-[#727272] outline-none" />
             </div>
-
-            {/* Check in */}
-            <div className="relative min-w-0 cursor-pointer pl-6 pr-3 before:absolute before:left-0 before:top-1/2 before:h-8 before:w-px before:-translate-y-1/2 before:bg-[#e3e3e3] lg:pl-[54px]">
-              <span className="block text-[16px] font-normal leading-[20px] text-[#1f1f1f]">Check in</span>
-              <input
-                type="date"
-                aria-label="Check in date"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-              />
-              <span className="mt-px block truncate text-[14px] leading-[20px] text-[#727272]">
-                {checkIn || "Add dates"}
-              </span>
-            </div>
-
-            {/* Check out */}
-            <div className="relative min-w-0 cursor-pointer pl-6 pr-3 before:absolute before:left-0 before:top-1/2 before:h-8 before:w-px before:-translate-y-1/2 before:bg-[#e3e3e3] lg:pl-[42px]">
-              <span className="block text-[16px] font-normal leading-[20px] text-[#1f1f1f]">Check out</span>
-              <input
-                type="date"
-                aria-label="Check out date"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-              />
-              <span className="mt-px block truncate text-[14px] leading-[20px] text-[#727272]">
-                {checkOut || "Add dates"}
-              </span>
-            </div>
-
-            {/* Who & Search Action */}
-            <div className="relative flex min-w-0 items-center justify-between pl-5 before:absolute before:left-0 before:top-1/2 before:h-8 before:w-px before:-translate-y-1/2 before:bg-[#e3e3e3] lg:pl-[30px]">
-              <div
-                className="cursor-pointer"
-                onClick={() => setGuestPickerOpen(!guestPickerOpen)}
-              >
-                <span className="block text-[16px] font-normal leading-[20px] text-[#1f1f1f]">Who</span>
-                <span className="mt-px block truncate text-[14px] leading-[20px] text-[#727272]">
-                  {guestCount === 1 ? "Add guests" : `${guestCount} guests`}
+            {(["checkIn", "checkOut"] as const).map((field) => (
+              <button key={field} type="button" aria-expanded={desktopPanel === field} aria-controls="desktop-search-panel"
+                onClick={() => setDesktopPanel(desktopPanel === field ? null : field)}
+                className={`h-full min-w-0 rounded-full px-4 text-left ${desktopPanel === field ? "bg-[#fcdf9c]" : "hover:bg-[#f3f4f5]"}`}>
+                <span className="block text-[16px] leading-5">{field === "checkIn" ? "Check in" : "Check out"}</span>
+                <span className="block truncate text-[14px] text-[#727272]">
+                  {datePreferences.mode !== "dates" ? "Flexible dates" : (field === "checkIn" ? checkIn : checkOut) || "Add dates"}
                 </span>
-              </div>
-
-              {/* Search circle icon */}
-              <button
-                type="submit"
-                aria-label="Search"
-                className="ml-2 mr-2 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-[#1f1f1f] transition hover:bg-[#f3cf77] lg:mr-[25px]"
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-[22px] w-[22px]"
-                >
+              </button>
+            ))}
+            <div className="flex h-full min-w-0 items-center pr-2">
+              <button type="button" aria-expanded={desktopPanel === "who"} aria-controls="desktop-search-panel"
+                onClick={() => setDesktopPanel(desktopPanel === "who" ? null : "who")}
+                className={`h-full min-w-0 flex-1 rounded-full px-4 text-left ${desktopPanel === "who" ? "bg-[#fcdf9c]" : "hover:bg-[#f3f4f5]"}`}>
+                <span className="block text-[16px] leading-5">Who</span>
+                <span className="block truncate text-[14px] text-[#727272]">{mobileGuestSummary || "Add guests"}</span>
+              </button>
+              <button type="submit" aria-label="Search" className="ml-1 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] hover:bg-[#f3cf77]">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-[22px] w-[22px]">
                   <circle cx="10.75" cy="10.75" r="6.75" stroke="currentColor" strokeWidth="1.5" />
                   <path d="m15.75 15.75 4.25 4.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </button>
-
-              {/* Guest counter popover */}
-              {guestPickerOpen && (
-                <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl z-50 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#1F1F1F]">Guests</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        disabled={guestCount <= 1}
-                        onClick={() => setGuestCount((prev) => Math.max(1, prev - 1))}
-                        className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
-                      >
-                        -
-                      </button>
-                      <span className="text-xs font-semibold text-gray-900">{guestCount}</span>
-                      <button
-                        type="button"
-                        onClick={() => setGuestCount((prev) => prev + 1)}
-                        className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 hover:bg-gray-100"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
+            {desktopPanel && (
+              <div id="desktop-search-panel" role="region" aria-label={desktopPanel === "where" ? "Suggested destinations" : desktopPanel === "who" ? "Guests" : "Choose dates"}
+                className={`absolute top-full z-50 mt-3 max-h-[min(600px,70dvh)] max-w-full overflow-y-auto rounded-[22px] border border-white bg-white p-5 shadow-xl ${desktopPanel === "where" ? "left-0 w-[340px]" : desktopPanel === "who" ? "right-0 w-[360px]" : "left-0 w-[600px]"}`}>
+                {desktopPanel === "where" ? <>
+                  <p className="mb-3 text-[12px] text-[#717171]">Suggested destinations</p>
+                  {destinationSuggestions}
+                </> : desktopPanel === "who" ? guestOptions : (
+                  <MobileDatePicker desktop checkIn={checkIn} checkOut={checkOut}
+                    selectionTarget={desktopPanel === "checkOut" ? "checkOut" : "checkIn"}
+                    onDatesChange={(start, end) => {
+                      setCheckIn(start); setCheckOut(end);
+                      if (start && !end) setDesktopPanel("checkOut");
+                    }} preferences={datePreferences} onPreferencesChange={setDatePreferences} />
+                )}
+              </div>
+            )}
           </form>
         </div>
       </section>
 
       {/* Mobile Search Popup Modal */}
       {isMobileSearchOpen && (
-        <div
+        <ModalOverlay
           className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[74px] pb-6 overflow-y-auto overscroll-contain animate-in fade-in duration-200"
           onClick={() => setIsMobileSearchOpen(false)}
         >
@@ -302,6 +431,13 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             </div>
 
             {/* Where? Card */}
+            {activeStep !== "where" ? (
+              <button type="button" onClick={() => setActiveStep("where")} aria-expanded={false}
+                className="flex w-full items-center justify-between gap-3 rounded-[22px] border border-white bg-[#f3f4f5] px-5 py-4 text-left">
+                <span className="text-[14px]">Where</span>
+                <span className="truncate text-[17px] font-semibold">{destination || "I’m flexible"}</span>
+              </button>
+            ) : (
             <div className="rounded-[22px] bg-white p-4 shadow-xs">
               <h3 className="text-[19px] font-semibold text-[#1f1f1f] mb-3">Where?</h3>
 
@@ -344,172 +480,44 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
 
               <p className="text-[12px] font-medium text-[#717171] mb-2.5">Sugested destinations</p>
 
-              {/* Suggestions with scrollbar accent */}
-              <div className="relative flex items-center justify-between">
-                <div className="w-full space-y-2.5 pr-2">
-                  {/* Recent searches */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDestination("Recent searches");
-                      setActiveStep("when");
-                    }}
-                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-5 w-5"
-                      >
-                        <path d="M12 3a2 2 0 0 0-2 2v6.5a1.5 1.5 0 0 1-3 0V9a1 1 0 0 0-2 0v5a6 6 0 0 0 12 0v-4a1 1 0 0 0-2 0v2.5a1.5 1.5 0 0 1-3 0V6a1 1 0 0 0-2 0" />
-                        <path d="M6 17h11" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-medium text-[#1f1f1f]">Recent searches</div>
-                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
-                    </div>
-                  </button>
+              {destinationSuggestions}
 
-                  {/* Nearby */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDestination("Nearby");
-                      setActiveStep("when");
-                    }}
-                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-5 w-5"
-                      >
-                        <polygon points="3 11 22 2 13 21 11 13 3 11" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-medium text-[#1f1f1f]">Nearby</div>
-                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
-                    </div>
-                  </button>
-
-                  {/* Suggested destinations */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDestination("Suggested destinations");
-                      setActiveStep("when");
-                    }}
-                    className="flex w-full items-center gap-3 text-left group cursor-pointer transition-opacity hover:opacity-80"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3f4f6] text-[#1f1f1f]">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-5 w-5"
-                      >
-                        <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
-                        <circle cx="12" cy="8" r="2" />
-                        <path d="M6 19a7 7 0 0 0 12 0" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-medium text-[#1f1f1f]">Suggested destinations</div>
-                      <div className="text-[12px] text-[#717171]">find what&apos;s around you</div>
-                    </div>
-                  </button>
-                </div>
-
-                {/* Vertical scrollbar indicator matching design */}
-                <div className="h-24 w-[2px] shrink-0 rounded-full bg-[#e5e5e5] relative self-center">
-                  <div className="h-9 w-[2px] rounded-full bg-[#eba900]" />
-                </div>
-              </div>
             </div>
 
+            )}
+
             {/* When Section */}
-            <div className="mt-3 rounded-[20px] bg-white px-5 py-3.5 shadow-xs">
-              <div
-                className="flex items-center justify-between cursor-pointer"
-                onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
-              >
-                <span className="text-[14px] text-[#1f1f1f] font-normal">When</span>
-                <span className="text-[15px] text-[#1f1f1f] font-semibold">
-                  {checkIn && checkOut ? `${checkIn} - ${checkOut}` : "Add dates"}
-                </span>
-              </div>
-              {activeStep === "when" && (
-                <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 animate-in fade-in">
-                  <div>
-                    <label className="block text-[11px] text-[#717171] mb-1">Check in</label>
-                    <input
-                      type="date"
-                      value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
-                      className="w-full text-[12px] p-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-[#717171] mb-1">Check out</label>
-                    <input
-                      type="date"
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="w-full text-[12px] p-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
-                    />
-                  </div>
-                </div>
-              )}
+            <div className="mt-3 rounded-[22px] border border-white bg-[#f3f4f5] p-3">
+              <button type="button" aria-expanded={activeStep === "when"}
+                className={`flex w-full items-center justify-between gap-2 text-left ${activeStep === "when" ? "mb-4 px-1 pt-1" : "px-2 py-1"}`}
+                onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}>
+                <span className={activeStep === "when" ? "text-[20px] font-semibold" : "text-[14px]"}>{activeStep === "when" ? "When?" : "When"}</span>
+                {activeStep !== "when" && <span className="text-right text-[15px] font-semibold">
+                  {datePreferences.mode !== "dates"
+                    ? `${datePreferences.mode === "flexible" ? datePreferences.stay + " · " : ""}${datePreferences.months.length ? datePreferences.months.map((month) => new Date(month + "-01T00:00:00").toLocaleDateString("en-US", { month: "short" })).join(", ") : "Anytime"}`
+                    : checkIn ? `${new Date(checkIn + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}${checkOut ? " – " + new Date(checkOut + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : " – Add checkout"}` : "Add dates"}
+                </span>}
+              </button>
+              {activeStep === "when" && <MobileDatePicker checkIn={checkIn} checkOut={checkOut}
+                onDatesChange={(start, end) => { setCheckIn(start); setCheckOut(end); }}
+                preferences={datePreferences} onPreferencesChange={setDatePreferences} />}
             </div>
 
             {/* Who Section */}
-            <div className="mt-3 rounded-[20px] bg-white px-5 py-3.5 shadow-xs">
-              <div
-                className="flex items-center justify-between cursor-pointer"
-                onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}
-              >
-                <span className="text-[14px] text-[#1f1f1f] font-normal">Who</span>
-                <span className="text-[15px] text-[#1f1f1f] font-semibold">
-                  {guestCount === 1 ? "Add guests" : `${guestCount} guests`}
+            <div className="mt-3 rounded-[22px] border border-white bg-[#f3f4f5] px-4 py-4">
+              <button type="button" aria-expanded={activeStep === "who"}
+                aria-controls="mobile-guest-options"
+                className="flex w-full items-center justify-between gap-3 text-left"
+                onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}>
+                <span className={activeStep === "who" ? "text-[20px] font-semibold" : "text-[14px]"}>
+                  {activeStep === "who" ? "Who?" : "Who"}
                 </span>
-              </div>
+                {activeStep !== "who" && <span className="text-right text-[15px] font-semibold">
+                  {mobileGuestSummary || "Add guests"}
+                </span>}
+              </button>
               {activeStep === "who" && (
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between animate-in fade-in">
-                  <span className="text-[13px] text-[#1f1f1f]">Guests</span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      disabled={guestCount <= 1}
-                      onClick={() => setGuestCount((c) => Math.max(1, c - 1))}
-                      className="h-7 w-7 rounded-full border border-gray-300 flex items-center justify-center text-sm disabled:opacity-40 hover:bg-gray-100 cursor-pointer"
-                    >
-                      -
-                    </button>
-                    <span className="text-sm font-semibold">{guestCount}</span>
-                    <button
-                      type="button"
-                      onClick={() => setGuestCount((c) => c + 1)}
-                      className="h-7 w-7 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-100 cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
+                <div id="mobile-guest-options">{guestOptions}</div>
               )}
             </div>
 
@@ -521,7 +529,10 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                   setDestination("");
                   setCheckIn("");
                   setCheckOut("");
-                  setGuestCount(1);
+                  setMobileGuests(emptyMobileGuests);
+                  setDatePreferences(initialDatePreferences);
+                  setDestinationScroll(0);
+                  setActiveStep("where");
                 }}
                 className="text-[15px] font-semibold underline text-[#1f1f1f] cursor-pointer hover:opacity-75"
               >
@@ -536,7 +547,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
@@ -1805,7 +1806,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
       {/* Modals */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Edit Host Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
@@ -1855,11 +1856,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showSuspendModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">
               {host.status === "SUSPENDED" ? "Unsuspend Account" : "Suspend Account"}
@@ -1898,11 +1899,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showApproveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Approve Host Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1927,11 +1928,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showRejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Reject Host Application</h3>
             <form onSubmit={handleRejectApplication} className="space-y-3 text-xs">
@@ -1964,11 +1965,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showActionReqModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Request Information / Action</h3>
             <form onSubmit={handleRequestAction} className="space-y-3 text-xs">
@@ -2001,11 +2002,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showDocRejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Reject Document</h3>
             <div className="space-y-3 text-xs">
@@ -2038,12 +2039,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Compliance Modal: Log Issue */}
       {showCreateIssueModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Log Compliance Issue</h3>
             <form onSubmit={handleCreateComplianceIssue} className="space-y-3 text-xs">
@@ -2100,12 +2101,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Compliance Modal: Resolve Issue */}
       {showResolveIssueModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Resolve Compliance Issue</h3>
             <form onSubmit={handleResolveComplianceIssue} className="space-y-3 text-xs">
@@ -2148,12 +2149,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Compliance Modal: Update Status */}
       {showUpdateCompModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-muted-foreground">Set Host Compliance Status</h3>
             <form onSubmit={handleUpdateComplianceStatus} className="space-y-3 text-xs">
@@ -2198,11 +2199,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
       {/* Admin Listing Review Modal */}
       {showListingReviewModal && selectedListingForReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
           <div className="w-full max-w-4xl max-h-[90vh] rounded-3xl bg-[var(--surface)] p-6 sm:p-8 shadow-2xl space-y-6 overflow-y-auto border border-[var(--border)] font-sans">
             {/* Modal Header */}
             <div className="flex items-start justify-between border-b border-[var(--border-subtle)] pb-4">
@@ -2450,12 +2451,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Sub-modal: Request Listing Changes */}
       {showListingReqChangesModal && selectedListingForReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
             <h3 className="text-base font-bold text-muted-foreground">Request Listing Changes</h3>
             <form onSubmit={handleRequestListingChanges} className="space-y-3 text-xs">
@@ -2488,12 +2489,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Sub-modal: Reject Listing */}
       {showListingRejectModal && selectedListingForReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)]">
             <h3 className="text-base font-bold text-muted-foreground">Reject Listing Application</h3>
             <form onSubmit={handleRejectListing} className="space-y-3 text-xs">
@@ -2526,12 +2527,12 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Sub-modal: Delete Listing */}
       {showDeleteListingModal && listingToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-bold text-lg">
@@ -2564,7 +2565,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

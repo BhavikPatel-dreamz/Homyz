@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Alert } from "../ui";
@@ -838,7 +839,7 @@ export function AdminPermissionMatrixManager({
 
       {/* SAVE CHANGES CONFIRMATION MODAL (Matching Host Permission Modal UI Exactly) */}
       {showSaveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-muted-foreground">
               Confirm Permission Changes
@@ -894,12 +895,12 @@ export function AdminPermissionMatrixManager({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* RESET TO DEFAULTS CONFIRMATION MODAL (Matching Host Permission Modal UI Exactly) */}
       {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-muted-foreground">
               Reset Admin Permissions
@@ -948,12 +949,12 @@ export function AdminPermissionMatrixManager({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* SET ALL PERMISSIONS CONFIRMATION MODAL */}
       {showSetAllModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-muted-foreground">
               Grant All Administrative Permissions
@@ -1002,12 +1003,12 @@ export function AdminPermissionMatrixManager({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* CLEAR ALL PERMISSIONS CONFIRMATION MODAL */}
       {showClearAllModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-bold text-muted-foreground">
               Revoke All Administrative Permissions
@@ -1056,7 +1057,7 @@ export function AdminPermissionMatrixManager({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

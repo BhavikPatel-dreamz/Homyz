@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -575,7 +576,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
           <div className="w-full max-w-3xl max-h-[92vh] rounded-3xl bg-[var(--surface)] p-6 sm:p-8 shadow-2xl space-y-6 overflow-y-auto border border-[var(--border)] font-sans">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
@@ -1125,12 +1126,12 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Calendar / Availability Blocked Dates Modal */}
       {showAvailabilityModal && selectedListingForCal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-extrabold text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
@@ -1200,12 +1201,12 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && listingToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-bold text-rose-600">Delete Property Listing?</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1229,7 +1230,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

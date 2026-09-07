@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -831,7 +832,7 @@ export function HostListingEditorClient({
       {/* GLOBAL MODAL: ADD YOUR CO-HOST'S INFO */}
       {/* --------------------------------------------------------- */}
       {isAddCoHostModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             {/* Top Close Button */}
             <button
@@ -953,13 +954,13 @@ export function HostListingEditorClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}
       {/* --------------------------------------------------------- */}
       {isTurnOffInstantBookModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             {/* Top Close Button */}
             <button
@@ -1054,14 +1055,14 @@ export function HostListingEditorClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: ADD A CUSTOM MESSAGE */}
       {/* --------------------------------------------------------- */}
       {isCustomMessageModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -1103,14 +1104,14 @@ export function HostListingEditorClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: EDIT ADDITIONAL HOUSE RULES */}
       {/* --------------------------------------------------------- */}
       {isEditingAdditionalRulesModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
@@ -1152,12 +1153,12 @@ export function HostListingEditorClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 border border-zinc-200 animate-in zoom-in-95 font-sans">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg">
@@ -1187,7 +1188,7 @@ export function HostListingEditorClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

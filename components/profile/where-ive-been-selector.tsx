@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useTransition, useRef } from "react";
 import {
   BUILTIN_TRAVEL_STAMPS,
@@ -398,7 +399,7 @@ export function WhereIveBeenSelector({
 
       {/* Delete Confirmation Dialog */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-center">
             <h4 className="text-base font-semibold text-[#1F1F1F] mb-2">Delete Travel Stamp?</h4>
             <p className="text-xs text-zinc-500 mb-6">
@@ -421,12 +422,12 @@ export function WhereIveBeenSelector({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* Add / Edit Stamp Modal */}
       {modalMode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto">
             <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">
@@ -540,7 +541,7 @@ export function WhereIveBeenSelector({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

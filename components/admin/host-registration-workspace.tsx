@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
@@ -1263,7 +1264,7 @@ export function HostRegistrationWorkspace({
 
       {/* PREVIEW DOCUMENT MODAL */}
       {previewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
@@ -1300,12 +1301,12 @@ export function HostRegistrationWorkspace({
               )}
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REJECT DOCUMENT MODAL */}
       {rejectModalOpen && targetDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Reject Document</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1361,12 +1362,12 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REQUEST RESUBMISSION MODAL */}
       {resubmitModalOpen && targetDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-amber-600">Request Document Re-submission</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1421,12 +1422,12 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* CREATE COMPLIANCE ISSUE MODAL */}
       {createIssueModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Log Compliance Issue</h3>
 
@@ -1488,12 +1489,12 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REQUEST ADDITIONAL INFO MODAL */}
       {requestInfoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-amber-600">Request Additional Information from Host</h3>
 
@@ -1551,12 +1552,12 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* APPLICATION APPROVAL MODAL */}
       {approvalModalOpen && eligibilityResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-5">
             <h3 className="text-xl font-black text-emerald-600">Final Application Approval Decision</h3>
 
@@ -1619,12 +1620,12 @@ export function HostRegistrationWorkspace({
               </div>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* APPLICATION REJECTION MODAL */}
       {appRejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-rose-600">Reject Host Application</h3>
 
@@ -1674,12 +1675,12 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* REOPEN APPLICATION MODAL */}
       {reopenModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-bold text-indigo-600">Reopen Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1718,7 +1719,7 @@ export function HostRegistrationWorkspace({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

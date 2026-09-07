@@ -23,7 +23,7 @@ export function PropertyCard({ badge = "guest_favorite" }: PropertyCardData) {
   };
 
   return (
-    <div className="group cursor-pointer overflow-hidden rounded-[20px] sm:rounded-[22px] border border-[#727272] bg-white transition-all duration-200">
+    <div className="group cursor-pointer overflow-hidden rounded-[20px] sm:rounded-[22px] border border-[#727272] bg-white hover:bg-[#FCDF9C] transition-all duration-200">
       <div className="relative aspect-[233/246] w-full overflow-hidden bg-gray-100">
         <Image
           alt="Warm neutral living room"

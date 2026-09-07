@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
@@ -747,7 +748,7 @@ export function HostOnboardingMonitoring() {
 
       {/* DRAWER MODAL: SINGLE HOST ONBOARDING PROGRESS & TRACKER */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end">
           <div className="w-full max-w-3xl bg-[var(--surface)] h-full overflow-y-auto p-6 space-y-6 border-l border-[var(--border)] shadow-2xl animate-in slide-in-from-right duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
               <div>
@@ -899,7 +900,7 @@ export function HostOnboardingMonitoring() {
               </div>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useState, useTransition } from "react";
 import { Alert, Badge } from "../ui";
 import { toast } from "@/components/ui/toast";
@@ -375,7 +376,7 @@ export function RoleMatrixManager({
 
       {/* Modal: Create Role */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-extrabold text-muted-foreground">
@@ -453,7 +454,7 @@ export function RoleMatrixManager({
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -67,7 +68,7 @@ export function BecomeHostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <ModalOverlay className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Dark overlay backdrop */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
@@ -276,6 +277,6 @@ export function BecomeHostModal({
           </div>
         </div>
       )}
-    </div>
+    </ModalOverlay>
   );
 }
