@@ -150,7 +150,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
 
           {/* Quick Prompts */}
           <div className="border-t border-[#E5E5E5] bg-white px-4 py-2 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-2 whitespace-nowrap">
+            <div className="flex items-center gap-2 flex-wrap">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
@@ -192,13 +192,13 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
         {/* Other Help Channels */}
         <div className="flex flex-col gap-4">
           <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-bold text-[#1F1F1F]">Phone Support</h4>
+            <h4 className="text-sm font-semibold text-[#1F1F1F]">Phone Support</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               For immediate assistance with active reservations:
             </p>
             <a
               href="tel:+18005554669"
-              className="mt-3 block text-sm font-bold text-[#1F1F1F] hover:underline"
+              className="mt-3 block text-sm font-semibold text-[#1F1F1F] hover:underline"
             >
               +1 (800) 555-HOMYZ
             </a>
@@ -206,13 +206,13 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
           </div>
 
           <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-bold text-[#1F1F1F]">Email Support</h4>
+            <h4 className="text-sm font-semibold text-[#1F1F1F]">Email Support</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               Send documents or detailed billing inquiries:
             </p>
             <a
               href="mailto:support@homyz.app"
-              className="mt-3 block text-sm font-bold text-[#1F1F1F] hover:underline"
+              className="mt-3 block text-sm font-semibold text-[#1F1F1F] hover:underline"
             >
               support@homyz.app
             </a>
@@ -220,13 +220,13 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
           </div>
 
           <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-bold text-[#1F1F1F]">Help Centre</h4>
+            <h4 className="text-sm font-semibold text-[#1F1F1F]">Help Centre</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               Find instant answers to FAQs, cancellation policies, and guest guides.
             </p>
             <a
               href="/help"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#1F1F1F] hover:underline"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] hover:underline"
             >
               <span>Browse Help Articles</span>
               <span>→</span>

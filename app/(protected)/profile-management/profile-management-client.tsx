@@ -287,27 +287,20 @@ export function ProfileManagementClient({
 
   const managementWorkspace = (
     <div className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
-      <div className="mb-4 flex items-center justify-between">
+      {!embedded && (
+        <div className="mb-4 flex items-center justify-between sm:hidden">
         <button
           type="button"
           onClick={() => (onCancel ? onCancel() : router.back())}
           aria-label="Go back"
-          className={`flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 ${embedded ? "" : "sm:hidden"}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 sm:hidden"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
             <path d="m14 5-7 7 7 7" />
           </svg>
         </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-xs font-semibold text-[#727272] hover:text-[#1F1F1F] underline underline-offset-2 transition-colors"
-          >
-            Back to About me
-          </button>
-        )}
-      </div>
+        </div>
+      )}
             {msg && (
               <div className="mb-6">
                 <Alert tone={msg.tone}>{msg.text}</Alert>
@@ -316,7 +309,7 @@ export function ProfileManagementClient({
 
             {/* 1. HERO AVATAR CARD & COMMUNITY NOTE */}
             <div className="mb-8 flex flex-col items-start gap-7 sm:flex-row sm:items-center sm:gap-6">
-              <div className={`profile-avtar-card relative mt-5 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}>
+              <div className={`profile-avtar-card relative md:mt-5 mt-0 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}>
                 <div className="relative h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
                   {imageUrl ? (
                     <Image src={imageUrl} alt="Profile photo" fill className="object-cover" sizes="(max-width: 639px) 220px, 362px" priority />
@@ -412,21 +405,21 @@ export function ProfileManagementClient({
 
             {/* TAB 1: PROFILE INFORMATION */}
             {activeMgmtTab === "info" && (
-              <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col gap-8 -mt-8">
+              <form onSubmit={(e) => onSubmit(e)} className="w-full flex flex-col sm:gap-8 gap-0 -mt-8">
                 {/* RESPONSIVE TWO-COLUMN PROMPT LIST */}
                 <div className="flex flex-wrap [&>div]:w-full md:[&>div]:py-6! [&>div]:py-3! md:[&>div:nth-child(odd)]:mr-12 md:[&>div:not(:last-child)]:w-[calc(50%-1.5rem)]">
                   {/* Item 0: Full Name */}
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         My full name
                       </span>
                       <input
                         value={name}
                         disabled={!isOwner}
                         onChange={(e) => setName(e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           name ? "text-[#1f1f1f] font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: Your full name"
@@ -437,14 +430,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         Where I've always wanted to go
                       </span>
                       <input
                         value={formDataState.whereIWantToGo}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereIWantToGo", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.whereIWantToGo
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -458,12 +451,12 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">My work</span>
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">My work</span>
                       <input
                         value={formDataState.myWork}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("myWork", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.myWork ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add your work"
@@ -475,14 +468,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         I spend too much time
                       </span>
                       <input
                         value={formDataState.spendTooMuchTime}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("spendTooMuchTime", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.spendTooMuchTime
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -496,12 +489,12 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">Pets</span>
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">Pets</span>
                       <input
                         value={formDataState.pets}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("pets", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.pets ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add pets"
@@ -513,12 +506,12 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">Decade I was born</span>
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">Decade I was born</span>
                       <input
                         value={formDataState.decadeBorn}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("decadeBorn", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.decadeBorn
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -532,14 +525,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         Where I went to school
                       </span>
                       <input
                         value={formDataState.school}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("school", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.school ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="Add school"
@@ -551,14 +544,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         My most useless skill
                       </span>
                       <input
                         value={formDataState.uselessSkill}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("uselessSkill", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.uselessSkill
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -572,12 +565,12 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">My fun fact</span>
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">My fun fact</span>
                       <input
                         value={formDataState.funFact}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("funFact", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.funFact ? "text-zinc-900 font-medium" : "text-zinc-400 font-normal"
                         }`}
                         placeholder="edit: What's your fun fact?"
@@ -589,14 +582,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         My favorite song in high school
                       </span>
                       <input
                         value={formDataState.favoriteSong}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("favoriteSong", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.favoriteSong
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -610,14 +603,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         Languages I speak: {formDataState.languages || "English and Russian"}
                       </span>
                       <input
                         value={formDataState.languages}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("languages", e.target.value)}
-                        className="w-full text-lg bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
+                        className="w-full sm:text-lg text-sm bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
                         placeholder="Languages"
                       />
                     </div>
@@ -627,14 +620,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         I'm obsessed with
                       </span>
                       <input
                         value={formDataState.obsessedWith}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("obsessedWith", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.obsessedWith
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -648,14 +641,14 @@ export function ProfileManagementClient({
                   <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         My biography title would be
                       </span>
                       <input
                         value={formDataState.bioTitle}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("bioTitle", e.target.value)}
-                        className={`w-full text-base bg-transparent focus:outline-none ${
+                        className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                           formDataState.bioTitle
                             ? "text-zinc-900 font-medium"
                             : "text-zinc-400 font-normal"
@@ -669,14 +662,14 @@ export function ProfileManagementClient({
                   <div className="flex items-center gap-3.5 border-b border-zinc-200/80 pb-2.5">
                     <IconSprig />
                     <div className="flex-1 min-w-0">
-                      <span className="block text-basefont-normal text-[#727272]">
+                      <span className="block sm:text-base text-sm font-normal text-[#727272]">
                         Where I live: {formDataState.whereILive || "Bucharest, Romania"}
                       </span>
                       <input
                         value={formDataState.whereILive}
                         disabled={!isOwner}
                         onChange={(e) => handleInputChange("whereILive", e.target.value)}
-                        className="w-full text-lg bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
+                        className="w-full md:text-lg text-sm bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
                         placeholder="Town, Country"
                       />
                     </div>
@@ -983,7 +976,7 @@ export function ProfileManagementClient({
   return (
     <div className="w-full bg-white min-h-[85vh] flex flex-col font-sans sm:py-8">
       <div className="mx-auto w-full">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 sm:gap-8 gap-0 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
           <GuestDashboardSidebar activeId="profile_management" />
           {managementWorkspace}
         </div>

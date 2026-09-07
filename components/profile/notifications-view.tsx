@@ -144,7 +144,7 @@ export function NotificationsView() {
                 <div className="flex items-baseline justify-between gap-2">
                   <h3
                     className={`text-sm ${
-                      item.unread ? "font-bold text-[#1F1F1F]" : "font-semibold text-zinc-700"
+                      item.unread ? "font-semibold text-[#1F1F1F]" : "font-semibold text-zinc-700"
                     }`}
                   >
                     {item.title}

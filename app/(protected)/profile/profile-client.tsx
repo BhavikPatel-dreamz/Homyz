@@ -164,18 +164,10 @@ export function ProfileClient({
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          {isOwner && (
-            <button
-              type="button"
-              onClick={() => handleSelectTab("profile_management")}
-              className="flex h-10 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm text-[#1F1F1F]"
-            >
-              Edit
-            </button>
-          )}
+          
         </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
           <GuestDashboardSidebar
             activeId={activeTab}

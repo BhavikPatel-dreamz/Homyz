@@ -166,7 +166,7 @@ export function SavedListingsView() {
               </p>
 
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-sm font-bold text-[#1F1F1F]">${item.pricePerNight}</span>
+                <span className="text-sm font-semibold text-[#1F1F1F]">${item.pricePerNight}</span>
                 <span className="text-xs text-[#727272]">/ night</span>
               </div>
             </article>

@@ -45,7 +45,7 @@ export function FilterBar({
               key={t.id}
               type="button"
               onClick={() => onChange({ tab: t.id })}
-              className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                 filters.tab === t.id
                 ? "bg-[var(--primary)] text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-muted-foreground"
@@ -69,7 +69,7 @@ export function FilterBar({
             placeholder="Search by property, guest name, or location..."
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
-            className="w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-xs font-medium text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]"
+            className="w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-sm font-normal text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]"
           />
         </div>
 

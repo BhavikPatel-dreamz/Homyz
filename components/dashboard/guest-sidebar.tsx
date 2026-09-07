@@ -40,7 +40,7 @@ export function GuestDashboardSidebar({
         My profile
       </h1>
 
-      <nav className="grid grid-cols-2 gap-1.5 lg:block">
+      <nav className="mobile-guest-grid grid grid-cols-2 gap-1.5 lg:block lg:mt-3 mt-5">
         {GUEST_NAV_ITEMS.map((item, index) => {
           const isActive = item.id === currentActive;
           const precedesActive = GUEST_NAV_ITEMS[index + 1]?.id === currentActive;
@@ -73,19 +73,19 @@ export function GuestDashboardSidebar({
                 className={`relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-[#1F1F1F] transition-colors lg:h-12 lg:w-12 xl:h-16 xl:w-16 ${
                   isActive
                     ? "bg-[#FCDF9C] ring-4 ring-white"
-                    : item.id === "about_me"
-                      ? "border border-[#1F1F1F] bg-white"
-                      : "bg-white"
+                    : "bg-white"
                 }`}
               >
                 {item.id === "about_me" ? (
+                  <span className={`relative block overflow-hidden rounded-full border border-[#1F1F1F] ${isActive ? "h-full w-full" : "h-10 w-10"}`}>
                   <Image
                     src={avatarUrl || item.image}
                     alt="About me"
                     fill
-                    sizes="64px"
+                    sizes={isActive ? "(min-width: 1280px) 64px, (min-width: 1024px) 48px, 40px" : "40px"}
                     className="object-cover"
                   />
+                  </span>
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#1F1F1F]">
                     <Image

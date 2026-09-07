@@ -114,22 +114,22 @@ export function InviteEarnView({ user }: { user?: { name?: string | null; id?: s
       <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
           <span className="text-xs text-[#727272]">Invited Friends</span>
-          <span className="mt-1 text-2xl font-bold text-[#1F1F1F]">4</span>
+          <span className="mt-1 text-2xl font-semibold text-[#1F1F1F]">4</span>
           <span className="mt-1 text-[11px] text-[#727272]">Signed up with link</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
           <span className="text-xs text-[#727272]">Completed Stays</span>
-          <span className="mt-1 text-2xl font-bold text-[#1F1F1F]">2</span>
+          <span className="mt-1 text-2xl font-semibold text-[#1F1F1F]">2</span>
           <span className="mt-1 text-[11px] text-[#727272]">Finished trips</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
           <span className="text-xs text-[#727272]">Total Credits Earned</span>
-          <span className="mt-1 text-2xl font-bold text-emerald-700">$50.00</span>
+          <span className="mt-1 text-2xl font-semibold text-emerald-700">$50.00</span>
           <span className="mt-1 text-[11px] text-[#727272]">Ready to use</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
           <span className="text-xs text-[#727272]">Pending Credits</span>
-          <span className="mt-1 text-2xl font-bold text-[#1F1F1F]">$25.00</span>
+          <span className="mt-1 text-2xl font-semibold text-[#1F1F1F]">$25.00</span>
           <span className="mt-1 text-[11px] text-[#727272]">Awaiting check-out</span>
         </div>
       </div>
@@ -141,28 +141,28 @@ export function InviteEarnView({ user }: { user?: { name?: string | null; id?: s
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-bold text-[#1F1F1F]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
               1
             </span>
-            <h4 className="mt-3 text-sm font-bold text-[#1F1F1F]">Send Invites</h4>
+            <h4 className="mt-3 text-sm font-semibold text-[#1F1F1F]">Send Invites</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               Share your personal link via WhatsApp, email, or social media.
             </p>
           </div>
           <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-bold text-[#1F1F1F]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
               2
             </span>
-            <h4 className="mt-3 text-sm font-bold text-[#1F1F1F]">Friend Books</h4>
+            <h4 className="mt-3 text-sm font-semibold text-[#1F1F1F]">Friend Books</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               They immediately receive $25 off their first eligible booking of $100+.
             </p>
           </div>
           <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-bold text-[#1F1F1F]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
               3
             </span>
-            <h4 className="mt-3 text-sm font-bold text-[#1F1F1F]">Get $25 Reward</h4>
+            <h4 className="mt-3 text-sm font-semibold text-[#1F1F1F]">Get $25 Reward</h4>
             <p className="mt-1 text-xs text-[#727272] leading-relaxed">
               You receive $25 in your Homyz travel credit wallet as soon as they complete their trip.
             </p>
@@ -176,30 +176,30 @@ export function InviteEarnView({ user }: { user?: { name?: string | null; id?: s
           Referral Activity
         </h3>
         <div className="divide-y divide-[#E5E5E5] rounded-2xl border border-[#E5E5E5] bg-white">
-          <div className="flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors">
+          <div className="flex items-center justify-between gap-3 p-4 hover:bg-zinc-50 transition-colors">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-[#1F1F1F]">Sarah Miller</span>
               <span className="text-xs text-[#727272]">Stay completed at Malibu Beach Villa • Aug 14, 2026</span>
             </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 text-center">
               +$25.00 Earned
             </span>
           </div>
-          <div className="flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors">
+          <div className="flex items-center justify-between gap-3 p-4 hover:bg-zinc-50 transition-colors">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-[#1F1F1F]">David Kim</span>
               <span className="text-xs text-[#727272]">Stay completed at Alpine Loft • Jul 28, 2026</span>
             </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 text-center">
               +$25.00 Earned
             </span>
           </div>
-          <div className="flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors">
+          <div className="flex items-center justify-between gap-3 p-4 hover:bg-zinc-50 transition-colors">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-[#1F1F1F]">Elena Rostova</span>
               <span className="text-xs text-[#727272]">Account created • Booking pending • Sep 01, 2026</span>
             </div>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
+            <span className="rounded-full bg-[#faeebc] px-3 py-1 text-xs font-semibold text-amber-800 text-center">
               Pending $25.00
             </span>
           </div>

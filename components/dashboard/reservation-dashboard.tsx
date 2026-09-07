@@ -191,7 +191,7 @@ export function ReservationDashboard({
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-12">
+    <div className="flex flex-col gap-8 sm:pb-12 pb-5">
       {/* Header & Filter Controls matching Screenshots */}
       <FilterBar
         filters={filters}
@@ -213,10 +213,10 @@ export function ReservationDashboard({
         <div className="flex flex-col gap-14 sm:gap-16">
           {pastYearGroups.map(({ year, items }) => (
             <section key={year} aria-labelledby={`bookings-year-${year}`}>
-              <h2 id={`bookings-year-${year}`} className="mb-7 text-xl font-semibold leading-7 text-[#1F1F1F] sm:mb-9 sm:text-2xl">
+              <h2 id={`bookings-year-${year}`} className="text-xl font-semibold leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
                 {year}
               </h2>
-              <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
                   <ReservationCard key={item.id} data={item} onSelect={setSelectedRes} />
                 ))}
@@ -225,7 +225,7 @@ export function ReservationDashboard({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}

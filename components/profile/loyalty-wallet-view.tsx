@@ -141,7 +141,7 @@ export function LoyaltyWalletView() {
               Current Balance
             </span>
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold tracking-tight text-[#1F1F1F] sm:text-5xl">
+              <span className="text-4xl font-semibold tracking-tight text-[#1F1F1F] sm:text-5xl">
                 {balance.toLocaleString()}
               </span>
               <span className="text-base font-semibold text-[#727272] sm:text-lg">
@@ -185,18 +185,18 @@ export function LoyaltyWalletView() {
       {/* Ways to Earn 3-Column Strip */}
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-bold text-[#1F1F1F]">Book a Stay</span>
-          <span className="mt-1 text-lg font-bold text-[#1F1F1F]">10 pts / $1</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">Book a Stay</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">10 pts / $1</span>
           <span className="mt-0.5 text-xs text-[#727272]">Earn on all homes &amp; villas</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-bold text-[#1F1F1F]">Write Reviews</span>
-          <span className="mt-1 text-lg font-bold text-[#1F1F1F]">50 pts each</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">Write Reviews</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">50 pts each</span>
           <span className="mt-0.5 text-xs text-[#727272]">After every completed trip</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-bold text-[#1F1F1F]">Refer Friends</span>
-          <span className="mt-1 text-lg font-bold text-[#1F1F1F]">250 pts</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">Refer Friends</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">250 pts</span>
           <span className="mt-0.5 text-xs text-[#727272]">When friend completes first stay</span>
         </div>
       </div>
@@ -226,7 +226,7 @@ export function LoyaltyWalletView() {
                   <p className="mt-1 text-xs text-[#727272] leading-relaxed">
                     {reward.description}
                   </p>
-                  <p className="mt-3 text-sm font-bold text-[#1F1F1F]">
+                  <p className="mt-3 text-sm font-semibold text-[#1F1F1F]">
                     {reward.points.toLocaleString()} pts
                   </p>
                 </div>
