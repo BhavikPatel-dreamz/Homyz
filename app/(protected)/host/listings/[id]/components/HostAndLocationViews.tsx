@@ -1,5 +1,7 @@
 "use client";
 
+import { BackButton } from "@/components/ui/back-button";
+
 import React from "react";
 import { RealMap } from "@/components/ui/real-map";
 
@@ -168,13 +170,7 @@ export function HostAndLocationViews({
         <div className="space-y-6 animate-in fade-in">
           <div className="flex items-center justify-between border-b border-zinc-150 pb-4">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("description")}
-                className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm cursor-pointer"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("description")} />
               <h1>Photos tour</h1>
             </div>
           </div>
@@ -199,7 +195,7 @@ export function HostAndLocationViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("photos")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
+              className="whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save Photo Tour"}
             </button>
@@ -270,13 +266,7 @@ function LocationAccordionView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("description")} />
         <h1>Location</h1>
       </div>
 
@@ -891,13 +881,7 @@ export function AboutHostFullView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Back button & Title Header */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("description")} />
         <h1>About the host</h1>
       </div>
 

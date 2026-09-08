@@ -1,5 +1,7 @@
 "use client";
 
+import { BackButton } from "@/components/ui/back-button";
+
 import React from "react";
 
 interface PropertyDetailsViewsProps {
@@ -129,13 +131,7 @@ export function PropertyDetailsViews({
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("title")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("title")} />
               <h1>Description</h1>
             </div>
             <p className="text-xs text-zinc-400 font-normal pl-11">
@@ -349,13 +345,7 @@ export function PropertyDetailsViews({
       {activeSection === "title" && (
         <div className="space-y-6 animate-in fade-in max-w-xl">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("description")}
-              className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm cursor-pointer"
-            >
-              ‹
-            </button>
+            <BackButton onClick={() => setActiveSection("description")} />
             <h1>Listing title</h1>
           </div>
 
@@ -376,7 +366,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("title")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-xs transition-all cursor-pointer"
+              className="whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save Title"}
             </button>
@@ -391,14 +381,7 @@ export function PropertyDetailsViews({
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           {/* Back button & Section Header */}
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("description")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </button>
+            <BackButton onClick={() => setActiveSection("description")} />
             <h1>Property type</h1>
           </div>
 
@@ -673,13 +656,7 @@ export function PropertyDetailsViews({
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("description")}
-                  className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-                >
-                  ‹
-                </button>
+                <BackButton onClick={() => setActiveSection("description")} />
                 <h1>Amenities</h1>
               </div>
               <p className="text-xs text-zinc-400 font-normal pl-11">
@@ -888,13 +865,7 @@ export function PropertyDetailsViews({
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("description")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("description")} />
               <h1>Accessibility features</h1>
             </div>
 

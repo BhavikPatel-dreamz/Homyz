@@ -32,6 +32,8 @@ export async function updateListingAction(id: string, input: unknown) {
     // Ownership (host must own; ADMIN bypasses) is enforced in the service.
     const listing = await listingService.update(actor, id, data);
     revalidatePath("/host/listings");
+    revalidatePath("/host/calendar");
+    revalidatePath("/host/today");
     return listing;
   });
 }

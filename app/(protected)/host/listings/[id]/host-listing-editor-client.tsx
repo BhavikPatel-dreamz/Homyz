@@ -561,7 +561,7 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]"
+      className="min-h-screen pb-[calc(110px+env(safe-area-inset-bottom))] sm:pb-0 bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]"
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       <HostHeader user={listing.host} />

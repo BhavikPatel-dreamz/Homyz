@@ -3,6 +3,7 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
@@ -18,6 +19,7 @@ import {
   updateListingAvailabilityAction,
 } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
+import { Container } from "../ui";
 
 const AMENITY_OPTIONS = [
   { id: "WIFI", label: "High-speed Wi-Fi", icon: "📶" },
@@ -67,6 +69,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
   const router = useRouter();
   const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const [activeTab, setActiveTab] = useState<string>("ALL");
+  const [showSearch, setShowSearch] = useState(false);
+  const [compactGrid, setCompactGrid] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Editor Modal State
@@ -391,188 +395,183 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       <HostSubNav activeTab="listing" />
 
       {/* ── 2. MAIN CONTENT AREA ── */}
-      <main className="max-w-6xl mx-auto w-full px-6 sm:px-10 py-10 flex-1 space-y-8">
-        {/* Toast Alert */}
-        {toastMsg && (
-          <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${
-            toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}>
-            {toastMsg.text}
-          </div>
-        )}
-
-        {/* Page Title & Mobile Action Icons */}
-        <div className="flex items-center justify-between">
-          <h1>
-            Your listings
-          </h1>
-
-          {/* Right Mobile Action Icons (Search, Filter, Plus) */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              disabled={pending}
-              className="inline-flex sm:hidden items-center justify-center w-8 h-8 rounded-full bg-[#FEE08B] text-[#1F1F1F] font-normal text-sm shadow-xs"
-              title="Create New Listing"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              disabled={pending}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-5 py-2.5 transition-all shadow-2xs active:scale-95"
-            >
-              + Create New Listing
-            </button>
-          </div>
-        </div>
-
-        {/* Property Cards Grid */}
-        {filteredListings.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* Demo / Empty State Cards matching screenshot */}
-            <div
-              onClick={handleOpenCreate}
-              className="group cursor-pointer flex flex-col space-y-2 text-left"
-            >
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-200 border border-zinc-300 flex items-center justify-center p-4">
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                  action required
-                </div>
-                <div className="text-center text-zinc-500 space-y-1">
-                  <span className="text-2xl block">＋</span>
-                  <span className="text-xs font-semibold block">Create Listing</span>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
+      <main className="listing-main min-w-0 flex-1 pt-16 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
+        <Container className="max-sm:px-6">
+          {/* Toast Alert */}
+          {toastMsg && (
+            <div className={`fixed top-5 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
+              }`}>
+              {toastMsg.text}
             </div>
+          )}
 
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
+          {/* Page Title & Mobile Action Icons */}
+          <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:mb-9 lg:mb-12">
+            <h1 className="min-w-0 text-[22px] leading-[1.15] font-medium tracking-[-0.025em] sm:text-[40px] lg:text-[48px]">
+              <span className="sm:hidden">Your listing</span>
+              <span className="hidden sm:inline">Your listings</span>
+            </h1>
 
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
-
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
+            {/* Right Mobile Action Icons (Search, Filter, Plus) */}
+            <div className="flex shrink-0 items-center gap-2">
+              <button type="button" aria-label="Search listings" aria-expanded={showSearch} onClick={() => setShowSearch(!showSearch)} className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5] sm:hidden">
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="10.5" cy="10.5" r="7" /><path d="m16 16 5 5" /></svg>
+              </button>
+              <button type="button" aria-label="Toggle compact listing layout" aria-pressed={compactGrid} onClick={() => setCompactGrid(!compactGrid)} className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5] sm:hidden">
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="4" y="3" width="16" height="4" rx="1" /><rect x="4" y="11" width="6" height="10" rx="1" /><rect x="14" y="11" width="6" height="6" rx="1" /></svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                disabled={pending}
+                className="inline-flex sm:hidden items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs"
+                title="Create New Listing"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                disabled={pending}
+                className="hidden sm:inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-5 py-2.5 transition-all shadow-2xs active:scale-95"
+              >
+                + Create New Listing
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredListings.map((item) => {
-              const photos = Array.isArray(item.photos) ? item.photos : [];
-              const coverPhoto = photos.length > 0 ? photos[0] : null;
-              const isListed = item.status === "ACTIVE" || (item.published && !item.isPaused);
 
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => router.push(`/host/listings/${item.id}`)}
-                  className="group cursor-pointer flex flex-col space-y-2 text-left"
+          {showSearch && (
+            <div className="mb-6 sm:hidden">
+              <input aria-label="Search listings by name or city" placeholder="Search listings" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="w-full rounded-full border border-zinc-300 px-4 py-3 text-base outline-offset-2" />
+            </div>
+          )}
+          {/* Property Cards Grid */}
+          {filteredListings.length === 0 && searchQuery ? (
+            <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
+          ) : filteredListings.length === 0 ? (
+            <div className={`grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-9 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-9`}>
+              {["listing-img-01.png", "listing-img-02.png", "listing-img-03.png", null].map((photo, index) => (
+                <button
+                  key={photo ?? "placeholder"}
+                  type="button"
+                  onClick={handleOpenCreate}
+                  disabled={pending}
+                  aria-label={`Create a new listing from preview ${index + 1}`}
+                  className="group min-w-0 text-left rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
                 >
-                  {/* Photo Container */}
-                  <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs">
-                    {coverPhoto ? (
-                      <img
-                        src={coverPhoto}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                    {photo && (
+                      <Image
+                        src={`/images/listing/${photo}`}
+                        alt={["Bright home office with an orange desk", "Light-filled living room with neutral furnishings", "Green-paneled lounge with a pink sofa"][index]}
+                        fill
+                        sizes="(min-width: 1600px) 375px, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
                       />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-zinc-400 text-xl font-semibold">
-                        🏡
-                      </div>
                     )}
+                    <span className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                      <span className="size-2 shrink-0 rounded-full bg-[#69ff00]" />
+                      listed
+                    </span>
+                  </div>
+                  <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                    <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
+                    <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-9 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-9`}>
+              {filteredListings.map((item, index) => {
+                const photos = Array.isArray(item.photos) ? item.photos : [];
+                const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
+                const coverPhoto = photos[0] || fallbackPhoto;
+                const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
 
-                    {/* White Pill Badge matching screenshot */}
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                      <span className={`w-2 h-2 rounded-full ${isListed ? "bg-emerald-500" : "bg-rose-500"}`}></span>
-                      {isListed ? "listed" : "action required"}
+                return (
+                  <div
+                    key={item.id}
+                    className="group relative min-w-0 text-left"
+                  >
+                    {/* Photo Container */}
+                    <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                      {coverPhoto ? (
+                        <img
+                          src={coverPhoto}
+                          alt={item.title}
+                          onError={(event) => {
+                            const image = event.currentTarget;
+                            if (image.getAttribute("src") !== fallbackPhoto) {
+                              image.src = fallbackPhoto;
+                            }
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-[#f1f1f1]" />
+                      )}
+
+                      {/* White Pill Badge matching screenshot */}
+                      <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                        <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#69ff00]" : "bg-rose-500"}`}></span>
+                        {isListed ? "listed" : "action required"}
+                      </div>
+
+                      {/* Delete Action Icon Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setListingToDelete(item);
+                          setShowDeleteModal(true);
+                        }}
+                        title="Delete Property Listing"
+                        className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
+                      >
+                        🗑️
+                      </button>
                     </div>
 
-                    {/* Delete Action Icon Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setListingToDelete(item);
-                        setShowDeleteModal(true);
-                      }}
-                      title="Delete Property Listing"
-                      className="absolute top-3 right-3 bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-7 h-7 font-semibold"
-                    >
-                      🗑️
-                    </button>
+                    {/* Below Card Information */}
+                    <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                      <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
+                        <Link href={`/host/listings/${item.id}`} className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4">
+                          {item.title || "Property name"}
+                        </Link>
+                      </h3>
+                      <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
+                        {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
+                      </p>
+                    </div>
                   </div>
-
-                  {/* Below Card Information */}
-                  <div>
-                    <h3 className="font-semibold text-sm text-[#1F1F1F] truncate">
-                      {item.title || "Property name"}
-                    </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 truncate">
-                      {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
-                    </p>
-                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                disabled={pending}
+                aria-label="Create a new listing"
+                className="min-w-0 rounded-[22px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
+              >
+                <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                  <span className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                    <span className="size-2 shrink-0 rounded-full bg-[#69ff00]" />
+                    listed
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                  <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
+                  <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
+                </div>
+              </button>
+            </div>
+          )}
+        </Container>
       </main>
 
       {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
-      <Footer />
+      <div className="hidden sm:block"><Footer /></div>
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (
@@ -610,11 +609,10 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                   key={s.step}
                   type="button"
                   onClick={() => setEditorStep(s.step)}
-                  className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
-                    editorStep === s.step
+                  className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${editorStep === s.step
                       ? "bg-emerald-600 text-white shadow-2xs"
                       : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground"
-                  }`}
+                    }`}
                 >
                   {s.label}
                 </button>
@@ -813,9 +811,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                         Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
                       </p>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
-                    }`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
+                      }`}>
                       {formData.photos.length} / 5 photos minimum
                     </span>
                   </div>
@@ -929,11 +926,10 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                                 : [...formData.amenities, item.id];
                               setFormData({ ...formData, amenities: updated });
                             }}
-                            className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
-                              isSelected
+                            className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${isSelected
                                 ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold"
                                 : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
-                            }`}
+                              }`}
                           >
                             <span className="text-base">{item.icon}</span>
                             <span className="text-xs">{item.label}</span>
@@ -1132,7 +1128,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       {/* Calendar / Availability Blocked Dates Modal */}
       {showAvailabilityModal && selectedListingForCal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
+          <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-semibold text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
             </h3>
@@ -1141,7 +1137,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
             </p>
 
             <form onSubmit={handleSaveAvailability} className="space-y-4 text-xs">
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   type="date"
                   value={blockedDateInput}
@@ -1183,7 +1179,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-subtle)]">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-[var(--border-subtle)]">
                 <button
                   type="button"
                   onClick={() => setShowAvailabilityModal(false)}
@@ -1207,12 +1203,12 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       {/* Delete Confirmation Modal */}
       {showDeleteModal && listingToDelete && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
+          <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-semibold text-rose-600">Delete Property Listing?</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
             </p>
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
