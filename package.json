@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:ci": "next build",
-    "start": "next start",
+    "start": "bash scripts/start-prod.sh",
     "security:scan": "bash .githooks/pre-commit --ci",
     "lint": "eslint",
     "check-env": "node scripts/check-env.js",
