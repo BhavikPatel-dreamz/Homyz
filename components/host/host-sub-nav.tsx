@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "../ui";
+import Image from "next/image";
 
 export interface HostSubNavProps {
   activeTab?: "today" | "calendar" | "listing" | "messages";
@@ -44,127 +45,37 @@ export function TodayNavIcon({ className = "" }: { className?: string }) {
 
 export function CalendarNavIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 28 28"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M4.5 7.5C4.5 6 5.8 4.8 7.5 4.8H8.5M12.5 4.8H15.5M19.5 4.8H20.5C22.2 4.8 23.5 6 23.5 7.5V21.5C23.5 23 22.2 24.2 20.5 24.2H7.5C5.8 24.2 4.5 23 4.5 21.5V7.5Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M4.5 10H23.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <rect
-        x="8.5"
-        y="2"
-        width="2.6"
-        height="5.5"
-        rx="1.3"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        fill="white"
-      />
-      <rect
-        x="16.8"
-        y="2"
-        width="2.6"
-        height="5.5"
-        rx="1.3"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        fill="white"
-      />
-      <circle cx="12.5" cy="14.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="16.5" cy="14.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="20.5" cy="14.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="7.5" cy="19.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="11.5" cy="19.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <circle cx="15.5" cy="19.5" r="1.3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-    </svg>
+    <Image
+      src="/images/icons/date-picker-icon.svg"
+      alt="Calendar Icon"
+      width={24}
+      height={19}
+      priority
+    />
   );
 }
 
 export function ListingNavIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 28 28"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M6.5 5C6.5 4.2 7.2 3.5 8 3.5H17L21.5 8V13M6.5 5V22.5C6.5 23.3 7.2 24 8 24H14"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 10L10.8 11.5L13.5 8.5M15.5 10H18.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 15.5L10.8 17L13.5 14M15.5 15.5H18.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M16.5 22.5L15.5 24.5L17.5 23.5L23 18L21 16L16.5 22.5Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        fill="white"
-      />
-      <line
-        x1="20"
-        y1="17"
-        x2="22"
-        y2="19"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
+    <Image
+      src="/images/icons/listing-edit-icon.svg"
+      alt="Listing Edit Icon"
+      width={24}
+      height={24}
+      priority
+    />
   );
 }
 
 export function MessagesNavIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 28 28"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M14 4.5C8.8 4.5 4.5 8.5 4.5 13.2C4.5 15.8 5.7 18.2 7.7 19.7C7.5 21 6.9 22.6 5.6 23.7C5.3 24 5.6 24.5 6 24.4C8.3 23.9 10.4 22.8 11.6 21.9C12.4 22.1 13.2 22.2 14 22.2C19.2 22.2 23.5 18.2 23.5 13.2C23.5 8.5 19.2 4.5 14 4.5Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <line x1="9.5" y1="10" x2="18.5" y2="10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <line x1="9.5" y1="13.5" x2="18.5" y2="13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <line x1="9.5" y1="17" x2="15" y2="17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
+    <Image
+      src="/images/icons/message-icon.svg"
+      alt="Message Icon"
+      width={24}
+      height={24}
+      priority
+    />
   );
 }
 
@@ -299,7 +210,7 @@ export function HostSubNav({
       {/* Desktop Sub Navigation matching nav bar.jpg */}
       <div className="host-sub-nav hidden pt-8 sm:block">
         <Container>
-          <div className="mx-auto flex w-full max-w-[1520px] items-center justify-between">
+          <div className="mx-auto flex w-full items-center justify-between">
             {/* Left Nav Tabs */}
             <nav aria-label="Host navigation" className="flex items-center gap-4">
               {tabs.map((tab) => {

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { Fragment, useState } from "react";
+import { CalendarSettingsPanel } from "./calendar-settings-panel";
 import { HostSubNav } from "./host-sub-nav";
 import { updateListingAction } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
+import Image from "next/image";
 import {
-  PropertyPhoto,
   WorkspaceDialog,
   ReservationDetails,
   MoneyDialog,
@@ -68,8 +68,8 @@ function MonthGrid({
   return (
     <div className="min-w-0">
       <div
-        className={`mb-3 grid grid-cols-7 text-center text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ${
-          compact ? "max-sm:hidden text-[9px]" : ""
+        className={`mb-4 grid grid-cols-7 text-center text-base font-medium pb-4 border-b border-b-[#DDDDDE] text-[#1F1F1F] ${
+          compact ? "max-sm:hidden text-[12px]" : ""
         }`}
       >
         {weekdays.map((d) => (
@@ -79,9 +79,11 @@ function MonthGrid({
           </span>
         ))}
       </div>
-      <div className={`grid grid-cols-7 ${compact ? "gap-1" : "gap-1.5 sm:gap-2"}`}>
+      <div
+        className={`grid grid-cols-7 ${compact ? "gap-1" : "gap-1"}`}
+      >
         {Array.from({ length: offset }, (_, i) => (
-          <span key={`blank-${i}`} className="min-h-12" />
+          <span key={`blank-${i}`} aria-hidden="true" />
         ))}
         {Array.from({ length: count }, (_, i) => {
           const date = new Date(month.getFullYear(), month.getMonth(), i + 1);
@@ -106,30 +108,30 @@ function MonthGrid({
               key={key}
               onClick={() => onDay(key, reservation)}
               aria-label={`${key}, ${reservation ? `reserved by ${reservation.guestName}` : blocked ? "blocked" : "available"}, ${money(rate)}`}
-              className={`group relative flex min-w-0 flex-col items-center justify-between rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+              className={`group relative flex min-w-0 flex-col items-center justify-center rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 ${
                 compact
-                  ? "min-h-3 rounded-full bg-transparent p-0 sm:min-h-12 sm:rounded-lg sm:bg-zinc-50 sm:py-1"
-                  : "min-h-20 p-2 sm:min-h-24 lg:min-h-28"
+                  ? "min-h-3 rounded-full p-0 sm:min-h-[68px] sm:rounded-[9px] sm:py-1.5"
+                  : "min-h-20 p-2 sm:min-h-24 lg:min-h-36.5"
               } ${
                 reservation
                   ? "border-zinc-900 bg-zinc-900 text-white shadow-xs"
                   : blocked
                     ? "border-zinc-200 bg-zinc-100/60 opacity-60"
-                    : "border-zinc-200/80 bg-[#FAFAFA] hover:border-zinc-400 hover:bg-white text-zinc-900 shadow-2xs"
+                    : "border-transparent bg-[#F3F4F5] hover:border-zinc-300 text-zinc-900"
               }`}
             >
               {/* Day Number */}
               <span
-                className={`flex items-center justify-center rounded-full font-semibold transition-transform ${
+                className={`flex items-center justify-center rounded-full font-normal transition-transform ${
                   compact
-                    ? "size-1 max-sm:bg-zinc-500 text-[0px] sm:size-6 sm:text-[10px]"
+                    ? "size-1 max-sm:bg-zinc-500 text-[0px] sm:size-5 sm:border sm:border-zinc-300 sm:bg-white sm:text-zinc-800 sm:text-[12px] sm:font-normal"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                 } ${
                   isToday
                     ? "bg-[#FDE29B] text-zinc-900 shadow-xs"
                     : reservation
                       ? "bg-zinc-800 text-white"
-                      : "text-zinc-800 group-hover:bg-zinc-200"
+                      : "text-zinc-800 bg-white group-hover:bg-zinc-200"
                 } ${blocked ? "line-through text-zinc-400" : ""}`}
               >
                 {i + 1}
@@ -137,12 +139,12 @@ function MonthGrid({
 
               {/* Price / Status */}
               <span
-                className={`${compact ? "hidden sm:block" : ""} mt-1 text-[9px] sm:text-[11px] font-medium tracking-tight ${
+                className={`${compact ? "hidden text-[12px] font-normal sm:block mt-2" : "text-[16px] mt-5.5 "} font-medium ${
                   reservation
                     ? "text-zinc-300"
                     : blocked
-                      ? "text-zinc-400 line-through"
-                      : "text-zinc-700"
+                    ? "text-[#1F1F1F] line-through"
+                    : "text-[#1F1F1F]"
                 }`}
               >
                 {blocked ? "Blocked" : money(rate)}
@@ -229,29 +231,35 @@ export function HostCalendarWorkspace({
   listings: initialListings,
   bookings: initialBookings,
 }: HostWorkspaceProps) {
-  const listings = initialListings.length > 0 ? initialListings : [DEFAULT_DEMO_LISTING];
-  const bookings = initialBookings.length > 0 ? initialBookings : SAMPLE_CALENDAR_BOOKINGS;
+  const listings =
+    initialListings.length > 0 ? initialListings : [DEFAULT_DEMO_LISTING];
+  const bookings =
+    initialBookings.length > 0 ? initialBookings : SAMPLE_CALENDAR_BOOKINGS;
 
-  const [selectedId, setSelectedId] = useState(listings[0]?.id || DEFAULT_DEMO_LISTING.id);
+  const [selectedId, setSelectedId] = useState(
+    listings[0]?.id || DEFAULT_DEMO_LISTING.id,
+  );
   const [month, setMonth] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
   const [view, setView] = useState<"month" | "year">("month");
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
-  const [priceSettingsOpen, setPriceSettingsOpen] = useState(true);
-  const [availSettingsOpen, setAvailSettingsOpen] = useState(true);
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] = useState<HostReservation | null>(null);
+  const [selectedBooking, setSelectedBooking] =
+    useState<HostReservation | null>(null);
   const [showMoney, setShowMoney] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [tips, setTips] = useState(false);
 
-  // Editable price form state
-  const listing = listings.find((l) => l.id === selectedId) || listings[0];
-  const [basePriceInput, setBasePriceInput] = useState<number>(listing ? listing.price / 100 : 421);
-  const [isSmartPricing, setIsSmartPricing] = useState<boolean>(true);
+  const [savedListings, setSavedListings] = useState<
+    Record<string, ListingDTO>
+  >({});
+  const listing =
+    savedListings[selectedId] ||
+    listings.find((l) => l.id === selectedId) ||
+    listings[0];
 
   async function save(values: Record<string, unknown>) {
     if (!listing || saving) return;
@@ -260,6 +268,10 @@ export function HostCalendarWorkspace({
     try {
       const result = await updateListingAction(listing.id, values);
       if (result.ok) {
+        setSavedListings((current) => ({
+          ...current,
+          [listing.id]: result.data,
+        }));
         setNotice("Changes saved.");
       } else {
         setNotice(result.error || "Could not save.");
@@ -277,38 +289,40 @@ export function HostCalendarWorkspace({
     else setSelectedDay(key);
   }
 
-  function changeMonth(amount: number) {
-    setMonth(
-      new Date(
-        month.getFullYear(),
-        month.getMonth() + (view === "year" ? amount * 12 : amount),
-        1,
-      ),
-    );
-  }
-
   return (
     <>
       <HostSubNav activeTab="calendar" />
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 pb-24 pt-8 sm:px-8 sm:pt-10">
         {/* Mobile Title */}
-        <h1 className="mb-6 text-2xl font-bold text-zinc-900 sm:hidden">Calendars</h1>
+        <h1 className="mb-6 text-2xl font-medium text-zinc-900 sm:hidden">
+          Calendars
+        </h1>
 
         {/* Top Control Bar: Month Selector, Price Tips, View Toggle */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-100 pb-5">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 sm:pl-[125px]">
           {/* Left: Month Dropdown + Prev/Next Buttons */}
           <div className="relative flex items-center gap-3">
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                className="flex items-center gap-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
+                className="flex items-center gap-2 text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900"
               >
                 <span>
-                  {view === "year" ? month.getFullYear() : `${monthName(month)}`}
+                  {view === "year"
+                    ? month.getFullYear()
+                    : `${monthName(month)}`}
                 </span>
-                <span className="text-base text-zinc-400">⌄</span>
+                {view === "month" && (
+                  <Image
+                    src={"/images/icons/chevron-down.svg"}
+                    alt={"chevron-down.svg"}
+                    width={25}
+                    height={22}
+                    className="ml-3"
+                  />
+                )}
               </button>
 
               {/* Month Picker Dropdown */}
@@ -335,68 +349,58 @@ export function HostCalendarWorkspace({
                 </div>
               )}
             </div>
-
-            {/* Steppers */}
-            <div className="flex items-center gap-1 text-zinc-500">
-              <button
-                aria-label="Previous month"
-                onClick={() => changeMonth(-1)}
-                className="flex size-8 items-center justify-center rounded-full hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
-              >
-                ‹
-              </button>
-              <button
-                aria-label="Next month"
-                onClick={() => changeMonth(1)}
-                className="flex size-8 items-center justify-center rounded-full hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
-              >
-                ›
-              </button>
-            </div>
           </div>
 
-          {/* Right: Price tips, Month/Year switcher, Settings (mobile) */}
+          {/* Right: Price tips, calendar view dropdown, Settings (mobile) */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => setTips(true)}
-              className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 rounded-full  bg-[#F3F4F5] px-4 py-2 text-base font-medium text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] transition-colors shadow-2xs"
             >
-              <span className="text-amber-500">✨</span>
+              <span className="text-amber-500">
+                <Image
+                  src={"/images/icons/price-tips.svg"}
+                  alt={"price-tips.svg"}
+                  width={25}
+                  height={22}
+                />
+              </span>
               <span>Price tips</span>
             </button>
 
-            {/* View Switcher: Month / Year */}
-            <div className="flex items-center rounded-full border border-zinc-200 bg-zinc-100/80 p-0.5">
-              <button
-                type="button"
-                onClick={() => setView("month")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                  view === "month"
-                    ? "bg-white text-zinc-900 shadow-xs"
-                    : "text-zinc-600 hover:text-zinc-900"
-                }`}
+            {/* Calendar view dropdown */}
+            <div className="relative">
+              <select
+                aria-label="Calendar view"
+                value={view}
+                onChange={(event) =>
+                  setView(event.target.value === "year" ? "year" : "month")
+                }
+                className="cursor-pointer appearance-none rounded-full border border-transparent bg-[#F3F4F5] py-2 pl-4 pr-10 text-base font-medium text-[#1F1F1F] shadow-2xs cursor-pointer transition-colors hover:border-[#1F1F1F] focus-visible:outline-none"
               >
-                Month
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("year")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                  view === "year"
-                    ? "bg-white text-zinc-900 shadow-xs"
-                    : "text-zinc-600 hover:text-zinc-900"
-                }`}
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+              </select>
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                Year
-              </button>
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </div>
 
             {/* Mobile Settings Toggle */}
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-semibold text-white sm:hidden"
+              className="rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-semibold text-white lg:hidden"
             >
               Settings
             </button>
@@ -404,41 +408,51 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* Main 3-Column Layout: Left Rail | Center Matrix | Right Sidebar */}
-        <div className="flex items-start gap-6 lg:gap-8">
+        <div className="flex items-start gap-6.75 lg:h-[970px]">
           {/* 1. Left Rail: Property Switcher Thumbnails */}
           <aside
             aria-label="Property selection"
-            className="hidden sm:flex flex-col items-center gap-3 w-16 shrink-0"
+            className="hidden w-[105px] shrink-0 flex-col items-center gap-2.5 sm:flex lg:max-h-full lg:overflow-y-auto [scrollbar-width:none]"
           >
-            {listings.map((l) => {
+            {listings.map((l, index) => {
               const isSelected = l.id === selectedId;
               return (
                 <button
                   key={l.id}
                   onClick={() => setSelectedId(l.id)}
                   title={l.title}
-                  className={`group relative size-14 rounded-2xl overflow-hidden transition-all ${
+                  aria-label={l.title}
+                  aria-pressed={isSelected}
+                  className={`group relative h-[94px] w-[105px] shrink-0 rounded-[18px] overflow-hidden transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d88ee] ${
                     isSelected
-                      ? "ring-3 ring-zinc-900 shadow-md scale-105"
-                      : "opacity-75 hover:opacity-100 hover:scale-102 border border-zinc-200"
+                      ? "border-[7px] border-[#A5A0FF] bg-[#A5A0FF]"
+                      : "border border-[#aaa] hover:border-[#8d88ee]"
                   }`}
                 >
-                  <PropertyPhoto listing={l} className="size-full object-cover" />
+                  <Image
+                    src={`/images/listing/listing-img-0${(index % 3) + 1}.png`}
+                    alt={l.title}
+                    fill
+                    sizes="105px"
+                    className="rounded-[11px] object-cover"
+                  />
                 </button>
               );
             })}
 
             {/* Placeholder slots matching Figma design */}
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <div
-                key={`placeholder-${idx}`}
-                className="size-14 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/60 flex items-center justify-center text-zinc-300"
-              />
-            ))}
+            {Array.from({ length: Math.max(0, 7 - listings.length) }).map(
+              (_, idx) => (
+                <div
+                  key={`placeholder-${idx}`}
+                  className="h-[94px] w-[105px] shrink-0 rounded-[18px] border border-[#aaa] bg-[#F3F4F5]"
+                />
+              ),
+            )}
           </aside>
 
           {/* 2. Center Calendar Matrix */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 border-y border-[#727272] py-4 lg:h-full lg:overflow-y-auto lg:pr-5 calendar-panel-scrollbar">
             {view === "month" ? (
               <MonthGrid
                 month={month}
@@ -449,253 +463,74 @@ export function HostCalendarWorkspace({
               />
             ) : (
               /* Year View Matrix (12 months) */
-              <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2">
                 {Array.from({ length: 12 }, (_, i) => {
-                  const d = new Date(month.getFullYear(), i, 1);
+                  const d = new Date(
+                    month.getFullYear(),
+                    month.getMonth() + i,
+                    1,
+                  );
                   return (
-                    <section key={i} className="rounded-2xl border border-zinc-100 p-4 bg-zinc-50/40">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMonth(d);
-                          setView("month");
-                        }}
-                        className="mb-4 text-sm font-bold text-zinc-900 hover:text-amber-700 flex items-center justify-between w-full"
-                      >
-                        <span>{monthName(d)}</span>
-                        <span className="text-xs text-zinc-400 font-normal">Open ›</span>
-                      </button>
-                      <MonthGrid
-                        month={d}
-                        listing={listing}
-                        bookings={bookings}
-                        compact
-                        onDay={openDay}
-                      />
-                    </section>
+                    <Fragment key={d.toISOString()}>
+                      {i > 0 && d.getMonth() === 0 && (
+                        <h2 className="col-span-full border-t border-zinc-100 pt-5 text-xl font-medium">
+                          {d.getFullYear()}
+                        </h2>
+                      )}
+                      <section className="min-w-0 border-b border-[#F3F4F5] pb-6">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMonth(d);
+                            setView("month");
+                          }}
+                          className="mb-5 text-sm font-medium text-zinc-900 hover:text-amber-700 flex items-center justify-between w-full"
+                        >
+                          <span>{monthName(d)}</span>
+                        </button>
+                        <MonthGrid
+                          month={d}
+                          listing={listing}
+                          bookings={bookings}
+                          compact
+                          onDay={openDay}
+                        />
+                      </section>
+                    </Fragment>
                   );
                 })}
               </div>
             )}
           </div>
 
-          {/* 3. Right Sidebar: Pricing & Availability Panels (Desktop) */}
-          <aside className="hidden lg:flex w-80 xl:w-96 shrink-0 flex-col gap-5 border-l border-zinc-100 pl-6 xl:pl-8">
-            {/* Card 1: Price settings */}
-            <div className="rounded-2xl border border-zinc-200 p-5 bg-white shadow-xs">
-              <button
-                type="button"
-                onClick={() => setPriceSettingsOpen(!priceSettingsOpen)}
-                className="flex w-full items-center justify-between text-left font-bold text-base text-zinc-900"
-              >
-                <span>Price settings</span>
-                <span className="text-sm text-zinc-400">{priceSettingsOpen ? "⌄" : "›"}</span>
-              </button>
-
-              {priceSettingsOpen && (
-                <div className="mt-4 space-y-4 text-xs">
-                  <p className="text-zinc-500 leading-relaxed">
-                    These apply to all nights, unless you customize them by date.
-                  </p>
-
-                  {/* Base Price Input */}
-                  <div className="rounded-xl bg-zinc-50 p-3 border border-zinc-100">
-                    <label className="block text-zinc-500 font-medium mb-1">Base price</label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-zinc-900">SR</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={basePriceInput}
-                        onChange={(e) => setBasePriceInput(Number(e.target.value))}
-                        className="w-full bg-transparent text-lg font-bold text-zinc-900 outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => save({ price: Math.round(basePriceInput * 100) })}
-                        disabled={saving}
-                        className="rounded-full bg-[#1F1F1F] text-white px-3 py-1 font-medium hover:bg-black text-[11px] disabled:opacity-50 shrink-0"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Custom Weekend Price */}
-                  <div className="flex items-center justify-between py-2 border-b border-zinc-100">
-                    <div>
-                      <span className="font-semibold text-zinc-800">Custom weekend price</span>
-                      <span className="block text-zinc-500">
-                        {listing.weekendPrice ? money(listing.weekendPrice) : "Not set"}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        save({
-                          weekendPrice: listing.weekendPrice ? null : Math.round(listing.price * 1.25),
-                        })
-                      }
-                      className="size-7 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:bg-zinc-100"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Smart Pricing Toggle */}
-                  <div className="flex items-center justify-between py-2 border-b border-zinc-100">
-                    <div>
-                      <span className="font-semibold text-zinc-800">Smart pricing</span>
-                      <span className="block text-zinc-500">Automatically adjust rates</span>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isSmartPricing}
-                      onClick={() => {
-                        const next = !isSmartPricing;
-                        setIsSmartPricing(next);
-                        save({ smartPricing: next });
-                      }}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                        isSmartPricing ? "bg-[#1F1F1F]" : "bg-zinc-200"
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                          isSmartPricing ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Discounts */}
-                  <div className="py-2 border-b border-zinc-100 space-y-2">
-                    <span className="font-semibold text-zinc-800">Discounts</span>
-                    <div className="flex items-center justify-between text-zinc-600">
-                      <span>Weekly (7 nights +)</span>
-                      <span className="font-semibold text-zinc-900">5%</span>
-                    </div>
-                    <div className="flex items-center justify-between text-zinc-600">
-                      <span>Monthly (28 nights +)</span>
-                      <span className="font-semibold text-zinc-900">10%</span>
-                    </div>
-                    <button type="button" className="text-zinc-500 hover:text-zinc-900 font-medium">
-                      + More discounts: Early birds / Last minute
-                    </button>
-                  </div>
-
-                  {/* Promotions & Additional Charges */}
-                  <div className="py-1 space-y-2">
-                    <button type="button" className="flex items-center justify-between w-full text-zinc-700 hover:text-zinc-900 font-medium">
-                      <span>+ Custom promotion</span>
-                      <span>›</span>
-                    </button>
-                    <button type="button" className="flex items-center justify-between w-full text-zinc-700 hover:text-zinc-900 font-medium">
-                      <span>+ Fees (Cleaning, pets, guests)</span>
-                      <span>›</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Card 2: Available settings */}
-            <div className="rounded-2xl border border-zinc-200 p-5 bg-white shadow-xs">
-              <button
-                type="button"
-                onClick={() => setAvailSettingsOpen(!availSettingsOpen)}
-                className="flex w-full items-center justify-between text-left font-bold text-base text-zinc-900"
-              >
-                <span>Available settings</span>
-                <span className="text-sm text-zinc-400">{availSettingsOpen ? "⌄" : "›"}</span>
-              </button>
-
-              {availSettingsOpen && (
-                <div className="mt-4 space-y-3.5 text-xs">
-                  <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                    <span className="text-zinc-600">Trip length</span>
-                    <span className="font-semibold text-zinc-900">
-                      {listing.minNights}–{listing.maxNights} nights
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                    <span className="text-zinc-600">Advance notice</span>
-                    <span className="font-semibold text-zinc-900">Same day notice</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                    <span className="text-zinc-600">Preparation time</span>
-                    <span className="font-semibold text-zinc-900">None</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                    <span className="text-zinc-600">Availability window</span>
-                    <span className="font-semibold text-zinc-900">6 months in advance</span>
-                  </div>
-
-                  <div className="pt-1">
-                    <Link
-                      href={`/host/listings/${listing.id}/availability`}
-                      className="text-xs font-semibold text-zinc-900 underline hover:text-amber-800"
-                    >
-                      Connect calendars (iCal sync)
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {notice && (
-              <p role="status" className="rounded-xl bg-emerald-50 p-3 text-xs text-emerald-800 border border-emerald-200">
-                {notice}
-              </p>
-            )}
+          {/* Shared pricing sidebar for both calendar views. */}
+          <aside
+            aria-label="Calendar settings"
+            className="hidden h-full w-60 shrink-0 overflow-y-auto overscroll-contain border-y border-zinc-200 border-l border-l-[#F3F4F5] px-5 py-5 lg:block xl:w-84.5 calendar-panel-scrollbar"
+          >
+            <CalendarSettingsPanel
+              key={listing.id}
+              listing={listing}
+              saving={saving}
+              notice={notice}
+              onSave={save}
+            />
           </aside>
         </div>
 
-        {/* Mobile Settings Dialog */}
         {mobileSettingsOpen && (
           <WorkspaceDialog
             title="Settings"
             onClose={() => setMobileSettingsOpen(false)}
             maxWidth="max-w-md"
           >
-            <div className="space-y-6">
-              <div className="rounded-xl bg-zinc-50 p-4">
-                <label className="block text-xs text-zinc-500 font-medium mb-1">Base nightly price</label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">SR</span>
-                  <input
-                    type="number"
-                    value={basePriceInput}
-                    onChange={(e) => setBasePriceInput(Number(e.target.value))}
-                    className="w-full bg-transparent text-lg font-bold outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => save({ price: Math.round(basePriceInput * 100) })}
-                    className="rounded-full bg-[#1F1F1F] text-white px-4 py-1 text-xs font-semibold"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-3 text-sm">
-                <span>Smart pricing</span>
-                <button
-                  type="button"
-                  onClick={() => setIsSmartPricing(!isSmartPricing)}
-                  className={`size-6 rounded-full ${isSmartPricing ? "bg-emerald-500" : "bg-zinc-300"}`}
-                />
-              </div>
-
-              <div className="text-xs text-zinc-500">
-                Trip length: {listing.minNights}–{listing.maxNights} nights • Same day advance notice
-              </div>
-            </div>
+            <CalendarSettingsPanel
+              key={listing.id}
+              listing={listing}
+              saving={saving}
+              notice={notice}
+              onSave={save}
+            />
           </WorkspaceDialog>
         )}
 
@@ -703,11 +538,14 @@ export function HostCalendarWorkspace({
         {selectedDay && listing && (
           <WorkspaceDialog
             dark
-            title={new Date(`${selectedDay}T12:00:00`).toLocaleDateString("en", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+            title={new Date(`${selectedDay}T12:00:00`).toLocaleDateString(
+              "en",
+              {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              },
+            )}
             onClose={() => setSelectedDay(null)}
             maxWidth="max-w-sm"
           >
@@ -717,10 +555,14 @@ export function HostCalendarWorkspace({
                 <span className="text-sm font-medium flex items-center gap-2">
                   <span
                     className={`size-2.5 rounded-full ${
-                      listing.blockedDates.includes(selectedDay) ? "bg-zinc-400" : "bg-emerald-400"
+                      listing.blockedDates.includes(selectedDay)
+                        ? "bg-zinc-400"
+                        : "bg-emerald-400"
                     }`}
                   />
-                  {listing.blockedDates.includes(selectedDay) ? "Blocked" : "Available"}
+                  {listing.blockedDates.includes(selectedDay)
+                    ? "Blocked"
+                    : "Available"}
                 </span>
 
                 <button
@@ -795,18 +637,33 @@ export function HostCalendarWorkspace({
 
         {/* Price Tips Dialog */}
         {tips && (
-          <WorkspaceDialog title="Price tips" onClose={() => setTips(false)} maxWidth="max-w-md">
+          <WorkspaceDialog
+            title="Price tips"
+            onClose={() => setTips(false)}
+            maxWidth="max-w-md"
+          >
             <div className="space-y-4 text-sm text-zinc-700 leading-relaxed">
               <div className="rounded-xl bg-amber-50 p-4 border border-amber-200/60">
-                <h4 className="font-bold text-zinc-900 text-sm mb-1">Local demand is rising</h4>
+                <h4 className="font-bold text-zinc-900 text-sm mb-1">
+                  Local demand is rising
+                </h4>
                 <p className="text-xs text-amber-900">
-                  Properties in your area typically command 15% higher nightly rates on weekends and during seasonal holidays.
+                  Properties in your area typically command 15% higher nightly
+                  rates on weekends and during seasonal holidays.
                 </p>
               </div>
               <ul className="space-y-2 text-xs text-zinc-600 list-disc list-inside">
-                <li>Turn on Smart Pricing to automatically optimize rates based on real-time search trends.</li>
-                <li>Add a 5% weekly discount to attract guests looking for medium-length stays.</li>
-                <li>Use custom date pricing for upcoming events in the city.</li>
+                <li>
+                  Turn on Smart Pricing to automatically optimize rates based on
+                  real-time search trends.
+                </li>
+                <li>
+                  Add a 5% weekly discount to attract guests looking for
+                  medium-length stays.
+                </li>
+                <li>
+                  Use custom date pricing for upcoming events in the city.
+                </li>
               </ul>
               <div className="pt-2 text-right">
                 <button
