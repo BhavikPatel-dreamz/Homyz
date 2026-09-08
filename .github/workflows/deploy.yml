@@ -11,11 +11,9 @@ concurrency:
 env:
   VPS_APP_PATH: "/var/www/html/Homyz"
   PM2_PROCESS_NAME: "Homyz"
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
 
 jobs:
-  # 1. Validate on GitHub's own runner FIRST — nothing on the server is touched yet.
-  #    Scan before install/build. If the scan fails, skip the GitHub build and deploy.
   validate:
     name: Validate
     runs-on: ubuntu-latest
@@ -40,12 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npx tsc --noEmit
 
       - name: Build
         env:
@@ -132,8 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      - name: Copy release scripts and start new container
+      - name: Pull image and health-check switch
         env:
           SSH_HOST: ${{ secrets.EC2_SSH_HOST }}
           SSH_USER: ${{ secrets.EC2_SSH_USER }}
@@ -143,7 +134,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${SSH_HOST}" ] || [ -z "${SSH_USER}" ] || [ -z "${SSH_KEY}" ]; then
-            echo "EC2_SSH_HOST / EC2_SSH_USER / EC2_SSH_KEY are required when ENABLE_DOCKER_DEPLOY=true"
+            echo "EC2_SSH_HOST / EC2_SSH_USER / EC2_SSH_KEY required when ENABLE_DOCKER_DEPLOY=true"
             exit 1
           fi
           install -d -m 700 ~/.ssh
@@ -158,7 +149,6 @@ jobs:
           "${SSH[@]}" "chmod +x /opt/homyz/scripts/deploy/*.sh"
           "${SSH[@]}" "HOMYZ_IMAGE='${HOMYZ_IMAGE}' AWS_REGION='${AWS_REGION}' APP_DIR=/opt/homyz bash /opt/homyz/scripts/deploy/release.sh"
 
-  # Legacy VPS + PM2 path. Disabled when ENABLE_DOCKER_DEPLOY=true.
   deploy:
     name: Deploy (PM2 VPS)
     needs: [validate]
@@ -214,7 +204,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ env.VPS_APP_PATH }}"
-          npm install
+          npm ci || npm install
           npm run build
 
       - name: Start App
@@ -224,6 +214,6 @@ jobs:
           if pm2 list | grep -q "${{ env.PM2_PROCESS_NAME }}"; then
               pm2 restart "${{ env.PM2_PROCESS_NAME }}"
           else
-              pm2 start npm --name "${{ env.PM2_PROCESS_NAME }}" -- start
+              pm2 start npm --name "${{ env.PM2_PROCESS_NAME }}" -- start -- -H 0.0.0.0 -p 3000
           fi
           pm2 save

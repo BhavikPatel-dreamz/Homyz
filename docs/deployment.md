@@ -1,281 +1,190 @@
 # Production deployment
 
-Homyz runs as a **Next.js 16** container behind an **AWS Application Load Balancer**.
-The database is **Neon PostgreSQL** today (`DATABASE_URL`). **Amazon RDS** is a later
-swap of that same URL — do not run Postgres on EC2. **User media** belongs in **S3**.
+Do this in **order**. Do not move the database until the load balancer is healthy.
+
+```text
+Phase 1  Docker on the ECS (Next.js only)
+Phase 2  Load balancer (HTTPS in front of :3000)
+Phase 3  Managed PostgreSQL RDS  ← only after Phase 2
+```
 
 ```text
 Internet
-   │ HTTPS (ACM)
+   │ HTTPS :443
    ▼
-AWS Application Load Balancer
-   │ HTTP to instance:3000 (TLS terminated at ALB)
+Load balancer  (Alibaba ALB / later AWS ALB)
+   │ HTTP → private IP:3000
+   │ health: GET /api/health
    ▼
-EC2 (security group: 3000 from ALB only)
-   │ Docker
-   ▼
-Next.js container  (0.0.0.0:3000)
-   │
-   ├── DATABASE_URL  →  Neon (future: RDS)
-   ├── S3_BUCKET     →  listing photos, stamp icons, host documents
-   └── REDIS_URL     →  optional
+ECS Docker  →  Next.js only (0.0.0.0:3000)
+   ├── DATABASE_URL  →  Neon now  →  RDS in Phase 3
+   ├── REDIS_URL     →  external (optional)
+   ├── S3 / OSS      →  external
+   └── Resend / Twilio / OAuth
 ```
 
-CI/CD:
-
-```text
-git push main
-  → GitHub Actions validate (scan, install, lint, typecheck, build)
-  → Docker build (immutable tag = git SHA)
-  → Amazon ECR
-  → EC2: pull → start candidate → /api/health → switch port 3000 → stop old
-```
-
-The existing PM2/VPS job stays active until GitHub Actions variable
-`ENABLE_DOCKER_DEPLOY` is set to `true`.
+Postgres, Redis, and object storage are **never** in the Docker image.
 
 ---
 
-## Local Docker
+## Phase 1 — Docker on the Ubuntu ECS
 
-From the repo root (needs a `.env` with real local/dev values, never commit it):
+Install Docker, put the app in `/opt/homyz`, create `/opt/homyz/.env` (`chmod 600`).
 
-```bash
-docker build -t homyz:local .
-docker run --rm --env-file .env -p 3000:3000 homyz:local
-```
-
-Or:
+Build (on a machine with enough RAM) and run:
 
 ```bash
+docker build --network=host --progress=plain \
+  --build-arg APP_URL=https://YOUR_DOMAIN \
+  --build-arg NEXTAUTH_URL=https://YOUR_DOMAIN \
+  -t homyz:local .
+
+# On the server, with /opt/homyz/.env already filled:
+cd /opt/homyz
 export HOMYZ_IMAGE=homyz:local
 docker compose -f docker-compose.prod.yml up -d
-docker compose -f docker-compose.prod.yml logs -f app
-curl -fsS http://127.0.0.1:3000/api/health
-```
-
-Optional Redis:
-
-```bash
-docker compose --profile redis -f docker-compose.prod.yml up -d
-# set REDIS_URL=redis://redis:6379 in .env when using the compose network
-```
-
-Production start command inside the image is `node server.js` (standalone),
-**not** `next dev`.
-
----
-
-## AWS prerequisites
-
-Create these in your account (values stay in AWS / GitHub, not in git):
-
-1. **ECR** repository (suggested name `homyz`).
-2. **EC2** Amazon Linux 2023 (or Ubuntu) in a private or public subnet that can
-   reach Neon, S3, and ECR. Attach an instance role (below).
-3. **ALB** in public subnets, HTTPS listener, HTTP→HTTPS redirect.
-4. **ACM** certificate for the public hostname.
-5. **S3** bucket for media (Block Public Access on; CloudFront or bucket policy
-   for `listing-photos/*` and `stamp-icons/*` only).
-6. **Neon** project (or later **RDS PostgreSQL**). Same `DATABASE_URL` shape.
-7. GitHub OIDC identity provider + IAM role for Actions (preferred over long-lived keys).
-
-Do not put AWS account IDs, ECR URLs, IPs, or secrets in application code.
-
-### IAM
-
-**GitHub Actions deploy role** (OIDC): `ecr:GetAuthorizationToken`,
-`ecr:BatchCheckLayerAvailability`, `ecr:CompleteLayerUpload`, `ecr:InitiateLayerUpload`,
-`ecr:PutImage`, `ecr:UploadLayerPart`, `ecr:BatchGetImage`.
-
-**EC2 instance role:**
-
-- ECR pull (`ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, `ecr:GetDownloadUrlForLayer`)
-- S3 `s3:GetObject`, `s3:PutObject` on the media bucket (and `s3:DeleteObject` if you add deletes later)
-- CloudWatch agent optional (`logs:*` / `cloudwatch:PutMetricData` as needed)
-
-Prefer the instance role over `AWS_ACCESS_KEY_ID` in `.env`.
-
-### Security groups
-
-| Source | Dest | Port | Why |
-| --- | --- | --- | --- |
-| `0.0.0.0/0` | ALB | 443 | HTTPS |
-| `0.0.0.0/0` | ALB | 80 | redirect to HTTPS |
-| ALB SG | EC2 SG | 3000 | target group |
-| EC2 | Neon / RDS | 5432 | **not** public; Neon allowlists the NAT/EIP |
-| EC2 | S3 / ECR / APIs | 443 | AWS + Resend/Twilio/OAuth |
-
-Do **not** expose 3000, 5432, or 6379 to the internet.
-
-### Load balancer / target group
-
-- Target: instance port **3000**, protocol HTTP
-- Health check: **HTTP `/api/health`**, matcher `200`, interval ~15s, healthy threshold 2
-- Idle timeout: 60s (raise if you have long uploads)
-- Stickiness: **off** (JWT sessions)
-- Attributes: HTTP/2 on; do not buffer if you rely on streaming
-- HTTPS listener uses the ACM cert; HTTP listener redirects to HTTPS
-
-`/api/health` is liveness only. `/api/ready` and `/api/v1/health` check Postgres
-(and Redis if configured) — use those for ops, not for high-frequency ALB probes.
-
----
-
-## EC2 host setup
-
-```bash
-# Amazon Linux 2023
-sudo dnf update -y
-sudo dnf install -y docker git curl
-sudo systemctl enable --now docker
-sudo usermod -aG docker ec2-user
-
-# Docker Compose plugin
-sudo mkdir -p /usr/local/lib/docker/cli-plugins
-sudo curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64 \
-  -o /usr/local/lib/docker/cli-plugins/docker-compose
-sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-
-sudo mkdir -p /opt/homyz/scripts/deploy
-# Copy docker-compose.prod.yml and scripts/deploy/*.sh from this repo into /opt/homyz
-sudo nano /opt/homyz/.env   # runtime secrets only; chmod 600
-```
-
-ECR login (instance role):
-
-```bash
-aws ecr get-login-password --region "$AWS_REGION" \
-  | docker login --username AWS --password-stdin "$ECR_REGISTRY"
-```
-
-First start (or after copying compose):
-
-```bash
-export HOMYZ_IMAGE="$ECR_REGISTRY/homyz:<git-sha>"
-cd /opt/homyz
-bash scripts/deploy/release.sh
-```
-
-Logs:
-
-```bash
-docker logs -f homyz-app
-docker inspect --format '{{.Config.Image}}' homyz-app
-```
-
-Health:
-
-```bash
 curl -fsS http://127.0.0.1:3000/api/health
 curl -fsS http://127.0.0.1:3000/api/ready
 ```
 
-Rollback:
+Until the load balancer exists, you may test on `http://PUBLIC_IP:3000`. After Phase 2, close **3000** to the internet.
 
-```bash
-# uses /opt/homyz/.image-previous written by the last successful switch
-bash /opt/homyz/scripts/deploy/rollback.sh
-```
+Required in `.env` now:
 
----
-
-## Environment variables
-
-Copy `.env.example` → `.env`. Required in production:
-
-- `DATABASE_URL` — Neon (or later RDS) with TLS
+- `DATABASE_URL` — Neon (TLS)
 - `NEXTAUTH_SECRET`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
-- `APP_URL` / `NEXTAUTH_URL` — public `https://` hostname
-- `S3_BUCKET` (+ `S3_REGION` / `AWS_REGION`)
-- `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if more than one EC2
+- `APP_URL` / `NEXTAUTH_URL` — the **public** URL users will type (the LB hostname once Phase 2 is done)
 
-The Docker **image must not** contain these values. Pass them with `--env-file` /
-Compose `env_file`.
+Rebuild the image whenever `APP_URL` changes (Server Action origins are baked at build time).
 
-At **image build**, pass the public hostname so Server Actions allow the ALB origin:
+---
+
+## Phase 2 — Load balancer (do this before RDS)
+
+Goal: users hit `https://your.domain`, never `:3000`. The ECS security group should allow **3000 only from the load balancer**, not `0.0.0.0/0`.
+
+The app is already LB-ready:
+
+| Setting | Value |
+| --- | --- |
+| Target | instance **port 3000**, HTTP |
+| Liveness | `GET /api/health` → `{ "status": "ok" }` (no database) |
+| Readiness | `GET /api/ready` (Postgres; do **not** use this on the LB) |
+| Stickiness | **off** (JWT / NextAuth cookies) |
+| HTTP :80 | redirect to HTTPS |
+| HTTPS :443 | certificate on the LB |
+
+### Alibaba Cloud (this ECS)
+
+Your MOTD is Alibaba ECS. Use **Application Load Balancer** (ALB) in the same VPC as the instance (`172.17.146.215` is the private NIC the LB will target).
+
+1. **Domain** — point an A/CNAME record at the ALB address (or EIP). You need a domain for HTTPS.
+2. **Certificate** — Alibaba SSL Certificates, then attach it to the ALB HTTPS listener.
+3. **ALB** — same region and VPC as the ECS. Internet-facing.
+4. **Server group**
+   - Type: instance
+   - Backend: this ECS, **port 3000**, protocol HTTP
+   - Health check: HTTP, path `/api/health`, port 3000, success = 200
+5. **Listeners**
+   - `80` HTTP → redirect to HTTPS
+   - `443` HTTPS → the server group
+6. **Security groups**
+   - Internet → ALB **80/443**
+   - ALB → ECS **3000** only
+   - SSH **22** only from your IP
+   - Do **not** open 3000, 5432, or 6379 to `0.0.0.0/0`
+7. **App URL** — set `APP_URL` and `NEXTAUTH_URL` to `https://your.domain`, rebuild the image, recreate the container.
+8. Confirm:
+   ```bash
+   curl -fsS https://your.domain/api/health
+   curl -fsS https://your.domain/api/ready
+   ```
+   Then remove the public **3000** rule.
+
+Classic SLB (CLB) also works: HTTP/HTTPS listener → ECS `:3000`, same health path.
+
+### AWS (if you move the VM later)
+
+Same wiring: ALB → target group instance:3000, health `GET /api/health`, ACM on 443, SG internet→ALB 80/443, ALB→EC2 3000.
+
+---
+
+## Phase 3 — Move the database to RDS (after the LB is green)
+
+The application does **not** care whether Postgres is Neon or RDS. Only `DATABASE_URL` changes. Do this **after** HTTPS through the load balancer works, so you are not changing how users reach the site and the database at the same time.
+
+Alibaba: **ApsaraDB RDS for PostgreSQL** in the **same VPC**, private endpoint.  
+AWS later: **Amazon RDS PostgreSQL** in a private subnet. Same steps.
+
+### Create RDS
+
+1. PostgreSQL 16 (or the major version Neon is on).
+2. Same VPC as the ECS. **No public** endpoint.
+3. Security group: ECS (or the app SG) → RDS **5432** only.
+4. SSL required.
+5. Create database `homyz` and a user. Save the URL:
+   ```text
+   postgresql://USER:PASSWORD@HOST:5432/homyz?sslmode=require
+   ```
+
+### Cut over
+
+On a laptop that can reach **both** Neon and RDS (or from the ECS if Neon is allowed):
 
 ```bash
-docker build \
-  --build-arg APP_URL=https://your.domain \
-  --build-arg NEXTAUTH_URL=https://your.domain \
-  -t homyz:<sha> .
+# 1. Freeze writes if you already have production data (maintenance window).
+
+# 2. Empty RDS: apply Prisma migrations (no prisma migrate dev / reset).
+DATABASE_URL='postgresql://USER:PASSWORD@RDS_HOST:5432/homyz?sslmode=require' \
+  npx prisma migrate deploy
+
+# 3. Copy data from Neon → RDS (example).
+pg_dump "$OLD_NEON_URL" --no-owner --no-acl -Fc -f homyz.dump
+pg_restore --no-owner --no-acl -d "$NEW_RDS_URL" homyz.dump
+
+# 4. On the ECS, point the app at RDS and recreate the container.
+#    Edit /opt/homyz/.env  DATABASE_URL=<rds url>
+cd /opt/homyz
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+curl -fsS http://127.0.0.1:3000/api/ready
 ```
 
----
+If `/api/ready` shows `"database":"healthy"` through the load balancer, Neon can be retired.
 
-## Database migrations
+Rollback: put the Neon URL back in `.env`, `docker compose ... up -d --force-recreate`.
 
-Prisma: `npm run db:migrate:deploy` (`prisma migrate deploy`).
-
-- **Do not** run `prisma migrate dev` or `prisma migrate reset` in production.
-- **Do not** auto-migrate on every container start.
-- Run migrate **once**, deliberately, from CI (when `RUN_DB_MIGRATE=true`) or a
-  one-off job **before** switching traffic if the migration is backward-compatible
-  with the currently running app version.
-
-Neon today / RDS later: only `DATABASE_URL` changes. Enable SSL (`sslmode=require`).
-Do not expose the database on the EC2 public interface.
+Do not run `prisma migrate dev`, `db:seed`, or `reset` against production RDS.
 
 ---
 
-## S3 media
+## GitHub CI (optional later)
 
-When `S3_BUCKET` is set:
+PM2/VPS deploy stays until `ENABLE_DOCKER_DEPLOY=true`. Docker→ECR is AWS-specific.
 
-| Prefix | Visibility | Used for |
-| --- | --- | --- |
-| `listing-photos/` | public URL (or CloudFront) | listing images |
-| `stamp-icons/` | public URL | stamp icons |
-| `host-documents/` | private | KYC docs; bytes returned only via authenticated API |
-
-Without `S3_BUCKET`, files still write to `public/uploads/` (fine for local dev,
-ephemeral on Docker/EC2).
-
-Suggested bucket policy: deny public `host-documents/*`; allow read on the two
-public prefixes (or put CloudFront in front and keep the bucket private).
+**Variables:** `AWS_REGION`, `ECR_REGISTRY`, `ECR_REPOSITORY`, `APP_URL`, `ENABLE_DOCKER_DEPLOY`, `RUN_DB_MIGRATE`  
+**Secrets:** `AWS_ROLE_TO_ASSUME`, `EC2_SSH_*`, `DATABASE_URL` (migrate job only)
 
 ---
 
-## GitHub Actions / secrets
+## Environment
 
-Repository **variables**:
+Copy `.env.example` → `/opt/homyz/.env`. Production:
 
-- `AWS_REGION`
-- `ECR_REPOSITORY` (e.g. `homyz`)
-- `APP_URL` (public https origin, used as Docker build-arg)
-- `ENABLE_DOCKER_DEPLOY` = `true` to cut over from PM2 to ECR/EC2
-- `RUN_DB_MIGRATE` = `true` only when you intend to apply Prisma migrations
+- `DATABASE_URL` — Neon now; RDS in Phase 3 (`sslmode=require`)
+- `NEXTAUTH_SECRET`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+- `APP_URL` / `NEXTAUTH_URL` — public `https://` hostname on the **load balancer**
+- `S3_BUCKET` (or equivalent) for durable uploads; without it, files die when the container is recreated
+- `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if you add a second ECS behind the same LB
 
-Repository **secrets**:
-
-- `AWS_ROLE_TO_ASSUME` — OIDC role ARN
-- `EC2_SSH_HOST`, `EC2_SSH_USER`, `EC2_SSH_KEY` — or replace later with SSM
-- `DATABASE_URL` — only if `RUN_DB_MIGRATE=true`
-
-Do not store `AWS_ACCESS_KEY` / `AWS_SECRET` in git. Prefer OIDC.
+Never commit `.env`.
 
 ---
 
-## Troubleshooting
+## Commands
 
-| Symptom | Check |
-| --- | --- |
-| ALB target unhealthy | SG 3000 from ALB; `curl /api/health` on the instance; container `docker logs` |
-| 502 after deploy | Candidate failed health — old container should still be running |
-| Server Actions fail | Rebuild image with `APP_URL` matching the browser origin |
-| Uploads disappear | `S3_BUCKET` not set |
-| OAuth redirect mismatch | `NEXTAUTH_URL` / provider console must be the HTTPS ALB hostname |
-| Neon timeout | allow the EC2 NAT IP on Neon; `sslmode=require` |
-| Image pull denied | EC2 instance role ECR permissions; `aws ecr get-login-password` |
-
----
-
-## Future: Amazon RDS
-
-When you move off Neon:
-
-1. Provision RDS PostgreSQL (private subnet, SG from EC2 only).
-2. `prisma migrate deploy` against the new URL (or dump/restore).
-3. Change `DATABASE_URL` on the EC2 `.env` (and GitHub migrate secret).
-4. Recreate the app container. No Dockerfile change.
+```bash
+docker logs -f homyz-app
+curl -fsS http://127.0.0.1:3000/api/health
+curl -fsS http://127.0.0.1:3000/api/ready
+HOMYZ_IMAGE="<previous-sha-image>" bash /opt/homyz/scripts/deploy/rollback.sh
+```

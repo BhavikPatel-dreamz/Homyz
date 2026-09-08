@@ -1,0 +1,25 @@
+[Unit]
+Description=Homyz Next.js (host Node)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/homyz
+Environment=NODE_ENV=production
+Environment=HOSTNAME=0.0.0.0
+Environment=PORT=3000
+EnvironmentFile=-/opt/homyz/.env
+ExecStart=/usr/bin/npm start -- -H 0.0.0.0 -p 3000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+SyslogIdentifier=homyz
+
+# Do not run as root in production; set User= after creating a deploy user.
+# User=homyz
+# Group=homyz
+
+[Install]
+WantedBy=multi-user.target

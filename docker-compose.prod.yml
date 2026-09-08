@@ -1,13 +1,12 @@
-# Production-oriented Compose for a single EC2 host behind an AWS ALB.
+# Next.js app container only. Postgres, Redis, S3, and email stay EXTERNAL.
 #
-#   AWS ALB (443) → EC2:3000 → this `app` container → Neon (DATABASE_URL)
-#                                                    → S3 (S3_BUCKET)
-#                                                    → Redis (optional profile)
+#   export HOMYZ_IMAGE=homyz:local   # or registry URI:tag
+#   docker compose -f docker-compose.prod.yml up -d
 #
-# Do not run Postgres here. Neon is current; RDS later is the same DATABASE_URL.
-# Redis is optional: `docker compose --profile redis -f docker-compose.prod.yml up -d`
-#
-# Image comes from ECR in production (`HOMYZ_IMAGE`). Secrets stay in `.env` on the host.
+# Bind 0.0.0.0:3000 so a cloud load balancer can reach the private NIC.
+# After the LB is in front, close port 3000 in the security group (LB SG only).
+# Runtime secrets: ./.env on the host (chmod 600). Never bake them into the image.
+# DATABASE_URL is Neon now; switch to RDS later by editing .env and recreating.
 
 name: homyz
 
@@ -42,24 +41,3 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-  redis:
-    image: redis:7-alpine
-    container_name: homyz-redis
-    profiles: ["redis"]
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "no"]
-    expose:
-      - "6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 15s
-      timeout: 3s
-      retries: 5
-    logging:
-      driver: json-file
-      options:
-        max-size: "5m"
-        max-file: "3"
