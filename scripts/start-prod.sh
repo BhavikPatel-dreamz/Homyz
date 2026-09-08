@@ -18,6 +18,6 @@ if [[ -d generated ]]; then
   cp -a generated .next/standalone/
 fi
 
-export HOSTNAME="${HOSTNAME:-0.0.0.0}"
+export HOSTNAME="${HOMYZ_BIND_HOST:-0.0.0.0}"
 export PORT="${PORT:-3000}"
 exec node .next/standalone/server.js
