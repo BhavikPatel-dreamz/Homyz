@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
+import { BecomeHostModal } from "./become-host-modal";
 import { Footer } from "@/components/dashboard/footer";
 import {
   createListingAction,
@@ -68,6 +69,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
   const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
 
   // Editor Modal State
   const [showEditorModal, setShowEditorModal] = useState(false);
@@ -128,32 +130,9 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
     setTimeout(() => setToastMsg(null), 4000);
   }
 
-  // Open Create Flow -> Redirects directly to Figma Host Listing Editor First Page
+  // Open the same host onboarding flow used by the header's "Become a host" action.
   function handleOpenCreate() {
-    startTransition(async () => {
-      try {
-        const res = await createListingAction({
-          title: "Draft Listing",
-          description: "",
-          price: 15000,
-          hostingType: "HOME",
-          propertyType: "Rental unit*",
-          listingType: "Entire place",
-          guests: 2,
-          bedrooms: 1,
-          beds: 1,
-          bathrooms: 1,
-          published: false,
-        });
-        if (res.ok && res.data) {
-          router.push(`/host/listings/${res.data.id}`);
-        } else {
-          router.push("/host/listings/new");
-        }
-      } catch (err) {
-        router.push("/host/listings/new");
-      }
-    });
+    setBecomeHostModalOpen(true);
   }
 
   // Open Edit Modal
@@ -517,7 +496,11 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               return (
                 <div
                   key={item.id}
-                  onClick={() => router.push(`/host/listings/${item.id}`)}
+                  onClick={() => router.push(
+                    item.status === "DRAFT"
+                      ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
+                      : `/host/listings/${item.id}`,
+                  )}
                   className="group cursor-pointer flex flex-col space-y-2 text-left"
                 >
                   {/* Photo Container */}
@@ -573,6 +556,11 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
       {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
       <Footer />
+
+      <BecomeHostModal
+        isOpen={becomeHostModalOpen}
+        onClose={() => setBecomeHostModalOpen(false)}
+      />
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (

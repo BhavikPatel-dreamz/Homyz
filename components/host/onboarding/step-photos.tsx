@@ -3,6 +3,9 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef } from "react";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+
 interface StepPhotosProps {
   photos: string[];
   onUpdatePhotos: (photos: string[]) => void;
@@ -22,6 +25,7 @@ export function StepPhotos({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle file selection from local device
@@ -32,10 +36,18 @@ export function StepPhotos({
   };
 
   const addFiles = (newFiles: File[]) => {
-    const updatedFiles = [...selectedFiles, ...newFiles];
+    const validFiles = newFiles.filter(
+      (file) => ACCEPTED_IMAGE_TYPES.has(file.type) && file.size > 0 && file.size <= MAX_FILE_SIZE,
+    );
+    if (validFiles.length !== newFiles.length) {
+      setUploadError("Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each.");
+    } else {
+      setUploadError(null);
+    }
+    const updatedFiles = [...selectedFiles, ...validFiles];
     setSelectedFiles(updatedFiles);
 
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
     setFilePreviews((prev) => [...prev, ...newPreviews]);
   };
 
@@ -53,13 +65,37 @@ export function StepPhotos({
 
   const handleConfirmUpload = async () => {
     setIsUploading(true);
-    // Combine existing photos with new previews
-    const allPhotos = [...photos, ...filePreviews];
-    onUpdatePhotos(allPhotos);
-    setIsUploading(false);
-    setIsModalOpen(false);
-    // Directly navigate to "Cool ! How does this look?" screen
-    onNext();
+    setUploadError(null);
+    try {
+      const uploadedUrls = await Promise.all(
+        selectedFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await fetch("/api/v1/upload/listing-photo", {
+            method: "POST",
+            body: formData,
+          });
+          const result: unknown = await response.json().catch(() => null);
+          if (!response.ok || !result || typeof result !== "object" || !("url" in result)) {
+            const message =
+              result && typeof result === "object" && "error" in result
+                ? String((result as { error?: string }).error)
+                : "Upload failed.";
+            throw new Error(message);
+          }
+          return String((result as { url: string }).url);
+        }),
+      );
+      onUpdatePhotos([...photos, ...uploadedUrls]);
+      filePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+      setSelectedFiles([]);
+      setFilePreviews([]);
+      setIsModalOpen(false);
+    } catch (error: unknown) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed. Please retry.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -68,6 +104,7 @@ export function StepPhotos({
   };
 
   const handleRemoveModalPreview = (index: number) => {
+    URL.revokeObjectURL(filePreviews[index]);
     setFilePreviews((prev) => prev.filter((_, idx) => idx !== index));
     setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
   };
@@ -153,7 +190,7 @@ export function StepPhotos({
               {/* Add More Slot */}
               <button
                 type="button"
-                onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsModalOpen(true)}
                 className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center p-4 transition-colors aspect-4/3 cursor-pointer"
               >
                 <span className="text-2xl text-zinc-400 mb-1">+</span>
@@ -171,7 +208,7 @@ export function StepPhotos({
             {/* Close Button (X) */}
             <button
               type="button"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => !isUploading && setIsModalOpen(false)}
               className="absolute top-5 right-5 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -185,6 +222,12 @@ export function StepPhotos({
                 ? "You can upload best 5 images of your place"
                 : "Choose at least 5 photos"}
             </h2>
+
+            {uploadError && (
+              <p role="alert" className="mb-4 w-full rounded-xl bg-rose-50 px-3 py-2 text-left text-xs font-medium text-rose-700">
+                {uploadError}
+              </p>
+            )}
 
             {/* Drop Zone Area */}
             <div
@@ -246,7 +289,7 @@ export function StepPhotos({
                 disabled={isUploading}
                 className="w-full py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors mt-6 cursor-pointer disabled:opacity-50"
               >
-                {isUploading ? "Uploading..." : "Upload"}
+                {isUploading ? "Uploading..." : "Upload selected photos"}
               </button>
             )}
           </div>
@@ -265,7 +308,7 @@ export function StepPhotos({
         <button
           type="button"
           onClick={onNext}
-          disabled={isLoading}
+          disabled={isLoading || isUploading}
           className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
           {isLoading ? (

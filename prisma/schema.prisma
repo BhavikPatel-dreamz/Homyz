@@ -297,7 +297,10 @@ model Listing {
   // Step 1 — Property & Location Details
   propertyType        String?       // House, Apartment, Villa, Cabin, Cottage, etc.
   listingType         String?       // Entire place, Private room, Shared room
+  locationSearch      String?
+  shortAddress        String?
   address             String?       @db.Text
+  apartment           String?
   city                String?
   district            String?
   postalCode          String?
@@ -699,5 +702,3 @@ model HostInfoRequest {
   @@index([requestId])
   @@index([status])
 }
-
-

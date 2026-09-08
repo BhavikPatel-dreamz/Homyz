@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
-import { PropertyCategory, PlaceTypeOption, LocationCoords } from "./onboarding/types";
+import { PropertyCategory, PlaceTypeOption, LocationCoords, LocationDetails } from "./onboarding/types";
 import { StepOverview } from "./onboarding/step-overview";
 import { StepIntro } from "./onboarding/step-intro";
 import { StepCategory } from "./onboarding/step-category";
@@ -27,6 +28,56 @@ import { StepPrice } from "./onboarding/step-price";
 import { StepWeekendPrice } from "./onboarding/step-weekend-price";
 import { StepDiscounts } from "./onboarding/step-discounts";
 import { StepSafety } from "./onboarding/step-safety";
+import type { ListingDTO } from "@/services/mappers";
+
+type HostingType = "HOME" | "EXPERIENCE" | "SERVICE";
+
+type NominatimSuggestion = {
+  lat: string;
+  lon: string;
+  display_name?: string;
+  address?: Record<string, string | undefined>;
+};
+
+type WizardError = {
+  title: string;
+  messages: string[];
+  fixStep?: number;
+};
+
+const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }> = {
+  propertyType: { message: "Choose the type of place you are hosting.", step: 2 },
+  listingType: { message: "Choose what guests will have.", step: 3 },
+  address: { message: "Add your street address, city, and country.", step: 5 },
+  coordinates: { message: "Confirm your property location on the map.", step: 4 },
+  capacity: { message: "Add valid guest and bed capacity details.", step: 6 },
+  weekendPrice: { message: "Set a weekend price greater than zero.", step: 8 },
+  safetyDisclosures: { message: "Answer all three safety questions.", step: 10 },
+  photos: { message: "Upload at least five property photos.", step: 12 },
+  title: { message: "Use a listing title between 3 and 50 characters.", step: 14 },
+  highlights: { message: "Choose no more than three highlights.", step: 15 },
+  description: { message: "Write a description of at least 10 characters.", step: 16 },
+  weekdayPrice: { message: "Set a weekday price greater than zero.", step: 18 },
+};
+
+const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
+  HOUSE: "House",
+  APARTMENT: "Apartment",
+  BARN: "Barn",
+  BED_AND_BREAKFAST: "Bed & breakfast",
+  BOAT: "Boat",
+  CABIN: "Cabin",
+  CAMPER_RV: "Camper / RV",
+  CASTLE: "Castle",
+  CONTAINER: "Container",
+  CYCLADIC_HOME: "Cycladic home",
+  DOME: "Dome",
+  EARTH_HOME: "Earth home",
+  FARM: "Farm",
+  GUEST_HOUSE: "Guest house",
+  HOTEL: "Hotel",
+  HOUSEBOAT: "Houseboat",
+};
 
 // Step Slugs for URL query parameter mapping
 const STEP_SLUGS = [
@@ -38,24 +89,33 @@ const STEP_SLUGS = [
   "address",         // Step 5
   "basics",          // Step 6
   "standout",        // Step 7
-  "amenities",       // Step 8
-  "photos",          // Step 9
-  "photos-review",   // Step 10
-  "title",           // Step 11
-  "highlights",      // Step 12
-  "description",     // Step 13
-  "finish-intro",    // Step 14
-  "price",           // Step 15
-  "weekend-price",   // Step 16
-  "discounts",       // Step 17
-  "safety",          // Step 18
+  "weekend-price",   // Step 8
+  "discounts",       // Step 9
+  "safety",          // Step 10
+  "amenities",       // Step 11
+  "photos",          // Step 12
+  "photos-review",   // Step 13
+  "title",           // Step 14
+  "highlights",      // Step 15
+  "description",     // Step 16
+  "finish-intro",    // Step 17
+  "price",           // Step 18
 ];
 
-export function NewListingGetStarted() {
+async function readSaveError(response: Response) {
+  const body: unknown = await response.json().catch(() => null);
+  if (body && typeof body === "object" && "error" in body) {
+    const error = (body as { error?: { message?: string } }).error;
+    if (error?.message) return error.message;
+  }
+  return "We couldn't save your listing. Please try again.";
+}
+
+export function NewListingGetStarted({ initialHostingType }: { initialHostingType: HostingType }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, update: updateSession } = useSession();
-  const hostingType = searchParams.get("type") || "HOME";
+  const hostingType = initialHostingType;
   const urlStepParam = searchParams.get("step");
   const urlDraftId = searchParams.get("draftId");
 
@@ -72,30 +132,36 @@ export function NewListingGetStarted() {
   const [step, setStep] = useState<number>(getInitialStep);
   const [draftId, setDraftId] = useState<string | null>(urlDraftId || null);
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
+  const [wizardError, setWizardError] = useState<WizardError | null>(null);
+  const hydratedDraftRef = useRef(false);
+  // PATCH operations are serialized so an older debounced save can never
+  // overwrite a newer explicit Next/Finish save.
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   // Selections & States
-  const [selectedCategory, setSelectedCategory] = useState<string>("House");
-  const [selectedPlaceType, setSelectedPlaceType] = useState<string>("Entire place");
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(["Wifi"]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedPlaceType, setSelectedPlaceType] = useState<string>("");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [title, setTitle] = useState<string>("");
   const [selectedHighlights, setSelectedHighlights] = useState<string[]>(["Peaceful", "Unique"]);
   const [description, setDescription] = useState<string>("");
-  const [price, setPrice] = useState<number>(241);
-  const [weekendPrice, setWeekendPrice] = useState<number>(291);
+  const [price, setPrice] = useState<number>(0);
+  const [weekendPrice, setWeekendPrice] = useState<number>(0);
   const [selectedDiscounts, setSelectedDiscounts] = useState<string[]>(["new_listing"]);
   const [selectedSafety, setSelectedSafety] = useState<string[]>([]);
 
   // Location & Address States
-  const [country, setCountry] = useState<string>("Saudi Arabia - SA");
+  const [country, setCountry] = useState<string>("");
   const [shortAddress, setShortAddress] = useState<string>("");
   const [aptFloorBldg, setAptFloorBldg] = useState<string>("");
   const [streetAddress, setStreetAddress] = useState<string>("");
   const [district, setDistrict] = useState<string>("");
   const [postalCode, setPostalCode] = useState<string>("");
-  const [city, setCity] = useState<string>("Riyadh");
-  const [showSpecificLocation, setShowSpecificLocation] = useState<boolean>(true);
+  const [city, setCity] = useState<string>("");
+  const [showSpecificLocation, setShowSpecificLocation] = useState<boolean>(false);
   const [coords, setCoords] = useState<LocationCoords>({ lat: 24.7136, lng: 46.6753 });
+  const [hasConfirmedLocation, setHasConfirmedLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Property Basics Counters (Step 6)
@@ -103,6 +169,22 @@ export function NewListingGetStarted() {
   const [bedrooms, setBedrooms] = useState<number>(1);
   const [beds, setBeds] = useState<number>(1);
   const [bathrooms, setBathrooms] = useState<number>(1);
+
+  const currencySymbol = country.includes("Saudi")
+    ? "SAR"
+    : country.includes("Emirates")
+      ? "AED"
+      : country.includes("Kuwait")
+        ? "KWD"
+        : country.includes("Qatar")
+          ? "QAR"
+          : country.includes("Bahrain")
+            ? "BHD"
+            : country.includes("Oman")
+              ? "OMR"
+              : country.includes("United Kingdom")
+                ? "GBP"
+                : "USD";
 
   // Sync state step with URL search parameters
   const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null) => {
@@ -138,86 +220,184 @@ export function NewListingGetStarted() {
     updateUrlForStep(targetStep);
   };
 
-  // Auto-Save current wizard progress to DB and transition to next step
-  const saveDraftAndGoToStep = async (nextStepIndex: number) => {
+  const buildDraftPayload = useCallback((currentStep: number) => ({
+    title: title.trim() || "Draft Listing",
+    description: description.trim(),
+    // The wizard displays whole currency units; the API persists minor units.
+    price: Math.round(price * 100),
+    weekendPrice: weekendPrice > 0 ? Math.round(weekendPrice * 100) : null,
+    hostingType,
+    propertyType: selectedCategory || null,
+    listingType: selectedPlaceType || null,
+    locationSearch: searchQuery.trim() || null,
+    shortAddress: shortAddress.trim() || null,
+    address: streetAddress.trim() || null,
+    apartment: aptFloorBldg.trim() || null,
+    city: city || null,
+    district: district || null,
+    postalCode: postalCode || null,
+    country: country || null,
+    latitude: hasConfirmedLocation && Number.isFinite(coords.lat) ? coords.lat : null,
+    longitude: hasConfirmedLocation && Number.isFinite(coords.lng) ? coords.lng : null,
+    showExactLocation: showSpecificLocation,
+    guests,
+    bedrooms,
+    beds,
+    bathrooms,
+    amenities: selectedAmenities,
+    photos,
+    highlights: selectedHighlights,
+    discounts: Object.fromEntries(
+      ["new_listing", "last_minute", "weekly", "monthly"].map((discount) => [
+        discount,
+        selectedDiscounts.includes(discount),
+      ]),
+    ),
+    safetyDisclosures: selectedSafety,
+    published: false,
+    currentStep: currentStep + 1,
+  }), [
+    aptFloorBldg,
+    bathrooms,
+    bedrooms,
+    beds,
+    city,
+    coords.lat,
+    coords.lng,
+    country,
+    description,
+    district,
+    guests,
+    hasConfirmedLocation,
+    hostingType,
+    photos,
+    postalCode,
+    price,
+    selectedAmenities,
+    selectedCategory,
+    selectedDiscounts,
+    selectedHighlights,
+    selectedPlaceType,
+    selectedSafety,
+    searchQuery,
+    showSpecificLocation,
+    shortAddress,
+    streetAddress,
+    title,
+    weekendPrice,
+  ]);
+
+  const validateCurrentStep = (): string[] | null => {
+    switch (step) {
+      case 2:
+        return selectedCategory ? null : ["Choose the type of place you want to host."];
+      case 3:
+        return selectedPlaceType ? null : ["Choose what guests will have."];
+      case 4:
+      case 5: {
+        const missing: string[] = [];
+        if (!hasConfirmedLocation) missing.push("Confirm your property location on the map.");
+        if (!streetAddress.trim()) missing.push("Enter a street address.");
+        if (!city.trim()) missing.push("Enter a city or town.");
+        if (!country.trim()) missing.push("Choose a country or region.");
+        return missing.length > 0 ? missing : null;
+      }
+      case 6:
+        return guests >= 1 && bedrooms >= 0 && beds >= 1 && bathrooms >= 0
+          ? null
+          : ["Enter valid capacity values for your place."];
+      case 12:
+      case 13:
+        return photos.length >= 5 ? null : ["Upload at least 5 successful property photos."];
+      case 14:
+        return title.trim().length >= 3 && title.trim().length <= 50
+          ? null
+          : ["Use a listing title between 3 and 50 characters."];
+      case 15:
+        return selectedHighlights.length <= 3 ? null : ["Choose no more than 3 highlights."];
+      case 16:
+        return description.trim().length >= 10 && description.trim().length <= 5000
+          ? null
+          : ["Write a description between 10 and 5,000 characters."];
+      case 8:
+        return weekendPrice > 0 ? null : ["Set a weekend price greater than zero."];
+      case 10: {
+        const answers = new Set(selectedSafety);
+        return ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"].every(
+          (item) => answers.has(`${item}:YES`) || answers.has(`${item}:NO`),
+        )
+          ? null
+          : ["Answer every safety question before continuing."];
+      }
+      case 18:
+        return price > 0 ? null : ["Set a weekday price greater than zero."];
+      default:
+        return null;
+    }
+  };
+
+  const queueDraftPatch = useCallback((id: string, payload: object) => {
+    const request = async () => {
+      const response = await fetch(`/api/v1/listings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error(await readSaveError(response));
+    };
+
+    const queuedRequest = saveQueueRef.current.catch(() => undefined).then(request);
+    saveQueueRef.current = queuedRequest;
+    return queuedRequest;
+  }, []);
+
+  // Persists a draft before navigation; the wizard never advances on a failed save.
+  const saveDraftAndGoToStep = async (nextStepIndex: number): Promise<string | null> => {
+    const validationErrors = validateCurrentStep();
+    if (validationErrors) {
+      setWizardError({ title: "Complete this step", messages: validationErrors });
+      return null;
+    }
+
     setIsSavingStep(true);
     try {
-      const fullAddressStr = [streetAddress, aptFloorBldg, district, city, country]
-        .filter(Boolean)
-        .join(", ");
-
-      const finalDescription = description.trim()
-        ? description.trim()
-        : selectedHighlights.length > 0
-        ? `You'll have a great time at this ${selectedHighlights.join(" and ").toLowerCase()} place.`
-        : "";
-
-      const payload = {
-        title: title.trim() || `Draft ${selectedCategory}`,
-        description: finalDescription,
-        price: price || 241,
-        weekendPrice: weekendPrice || 291,
-        hostingType: hostingType.toUpperCase(),
-        propertyType: selectedCategory,
-        listingType: selectedPlaceType,
-        address: fullAddressStr || streetAddress || "Main Street",
-        city: city || "Riyadh",
-        district: district || "",
-        postalCode: postalCode || "",
-        country: country || "Saudi Arabia",
-        latitude: coords.lat,
-        longitude: coords.lng,
-        guests,
-        bedrooms,
-        beds,
-        bathrooms,
-        amenities: selectedAmenities,
-        photos: photos,
-        highlights: selectedHighlights,
-        discounts: selectedDiscounts,
-        safetyDisclosures: selectedSafety,
-        published: false,
-      };
+      const payload = buildDraftPayload(nextStepIndex);
 
       let activeDraftId = draftId;
 
       if (activeDraftId) {
-        // Update existing listing draft in database
-        const res = await fetch(`/api/v1/listings/${activeDraftId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          console.warn("Failed to patch listing draft:", await res.text());
-        }
+        await queueDraftPatch(activeDraftId, payload);
       } else {
-        // Create new listing draft in database
         const res = await fetch("/api/v1/listings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (res.ok && (data.data?.id || data.id)) {
-          activeDraftId = data.data?.id || data.id;
-          setDraftId(activeDraftId);
+        if (!res.ok) throw new Error(await readSaveError(res));
+        const data: unknown = await res.json().catch(() => null);
+        const createdId =
+          data && typeof data === "object" && "data" in data
+            ? ((data as { data?: { id?: string } }).data?.id ?? null)
+            : null;
+        if (!createdId) {
+          throw new Error("The draft was saved, but no listing ID was returned.");
         }
+        activeDraftId = createdId;
+        setDraftId(createdId);
+        hydratedDraftRef.current = true;
       }
 
-      // Automatically sync session role if user was converted from USER to HOST
       if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
         await updateSession({ role: "HOST" });
-        router.refresh();
       }
 
       setStep(nextStepIndex);
       updateUrlForStep(nextStepIndex, activeDraftId);
-    } catch (err: any) {
-      console.error("Auto-save listing error:", err);
-      // Proceed to next step even if network glitch occurs
-      setStep(nextStepIndex);
-      updateUrlForStep(nextStepIndex);
+      return activeDraftId;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "We couldn't save your listing.";
+      setWizardError({ title: "Your changes weren't saved", messages: [message] });
+      return null;
     } finally {
       setIsSavingStep(false);
     }
@@ -225,20 +405,140 @@ export function NewListingGetStarted() {
 
   // Final Draft Completion & Redirect to Host Listings
   const handleFinalSaveAndFinish = async () => {
-    setIsSavingStep(true);
+    const savedDraftId = await saveDraftAndGoToStep(18);
+    if (!savedDraftId) return;
+
     try {
-      await saveDraftAndGoToStep(18);
-      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
-        await updateSession({ role: "HOST" });
-        router.refresh();
+      const response = await fetch(`/api/v1/listings/${savedDraftId}/readiness`);
+      if (!response.ok) throw new Error(await readSaveError(response));
+      const body: unknown = await response.json();
+      const readiness = body && typeof body === "object" && "data" in body
+        ? (body as { data?: { publishable?: boolean; missing?: string[] } }).data
+        : undefined;
+      if (!readiness?.publishable) {
+        const requirements = (readiness?.missing ?? [])
+          .map((field) => COMPLETION_REQUIREMENTS[field])
+          .filter((requirement): requirement is { message: string; step: number } => Boolean(requirement));
+        setWizardError({
+          title: "Complete your listing",
+          messages: requirements.length > 0
+            ? requirements.map((requirement) => requirement.message)
+            : ["We couldn't confirm that all listing details are complete. Please review the form."],
+          fixStep: requirements[0]?.step,
+        });
+        return;
       }
       toast.success("Draft listing saved successfully!");
       router.push("/host/listings");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save listing.");
-      setIsSavingStep(false);
+    } catch (error: unknown) {
+      setWizardError({
+        title: "We couldn't verify your listing",
+        messages: [error instanceof Error ? error.message : "Please try again."],
+      });
     }
   };
+
+  useEffect(() => {
+    if (!urlDraftId) {
+      hydratedDraftRef.current = true;
+      return;
+    }
+
+    const controller = new AbortController();
+    const loadDraft = async () => {
+      try {
+        const response = await fetch(`/api/v1/listings/${urlDraftId}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(await readSaveError(response));
+        const body: unknown = await response.json();
+        const listing =
+          body && typeof body === "object" && "data" in body
+            ? (body as { data?: ListingDTO }).data
+            : undefined;
+        if (!listing) throw new Error("Listing draft was not found.");
+        if (listing.hostingType !== hostingType) {
+          throw new Error("This draft belongs to a different hosting flow.");
+        }
+
+        const listingTypeLabels: Record<string, string> = {
+          ENTIRE_PLACE: "Entire place",
+          ROOM: "Private room",
+          SHARED_ROOM: "Shared room",
+        };
+        const discountValues = listing.discounts;
+        const restoredDiscounts =
+          discountValues && typeof discountValues === "object" && !Array.isArray(discountValues)
+            ? Object.entries(discountValues)
+                .filter(([, enabled]) => enabled === true)
+                .map(([discount]) => discount)
+            : ["new_listing"];
+
+        setDraftId(listing.id);
+        setSelectedCategory(listing.propertyType ? RESTORED_PROPERTY_TYPE_LABELS[listing.propertyType] ?? "" : "");
+        setSelectedPlaceType(listing.listingType ? listingTypeLabels[listing.listingType] ?? "" : "");
+        setSelectedAmenities(listing.amenities ?? []);
+        setPhotos(listing.photos ?? []);
+        setTitle(listing.title === "Draft Listing" ? "" : listing.title);
+        setSelectedHighlights(listing.highlights ?? []);
+        setDescription(listing.description ?? "");
+        setPrice((listing.price ?? 0) / 100);
+        setWeekendPrice((listing.weekendPrice ?? 0) / 100);
+        setSelectedDiscounts(restoredDiscounts);
+        setSelectedSafety((listing.safetyDisclosures ?? []).filter((value) => value.includes(":")));
+        setCountry(listing.country ?? "");
+        setShortAddress(listing.shortAddress ?? "");
+        setStreetAddress(listing.address ?? "");
+        setAptFloorBldg(listing.apartment ?? "");
+        setDistrict(listing.district ?? "");
+        setPostalCode(listing.postalCode ?? "");
+        setCity(listing.city ?? "");
+        setShowSpecificLocation(listing.showExactLocation ?? false);
+        setCoords({ lat: listing.latitude ?? 24.7136, lng: listing.longitude ?? 46.6753 });
+        setHasConfirmedLocation(listing.latitude !== null && listing.longitude !== null);
+        setSearchQuery(listing.locationSearch ?? listing.address ?? "");
+        setGuests(listing.guests ?? 1);
+        setBedrooms(listing.bedrooms ?? 0);
+        setBeds(listing.beds ?? 1);
+        setBathrooms(listing.bathrooms ?? 0);
+
+        const resumeStep = Math.max(0, Math.min(STEP_SLUGS.length - 1, (listing.currentStep || 1) - 1));
+        setStep(resumeStep);
+        window.history.replaceState(
+          null,
+          "",
+          `/host/listings/new?type=${hostingType}&step=${STEP_SLUGS[resumeStep]}&draftId=${listing.id}`,
+        );
+        hydratedDraftRef.current = true;
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setWizardError({
+          title: "We couldn't load your draft",
+          messages: [error instanceof Error ? error.message : "Please try again."],
+        });
+      }
+    };
+
+    void loadDraft();
+    return () => controller.abort();
+  }, [hostingType, urlDraftId]);
+
+  // Every editable draft value is write-through autosaved. The queue preserves
+  // ordering and explicit navigation waits for the latest database write.
+  useEffect(() => {
+    if (!draftId || !hydratedDraftRef.current || isSavingStep) return;
+    const timer = window.setTimeout(async () => {
+      try {
+        await queueDraftPatch(draftId, buildDraftPayload(step));
+      } catch {
+        setWizardError({
+          title: "Your changes weren't saved",
+          messages: ["Please check your connection and try again."],
+        });
+      }
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, step]);
 
   const categories: PropertyCategory[] = [
     {
@@ -421,8 +721,9 @@ export function NewListingGetStarted() {
   ];
 
   // Map position change handler
-  const handleLocationChange = (lat: number, lng: number, details?: any) => {
+  const handleLocationChange = (lat: number, lng: number, details?: LocationDetails) => {
     setCoords({ lat, lng });
+    setHasConfirmedLocation(true);
     if (details) {
       const fullDisplay = details.formattedAddress || details.address || "";
       if (fullDisplay) {
@@ -448,7 +749,7 @@ export function NewListingGetStarted() {
   };
 
   // Location Autocomplete Selection
-  const handleSelectSuggestion = (item: any) => {
+  const handleSelectSuggestion = (item: NominatimSuggestion) => {
     const a = item.address || {};
     const newLat = parseFloat(item.lat);
     const newLng = parseFloat(item.lon);
@@ -465,6 +766,7 @@ export function NewListingGetStarted() {
     setDistrict(districtName);
     setPostalCode(postalCodeStr);
     setCoords({ lat: newLat, lng: newLng });
+    setHasConfirmedLocation(Number.isFinite(newLat) && Number.isFinite(newLng));
     setSearchQuery(fullAddrStr || street);
 
     if (countryName) {
@@ -488,12 +790,16 @@ export function NewListingGetStarted() {
   };
 
   const handleToggleHighlight = (id: string) => {
+    if (!selectedHighlights.includes(id) && selectedHighlights.length >= 3) {
+      setWizardError({
+        title: "Maximum highlights selected",
+        messages: ["Choose up to three highlights. Remove one before adding another."],
+      });
+      return;
+    }
     setSelectedHighlights((prev) => {
       if (prev.includes(id)) {
         return prev.filter((item) => item !== id);
-      }
-      if (prev.length >= 2) {
-        return [prev[1], id];
       }
       return [...prev, id];
     });
@@ -505,11 +811,14 @@ export function NewListingGetStarted() {
     );
   };
 
-  const handleToggleSafety = (id: string) => {
-    setSelectedSafety((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const handleAnswerSafety = (id: string, answer: "YES" | "NO") => {
+    setSelectedSafety((prev) => [
+      ...prev.filter((value) => !value.startsWith(`${id}:`)),
+      `${id}:${answer}`,
+    ]);
   };
+
+  const errorFixStep = wizardError?.fixStep;
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -623,132 +932,176 @@ export function NewListingGetStarted() {
         />
       )}
 
-      {/* Step 8: Amenities Selection ("Tell guests what your place has to offer") */}
+      {/* Step 8: Weekend pricing begins the "Make it stand out" section. */}
       {step === 8 && (
-        <StepAmenities
-          selectedAmenities={selectedAmenities}
-          onToggleAmenity={handleToggleAmenity}
+        <StepWeekendPrice
+          weekdayPrice={price}
+          weekendPrice={weekendPrice}
+          onChangeWeekendPrice={setWeekendPrice}
+          currencySymbol={currencySymbol}
           onBack={() => goToStep(7)}
           onNext={() => saveDraftAndGoToStep(9)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 9: Photos Upload ("Add some photos of your house") */}
+      {/* Step 9: Discounts */}
       {step === 9 && (
-        <StepPhotos
-          photos={photos}
-          onUpdatePhotos={setPhotos}
+        <StepDiscounts
+          selectedDiscounts={selectedDiscounts}
+          onToggleDiscount={handleToggleDiscount}
           onBack={() => goToStep(8)}
           onNext={() => saveDraftAndGoToStep(10)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 10: Photos Management ("Cool ! How does this look?") */}
+      {/* Step 10: Required safety disclosures */}
       {step === 10 && (
-        <StepPhotoManagement
-          photos={photos}
-          onUpdatePhotos={setPhotos}
+        <StepSafety
+          selectedSafety={selectedSafety}
+          onAnswerSafety={handleAnswerSafety}
           onBack={() => goToStep(9)}
           onNext={() => saveDraftAndGoToStep(11)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 11: Listing Title ("Now, it’s time to give your house a title") */}
+      {/* Step 11: Existing amenities capture remains part of the standout section. */}
       {step === 11 && (
-        <StepTitle
-          title={title}
-          onChangeTitle={setTitle}
+        <StepAmenities
+          selectedAmenities={selectedAmenities}
+          onToggleAmenity={handleToggleAmenity}
           onBack={() => goToStep(10)}
           onNext={() => saveDraftAndGoToStep(12)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 12: House Highlights ("Let’s describe your house") */}
+      {/* Step 12: Photos Upload ("Add some photos of your house") */}
       {step === 12 && (
-        <StepHighlights
-          selectedHighlights={selectedHighlights}
-          onToggleHighlight={handleToggleHighlight}
+        <StepPhotos
+          photos={photos}
+          onUpdatePhotos={setPhotos}
           onBack={() => goToStep(11)}
-          onNext={() => {
-            if (!description && selectedHighlights.length > 0) {
-              setDescription(`You'll have a great time at this ${selectedHighlights.join(" and ").toLowerCase()} place.`);
-            }
-            saveDraftAndGoToStep(13);
-          }}
+          onNext={() => saveDraftAndGoToStep(13)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 13: Description Text ("Create your description") */}
+      {/* Step 13: Photos Management ("Cool! How does this look?") */}
       {step === 13 && (
-        <StepDescription
-          description={description}
-          onChangeDescription={setDescription}
+        <StepPhotoManagement
+          photos={photos}
+          onUpdatePhotos={setPhotos}
           onBack={() => goToStep(12)}
           onNext={() => saveDraftAndGoToStep(14)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 14: Finish Intro ("Finish up and publish") */}
+      {/* Step 14: Listing Title */}
       {step === 14 && (
-        <StepFinishIntro
+        <StepTitle
+          title={title}
+          onChangeTitle={setTitle}
           onBack={() => goToStep(13)}
           onNext={() => saveDraftAndGoToStep(15)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 15: Base Pricing ("Now, set a weekday base price") */}
+      {/* Step 15: House Highlights */}
       {step === 15 && (
-        <StepPrice
-          price={price}
-          onChangePrice={(val) => {
-            setPrice(val);
-            setWeekendPrice(Math.round(val * 1.2074));
-          }}
+        <StepHighlights
+          selectedHighlights={selectedHighlights}
+          onToggleHighlight={handleToggleHighlight}
           onBack={() => goToStep(14)}
           onNext={() => saveDraftAndGoToStep(16)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 16: Weekend Base Pricing ("Set a weekend price") */}
+      {/* Step 16: Description */}
       {step === 16 && (
-        <StepWeekendPrice
-          weekdayPrice={price}
-          weekendPrice={weekendPrice}
-          onChangeWeekendPrice={setWeekendPrice}
+        <StepDescription
+          description={description}
+          onChangeDescription={setDescription}
           onBack={() => goToStep(15)}
           onNext={() => saveDraftAndGoToStep(17)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 17: Discounts ("Add discounts") */}
+      {/* Step 17: Finish and publish introduction */}
       {step === 17 && (
-        <StepDiscounts
-          selectedDiscounts={selectedDiscounts}
-          onToggleDiscount={handleToggleDiscount}
+        <StepFinishIntro
           onBack={() => goToStep(16)}
           onNext={() => saveDraftAndGoToStep(18)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 18: Safety ("Share safety details") */}
+      {/* Step 18: Weekday price and completed-draft save */}
       {step === 18 && (
-        <StepSafety
-          selectedSafety={selectedSafety}
-          onToggleSafety={handleToggleSafety}
+        <StepPrice
+          price={price}
+          onChangePrice={setPrice}
+          currencySymbol={currencySymbol}
           onBack={() => goToStep(17)}
           onNext={handleFinalSaveAndFinish}
           isLoading={isSavingStep}
         />
+      )}
+
+      {wizardError && (
+        <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs">
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="wizard-error-title"
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl sm:p-8"
+          >
+            <div className="mb-5 flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-lg text-rose-700">!</div>
+              <div className="min-w-0 flex-1">
+                <h2 id="wizard-error-title" className="text-lg font-semibold text-zinc-900">
+                  {wizardError.title}
+                </h2>
+                <div className="mt-2 space-y-1.5 text-sm leading-6 text-zinc-600">
+                  {wizardError.messages.length === 1 ? (
+                    <p>{wizardError.messages[0]}</p>
+                  ) : (
+                    <ul className="list-disc space-y-1 pl-5">
+                      {wizardError.messages.map((message) => <li key={message}>{message}</li>)}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setWizardError(null)}
+                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+              >
+                Close
+              </button>
+              {errorFixStep !== undefined && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWizardError(null);
+                    goToStep(errorFixStep);
+                  }}
+                  className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-[#ebd08d]"
+                >
+                  Fix now
+                </button>
+              )}
+            </div>
+          </section>
+        </ModalOverlay>
       )}
 
       {/* Shared Application Footer */}

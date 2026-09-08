@@ -17,7 +17,8 @@ export function StepDescription({
   onNext,
   isLoading = false,
 }: StepDescriptionProps) {
-  const maxChars = 500;
+  const minChars = 10;
+  const maxChars = 5000;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -43,7 +44,7 @@ export function StepDescription({
             Your description
           </label>
           <span className="text-xs font-semibold text-zinc-400 mb-3">
-            {description.length}/{maxChars}
+            {description.length}/{maxChars} (minimum {minChars})
           </span>
 
           <textarea

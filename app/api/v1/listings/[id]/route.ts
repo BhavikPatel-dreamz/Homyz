@@ -3,13 +3,19 @@ import { ok } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { updateListingSchema } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
+import { ListingStatus } from "@/generated/prisma/enums";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// GET /api/v1/listings/[id] — public read of a single listing.
-export const GET = apiHandler(async (_req, ctx: Ctx) => {
+// GET /api/v1/listings/[id] — public only for active listings. Drafts and all
+// other non-public states are available exclusively to their owner or an admin.
+export const GET = apiHandler(async (req, ctx: Ctx) => {
   const { id } = await ctx.params;
   const listing = await listingService.getById(id);
+  if (!listing.published || listing.status !== ListingStatus.ACTIVE) {
+    const actor = await requireApiAuth(req);
+    return ok(await listingService.getForOwner(actor, id));
+  }
   return ok(listing);
 });
 

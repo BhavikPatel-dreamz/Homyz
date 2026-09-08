@@ -70,7 +70,7 @@ export function StepTitle({
         <button
           type="button"
           onClick={onNext}
-          disabled={isLoading || !title.trim()}
+          disabled={isLoading}
           className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
           {isLoading ? (
