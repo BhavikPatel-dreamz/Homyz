@@ -40,6 +40,10 @@ interface EditorSidebarProps {
   wifiNetwork: string;
   houseManual: string;
   directions?: string;
+  editBedrooms?: number;
+  editBeds?: number;
+  parkingAvailable?: boolean;
+  parkingType?: string;
 }
 
 export function EditorSidebar({
@@ -79,6 +83,10 @@ export function EditorSidebar({
   wifiNetwork,
   houseManual,
   directions = "",
+  editBedrooms = 1,
+  editBeds = 1,
+  parkingAvailable = false,
+  parkingType = "Free",
 }: EditorSidebarProps) {
   return (
     <aside className="lg:col-span-5 xl:col-span-5 flex flex-col sticky top-20 self-start max-h-[calc(100vh-6rem)]">
@@ -396,6 +404,23 @@ export function EditorSidebar({
                 </span>
               </div>
 
+              {/* 5b. Sleeping arrangements */}
+              <div
+                onClick={() => setActiveSection("sleeping-arrangements")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
+                  activeSection === "sleeping-arrangements"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                  Sleeping arrangements
+                </span>
+                <span className="text-xs font-semibold text-[#1F1F1F] block">
+                  {editBedrooms || 1} {editBedrooms === 1 ? "bedroom" : "bedrooms"} · {editBeds || 1} {editBeds === 1 ? "bed" : "beds"}
+                </span>
+              </div>
+
               {/* 6. Description */}
               <div
                 onClick={() => setActiveSection("description")}
@@ -409,7 +434,7 @@ export function EditorSidebar({
                   Description
                 </span>
                 <p className="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
-                  {editDescription || "Lorem ipsum massa pellentesque enim lobortis mattis..."}
+                  {editDescription || "No description provided yet."}
                 </p>
               </div>
 
@@ -728,6 +753,23 @@ export function EditorSidebar({
                 </span>
                 <p className="text-[11px] text-zinc-500 font-normal">
                   {houseManual ? houseManual.slice(0, 30) + "..." : "Add details"}
+                </p>
+              </div>
+
+              {/* Card 3b: Parking */}
+              <div
+                onClick={() => setActiveSection("parking")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "parking"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  Parking
+                </span>
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  {parkingAvailable ? `${parkingType || "Free"} parking` : "No parking specified"}
                 </p>
               </div>
 

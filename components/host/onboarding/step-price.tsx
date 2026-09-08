@@ -14,7 +14,7 @@ interface StepPriceProps {
 export function StepPrice({
   price,
   onChangePrice,
-  currencySymbol = "SR",
+  currencySymbol = "SAR",
   onBack,
   onNext,
   isLoading = false,
@@ -22,10 +22,10 @@ export function StepPrice({
   const [isEditing, setIsEditing] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
-  // Calculated guest price before taxes (~20.7% guest fee offset SR241 -> SR291)
-  const guestPrice = Math.round(price * 1.2074);
+  // Guest base price per night
+  const guestPrice = price;
 
-  // Drag slider handler for weekday base price (range 50 to 1000)
+  // Drag slider handler for weekday base price (range 50 to 2000)
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     onChangePrice(val);
@@ -33,17 +33,18 @@ export function StepPrice({
 
   // Direct manual numeric input handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    const val = parseInt(raw, 10);
     if (!isNaN(val)) {
       onChangePrice(val);
     } else {
-      onChangePrice(241);
+      onChangePrice(0);
     }
   };
 
-  // Progress percentage for background gradient fill of range slider (50 to 1000)
+  // Progress percentage for background gradient fill of range slider (50 to 2000)
   const sliderMin = 50;
-  const sliderMax = 1000;
+  const sliderMax = 2000;
   const sliderPercentage = Math.min(
     100,
     Math.max(0, ((price - sliderMin) / (sliderMax - sliderMin)) * 100)
@@ -56,17 +57,17 @@ export function StepPrice({
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
           Now, set a weekday base price
         </h1>
-        <p className="text-xs font-semibold text-zinc-400 mb-10 max-w-md uppercase tracking-wider">
-          TIP: Lorem ipsum magna turpis mattis diam euismod non pulvinar laoreet.
+        <p className="text-xs font-semibold text-zinc-500 mb-10 max-w-md uppercase tracking-wider">
+          TIP: Places like yours in your area typically range from 150 {currencySymbol} to 450 {currencySymbol} per night. You can change this anytime.
         </p>
 
-        {/* Pricing Card Box Container (Matches First Image Design) */}
+        {/* Pricing Card Box Container */}
         <div className="w-full max-w-sm bg-[#f7f7f8] border border-zinc-200/90 rounded-3xl p-8 sm:p-10 flex flex-col items-center justify-center shadow-2xs transition-all">
           {/* Editable Base Price Display */}
           <div className="flex items-center justify-center gap-2 mb-2 w-full">
             {isEditing ? (
               <div className="flex items-center justify-center gap-1 border-b-2 border-zinc-900 pb-1">
-                <span className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F]">{currencySymbol}</span>
+                <span className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F]">{currencySymbol}</span>
                 <input
                   type="number"
                   min={10}
@@ -85,8 +86,7 @@ export function StepPrice({
                 className="group flex items-center justify-center gap-2 text-4xl sm:text-5xl font-semibold text-[#1F1F1F] tracking-tight hover:opacity-80 transition-opacity cursor-pointer"
               >
                 <span>
-                  {currencySymbol}
-                  {price.toLocaleString()}
+                  {currencySymbol} {price.toLocaleString()}
                 </span>
                 <div className="w-9 h-9 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 shadow-2xs group-hover:border-zinc-900 group-hover:bg-zinc-100 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -104,8 +104,7 @@ export function StepPrice({
             className="text-xs font-semibold text-zinc-500 flex items-center justify-center gap-1.5 hover:text-zinc-800 transition-colors cursor-pointer select-none mb-6"
           >
             <span>
-              Guest price before taxes {currencySymbol}
-              {guestPrice.toLocaleString()}
+              Guest price per night {currencySymbol} {guestPrice.toLocaleString()}
             </span>
             <svg
               className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -122,35 +121,32 @@ export function StepPrice({
           {showBreakdown && (
             <div className="w-full mb-6 pt-3 border-t border-zinc-200 text-left text-xs space-y-2 animate-in fade-in duration-150">
               <div className="flex justify-between text-zinc-600">
-                <span>Base price</span>
+                <span>Base weekday price</span>
                 <span>
-                  {currencySymbol}
-                  {price.toLocaleString()}
+                  {currencySymbol} {price.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between text-zinc-600">
-                <span>Guest service fee</span>
+                <span>Host earnings (estimate)</span>
                 <span>
-                  {currencySymbol}
-                  {(guestPrice - price).toLocaleString()}
+                  {currencySymbol} {Math.round(price * 0.97).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between font-semibold text-[#1F1F1F] pt-1 border-t border-zinc-200">
-                <span>Guest price</span>
+                <span>Guest price before taxes</span>
                 <span>
-                  {currencySymbol}
-                  {guestPrice.toLocaleString()}
+                  {currencySymbol} {guestPrice.toLocaleString()}
                 </span>
               </div>
             </div>
           )}
 
-          {/* Base Price Drag Slider Section (Matching First Image Drag Icon Styling) */}
+          {/* Base Price Drag Slider Section */}
           <div className="w-full flex flex-col items-start pt-3 border-t border-zinc-200/80">
             <label className="text-xs font-semibold text-zinc-500 mb-3">
               Base price adjustment
             </label>
-            
+
             <div className="relative w-full flex items-center">
               <input
                 type="range"
@@ -167,7 +163,7 @@ export function StepPrice({
             </div>
 
             <span className="text-xs font-medium text-zinc-600 mt-2.5">
-              Try {currencySymbol}{price.toLocaleString()}
+              Set to {currencySymbol} {price.toLocaleString()}
             </span>
           </div>
         </div>

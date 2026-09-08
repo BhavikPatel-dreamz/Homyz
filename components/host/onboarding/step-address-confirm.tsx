@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { RealMap } from "@/components/ui/real-map";
+import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 
@@ -23,7 +23,7 @@ interface StepAddressConfirmProps {
   showSpecificLocation: boolean;
   setShowSpecificLocation: (val: boolean) => void;
   coords: LocationCoords;
-  onLocationChange: (lat: number, lng: number, details?: any) => void;
+  onLocationChange: (lat: number, lng: number, details?: LocationDetails) => void;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -165,10 +165,7 @@ export function StepAddressConfirm({
             </button>
           </div>
           <p className="text-xs font-medium text-zinc-500 leading-relaxed max-w-xl">
-            Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.{" "}
-            <button type="button" className="font-semibold underline text-zinc-800 hover:text-[#1F1F1F] cursor-pointer">
-              Learn more
-            </button>
+            Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
           </p>
         </div>
 

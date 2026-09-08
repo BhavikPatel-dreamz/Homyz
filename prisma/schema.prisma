@@ -297,7 +297,10 @@ model Listing {
   // Step 1 — Property & Location Details
   propertyType        String?       // House, Apartment, Villa, Cabin, Cottage, etc.
   listingType         String?       // Entire place, Private room, Shared room
+  locationSearch      String?
+  shortAddress        String?
   address             String?       @db.Text
+  apartment           String?
   city                String?
   district            String?
   postalCode          String?
@@ -311,18 +314,77 @@ model Listing {
   beds                Int           @default(1)
   bathrooms           Int           @default(1)
 
+  // Professional Property Details
+  propertySize        Int?          // Size in sq meters or sq ft
+  propertySizeUnit    String?       // "SQM" | "SQFT"
+  listingFloor        Int?          // Floor number for apartments/condos
+  totalFloors         Int?          // Total building floors
+  yearBuilt           Int?
+  yearRenovated       Int?
+  privateEntrance     Boolean?
+  elevatorAvailable   Boolean?
+  stairsRequired      Boolean?
+
+  // Rooms & Sleeping Arrangements (Structured validated JSON)
+  rooms               Json?
+
+  // Bathroom Breakdown
+  fullBathrooms       Int?
+  halfBathrooms       Int?
+  privateBathrooms    Int?
+  sharedBathrooms     Int?
+
+  // Parking Details
+  parkingAvailable    Boolean?
+  parkingType         String?       // "FREE" | "PAID"
+  parkingSpaces       Int?
+  parkingReservation  Boolean?
+
+  // Guest Access
+  guestAccess         String[]      @default([])
+
   // Step 2 — Photos & Content Details
   photos              String[]      @default([]) // Min 5 photos required for submission
   highlights          String[]      @default([]) // Max 3 highlights
-  amenities           String[]      @default([]) // Amenities list (WiFi, Pool, Kitchen, Parking, Aircon, etc.)
-  safetyDisclosures   String[]      @default([])
+  amenities           String[]      @default([]) // Canonical amenities list
+  safetyDisclosures   String[]      @default([]) // Cameras, Noise monitor, Weapons disclosures
+  safetyEquipment     String[]      @default([]) // Smoke alarm, CO alarm, Extinguisher, First aid
+  safetyHazards       String[]      @default([]) // Water, Heights, Stairs, Animals, etc.
+  accessibilityFeatures String[]    @default([]) // Step-free, Wide doors, Grab rails, etc.
+  views               String[]      @default([]) // City, Sea, Mountain, Garden, etc.
 
   // Step 3 — House Rules & Check-in Details
-  houseRules          String[]      @default([]) // No smoking, Pets allowed, Quiet hours, etc.
-  checkInMethod       String?       @default("SMART_LOCK") // SMART_LOCK, KEYPAD, LOCKBOX, HOST_MEET
+  houseRules          String[]      @default([]) // Legacy / summary house rules strings
+  petsAllowed         Boolean?
+  maxPets             Int?
+  petFee              Int?          // In minor units (cents)
+  petRestrictions     String?
+  dogsAllowed         Boolean?
+  catsAllowed         Boolean?
+  smokingAllowed      Boolean?
+  smokingLocation     String?       // "INSIDE" | "OUTSIDE_ONLY" | "DESIGNATED_AREA"
+  eventsAllowed       Boolean?
+  childrenAllowed     Boolean?
+  infantsAllowed      Boolean?
+  photographyAllowed  Boolean?
+  quietHours          Boolean?
+  quietHoursStart     String?
+  quietHoursEnd       String?
+  additionalRules     String?       @db.Text
+
+  // Arrival, Access & Sensitive Guide Information
+  checkInMethod       String?       @default("SMART_LOCK") // SMART_LOCK, KEYPAD, LOCKBOX, HOST_MEET, etc.
   checkInStart        String?       @default("15:00")
   checkInEnd          String?       @default("22:00")
   checkOutTime        String?       @default("11:00")
+  directions          String?       @db.Text
+  parkingInstructions String?       @db.Text
+  checkInInstructions String?       @db.Text
+  houseManual         String?       @db.Text
+  wifiNetwork         String?
+  wifiPassword        String?
+  doorCode            String?
+  lockboxCode         String?
 
   // Step 4 — Policies & Constraints
   cancellationPolicy  String?       @default("FLEXIBLE") // FLEXIBLE, MODERATE, STRICT, SUPER_STRICT
@@ -364,23 +426,32 @@ model Listing {
   @@index([hostId])
   @@index([published])
   @@index([status])
+  @@index([status, published])
+  @@index([city])
 }
 
 model Booking {
-  id        String        @id @default(cuid())
-  userId    String
-  listingId String
-  status    BookingStatus @default(PENDING)
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  userId         String
+  listingId      String
+  status         BookingStatus @default(PENDING)
+  startDate      DateTime
+  endDate        DateTime
+  guests         Int           @default(1)
+  totalPrice     Int?          // Minor units / cents
+  nightlyPrice   Int?          // Minor units / cents
+  cleaningFee    Int?          // Minor units / cents
+  currency       String        @default("SAR")
+  priceBreakdown Json?         // Structured snapshot of nights, rates, discounts
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([listingId])
+  @@index([listingId, startDate, endDate, status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -699,5 +770,3 @@ model HostInfoRequest {
   @@index([requestId])
   @@index([status])
 }
-
-

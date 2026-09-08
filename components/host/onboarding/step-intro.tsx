@@ -24,7 +24,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
             your place
           </h1>
           <p className="text-base font-normal text-[#727272] leading-relaxed">
-            Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.
+            In this step, we&apos;ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
           </p>
         </div>
 

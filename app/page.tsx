@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { HomeView } from "@/components/home/home-view";
+import { listingService } from "@/services/listing.service";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Homyz - Book cozy stays that feel like home",
   description:
-    "Explore guest-favorite apartments, lofts, villas, and cozy homes in Paris, Hamburg, Berlin, Barcelona, Milan, Lisbon, and around the world.",
+    "Explore hand-picked apartments, lofts, villas, and cozy homes across Riyadh, Jeddah, and top destinations.",
   openGraph: {
     title: "Homyz - Book cozy stays that feel like home",
     description:
@@ -13,6 +16,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
-  return <HomeView />;
+export default async function HomePage() {
+  let listings: any[] = [];
+  try {
+    const res = await listingService.searchPublicListings({ take: 24 });
+    listings = res.items;
+  } catch (error) {
+    console.error("Failed to load public listings for home page:", error);
+  }
+
+  return <HomeView initialListings={listings} />;
 }
+

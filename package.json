@@ -3,13 +3,13 @@
   "version": "0.1.1",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "build:ci": "next build",
-    "start": "next start",
+    "start": "bash scripts/start-prod.sh",
     "security:scan": "bash .githooks/pre-commit --ci",
     "lint": "eslint",
     "check-env": "node scripts/check-env.js",
@@ -21,7 +21,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1126.0",
+    "@aws-sdk/client-s3": "^3.1127.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "^7.10.0",

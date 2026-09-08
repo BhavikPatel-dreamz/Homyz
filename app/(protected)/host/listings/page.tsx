@@ -4,7 +4,7 @@ import { listingService } from "@/services/listing.service";
 import { Role } from "@/generated/prisma/enums";
 
 export default async function HostListingsPage() {
-  const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
+  const actor = await requirePageRole([Role.USER, Role.HOST, Role.ADMIN]);
   const { items } = await listingService.listForHost(actor, {
     skip: 0,
     take: 100,

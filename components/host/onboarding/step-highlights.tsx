@@ -88,7 +88,7 @@ export function StepHighlights({
           Let’s describe your house
         </h1>
         <p className="text-sm font-medium text-zinc-500 mb-10">
-          Choose up to 2 highlights. We’ll use these to get your description started.
+          Choose up to 3 highlights. We’ll use these to help guests understand your place.
         </p>
 
         {/* Highlights Selector Grid */}

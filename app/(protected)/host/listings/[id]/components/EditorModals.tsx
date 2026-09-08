@@ -212,7 +212,7 @@ export function EditorModals({
                 <div className="space-y-0.5">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">You may get fewer bookings</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    Guests prefer listings that confirm instantly without waiting for host approval.
                   </p>
                 </div>
               </div>
@@ -224,9 +224,9 @@ export function EditorModals({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to review every booking request</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You&apos;ll need to review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    You must manually evaluate guest profiles and message history before accepting.
                   </p>
                 </div>
               </div>
@@ -238,9 +238,9 @@ export function EditorModals({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You&apos;ll need to respond to each request in 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    Requests that are not answered within 24 hours expire automatically.
                   </p>
                 </div>
               </div>

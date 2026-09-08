@@ -398,7 +398,7 @@ export function PricingAndBookingViews({
               <div className="space-y-1">
                 <h3 className="font-semibold text-sm text-[#1F1F1F]">Use instant book</h3>
                 <p className="text-xs text-zinc-500 font-normal">
-                  Lorem ipsum lectus at libero iaculis semper donec enim lorem.
+                  Allow guests to book automatically without waiting for host confirmation.
                 </p>
               </div>
 
@@ -409,7 +409,7 @@ export function PricingAndBookingViews({
                 <div className="space-y-2">
                   <div className="space-y-0.5">
                     <h4 className="font-semibold text-xs text-[#1F1F1F]">Require a good track record</h4>
-                    <p className="text-[11px] text-zinc-400 font-normal">Lorem ipsum integer habitant</p>
+                    <p className="text-[11px] text-zinc-400 font-normal">Only guests with positive reviews can instant book</p>
                   </div>
                   <button
                     type="button"
@@ -425,7 +425,7 @@ export function PricingAndBookingViews({
                   <div className="flex items-start justify-between">
                     <div className="space-y-0.5">
                       <h4 className="font-semibold text-xs text-[#1F1F1F]">Add a custom message</h4>
-                      <p className="text-[11px] text-zinc-400 font-normal">Lorem ipsum integer habitant</p>
+                      <p className="text-[11px] text-zinc-400 font-normal">Send a welcome message automatically after booking</p>
                     </div>
                     <button
                       type="button"
@@ -580,7 +580,7 @@ function CancellationPolicyView({
           <h1>Cancellation policy</h1>
         </div>
         <p className="text-xs text-zinc-500 font-normal pl-11">
-          Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+          Choose how flexible your refund policy is for cancellations before check-in.
         </p>
       </div>
 

@@ -2,6 +2,26 @@
 
 import React, { useState, useRef } from "react";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+
+// Cute Camera SVG Illustration Component
+function CameraPlaceholder() {
+  return (
+    <div className="w-14 h-14 flex items-center justify-center pointer-events-none">
+      <svg width="56" height="56" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 22 28 C 22 15 58 15 58 28" stroke="#E67E22" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+        <rect x="14" y="26" width="52" height="36" rx="10" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
+        <rect x="26" y="20" width="16" height="8" rx="3" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
+        <circle cx="40" cy="44" r="13" fill="#4A235A" />
+        <circle cx="40" cy="44" r="8" fill="#FFF9C4" />
+        <circle cx="40" cy="44" r="4.5" fill="#4A235A" />
+        <circle cx="56" cy="33" r="2.5" fill="#E67E22" />
+      </svg>
+    </div>
+  );
+}
+
 interface StepPhotoManagementProps {
   photos: string[];
   onUpdatePhotos: (photos: string[]) => void;
@@ -20,26 +40,66 @@ export function StepPhotoManagement({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTargetIdx, setReplaceTargetIdx] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Handle adding new photos
-  const handleAddPhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const newFiles = Array.from(e.target.files);
-    const newUrls = newFiles.map((file) => URL.createObjectURL(file));
-    onUpdatePhotos([...photos, ...newUrls]);
-    e.target.value = "";
+  const uploadFile = async (file: File): Promise<string> => {
+    if (!ACCEPTED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_FILE_SIZE) {
+      throw new Error("Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each.");
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch("/api/v1/upload/listing-photo", {
+      method: "POST",
+      body: formData,
+    });
+    const result: unknown = await response.json().catch(() => null);
+    if (!response.ok || !result || typeof result !== "object" || !("url" in result)) {
+      const message =
+        result && typeof result === "object" && "error" in result
+          ? String((result as { error?: string }).error)
+          : "Photo upload failed.";
+      throw new Error(message);
+    }
+    return String((result as { url: string }).url);
   };
 
-  // Handle replacing a specific photo at target index
-  const handleReplacePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle adding new photos with real persistent storage upload
+  const handleAddPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const newFiles = Array.from(e.target.files);
+    e.target.value = "";
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const uploadedUrls = await Promise.all(newFiles.map(uploadFile));
+      onUpdatePhotos([...photos, ...uploadedUrls]);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Failed to upload photo(s).");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Handle replacing a specific photo at target index with real persistent storage upload
+  const handleReplacePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0 || replaceTargetIdx === null) return;
     const file = e.target.files[0];
-    const newUrl = URL.createObjectURL(file);
-    const updated = [...photos];
-    updated[replaceTargetIdx] = newUrl;
-    onUpdatePhotos(updated);
+    const targetIdx = replaceTargetIdx;
     setReplaceTargetIdx(null);
     e.target.value = "";
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const persistentUrl = await uploadFile(file);
+      const updated = [...photos];
+      updated[targetIdx] = persistentUrl;
+      onUpdatePhotos(updated);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Failed to replace photo.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const triggerReplace = (idx: number) => {
@@ -60,12 +120,20 @@ export function StepPhotoManagement({
     onUpdatePhotos(updated);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFiles = Array.from(e.dataTransfer.files);
-      const newUrls = droppedFiles.map((file) => URL.createObjectURL(file));
-      onUpdatePhotos([...photos, ...newUrls]);
+      setIsUploading(true);
+      setUploadError(null);
+      try {
+        const uploadedUrls = await Promise.all(droppedFiles.map(uploadFile));
+        onUpdatePhotos([...photos, ...uploadedUrls]);
+      } catch (err: unknown) {
+        setUploadError(err instanceof Error ? err.message : "Failed to upload dropped photo(s).");
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -73,22 +141,6 @@ export function StepPhotoManagement({
     e.preventDefault();
   };
 
-  // Cute Camera SVG Illustration Component
-  const CameraPlaceholder = () => (
-    <div className="w-14 h-14 flex items-center justify-center pointer-events-none">
-      <svg width="56" height="56" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M 22 28 C 22 15 58 15 58 28" stroke="#E67E22" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-        <rect x="14" y="26" width="52" height="36" rx="10" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-        <rect x="26" y="20" width="16" height="8" rx="3" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-        <circle cx="40" cy="44" r="13" fill="#4A235A" />
-        <circle cx="40" cy="44" r="8" fill="#FFF9C4" />
-        <circle cx="40" cy="44" r="4.5" fill="#4A235A" />
-        <circle cx="56" cy="33" r="2.5" fill="#E67E22" />
-      </svg>
-    </div>
-  );
-
-  const mainCollageSlots = [0, 1, 2, 3, 4];
   const extraPhotos = photos.slice(5);
 
   return (
@@ -105,8 +157,22 @@ export function StepPhotoManagement({
               Cool ! How does this look?
             </h1>
             <p className="text-xs font-normal text-[#727272] mt-1">
-              Drag photos to reorder or click <span className="font-semibold text-zinc-700">+</span> to add more. ({photos.length} photos selected)
+              Review your property photos. Click Make cover to change the primary photo, or Replace to swap an image. ({photos.length} photos selected)
             </p>
+            {uploadError && (
+              <p className="text-xs font-semibold text-rose-600 mt-2 bg-rose-50 border border-rose-200 rounded-lg p-2">
+                {uploadError}
+              </p>
+            )}
+            {isUploading && (
+              <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2 animate-pulse">
+                <svg className="animate-spin h-3.5 w-3.5 text-amber-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Uploading photo(s) to secure storage...</span>
+              </div>
+            )}
           </div>
 
           {/* Plus (+) Button to Add More Photos */}
@@ -304,16 +370,16 @@ export function StepPhotoManagement({
         <button
           type="button"
           onClick={onNext}
-          disabled={isLoading}
+          disabled={isLoading || isUploading}
           className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
         >
-          {isLoading ? (
+          {isLoading || isUploading ? (
             <>
               <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>Loading...</span>
+              <span>{isUploading ? "Uploading..." : "Loading..."}</span>
             </>
           ) : (
             "Next"

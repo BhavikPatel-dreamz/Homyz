@@ -72,8 +72,8 @@ export function GuestsSafetyView({
               }} />
             <h1>Guests safety</h1>
           </div>
-          <p className="text-xs text-zinc-400 font-normal pl-11">
-            Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+          <p className="text-xs text-zinc-500 font-normal pl-11">
+            Disclose safety devices, safety equipment, and any property safety considerations for your guests.
           </p>
         </div>
 

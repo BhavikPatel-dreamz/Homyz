@@ -17,6 +17,7 @@ import { PricingAndBookingViews } from "./components/PricingAndBookingViews";
 import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
+import { normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
 
 export interface HostListingData {
   id: string;
@@ -37,6 +38,59 @@ export interface HostListingData {
   bedrooms: number;
   beds: number;
   bathrooms: number;
+  // Professional Property Details
+  propertySize?: number | null;
+  propertySizeUnit?: string | null;
+  listingFloor?: number | null;
+  totalFloors?: number | null;
+  yearBuilt?: number | null;
+  yearRenovated?: number | null;
+  privateEntrance?: boolean | null;
+  elevatorAvailable?: boolean | null;
+  stairsRequired?: boolean | null;
+  rooms?: Array<{
+    id: string;
+    name: string;
+    type: "BEDROOM" | "LIVING_ROOM" | "OTHER";
+    beds: Array<{ type: string; count: number }>;
+  }> | null;
+  fullBathrooms?: number | null;
+  halfBathrooms?: number | null;
+  privateBathrooms?: number | null;
+  sharedBathrooms?: number | null;
+  parkingAvailable?: boolean | null;
+  parkingType?: string | null;
+  parkingSpaces?: number | null;
+  parkingReservation?: boolean | null;
+  guestAccess?: string[];
+  safetyEquipment?: string[];
+  safetyHazards?: string[];
+  accessibilityFeatures?: string[];
+  views?: string[];
+  petsAllowed?: boolean | null;
+  maxPets?: number | null;
+  petFee?: number | null;
+  petRestrictions?: string | null;
+  dogsAllowed?: boolean | null;
+  catsAllowed?: boolean | null;
+  smokingAllowed?: boolean | null;
+  smokingLocation?: string | null;
+  eventsAllowed?: boolean | null;
+  childrenAllowed?: boolean | null;
+  infantsAllowed?: boolean | null;
+  photographyAllowed?: boolean | null;
+  quietHours?: boolean | null;
+  quietHoursStart?: string | null;
+  quietHoursEnd?: string | null;
+  additionalRules?: string | null;
+  directions?: string | null;
+  parkingInstructions?: string | null;
+  checkInInstructions?: string | null;
+  houseManual?: string | null;
+  wifiNetwork?: string | null;
+  wifiPassword?: string | null;
+  doorCode?: string | null;
+  lockboxCode?: string | null;
   photos: string[];
   amenities: string[];
   houseRules: string[];
@@ -104,9 +158,10 @@ const ALL_AMENITIES_CATALOG: AmenityItem[] = [
   { id: "kitchen", name: "Kitchen", category: "Kitchen and dining", description: "A space for cooking meals that includes at least a refrigerator, oven and stovetop", icon: "🍳" },
   { id: "shampoo", name: "Shampoo", category: "Bathroom", icon: "🧴" },
   { id: "shower_gel", name: "Shower gel", category: "Bathroom", icon: "🧼" },
-  { id: "smoke_alarm", name: "Smoke alarm", category: "Home safety", description: "Lorem ipsum vitae nec duis in in uma molestie a.", icon: "🚨" },
-  { id: "tv", name: "TV", category: "Entertainment", description: "Lorem ipsum vitae nec duis in in uma molestie a.", icon: "📺" },
-  { id: "wifi", name: "Wifi", category: "Internet and office", description: "Lorem ipsum vitae nec duis in in uma molestie a.", icon: "📶" },
+  { id: "smoke_alarm", name: "Smoke alarm", category: "Home safety", description: "Operational smoke detector installed in property.", icon: "🚨" },
+  { id: "carbon_monoxide_alarm", name: "Carbon monoxide alarm", category: "Home safety", description: "CO detector installed", icon: "🚨" },
+  { id: "tv", name: "TV", category: "Entertainment", description: "Television available in property.", icon: "📺" },
+  { id: "wifi", name: "Wifi", category: "Internet and office", description: "High-speed wireless internet access.", icon: "📶" },
 ];
 
 const AMENITY_CATEGORIES = [
@@ -236,14 +291,16 @@ export function HostListingEditorClient({
   const [whichIsMostLike, setWhichIsMostLike] = useState("Apartment");
   const [editPropertyType, setEditPropertyType] = useState(listing.propertyType || "Rental unit*");
   const [editListingType, setEditListingType] = useState(listing.listingType || "Entire place");
-  const [buildingFloors, setBuildingFloors] = useState(1);
-  const [listingFloor, setListingFloor] = useState(1);
-  const [yearBuilt, setYearBuilt] = useState("2002");
-  const [propertySize, setPropertySize] = useState("");
-  const [propertySizeUnit, setPropertySizeUnit] = useState("XX");
+  const [buildingFloors, setBuildingFloors] = useState(listing.totalFloors ?? 1);
+  const [listingFloor, setListingFloor] = useState(listing.listingFloor ?? 1);
+  const [yearBuilt, setYearBuilt] = useState(listing.yearBuilt ? String(listing.yearBuilt) : "");
+  const [propertySize, setPropertySize] = useState(listing.propertySize ? String(listing.propertySize) : "");
+  const [propertySizeUnit, setPropertySizeUnit] = useState(listing.propertySizeUnit || "SQM");
+  const [privateEntrance, setPrivateEntrance] = useState(listing.privateEntrance ?? false);
+  const [elevatorAvailable, setElevatorAvailable] = useState(listing.elevatorAvailable ?? false);
 
-  const [editAddress, setEditAddress] = useState(listing.address || "Error voluptatem id");
-  const [editCity, setEditCity] = useState(listing.city || "Fugit exercitatione");
+  const [editAddress, setEditAddress] = useState(listing.address || "");
+  const [editCity, setEditCity] = useState(listing.city || "");
   const [editDistrict, setEditDistrict] = useState(listing.district || "");
   const [editPostalCode, setEditPostalCode] = useState(listing.postalCode || "");
   const [editCountry, setEditCountry] = useState(listing.country || "Saudi Arabia");
@@ -253,16 +310,35 @@ export function HostListingEditorClient({
   const [editBedrooms, setEditBedrooms] = useState(listing.bedrooms || 1);
   const [editBeds, setEditBeds] = useState(listing.beds || 1);
   const [editBathrooms, setEditBathrooms] = useState(listing.bathrooms || 1);
+  const [fullBathrooms, setFullBathrooms] = useState(listing.fullBathrooms ?? listing.bathrooms ?? 1);
+  const [halfBathrooms, setHalfBathrooms] = useState(listing.halfBathrooms ?? 0);
+  const [privateBathrooms, setPrivateBathrooms] = useState(listing.privateBathrooms ?? listing.bathrooms ?? 1);
+  const [sharedBathrooms, setSharedBathrooms] = useState(listing.sharedBathrooms ?? 0);
+  const [rooms, setRooms] = useState<any[]>(
+    Array.isArray(listing.rooms) && listing.rooms.length > 0
+      ? (listing.rooms as any[])
+      : [{ id: "room_1", name: "Bedroom 1", type: "BEDROOM", beds: [{ type: "QUEEN", count: 1 }] }]
+  );
 
-  // Arrival guide fields
+  // Arrival guide & parking fields
   const [checkInMethod, setCheckInMethod] = useState(listing.checkInMethod || "SMART_LOCK");
   const [checkInStart, setCheckInStart] = useState(listing.checkInStart || "15:00");
   const [checkInEnd, setCheckInEnd] = useState(listing.checkInEnd || "22:00");
   const [checkOutTime, setCheckOutTime] = useState(listing.checkOutTime || "11:00");
-  const [wifiNetwork, setWifiNetwork] = useState("Homyz_Guest_Wifi");
-  const [wifiPassword, setWifiPassword] = useState("welcome2homyz");
-  const [houseManual, setHouseManual] = useState("Welcome to our property! Please refer to the guide for AC controls, parking spots, and trash disposal.");
-  const [directions, setDirections] = useState<string>("");
+  const [wifiNetwork, setWifiNetwork] = useState(listing.wifiNetwork || "");
+  const [wifiPassword, setWifiPassword] = useState(listing.wifiPassword || "");
+  const [houseManual, setHouseManual] = useState(listing.houseManual || "");
+  const [directions, setDirections] = useState<string>(listing.directions || "");
+  const [checkInInstructions, setCheckInInstructions] = useState<string>(listing.checkInInstructions || "");
+  const [doorCode, setDoorCode] = useState<string>(listing.doorCode || "");
+  const [lockboxCode, setLockboxCode] = useState<string>(listing.lockboxCode || "");
+
+  // Parking State
+  const [parkingAvailable, setParkingAvailable] = useState<boolean>(listing.parkingAvailable ?? false);
+  const [parkingType, setParkingType] = useState<string>(listing.parkingType || "FREE");
+  const [parkingSpaces, setParkingSpaces] = useState<number>(listing.parkingSpaces ?? 1);
+  const [parkingReservation, setParkingReservation] = useState<boolean>(listing.parkingReservation ?? false);
+  const [parkingInstructions, setParkingInstructions] = useState<string>(listing.parkingInstructions || "");
 
   // Pricing & Discounts
   const [editPrice, setEditPrice] = useState(listing.price / 100);
@@ -281,8 +357,8 @@ export function HostListingEditorClient({
   // Photos & Amenities
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
   const [newPhotoUrl, setNewPhotoUrl] = useState("");
-  const [editAmenities, setEditAmenities] = useState<string[]>(
-    listing.amenities?.length ? listing.amenities : ["Air conditioning", "Bed linens", "Body soap", "Kitchen", "Wifi", "TV", "Smoke alarm"]
+  const [editAmenities, setEditAmenities] = useState<string[]>(() =>
+    normalizeAmenities(listing.amenities?.length ? listing.amenities : ["air_conditioning", "kitchen", "wifi", "tv", "smoke_alarm"])
   );
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -292,7 +368,7 @@ export function HostListingEditorClient({
       id: "disabled_parking",
       name: "Disabled parking spot",
       icon: "🚗",
-      description: "Lorem ipsum blandit nibh tellus at sit in risus viverra tincidunt purus penatibus odio iaculis eget at fringilla neque morbi.",
+      description: "Dedicated parking space accessible for guests with mobility disabilities.",
       hasFeature: false,
     },
     { id: "lit_path", name: "Lit path to the guest entrance", icon: "💡", hasFeature: false },
@@ -396,31 +472,81 @@ export function HostListingEditorClient({
     Array<{ id: string; phone?: string; email?: string; countryCode?: string; status: string; dateAdded: string }>
   >([]);
 
+  const initialRules = Array.isArray(listing.houseRules) ? listing.houseRules : [];
+  const normalizedListingAmenities = (listing.amenities || []).map(normalizeAmenityId);
+
   // Booking Settings State (Matches Figma Screenshots 1 & 2)
-  const [bookingMethod, setBookingMethod] = useState<"instant" | "approve">("instant");
+  const [bookingMethod, setBookingMethod] = useState<"instant" | "approve">(
+    listing.instantBook === false ? "approve" : "instant"
+  );
   const [requireTrackRecord, setRequireTrackRecord] = useState(false);
   const [customBookingMessage, setCustomBookingMessage] = useState("");
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
 
-  // House Rules State (Matches Figma Screenshot 100%)
-  const [petsAllowed, setPetsAllowed] = useState<boolean | null>(null);
+  // House Rules State (Structured & Real Database Backed)
+  const [petsAllowed, setPetsAllowed] = useState<boolean | null>(() => {
+    if (listing.petsAllowed !== null && listing.petsAllowed !== undefined) return listing.petsAllowed;
+    if (initialRules.some((r) => /no pets/i.test(r))) return false;
+    if (initialRules.some((r) => /pets allowed/i.test(r))) return true;
+    return null;
+  });
   const [maxPetsAllowedToggle, setMaxPetsAllowedToggle] = useState<boolean | null>(null);
-  const [maxPetsCount, setMaxPetsCount] = useState<number>(1);
-  const [eventsAllowed, setEventsAllowed] = useState<boolean | null>(true);
-  const [smokingAllowed, setSmokingAllowed] = useState<boolean | null>(true);
-  const [quietHoursToggle, setQuietHoursToggle] = useState<boolean | null>(false);
-  const [commercialFilmingAllowed, setCommercialFilmingAllowed] = useState<boolean | null>(false);
-  const [maxGuestsCount, setMaxGuestsCount] = useState<number>(1);
-  const [additionalHouseRules, setAdditionalHouseRules] = useState<string>("");
+  const [maxPetsCount, setMaxPetsCount] = useState<number>(listing.maxPets ?? 1);
+  const [petFee, setPetFee] = useState<string>(listing.petFee ? String(listing.petFee / 100) : "");
+  const [petRestrictions, setPetRestrictions] = useState<string>(listing.petRestrictions || "");
+  const [dogsAllowed, setDogsAllowed] = useState<boolean>(listing.dogsAllowed ?? true);
+  const [catsAllowed, setCatsAllowed] = useState<boolean>(listing.catsAllowed ?? true);
+
+  const [eventsAllowed, setEventsAllowed] = useState<boolean | null>(() => {
+    if (listing.eventsAllowed !== null && listing.eventsAllowed !== undefined) return listing.eventsAllowed;
+    if (initialRules.some((r) => /no (wild )?parties|no events/i.test(r))) return false;
+    if (initialRules.some((r) => /events allowed/i.test(r))) return true;
+    return true;
+  });
+  const [smokingAllowed, setSmokingAllowed] = useState<boolean | null>(() => {
+    if (listing.smokingAllowed !== null && listing.smokingAllowed !== undefined) return listing.smokingAllowed;
+    if (initialRules.some((r) => /no smoking/i.test(r))) return false;
+    if (initialRules.some((r) => /smoking allowed/i.test(r))) return true;
+    return false;
+  });
+  const [smokingLocation, setSmokingLocation] = useState<string>(listing.smokingLocation || "OUTSIDE_ONLY");
+  const [quietHoursToggle, setQuietHoursToggle] = useState<boolean | null>(() => {
+    if (listing.quietHours !== null && listing.quietHours !== undefined) return listing.quietHours;
+    return initialRules.some((r) => /quiet hours/i.test(r));
+  });
+  const [quietHoursStart, setQuietHoursStart] = useState<string>(listing.quietHoursStart || "22:00");
+  const [quietHoursEnd, setQuietHoursEnd] = useState<string>(listing.quietHoursEnd || "08:00");
+  const [commercialFilmingAllowed, setCommercialFilmingAllowed] = useState<boolean | null>(() => {
+    if (initialRules.some((r) => /no commercial filming/i.test(r))) return false;
+    if (initialRules.some((r) => /commercial filming allowed/i.test(r))) return true;
+    return false;
+  });
+  const [maxGuestsCount, setMaxGuestsCount] = useState<number>(listing.guests || 1);
+  const [additionalHouseRules, setAdditionalHouseRules] = useState<string>(() => {
+    if (listing.additionalRules) return listing.additionalRules;
+    const knownPattern = /pets|smoking|parties|events|quiet hours|commercial filming/i;
+    const customs = initialRules.filter((r) => !knownPattern.test(r));
+    return customs.join("\n");
+  });
   const [isEditingAdditionalRulesModalOpen, setIsEditingAdditionalRulesModalOpen] = useState<boolean>(false);
 
   // Guests Safety & Cancellation Policy State (Matches Figma Screenshot 100%)
-  const [carbonMonoxideAlarm, setCarbonMonoxideAlarm] = useState<boolean>(false);
-  const [smokeAlarm, setSmokeAlarm] = useState<boolean>(true);
-  const [firstAidKit, setFirstAidKit] = useState<boolean>(false);
-  const [fireExtinguisher, setFireExtinguisher] = useState<boolean>(false);
-  const [cancellationPolicy, setCancellationPolicy] = useState<string>("Flexible");
+  const [carbonMonoxideAlarm, setCarbonMonoxideAlarm] = useState<boolean>(
+    normalizedListingAmenities.includes("carbon_monoxide_alarm")
+  );
+  const [smokeAlarm, setSmokeAlarm] = useState<boolean>(
+    normalizedListingAmenities.includes("smoke_alarm")
+  );
+  const [firstAidKit, setFirstAidKit] = useState<boolean>(
+    normalizedListingAmenities.includes("first_aid_kit")
+  );
+  const [fireExtinguisher, setFireExtinguisher] = useState<boolean>(
+    normalizedListingAmenities.includes("fire_extinguisher")
+  );
+  const [cancellationPolicy, setCancellationPolicy] = useState<string>(
+    listing.cancellationPolicy || "Flexible"
+  );
   const [customSlug, setCustomSlug] = useState<string>("");
 
   const [isSafetyConsiderationsModalOpen, setIsSafetyConsiderationsModalOpen] = useState(false);
@@ -445,17 +571,36 @@ export function HostListingEditorClient({
     } else if (sectionToSave === "description") {
       payload = { description: editDescription };
     } else if (sectionToSave === "propertyType") {
+      const isApartment = [
+        "Apartment", "Condo", "Loft", "Serviced apartment", "Rental unit*",
+        "RENTAL_UNIT", "CONDO", "LOFT", "SERVICED_APARTMENT", "APARTMENT",
+      ].includes(whichIsMostLike) || [
+        "Apartment", "Condo", "Loft", "Serviced apartment", "Rental unit*",
+      ].includes(editPropertyType);
+
       payload = {
         hostingType: editHostingType,
         propertyType: editPropertyType,
         listingType: editListingType,
+        propertySize: propertySize ? parseInt(propertySize, 10) : null,
+        propertySizeUnit,
+        listingFloor: isApartment ? Number(listingFloor) : null,
+        totalFloors: isApartment ? Number(buildingFloors) : null,
+        yearBuilt: yearBuilt ? parseInt(yearBuilt, 10) : null,
+        elevatorAvailable: isApartment ? elevatorAvailable : null,
+        privateEntrance: !isApartment ? privateEntrance : null,
       };
-    } else if (sectionToSave === "guests") {
+    } else if (sectionToSave === "guests" || sectionToSave === "sleeping-arrangements") {
       payload = {
         guests: editGuests,
         bedrooms: editBedrooms,
         beds: editBeds,
         bathrooms: editBathrooms,
+        fullBathrooms,
+        halfBathrooms,
+        privateBathrooms,
+        sharedBathrooms,
+        rooms,
       };
     } else if (sectionToSave === "pricing") {
       payload = {
@@ -480,48 +625,129 @@ export function HostListingEditorClient({
         country: editCountry,
         showExactLocation,
       };
-    } else if (sectionToSave === "arrival-guide") {
+    } else if (sectionToSave === "parking") {
+      payload = {
+        parkingAvailable,
+        parkingType: parkingAvailable ? parkingType : null,
+        parkingSpaces: parkingAvailable ? Number(parkingSpaces) : null,
+        parkingReservation: parkingAvailable ? parkingReservation : null,
+        parkingInstructions,
+      };
+    } else if (sectionToSave === "directions") {
+      payload = { directions };
+    } else if (sectionToSave === "wifi-details") {
+      payload = { wifiNetwork, wifiPassword };
+    } else if (sectionToSave === "house-manual") {
+      payload = { houseManual };
+    } else if (sectionToSave === "check-in-method") {
+      payload = {
+        checkInMethod,
+        checkInInstructions,
+        doorCode: doorCode || null,
+        lockboxCode: lockboxCode || null,
+      };
+    } else if (sectionToSave === "arrival-guide" || sectionToSave === "check-in-out") {
       payload = {
         checkInMethod,
         checkInStart,
         checkInEnd,
         checkOutTime,
+        directions,
+        parkingInstructions,
+        checkInInstructions,
+        houseManual,
+        wifiNetwork,
+        wifiPassword,
+        doorCode: doorCode || null,
+        lockboxCode: lockboxCode || null,
       };
     } else if (sectionToSave === "booking-settings") {
       payload = {
-        bookingMethod,
-        requireTrackRecord,
-        customBookingMessage,
+        instantBook: bookingMethod === "instant",
       };
     } else if (sectionToSave === "house-rules") {
+      const rules: string[] = [];
+      if (petsAllowed === true) {
+        rules.push(maxPetsCount > 1 ? `Pets allowed (up to ${maxPetsCount})` : "Pets allowed");
+      } else if (petsAllowed === false) {
+        rules.push("No pets");
+      }
+
+      if (eventsAllowed === true) {
+        rules.push("Events allowed");
+      } else if (eventsAllowed === false) {
+        rules.push("No events or parties");
+      }
+
+      if (smokingAllowed === true) {
+        rules.push(`Smoking allowed (${smokingLocation.toLowerCase().replace(/_/g, " ")})`);
+      } else if (smokingAllowed === false) {
+        rules.push("No smoking inside property");
+      }
+
+      if (quietHoursToggle === true) {
+        rules.push(`Quiet hours between ${quietHoursStart} - ${quietHoursEnd}`);
+      }
+
+      if (commercialFilmingAllowed === true) {
+        rules.push("Commercial filming allowed");
+      } else if (commercialFilmingAllowed === false) {
+        rules.push("No commercial filming");
+      }
+
+      if (additionalHouseRules && additionalHouseRules.trim()) {
+        const customLines = additionalHouseRules.split("\n").map((l) => l.trim()).filter(Boolean);
+        rules.push(...customLines);
+      }
+
       payload = {
+        houseRules: rules,
         petsAllowed,
-        maxPetsAllowedToggle,
-        maxPetsCount,
-        eventsAllowed,
+        maxPets: petsAllowed ? Number(maxPetsCount) : null,
+        petFee: petsAllowed && petFee ? Math.round(Number(petFee) * 100) : null,
+        petRestrictions: petsAllowed ? petRestrictions : null,
+        dogsAllowed: petsAllowed ? dogsAllowed : null,
+        catsAllowed: petsAllowed ? catsAllowed : null,
         smokingAllowed,
-        quietHoursToggle,
-        commercialFilmingAllowed,
-        maxGuestsCount,
-        additionalHouseRules,
+        smokingLocation: smokingAllowed ? smokingLocation : null,
+        eventsAllowed,
+        quietHours: quietHoursToggle,
+        quietHoursStart: quietHoursToggle ? quietHoursStart : null,
+        quietHoursEnd: quietHoursToggle ? quietHoursEnd : null,
+        additionalRules: additionalHouseRules,
       };
-    } else if (sectionToSave === "guests-safety") {
+    } else if (sectionToSave === "guests-safety" || sectionToSave === "safety-equipment") {
+      const currentAmenitySet = new Set(editAmenities.map(normalizeAmenityId));
+      if (smokeAlarm) currentAmenitySet.add("smoke_alarm"); else currentAmenitySet.delete("smoke_alarm");
+      if (carbonMonoxideAlarm) currentAmenitySet.add("carbon_monoxide_alarm"); else currentAmenitySet.delete("carbon_monoxide_alarm");
+      if (firstAidKit) currentAmenitySet.add("first_aid_kit"); else currentAmenitySet.delete("first_aid_kit");
+      if (fireExtinguisher) currentAmenitySet.add("fire_extinguisher"); else currentAmenitySet.delete("fire_extinguisher");
+
+      const newAmenitiesList = Array.from(currentAmenitySet);
+      setEditAmenities(newAmenitiesList);
+
+      const equipment: string[] = [];
+      if (smokeAlarm) equipment.push("SMOKE_ALARM");
+      if (carbonMonoxideAlarm) equipment.push("CARBON_MONOXIDE_ALARM");
+      if (firstAidKit) equipment.push("FIRST_AID_KIT");
+      if (fireExtinguisher) equipment.push("FIRE_EXTINGUISHER");
+
       payload = {
-        carbonMonoxideAlarm,
-        smokeAlarm,
+        safetyEquipment: equipment,
+        safetyHazards: safetyConsiderations,
+        amenities: newAmenitiesList,
       };
     } else if (sectionToSave === "cancellation-policy") {
       payload = {
         cancellationPolicy,
       };
     } else if (sectionToSave === "custom-link") {
-      payload = {
-        customSlug,
-      };
-    } else if (sectionToSave === "directions") {
-      payload = {
-        directions,
-      };
+      setIsSaving(false);
+      setFeedbackMsg({
+        type: "success",
+        text: "Custom link preview updated.",
+      });
+      return;
     }
 
     try {
@@ -626,6 +852,20 @@ export function HostListingEditorClient({
             setEditBeds={setEditBeds}
             editBathrooms={editBathrooms}
             setEditBathrooms={setEditBathrooms}
+            fullBathrooms={fullBathrooms}
+            setFullBathrooms={setFullBathrooms}
+            halfBathrooms={halfBathrooms}
+            setHalfBathrooms={setHalfBathrooms}
+            privateBathrooms={privateBathrooms}
+            setPrivateBathrooms={setPrivateBathrooms}
+            sharedBathrooms={sharedBathrooms}
+            setSharedBathrooms={setSharedBathrooms}
+            privateEntrance={privateEntrance}
+            setPrivateEntrance={setPrivateEntrance}
+            elevatorAvailable={elevatorAvailable}
+            setElevatorAvailable={setElevatorAvailable}
+            rooms={rooms}
+            setRooms={setRooms}
             editAmenities={editAmenities}
             setEditAmenities={setEditAmenities}
             accessibilityFeatures={accessibilityFeatures}
@@ -709,12 +949,30 @@ export function HostListingEditorClient({
             setMaxGuestsCount={setMaxGuestsCount}
             petsAllowed={petsAllowed}
             setPetsAllowed={setPetsAllowed}
+            maxPetsCount={maxPetsCount}
+            setMaxPetsCount={setMaxPetsCount}
+            petFee={petFee}
+            setPetFee={setPetFee}
+            petRestrictions={petRestrictions}
+            setPetRestrictions={setPetRestrictions}
+            dogsAllowed={dogsAllowed}
+            setDogsAllowed={setDogsAllowed}
+            catsAllowed={catsAllowed}
+            setCatsAllowed={setCatsAllowed}
             quietHours={quietHoursToggle}
             setQuietHours={setQuietHoursToggle}
+            quietHoursStart={quietHoursStart}
+            setQuietHoursStart={setQuietHoursStart}
+            quietHoursEnd={quietHoursEnd}
+            setQuietHoursEnd={setQuietHoursEnd}
             eventsAllowed={eventsAllowed}
             setEventsAllowed={setEventsAllowed}
             smokingAllowed={smokingAllowed}
             setSmokingAllowed={setSmokingAllowed}
+            smokingLocation={smokingLocation}
+            setSmokingLocation={setSmokingLocation}
+            additionalHouseRules={additionalHouseRules}
+            setAdditionalHouseRules={setAdditionalHouseRules}
             setIsEditingAdditionalRulesModalOpen={setIsEditingAdditionalRulesModalOpen}
             checkInMethod={checkInMethod}
             setCheckInMethod={setCheckInMethod}
@@ -726,6 +984,22 @@ export function HostListingEditorClient({
             setHouseManual={setHouseManual}
             directions={directions}
             setDirections={setDirections}
+            checkInInstructions={checkInInstructions}
+            setCheckInInstructions={setCheckInInstructions}
+            doorCode={doorCode}
+            setDoorCode={setDoorCode}
+            lockboxCode={lockboxCode}
+            setLockboxCode={setLockboxCode}
+            parkingAvailable={parkingAvailable}
+            setParkingAvailable={setParkingAvailable}
+            parkingType={parkingType}
+            setParkingType={setParkingType}
+            parkingSpaces={parkingSpaces}
+            setParkingSpaces={setParkingSpaces}
+            parkingReservation={parkingReservation}
+            setParkingReservation={setParkingReservation}
+            parkingInstructions={parkingInstructions}
+            setParkingInstructions={setParkingInstructions}
           />
 
           <GuestsSafetyView
@@ -825,6 +1099,10 @@ export function HostListingEditorClient({
           wifiNetwork={wifiNetwork}
           houseManual={houseManual}
           directions={directions}
+          editBedrooms={editBedrooms}
+          editBeds={editBeds}
+          parkingAvailable={parkingAvailable}
+          parkingType={parkingType}
         />
       </Container>
 
@@ -995,7 +1273,7 @@ export function HostListingEditorClient({
                 <div className="space-y-0.5">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">You may get fewer bookings</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    Guests often prefer places they can book immediately without waiting for host approval.
                   </p>
                 </div>
               </div>
@@ -1010,7 +1288,7 @@ export function HostListingEditorClient({
                 <div className="space-y-0.5">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    You manually accept or decline reservation inquiries based on your availability.
                   </p>
                 </div>
               </div>
@@ -1025,7 +1303,7 @@ export function HostListingEditorClient({
                 <div className="space-y-0.5">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Lorem ipsum varius cursus a est ut consequat id elit.
+                    Unanswered requests expire automatically after 24 hours and affect your host response rate.
                   </p>
                 </div>
               </div>

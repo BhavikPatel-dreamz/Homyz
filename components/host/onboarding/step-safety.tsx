@@ -9,7 +9,7 @@ export interface SafetyOption {
 
 interface StepSafetyProps {
   selectedSafety: string[];
-  onToggleSafety: (id: string) => void;
+  onAnswerSafety: (id: string, answer: "YES" | "NO") => void;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -17,22 +17,22 @@ interface StepSafetyProps {
 
 export function StepSafety({
   selectedSafety,
-  onToggleSafety,
+  onAnswerSafety,
   onBack,
   onNext,
   isLoading = false,
 }: StepSafetyProps) {
   const safetyItems: SafetyOption[] = [
     {
-      id: "security_camera",
+      id: "SECURITY_CAMERA",
       label: "Exterior security camera present",
     },
     {
-      id: "noise_monitor",
+      id: "NOISE_MONITOR",
       label: "Noise decibel monitor present",
     },
     {
-      id: "weapons",
+      id: "WEAPONS",
       label: "Weapon(s) on the property",
     },
   ];
@@ -51,40 +51,43 @@ export function StepSafety({
         {/* Safety Options List */}
         <div className="w-full space-y-4">
           {safetyItems.map((item) => {
-            const isEnabled = selectedSafety.includes(item.id);
+            const answer = selectedSafety.find((value) => value.startsWith(`${item.id}:`))?.split(":")[1];
             return (
-              <div
+              <fieldset
                 key={item.id}
-                onClick={() => onToggleSafety(item.id)}
-                className={`w-full border rounded-2xl p-4 sm:p-5 bg-white transition-all flex items-center justify-between shadow-2xs cursor-pointer select-none ${
-                  isEnabled ? "border-zinc-300 ring-1 ring-zinc-200" : "border-zinc-200 hover:border-zinc-300"
+                className={`w-full border rounded-2xl p-4 sm:p-5 bg-white transition-all shadow-2xs ${
+                  answer ? "border-zinc-900 ring-1 ring-zinc-200" : "border-zinc-200"
                 }`}
               >
-                {/* Left Side Label */}
-                <span className="text-sm font-semibold text-zinc-800 pr-4">
+                <legend className="text-sm font-semibold text-zinc-800 pr-4">
                   {item.label}
-                </span>
-
-                {/* Right Side Toggle Switch */}
-                <div
-                  className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                    isEnabled ? "bg-zinc-900" : "bg-zinc-200"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
-                      isEnabled ? "translate-x-6" : "translate-x-0"
-                    }`}
-                  />
+                </legend>
+                <p className="mt-1 text-xs text-zinc-500">Please answer yes or no. You can update this later.</p>
+                <div className="mt-4 flex gap-2" role="group" aria-label={item.label}>
+                  {(["YES", "NO"] as const).map((choice) => (
+                    <button
+                      key={choice}
+                      type="button"
+                      aria-pressed={answer === choice}
+                      onClick={() => onAnswerSafety(item.id, choice)}
+                      className={`rounded-full border px-4 py-2 text-xs font-semibold transition-colors ${
+                        answer === choice
+                          ? "border-zinc-900 bg-zinc-900 text-white"
+                          : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-900"
+                      }`}
+                    >
+                      {choice === "YES" ? "Yes" : "No"}
+                    </button>
+                  ))}
                 </div>
-              </div>
+              </fieldset>
             );
           })}
         </div>
 
         {/* Paragraph Notice */}
         <p className="text-xs text-zinc-400 leading-relaxed max-w-lg mt-6">
-          Lorem ipsum aliquam pellentesque nibh tempor quam pharetra lobortis vulputate et malesuada nascetur blandit quis mi arcu sed nunc ultrices purus cras mattis vitae nisi adipiscing porta placerat nullam sed.
+          Safety disclosures help guests make informed booking decisions. Your exact property location remains private until a reservation is confirmed.
         </p>
       </div>
 

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
+import { BecomeHostModal } from "./become-host-modal";
 import { Footer } from "@/components/dashboard/footer";
 import {
   createListingAction,
@@ -20,23 +21,24 @@ import {
 } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
+import { normalizeAmenities } from "@/lib/constants/amenities";
 
 const AMENITY_OPTIONS = [
-  { id: "WIFI", label: "High-speed Wi-Fi", icon: "📶" },
-  { id: "POOL", label: "Swimming Pool", icon: "🏊" },
-  { id: "KITCHEN", label: "Full Kitchen", icon: "🍳" },
-  { id: "PARKING", label: "Free Parking", icon: "🚗" },
-  { id: "AIR_CONDITIONING", label: "Air Conditioning", icon: "❄️" },
-  { id: "WORKSPACE", label: "Dedicated Workspace", icon: "💻" },
-  { id: "TV", label: "Smart TV / Netflix", icon: "📺" },
-  { id: "WASHER", label: "Washer & Dryer", icon: "🧺" },
-  { id: "GYM", label: "Fitness Gym", icon: "🏋️" },
-  { id: "BBQ", label: "BBQ Grill", icon: "🍖" },
-  { id: "PATIO", label: "Private Patio / Balcony", icon: "🪴" },
-  { id: "JACUZZI", label: "Hot Tub / Jacuzzi", icon: "♨️" },
-  { id: "BEACH_ACCESS", label: "Beachfront Access", icon: "🏖️" },
-  { id: "EV_CHARGER", label: "EV Car Charger", icon: "🔌" },
-  { id: "PET_FRIENDLY", label: "Pet Friendly", icon: "🐾" },
+  { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
+  { id: "pool", label: "Swimming Pool", icon: "🏊" },
+  { id: "kitchen", label: "Full Kitchen", icon: "🍳" },
+  { id: "free_parking", label: "Free Parking", icon: "🚗" },
+  { id: "air_conditioning", label: "Air Conditioning", icon: "❄️" },
+  { id: "workspace", label: "Dedicated Workspace", icon: "💻" },
+  { id: "tv", label: "Smart TV / Netflix", icon: "📺" },
+  { id: "washer", label: "Washer & Dryer", icon: "🧺" },
+  { id: "gym", label: "Fitness Gym", icon: "🏋️" },
+  { id: "bbq_grill", label: "BBQ Grill", icon: "🍖" },
+  { id: "patio", label: "Private Patio / Balcony", icon: "🪴" },
+  { id: "hot_tub", label: "Hot Tub / Jacuzzi", icon: "♨️" },
+  { id: "beach_access", label: "Beachfront Access", icon: "🏖️" },
+  { id: "ev_charger", label: "EV Car Charger", icon: "🔌" },
+  { id: "pet_friendly", label: "Pet Friendly", icon: "🐾" },
 ];
 
 const HOUSE_RULE_OPTIONS = [
@@ -72,6 +74,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
   const [showSearch, setShowSearch] = useState(false);
   const [compactGrid, setCompactGrid] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
 
   // Editor Modal State
   const [showEditorModal, setShowEditorModal] = useState(false);
@@ -132,32 +135,9 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
     setTimeout(() => setToastMsg(null), 4000);
   }
 
-  // Open Create Flow -> Redirects directly to Figma Host Listing Editor First Page
+  // Open the same host onboarding flow used by the header's "Become a host" action.
   function handleOpenCreate() {
-    startTransition(async () => {
-      try {
-        const res = await createListingAction({
-          title: "Draft Listing",
-          description: "",
-          price: 15000,
-          hostingType: "HOME",
-          propertyType: "Rental unit*",
-          listingType: "Entire place",
-          guests: 2,
-          bedrooms: 1,
-          beds: 1,
-          bathrooms: 1,
-          published: false,
-        });
-        if (res.ok && res.data) {
-          router.push(`/host/listings/${res.data.id}`);
-        } else {
-          router.push("/host/listings/new");
-        }
-      } catch (err) {
-        router.push("/host/listings/new");
-      }
-    });
+    setBecomeHostModalOpen(true);
   }
 
   // Open Edit Modal
@@ -182,7 +162,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       photos: Array.isArray(item.photos) ? [...item.photos] : [],
       newPhotoUrl: "",
       highlights: Array.isArray(item.highlights) ? [...item.highlights] : [],
-      amenities: Array.isArray(item.amenities) ? [...item.amenities] : [],
+      amenities: normalizeAmenities(item.amenities),
       houseRules: Array.isArray(item.houseRules) ? [...item.houseRules] : [],
       checkInMethod: item.checkInMethod || "SMART_LOCK",
       checkInStart: item.checkInStart || "15:00",
@@ -257,8 +237,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         setShowEditorModal(false);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to save listing.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to save listing.", "error");
       }
     });
   }
@@ -275,8 +255,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast("Listing submitted for Admin Review!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to submit listing.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to submit listing.", "error");
       }
     });
   }
@@ -293,8 +273,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast(nextState ? "Listing paused (unpublished from search)." : "Listing resumed!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to update listing state.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to update listing state.", "error");
       }
     });
   }
@@ -310,8 +290,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast("Listing duplicated to new Draft!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to duplicate listing.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to duplicate listing.", "error");
       }
     });
   }
@@ -330,8 +310,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         setShowDeleteModal(false);
         setListingToDelete(null);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to delete listing.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to delete listing.", "error");
       }
     });
   }
@@ -357,8 +337,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         showToast("Blocked dates saved!", "success");
         setShowAvailabilityModal(false);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to update availability.", "error");
+      } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : "Failed to update availability.", "error");
       }
     });
   }
@@ -445,6 +425,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               <input aria-label="Search listings by name or city" placeholder="Search listings" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="w-full rounded-full border border-zinc-300 px-4 py-3 text-base outline-offset-2" />
             </div>
           )}
+
           {/* Property Cards Grid */}
           {filteredListings.length === 0 && searchQuery ? (
             <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
@@ -536,7 +517,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     {/* Below Card Information */}
                     <div className="px-0 pt-3 sm:px-3 lg:pt-6">
                       <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
-                        <Link href={`/host/listings/${item.id}`} className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4">
+                        <Link
+                          href={
+                            item.status === "DRAFT"
+                              ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
+                              : `/host/listings/${item.id}`
+                          }
+                          className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
+                        >
                           {item.title || "Property name"}
                         </Link>
                       </h3>
@@ -572,6 +560,11 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
       {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
       <div className="hidden sm:block"><Footer /></div>
+
+      <BecomeHostModal
+        isOpen={becomeHostModalOpen}
+        onClose={() => setBecomeHostModalOpen(false)}
+      />
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (
@@ -846,8 +839,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                               } else {
                                 showToast(data.error || "Failed to upload photo.", "error");
                               }
-                            } catch (err: any) {
-                              showToast("Upload failed: " + err.message, "error");
+                            } catch (err: unknown) {
+                              showToast("Upload failed: " + (err instanceof Error ? err.message : "Network error"), "error");
                             }
                             e.target.value = "";
                           }}

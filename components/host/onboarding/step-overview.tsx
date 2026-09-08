@@ -47,7 +47,7 @@ export function StepOverview({ onGetStarted, isLoading = false }: StepOverviewPr
               Make it stand out
             </h3>
             <p className="mt-2 text-sm font-medium text-zinc-500 leading-relaxed">
-              Add 5 or more photos plus a title and description and we'll help you out.
+              Add 5 or more photos plus a title and description and we&apos;ll help you out.
             </p>
           </div>
 

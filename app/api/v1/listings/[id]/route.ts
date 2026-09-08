@@ -1,16 +1,29 @@
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
+import { getAuthContext } from "@/lib/auth/context";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { updateListingSchema } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
+import { toPublicListingDTO } from "@/services/mappers";
+import { ListingStatus, Role } from "@/generated/prisma/enums";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// GET /api/v1/listings/[id] — public read of a single listing.
-export const GET = apiHandler(async (_req, ctx: Ctx) => {
+// GET /api/v1/listings/[id] — public only for active listings. Drafts and all
+// other non-public states are available exclusively to their owner or an admin.
+// For public callers, privacy masking is enforced (exact address/apartment/unrounded coords hidden).
+export const GET = apiHandler(async (req, ctx: Ctx) => {
   const { id } = await ctx.params;
   const listing = await listingService.getById(id);
-  return ok(listing);
+  if (!listing.published || listing.status !== ListingStatus.ACTIVE) {
+    const actor = await requireApiAuth(req);
+    return ok(await listingService.getForOwner(actor, id));
+  }
+  const caller = await getAuthContext(req);
+  if (caller && (caller.role === Role.ADMIN || caller.id === listing.hostId)) {
+    return ok(listing);
+  }
+  return ok(toPublicListingDTO(listing));
 });
 
 // PATCH /api/v1/listings/[id] — update (owner host, or ADMIN). Ownership is

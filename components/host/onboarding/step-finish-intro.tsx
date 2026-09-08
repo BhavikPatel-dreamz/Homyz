@@ -21,7 +21,7 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
             Finish up and publish
           </h1>
           <p className="text-sm text-zinc-500 max-w-md font-medium leading-relaxed mb-8">
-            Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.
+            Finally, you&apos;ll choose your weekday base price, weekend pricing, early bird or length-of-stay discounts, and review important safety details.
           </p>
         </div>
 

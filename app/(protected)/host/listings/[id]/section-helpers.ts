@@ -4,6 +4,9 @@ export type SectionKey =
   | "pricing"
   | "availability"
   | "guests"
+  | "sleeping-arrangements"
+  | "parking"
+  | "safety-equipment"
   | "description"
   | "amenities"
   | "add-amenities"
@@ -49,7 +52,7 @@ export type SectionKey =
   | "remove-listing"
   | "removelisting";
 
-const SECTION_SLUG_MAP: Record<string, SectionKey> = {
+export const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "property-type": "propertyType",
   "propertytype": "propertyType",
   "propertyType": "propertyType",
@@ -58,6 +61,12 @@ const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "pricing": "pricing",
   "availability": "availability",
   "guests": "guests",
+  "sleeping-arrangements": "sleeping-arrangements",
+  "sleepingarrangements": "sleeping-arrangements",
+  "rooms": "sleeping-arrangements",
+  "parking": "parking",
+  "safety-equipment": "safety-equipment",
+  "safetyequipment": "safety-equipment",
   "amenities": "amenities",
   "add-amenities": "add-amenities",
   "photos": "photos",
