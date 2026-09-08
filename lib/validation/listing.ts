@@ -53,6 +53,40 @@ const listingPhotoUrl = z.string().trim().refine(
   { message: "Photo must be an uploaded listing-media URL." },
 );
 
+export const BED_TYPES = [
+  "KING",
+  "QUEEN",
+  "DOUBLE",
+  "SINGLE",
+  "TWIN",
+  "BUNK_BED",
+  "SOFA_BED",
+  "FLOOR_MATTRESS",
+  "CRIB",
+] as const;
+
+export const ROOM_TYPES = [
+  "BEDROOM",
+  "LIVING_ROOM",
+  "OTHER",
+] as const;
+
+export const bedItemSchema = z.object({
+  type: z.enum(BED_TYPES),
+  count: z.number().int().min(1).max(20),
+});
+
+export const roomSchema = z.object({
+  id: z.string().min(1).max(80),
+  name: z.string().trim().min(1).max(100),
+  type: z.enum(ROOM_TYPES).default("BEDROOM"),
+  beds: z.array(bedItemSchema).default([]),
+});
+
+export const roomsSchema = z.array(roomSchema).max(50);
+export type RoomInput = z.infer<typeof roomSchema>;
+export type BedItemInput = z.infer<typeof bedItemSchema>;
+
 const listingFields = {
   title: z.string().trim().max(50).optional().default("Draft Listing"),
   description: z.string().trim().max(5000).optional().default(""),
@@ -76,16 +110,79 @@ const listingFields = {
   bedrooms: z.number().int().min(0).max(30).optional().default(1),
   beds: z.number().int().min(1).max(50).optional().default(1),
   bathrooms: z.number().int().min(0).max(30).optional().default(1),
+
+  // Professional Property Details
+  propertySize: z.number().int().min(1).max(100000).optional().nullable(),
+  propertySizeUnit: z.enum(["SQM", "SQFT"]).optional().nullable(),
+  listingFloor: z.number().int().min(-5).max(200).optional().nullable(),
+  totalFloors: z.number().int().min(1).max(200).optional().nullable(),
+  yearBuilt: z.number().int().min(1800).max(2100).optional().nullable(),
+  yearRenovated: z.number().int().min(1800).max(2100).optional().nullable(),
+  privateEntrance: z.boolean().optional().nullable(),
+  elevatorAvailable: z.boolean().optional().nullable(),
+  stairsRequired: z.boolean().optional().nullable(),
+
+  // Rooms & Sleeping Arrangements
+  rooms: roomsSchema.optional().nullable(),
+
+  // Bathroom Breakdown
+  fullBathrooms: z.number().int().min(0).max(50).optional().nullable(),
+  halfBathrooms: z.number().int().min(0).max(50).optional().nullable(),
+  privateBathrooms: z.number().int().min(0).max(50).optional().nullable(),
+  sharedBathrooms: z.number().int().min(0).max(50).optional().nullable(),
+
+  // Parking Details
+  parkingAvailable: z.boolean().optional().nullable(),
+  parkingType: z.string().trim().max(50).optional().nullable(),
+  parkingSpaces: z.number().int().min(0).max(100).optional().nullable(),
+  parkingReservation: z.boolean().optional().nullable(),
+
+  // Guest Access
+  guestAccess: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+
+  // Photos & Highlights & Features
   photos: z.array(listingPhotoUrl).max(100).optional().default([]),
   highlights: z.array(z.string().trim().min(1).max(80)).max(3).optional().default([]),
-  amenities: z.array(z.string().trim().min(1).max(80)).max(100).optional().default([]),
-  // Explicit KEY:YES / KEY:NO values preserve the difference between No and unanswered.
-  safetyDisclosures: z.array(z.string().trim().min(1).max(80)).max(3).optional().default([]),
+  amenities: z.array(z.string().trim().min(1).max(80)).max(200).optional().default([]),
+  safetyDisclosures: z.array(z.string().trim().min(1).max(80)).max(10).optional().default([]),
+  safetyEquipment: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+  safetyHazards: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+  accessibilityFeatures: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+  views: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+
+  // Structured House Rules
   houseRules: z.array(z.string().trim().min(1).max(200)).max(50).optional().default([]),
+  petsAllowed: z.boolean().optional().nullable(),
+  maxPets: z.number().int().min(0).max(20).optional().nullable(),
+  petFee: z.number().int().min(0).optional().nullable(),
+  petRestrictions: z.string().trim().max(500).optional().nullable(),
+  dogsAllowed: z.boolean().optional().nullable(),
+  catsAllowed: z.boolean().optional().nullable(),
+  smokingAllowed: z.boolean().optional().nullable(),
+  smokingLocation: z.enum(["INSIDE", "OUTSIDE_ONLY", "DESIGNATED_AREA"]).optional().nullable(),
+  eventsAllowed: z.boolean().optional().nullable(),
+  childrenAllowed: z.boolean().optional().nullable(),
+  infantsAllowed: z.boolean().optional().nullable(),
+  photographyAllowed: z.boolean().optional().nullable(),
+  quietHours: z.boolean().optional().nullable(),
+  quietHoursStart: z.string().trim().max(20).optional().nullable(),
+  quietHoursEnd: z.string().trim().max(20).optional().nullable(),
+  additionalRules: z.string().trim().max(5000).optional().nullable(),
+
+  // Arrival & Access
   checkInMethod: z.string().trim().max(80).optional().default("SMART_LOCK"),
   checkInStart: z.string().trim().max(20).optional().default("15:00"),
   checkInEnd: z.string().trim().max(20).optional().default("22:00"),
   checkOutTime: z.string().trim().max(20).optional().default("11:00"),
+  directions: z.string().trim().max(5000).optional().nullable(),
+  parkingInstructions: z.string().trim().max(5000).optional().nullable(),
+  checkInInstructions: z.string().trim().max(5000).optional().nullable(),
+  houseManual: z.string().trim().max(10000).optional().nullable(),
+  wifiNetwork: z.string().trim().max(120).optional().nullable(),
+  wifiPassword: z.string().trim().max(120).optional().nullable(),
+  doorCode: z.string().trim().max(120).optional().nullable(),
+  lockboxCode: z.string().trim().max(120).optional().nullable(),
+
   cancellationPolicy: z.string().trim().max(80).optional().default("FLEXIBLE"),
   minNights: z.number().int().min(1).max(365).optional().default(1),
   maxNights: z.number().int().min(1).max(365).optional().default(365),

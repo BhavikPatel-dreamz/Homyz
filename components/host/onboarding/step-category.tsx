@@ -28,7 +28,7 @@ export function StepCategory({
           Which of these best describes your place
         </h1>
         <p className="text-sm sm:text-base font-medium text-zinc-500 max-w-xl leading-relaxed mb-10">
-          Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.
+          Choose the property type that best reflects the style and layout of your accommodation.
         </p>
 
         <div className="flex flex-wrap justify-center gap-3.5 max-w-4xl">

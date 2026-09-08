@@ -25,7 +25,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
             to stand out
           </h1>
           <p className="text-base font-normal text-[#727272] leading-relaxed">
-            Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.
+            In this step, you&apos;ll add amenities your place offers, upload 5 or more high-quality photos, and give your listing a title and description.
           </p>
         </div>
 

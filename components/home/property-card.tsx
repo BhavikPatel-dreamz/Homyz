@@ -1,20 +1,37 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import Link from "next/link";
 
 export interface PropertyCardData {
   id: string;
   name: string;
-  subtitle: string;
-  price: string;
-  rating: string | number;
-  badge?: "guest_favorite" | "superhost";
-  imageUrl: string;
+  subtitle?: string;
+  price: string | number;
+  rating?: string | number | null;
+  badge?: "guest_favorite" | "superhost" | "featured" | null;
+  imageUrl?: string | null;
+  city?: string | null;
+  country?: string | null;
+  guests?: number;
+  propertyType?: string | null;
 }
 
-export function PropertyCard({ badge = "guest_favorite" }: PropertyCardData) {
+export function PropertyCard({
+  id,
+  name,
+  subtitle,
+  price,
+  rating,
+  badge,
+  imageUrl,
+  city,
+  country,
+  guests,
+  propertyType,
+}: PropertyCardData) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -22,18 +39,43 @@ export function PropertyCard({ badge = "guest_favorite" }: PropertyCardData) {
     setIsFavorite(!isFavorite);
   };
 
-  return (
-    <div className="group cursor-pointer overflow-hidden rounded-[20px] sm:rounded-[22px] border border-[#727272] bg-white hover:bg-[#FCDF9C] transition-all duration-200">
-      <div className="relative aspect-[233/246] w-full overflow-hidden bg-gray-100">
-        <Image
-          alt="Warm neutral living room"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          src="/images/home/property.png"
-          fill
-          sizes="(min-width: 1280px) 233px, (min-width: 1024px) 180px, (min-width: 768px) 33vw, 45vw"
-        />
+  const formattedPrice =
+    typeof price === "number" ? `SAR ${Math.round(price / 100)}` : price;
 
-        {/* Badge */}
+  const displaySubtitle =
+    subtitle ||
+    (city ? `${city}${country ? `, ${country}` : ""}` : country || "Saudi Arabia");
+
+  const displayImage = imageUrl && !imageError ? imageUrl : null;
+
+  return (
+    <Link
+      href={`/listings/${id}`}
+      className="group block cursor-pointer overflow-hidden rounded-[20px] sm:rounded-[22px] border border-zinc-200 bg-white hover:bg-[#FCDF9C]/30 hover:border-zinc-300 transition-all duration-200"
+    >
+      <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
+        {displayImage ? (
+          <img
+            alt={name || "Property photo"}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            src={displayImage}
+            onError={() => setImageError(true)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400 bg-zinc-50">
+            <span className="text-3xl mb-1">🏡</span>
+            <span className="text-xs font-medium text-zinc-400">Photo preview</span>
+          </div>
+        )}
+
+        {/* Real Badge (Only if real) */}
+        {badge === "featured" && (
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-zinc-900 shadow-xs border border-white/60">
+            Featured
+          </span>
+        )}
+
         {badge === "guest_favorite" && (
           <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/85 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-normal text-[#1f1f1f] shadow-xs backdrop-blur-md">
             <svg
@@ -62,7 +104,7 @@ export function PropertyCard({ badge = "guest_favorite" }: PropertyCardData) {
           type="button"
           aria-label="Save property"
           onClick={toggleFavorite}
-          className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center text-[#1f1f1f] transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+          className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-xs text-[#1f1f1f] transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
         >
           {isFavorite ? (
             <svg
@@ -93,28 +135,35 @@ export function PropertyCard({ badge = "guest_favorite" }: PropertyCardData) {
       </div>
 
       <div className="px-3 py-2.5 sm:px-3.5 sm:py-3 text-[#1f1f1f]">
-        <h3 className="truncate text-[13.5px] sm:text-base font-normal text-[#1f1f1f] leading-snug">
-          Property name
+        <h3 className="truncate text-[13.5px] sm:text-base font-medium text-[#1f1f1f] leading-snug">
+          {name || "Untitled stay"}
         </h3>
-        <p className="truncate text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 sm:mt-1">
-          date | type of host |
+        <p className="truncate text-[11px] sm:text-xs font-normal text-zinc-500 leading-normal mt-0.5 sm:mt-1">
+          {displaySubtitle}
         </p>
-        <div className="flex items-center text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
-          <span>price for x nights</span>
-          <span className="mx-1 sm:mx-1.5">|</span>
-          <span className="inline-flex items-center gap-1">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 text-[#1f1f1f]"
-            >
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-            </svg>
-            5.0
-          </span>
+        <div className="flex items-center justify-between text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
+          <span className="font-semibold">{formattedPrice}</span>
+          {/* Rating only displayed if genuine rating exists */}
+          {rating && Number(rating) > 0 ? (
+            <span className="inline-flex items-center gap-1 text-xs">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 text-amber-500"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {Number(rating).toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-[10px] text-zinc-400 font-normal">
+              {propertyType || "Stay"}
+            </span>
+          )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
+

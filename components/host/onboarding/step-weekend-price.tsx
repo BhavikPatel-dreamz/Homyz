@@ -16,7 +16,7 @@ export function StepWeekendPrice({
   weekdayPrice,
   weekendPrice,
   onChangeWeekendPrice,
-  currencySymbol = "SR",
+  currencySymbol = "SAR",
   onBack,
   onNext,
   isLoading = false,
@@ -24,11 +24,14 @@ export function StepWeekendPrice({
   const [isEditing, setIsEditing] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
+  // Derive base reference price from weekday base price
+  const baseWeekday = weekdayPrice > 0 ? weekdayPrice : 100;
+  // Authoritative weekend price (falls back to baseWeekday if not yet set)
+  const activeWeekendPrice = weekendPrice > 0 ? weekendPrice : baseWeekday;
   // Calculate percentage premium relative to base weekday price
-  const baseWeekday = weekdayPrice > 0 ? weekdayPrice : 241;
-  const currentPercentage = Math.max(0, Math.round(((weekendPrice - baseWeekday) / baseWeekday) * 100));
+  const currentPercentage = Math.max(0, Math.round(((activeWeekendPrice - baseWeekday) / baseWeekday) * 100));
 
-  // Update calculated weekend price when dragging slider
+  // Update calculated weekend price when dragging slider (0% to 50% premium)
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pct = parseInt(e.target.value, 10);
     const newWeekendPrice = Math.round(baseWeekday * (1 + pct / 100));
@@ -37,16 +40,14 @@ export function StepWeekendPrice({
 
   // Direct manual input for weekend price
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    const val = parseInt(raw, 10);
     if (!isNaN(val)) {
       onChangeWeekendPrice(val);
     } else {
       onChangeWeekendPrice(baseWeekday);
     }
   };
-
-  // Guest price before taxes (~11.34% guest fee offset SR291 -> SR324)
-  const guestPrice = Math.round(weekendPrice * 1.1134);
 
   return (
     <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
@@ -55,22 +56,22 @@ export function StepWeekendPrice({
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
           Set a weekend price
         </h1>
-        <p className="text-xs font-semibold text-zinc-400 mb-10 max-w-md uppercase tracking-wider">
-          TIP: Lorem ipsum magna turpis mattis diam euismod non pulvinar laoreet.
+        <p className="text-xs font-semibold text-zinc-500 mb-10 max-w-md uppercase tracking-wider">
+          TIP: Weekend rates typically reflect increased leisure demand for Friday and Saturday nights.
         </p>
 
-        {/* Pricing Card Box (Matches First Image Design) */}
+        {/* Pricing Card Box */}
         <div className="w-full max-w-sm bg-[#f7f7f8] border border-zinc-200/90 rounded-3xl p-8 sm:p-10 flex flex-col items-center justify-center shadow-2xs transition-all">
           {/* Big Weekend Price Display */}
           <div className="flex items-center justify-center gap-2 mb-2 w-full">
             {isEditing ? (
               <div className="flex items-center justify-center gap-1 border-b-2 border-zinc-900 pb-1">
-                <span className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F]">{currencySymbol}</span>
+                <span className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F]">{currencySymbol}</span>
                 <input
                   type="number"
                   min={10}
                   max={500000}
-                  value={weekendPrice || ""}
+                  value={activeWeekendPrice || ""}
                   onChange={handleInputChange}
                   onBlur={() => setIsEditing(false)}
                   autoFocus
@@ -84,8 +85,7 @@ export function StepWeekendPrice({
                 className="group flex items-center justify-center gap-2 text-4xl sm:text-5xl font-semibold text-[#1F1F1F] tracking-tight hover:opacity-80 transition-opacity cursor-pointer"
               >
                 <span>
-                  {currencySymbol}
-                  {weekendPrice.toLocaleString()}
+                  {currencySymbol} {activeWeekendPrice.toLocaleString()}
                 </span>
                 <div className="w-9 h-9 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 shadow-2xs group-hover:border-zinc-900 group-hover:bg-zinc-100 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -103,8 +103,7 @@ export function StepWeekendPrice({
             className="text-xs font-semibold text-zinc-500 flex items-center justify-center gap-1.5 hover:text-zinc-800 transition-colors cursor-pointer select-none mb-6"
           >
             <span>
-              Guest price before taxes {currencySymbol}
-              {guestPrice.toLocaleString()}
+              Weekend rate {currencySymbol} {activeWeekendPrice.toLocaleString()} ({currentPercentage}% premium)
             </span>
             <svg
               className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -121,24 +120,21 @@ export function StepWeekendPrice({
           {showBreakdown && (
             <div className="w-full mb-6 pt-3 border-t border-zinc-200 text-left text-xs space-y-2 animate-in fade-in duration-150">
               <div className="flex justify-between text-zinc-600">
-                <span>Weekend base price</span>
+                <span>Weekday base price</span>
                 <span>
-                  {currencySymbol}
-                  {weekendPrice.toLocaleString()}
+                  {currencySymbol} {baseWeekday.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between text-zinc-600">
-                <span>Guest service fee</span>
+                <span>Weekend premium</span>
                 <span>
-                  {currencySymbol}
-                  {(guestPrice - weekendPrice).toLocaleString()}
+                  +{currentPercentage}% ({currencySymbol} {(activeWeekendPrice - baseWeekday).toLocaleString()})
                 </span>
               </div>
               <div className="flex justify-between font-semibold text-[#1F1F1F] pt-1 border-t border-zinc-200">
-                <span>Guest price</span>
+                <span>Total weekend nightly price</span>
                 <span>
-                  {currencySymbol}
-                  {guestPrice.toLocaleString()}
+                  {currencySymbol} {activeWeekendPrice.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -147,9 +143,9 @@ export function StepWeekendPrice({
           {/* Weekend Premium Drag Slider Section */}
           <div className="w-full flex flex-col items-start pt-3 border-t border-zinc-200/80">
             <label className="text-xs font-semibold text-zinc-500 mb-3">
-              Weekend premium
+              Weekend premium over weekday base
             </label>
-            
+
             <div className="relative w-full flex items-center">
               <input
                 type="range"
@@ -166,7 +162,7 @@ export function StepWeekendPrice({
             </div>
 
             <span className="text-xs font-medium text-zinc-600 mt-2.5">
-              Try {currentPercentage}%
+              +{currentPercentage}% premium ({currencySymbol} {activeWeekendPrice.toLocaleString()} / night)
             </span>
           </div>
         </div>

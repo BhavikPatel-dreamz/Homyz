@@ -397,7 +397,7 @@ function LocationAccordionView({
                 <div className="space-y-1 max-w-md">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">Show your specific location</h4>
                   <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                    Lorem ipsum massa pellentesque enim lobortis mattis elit lorem morbi viverra nec congue tempus et pellentesque nibh lobortis et mi placerat iaculis habitasse ac.
+                    Shows a precise pin on the public map instead of a generalized approximate neighborhood circle.
                   </p>
                 </div>
                 <button
@@ -420,7 +420,7 @@ function LocationAccordionView({
                 <div className="space-y-1 max-w-md">
                   <h4 className="font-semibold text-xs text-[#1F1F1F]">Address privacy for cancellation</h4>
                   <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                    Lorem ipsum massa pellentesque enim lobortis mattis elit lorem morbi viverra nec congue tempus et pellentesque nibh lobortis et mi placerat iaculis habitasse ac.
+                    Hides your exact street address from confirmed guests who cancel before the full refund period.
                   </p>
                 </div>
                 <button
@@ -483,7 +483,7 @@ function LocationAccordionView({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-xs text-[#1F1F1F]">Beach access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
+                    <p className="text-[10px] text-zinc-400 font-normal">Direct walking path to the beach</p>
                   </div>
                   <button
                     type="button"
@@ -506,7 +506,7 @@ function LocationAccordionView({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-xs text-[#1F1F1F]">Resort access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
+                    <p className="text-[10px] text-zinc-400 font-normal">Access to nearby resort amenities</p>
                   </div>
                   <button
                     type="button"
@@ -529,7 +529,7 @@ function LocationAccordionView({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-xs text-[#1F1F1F]">Lake access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
+                    <p className="text-[10px] text-zinc-400 font-normal">Guests can access water via path or dock</p>
                   </div>
                   <button
                     type="button"
@@ -552,7 +552,7 @@ function LocationAccordionView({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-xs text-[#1F1F1F]">Ski-in/ski-out</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
+                    <p className="text-[10px] text-zinc-400 font-normal">Access slopes directly from the property</p>
                   </div>
                   <button
                     type="button"
@@ -600,7 +600,7 @@ function LocationAccordionView({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-xs text-[#1F1F1F]">Waterfront</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Lorem ipsum integer habitasse</p>
+                    <p className="text-[10px] text-zinc-400 font-normal">Located right on the water’s edge</p>
                   </div>
                   <button
                     type="button"

@@ -74,8 +74,8 @@ export function StepBasicsCounters({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => setBedrooms(Math.max(1, bedrooms - 1))}
-                disabled={bedrooms <= 1}
+                onClick={() => setBedrooms(Math.max(0, bedrooms - 1))}
+                disabled={bedrooms <= 0}
                 className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
               >
                 -

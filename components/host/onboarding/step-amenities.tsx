@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+
+import { normalizeAmenityId } from "@/lib/constants/amenities";
 
 interface AmenityOption {
   id: string;
@@ -27,7 +29,7 @@ export function StepAmenities({
 
   const favoriteAmenities: AmenityOption[] = [
     {
-      id: "Wifi",
+      id: "wifi",
       label: "Wifi",
       category: "favorites",
       icon: (
@@ -37,7 +39,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "TV",
+      id: "tv",
       label: "TV",
       category: "favorites",
       icon: (
@@ -47,7 +49,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Kitchen",
+      id: "kitchen",
       label: "Kitchen",
       category: "favorites",
       icon: (
@@ -57,7 +59,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Washer",
+      id: "washer",
       label: "Washer",
       category: "favorites",
       icon: (
@@ -67,7 +69,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Free parking",
+      id: "free_parking",
       label: "Free parking",
       category: "favorites",
       icon: (
@@ -77,7 +79,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Paid parking",
+      id: "paid_parking",
       label: "Paid parking",
       category: "favorites",
       icon: (
@@ -87,7 +89,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "AC",
+      id: "air_conditioning",
       label: "AC",
       category: "favorites",
       icon: (
@@ -97,7 +99,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Workspace",
+      id: "workspace",
       label: "Workspace",
       category: "favorites",
       icon: (
@@ -110,7 +112,7 @@ export function StepAmenities({
 
   const standoutAmenities: AmenityOption[] = [
     {
-      id: "Pool",
+      id: "pool",
       label: "Pool",
       category: "standout",
       icon: (
@@ -120,7 +122,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Hot tub",
+      id: "hot_tub",
       label: "Hot tub",
       category: "standout",
       icon: (
@@ -130,7 +132,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Patio",
+      id: "patio",
       label: "Patio",
       category: "standout",
       icon: (
@@ -140,7 +142,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "BBQ grill",
+      id: "bbq_grill",
       label: "BBQ grill",
       category: "standout",
       icon: (
@@ -150,7 +152,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Outdoor dining area",
+      id: "outdoor_dining_area",
       label: "Outdoor dining area",
       category: "standout",
       icon: (
@@ -160,7 +162,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Fire pit",
+      id: "fire_pit",
       label: "Fire pit",
       category: "standout",
       icon: (
@@ -170,7 +172,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Pool table",
+      id: "pool_table",
       label: "Pool table",
       category: "standout",
       icon: (
@@ -180,7 +182,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Indoor fireplace",
+      id: "indoor_fireplace",
       label: "Indoor fireplace",
       category: "standout",
       icon: (
@@ -190,7 +192,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Piano",
+      id: "piano",
       label: "Piano",
       category: "standout",
       icon: (
@@ -203,7 +205,7 @@ export function StepAmenities({
 
   const safetyItems: AmenityOption[] = [
     {
-      id: "Smoke alarm",
+      id: "smoke_alarm",
       label: "Smoke alarm",
       category: "safety",
       icon: (
@@ -213,7 +215,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "First aid kit",
+      id: "first_aid_kit",
       label: "First aid kit",
       category: "safety",
       icon: (
@@ -223,7 +225,7 @@ export function StepAmenities({
       ),
     },
     {
-      id: "Fire extinguisher",
+      id: "fire_extinguisher",
       label: "Fire extinguisher",
       category: "safety",
       icon: (
@@ -234,8 +236,10 @@ export function StepAmenities({
     },
   ];
 
+  const normalizedSelected = selectedAmenities.map(normalizeAmenityId);
+
   const renderAmenityCard = (item: AmenityOption) => {
-    const isSelected = selectedAmenities.includes(item.id);
+    const isSelected = normalizedSelected.includes(item.id);
     return (
       <button
         key={item.id}

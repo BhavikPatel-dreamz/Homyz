@@ -65,7 +65,7 @@ export function StepTitle({
           onClick={onBack}
           className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
         >
-          Exit
+          Back
         </button>
         <button
           type="button"

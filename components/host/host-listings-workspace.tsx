@@ -19,23 +19,24 @@ import {
   updateListingAvailabilityAction,
 } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
+import { normalizeAmenities } from "@/lib/constants/amenities";
 
 const AMENITY_OPTIONS = [
-  { id: "WIFI", label: "High-speed Wi-Fi", icon: "📶" },
-  { id: "POOL", label: "Swimming Pool", icon: "🏊" },
-  { id: "KITCHEN", label: "Full Kitchen", icon: "🍳" },
-  { id: "PARKING", label: "Free Parking", icon: "🚗" },
-  { id: "AIR_CONDITIONING", label: "Air Conditioning", icon: "❄️" },
-  { id: "WORKSPACE", label: "Dedicated Workspace", icon: "💻" },
-  { id: "TV", label: "Smart TV / Netflix", icon: "📺" },
-  { id: "WASHER", label: "Washer & Dryer", icon: "🧺" },
-  { id: "GYM", label: "Fitness Gym", icon: "🏋️" },
-  { id: "BBQ", label: "BBQ Grill", icon: "🍖" },
-  { id: "PATIO", label: "Private Patio / Balcony", icon: "🪴" },
-  { id: "JACUZZI", label: "Hot Tub / Jacuzzi", icon: "♨️" },
-  { id: "BEACH_ACCESS", label: "Beachfront Access", icon: "🏖️" },
-  { id: "EV_CHARGER", label: "EV Car Charger", icon: "🔌" },
-  { id: "PET_FRIENDLY", label: "Pet Friendly", icon: "🐾" },
+  { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
+  { id: "pool", label: "Swimming Pool", icon: "🏊" },
+  { id: "kitchen", label: "Full Kitchen", icon: "🍳" },
+  { id: "free_parking", label: "Free Parking", icon: "🚗" },
+  { id: "air_conditioning", label: "Air Conditioning", icon: "❄️" },
+  { id: "workspace", label: "Dedicated Workspace", icon: "💻" },
+  { id: "tv", label: "Smart TV / Netflix", icon: "📺" },
+  { id: "washer", label: "Washer & Dryer", icon: "🧺" },
+  { id: "gym", label: "Fitness Gym", icon: "🏋️" },
+  { id: "bbq_grill", label: "BBQ Grill", icon: "🍖" },
+  { id: "patio", label: "Private Patio / Balcony", icon: "🪴" },
+  { id: "hot_tub", label: "Hot Tub / Jacuzzi", icon: "♨️" },
+  { id: "beach_access", label: "Beachfront Access", icon: "🏖️" },
+  { id: "ev_charger", label: "EV Car Charger", icon: "🔌" },
+  { id: "pet_friendly", label: "Pet Friendly", icon: "🐾" },
 ];
 
 const HOUSE_RULE_OPTIONS = [
@@ -157,7 +158,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       photos: Array.isArray(item.photos) ? [...item.photos] : [],
       newPhotoUrl: "",
       highlights: Array.isArray(item.highlights) ? [...item.highlights] : [],
-      amenities: Array.isArray(item.amenities) ? [...item.amenities] : [],
+      amenities: normalizeAmenities(item.amenities),
       houseRules: Array.isArray(item.houseRules) ? [...item.houseRules] : [],
       checkInMethod: item.checkInMethod || "SMART_LOCK",
       checkInStart: item.checkInStart || "15:00",
@@ -410,81 +411,30 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
 
         {/* Property Cards Grid */}
         {filteredListings.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* Demo / Empty State Cards matching screenshot */}
-            <div
+          <div className="w-full flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-zinc-200 rounded-3xl bg-zinc-50/50">
+            <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 mb-4 shadow-xs">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-[#1F1F1F] mb-1">
+              {searchQuery || activeTab !== "ALL" ? "No matching listings found" : "You haven't created any listings yet"}
+            </h3>
+            <p className="text-sm text-zinc-500 max-w-sm mb-6">
+              {searchQuery || activeTab !== "ALL"
+                ? "Try adjusting your search terms or filters to find what you're looking for."
+                : "Earn extra income by hosting travelers from all around the world. Start by creating your first listing."}
+            </p>
+            <button
+              type="button"
               onClick={handleOpenCreate}
-              className="group cursor-pointer flex flex-col space-y-2 text-left"
+              className="px-6 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors cursor-pointer flex items-center gap-2"
             >
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-200 border border-zinc-300 flex items-center justify-center p-4">
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                  action required
-                </div>
-                <div className="text-center text-zinc-500 space-y-1">
-                  <span className="text-2xl block">＋</span>
-                  <span className="text-xs font-semibold block">Create Listing</span>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
-
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
-
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
-
-            <div onClick={handleOpenCreate} className="group cursor-pointer flex flex-col space-y-2 text-left">
-              <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200">
-                <img
-                  src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80"
-                  alt="Property Preview"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-medium text-zinc-800 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  listed
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property name</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Address, Country</p>
-              </div>
-            </div>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Create your first listing</span>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -494,13 +444,9 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
               const isListed = item.status === "ACTIVE" || (item.published && !item.isPaused);
 
               return (
-                <div
+                <Link
                   key={item.id}
-                  onClick={() => router.push(
-                    item.status === "DRAFT"
-                      ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                      : `/host/listings/${item.id}`,
-                  )}
+                  href={`/host/listings/${item.id}`}
                   className="group cursor-pointer flex flex-col space-y-2 text-left"
                 >
                   {/* Photo Container */}
@@ -527,6 +473,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     <button
                       type="button"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         setListingToDelete(item);
                         setShowDeleteModal(true);
@@ -547,7 +494,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                       {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
                     </p>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

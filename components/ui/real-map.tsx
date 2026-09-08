@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-interface LocationDetails {
+export interface LocationDetails {
   address?: string;
   city?: string;
   district?: string;
@@ -45,49 +45,74 @@ export function RealMap({
   });
 
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
+  const reverseCacheRef = useRef<Map<string, LocationDetails>>(new Map());
+  const reverseDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reverse geocode when map pin changes position
+  // Reverse geocode when map pin changes position with debouncing & caching
   const handlePositionChange = useCallback(
-    async (newLat: number, newLng: number) => {
+    (newLat: number, newLng: number) => {
       setCoords({ lat: newLat, lng: newLng });
+
+      if (reverseDebounceRef.current) {
+        clearTimeout(reverseDebounceRef.current);
+      }
+
+      const cacheKey = `${newLat.toFixed(4)},${newLng.toFixed(4)}`;
+      const cached = reverseCacheRef.current.get(cacheKey);
+      if (cached) {
+        isInternalUpdateRef.current = true;
+        if (onLocationChange) {
+          onLocationChange(newLat, newLng, cached);
+        }
+        return;
+      }
+
       setIsLoadingGeocode(true);
+      reverseDebounceRef.current = setTimeout(async () => {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newLat}&lon=${newLng}&zoom=18&addressdetails=1`,
+            { headers: { "User-Agent": "HomyzApp/1.0" } }
+          );
+          if (!response.ok) {
+            throw new Error(`Nominatim reverse error ${response.status}`);
+          }
+          const data = await response.json();
 
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newLat}&lon=${newLng}&zoom=18&addressdetails=1`,
-          { headers: { "User-Agent": "HomyzApp/1.0" } }
-        );
-        const data = await response.json();
+          if (data && data.address) {
+            const a = data.address;
+            const streetAddress = a.road || a.pedestrian || a.suburb || a.neighbourhood || a.amenity || "";
+            const cityName = a.city || a.town || a.municipality || a.county || a.state || "";
+            const districtName = a.suburb || a.neighbourhood || a.city_district || "";
+            const postalCodeStr = a.postcode || "";
+            const countryName = a.country || "";
+            const fullAddress = data.display_name || [streetAddress, districtName, cityName, countryName].filter(Boolean).join(", ");
 
-        if (data && data.address) {
-          const a = data.address;
-          const streetAddress = a.road || a.pedestrian || a.suburb || a.neighbourhood || a.amenity || "";
-          const cityName = a.city || a.town || a.municipality || a.county || a.state || "";
-          const districtName = a.suburb || a.neighbourhood || a.city_district || "";
-          const postalCodeStr = a.postcode || "";
-          const countryName = a.country || "";
-          const fullAddress = data.display_name || [streetAddress, districtName, cityName, countryName].filter(Boolean).join(", ");
-
-          isInternalUpdateRef.current = true;
-
-          if (onLocationChange) {
-            onLocationChange(newLat, newLng, {
+            const details: LocationDetails = {
               address: streetAddress,
               city: cityName,
               district: districtName,
               postalCode: postalCodeStr,
               country: countryName,
               formattedAddress: fullAddress,
-            });
+            };
+
+            reverseCacheRef.current.set(cacheKey, details);
+            isInternalUpdateRef.current = true;
+
+            if (onLocationChange) {
+              onLocationChange(newLat, newLng, details);
+            }
+          } else if (onLocationChange) {
+            onLocationChange(newLat, newLng);
           }
-        } else if (onLocationChange) {
-          onLocationChange(newLat, newLng);
+        } catch {
+          // Graceful fallback on network or rate limit failure: maintain coordinates safely
+          if (onLocationChange) onLocationChange(newLat, newLng);
+        } finally {
+          setIsLoadingGeocode(false);
         }
-      } catch (err) {
-        if (onLocationChange) onLocationChange(newLat, newLng);
-      } finally {
-        setIsLoadingGeocode(false);
-      }
+      }, 400);
     },
     [onLocationChange]
   );

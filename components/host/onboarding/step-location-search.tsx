@@ -1,9 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { RealMap } from "@/components/ui/real-map";
+import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
+
+interface NominatimSuggestion {
+  place_id?: number | string;
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: Record<string, string>;
+}
 
 interface StepLocationSearchProps {
   streetAddress: string;
@@ -12,8 +20,8 @@ interface StepLocationSearchProps {
   coords: LocationCoords;
   searchQuery: string;
   onSearchInputChange: (val: string) => void;
-  onSelectSuggestion: (item: any) => void;
-  onLocationChange: (lat: number, lng: number, details?: any) => void;
+  onSelectSuggestion: (item: NominatimSuggestion) => void;
+  onLocationChange: (lat: number, lng: number, details?: LocationDetails) => void;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -32,34 +40,80 @@ export function StepLocationSearch({
   onNext,
   isLoading = false,
 }: StepLocationSearchProps) {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
+  const searchCacheRef = React.useRef<Map<string, NominatimSuggestion[]>>(new Map());
 
-  const handleInputChange = async (val: string) => {
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
+
+  const handleInputChange = (val: string) => {
     onSearchInputChange(val);
-    if (!val || val.length < 3) {
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const trimmed = val.trim();
+    if (!trimmed || trimmed.length < 3) {
       setSuggestions([]);
+      setIsSearching(false);
+      return;
+    }
+
+    // Check in-memory cache first to avoid duplicate network calls
+    const cached = searchCacheRef.current.get(trimmed.toLowerCase());
+    if (cached) {
+      setSuggestions(cached);
+      setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&addressdetails=1&limit=5`,
-        { headers: { "User-Agent": "HomyzApp/1.0" } }
-      );
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setSuggestions(data);
+    debounceTimerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed)}&addressdetails=1&limit=5`,
+          {
+            headers: { "User-Agent": "HomyzApp/1.0" },
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Nominatim error ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          searchCacheRef.current.set(trimmed.toLowerCase(), data);
+          setSuggestions(data);
+        }
+      } catch (err: unknown) {
+        if ((err as Error)?.name !== "AbortError") {
+          // Graceful fallback on rate-limit or network offline: keep user data safe
+          setSuggestions([]);
+        }
+      } finally {
+        setIsSearching(false);
       }
-    } catch (err) {
-      // Ignore search errors
-    } finally {
-      setIsSearching(false);
-    }
+    }, 400);
   };
 
-  const handleSuggestionClick = (item: any) => {
+  const handleSuggestionClick = (item: NominatimSuggestion) => {
     onSelectSuggestion(item);
     setSuggestions([]);
   };
@@ -71,7 +125,7 @@ export function StepLocationSearch({
           Where’s your place located?
         </h1>
         <p className="text-sm sm:text-base font-medium text-zinc-500 max-w-xl leading-relaxed mb-8">
-          Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.
+          Your address is only shared with guests after they have made a confirmed reservation.
         </p>
 
         <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/90 bg-white">

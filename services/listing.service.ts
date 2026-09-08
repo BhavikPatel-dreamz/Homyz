@@ -13,7 +13,15 @@ import { ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
 
 import { auditService } from "./audit.service";
-import { reviveListingDTO, toListingDTO, type ListingDTO } from "./mappers";
+import {
+  reviveListingDTO,
+  revivePublicListingDTO,
+  toListingDTO,
+  toPublicListingDTO,
+  type ListingDTO,
+  type PublicListingDTO,
+} from "./mappers";
+import { normalizeAmenities } from "@/lib/constants/amenities";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -89,7 +97,7 @@ async function queryList(opts: {
   skip: number;
   take: number;
   publishedOnly?: boolean;
-}): Promise<{ items: ListingDTO[]; total: number }> {
+}): Promise<{ items: PublicListingDTO[]; total: number }> {
   const where = opts.publishedOnly === false ? {} : { published: true, status: ListingStatus.ACTIVE };
   const [items, total] = await Promise.all([
     prisma.listing.findMany({
@@ -100,7 +108,7 @@ async function queryList(opts: {
     }),
     prisma.listing.count({ where }),
   ]);
-  return { items: items.map(toListingDTO), total };
+  return { items: items.map(toPublicListingDTO), total };
 }
 
 // Public catalogue — published & active listings only by default.
@@ -108,7 +116,7 @@ async function list(opts: {
   skip: number;
   take: number;
   publishedOnly?: boolean;
-}): Promise<{ items: ListingDTO[]; total: number }> {
+}): Promise<{ items: PublicListingDTO[]; total: number }> {
   const isPublicView = opts.publishedOnly !== false;
   if (!isPublicView || opts.skip > MAX_CACHED_LIST_SKIP) {
     return queryList(opts);
@@ -120,11 +128,179 @@ async function list(opts: {
     {
       ttl: LISTINGS_LIST_TTL,
       revive: (cached) => ({
-        items: cached.items.map(reviveListingDTO),
+        items: cached.items.map(revivePublicListingDTO),
         total: cached.total,
       }),
     },
   );
+}
+
+export type PublicSearchFilters = {
+  city?: string;
+  country?: string;
+  checkIn?: Date | string;
+  checkOut?: Date | string;
+  guests?: number;
+  propertyType?: string;
+  listingType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenities?: string[];
+  skip?: number;
+  take?: number;
+};
+
+async function searchPublicListings(
+  filters: PublicSearchFilters,
+): Promise<{ items: PublicListingDTO[]; total: number }> {
+  const skip = filters.skip ?? 0;
+  const take = filters.take ?? 20;
+
+  const andClauses: Prisma.ListingWhereInput[] = [
+    { published: true },
+    { status: ListingStatus.ACTIVE },
+    { isPaused: false },
+  ];
+
+  if (filters.city && filters.city.trim()) {
+    const term = filters.city.trim();
+    andClauses.push({
+      OR: [
+        { city: { contains: term, mode: "insensitive" } },
+        { district: { contains: term, mode: "insensitive" } },
+        { address: { contains: term, mode: "insensitive" } },
+        { country: { contains: term, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (filters.country && filters.country.trim()) {
+    andClauses.push({
+      country: { contains: filters.country.trim(), mode: "insensitive" },
+    });
+  }
+
+  if (filters.guests && filters.guests > 0) {
+    andClauses.push({
+      guests: { gte: filters.guests },
+    });
+  }
+
+  if (filters.propertyType && filters.propertyType.trim()) {
+    andClauses.push({
+      propertyType: { equals: filters.propertyType.trim(), mode: "insensitive" },
+    });
+  }
+
+  if (filters.listingType && filters.listingType.trim()) {
+    andClauses.push({
+      listingType: { equals: filters.listingType.trim(), mode: "insensitive" },
+    });
+  }
+
+  if (typeof filters.minPrice === "number") {
+    andClauses.push({
+      price: { gte: filters.minPrice },
+    });
+  }
+
+  if (typeof filters.maxPrice === "number") {
+    andClauses.push({
+      price: { lte: filters.maxPrice },
+    });
+  }
+
+  if (filters.amenities && filters.amenities.length > 0) {
+    const canonicalAmenityIds = normalizeAmenities(filters.amenities);
+    if (canonicalAmenityIds.length > 0) {
+      andClauses.push({
+        amenities: { hasEvery: canonicalAmenityIds },
+      });
+    }
+  }
+
+  // If checkIn and checkOut provided, exclude booked listings and blocked calendar dates
+  if (filters.checkIn && filters.checkOut) {
+    const cIn = new Date(filters.checkIn);
+    const cOut = new Date(filters.checkOut);
+    if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
+      const conflicts = await prisma.booking.findMany({
+        where: {
+          status: { in: ["PENDING", "CONFIRMED"] },
+          startDate: { lt: cOut },
+          endDate: { gt: cIn },
+        },
+        select: { listingId: true },
+        distinct: ["listingId"],
+      });
+
+      if (conflicts.length > 0) {
+        const bookedListingIds = conflicts.map((c: { listingId: string }) => c.listingId);
+        andClauses.push({
+          id: { notIn: bookedListingIds },
+        });
+      }
+    }
+  }
+
+  const where: Prisma.ListingWhereInput = { AND: andClauses };
+
+  const [items, total] = await Promise.all([
+    prisma.listing.findMany({
+      where,
+      skip,
+      take,
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+    }),
+    prisma.listing.count({ where }),
+  ]);
+
+  return {
+    items: items.map(toPublicListingDTO),
+    total,
+  };
+}
+
+async function getPublicListingById(id: string): Promise<
+  PublicListingDTO & {
+    host?: {
+      id: string;
+      name: string | null;
+      image: string | null;
+      createdAt: Date;
+    };
+  }
+> {
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  const publicDTO = toPublicListingDTO(listing);
+  return {
+    ...publicDTO,
+    host: listing.host
+      ? {
+          id: listing.host.id,
+          name: listing.host.name,
+          image: listing.host.image,
+          createdAt: listing.host.createdAt,
+        }
+      : undefined,
+  };
 }
 
 async function getById(id: string): Promise<ListingDTO> {
@@ -215,15 +391,63 @@ async function create(
       bedrooms: input.bedrooms ?? 1,
       beds: input.beds ?? 1,
       bathrooms: input.bathrooms ?? 1,
+      // Professional Property Details
+      propertySize: input.propertySize ?? null,
+      propertySizeUnit: input.propertySizeUnit ?? null,
+      listingFloor: input.listingFloor ?? null,
+      totalFloors: input.totalFloors ?? null,
+      yearBuilt: input.yearBuilt ?? null,
+      yearRenovated: input.yearRenovated ?? null,
+      privateEntrance: input.privateEntrance ?? null,
+      elevatorAvailable: input.elevatorAvailable ?? null,
+      stairsRequired: input.stairsRequired ?? null,
+      rooms: input.rooms ? JSON.parse(JSON.stringify(input.rooms)) : null,
+      fullBathrooms: input.fullBathrooms ?? null,
+      halfBathrooms: input.halfBathrooms ?? null,
+      privateBathrooms: input.privateBathrooms ?? null,
+      sharedBathrooms: input.sharedBathrooms ?? null,
+      parkingAvailable: input.parkingAvailable ?? null,
+      parkingType: input.parkingType ?? null,
+      parkingSpaces: input.parkingSpaces ?? null,
+      parkingReservation: input.parkingReservation ?? null,
+      guestAccess: input.guestAccess || [],
       photos: input.photos || [],
       highlights: input.highlights || [],
-      amenities: input.amenities || [],
+      amenities: input.amenities ? normalizeAmenities(input.amenities) : [],
       safetyDisclosures: input.safetyDisclosures || [],
+      safetyEquipment: input.safetyEquipment || [],
+      safetyHazards: input.safetyHazards || [],
+      accessibilityFeatures: input.accessibilityFeatures || [],
+      views: input.views || [],
       houseRules: input.houseRules || [],
+      petsAllowed: input.petsAllowed ?? null,
+      maxPets: input.maxPets ?? null,
+      petFee: input.petFee ?? null,
+      petRestrictions: input.petRestrictions ?? null,
+      dogsAllowed: input.dogsAllowed ?? null,
+      catsAllowed: input.catsAllowed ?? null,
+      smokingAllowed: input.smokingAllowed ?? null,
+      smokingLocation: input.smokingLocation ?? null,
+      eventsAllowed: input.eventsAllowed ?? null,
+      childrenAllowed: input.childrenAllowed ?? null,
+      infantsAllowed: input.infantsAllowed ?? null,
+      photographyAllowed: input.photographyAllowed ?? null,
+      quietHours: input.quietHours ?? null,
+      quietHoursStart: input.quietHoursStart ?? null,
+      quietHoursEnd: input.quietHoursEnd ?? null,
+      additionalRules: input.additionalRules ?? null,
       checkInMethod: input.checkInMethod || "SMART_LOCK",
       checkInStart: input.checkInStart || "15:00",
       checkInEnd: input.checkInEnd || "22:00",
       checkOutTime: input.checkOutTime || "11:00",
+      directions: input.directions ?? null,
+      parkingInstructions: input.parkingInstructions ?? null,
+      checkInInstructions: input.checkInInstructions ?? null,
+      houseManual: input.houseManual ?? null,
+      wifiNetwork: input.wifiNetwork ?? null,
+      wifiPassword: input.wifiPassword ?? null,
+      doorCode: input.doorCode ?? null,
+      lockboxCode: input.lockboxCode ?? null,
       cancellationPolicy: input.cancellationPolicy || "FLEXIBLE",
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
@@ -276,6 +500,15 @@ async function update(
   const dataToUpdate = { ...input };
   if (actor.role !== Role.ADMIN) {
     delete dataToUpdate.published;
+  }
+  if (dataToUpdate.amenities) {
+    dataToUpdate.amenities = normalizeAmenities(dataToUpdate.amenities);
+  }
+  if (dataToUpdate.rooms !== undefined) {
+    dataToUpdate.rooms = dataToUpdate.rooms ? JSON.parse(JSON.stringify(dataToUpdate.rooms)) : null;
+  }
+  if (dataToUpdate.discounts !== undefined) {
+    dataToUpdate.discounts = dataToUpdate.discounts ? JSON.parse(JSON.stringify(dataToUpdate.discounts)) : null;
   }
 
   const listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
@@ -507,6 +740,14 @@ async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
     await assertHostPermission(actor.id, "listing.delete");
   }
 
+  // Safety check: Never delete a listing that has associated bookings
+  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
+  if (bookingCount > 0) {
+    throw AppError.badRequest(
+      "Cannot delete a listing that has associated bookings. Please unpublish or pause the listing instead.",
+    );
+  }
+
   await prisma.listing.delete({ where: { id } });
   await Promise.all([
     deleteCache(keys.listing(id)),
@@ -648,6 +889,8 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
 
 export const listingService = {
   list,
+  searchPublicListings,
+  getPublicListingById,
   getById,
   getForOwner,
   getPublishReadiness,
@@ -663,4 +906,5 @@ export const listingService = {
   requestChangesByAdmin,
   rejectListingByAdmin,
   remove,
+  toPublic: toPublicListingDTO,
 };

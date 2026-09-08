@@ -28,6 +28,7 @@ import { StepPrice } from "./onboarding/step-price";
 import { StepWeekendPrice } from "./onboarding/step-weekend-price";
 import { StepDiscounts } from "./onboarding/step-discounts";
 import { StepSafety } from "./onboarding/step-safety";
+import { WIZARD_STEPS } from "./onboarding/wizard-steps";
 import type { ListingDTO } from "@/services/mappers";
 
 type HostingType = "HOME" | "EXPERIENCE" | "SERVICE";
@@ -48,16 +49,16 @@ type WizardError = {
 const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }> = {
   propertyType: { message: "Choose the type of place you are hosting.", step: 2 },
   listingType: { message: "Choose what guests will have.", step: 3 },
-  address: { message: "Add your street address, city, and country.", step: 5 },
   coordinates: { message: "Confirm your property location on the map.", step: 4 },
+  address: { message: "Add your street address, city, and country.", step: 5 },
   capacity: { message: "Add valid guest and bed capacity details.", step: 6 },
-  weekendPrice: { message: "Set a weekend price greater than zero.", step: 8 },
-  safetyDisclosures: { message: "Answer all three safety questions.", step: 10 },
-  photos: { message: "Upload at least five property photos.", step: 12 },
-  title: { message: "Use a listing title between 3 and 50 characters.", step: 14 },
-  highlights: { message: "Choose no more than three highlights.", step: 15 },
-  description: { message: "Write a description of at least 10 characters.", step: 16 },
-  weekdayPrice: { message: "Set a weekday price greater than zero.", step: 18 },
+  photos: { message: "Upload at least five property photos.", step: 9 },
+  title: { message: "Use a listing title between 3 and 50 characters.", step: 11 },
+  highlights: { message: "Choose no more than three highlights.", step: 12 },
+  description: { message: "Write a description of at least 10 characters.", step: 13 },
+  weekdayPrice: { message: "Set a weekday price greater than zero.", step: 15 },
+  weekendPrice: { message: "Set a weekend price greater than zero.", step: 16 },
+  safetyDisclosures: { message: "Answer all three safety questions.", step: 18 },
 };
 
 const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -79,28 +80,8 @@ const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
   HOUSEBOAT: "Houseboat",
 };
 
-// Step Slugs for URL query parameter mapping
-const STEP_SLUGS = [
-  "overview",        // Step 0
-  "intro",           // Step 1
-  "category",        // Step 2
-  "place-type",      // Step 3
-  "location",        // Step 4
-  "address",         // Step 5
-  "basics",          // Step 6
-  "standout",        // Step 7
-  "weekend-price",   // Step 8
-  "discounts",       // Step 9
-  "safety",          // Step 10
-  "amenities",       // Step 11
-  "photos",          // Step 12
-  "photos-review",   // Step 13
-  "title",           // Step 14
-  "highlights",      // Step 15
-  "description",     // Step 16
-  "finish-intro",    // Step 17
-  "price",           // Step 18
-];
+// Step Slugs for URL query parameter mapping derived from centralized config
+const STEP_SLUGS = WIZARD_STEPS.map((s) => s.slug);
 
 async function readSaveError(response: Response) {
   const body: unknown = await response.json().catch(() => null);
@@ -306,22 +287,24 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         return guests >= 1 && bedrooms >= 0 && beds >= 1 && bathrooms >= 0
           ? null
           : ["Enter valid capacity values for your place."];
-      case 12:
-      case 13:
+      case 9:
+      case 10:
         return photos.length >= 5 ? null : ["Upload at least 5 successful property photos."];
-      case 14:
+      case 11:
         return title.trim().length >= 3 && title.trim().length <= 50
           ? null
           : ["Use a listing title between 3 and 50 characters."];
-      case 15:
+      case 12:
         return selectedHighlights.length <= 3 ? null : ["Choose no more than 3 highlights."];
-      case 16:
+      case 13:
         return description.trim().length >= 10 && description.trim().length <= 5000
           ? null
           : ["Write a description between 10 and 5,000 characters."];
-      case 8:
+      case 15:
+        return price > 0 ? null : ["Set a weekday price greater than zero."];
+      case 16:
         return weekendPrice > 0 ? null : ["Set a weekend price greater than zero."];
-      case 10: {
+      case 18: {
         const answers = new Set(selectedSafety);
         return ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"].every(
           (item) => answers.has(`${item}:YES`) || answers.has(`${item}:NO`),
@@ -329,8 +312,6 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
           ? null
           : ["Answer every safety question before continuing."];
       }
-      case 18:
-        return price > 0 ? null : ["Set a weekday price greater than zero."];
       default:
         return null;
     }
@@ -691,7 +672,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     {
       id: "Entire place",
       title: "An entire place",
-      description: "Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.",
+      description: "Guests have the whole place to themselves. This usually includes a bedroom, a bathroom, and a kitchen.",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -701,7 +682,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     {
       id: "Private room",
       title: "A room",
-      description: "Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.",
+      description: "Guests have their own private room for sleeping. Other areas could be shared.",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -711,7 +692,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     {
       id: "Shared room",
       title: "A shared room",
-      description: "Lorem ipsum non diam posuere malesuada nisl urna pharetra feugiat nisi a amet at pretium nam ac magna fermentum in.",
+      description: "Guests sleep in a bedroom or common area that may be shared with others.",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
@@ -932,122 +913,122 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         />
       )}
 
-      {/* Step 8: Weekend pricing begins the "Make it stand out" section. */}
+      {/* Step 8: Amenities */}
       {step === 8 && (
-        <StepWeekendPrice
-          weekdayPrice={price}
-          weekendPrice={weekendPrice}
-          onChangeWeekendPrice={setWeekendPrice}
-          currencySymbol={currencySymbol}
+        <StepAmenities
+          selectedAmenities={selectedAmenities}
+          onToggleAmenity={handleToggleAmenity}
           onBack={() => goToStep(7)}
           onNext={() => saveDraftAndGoToStep(9)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 9: Discounts */}
+      {/* Step 9: Photos Upload */}
       {step === 9 && (
-        <StepDiscounts
-          selectedDiscounts={selectedDiscounts}
-          onToggleDiscount={handleToggleDiscount}
+        <StepPhotos
+          photos={photos}
+          onUpdatePhotos={setPhotos}
           onBack={() => goToStep(8)}
           onNext={() => saveDraftAndGoToStep(10)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 10: Required safety disclosures */}
+      {/* Step 10: Photos Review & Management */}
       {step === 10 && (
-        <StepSafety
-          selectedSafety={selectedSafety}
-          onAnswerSafety={handleAnswerSafety}
+        <StepPhotoManagement
+          photos={photos}
+          onUpdatePhotos={setPhotos}
           onBack={() => goToStep(9)}
           onNext={() => saveDraftAndGoToStep(11)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 11: Existing amenities capture remains part of the standout section. */}
+      {/* Step 11: Listing Title */}
       {step === 11 && (
-        <StepAmenities
-          selectedAmenities={selectedAmenities}
-          onToggleAmenity={handleToggleAmenity}
+        <StepTitle
+          title={title}
+          onChangeTitle={setTitle}
           onBack={() => goToStep(10)}
           onNext={() => saveDraftAndGoToStep(12)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 12: Photos Upload ("Add some photos of your house") */}
+      {/* Step 12: House Highlights */}
       {step === 12 && (
-        <StepPhotos
-          photos={photos}
-          onUpdatePhotos={setPhotos}
+        <StepHighlights
+          selectedHighlights={selectedHighlights}
+          onToggleHighlight={handleToggleHighlight}
           onBack={() => goToStep(11)}
           onNext={() => saveDraftAndGoToStep(13)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 13: Photos Management ("Cool! How does this look?") */}
+      {/* Step 13: Description */}
       {step === 13 && (
-        <StepPhotoManagement
-          photos={photos}
-          onUpdatePhotos={setPhotos}
+        <StepDescription
+          description={description}
+          onChangeDescription={setDescription}
           onBack={() => goToStep(12)}
           onNext={() => saveDraftAndGoToStep(14)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 14: Listing Title */}
+      {/* Step 14: Finish and publish introduction (Part 3) */}
       {step === 14 && (
-        <StepTitle
-          title={title}
-          onChangeTitle={setTitle}
+        <StepFinishIntro
           onBack={() => goToStep(13)}
           onNext={() => saveDraftAndGoToStep(15)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 15: House Highlights */}
+      {/* Step 15: Weekday base price */}
       {step === 15 && (
-        <StepHighlights
-          selectedHighlights={selectedHighlights}
-          onToggleHighlight={handleToggleHighlight}
+        <StepPrice
+          price={price}
+          onChangePrice={setPrice}
+          currencySymbol={currencySymbol}
           onBack={() => goToStep(14)}
           onNext={() => saveDraftAndGoToStep(16)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 16: Description */}
+      {/* Step 16: Weekend price & premium */}
       {step === 16 && (
-        <StepDescription
-          description={description}
-          onChangeDescription={setDescription}
+        <StepWeekendPrice
+          weekdayPrice={price}
+          weekendPrice={weekendPrice}
+          onChangeWeekendPrice={setWeekendPrice}
+          currencySymbol={currencySymbol}
           onBack={() => goToStep(15)}
           onNext={() => saveDraftAndGoToStep(17)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 17: Finish and publish introduction */}
+      {/* Step 17: Discounts */}
       {step === 17 && (
-        <StepFinishIntro
+        <StepDiscounts
+          selectedDiscounts={selectedDiscounts}
+          onToggleDiscount={handleToggleDiscount}
           onBack={() => goToStep(16)}
           onNext={() => saveDraftAndGoToStep(18)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 18: Weekday price and completed-draft save */}
+      {/* Step 18: Safety disclosures & Final submission */}
       {step === 18 && (
-        <StepPrice
-          price={price}
-          onChangePrice={setPrice}
-          currencySymbol={currencySymbol}
+        <StepSafety
+          selectedSafety={selectedSafety}
+          onAnswerSafety={handleAnswerSafety}
           onBack={() => goToStep(17)}
           onNext={handleFinalSaveAndFinish}
           isLoading={isSavingStep}

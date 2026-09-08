@@ -2,6 +2,18 @@
 
 import React from "react";
 
+export interface BedItem {
+  type: string;
+  count: number;
+}
+
+export interface RoomData {
+  id: string;
+  name: string;
+  type: "BEDROOM" | "LIVING_ROOM" | "OTHER";
+  beds: BedItem[];
+}
+
 interface PropertyDetailsViewsProps {
   activeSection: string;
   setActiveSection: (section: any) => void;
@@ -45,7 +57,7 @@ interface PropertyDetailsViewsProps {
   editBathrooms: number;
   setEditBathrooms: (val: number) => void;
 
-  // Additional Property Type Fields (Matches Figma screenshot 100%)
+  // Professional Property Details
   buildingFloors?: number;
   setBuildingFloors?: (val: number) => void;
   listingFloor?: number;
@@ -56,6 +68,22 @@ interface PropertyDetailsViewsProps {
   setPropertySize?: (val: string) => void;
   propertySizeUnit?: string;
   setPropertySizeUnit?: (val: string) => void;
+  privateEntrance?: boolean;
+  setPrivateEntrance?: (val: boolean) => void;
+  elevatorAvailable?: boolean;
+  setElevatorAvailable?: (val: boolean) => void;
+
+  // Rooms & Sleeping Arrangements
+  rooms?: RoomData[];
+  setRooms?: (rooms: RoomData[]) => void;
+  fullBathrooms?: number;
+  setFullBathrooms?: (val: number) => void;
+  halfBathrooms?: number;
+  setHalfBathrooms?: (val: number) => void;
+  privateBathrooms?: number;
+  setPrivateBathrooms?: (val: number) => void;
+  sharedBathrooms?: number;
+  setSharedBathrooms?: (val: number) => void;
 
   // Amenities
   editAmenities: string[];
@@ -98,12 +126,26 @@ export function PropertyDetailsViews({
   setBuildingFloors,
   listingFloor = 1,
   setListingFloor,
-  yearBuilt = "2002",
+  yearBuilt = "",
   setYearBuilt,
   propertySize = "",
   setPropertySize,
-  propertySizeUnit = "XX",
+  propertySizeUnit = "SQM",
   setPropertySizeUnit,
+  privateEntrance = false,
+  setPrivateEntrance,
+  elevatorAvailable = false,
+  setElevatorAvailable,
+  rooms = [],
+  setRooms,
+  fullBathrooms = 1,
+  setFullBathrooms,
+  halfBathrooms = 0,
+  setHalfBathrooms,
+  privateBathrooms = 1,
+  setPrivateBathrooms,
+  sharedBathrooms = 0,
+  setSharedBathrooms,
   editGuests,
   setEditGuests,
   editBedrooms,
@@ -119,6 +161,24 @@ export function PropertyDetailsViews({
   expandedAccessibility = "disabled_parking",
   setExpandedAccessibility,
 }: PropertyDetailsViewsProps) {
+  const isApartmentLike = [
+    "Apartment",
+    "Condo",
+    "Loft",
+    "Serviced apartment",
+    "Rental unit*",
+    "RENTAL_UNIT",
+    "CONDO",
+    "LOFT",
+    "SERVICED_APARTMENT",
+    "APARTMENT",
+  ].includes(whichIsMostLike) || [
+    "Apartment",
+    "Condo",
+    "Loft",
+    "Serviced apartment",
+    "Rental unit*",
+  ].includes(editPropertyType);
   return (
     <>
       {/* --------------------------------------------------------- */}
@@ -477,49 +537,144 @@ export function PropertyDetailsViews({
               </p>
             </div>
 
-            {/* 4. How many floors are in the building */}
-            <div className="flex items-center justify-between py-1">
-              <label className="text-xs font-semibold text-zinc-800">How many floors are in the building</label>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setBuildingFloors?.(Math.max(1, buildingFloors - 1))}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-                >
-                  -
-                </button>
-                <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors}</span>
-                <button
-                  type="button"
-                  onClick={() => setBuildingFloors?.(buildingFloors + 1)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            {/* Conditional Building / Floor Details */}
+            {isApartmentLike ? (
+              <>
+                {/* 4. How many floors are in the building */}
+                <div className="flex items-center justify-between py-1">
+                  <label className="text-xs font-semibold text-zinc-800">How many floors are in the building</label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      -
+                    </button>
+                    <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
 
-            {/* 5. Which floor is the listing on? */}
-            <div className="flex items-center justify-between py-1">
-              <label className="text-xs font-semibold text-zinc-800">Which floor is the listing on?</label>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setListingFloor?.(Math.max(1, listingFloor - 1))}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-                >
-                  -
-                </button>
-                <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{listingFloor}</span>
-                <button
-                  type="button"
-                  onClick={() => setListingFloor?.(listingFloor + 1)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+                {/* 5. Which floor is the listing on? */}
+                <div className="flex items-center justify-between py-1">
+                  <label className="text-xs font-semibold text-zinc-800">Which floor is the listing on?</label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setListingFloor?.(Math.max(0, (listingFloor || 1) - 1))}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      -
+                    </button>
+                    <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{listingFloor ?? 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => setListingFloor?.((listingFloor || 0) + 1)}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Elevator Available */}
+                <div className="flex items-center justify-between py-1">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-semibold text-zinc-800">Elevator available</label>
+                    <p className="text-[11px] text-zinc-400 font-normal">Is there an elevator to access this floor?</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setElevatorAvailable?.(false)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        elevatorAvailable === false
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setElevatorAvailable?.(true)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        elevatorAvailable === true
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Standalone House / Villa fields */}
+                <div className="flex items-center justify-between py-1">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-semibold text-zinc-800">Stories / levels</label>
+                    <p className="text-[11px] text-zinc-400 font-normal">How many floors/levels does this house have?</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      -
+                    </button>
+                    <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
+                      className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-1">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-semibold text-zinc-800">Private entrance</label>
+                    <p className="text-[11px] text-zinc-400 font-normal">Guests have their own private exterior door or gate</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPrivateEntrance?.(false)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        privateEntrance === false
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrivateEntrance?.(true)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        privateEntrance === true
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* 6. Year built */}
             <div className="space-y-1.5">
@@ -530,7 +685,8 @@ export function PropertyDetailsViews({
                   onChange={(e) => setYearBuilt?.(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                 >
-                  {["2024", "2023", "2022", "2021", "2020", "2015", "2010", "2005", "2002", "2000", "1995", "1990"].map((yr) => (
+                  <option value="">Select year (optional)</option>
+                  {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
                     <option key={yr} value={yr}>{yr}</option>
                   ))}
                 </select>
@@ -548,10 +704,12 @@ export function PropertyDetailsViews({
                 <div className="col-span-2 space-y-1.5">
                   <label className="block text-xs font-semibold text-zinc-800">Property size</label>
                   <input
-                    type="text"
+                    type="number"
                     value={propertySize}
                     onChange={(e) => setPropertySize?.(e.target.value)}
-                    placeholder="XX XXX"
+                    placeholder="e.g. 120"
+                    min={1}
+                    max={50000}
                     className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-300"
                   />
                 </div>
@@ -563,9 +721,8 @@ export function PropertyDetailsViews({
                       onChange={(e) => setPropertySizeUnit?.(e.target.value)}
                       className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-8 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                     >
-                      <option value="XX">XX</option>
-                      <option value="SQM">SQM</option>
-                      <option value="SQFT">SQFT</option>
+                      <option value="SQM">SQM (m²)</option>
+                      <option value="SQFT">SQFT (sq ft)</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
                       <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
@@ -576,29 +733,21 @@ export function PropertyDetailsViews({
                 </div>
               </div>
               <p className="text-[11px] text-zinc-400 font-normal pt-0.5">
-                The amount of indoor space that's available to guests.
+                The amount of indoor space available to guests.
               </p>
             </div>
 
-            {/* 8. Your category block */}
+            {/* 8. Category Information */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start pt-6 border-t border-zinc-200/80 mt-4">
               <div className="sm:col-span-7 space-y-2">
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Your category</h3>
+                <h3 className="font-semibold text-sm text-[#1F1F1F]">Property categorization</h3>
                 <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                  Lorem ipsum aliquam dignissim sollicitudin libero odio pulvinar fringilla sagittis facilisi erat tempor morbi proin sit pellentesque lacus in facilisis est purus aliquet mauris massa duis placerat tincidunt neque vulputate.
+                  Categorizing your place accurately helps guests find the exact space type they need. Your listing is classified based on your property type and amenities.
                 </p>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  className="text-xs font-semibold text-[#1F1F1F] underline hover:text-amber-600 inline-block pt-1"
-                >
-                  Learn more
-                </a>
               </div>
-              <div className="sm:col-span-5 rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 flex items-center justify-center text-center h-full min-h-[100px]">
-                <p className="text-xs font-semibold text-zinc-600 leading-snug">
-                  *Your listing isn't part of a part yet.
-                </p>
+              <div className="sm:col-span-5 rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 flex flex-col items-center justify-center text-center h-full min-h-[90px]">
+                <span className="text-xs font-semibold text-zinc-800">{whichIsMostLike}</span>
+                <span className="text-[11px] text-zinc-500">{editPropertyType} · {editListingType}</span>
               </div>
             </div>
 
@@ -618,36 +767,384 @@ export function PropertyDetailsViews({
       )}
 
       {/* --------------------------------------------------------- */}
-      {/* VIEW 6: NUMBER OF GUESTS */}
+      {/* VIEW: GUESTS & SLEEPING ARRANGEMENTS */}
       {/* --------------------------------------------------------- */}
-      {activeSection === "guests" && (
-        <div className="space-y-10 animate-in fade-in max-w-xl py-12 font-sans flex flex-col items-center justify-center min-h-[400px]">
-          {/* Main Question Heading */}
-          <h2 className="text-sm font-medium text-zinc-700 text-center tracking-tight">
-            How many guests can fit comfortably in your space ?
-          </h2>
+      {(activeSection === "guests" || activeSection === "sleeping-arrangements") && (
+        <div className="space-y-8 animate-in fade-in max-w-xl pb-10 font-sans">
+          {/* Header */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveSection("propertyType")}
+                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+              >
+                ‹
+              </button>
+              <h1>Guests & Sleeping arrangements</h1>
+            </div>
+            <p className="text-xs text-zinc-500 font-normal pl-11">
+              Configure maximum capacity, bedroom sleeping arrangements, and bathroom breakdown.
+            </p>
+          </div>
 
-          {/* Main Counter Display with Soft Yellow Circle */}
-          <div className="flex items-center gap-6">
-            <button
-              type="button"
-              onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-              className="w-9 h-9 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 text-base font-semibold hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-            >
-              -
-            </button>
-
-            <div className="w-16 h-16 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-2xl font-semibold text-zinc-950 shadow-xs">
-              {editGuests}
+          {/* Section 1: Guest Capacity Counter */}
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold text-zinc-900">Maximum guests</h3>
+                <p className="text-[11px] text-zinc-400">Total number of guests allowed to stay</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
+                  className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 font-semibold text-sm hover:bg-zinc-100 cursor-pointer transition-all shadow-2xs"
+                >
+                  -
+                </button>
+                <span className="w-6 text-center text-sm font-semibold text-zinc-950">{editGuests}</span>
+                <button
+                  type="button"
+                  onClick={() => setEditGuests(Math.min(50, editGuests + 1))}
+                  className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 font-semibold text-sm hover:bg-zinc-100 cursor-pointer transition-all shadow-2xs"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setEditGuests(editGuests + 1)}
-              className="w-9 h-9 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 text-base font-semibold hover:bg-zinc-100 cursor-pointer shadow-2xs transition-all"
-            >
-              +
-            </button>
+            {/* Quick Counters: Bedrooms & Beds */}
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-800 block">Bedrooms</span>
+                  <span className="text-[11px] text-zinc-400">Total bedroom spaces</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-4 text-center text-xs font-semibold text-zinc-900">{editBedrooms}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-800 block">Beds</span>
+                  <span className="text-[11px] text-zinc-400">Total beds available</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-4 text-center text-xs font-semibold text-zinc-900">{editBeds}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Room-Level Sleeping Arrangements */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold text-zinc-900">Room-by-room sleeping arrangements</h3>
+                <p className="text-[11px] text-zinc-400">Specify beds for each bedroom or common space</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const roomIndex = (rooms || []).length + 1;
+                  const newRoom: RoomData = {
+                    id: `room_${Date.now()}`,
+                    name: `Bedroom ${roomIndex}`,
+                    type: "BEDROOM",
+                    beds: [{ type: "QUEEN", count: 1 }],
+                  };
+                  const updated = [...(rooms || []), newRoom];
+                  setRooms?.(updated);
+                  setEditBedrooms(updated.filter((r) => r.type === "BEDROOM").length);
+                  const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
+                  setEditBeds(Math.max(1, totalBeds));
+                }}
+                className="text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-1.5 rounded-full cursor-pointer transition-colors"
+              >
+                + Add room
+              </button>
+            </div>
+
+            {/* Render Rooms List */}
+            {(!rooms || rooms.length === 0) ? (
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center space-y-2">
+                <p className="text-xs text-zinc-500">No rooms configured yet.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const defaultRoom: RoomData = {
+                      id: "room_1",
+                      name: "Bedroom 1",
+                      type: "BEDROOM",
+                      beds: [{ type: "QUEEN", count: 1 }],
+                    };
+                    setRooms?.([defaultRoom]);
+                  }}
+                  className="text-xs font-semibold text-amber-700 underline cursor-pointer"
+                >
+                  Add Bedroom 1
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {rooms.map((room, roomIdx) => (
+                  <div key={room.id || roomIdx} className="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🛏️</span>
+                        <input
+                          type="text"
+                          value={room.name}
+                          onChange={(e) => {
+                            const updated = [...rooms];
+                            updated[roomIdx] = { ...updated[roomIdx], name: e.target.value };
+                            setRooms?.(updated);
+                          }}
+                          className="text-xs font-semibold text-zinc-900 border-b border-transparent hover:border-zinc-300 focus:border-zinc-900 outline-none px-1 py-0.5"
+                        />
+                        <span className="text-[10px] font-medium bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
+                          {room.type}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = rooms.filter((_, idx) => idx !== roomIdx);
+                          setRooms?.(updated);
+                          setEditBedrooms(updated.filter((r) => r.type === "BEDROOM").length);
+                          const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
+                          setEditBeds(Math.max(1, totalBeds));
+                        }}
+                        className="text-xs text-zinc-400 hover:text-red-600 cursor-pointer transition-colors p-1"
+                        title="Remove room"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Beds in this room */}
+                    <div className="space-y-2 pl-6 pt-1">
+                      {room.beds.map((bed, bedIdx) => (
+                        <div key={bedIdx} className="flex items-center justify-between text-xs py-1 border-b border-zinc-50 last:border-0">
+                          <span className="text-zinc-700 font-medium capitalize">
+                            {bed.type.toLowerCase().replace(/_/g, " ")} bed
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...rooms];
+                                const currentCount = bed.count;
+                                if (currentCount <= 1) {
+                                  updated[roomIdx].beds = updated[roomIdx].beds.filter((_, bIdx) => bIdx !== bedIdx);
+                                } else {
+                                  updated[roomIdx].beds[bedIdx].count = currentCount - 1;
+                                }
+                                setRooms?.(updated);
+                                const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
+                                setEditBeds(Math.max(1, totalBeds));
+                              }}
+                              className="w-6 h-6 rounded-full border border-zinc-300 flex items-center justify-center text-xs text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                            >
+                              -
+                            </button>
+                            <span className="w-4 text-center font-semibold text-zinc-900">{bed.count}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...rooms];
+                                updated[roomIdx].beds[bedIdx].count += 1;
+                                setRooms?.(updated);
+                                const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
+                                setEditBeds(Math.max(1, totalBeds));
+                              }}
+                              className="w-6 h-6 rounded-full border border-zinc-300 flex items-center justify-center text-xs text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add Bed to this Room */}
+                      <div className="pt-2">
+                        <select
+                          defaultValue=""
+                          onChange={(e) => {
+                            if (!e.target.value) return;
+                            const bedType = e.target.value;
+                            const updated = [...rooms];
+                            const existingBed = updated[roomIdx].beds.find((b) => b.type === bedType);
+                            if (existingBed) {
+                              existingBed.count += 1;
+                            } else {
+                              updated[roomIdx].beds.push({ type: bedType, count: 1 });
+                            }
+                            setRooms?.(updated);
+                            const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
+                            setEditBeds(Math.max(1, totalBeds));
+                            e.target.value = "";
+                          }}
+                          className="text-[11px] font-medium text-zinc-600 bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-1.5 outline-none cursor-pointer"
+                        >
+                          <option value="">+ Add bed type...</option>
+                          <option value="KING">King bed</option>
+                          <option value="QUEEN">Queen bed</option>
+                          <option value="DOUBLE">Double bed</option>
+                          <option value="SINGLE">Single bed</option>
+                          <option value="TWIN">Twin bed</option>
+                          <option value="SOFA_BED">Sofa bed</option>
+                          <option value="BUNK_BED">Bunk bed</option>
+                          <option value="CRIB">Crib</option>
+                          <option value="FLOOR_MATTRESS">Floor mattress</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 3: Bathroom Breakdown */}
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
+            <div>
+              <h3 className="text-xs font-semibold text-zinc-900">Bathroom breakdown</h3>
+              <p className="text-[11px] text-zinc-400">Specify full and half bathrooms available to guests</p>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-800 block">Full bathrooms</span>
+                  <span className="text-[11px] text-zinc-400">Includes shower/bathtub, sink, and toilet</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = Math.max(0, (fullBathrooms || 1) - 1);
+                      setFullBathrooms?.(val);
+                      setEditBathrooms(val + (halfBathrooms || 0));
+                    }}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-4 text-center text-xs font-semibold text-zinc-900">{fullBathrooms ?? 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = (fullBathrooms || 0) + 1;
+                      setFullBathrooms?.(val);
+                      setEditBathrooms(val + (halfBathrooms || 0));
+                    }}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-800 block">Half bathrooms</span>
+                  <span className="text-[11px] text-zinc-400">Includes sink and toilet only (no bath or shower)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = Math.max(0, (halfBathrooms || 0) - 1);
+                      setHalfBathrooms?.(val);
+                      setEditBathrooms((fullBathrooms || 1) + val);
+                    }}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-4 text-center text-xs font-semibold text-zinc-900">{halfBathrooms ?? 0}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = (halfBathrooms || 0) + 1;
+                      setHalfBathrooms?.(val);
+                      setEditBathrooms((fullBathrooms || 1) + val);
+                    }}
+                    className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-800 block">Bathroom privacy</span>
+                  <span className="text-[11px] text-zinc-400">Are the bathrooms private or shared with host/others?</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPrivateBathrooms?.(fullBathrooms || 1);
+                      setSharedBathrooms?.(0);
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      (sharedBathrooms ?? 0) === 0
+                        ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    Private
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSharedBathrooms?.(1);
+                      setPrivateBathrooms?.(0);
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      (sharedBathrooms ?? 0) > 0
+                        ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    Shared
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Save Button */}
@@ -833,9 +1330,9 @@ export function PropertyDetailsViews({
                     "Kitchen": { icon: "🍳", desc: "A space for cooking meals that includes at least a refrigerator, oven and stovetop" },
                     "Shampoo": { icon: "🧴" },
                     "Shower gel": { icon: "🧼" },
-                    "Smoke alarm": { icon: "🚨", desc: "Lorem ipsum vitae nec duis in in urna molestie a." },
-                    "TV": { icon: "📺", desc: "Lorem ipsum vitae nec duis in in urna molestie a." },
-                    "Wifi": { icon: "📶", desc: "Lorem ipsum vitae nec duis in in urna molestie a." },
+                    "Smoke alarm": { icon: "🚨", desc: "Working smoke detector installed according to building safety regulations" },
+                    "TV": { icon: "📺", desc: "High-definition television with streaming or cable capabilities" },
+                    "Wifi": { icon: "📶", desc: "High-speed wireless internet connection available throughout the space" },
                   };
                   const meta = detailsMap[am] || { icon: "🛋️" };
 
@@ -916,7 +1413,7 @@ export function PropertyDetailsViews({
                 id: "disabled_parking",
                 name: "Disabled parking spot",
                 icon: "♿",
-                desc: "Lorem ipsum blandit nibh tellus at sit in risus viverra tincidunt purus penatibus odio iaculis eget at fringilla neque morbi."
+                desc: "Dedicated accessible parking spot with ample space near the entrance."
               },
               {
                 id: "lit_path",

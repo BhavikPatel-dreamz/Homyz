@@ -19,17 +19,35 @@ interface HouseRulesAndArrivalViewsProps {
   setMaxGuestsCount: (val: number) => void;
   petsAllowed: boolean | null;
   setPetsAllowed: (val: any) => void;
+  maxPetsCount?: number;
+  setMaxPetsCount?: (val: number) => void;
+  petFee?: string;
+  setPetFee?: (val: string) => void;
+  petRestrictions?: string;
+  setPetRestrictions?: (val: string) => void;
+  dogsAllowed?: boolean;
+  setDogsAllowed?: (val: boolean) => void;
+  catsAllowed?: boolean;
+  setCatsAllowed?: (val: boolean) => void;
   quietHours: boolean | null;
   setQuietHours: (val: any) => void;
+  quietHoursStart?: string;
+  setQuietHoursStart?: (val: string) => void;
+  quietHoursEnd?: string;
+  setQuietHoursEnd?: (val: string) => void;
   eventsAllowed: boolean | null;
   setEventsAllowed: (val: any) => void;
   smokingAllowed: boolean | null;
   setSmokingAllowed: (val: any) => void;
+  smokingLocation?: string;
+  setSmokingLocation?: (val: string) => void;
+  additionalHouseRules?: string;
+  setAdditionalHouseRules?: (val: string) => void;
 
   // Modals trigger
   setIsEditingAdditionalRulesModalOpen: (open: boolean) => void;
 
-  // Arrival Guide
+  // Arrival Guide & Parking
   checkInMethod: string;
   setCheckInMethod: (val: string) => void;
   wifiNetwork: string;
@@ -40,6 +58,22 @@ interface HouseRulesAndArrivalViewsProps {
   setHouseManual: (val: string) => void;
   directions?: string;
   setDirections?: (val: string) => void;
+  checkInInstructions?: string;
+  setCheckInInstructions?: (val: string) => void;
+  doorCode?: string;
+  setDoorCode?: (val: string) => void;
+  lockboxCode?: string;
+  setLockboxCode?: (val: string) => void;
+  parkingAvailable?: boolean;
+  setParkingAvailable?: (val: boolean) => void;
+  parkingType?: string;
+  setParkingType?: (val: string) => void;
+  parkingSpaces?: number;
+  setParkingSpaces?: (val: number) => void;
+  parkingReservation?: boolean;
+  setParkingReservation?: (val: boolean) => void;
+  parkingInstructions?: string;
+  setParkingInstructions?: (val: string) => void;
 }
 
 export function HouseRulesAndArrivalViews({
@@ -57,12 +91,30 @@ export function HouseRulesAndArrivalViews({
   setMaxGuestsCount,
   petsAllowed,
   setPetsAllowed,
+  maxPetsCount = 1,
+  setMaxPetsCount,
+  petFee = "",
+  setPetFee,
+  petRestrictions = "",
+  setPetRestrictions,
+  dogsAllowed = true,
+  setDogsAllowed,
+  catsAllowed = true,
+  setCatsAllowed,
   quietHours,
   setQuietHours,
+  quietHoursStart = "22:00",
+  setQuietHoursStart,
+  quietHoursEnd = "08:00",
+  setQuietHoursEnd,
   eventsAllowed,
   setEventsAllowed,
   smokingAllowed,
   setSmokingAllowed,
+  smokingLocation = "OUTSIDE_ONLY",
+  setSmokingLocation,
+  additionalHouseRules = "",
+  setAdditionalHouseRules,
   setIsEditingAdditionalRulesModalOpen,
   checkInMethod,
   setCheckInMethod,
@@ -74,6 +126,22 @@ export function HouseRulesAndArrivalViews({
   setHouseManual,
   directions = "",
   setDirections,
+  checkInInstructions = "",
+  setCheckInInstructions,
+  doorCode = "",
+  setDoorCode,
+  lockboxCode = "",
+  setLockboxCode,
+  parkingAvailable = false,
+  setParkingAvailable,
+  parkingType = "FREE",
+  setParkingType,
+  parkingSpaces = 1,
+  setParkingSpaces,
+  parkingReservation = false,
+  setParkingReservation,
+  parkingInstructions = "",
+  setParkingInstructions,
 }: HouseRulesAndArrivalViewsProps) {
   return (
     <>
@@ -81,7 +149,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW 8: HOUSE RULES */}
       {/* --------------------------------------------------------- */}
       {/* --------------------------------------------------------- */}
-      {/* VIEW: HOUSE RULES (Matches Figma Screenshot 100%) */}
+      {/* VIEW: HOUSE RULES (Professional Airbnb-Style Structured) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-rules" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
@@ -98,95 +166,122 @@ export function HouseRulesAndArrivalViews({
               <h1>House rules</h1>
             </div>
             <p className="text-xs text-zinc-500 font-normal pl-11">
-              Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+              Set clear expectations for your guests regarding pets, smoking, events, quiet hours, and property rules.
             </p>
           </div>
 
           {/* List of Rules Rows */}
           <div className="divide-y divide-zinc-200/80 pt-2">
             {/* Row 1: Pets allowed */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Pets allowed</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setPetsAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    petsAllowed === false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPetsAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    petsAllowed === true
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✓
-                </button>
+            <div className="py-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-xs text-[#1F1F1F] block">Pets allowed</span>
+                  <span className="text-[11px] text-zinc-400">Do you welcome pets in your space?</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setPetsAllowed(false)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      petsAllowed === false
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✕
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPetsAllowed(true)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      petsAllowed === true
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✓
+                  </button>
+                </div>
               </div>
+
+              {/* Conditional Pet Details */}
+              {petsAllowed === true && (
+                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-zinc-800">Maximum number of pets</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
+                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs"
+                      >
+                        -
+                      </button>
+                      <span className="text-xs font-semibold text-[#1F1F1F] min-w-[16px] text-center">{maxPetsCount || 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
+                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200/60">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dogsAllowed ?? true}
+                        onChange={(e) => setDogsAllowed?.(e.target.checked)}
+                        className="rounded text-amber-500 accent-zinc-900"
+                      />
+                      <span className="text-zinc-700">Dogs allowed</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={catsAllowed ?? true}
+                        onChange={(e) => setCatsAllowed?.(e.target.checked)}
+                        className="rounded text-amber-500 accent-zinc-900"
+                      />
+                      <span className="text-zinc-700">Cats allowed</span>
+                    </label>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="block text-[11px] font-semibold text-zinc-700">Pet fee per stay (optional, SAR)</label>
+                    <input
+                      type="number"
+                      value={petFee}
+                      onChange={(e) => setPetFee?.(e.target.value)}
+                      placeholder="e.g. 50"
+                      min={0}
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-semibold text-zinc-700">Pet restrictions or guidelines</label>
+                    <input
+                      type="text"
+                      value={petRestrictions}
+                      onChange={(e) => setPetRestrictions?.(e.target.value)}
+                      placeholder="e.g. Under 20kg only, house-trained, please bring own bed"
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Row 2: Maximum number of pets allowed */}
-            <div className="py-3.5 flex items-start justify-between gap-4">
-              <div className="space-y-1 max-w-sm">
-                <h4 className="font-semibold text-xs text-[#1F1F1F]">Maximum number of pets allowed</h4>
-                <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                  Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
-                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-[#1F1F1F]">
-                    learn more
-                  </a>
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 pt-0.5">
-                <button
-                  type="button"
-                  onClick={() => setPetsAllowed(false)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPetsAllowed(true)}
-                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-semibold text-zinc-950 cursor-pointer shadow-2xs"
-                >
-                  ✓
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3: Maximum number of pets */}
+            {/* Row 2: Events allowed */}
             <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Maximum number of pets</span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {}}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                >
-                  -
-                </button>
-                <span className="text-xs font-semibold text-[#1F1F1F] min-w-[12px] text-center">1</span>
-                <button
-                  type="button"
-                  onClick={() => {}}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                >
-                  +
-                </button>
+              <div>
+                <span className="font-semibold text-xs text-[#1F1F1F] block">Events & parties allowed</span>
+                <span className="text-[11px] text-zinc-400">Can guests host gatherings or parties?</span>
               </div>
-            </div>
-
-            {/* Row 4: Events allowed */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Events allowed</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
@@ -203,7 +298,7 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   onClick={() => setEventsAllowed(true)}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    eventsAllowed !== false
+                    eventsAllowed === true
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
                   }`}
@@ -213,137 +308,146 @@ export function HouseRulesAndArrivalViews({
               </div>
             </div>
 
-            {/* Row 5: Smoking, vaping, e-cigarettes allowed */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Smoking, vaping, e-cigarettes allowed</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setSmokingAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    smokingAllowed === false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSmokingAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    smokingAllowed !== false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✓
-                </button>
+            {/* Row 3: Smoking, vaping allowed */}
+            <div className="py-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-xs text-[#1F1F1F] block">Smoking, vaping, e-cigarettes</span>
+                  <span className="text-[11px] text-zinc-400">Is smoking permitted anywhere on premises?</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSmokingAllowed(false)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      smokingAllowed === false
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✕
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSmokingAllowed(true)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      smokingAllowed === true
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✓
+                  </button>
+                </div>
               </div>
+
+              {/* Conditional Smoking Location */}
+              {smokingAllowed === true && (
+                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-2 text-xs">
+                  <label className="block text-[11px] font-semibold text-zinc-800">Allowed smoking location</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { val: "OUTSIDE_ONLY", label: "Outside only (balcony / patio)" },
+                      { val: "DESIGNATED_AREA", label: "Designated area only" },
+                      { val: "INSIDE", label: "Inside permitted" },
+                    ].map((loc) => (
+                      <button
+                        key={loc.val}
+                        type="button"
+                        onClick={() => setSmokingLocation?.(loc.val)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                          smokingLocation === loc.val
+                            ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
+                            : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {loc.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Row 6: Quiet hours */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Quiet hours</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setQuietHours(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    quietHours !== false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuietHours(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    quietHours === false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✓
-                </button>
+            {/* Row 4: Quiet hours */}
+            <div className="py-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-xs text-[#1F1F1F] block">Quiet hours</span>
+                  <span className="text-[11px] text-zinc-400">Enforce quiet hours during night times</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setQuietHours(false)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      quietHours === false
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✕
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuietHours(true)}
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
+                      quietHours === true
+                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                    }`}
+                  >
+                    ✓
+                  </button>
+                </div>
               </div>
+
+              {/* Conditional Quiet Hours Schedule */}
+              {quietHours === true && (
+                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 grid grid-cols-2 gap-3 text-xs">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-semibold text-zinc-700">Quiet hours start</label>
+                    <select
+                      value={quietHoursStart}
+                      onChange={(e) => setQuietHoursStart?.(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs cursor-pointer"
+                    >
+                      {["20:00", "21:00", "22:00", "23:00", "00:00"].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-semibold text-zinc-700">Quiet hours end</label>
+                    <select
+                      value={quietHoursEnd}
+                      onChange={(e) => setQuietHoursEnd?.(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs cursor-pointer"
+                    >
+                      {["06:00", "07:00", "08:00", "09:00", "10:00"].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Row 7: Commercial photography and filming allowed */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Commercial photography and filming allowed</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  className="w-7 h-7 rounded-full border border-amber-300 bg-[#FEE08B] flex items-center justify-center text-xs font-semibold text-zinc-950 cursor-pointer shadow-2xs"
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
-                >
-                  ✓
-                </button>
+            {/* Row 5: Additional rules */}
+            <div className="py-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Additional house rules</h4>
+                  <p className="text-[11px] text-zinc-400">Specify any custom rules or property considerations</p>
+                </div>
               </div>
-            </div>
-
-            {/* Row 8: Number of quest */}
-            <div className="py-3.5 flex items-center justify-between">
-              <span className="font-semibold text-xs text-[#1F1F1F]">Number of quest</span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMaxGuestsCount(Math.max(1, (maxGuestsCount || 1) - 1))}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                >
-                  -
-                </button>
-                <span className="text-xs font-semibold text-[#1F1F1F] min-w-[12px] text-center">{maxGuestsCount || 1}</span>
-                <button
-                  type="button"
-                  onClick={() => setMaxGuestsCount((maxGuestsCount || 1) + 1)}
-                  className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Row 9: Check-in and check-out times */}
-            <div className="py-3.5 flex items-start justify-between gap-4">
-              <div className="space-y-1 max-w-sm">
-                <h4 className="font-semibold text-xs text-[#1F1F1F]">Check-in and check-out times</h4>
-                <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                  Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
-                  <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-[#1F1F1F]">
-                    learn more
-                  </a>
-                </p>
-              </div>
-              <button
-                type="button"
-                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0 pt-0.5"
-              >
-                ›
-              </button>
-            </div>
-
-            {/* Row 10: Additional rules */}
-            <div className="py-3.5 flex items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <h4 className="font-semibold text-xs text-[#1F1F1F]">Additional rules</h4>
-                <p className="text-[11px] text-zinc-400 font-normal">Share anything else you expect from guests.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsEditingAdditionalRulesModalOpen(true)}
-                className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0"
-              >
-                ›
-              </button>
+              <textarea
+                rows={4}
+                value={additionalHouseRules}
+                onChange={(e) => setAdditionalHouseRules?.(e.target.value)}
+                placeholder="e.g. Please remove shoes at the entrance. No outdoor footwear inside. Do not leave food outdoors."
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs text-zinc-800 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+              />
             </div>
           </div>
 
@@ -363,6 +467,170 @@ export function HouseRulesAndArrivalViews({
               className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --------------------------------------------------------- */}
+      {/* VIEW: PARKING INSTRUCTIONS & CONFIGURATION */}
+      {/* --------------------------------------------------------- */}
+      {activeSection === "parking" && (
+        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveSection("arrival-guide")}
+              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
+            >
+              ‹
+            </button>
+            <h1>Parking instructions & details</h1>
+          </div>
+          <p className="text-xs text-zinc-500 font-normal pl-11">
+            Let guests know if parking is available, where to park, and any permit or reservation requirements.
+          </p>
+
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
+            {/* Parking Available Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-semibold text-zinc-900">Parking available on premises</h3>
+                <p className="text-[11px] text-zinc-400">Do guests have dedicated or shared parking?</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setParkingAvailable?.(false)}
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                    parkingAvailable === false
+                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                  }`}
+                >
+                  ✕
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setParkingAvailable?.(true)}
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                    parkingAvailable === true
+                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                  }`}
+                >
+                  ✓
+                </button>
+              </div>
+            </div>
+
+            {/* Conditional Parking Details */}
+            {parkingAvailable && (
+              <div className="space-y-4 pt-3 border-t border-zinc-100">
+                {/* Parking Type: Free vs Paid */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-800">Parking fee type</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setParkingType?.("FREE")}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                        parkingType === "FREE"
+                          ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      Free
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParkingType?.("PAID")}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                        parkingType === "PAID"
+                          ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      Paid
+                    </button>
+                  </div>
+                </div>
+
+                {/* Number of spaces */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-800">Available parking spaces</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
+                      className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="w-4 text-center text-xs font-semibold text-zinc-900">{parkingSpaces ?? 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
+                      className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reservation Required */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-800">Reservation required in advance</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setParkingReservation?.(false)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        parkingReservation === false
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParkingReservation?.(true)}
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
+                        parkingReservation === true
+                          ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
+                          : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                  </div>
+                </div>
+
+                {/* Parking Instructions */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-zinc-800">Parking instructions for guests</label>
+                  <textarea
+                    rows={4}
+                    value={parkingInstructions}
+                    onChange={(e) => setParkingInstructions?.(e.target.value)}
+                    placeholder="e.g. Park in space #4B in underground garage. Access gate code is 1234."
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs text-zinc-800 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Save Button */}
+          <div className="pt-2">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => handleSaveSection("parking")}
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+            >
+              {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
@@ -405,6 +673,12 @@ export function HouseRulesAndArrivalViews({
         <CheckInMethodView
           checkInMethod={checkInMethod}
           setCheckInMethod={setCheckInMethod}
+          checkInInstructions={checkInInstructions}
+          setCheckInInstructions={setCheckInInstructions}
+          doorCode={doorCode}
+          setDoorCode={setDoorCode}
+          lockboxCode={lockboxCode}
+          setLockboxCode={setLockboxCode}
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
@@ -630,7 +904,7 @@ function CheckOutInstructionsView({
 }) {
   const [isAdding, setIsAdding] = React.useState(false);
   const [text, setText] = React.useState(
-    "Lorem ipsum sit lorem proin pulvinar vel vitae proin maecenas adipiscing pretium in orci et aenean dignissim quis nibh mi."
+    "Guests will see these instructions 24 hours before check-out time. Clearly detail garbage disposal, lockup procedures, and key returns."
   );
 
   return (
@@ -841,7 +1115,7 @@ function InteractionPreferencesView({
 
       {/* Description */}
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
-        Lorem ipsum tincidunt ultricies pellentesque amet sapien pharetra ultricies ipsum sed imperdiet volutpat est vel eget luctus imperdiet mauris amet.
+        Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy.
       </p>
 
       {/* Options List with Toggle Switches */}
@@ -854,25 +1128,17 @@ function InteractionPreferencesView({
               onClick={() => setSelectedOption(index)}
               className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs font-semibold shadow-2xs ${
                 isActive
-                  ? "bg-white border-zinc-300 shadow-2xs"
-                  : "bg-white border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                  ? "bg-[#FEF9EC] border-amber-300 text-zinc-950"
+                  : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300"
               }`}
             >
-              <span className={`leading-snug pr-4 ${isActive ? "text-[#1F1F1F] font-semibold" : "text-zinc-600"}`}>
-                {option}
-              </span>
-
-              {/* Toggle Switch Component */}
+              <span>{option}</span>
               <div
-                className={`w-10 h-5 rounded-full shrink-0 p-0.5 transition-colors duration-200 ${
-                  isActive ? "bg-zinc-800" : "bg-zinc-200"
+                className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                  isActive ? "border-amber-400 bg-amber-400 text-white" : "border-zinc-300 bg-white"
                 }`}
               >
-                <div
-                  className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform duration-200 ${
-                    isActive ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
+                {isActive && <span className="text-[10px] leading-none">✓</span>}
               </div>
             </div>
           );
@@ -885,19 +1151,18 @@ function InteractionPreferencesView({
           type="button"
           disabled={isSaving}
           onClick={() => {
-            handleSaveSection("arrival-guide");
+            handleSaveSection("interaction-preferences");
             setIsSaved(true);
-            setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+          {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          onClick={() => setActiveSection("description")}
+          className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -973,7 +1238,7 @@ function ListingStatusView({
         >
           <h3 className="font-semibold text-xs text-[#1F1F1F]">Listed</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-            Lorem ipsum feugiat donec porta aliquam sed blandit consectetur mauris eget augue.
+            Guests can find your listing in search results and book available dates.
           </p>
         </div>
 
@@ -988,7 +1253,7 @@ function ListingStatusView({
         >
           <h3 className="font-semibold text-xs text-[#1F1F1F]">Unlisted</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-            Lorem ipsum feugiat donec porta aliquam sed blandit consectetur mauris eget augue.
+            Your listing is hidden from search results and guests cannot book dates.
           </p>
         </div>
       </div>
@@ -1069,9 +1334,8 @@ function LanguagesView({
         <h1 className="tracking-tight text-[#1F1F1F]">Languages</h1>
       </div>
 
-      {/* Description Text matching Figma 100% */}
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
-        Lorem ipsum faucibus euismod est id diam pellentesque mus quis elementum tellus amet laoreet interdum pretium purus tempor etiam a.
+        Select the languages you and your co-hosts can speak with guests during their stay or via messaging.
       </p>
 
       {/* List of currently selected languages */}
@@ -1209,10 +1473,7 @@ function GuestRequirementsView({
         <div className="space-y-1 max-w-md">
           <h3 className="text-xs font-semibold text-[#1F1F1F]">Require a profile photo</h3>
           <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-            Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt{" "}
-            <a href="#" className="underline font-medium text-zinc-700 hover:text-zinc-950">
-              learn more
-            </a>
+            Ask guests to upload a confirmed profile photo before booking your place.
           </p>
         </div>
 
@@ -1524,21 +1785,32 @@ function DirectionsView({
 function CheckInMethodView({
   checkInMethod,
   setCheckInMethod,
+  checkInInstructions,
+  setCheckInInstructions,
+  doorCode,
+  setDoorCode,
+  lockboxCode,
+  setLockboxCode,
   setActiveSection,
   isSaving,
   handleSaveSection,
 }: {
   checkInMethod: string;
   setCheckInMethod: (val: string) => void;
+  checkInInstructions?: string;
+  setCheckInInstructions?: (val: string) => void;
+  doorCode?: string;
+  setDoorCode?: (val: string) => void;
+  lockboxCode?: string;
+  setLockboxCode?: (val: string) => void;
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
   const [isEditingMethod, setIsEditingMethod] = React.useState(false);
-  const [isAddingInstructions, setIsAddingInstructions] = React.useState(false);
-  const [instructionsText, setInstructionsText] = React.useState(
-    "Lorem ipsum sed elit euismod pretium pellentesque in eget velit nunc vitae quisque semper accumsan suspendisse."
-  );
+
+  const isCodeBased = ["Smart lock", "Keypad", "SMART_LOCK", "KEYPAD"].includes(checkInMethod);
+  const isLockbox = ["Lockbox", "LOCKBOX"].includes(checkInMethod);
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
@@ -1554,7 +1826,7 @@ function CheckInMethodView({
         <h1>Check-in method</h1>
       </div>
 
-      {/* Card 1: Selected Method Card (Matches Figma Screenshot 100%) */}
+      {/* Card 1: Selected Method Card */}
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-[#1F1F1F]">
@@ -1579,7 +1851,6 @@ function CheckInMethodView({
                 key={method}
                 onClick={() => {
                   setCheckInMethod(method);
-                  handleSaveSection("arrival-guide");
                   setIsEditingMethod(false);
                 }}
                 className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs font-semibold ${
@@ -1595,47 +1866,65 @@ function CheckInMethodView({
           </div>
         )}
 
-        <div className="border-t border-zinc-150/80 my-2" />
-
-        <div className="flex items-center justify-between cursor-pointer pt-1">
-          <span className="text-xs text-zinc-500 font-medium">Will be send it before the check-in</span>
-          <span className="text-zinc-600 text-base font-semibold">›</span>
-        </div>
-      </div>
-
-      {/* Section 2: Check-in instructions (Matches Figma Screenshot 100%) */}
-      <div className="pt-4 space-y-2">
-        <h2 className="text-sm font-semibold text-[#1F1F1F]">Check-in instructions</h2>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
-          {instructionsText}
-        </p>
-
-        {isAddingInstructions && (
-          <div className="pt-2 space-y-3 animate-in fade-in">
-            <textarea
-              rows={4}
-              value={instructionsText}
-              onChange={(e) => setInstructionsText(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+        {/* Access Code Input */}
+        {isCodeBased && (
+          <div className="pt-2 border-t border-zinc-100 space-y-1.5">
+            <label className="block text-xs font-semibold text-zinc-800">
+              Keypad / Door code (Confidential)
+            </label>
+            <p className="text-[11px] text-zinc-400">This code is only shared with confirmed booked guests.</p>
+            <input
+              type="text"
+              value={doorCode || ""}
+              onChange={(e) => setDoorCode?.(e.target.value)}
+              placeholder="e.g. 1234#"
+              className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
             />
           </div>
         )}
 
-        <div className="pt-3">
+        {isLockbox && (
+          <div className="pt-2 border-t border-zinc-100 space-y-1.5">
+            <label className="block text-xs font-semibold text-zinc-800">
+              Lockbox combination code (Confidential)
+            </label>
+            <p className="text-[11px] text-zinc-400">This code is only shared with confirmed booked guests.</p>
+            <input
+              type="text"
+              value={lockboxCode || ""}
+              onChange={(e) => setLockboxCode?.(e.target.value)}
+              placeholder="e.g. 8842"
+              className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Section 2: Check-in instructions */}
+      <div className="pt-2 space-y-2">
+        <h2 className="text-sm font-semibold text-[#1F1F1F]">Check-in instructions for guests</h2>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
+          Share detailed steps for guests to unlock doors, locate keys, access the building, and check in smoothly.
+        </p>
+
+        <div className="pt-1">
+          <textarea
+            rows={4}
+            value={checkInInstructions || ""}
+            onChange={(e) => setCheckInInstructions?.(e.target.value)}
+            placeholder="e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."
+            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+          />
+        </div>
+
+        <div className="pt-2">
           <button
             type="button"
-            onClick={() => {
-              if (isAddingInstructions) {
-                handleSaveSection("arrival-guide");
-                setIsAddingInstructions(false);
-              } else {
-                setIsAddingInstructions(true);
-              }
-            }}
-            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+            disabled={isSaving}
+            onClick={() => handleSaveSection("check-in-method")}
+            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
           >
-            <span className="text-sm font-semibold">+</span>
-            {isAddingInstructions ? "Save instructions" : "Add instructions"}
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -1673,7 +1962,7 @@ function LocalLawsView({
 
       {/* Paragraph 1 */}
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
-        Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt.
+        Make sure you understand and follow the local zoning laws, registration requirements, and tax obligations for your municipality.
       </p>
 
       {/* Regulation Article Card Link */}
@@ -1690,7 +1979,7 @@ function LocalLawsView({
 
       {/* Paragraph 2 */}
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
-        Lorem ipsum massa eu tincidunt integer convallis consequat morbi ultrices adipiscing laoreet est ultrices donec quis lacus tortor enim nibh odio ipsum mattis est tristique mi gravida nunc dignissim lacus venenatis euismod viverra blandit tellus urna fermentum proin risus fringilla proin velit amet malesuada ut dignissim sem sem in elementum.
+        Hosts are responsible for complying with municipal permits, building association bylaws, safety codes, and mandatory guest identification reporting according to Ministry of Tourism regulations.
       </p>
 
       {/* Action Buttons */}
@@ -1764,7 +2053,7 @@ function RegulationsView({
                 You&apos;re all set!
               </h1>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
-                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+                Your official municipal hosting permit has been recorded and verified.
               </p>
               <button
                 type="button"
@@ -1781,7 +2070,7 @@ function RegulationsView({
                 Registration details
               </h2>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
-                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.
+                Keep your official tourism permit number and registered address up to date.
               </p>
 
               {/* Editable or Static Registration Fields */}
@@ -1835,7 +2124,7 @@ function RegulationsView({
 
               {/* Bottom Paragraph with Customer Support Link */}
               <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2 max-w-md">
-                Lorem ipsum parturient lacus faucibus morbi porta ultrices senectus augue.{" "}
+                If your permit details change or you need assistance with registration, please contact our{" "}
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
@@ -1930,7 +2219,7 @@ function RegulationsView({
 
       {/* Top Description Paragraph */}
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
-        Lorem ipsum mauris id ut at ac tristique est semper pharetra gravida egestas elementum turpis amet eget eu tincidunt.
+        Local tourism regulations require short-term rental hosts to display a valid municipal permit number.
       </p>
 
       {/* Registration Status Block */}

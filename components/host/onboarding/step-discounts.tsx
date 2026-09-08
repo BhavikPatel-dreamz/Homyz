@@ -24,29 +24,31 @@ export function StepDiscounts({
   onNext,
   isLoading = false,
 }: StepDiscountsProps) {
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
+
   const discounts: DiscountOption[] = [
     {
       id: "new_listing",
       title: "New listing promotion",
-      description: "Lorem ipsum ut integer porta euismod ipsum diam urna turpis.",
+      description: "Offer 20% off your first 3 bookings to get reservations faster and build initial reviews.",
       percentage: 20,
     },
     {
       id: "last_minute",
       title: "Last-minute discount",
-      description: "Lorem ipsum ut integer porta euismod ipsum diam urna turpis.",
+      description: "Offer 15% off for stays booked within 2 days of arrival to fill unbooked calendar days.",
       percentage: 15,
     },
     {
       id: "weekly",
       title: "Weekly discount",
-      description: "Lorem ipsum ut integer porta euismod ipsum diam urna turpis.",
+      description: "Offer 10% off for stays of 7 nights or longer to attract extended guests.",
       percentage: 10,
     },
     {
       id: "monthly",
       title: "Monthly discount",
-      description: "Lorem ipsum ut integer porta euismod ipsum diam urna turpis.",
+      description: "Offer 25% off for stays of 28 nights or longer for stable, long-term occupancy.",
       percentage: 25,
     },
   ];
@@ -71,7 +73,7 @@ export function StepDiscounts({
                 key={discount.id}
                 onClick={() => onToggleDiscount(discount.id)}
                 className={`w-full border rounded-2xl p-5 sm:p-6 bg-white transition-all flex items-center justify-between shadow-2xs cursor-pointer select-none ${
-                  isEnabled ? "border-zinc-300 ring-1 ring-zinc-200" : "border-zinc-200 hover:border-zinc-300"
+                  isEnabled ? "border-zinc-900 ring-1 ring-zinc-900" : "border-zinc-200 hover:border-zinc-300"
                 }`}
               >
                 {/* Left Side Info */}
@@ -79,7 +81,7 @@ export function StepDiscounts({
                   <span className="text-sm font-semibold text-zinc-800 mb-1">
                     {discount.title}
                   </span>
-                  <span className="text-xs text-zinc-400 mb-2 leading-relaxed">
+                  <span className="text-xs text-zinc-500 mb-2 leading-relaxed">
                     {discount.description}
                   </span>
                   <span className="text-xl font-semibold text-[#1F1F1F]">
@@ -89,8 +91,8 @@ export function StepDiscounts({
 
                 {/* Right Side Toggle Switch */}
                 <div
-                  className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
-                    isEnabled ? "bg-[#DF4557]" : "bg-zinc-200"
+                  className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 shrink-0 ${
+                    isEnabled ? "bg-zinc-900" : "bg-zinc-200"
                   }`}
                 >
                   <div
@@ -104,13 +106,30 @@ export function StepDiscounts({
           })}
         </div>
 
-        {/* Footnote Notice */}
-        <p className="text-xs text-zinc-400 font-medium mt-4">
-          Only one discount will be applied per stay.{" "}
-          <button type="button" className="underline hover:text-zinc-600 cursor-pointer">
-            Read more
-          </button>
-        </p>
+        {/* Footnote Notice & Read more Toggle */}
+        <div className="mt-4 w-full">
+          <p className="text-xs text-zinc-500 font-medium">
+            Only one promotional or length-of-stay discount applies per booking.{" "}
+            <button
+              type="button"
+              onClick={() => setShowExplanation(!showExplanation)}
+              className="underline hover:text-zinc-800 cursor-pointer font-semibold"
+            >
+              {showExplanation ? "Hide details" : "Read more"}
+            </button>
+          </p>
+
+          {showExplanation && (
+            <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
+              <p className="font-semibold text-zinc-800 mb-1">How discounts work on Homyz:</p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>If multiple discounts apply to the same dates, the highest qualifying single discount will be granted to the guest.</li>
+                <li>Length-of-stay discounts (weekly or monthly) take priority over the new listing promotion once your first 3 bookings are completed.</li>
+                <li>You can adjust or turn off any discount at any time from your host listing editor.</li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Bottom Action Footer Bar */}
