@@ -1,5 +1,6 @@
 "use client";
 
+import { Container } from "@/components/ui";
 import React from "react";
 
 export interface HouseHighlightOption {
@@ -81,75 +82,77 @@ export function StepHighlights({
   ];
 
   return (
-    <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
-      <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
-        {/* Main Title & Subtitle */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
-          Let’s describe your house
-        </h1>
-        <p className="text-sm font-medium text-zinc-500 mb-10">
-          Choose up to 3 highlights. We’ll use these to help guests understand your place.
-        </p>
+    <main className="py-10">
+      <Container>
+        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+          <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
+            {/* Main Title & Subtitle */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
+              Let’s describe your house
+            </h1>
+            <p className="text-sm font-medium text-zinc-500 mb-10">
+              Choose up to 3 highlights. We’ll use these to help guests understand your place.
+            </p>
 
-        {/* Highlights Selector Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 w-full max-w-2xl">
-          {highlightOptions.map((item) => {
-            const isSelected = selectedHighlights.includes(item.id);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onToggleHighlight(item.id)}
-                className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer select-none text-left ${
-                  isSelected
-                    ? "border-zinc-900 bg-[#EEF2FF] text-[#1F1F1F] ring-zinc-900 shadow-2xs"
-                    : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected
-                      ? "border-zinc-900 bg-white text-[#1F1F1F]"
-                      : "border-zinc-200 bg-white text-zinc-600"
-                  }`}
-                >
-                  {item.icon}
-                </div>
-                <span className="truncate">{item.label}</span>
-              </button>
-            );
-          })}
+            {/* Highlights Selector Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 w-full max-w-2xl">
+              {highlightOptions.map((item) => {
+                const isSelected = selectedHighlights.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onToggleHighlight(item.id)}
+                    className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer select-none text-left ${isSelected
+                        ? "border-zinc-900 bg-[#EEF2FF] text-[#1F1F1F] ring-zinc-900 shadow-2xs"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
+                      }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
+                          ? "border-zinc-900 bg-white text-[#1F1F1F]"
+                          : "border-zinc-200 bg-white text-zinc-600"
+                        }`}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom Action Footer Bar */}
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={isLoading}
+              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Loading...</span>
+                </>
+              ) : (
+                "Next"
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom Action Footer Bar */}
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={isLoading}
-          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
-        >
-          {isLoading ? (
-            <>
-              <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>Loading...</span>
-            </>
-          ) : (
-            "Next"
-          )}
-        </button>
-      </div>
+      </Container>
     </main>
   );
 }
