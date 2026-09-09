@@ -1,6 +1,43 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import React from "react";
+import { GuidebooksManager } from "./GuidebooksManager";
+import { LocalLawsView } from "./LocalLawsView";
+import { TaxesManager } from "./TaxesManager";
+
+function AllowDenyButtons({
+  value,
+  onChange,
+  label,
+}: {
+  value: boolean | null;
+  onChange: (value: boolean) => void;
+  label: string;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5" aria-label={label}>
+      <button
+        type="button"
+        aria-label={`Do not allow ${label}`}
+        aria-pressed={value === false}
+        onClick={() => onChange(false)}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-colors ${value === false ? "border-amber-300 bg-[#FEE08B] text-zinc-950" : "border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50"}`}
+      >
+        ✕
+      </button>
+      <button
+        type="button"
+        aria-label={`Allow ${label}`}
+        aria-pressed={value === true}
+        onClick={() => onChange(true)}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-colors ${value === true ? "border-amber-300 bg-[#FEE08B] text-zinc-950" : "border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50"}`}
+      >
+        ✓
+      </button>
+    </div>
+  );
+}
 
 interface HouseRulesAndArrivalViewsProps {
   activeSection: string;
@@ -21,8 +58,6 @@ interface HouseRulesAndArrivalViewsProps {
   setPetsAllowed: (val: any) => void;
   maxPetsCount?: number;
   setMaxPetsCount?: (val: number) => void;
-  petFee?: string;
-  setPetFee?: (val: string) => void;
   petRestrictions?: string;
   setPetRestrictions?: (val: string) => void;
   dogsAllowed?: boolean;
@@ -37,12 +72,16 @@ interface HouseRulesAndArrivalViewsProps {
   setQuietHoursEnd?: (val: string) => void;
   eventsAllowed: boolean | null;
   setEventsAllowed: (val: any) => void;
+  commercialFilmingAllowed: boolean | null;
+  setCommercialFilmingAllowed: (val: boolean | null) => void;
   smokingAllowed: boolean | null;
   setSmokingAllowed: (val: any) => void;
   smokingLocation?: string;
   setSmokingLocation?: (val: string) => void;
   additionalHouseRules?: string;
   setAdditionalHouseRules?: (val: string) => void;
+  listingStatusSetting?: "listed" | "unlisted";
+  setListingStatusSetting?: (val: "listed" | "unlisted") => void;
 
   // Modals trigger
   setIsEditingAdditionalRulesModalOpen: (open: boolean) => void;
@@ -74,9 +113,19 @@ interface HouseRulesAndArrivalViewsProps {
   setParkingReservation?: (val: boolean) => void;
   parkingInstructions?: string;
   setParkingInstructions?: (val: string) => void;
+  listingId?: string;
+  listingCity?: string;
+  listingCountry?: string;
+  listingLatitude?: number | null;
+  listingLongitude?: number | null;
 }
 
 export function HouseRulesAndArrivalViews({
+  listingId,
+  listingCity,
+  listingCountry,
+  listingLatitude,
+  listingLongitude,
   activeSection,
   setActiveSection,
   isSaving,
@@ -93,8 +142,6 @@ export function HouseRulesAndArrivalViews({
   setPetsAllowed,
   maxPetsCount = 1,
   setMaxPetsCount,
-  petFee = "",
-  setPetFee,
   petRestrictions = "",
   setPetRestrictions,
   dogsAllowed = true,
@@ -109,13 +156,15 @@ export function HouseRulesAndArrivalViews({
   setQuietHoursEnd,
   eventsAllowed,
   setEventsAllowed,
+  commercialFilmingAllowed,
+  setCommercialFilmingAllowed,
   smokingAllowed,
   setSmokingAllowed,
   smokingLocation = "OUTSIDE_ONLY",
   setSmokingLocation,
   additionalHouseRules = "",
   setAdditionalHouseRules,
-  setIsEditingAdditionalRulesModalOpen,
+  setIsEditingAdditionalRulesModalOpen: _setIsEditingAdditionalRulesModalOpen,
   checkInMethod,
   setCheckInMethod,
   wifiNetwork,
@@ -142,6 +191,8 @@ export function HouseRulesAndArrivalViews({
   setParkingReservation,
   parkingInstructions = "",
   setParkingInstructions,
+  listingStatusSetting = "unlisted",
+  setListingStatusSetting,
 }: HouseRulesAndArrivalViewsProps) {
   return (
     <>
@@ -152,7 +203,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE RULES (Professional Airbnb-Style Structured) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-rules" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="max-w-3xl space-y-6 pb-10 font-sans animate-in fade-in">
           {/* Header & Subtitle */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
@@ -254,12 +305,14 @@ export function HouseRulesAndArrivalViews({
                     <label className="block text-[11px] font-semibold text-zinc-700">Pet fee per stay (optional, SAR)</label>
                     <input
                       type="number"
-                      value={petFee}
-                      onChange={(e) => setPetFee?.(e.target.value)}
-                      placeholder="e.g. 50"
+                      value=""
+                      disabled
+                      aria-describedby="pet-fee-unavailable"
+                      placeholder="Unavailable"
                       min={0}
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs"
+                      className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-xs text-zinc-500 outline-none shadow-2xs cursor-not-allowed"
                     />
+                    <p id="pet-fee-unavailable" className="text-[11px] text-zinc-500">Pet fees are unavailable until guests can declare pets during booking.</p>
                   </div>
 
                   <div className="space-y-1">
@@ -433,7 +486,60 @@ export function HouseRulesAndArrivalViews({
               )}
             </div>
 
-            {/* Row 5: Additional rules */}
+            {/* Row 5: Commercial photography and filming */}
+            <div className="flex items-center justify-between gap-5 py-3.5">
+              <div>
+                <span className="block text-xs font-semibold text-[#1F1F1F]">Commercial photography and filming allowed</span>
+                <span className="text-[11px] text-zinc-400">Can guests use the space for commercial photo or film shoots?</span>
+              </div>
+              <AllowDenyButtons
+                label="commercial photography and filming"
+                value={commercialFilmingAllowed}
+                onChange={setCommercialFilmingAllowed}
+              />
+            </div>
+
+            {/* Row 6: Guest limit */}
+            <div className="flex items-center justify-between gap-5 py-3.5">
+              <div>
+                <span className="block text-xs font-semibold text-[#1F1F1F]">Number of guests</span>
+                <span className="text-[11px] text-zinc-400">Maximum guests allowed to stay at your place</span>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Decrease maximum guests"
+                  onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600 transition-colors hover:bg-zinc-50"
+                >
+                  −
+                </button>
+                <span className="min-w-3 text-center text-xs font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
+                <button
+                  type="button"
+                  aria-label="Increase maximum guests"
+                  onClick={() => setMaxGuestsCount(Math.min(100, maxGuestsCount + 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600 transition-colors hover:bg-zinc-50"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Row 7: Arrival times */}
+            <button
+              type="button"
+              onClick={() => setActiveSection("check-in-out")}
+              className="flex w-full items-center justify-between gap-5 py-3.5 text-left transition-colors hover:text-zinc-600"
+            >
+              <span>
+                <span className="block text-xs font-semibold text-[#1F1F1F]">Check-in and check-out times</span>
+                <span className="text-[11px] text-zinc-400">Set the arrival window and guest departure time.</span>
+              </span>
+              <span aria-hidden="true" className="text-xl leading-none text-zinc-700">›</span>
+            </button>
+
+            {/* Row 8: Additional rules */}
             <div className="py-3.5 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -800,10 +906,13 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: GUIDEBOOKS (Matches Figma Screenshot 100%) */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "guidebooks" || activeSection === "guidebook") && (
-        <GuidebooksView
+        <GuidebooksManager
+          listingId={listingId || ""}
+          listingCity={listingCity}
+          listingCountry={listingCountry}
+          listingLatitude={listingLatitude}
+          listingLongitude={listingLongitude}
           setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
         />
       )}
 
@@ -829,6 +938,8 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          status={listingStatusSetting || "unlisted"}
+          setStatus={setListingStatusSetting}
         />
       )}
 
@@ -860,6 +971,8 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          listingCity={listingCity}
+          listingCountry={listingCountry}
         />
       )}
 
@@ -872,10 +985,11 @@ export function HouseRulesAndArrivalViews({
       )}
 
       {activeSection === "taxes" && (
-        <TaxesView
+        <TaxesManager
+          listingId={listingId || ""}
+          listingCity={listingCity}
+          listingCountry={listingCountry}
           setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
         />
       )}
 
@@ -895,7 +1009,7 @@ export function HouseRulesAndArrivalViews({
 /* ================================================================= */
 function CheckOutInstructionsView({
   setActiveSection,
-  isSaving,
+  isSaving: _isSaving,
   handleSaveSection,
 }: {
   setActiveSection: (s: any) => void;
@@ -965,7 +1079,7 @@ function CheckOutInstructionsView({
 /* ================================================================= */
 function GuidebooksView({
   setActiveSection,
-  isSaving,
+  isSaving: _isSaving,
   handleSaveSection,
 }: {
   setActiveSection: (s: any) => void;
@@ -1178,12 +1292,21 @@ function ListingStatusView({
   setActiveSection,
   isSaving,
   handleSaveSection,
+  status: propStatus,
+  setStatus: propSetStatus,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
+  status?: "listed" | "unlisted";
+  setStatus?: (s: "listed" | "unlisted") => void;
 }) {
-  const [status, setStatus] = React.useState<"listed" | "unlisted">("listed");
+  const [localStatus, setLocalStatus] = React.useState<"listed" | "unlisted">(propStatus || "unlisted");
+  const status = propStatus ?? localStatus;
+  const setStatus = (val: "listed" | "unlisted") => {
+    setLocalStatus(val);
+    propSetStatus?.(val);
+  };
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
@@ -1290,7 +1413,7 @@ function ListingStatusView({
 /* ================================================================= */
 function LanguagesView({
   setActiveSection,
-  isSaving,
+  isSaving: _isSaving,
   handleSaveSection,
 }: {
   setActiveSection: (s: any) => void;
@@ -1552,7 +1675,7 @@ function CheckInCheckOutView({
   checkOutTime,
   setCheckOutTime,
   setActiveSection,
-  isSaving,
+  isSaving: _isSaving,
   handleSaveSection,
 }: {
   checkInStart: string;
@@ -1933,88 +2056,11 @@ function CheckInMethodView({
 }
 
 /* ================================================================= */
-/* LOCAL LAWS INNER COMPONENT (Matches Reference Figma Design 100%)  */
-/* ================================================================= */
-function LocalLawsView({
-  setActiveSection,
-  isSaving,
-  handleSaveSection,
-}: {
-  setActiveSection: (s: any) => void;
-  isSaving: boolean;
-  handleSaveSection: (key: any) => void;
-}) {
-  const [isSaved, setIsSaved] = React.useState(false);
-
-  return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
-        <h1 className="tracking-tight text-[#1F1F1F]">Local laws</h1>
-      </div>
-
-      {/* Paragraph 1 */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
-        Make sure you understand and follow the local zoning laws, registration requirements, and tax obligations for your municipality.
-      </p>
-
-      {/* Regulation Article Card Link */}
-      <div className="rounded-2xl border border-zinc-300/80 bg-white p-3.5 flex items-center gap-4 shadow-2xs hover:border-zinc-400 transition-all cursor-pointer group max-w-lg">
-        <div className="w-16 h-16 rounded-2xl bg-[#D4D4D8] border border-zinc-300/50 shrink-0" />
-        <div className="flex-1 space-y-0.5">
-          <span className="text-[10px] text-zinc-400 font-medium block">2 min read</span>
-          <h4 className="text-xs font-semibold text-[#1F1F1F] flex items-center gap-1.5 group-hover:text-zinc-700 transition-colors">
-            What hosting regulations apply to you
-            <span className="text-zinc-500 font-normal text-xs transition-transform group-hover:translate-x-0.5">›</span>
-          </h4>
-        </div>
-      </div>
-
-      {/* Paragraph 2 */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
-        Hosts are responsible for complying with municipal permits, building association bylaws, safety codes, and mandatory guest identification reporting according to Ministry of Tourism regulations.
-      </p>
-
-      {/* Action Buttons */}
-      <div className="flex items-center gap-3 pt-3">
-        <button
-          type="button"
-          disabled={isSaving}
-          onClick={() => {
-            handleSaveSection("local-laws");
-            setIsSaved(true);
-            setTimeout(() => setIsSaved(false), 2000);
-          }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-        >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ================================================================= */
 /* REGULATIONS INNER COMPONENT (Matches Reference Figma Design 100%) */
 /* ================================================================= */
 function RegulationsView({
   setActiveSection,
-  isSaving,
+  isSaving: _isSaving,
   handleSaveSection,
 }: {
   setActiveSection: (s: any) => void;

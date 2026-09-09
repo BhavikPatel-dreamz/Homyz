@@ -59,11 +59,15 @@ const CHECK_IN_METHODS = [
 ];
 
 const CANCELLATION_POLICIES = [
-  { id: "FLEXIBLE", label: "Flexible: Full refund up to 1 day before check-in" },
-  { id: "MODERATE", label: "Moderate: Full refund up to 5 days before check-in" },
-  { id: "STRICT", label: "Strict: Full refund up to 14 days before check-in" },
-  { id: "SUPER_STRICT", label: "Super Strict: 50% refund up to 30 days before check-in" },
+  { id: "FLEXIBLE", label: "Flexible" },
+  { id: "MODERATE", label: "Moderate" },
+  { id: "STRICT", label: "Strict" },
+  { id: "SUPER_STRICT", label: "Super Strict" },
 ];
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
 
 export function HostListingsWorkspace({ initialListings }: { initialListings: ListingDTO[] }) {
   const router = useRouter();
@@ -233,8 +237,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         setShowEditorModal(false);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to save listing.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to save listing."), "error");
       }
     });
   }
@@ -251,8 +255,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast("Listing submitted for Admin Review!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to submit listing.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to submit listing."), "error");
       }
     });
   }
@@ -269,8 +273,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast(nextState ? "Listing paused (unpublished from search)." : "Listing resumed!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to update listing state.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to update listing state."), "error");
       }
     });
   }
@@ -286,8 +290,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         }
         showToast("Listing duplicated to new Draft!", "success");
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to duplicate listing.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to duplicate listing."), "error");
       }
     });
   }
@@ -306,8 +310,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         setShowDeleteModal(false);
         setListingToDelete(null);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to delete listing.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to delete listing."), "error");
       }
     });
   }
@@ -333,8 +337,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
         showToast("Blocked dates saved!", "success");
         setShowAvailabilityModal(false);
         router.refresh();
-      } catch (err: any) {
-        showToast(err.message || "Failed to update availability.", "error");
+      } catch (err: unknown) {
+        showToast(errorMessage(err, "Failed to update availability."), "error");
       }
     });
   }
@@ -784,8 +788,8 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                               } else {
                                 showToast(data.error || "Failed to upload photo.", "error");
                               }
-                            } catch (err: any) {
-                              showToast("Upload failed: " + err.message, "error");
+                            } catch (err: unknown) {
+                              showToast(`Upload failed: ${errorMessage(err, "Please try again.")}`, "error");
                             }
                             e.target.value = "";
                           }}

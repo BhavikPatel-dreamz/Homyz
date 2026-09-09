@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listingService } from "@/services/listing.service";
+import { guidebookService } from "@/services/guidebook.service";
 import { PublicListingDetailClient } from "./public-listing-detail-client";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +41,11 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
 export default async function PublicListingPage({ params }: ListingDetailPageProps) {
   const { id } = await params;
   let listing: Awaited<ReturnType<typeof listingService.getPublicListingById>> | null = null;
+  let guidebooks: any[] = [];
 
   try {
     listing = await listingService.getPublicListingById(id);
+    guidebooks = await guidebookService.getGuidebooksForListing(id).catch(() => []);
   } catch (err: unknown) {
     const error = err as { statusCode?: number; status?: number; message?: string } | null;
     if (error?.statusCode === 404 || error?.status === 404 || error?.message?.includes("not available")) {
@@ -56,5 +59,5 @@ export default async function PublicListingPage({ params }: ListingDetailPagePro
     notFound();
   }
 
-  return <PublicListingDetailClient listing={listing} />;
+  return <PublicListingDetailClient listing={listing} guidebooks={guidebooks} />;
 }

@@ -8,6 +8,7 @@ import type {
   ChangePasswordInput,
   UpdateProfileInput,
 } from "@/lib/validation/user";
+import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
 import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
 
@@ -78,6 +79,33 @@ async function updateProfile(
     }
     throw err;
   }
+}
+
+/** Merge the listing-editor fields into the shared public profile. */
+async function updateHostPublicProfile(userId: string, input: UpdateHostPublicProfileInput): Promise<PublicUser> {
+  const existing = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { publicProfile: true },
+  });
+  if (!existing) throw AppError.notFound("User not found");
+
+  const current = (existing.publicProfile as Record<string, unknown> | null) ?? {};
+  const currentPrompts = (current.prompts as Record<string, unknown> | undefined) ?? {};
+  const nextProfile = {
+    ...current,
+    ...(input.bio !== undefined ? { bio: input.bio } : {}),
+    ...(input.prompts !== undefined ? { prompts: { ...currentPrompts, ...input.prompts } } : {}),
+    ...(input.languages !== undefined ? { languages: [...new Set(input.languages)] } : {}),
+    ...(input.interests !== undefined ? { interests: [...new Set(input.interests)] } : {}),
+    ...(input.stampsVisible !== undefined ? { stampsVisible: input.stampsVisible } : {}),
+    ...(input.selectedStamps !== undefined ? { selectedStamps: [...new Set(input.selectedStamps)].slice(0, 10) } : {}),
+  };
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { publicProfile: nextProfile },
+  });
+  await deleteCache(keys.userProfile(userId));
+  return toPublicUser(user);
 }
 
 async function changePassword(
@@ -178,6 +206,7 @@ async function getUserStats(userId: string) {
 export const userService = {
   getById,
   updateProfile,
+  updateHostPublicProfile,
   changePassword,
   getTripPhotos,
   createTripPhotos,
@@ -185,4 +214,3 @@ export const userService = {
   deleteTripPhoto,
   getUserStats,
 };
-

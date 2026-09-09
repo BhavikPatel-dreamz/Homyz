@@ -36,15 +36,52 @@ export async function updateListingAction(id: string, input: unknown) {
   });
 }
 
-export async function deleteListingAction(id: string) {
+export async function deleteListingAction(
+  id: string,
+  feedback?: {
+    categories?: string[];
+    reasons?: string[];
+    customFeedback?: string;
+  }
+) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    const result = await listingService.remove(actor, id);
+    const result = await listingService.remove(actor, id, feedback);
     revalidatePath("/host/listings");
     revalidatePath("/admin/listings");
     revalidatePath("/admin/hosts");
     return result;
+  });
+}
+
+export async function publishListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.publish(actor, id);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath(`/listings/${id}`);
+    if (listing.customSlug) {
+      revalidatePath(`/stay/${listing.customSlug}`);
+    }
+    return listing;
+  });
+}
+
+export async function unpublishListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.unpublish(actor, id);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath(`/listings/${id}`);
+    if (listing.customSlug) {
+      revalidatePath(`/stay/${listing.customSlug}`);
+    }
+    return listing;
   });
 }
 

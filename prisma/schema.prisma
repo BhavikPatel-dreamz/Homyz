@@ -39,6 +39,14 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum ListingCoHostStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
 enum UserStatus {
   ACTIVE
   SUSPENDED
@@ -166,6 +174,12 @@ model User {
   resolvedComplianceIssues HostComplianceIssue[] @relation("ResolvedComplianceIssues")
   createdInfoRequests HostInfoRequest[] @relation("CreatedInfoRequests")
   tripPhotos         TripPhoto[]
+  coHostInvitationsSent ListingCoHost[] @relation("ListingCoHostInviter")
+  coHostAssignments      ListingCoHost[] @relation("ListingCoHostUser")
+  guidebooks             Guidebook[]
+  taxRegistrations       TaxRegistration[]
+  taxAuditLogs           TaxAuditLog[]
+  listingRemovalFeedbacks ListingRemovalFeedback[]
 
   @@index([role])
   @@index([adminRoleId])
@@ -289,6 +303,7 @@ model Listing {
   hostId              String
   title               String
   description         String        @db.Text
+  descriptionSections Json?         // Structured property / guest access / interaction / notes
   price               Int           // minor units (e.g. cents) per night
   published           Boolean       @default(false)
   status              ListingStatus @default(DRAFT)
@@ -300,6 +315,8 @@ model Listing {
   locationSearch      String?
   shortAddress        String?
   address             String?       @db.Text
+  neighborhoodDescription String?   @db.Text
+  gettingAround       String?       @db.Text
   apartment           String?
   city                String?
   district            String?
@@ -352,6 +369,9 @@ model Listing {
   safetyHazards       String[]      @default([]) // Water, Heights, Stairs, Animals, etc.
   accessibilityFeatures String[]    @default([]) // Step-free, Wide doors, Grab rails, etc.
   views               String[]      @default([]) // City, Sea, Mountain, Garden, etc.
+  // Location context distinct from amenities (for example, nearby transit).
+  // Beach access remains a canonical amenity and is intentionally not duplicated here.
+  locationFeatures    String[]      @default([])
 
   // Step 3 — House Rules & Check-in Details
   houseRules          String[]      @default([]) // Legacy / summary house rules strings
@@ -387,12 +407,15 @@ model Listing {
   lockboxCode         String?
 
   // Step 4 — Policies & Constraints
-  cancellationPolicy  String?       @default("FLEXIBLE") // FLEXIBLE, MODERATE, STRICT, SUPER_STRICT
+  cancellationPolicy  String?       @default("FLEXIBLE") // Short stays: FLEXIBLE, MODERATE, LIMITED, FIRM, STRICT
+  longTermCancellationPolicy String? @default("FIRM") // Stays of 28+ nights: FIRM or STRICT
+  bookingMessage      String?       @db.Text // Public pre-booking message from the host
   minNights           Int           @default(1)
   maxNights           Int           @default(365)
   instantBook         Boolean       @default(true)
   isPaused            Boolean       @default(false)
   isFeatured          Boolean       @default(false)
+  customSlug          String?       @unique
 
   // Step 5 — Availability & Dates
   blockedDates        String[]      @default([]) // Array of YYYY-MM-DD blocked dates
@@ -417,17 +440,53 @@ model Listing {
   approvedAt          DateTime?
   approvedById        String?
 
+  deletedAt           DateTime?
+  removalReason       Json?
+
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
   host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings Booking[]
+  coHosts  ListingCoHost[]
+  guidebookListings GuidebookListing[]
+  taxes    ListingTax[]
+  taxAuditLogs TaxAuditLog[]
 
   @@index([hostId])
   @@index([published])
   @@index([status])
   @@index([status, published])
   @@index([city])
+}
+
+model ListingCoHost {
+  id              String            @id @default(cuid())
+  listingId       String
+  inviterHostId   String
+  userId          String?
+  email           String?
+  phone           String?
+  status          ListingCoHostStatus @default(PENDING)
+  tokenHash       String?           @unique
+  invitedAt       DateTime          @default(now())
+  expiresAt       DateTime?
+  acceptedAt      DateTime?
+  declinedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  listing       Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  inviterHost   User    @relation("ListingCoHostInviter", fields: [inviterHostId], references: [id], onDelete: Cascade)
+  user          User?   @relation("ListingCoHostUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([listingId, email])
+  @@unique([listingId, phone])
+  @@unique([listingId, userId])
+  @@index([listingId, status])
+  @@index([email, status])
+  @@index([phone, status])
 }
 
 model Booking {
@@ -443,11 +502,13 @@ model Booking {
   cleaningFee    Int?          // Minor units / cents
   currency       String        @default("SAR")
   priceBreakdown Json?         // Structured snapshot of nights, rates, discounts
+  cancellationPolicy String?   // Applicable listing policy snapshot at booking time
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  taxes   ReservationTax[]
 
   @@index([userId])
   @@index([listingId])
@@ -770,3 +831,261 @@ model HostInfoRequest {
   @@index([requestId])
   @@index([status])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Host Guidebooks & Local Recommendations
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Guidebook {
+  id               String             @id @default(cuid())
+  hostId           String
+  title            String
+  coverImage       String?
+  city             String?
+  state            String?
+  country          String?
+  countryCode      String?
+  latitude         Float?
+  longitude        Float?
+  formattedAddress String?
+  published        Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  host             User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listings         GuidebookListing[]
+  items            GuidebookItem[]
+
+  @@index([hostId])
+  @@index([city])
+  @@index([published])
+}
+
+model GuidebookListing {
+  id          String    @id @default(cuid())
+  guidebookId String
+  listingId   String
+  createdAt   DateTime  @default(now())
+
+  guidebook   Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([guidebookId, listingId])
+  @@index([guidebookId])
+  @@index([listingId])
+}
+
+model GuidebookItem {
+  id              String    @id @default(cuid())
+  guidebookId     String
+  type            String    @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "TIP"
+  title           String
+  category        String    // "FOOD_AND_DRINK", "COFFEE_AND_CAFES", "SIGHTSEEING", "SHOPPING", "OUTDOORS", "ENTERTAINMENT", "NIGHTLIFE", "ESSENTIALS", "GETTING_AROUND", "FAMILY", "WELLNESS", "LOCAL_FAVORITE", "LOCAL_TIP"
+  description     String?   @db.Text
+  hostTip         String?   @db.Text
+  photo           String?
+  placeProviderId String?
+  address         String?
+  latitude        Float?
+  longitude       Float?
+  isFavorite      Boolean   @default(false)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  guidebook       Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+
+  @@index([guidebookId])
+  @@index([guidebookId, sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tax Management Engine (Airbnb-Grade Multi-Jurisdiction Engine)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TaxType {
+  VAT
+  GST
+  TOURIST_TAX
+  OCCUPANCY_TAX
+  LODGING_TAX
+  SALES_TAX
+  CITY_TAX
+  OTHER
+}
+
+enum TaxCalculationMethod {
+  PERCENTAGE
+  FLAT_PER_BOOKING
+  AMOUNT_PER_NIGHT
+  AMOUNT_PER_GUEST
+  AMOUNT_PER_GUEST_PER_NIGHT
+}
+
+enum TaxRemittanceResponsibility {
+  PLATFORM
+  HOST
+  THIRD_PARTY
+  MANUAL
+}
+
+enum TaxRegistrationStatus {
+  UNVERIFIED
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+model TaxJurisdiction {
+  id            String            @id @default(cuid())
+  country       String            // ISO 2-letter e.g. "SA", "AE", "US", "GB"
+  region        String?           // State, Province, or District
+  city          String?           // City or Municipality e.g. "Riyadh", "Dubai"
+  postalPattern String?           // Regex or prefix for postal match
+  name          String            // Friendly name e.g. "Saudi Arabia - Riyadh"
+  currency      String            @default("SAR")
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  rules         TaxRule[]
+  registrations TaxRegistration[]
+
+  @@index([country])
+  @@index([country, city])
+}
+
+model TaxRule {
+  id                         String                      @id @default(cuid())
+  jurisdictionId             String
+  taxType                    TaxType
+  name                       String                      // e.g. "Saudi Value-Added Tax", "Municipal Tourism Fee"
+  description                String?                     @db.Text
+  calculationMethod          TaxCalculationMethod        @default(PERCENTAGE)
+  rate                       Float?                      // e.g. 15.0 for 15%
+  amount                     Int?                        // in minor units / cents (for flat/night/guest)
+  taxableComponents          String[]                    @default(["BASE_PRICE", "CLEANING_FEE"])
+  remittanceResponsibility   TaxRemittanceResponsibility @default(PLATFORM)
+  isSystemManaged            Boolean                     @default(true)
+  isInclusive                Boolean                     @default(false)
+  longStayExemptionNights    Int?                        // e.g. 28 -> stays >= 28 nights exempt
+  effectiveFrom              DateTime                    @default(now())
+  effectiveUntil             DateTime?
+  version                    Int                         @default(1)
+  isActive                   Boolean                     @default(true)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+
+  jurisdiction               TaxJurisdiction             @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  listingTaxes               ListingTax[]
+
+  @@index([jurisdictionId])
+  @@index([jurisdictionId, taxType])
+}
+
+model ListingTax {
+  id                         String                      @id @default(cuid())
+  listingId                  String
+  taxRuleId                  String?
+  customName                 String?
+  taxType                    TaxType
+  calculationMethod          TaxCalculationMethod        @default(PERCENTAGE)
+  rate                       Float?
+  amount                     Int?                        // in minor units / cents
+  taxableComponents          String[]                    @default(["BASE_PRICE"])
+  remittanceResponsibility   TaxRemittanceResponsibility @default(HOST)
+  longStayExemptionNights    Int?
+  isActive                   Boolean                     @default(true)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+
+  listing                    Listing                     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  taxRule                    TaxRule?                    @relation(fields: [taxRuleId], references: [id], onDelete: SetNull)
+
+  @@unique([listingId, taxType])
+  @@index([listingId])
+}
+
+model TaxRegistration {
+  id                         String                      @id @default(cuid())
+  hostId                     String
+  jurisdictionId             String?
+  taxType                    String                      // "VAT_ID", "GST_NUMBER", "TOURIST_TAX_ID", "MUNICIPAL_LICENSE"
+  registrationNumber         String
+  businessName               String?
+  businessAddress            String?
+  documentUrl                String?
+  status                     TaxRegistrationStatus       @default(UNVERIFIED)
+  verifiedAt                 DateTime?
+  verifiedById               String?
+  notes                      String?                     @db.Text
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+
+  host                       User                        @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  jurisdiction               TaxJurisdiction?            @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+
+  @@index([hostId])
+  @@index([hostId, taxType])
+}
+
+model ReservationTax {
+  id                         String                      @id @default(cuid())
+  bookingId                  String
+  taxRuleId                  String?
+  taxRuleVersion             Int                         @default(1)
+  taxName                    String
+  taxType                    TaxType
+  calculationMethod          TaxCalculationMethod
+  rate                       Float?
+  amount                     Int?                        // configured fixed amount
+  taxableBase                Int                         // in minor units (cents)
+  taxAmount                  Int                         // in minor units (cents)
+  currency                   String                      @default("SAR")
+  remittanceResponsibility   TaxRemittanceResponsibility
+  refundedTax                Int                         @default(0) // in minor units
+  createdAt                  DateTime                    @default(now())
+
+  booking                    Booking                     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model TaxAuditLog {
+  id                         String                      @id @default(cuid())
+  listingId                  String?
+  hostId                     String
+  action                     String                      // "CREATE_TAX", "UPDATE_TAX", "DELETE_TAX", "ADD_REGISTRATION", "UPDATE_REGISTRATION"
+  oldValues                  Json?
+  newValues                  Json?
+  ipAddress                  String?
+  createdAt                  DateTime                    @default(now())
+
+  host                       User                        @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listing                    Listing?                    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([hostId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Listing Removal Feedback & Exit Survey
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ListingRemovalFeedback {
+  id              String    @id @default(cuid())
+  listingId       String
+  hostId          String
+  listingTitle    String
+  categories      String[]  // E.g. ["NO_LONGER_ABLE", "NOT_READY", "EXPECTED_MORE_HOMYZ", "WANTED_MORE_MONEY", "GUEST_ISSUES", "DUPLICATE"]
+  reasons         String[]  // Array of all specific reason options selected
+  customFeedback  String?   @db.Text
+  actionTaken     String    @default("PERMANENT_DELETE") // "PERMANENT_DELETE" | "ARCHIVED"
+  createdAt       DateTime  @default(now())
+
+  host            User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([hostId])
+}
+

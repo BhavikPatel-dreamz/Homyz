@@ -17,8 +17,11 @@ interface RealMapProps {
   country?: string;
   lat?: number;
   lng?: number;
+  /** Keep a previously saved pin until the host deliberately changes address text. */
+  preferInitialCoordinates?: boolean;
   showExactLocation?: boolean;
   onLocationChange?: (lat: number, lng: number, details?: LocationDetails) => void;
+  onLocationError?: (message: string) => void;
   className?: string;
 }
 
@@ -28,8 +31,10 @@ export function RealMap({
   country = "Saudi Arabia",
   lat: initialLat,
   lng: initialLng,
+  preferInitialCoordinates = false,
   showExactLocation = true,
   onLocationChange,
+  onLocationError,
   className = "h-[220px] w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-xs relative",
 }: RealMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +42,7 @@ export function RealMap({
   const markerRef = useRef<any>(null);
   const circleRef = useRef<any>(null);
   const isInternalUpdateRef = useRef(false);
+  const didRunForwardGeocodeRef = useRef(false);
 
   // Default to Riyadh coordinates (24.7136, 46.6753) if not provided
   const [coords, setCoords] = useState<{ lat: number; lng: number }>({
@@ -126,6 +132,15 @@ export function RealMap({
 
     if (!address && !city) return;
 
+    // A saved coordinate is authoritative on first render. This prevents an
+    // automatic forward-geocode of the displayed address from overwriting it.
+    if (!didRunForwardGeocodeRef.current) {
+      didRunForwardGeocodeRef.current = true;
+      if (preferInitialCoordinates && Number.isFinite(initialLat) && Number.isFinite(initialLng)) {
+        return;
+      }
+    }
+
     const fullQuery = [address, city, country].filter(Boolean).join(", ");
     if (!fullQuery) return;
 
@@ -137,6 +152,9 @@ export function RealMap({
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullQuery)}&limit=1`,
           { signal: controller.signal, headers: { "User-Agent": "HomyzApp/1.0" } }
         );
+        if (!response.ok) {
+          throw new Error("We couldn't find that address. Move the pin or refine the address and try again.");
+        }
         const data = await response.json();
         if (data && data.length > 0) {
           const newLat = parseFloat(data[0].lat);
@@ -144,7 +162,9 @@ export function RealMap({
           setCoords({ lat: newLat, lng: newLng });
         }
       } catch (err) {
-        // Ignore aborts or geocoding network errors
+        if (!controller.signal.aborted) {
+          onLocationError?.(err instanceof Error ? err.message : "We couldn't resolve that address.");
+        }
       } finally {
         setIsLoadingGeocode(false);
       }
@@ -154,7 +174,7 @@ export function RealMap({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [address, city, country]);
+  }, [address, city, country, initialLat, initialLng, onLocationError, preferInitialCoordinates]);
 
   // Load Leaflet CSS and Initialize Map
   useEffect(() => {

@@ -11,6 +11,10 @@ import type { CreateBookingInput } from "@/lib/validation/booking";
 import { toBookingDTO, type BookingDTO } from "./mappers";
 
 import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
+import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
+import { TaxCalculator } from "@/lib/tax/tax-calculator";
+import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 
 export type BookingQuote = {
   listingId: string;
@@ -22,10 +26,22 @@ export type BookingQuote = {
   baseNightlyPrice: number; // cents
   weekendNightlyPrice: number | null; // cents
   nightlySubtotal: number; // cents
+  discountAmount: number; // cents
+  discountPercentage: number;
   cleaningFee: number; // cents
-  totalPrice: number; // cents
+  subtotal: number; // nightlySubtotal - discountAmount + cleaningFee (cents)
+  totalPrice: number; // cents (totalPrice before tax for compatibility)
+  taxes: CalculatedTaxItem[];
+  taxTotal: number; // total tax in cents
+  platformRemittedTaxTotal: number; // taxes platform collects & remits
+  hostRemittedTaxTotal: number; // taxes host collects & remits
+  guestTotal: number; // subtotal + taxTotal (cents)
+  payoutBreakdown?: HostPayoutBreakdown;
   currency: string;
   guests: number;
+  pets: number;
+  cancellationPolicy: string;
+  cancellationPolicyType: "SHORT_TERM" | "LONG_TERM";
   breakdown: Array<{
     date: string;
     isWeekend: boolean;
@@ -38,9 +54,11 @@ export async function getBookingQuote(opts: {
   checkIn: Date | string;
   checkOut: Date | string;
   guests?: number;
+  pets?: number;
 }): Promise<BookingQuote> {
   const listing = await prisma.listing.findUnique({
     where: { id: opts.listingId },
+    include: { taxes: { where: { isActive: true } } },
   });
 
   if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
@@ -80,6 +98,16 @@ export async function getBookingQuote(opts: {
     throw AppError.badRequest(`Property accommodates a maximum of ${listing.guests} guests`);
   }
 
+  const requestedPets = opts.pets ?? 0;
+  if (requestedPets > 0) {
+    if (listing.petsAllowed === false) {
+      throw AppError.badRequest("Pets are not allowed at this property");
+    }
+    if (listing.maxPets !== null && requestedPets > listing.maxPets) {
+      throw AppError.badRequest(`Property accommodates a maximum of ${listing.maxPets} pets`);
+    }
+  }
+
   const basePrice = listing.price; // cents
   const weekendPrice = listing.weekendPrice && listing.weekendPrice > 0 ? listing.weekendPrice : null;
   const cleaningFee = listing.cleaningFee || 0; // cents
@@ -111,7 +139,55 @@ export async function getBookingQuote(opts: {
     });
   }
 
-  const totalPrice = nightlySubtotal + cleaningFee;
+  const discountConfig = listing.discounts && typeof listing.discounts === "object"
+    ? listing.discounts as Record<string, unknown> : {};
+  const discountKey = nights >= 28 ? "monthly" : nights >= 7 ? "weekly" : null;
+  const discountEntry = discountKey && discountConfig[discountKey] && typeof discountConfig[discountKey] === "object"
+    ? discountConfig[discountKey] as Record<string, unknown> : null;
+  const discountPercentage = discountEntry?.enabled !== false && typeof discountEntry?.percentage === "number"
+    ? Math.max(0, Math.min(100, discountEntry.percentage)) : 0;
+  const discountAmount = Math.round(nightlySubtotal * discountPercentage / 100);
+  const subtotal = nightlySubtotal - discountAmount + cleaningFee;
+  const cancellationPolicyType = nights >= 28 ? "LONG_TERM" : "SHORT_TERM";
+  const cancellationPolicy = cancellationPolicyType === "LONG_TERM"
+    ? listing.longTermCancellationPolicy || "FIRM"
+    : listing.cancellationPolicy || "FLEXIBLE";
+
+  // Resolve jurisdiction and compute deterministic taxes
+  const resolved = resolveTaxJurisdiction({
+    country: listing.country,
+    city: listing.city,
+    postalCode: listing.postalCode,
+    district: listing.district,
+  });
+
+  const hostTaxes: ListingTaxDTO[] = (listing.taxes || []).map((t: any) => ({
+    id: t.id,
+    listingId: t.listingId,
+    taxRuleId: t.taxRuleId,
+    customName: t.customName,
+    taxType: t.taxType,
+    calculationMethod: t.calculationMethod,
+    rate: t.rate,
+    amount: t.amount,
+    taxableComponents: t.taxableComponents as any,
+    remittanceResponsibility: t.remittanceResponsibility,
+    longStayExemptionNights: t.longStayExemptionNights,
+    isActive: t.isActive,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
+  }));
+
+  const taxResult = TaxCalculator.calculateTaxes({
+    nights,
+    nightlySubtotal,
+    discountAmount,
+    cleaningFee,
+    guests: requestedGuests,
+    rules: resolved.systemRules,
+    hostTaxes,
+    currency: "SAR",
+  });
 
   return {
     listingId: listing.id,
@@ -123,10 +199,22 @@ export async function getBookingQuote(opts: {
     baseNightlyPrice: basePrice,
     weekendNightlyPrice: weekendPrice,
     nightlySubtotal,
+    discountAmount,
+    discountPercentage,
     cleaningFee,
-    totalPrice,
+    subtotal,
+    totalPrice: subtotal,
+    taxes: taxResult.taxes,
+    taxTotal: taxResult.taxTotal,
+    platformRemittedTaxTotal: taxResult.platformRemittedTaxTotal,
+    hostRemittedTaxTotal: taxResult.hostRemittedTaxTotal,
+    guestTotal: taxResult.guestTotal,
+    payoutBreakdown: taxResult.payoutBreakdown,
     currency: "SAR",
     guests: requestedGuests,
+    pets: requestedPets,
+    cancellationPolicy,
+    cancellationPolicyType,
     breakdown,
   };
 }
@@ -153,21 +241,8 @@ async function create(
     checkIn: input.startDate,
     checkOut: input.endDate,
     guests: input.guests,
+    pets: input.pets,
   });
-
-  // Verify no booking conflict (overlap check)
-  const conflict = await prisma.booking.findFirst({
-    where: {
-      listingId: input.listingId,
-      status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-      startDate: { lt: input.endDate },
-      endDate: { gt: input.startDate },
-    },
-  });
-
-  if (conflict) {
-    throw AppError.conflict("The selected dates are no longer available");
-  }
 
   // Check against listing.blockedDates
   if (Array.isArray(listing.blockedDates) && listing.blockedDates.length > 0) {
@@ -179,19 +254,50 @@ async function create(
     }
   }
 
-  const booking = await prisma.booking.create({
-    data: {
+  const booking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    // Serialize booking attempts per listing so concurrent overlap checks cannot both win.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.listingId}))`;
+    const conflict = await tx.booking.findFirst({ where: { listingId: input.listingId, status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] }, startDate: { lt: input.endDate }, endDate: { gt: input.startDate } } });
+    if (conflict) throw AppError.conflict("The selected dates are no longer available");
+
+    const createdBooking = await tx.booking.create({ data: {
       userId: actor.id,
       listingId: input.listingId,
       startDate: input.startDate,
       endDate: input.endDate,
       guests: quote.guests,
-      totalPrice: quote.totalPrice,
+      totalPrice: quote.guestTotal,
       nightlyPrice: quote.baseNightlyPrice,
       cleaningFee: quote.cleaningFee,
       currency: quote.currency,
-      priceBreakdown: quote as any,
-    },
+      priceBreakdown: quote as unknown as Prisma.InputJsonValue,
+      cancellationPolicy: quote.cancellationPolicy,
+      status: listing.instantBook ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
+    } });
+
+    // Snapshot each calculated tax item for immutable reservation auditing
+    if (quote.taxes && quote.taxes.length > 0) {
+      for (const tax of quote.taxes) {
+        await tx.reservationTax.create({
+          data: {
+            bookingId: createdBooking.id,
+            taxRuleId: tax.taxRuleId || null,
+            taxRuleVersion: tax.taxRuleVersion || 1,
+            taxName: tax.taxName,
+            taxType: tax.taxType,
+            calculationMethod: tax.calculationMethod,
+            rate: tax.rate ?? null,
+            amount: tax.amount ?? null,
+            taxableBase: tax.taxableBase,
+            taxAmount: tax.taxAmount,
+            currency: tax.currency || "SAR",
+            remittanceResponsibility: tax.remittanceResponsibility,
+          },
+        });
+      }
+    }
+
+    return createdBooking;
   });
 
   // Invalidate booking caches after creation

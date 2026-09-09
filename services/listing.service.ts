@@ -22,6 +22,7 @@ import {
   type PublicListingDTO,
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
+import { normalizeSlug } from "@/lib/utils/slug";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -40,6 +41,42 @@ export type ListingPublishReadiness = {
   publishable: boolean;
   missing: string[];
 };
+
+function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const profile = value as Record<string, unknown>;
+  if (profile.profileVisible === false) return null;
+  const promptSource = profile.prompts && typeof profile.prompts === "object" && !Array.isArray(profile.prompts)
+    ? profile.prompts as Record<string, unknown> : {};
+  const prompts = Object.fromEntries(
+    ["homeUnique", "guestsShouldKnow", "hobbies", "education", "perfectGuest"]
+      .filter((key) => typeof promptSource[key] === "string" && promptSource[key])
+      .map((key) => [key, promptSource[key]]),
+  );
+  const list = (input: unknown) => Array.isArray(input)
+    ? input.filter((item): item is string => typeof item === "string").slice(0, 20) : [];
+  const languages = list(profile.languages);
+  if (!languages.length && typeof profile.languages === "string" && profile.languages.trim()) {
+    languages.push(profile.languages.trim().slice(0, 300));
+  }
+  const profileDetails = Object.fromEntries(
+    [
+      "whereIWantToGo", "uselessSkill", "myWork", "funFact", "favoriteSong",
+      "obsessedWith", "pets", "bioTitle", "decadeBorn", "whereILive", "school",
+      "spendTooMuchTime", "breakfast",
+    ].filter((key) => typeof profile[key] === "string" && (profile[key] as string).trim())
+      .map((key) => [key, (profile[key] as string).trim().slice(0, 300)]),
+  );
+  return {
+    ...(typeof profile.bio === "string" ? { bio: profile.bio } : {}),
+    ...(Object.keys(prompts).length ? { prompts } : {}),
+    ...profileDetails,
+    languages,
+    interests: list(profile.interests),
+    stampsVisible: profile.stampsVisible !== false,
+    ...(profile.stampsVisible !== false ? { selectedStamps: list(profile.selectedStamps).slice(0, 10) } : {}),
+  };
+}
 
 function getPublishReadiness(listing: {
   propertyType: string | null;
@@ -160,6 +197,7 @@ async function searchPublicListings(
     { published: true },
     { status: ListingStatus.ACTIVE },
     { isPaused: false },
+    { deletedAt: null },
   ];
 
   if (filters.city && filters.city.trim()) {
@@ -264,10 +302,10 @@ async function searchPublicListings(
 async function getPublicListingById(id: string): Promise<
   PublicListingDTO & {
     host?: {
-      id: string;
       name: string | null;
       image: string | null;
       createdAt: Date;
+      publicProfile: Record<string, unknown> | null;
     };
   }
 > {
@@ -280,6 +318,7 @@ async function getPublicListingById(id: string): Promise<
           name: true,
           image: true,
           createdAt: true,
+          publicProfile: true,
         },
       },
     },
@@ -294,10 +333,49 @@ async function getPublicListingById(id: string): Promise<
     ...publicDTO,
     host: listing.host
       ? {
-          id: listing.host.id,
           name: listing.host.name,
           image: listing.host.image,
           createdAt: listing.host.createdAt,
+          publicProfile: toPublicHostProfile(listing.host.publicProfile),
+        }
+      : undefined,
+  };
+}
+
+async function getPublicListingBySlug(slug: string) {
+  const normalized = normalizeSlug(slug);
+  if (!normalized) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  const listing = await prisma.listing.findUnique({
+    where: { customSlug: normalized },
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          createdAt: true,
+          publicProfile: true,
+        },
+      },
+    },
+  });
+
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  const publicDTO = toPublicListingDTO(listing);
+  return {
+    ...publicDTO,
+    host: listing.host
+      ? {
+          name: listing.host.name,
+          image: listing.host.image,
+          createdAt: listing.host.createdAt,
+          publicProfile: toPublicHostProfile(listing.host.publicProfile),
         }
       : undefined,
   };
@@ -308,7 +386,7 @@ async function getById(id: string): Promise<ListingDTO> {
     keys.listing(id),
     async () => {
       const listing = await prisma.listing.findUnique({ where: { id } });
-      if (!listing) throw AppError.notFound("Listing not found");
+      if (!listing || listing.deletedAt) throw AppError.notFound("Listing not found");
       return toListingDTO(listing);
     },
     { ttl: LISTING_TTL, revive: reviveListingDTO },
@@ -335,7 +413,7 @@ async function listForHost(
   }
   const skip = opts?.skip ?? 0;
   const take = opts?.take ?? 50;
-  const where = { hostId: actor.id };
+  const where: Prisma.ListingWhereInput = { hostId: actor.id, deletedAt: null };
   const [items, total] = await Promise.all([
     prisma.listing.findMany({
       where,
@@ -371,6 +449,7 @@ async function create(
       hostId: actor.id,
       title: input.title || "Draft Listing",
       description: input.description || "",
+      descriptionSections: input.descriptionSections ? JSON.parse(JSON.stringify(input.descriptionSections)) : null,
       price: input.price ?? 10000,
       published: false, // Strictly enforced: Host submission requires Admin approval before activation
       hostingType: input.hostingType || "HOME",
@@ -379,6 +458,8 @@ async function create(
       locationSearch: input.locationSearch || null,
       shortAddress: input.shortAddress || null,
       address: input.address || null,
+      neighborhoodDescription: input.neighborhoodDescription ?? null,
+      gettingAround: input.gettingAround ?? null,
       apartment: input.apartment || null,
       city: input.city || null,
       district: input.district || null,
@@ -419,6 +500,7 @@ async function create(
       safetyHazards: input.safetyHazards || [],
       accessibilityFeatures: input.accessibilityFeatures || [],
       views: input.views || [],
+      locationFeatures: input.locationFeatures || [],
       houseRules: input.houseRules || [],
       petsAllowed: input.petsAllowed ?? null,
       maxPets: input.maxPets ?? null,
@@ -449,6 +531,8 @@ async function create(
       doorCode: input.doorCode ?? null,
       lockboxCode: input.lockboxCode ?? null,
       cancellationPolicy: input.cancellationPolicy || "FLEXIBLE",
+      longTermCancellationPolicy: input.longTermCancellationPolicy || "FIRM",
+      bookingMessage: input.bookingMessage ?? null,
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
       instantBook: input.instantBook ?? true,
@@ -460,7 +544,16 @@ async function create(
       weekendPremium: input.weekendPremium ?? null,
       discounts: input.discounts ? JSON.parse(JSON.stringify(input.discounts)) : null,
       currentStep: input.currentStep ?? 1,
+      customSlug: typeof input.customSlug === "string" ? normalizeSlug(input.customSlug) : null,
     },
+  }).catch((error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = String(error.meta?.target || error.meta?.constraint || error.message);
+      if (target.includes("customSlug")) {
+        throw AppError.conflict("This custom link is already in use by another listing.");
+      }
+    }
+    throw error;
   });
 
   await auditService.record({
@@ -501,7 +594,19 @@ async function update(
   if (actor.role !== Role.ADMIN) {
     delete dataToUpdate.published;
   }
-  if (dataToUpdate.amenities) {
+  if (dataToUpdate.descriptionSections !== undefined) {
+    dataToUpdate.descriptionSections = dataToUpdate.descriptionSections ? JSON.parse(JSON.stringify(dataToUpdate.descriptionSections)) : null;
+  }
+  if (dataToUpdate.neighborhoodDescription !== undefined) {
+    dataToUpdate.neighborhoodDescription = dataToUpdate.neighborhoodDescription ?? null;
+  }
+  if (dataToUpdate.gettingAround !== undefined) {
+    dataToUpdate.gettingAround = dataToUpdate.gettingAround ?? null;
+  }
+  if (dataToUpdate.bookingMessage !== undefined) {
+    dataToUpdate.bookingMessage = dataToUpdate.bookingMessage || null;
+  }
+  if (Array.isArray(dataToUpdate.amenities)) {
     dataToUpdate.amenities = normalizeAmenities(dataToUpdate.amenities);
   }
   if (dataToUpdate.rooms !== undefined) {
@@ -510,8 +615,22 @@ async function update(
   if (dataToUpdate.discounts !== undefined) {
     dataToUpdate.discounts = dataToUpdate.discounts ? JSON.parse(JSON.stringify(dataToUpdate.discounts)) : null;
   }
+  if (dataToUpdate.customSlug !== undefined) {
+    dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
+  }
 
-  const listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
+  let listing;
+  try {
+    listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = String(error.meta?.target || error.meta?.constraint || error.message);
+      if (target.includes("customSlug")) {
+        throw AppError.conflict("This custom link is already in use by another listing.");
+      }
+    }
+    throw error;
+  }
   await Promise.all([
     deleteCache(keys.listing(id)),
     incrCounter(keys.listingsPublicVersion()),
@@ -601,6 +720,75 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
     resourceType: "Listing",
     resourceId: id,
     description: `Resubmitted listing "${updated.title}" for Admin review after updating details`,
+  });
+
+  return toListingDTO(updated);
+}
+
+async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  assertOwnership(actor, existing.hostId);
+
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  const readiness = getPublishReadiness(existing);
+  if (!readiness.publishable) {
+    throw AppError.badRequest(
+      `Cannot publish listing. Missing required sections: ${readiness.missing.join(", ")}.`,
+      readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
+    );
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.ACTIVE,
+      published: true,
+      isPaused: false,
+      rejectionReason: null,
+      requestedChanges: Prisma.DbNull,
+    },
+  });
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_PUBLISHED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Host directly published listing "${updated.title}"`,
+  });
+
+  return toListingDTO(updated);
+}
+
+async function unpublishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  assertOwnership(actor, existing.hostId);
+
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.DRAFT,
+      published: false,
+    },
+  });
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_UNPUBLISHED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Host unpublished listing "${updated.title}"`,
   });
 
   return toListingDTO(updated);
@@ -731,7 +919,15 @@ async function rejectListingByAdmin(
   return toListingDTO(updated);
 }
 
-async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
+async function remove(
+  actor: AuthUser,
+  id: string,
+  feedback?: {
+    categories?: string[];
+    reasons?: string[];
+    customFeedback?: string;
+  }
+): Promise<{ success: true }> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
   assertOwnership(actor, existing.hostId);
@@ -740,15 +936,38 @@ async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
     await assertHostPermission(actor.id, "listing.delete");
   }
 
-  // Safety check: Never delete a listing that has associated bookings
-  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
-  if (bookingCount > 0) {
-    throw AppError.badRequest(
-      "Cannot delete a listing that has associated bookings. Please unpublish or pause the listing instead.",
-    );
+  // 1. Store exit survey and reasons in the database if provided
+  if (feedback && feedback.reasons && feedback.reasons.length > 0) {
+    await prisma.listingRemovalFeedback.create({
+      data: {
+        listingId: id,
+        hostId: actor.id,
+        listingTitle: existing.title,
+        categories: feedback.categories || [],
+        reasons: feedback.reasons || [],
+        customFeedback: feedback.customFeedback || null,
+        actionTaken: "PERMANENT_DELETE",
+      },
+    });
   }
 
-  await prisma.listing.delete({ where: { id } });
+  // 2. Safety check: If listing has associated bookings, soft-delete / unpublish to preserve booking foreign keys
+  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
+  if (bookingCount > 0) {
+    await prisma.listing.update({
+      where: { id },
+      data: {
+        published: false,
+        isPaused: true,
+        deletedAt: new Date(),
+        removalReason: feedback as any,
+      },
+    });
+  } else {
+    // No bookings, safe to hard delete
+    await prisma.listing.delete({ where: { id } });
+  }
+
   await Promise.all([
     deleteCache(keys.listing(id)),
     incrCounter(keys.listingsPublicVersion()),
@@ -760,7 +979,7 @@ async function remove(actor: AuthUser, id: string): Promise<{ success: true }> {
     action: "LISTING_DELETED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Deleted listing "${existing.title}"`,
+    description: `Removed listing "${existing.title}" with reasons: ${(feedback?.reasons || []).join(", ") || "No reason given"}`,
   });
 
   return { success: true };
@@ -891,6 +1110,7 @@ export const listingService = {
   list,
   searchPublicListings,
   getPublicListingById,
+  getPublicListingBySlug,
   getById,
   getForOwner,
   getPublishReadiness,
@@ -900,6 +1120,10 @@ export const listingService = {
   duplicate,
   togglePause,
   updateAvailability,
+  publish: publishListing,
+  unpublish: unpublishListing,
+  publishListing,
+  unpublishListing,
   submitForReview,
   resubmitForReview,
   approveListingByAdmin,

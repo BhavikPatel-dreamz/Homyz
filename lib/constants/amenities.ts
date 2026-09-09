@@ -309,3 +309,38 @@ export function searchAmenitiesCatalog(query: string, category?: string): Canoni
 export const AMENITIES_CATALOG = CANONICAL_AMENITIES;
 export const ALL_CANONICAL_AMENITY_IDS = CANONICAL_AMENITIES.map((a) => a.id);
 
+const CANONICAL_AMENITY_BY_ID = new Map<string, CanonicalAmenity>(
+  CANONICAL_AMENITIES.map((a) => [a.id, a])
+);
+
+/**
+ * Returns canonical amenity metadata (id, label, icon, description, category)
+ * for any given canonical ID or arbitrary alias string.
+ */
+export function getAmenityMeta(idOrLabel: string): CanonicalAmenity {
+  if (!idOrLabel || typeof idOrLabel !== "string") {
+    return {
+      id: "",
+      label: "",
+      category: "favorites",
+      icon: "🛋️",
+      description: "",
+    };
+  }
+  const canonicalId = normalizeAmenityId(idOrLabel);
+  const found = CANONICAL_AMENITY_BY_ID.get(canonicalId);
+  if (found) return found;
+
+  const prettyLabel = idOrLabel
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return {
+    id: canonicalId || idOrLabel,
+    label: prettyLabel,
+    category: "favorites",
+    icon: "🛋️",
+    description: "Amenity available on premises",
+  };
+}
+
