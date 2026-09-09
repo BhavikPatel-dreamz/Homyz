@@ -40,10 +40,33 @@ if [[ ! -f package.json ]]; then
   exit 1
 fi
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  echo "pnpm not on PATH. Install with: curl -fsSL https://get.pnpm.io/install.sh | sh -" >&2
-  exit 1
-fi
+ensure_pnpm() {
+  if command -v pnpm >/dev/null 2>&1; then
+    return 0
+  fi
+  mkdir -p "${HOME}/.local/bin"
+  export PATH="${HOME}/.local/bin:${PATH}"
+  if command -v corepack >/dev/null 2>&1; then
+    echo "Enabling pnpm via corepack in ${HOME}/.local/bin (no sudo)"
+    corepack enable --install-directory "${HOME}/.local/bin"
+    corepack prepare pnpm@10 --activate || true
+  fi
+  if command -v pnpm >/dev/null 2>&1; then
+    return 0
+  fi
+  echo "pnpm still missing; using npx pnpm@10"
+}
+
+pnpm_run() {
+  if command -v pnpm >/dev/null 2>&1; then
+    pnpm "$@"
+  else
+    npx --yes pnpm@10 "$@"
+  fi
+}
+
+ensure_pnpm
+echo "pnpm=$(command -v pnpm || echo 'npx pnpm@10')"
 
 if [[ "${SKIP_GIT:-}" != "1" && -d .git ]]; then
   git fetch origin
@@ -52,18 +75,18 @@ fi
 
 echo "Installing dependencies"
 if [[ -f pnpm-lock.yaml ]]; then
-  pnpm install --frozen-lockfile
+  pnpm_run install --frozen-lockfile
 else
-  pnpm install
+  pnpm_run install
 fi
 
 if [[ "${RUN_DB_MIGRATE:-}" == "true" ]]; then
   echo "Applying Prisma migrations"
-  pnpm db:migrate:deploy
+  pnpm_run db:migrate:deploy
 fi
 
 echo "Building"
-pnpm run build
+pnpm_run run build
 
 if [[ ! -f .next/standalone/server.js ]]; then
   echo "Build did not produce .next/standalone/server.js" >&2
@@ -107,6 +130,6 @@ if [[ "${healthy}" -ne 1 ]]; then
   exit 1
 fi
 
-echo "Release complete ($(node -v), pnpm $(pnpm -v))"
+echo "Release complete ($(node -v))"
 curl -fsS http://127.0.0.1:3000/api/health
 echo
