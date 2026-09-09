@@ -2,6 +2,7 @@
 
 import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
+import { Container } from "@/components/ui";
 
 interface StepBasicsCountersProps {
   guests: number;
@@ -31,126 +32,130 @@ export function StepBasicsCounters({
   isLoading = false,
 }: StepBasicsCountersProps) {
   return (
-    <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
-      <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
-        {/* Header & Subtitle */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-3">
-          Share some basics about your place
-        </h1>
-        <p className="text-sm font-medium text-zinc-500 mb-10">
-          You’ll add more details later, like bed types.
-        </p>
+    <main className="py-10">
+      <Container>
+        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+          <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
+            {/* Header & Subtitle */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-3">
+              Share some basics about your place
+            </h1>
+            <p className="text-sm font-medium text-zinc-500 mb-10">
+              You’ll add more details later, like bed types.
+            </p>
 
-        {/* Counters List Stack */}
-        <div className="flex flex-col w-full divide-y divide-zinc-200/80 border-t border-b border-zinc-200/80 mb-6">
-          {/* Guests Row */}
-          <div className="flex items-center justify-between py-6">
-            <span className="text-base font-semibold text-[#1F1F1F]">Guests</span>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setGuests(Math.max(1, guests - 1))}
-                disabled={guests <= 1}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
-              >
-                -
-              </button>
-              <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
-                {guests}
-              </span>
-              <button
-                type="button"
-                onClick={() => setGuests(guests + 1)}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
-              >
-                +
-              </button>
+            {/* Counters List Stack */}
+            <div className="flex flex-col w-full divide-y divide-zinc-200/80 border-t border-b border-zinc-200/80 mb-6">
+              {/* Guests Row */}
+              <div className="flex items-center justify-between py-6">
+                <span className="text-base font-semibold text-[#1F1F1F]">Guests</span>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setGuests(Math.max(1, guests - 1))}
+                    disabled={guests <= 1}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                    {guests}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setGuests(guests + 1)}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Bedrooms Row */}
+              <div className="flex items-center justify-between py-6">
+                <span className="text-base font-semibold text-[#1F1F1F]">Bedrooms</span>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setBedrooms(Math.max(0, bedrooms - 1))}
+                    disabled={bedrooms <= 0}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                    {bedrooms}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBedrooms(bedrooms + 1)}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Beds Row */}
+              <div className="flex items-center justify-between py-6">
+                <span className="text-base font-semibold text-[#1F1F1F]">Beds</span>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setBeds(Math.max(1, beds - 1))}
+                    disabled={beds <= 1}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                    {beds}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBeds(beds + 1)}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Bathrooms Row */}
+              <div className="flex items-center justify-between py-6">
+                <span className="text-base font-semibold text-[#1F1F1F]">Bathrooms</span>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setBathrooms(Math.max(1, bathrooms - 1))}
+                    disabled={bathrooms <= 1}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                    {bathrooms}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBathrooms(bathrooms + 1)}
+                    className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Bedrooms Row */}
-          <div className="flex items-center justify-between py-6">
-            <span className="text-base font-semibold text-[#1F1F1F]">Bedrooms</span>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setBedrooms(Math.max(0, bedrooms - 1))}
-                disabled={bedrooms <= 0}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
-              >
-                -
-              </button>
-              <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
-                {bedrooms}
-              </span>
-              <button
-                type="button"
-                onClick={() => setBedrooms(bedrooms + 1)}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Beds Row */}
-          <div className="flex items-center justify-between py-6">
-            <span className="text-base font-semibold text-[#1F1F1F]">Beds</span>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setBeds(Math.max(1, beds - 1))}
-                disabled={beds <= 1}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
-              >
-                -
-              </button>
-              <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
-                {beds}
-              </span>
-              <button
-                type="button"
-                onClick={() => setBeds(beds + 1)}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Bathrooms Row */}
-          <div className="flex items-center justify-between py-6">
-            <span className="text-base font-semibold text-[#1F1F1F]">Bathrooms</span>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setBathrooms(Math.max(1, bathrooms - 1))}
-                disabled={bathrooms <= 1}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
-              >
-                -
-              </button>
-              <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
-                {bathrooms}
-              </span>
-              <button
-                type="button"
-                onClick={() => setBathrooms(bathrooms + 1)}
-                className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
-              >
-                +
-              </button>
-            </div>
-          </div>
+          <StepProgressFooter
+            currentStep={5}
+            onBack={onBack}
+            onNext={onNext}
+            isLoading={isLoading}
+          />
         </div>
-      </div>
-
-      <StepProgressFooter
-        currentStep={5}
-        onBack={onBack}
-        onNext={onNext}
-        isLoading={isLoading}
-      />
+      </Container>
     </main>
   );
 }

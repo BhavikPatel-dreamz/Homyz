@@ -1,5 +1,6 @@
 "use client";
 
+import { Container } from "@/components/ui";
 import React, { useState } from "react";
 
 export interface DiscountOption {
@@ -54,112 +55,113 @@ export function StepDiscounts({
   ];
 
   return (
-    <main className="flex-1 w-full flex flex-col justify-between px-6 lg:px-16 py-10 my-auto animate-in fade-in duration-200">
-      <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
-        {/* Heading & Subtitle */}
-        <h1 className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
-          Add discounts
-        </h1>
-        <p className="text-xs text-zinc-500 font-medium mb-8 max-w-md">
-          Help your place stand out to get booked faster and earn your first reviews.
-        </p>
+    <main className="py-10">
+      <Container>
+        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+          <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
+            {/* Heading & Subtitle */}
+            <h1 className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
+              Add discounts
+            </h1>
+            <p className="text-xs text-zinc-500 font-medium mb-8 max-w-md">
+              Help your place stand out to get booked faster and earn your first reviews.
+            </p>
 
-        {/* Discounts List */}
-        <div className="w-full space-y-4">
-          {discounts.map((discount) => {
-            const isEnabled = selectedDiscounts.includes(discount.id);
-            return (
-              <div
-                key={discount.id}
-                onClick={() => onToggleDiscount(discount.id)}
-                className={`w-full border rounded-2xl p-5 sm:p-6 bg-white transition-all flex items-center justify-between shadow-2xs cursor-pointer select-none ${
-                  isEnabled ? "border-zinc-900 ring-1 ring-zinc-900" : "border-zinc-200 hover:border-zinc-300"
-                }`}
-              >
-                {/* Left Side Info */}
-                <div className="flex flex-col items-start pr-4">
-                  <span className="text-sm font-semibold text-zinc-800 mb-1">
-                    {discount.title}
-                  </span>
-                  <span className="text-xs text-zinc-500 mb-2 leading-relaxed">
-                    {discount.description}
-                  </span>
-                  <span className="text-xl font-semibold text-[#1F1F1F]">
-                    {discount.percentage}%
-                  </span>
-                </div>
-
-                {/* Right Side Toggle Switch */}
-                <div
-                  className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 shrink-0 ${
-                    isEnabled ? "bg-zinc-900" : "bg-zinc-200"
-                  }`}
-                >
+            {/* Discounts List */}
+            <div className="w-full space-y-4">
+              {discounts.map((discount) => {
+                const isEnabled = selectedDiscounts.includes(discount.id);
+                return (
                   <div
-                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
-                      isEnabled ? "translate-x-6" : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    key={discount.id}
+                    onClick={() => onToggleDiscount(discount.id)}
+                    className={`w-full border rounded-2xl p-5 sm:p-6 bg-white transition-all flex items-center justify-between shadow-2xs cursor-pointer select-none ${isEnabled ? "border-zinc-900 ring-1 ring-zinc-900" : "border-zinc-200 hover:border-zinc-300"
+                      }`}
+                  >
+                    {/* Left Side Info */}
+                    <div className="flex flex-col items-start pr-4">
+                      <span className="text-sm font-semibold text-zinc-800 mb-1">
+                        {discount.title}
+                      </span>
+                      <span className="text-xs text-zinc-500 mb-2 leading-relaxed">
+                        {discount.description}
+                      </span>
+                      <span className="text-xl font-semibold text-[#1F1F1F]">
+                        {discount.percentage}%
+                      </span>
+                    </div>
 
-        {/* Footnote Notice & Read more Toggle */}
-        <div className="mt-4 w-full">
-          <p className="text-xs text-zinc-500 font-medium">
-            Only one promotional or length-of-stay discount applies per booking.{" "}
+                    {/* Right Side Toggle Switch */}
+                    <div
+                      className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 shrink-0 ${isEnabled ? "bg-zinc-900" : "bg-zinc-200"
+                        }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${isEnabled ? "translate-x-6" : "translate-x-0"
+                          }`}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footnote Notice & Read more Toggle */}
+            <div className="mt-4 w-full">
+              <p className="text-xs text-zinc-500 font-medium">
+                Only one promotional or length-of-stay discount applies per booking.{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  className="underline hover:text-zinc-800 cursor-pointer font-semibold"
+                >
+                  {showExplanation ? "Hide details" : "Read more"}
+                </button>
+              </p>
+
+              {showExplanation && (
+                <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
+                  <p className="font-semibold text-zinc-800 mb-1">How discounts work on Homyz:</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>If multiple discounts apply to the same dates, the highest qualifying single discount will be granted to the guest.</li>
+                    <li>Length-of-stay discounts (weekly or monthly) take priority over the new listing promotion once your first 3 bookings are completed.</li>
+                    <li>You can adjust or turn off any discount at any time from your host listing editor.</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Action Footer Bar */}
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
             <button
               type="button"
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="underline hover:text-zinc-800 cursor-pointer font-semibold"
+              onClick={onBack}
+              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
             >
-              {showExplanation ? "Hide details" : "Read more"}
+              Back
             </button>
-          </p>
-
-          {showExplanation && (
-            <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
-              <p className="font-semibold text-zinc-800 mb-1">How discounts work on Homyz:</p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li>If multiple discounts apply to the same dates, the highest qualifying single discount will be granted to the guest.</li>
-                <li>Length-of-stay discounts (weekly or monthly) take priority over the new listing promotion once your first 3 bookings are completed.</li>
-                <li>You can adjust or turn off any discount at any time from your host listing editor.</li>
-              </ul>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={isLoading}
+              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Loading...</span>
+                </>
+              ) : (
+                "Next"
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom Action Footer Bar */}
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={isLoading}
-          className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
-        >
-          {isLoading ? (
-            <>
-              <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>Loading...</span>
-            </>
-          ) : (
-            "Next"
-          )}
-        </button>
-      </div>
+      </Container>
     </main>
   );
 }
