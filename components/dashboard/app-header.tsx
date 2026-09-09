@@ -109,7 +109,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
               <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to hosting
               </Link>
-            ) : (
+            ) : user ? (
               <button
                 type="button"
                 onClick={() => setBecomeHostModalOpen(true)}
@@ -117,7 +117,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
               >
                 Become a host
               </button>
-            )}
+            ) : null}
 
             {user?.image ? (
               <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
