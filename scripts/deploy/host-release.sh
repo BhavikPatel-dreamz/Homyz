@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Host Node deploy (no sudo, no Docker). Run on the ECS as developer1.
+#
+#   SKIP_GIT=1  — code already synced by CI (rsync); do not git pull
+#   RUN_DB_MIGRATE=true — prisma migrate deploy (uses ~/homyz/.env)
+#   APP_DIR     — default $HOME/homyz
+set -euo pipefail
+
+APP_DIR="${APP_DIR:-${HOME}/homyz}"
+export PNPM_HOME="${PNPM_HOME:-${HOME}/.local/share/pnpm}"
+export PATH="${PNPM_HOME}:${HOME}/.local/bin:/usr/bin:${PATH}"
+
+cd "${APP_DIR}"
+
+if [[ ! -f .env ]]; then
+  echo "Missing ${APP_DIR}/.env — create it on the server; CI never overwrites it." >&2
+  exit 1
+fi
+
+if [[ ! -f package.json ]]; then
+  echo "Missing ${APP_DIR}/package.json — clone or rsync the repo first." >&2
+  exit 1
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm not on PATH. Install with: curl -fsSL https://get.pnpm.io/install.sh | sh -" >&2
+  exit 1
+fi
+
+if [[ "${SKIP_GIT:-}" != "1" && -d .git ]]; then
+  git fetch origin
+  git reset --hard origin/main
+fi
+
+echo "Installing dependencies"
+if [[ -f pnpm-lock.yaml ]]; then
+  pnpm install --frozen-lockfile
+else
+  pnpm install
+fi
+
+if [[ "${RUN_DB_MIGRATE:-}" == "true" ]]; then
+  echo "Applying Prisma migrations"
+  pnpm db:migrate:deploy
+fi
+
+echo "Building"
+pnpm run build
+
+if [[ ! -f .next/standalone/server.js ]]; then
+  echo "Build did not produce .next/standalone/server.js" >&2
+  exit 1
+fi
+
+stop_old() {
+  if [[ -f homyz.pid ]]; then
+    old="$(tr -d '[:space:]' < homyz.pid || true)"
+    if [[ -n "${old}" ]] && kill -0 "${old}" 2>/dev/null; then
+      kill "${old}" 2>/dev/null || true
+      sleep 2
+      kill -9 "${old}" 2>/dev/null || true
+    fi
+    rm -f homyz.pid
+  fi
+  pkill -f "${APP_DIR}/.next/standalone/server.js" 2>/dev/null || true
+  pkill -f "next start" 2>/dev/null || true
+}
+
+echo "Restarting"
+stop_old
+sleep 1
+
+nohup env HOMYZ_BIND_HOST=0.0.0.0 PORT="${PORT:-3000}" \
+  bash "${APP_DIR}/scripts/start-prod.sh" >>"${APP_DIR}/app.log" 2>&1 &
+echo $! > homyz.pid
+
+healthy=0
+for _ in $(seq 1 30); do
+  if curl -fsS http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+    healthy=1
+    break
+  fi
+  sleep 2
+done
+
+if [[ "${healthy}" -ne 1 ]]; then
+  echo "Health check failed after restart" >&2
+  tail -n 80 "${APP_DIR}/app.log" >&2 || true
+  exit 1
+fi
+
+echo "Release complete ($(node -v), pnpm $(pnpm -v))"
+curl -fsS http://127.0.0.1:3000/api/health
+echo
