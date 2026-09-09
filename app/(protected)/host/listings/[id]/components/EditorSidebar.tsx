@@ -189,103 +189,124 @@ export function EditorSidebar({
                 })()}
               </div>
 
-              {/* Card 2: Language */}
+              {/* Card 2: Languages */}
               <div
                 onClick={() => setActiveSection("language")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "language"
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
+                  activeSection === "language" || activeSection === "languages"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Language
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  English
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Languages
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    English
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
               {/* Card 3: Guest requirements */}
               <div
                 onClick={() => setActiveSection("guest-requirements")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "guest-requirements" || activeSection === "guestrequirements"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Guest requirements
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Profile photo not required
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Guest requirements
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    Profile photo not required
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
               {/* Card 4: Local laws */}
               <div
                 onClick={() => setActiveSection("local-laws")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "local-laws" || activeSection === "locallaws"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Local laws
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Review your local laws
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Local laws
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    Review your local laws
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
               {/* Card 5: Regulations */}
               <div
                 onClick={() => setActiveSection("regulations")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "regulations"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Regulations
-                </span>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Regulations
+                  </span>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
               {/* Card 6: Taxes */}
               <div
                 onClick={() => setActiveSection("taxes")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "taxes"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Taxes
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Learn how taxes work for Hosts
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Taxes
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    Learn how taxes work for Hosts
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
-              {/* Card 7: Homyz.com stays */}
+              {/* Card 7: Airbnb.org stays */}
               <div
-                onClick={() => setActiveSection("homyz-stays")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "homyz-stays" || activeSection === "homyzstays"
+                onClick={() => setActiveSection("airbnb-org-stays")}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
+                  activeSection === "airbnb-org-stays" ||
+                  activeSection === "airbnb-stays" ||
+                  activeSection === "homyz-stays" ||
+                  activeSection === "homyzstays"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Homyz.com stays
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Learn how you can help
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Airbnb.org stays
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    Learn how you can help
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
               {/* Card 8: Remove listing */}
@@ -294,18 +315,21 @@ export function EditorSidebar({
                   setActiveSection("remove-listing");
                   setIsRemoveListingModalOpen?.(true);
                 }}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "remove-listing" || activeSection === "removelisting"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                  Remove listing
-                </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Permanently remove your listing
-                </p>
+                <div>
+                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                    Remove listing
+                  </span>
+                  <p className="text-[11px] text-zinc-500 font-normal">
+                    Permanently remove your listing
+                  </p>
+                </div>
+                <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
             </div>
           ) : editorTab === "space" ? (

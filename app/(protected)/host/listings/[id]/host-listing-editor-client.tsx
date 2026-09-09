@@ -18,6 +18,7 @@ import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
+import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
 import { normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
 import {
@@ -198,6 +199,8 @@ const PREFERENCE_SECTIONS: SectionKey[] = [
   "taxes",
   "homyz-stays",
   "homyzstays",
+  "airbnb-org-stays",
+  "airbnb-stays",
   "remove-listing",
   "removelisting",
 ];
@@ -824,6 +827,31 @@ export function HostListingEditorClient({
     }
   }
 
+  const handleSaveOrgStays = async (orgConfig: OrgStaysConfig) => {
+    setIsSaving(true);
+    try {
+      const nextDiscounts = {
+        ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
+        orgStays: orgConfig,
+      };
+      const res = await updateListingAction(listing.id, { discounts: nextDiscounts });
+      if (res.ok) {
+        setListing((prev) => ({
+          ...prev,
+          discounts: nextDiscounts,
+        }));
+        setFeedbackMsg({ type: "success", text: "Airbnb.org stays preferences saved successfully!" });
+      } else {
+        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save preferences." });
+      }
+    } catch (err: any) {
+      console.error("Failed to save Airbnb.org stays preferences:", err);
+      setFeedbackMsg({ type: "error", text: err?.message || "Failed to save preferences." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const [isRemoveListingModalOpen, setIsRemoveListingModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -1013,6 +1041,8 @@ export function HostListingEditorClient({
             listingCountry={editCountry || listing.country}
             listingLatitude={listing.latitude}
             listingLongitude={listing.longitude}
+            listingDiscounts={listing.discounts}
+            onSaveOrgStays={handleSaveOrgStays}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}

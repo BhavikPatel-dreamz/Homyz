@@ -71,7 +71,15 @@ function errorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
-export function HostListingsWorkspace({ initialListings }: { initialListings: ListingDTO[] }) {
+export function HostListingsWorkspace({
+  initialListings,
+  initialShowSearch = false,
+  initialSearchQuery = "",
+}: {
+  initialListings: ListingDTO[];
+  initialShowSearch?: boolean;
+  initialSearchQuery?: string;
+}) {
   const router = useRouter();
   const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const [activeTab, setActiveTab] = useState<string>("ALL");

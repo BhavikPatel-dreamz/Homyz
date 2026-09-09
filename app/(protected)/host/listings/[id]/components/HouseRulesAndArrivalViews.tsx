@@ -7,6 +7,7 @@ import React from "react";
 import { GuidebooksManager } from "./GuidebooksManager";
 import { LocalLawsView } from "./LocalLawsView";
 import { TaxesManager } from "./TaxesManager";
+import { AirbnbOrgStaysView } from "./AirbnbOrgStaysView";
 
 function AllowDenyButtons({
   value,
@@ -120,6 +121,8 @@ interface HouseRulesAndArrivalViewsProps {
   listingCountry?: string;
   listingLatitude?: number | null;
   listingLongitude?: number | null;
+  listingDiscounts?: any;
+  onSaveOrgStays?: (cfg: any) => Promise<void>;
 }
 
 export function HouseRulesAndArrivalViews({
@@ -128,6 +131,8 @@ export function HouseRulesAndArrivalViews({
   listingCountry,
   listingLatitude,
   listingLongitude,
+  listingDiscounts,
+  onSaveOrgStays,
   activeSection,
   setActiveSection,
   isSaving,
@@ -977,11 +982,16 @@ export function HouseRulesAndArrivalViews({
         />
       )}
 
-      {(activeSection === "homyz-stays" || activeSection === "homyzstays") && (
-        <HomyzStaysView
+      {(activeSection === "airbnb-org-stays" ||
+        activeSection === "airbnb-stays" ||
+        activeSection === "homyz-stays" ||
+        activeSection === "homyzstays") && (
+        <AirbnbOrgStaysView
+          listingId={listingId || ""}
+          discounts={listingDiscounts}
           setActiveSection={setActiveSection}
+          onSave={onSaveOrgStays}
           isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
         />
       )}
     </>
