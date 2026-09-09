@@ -459,13 +459,16 @@ export function HostListingsWorkspace({
                   aria-label="Toggle compact listing layout"
                   aria-pressed={compactGrid}
                   onClick={() => setCompactGrid(!compactGrid)}
-                  className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5]"
+                  className={`flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors ${
+                    compactGrid ? "bg-zinc-200" : "bg-[#f5f5f5] hover:bg-[#eaeaea]"
+                  }`}
                 >
-                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2} aria-hidden="true">
                     <rect x="4" y="3" width="16" height="4" rx="1" />
                     <rect x="4" y="11" width="6" height="10" rx="1" />
                     <rect x="14" y="11" width="6" height="6" rx="1" />
                   </svg>
+                  <span className="sr-only">Toggle compact listing layout</span>
                 </button>
                 <button
                   type="button"
