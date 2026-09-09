@@ -157,12 +157,22 @@ Do not run `prisma migrate dev`, `db:seed`, or `reset` against production RDS.
 
 ---
 
-## GitHub CI (optional later)
+## Automatic deploy (GitHub → this ECS)
 
-PM2/VPS deploy stays until `ENABLE_DOCKER_DEPLOY=true`. Docker→ECR is AWS-specific.
+Host Node in `~/homyz`, **no sudo**. Push to `main` (or run the workflow by hand). CI rsyncs the repo, `pnpm install` + build, restarts standalone. Server `.env` is never overwritten.
 
-**Variables:** `AWS_REGION`, `ECR_REGISTRY`, `ECR_REPOSITORY`, `APP_URL`, `ENABLE_DOCKER_DEPLOY`, `RUN_DB_MIGRATE`  
-**Secrets:** `AWS_ROLE_TO_ASSUME`, `EC2_SSH_*`, `DATABASE_URL` (migrate job only)
+**GitHub → Settings → Secrets and variables → Actions**
+
+Secrets: `ECS_SSH_HOST` (e.g. `8.213.86.216`), `ECS_SSH_USER` (`developer1`), `ECS_SSH_PASSWORD`.
+
+Variables: `ENABLE_ECS_DEPLOY` = `true`. Optional: `APP_URL` = `http://8.213.86.216:3000`, `RUN_DB_MIGRATE` = `true` only when you want migrations.
+
+Alibaba security group must allow **TCP 22** from the internet (GitHub-hosted runners). Password SSH must be enabled for `developer1`.
+
+PM2/VPS deploy is skipped while `ENABLE_ECS_DEPLOY=true`. Docker→ECR is AWS-specific (`ENABLE_DOCKER_DEPLOY`).
+
+**Variables (other):** `AWS_REGION`, `ECR_REGISTRY`, `ECR_REPOSITORY`, `ENABLE_DOCKER_DEPLOY`  
+**Secrets (other):** `AWS_ROLE_TO_ASSUME`, `EC2_SSH_*`, `DATABASE_URL` (GHA migrate job only; unused when ECS migrate runs on the server)
 
 ---
 

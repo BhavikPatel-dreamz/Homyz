@@ -3,6 +3,7 @@ name: Deploy Homyz
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-homyz
@@ -25,11 +26,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          cache: pnpm
 
       - name: Virus / malware scan
         run: |
@@ -37,7 +43,7 @@ jobs:
           bash .githooks/pre-commit --ci
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         env:
@@ -47,26 +53,29 @@ jobs:
           JWT_REFRESH_SECRET: github-actions-ci-secret
           APP_URL: ${{ vars.APP_URL || 'http://localhost:3000' }}
           NEXTAUTH_URL: ${{ vars.APP_URL || 'http://localhost:3000' }}
-        run: npm run build:ci
+        run: pnpm run build:ci
 
   migrate:
     name: Prisma migrate deploy
     needs: [validate]
-    if: ${{ needs.validate.result == 'success' && vars.RUN_DB_MIGRATE == 'true' }}
+    if: ${{ needs.validate.result == 'success' && vars.RUN_DB_MIGRATE == 'true' && vars.ENABLE_ECS_DEPLOY != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Apply migrations (non-destructive prisma migrate deploy only)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npm run db:migrate:deploy
+        run: pnpm db:migrate:deploy
 
   docker:
     name: Docker image → ECR
@@ -149,10 +158,60 @@ jobs:
           "${SSH[@]}" "chmod +x /opt/homyz/scripts/deploy/*.sh"
           "${SSH[@]}" "HOMYZ_IMAGE='${HOMYZ_IMAGE}' AWS_REGION='${AWS_REGION}' APP_DIR=/opt/homyz bash /opt/homyz/scripts/deploy/release.sh"
 
+  deploy-ecs:
+    name: Deploy ECS (host Node, SSH password)
+    needs: [validate]
+    if: ${{ needs.validate.result == 'success' && vars.ENABLE_ECS_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Sync code to ECS (never overwrites .env)
+        env:
+          SSHPASS: ${{ secrets.VPS_KEY }}
+          HOST: ${{ secrets.VPS_SERVER }}
+          USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOST}" ] || [ -z "${USER}" ] || [ -z "${SSHPASS}" ]; then
+            echo "Set secrets VPS_SERVER, VPS_USER, VPS_KEY" >&2
+            exit 1
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass rsync
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "${HOST}" >> ~/.ssh/known_hosts
+          rsync -az --delete \
+            --exclude '.git/' \
+            --exclude 'node_modules/' \
+            --exclude '.next/' \
+            --exclude '.env' \
+            --exclude '.env.local' \
+            --exclude 'app.log' \
+            --exclude 'homyz.pid' \
+            -e "sshpass -e ssh -o StrictHostKeyChecking=yes" \
+            ./ "${USER}@${HOST}:homyz/"
+
+      - name: Build and restart on ECS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.ECS_SSH_HOST }}
+          username: ${{ secrets.ECS_SSH_USER }}
+          password: ${{ secrets.ECS_SSH_PASSWORD }}
+          command_timeout: 40m
+          script: |
+            set -euo pipefail
+            export SKIP_GIT=1
+            export APP_DIR="${HOME}/homyz"
+            export RUN_DB_MIGRATE="${{ vars.RUN_DB_MIGRATE }}"
+            chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
+            bash "${APP_DIR}/scripts/deploy/host-release.sh"
+
   deploy:
     name: Deploy (PM2 VPS)
     needs: [validate]
-    if: ${{ needs.validate.result == 'success' && vars.ENABLE_DOCKER_DEPLOY != 'true' }}
+    if: ${{ needs.validate.result == 'success' && vars.ENABLE_DOCKER_DEPLOY != 'true' && vars.ENABLE_ECS_DEPLOY != 'true' }}
     runs-on: [self-hosted]
     steps:
       - name: Capture Current Release
