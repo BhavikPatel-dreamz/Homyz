@@ -220,13 +220,25 @@ jobs:
           password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
           key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
           command_timeout: 40m
+          script_stop: true
           script: |
             set -euo pipefail
+            echo "remote deploy starting"
             export SKIP_GIT=1
             export APP_DIR="${HOME}/homyz"
             export RUN_DB_MIGRATE="${{ vars.RUN_DB_MIGRATE }}"
-            chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
-            bash "${APP_DIR}/scripts/deploy/host-release.sh"
+            if [[ -f "${APP_DIR}/scripts/deploy/host-release.sh" ]]; then
+              chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
+              bash "${APP_DIR}/scripts/deploy/host-release.sh"
+            elif [[ -f "${APP_DIR}/homyz/scripts/deploy/host-release.sh" ]]; then
+              chmod +x "${APP_DIR}/homyz/scripts/start-prod.sh" "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
+              APP_DIR="${APP_DIR}/homyz" bash "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
+            else
+              echo "host-release.sh not found under ${APP_DIR}" >&2
+              ls -la "${APP_DIR}" >&2 || true
+              exit 1
+            fi
+            echo "remote deploy finished"
 
   deploy:
     name: Deploy (PM2 VPS)

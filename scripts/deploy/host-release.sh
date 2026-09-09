@@ -8,9 +8,27 @@ set -euo pipefail
 
 APP_DIR="${APP_DIR:-${HOME}/homyz}"
 export PNPM_HOME="${PNPM_HOME:-${HOME}/.local/share/pnpm}"
-export PATH="${PNPM_HOME}:${HOME}/.local/bin:/usr/bin:${PATH}"
+export PATH="${PNPM_HOME}:${HOME}/.local/bin:${HOME}/.local/share/pnpm:/usr/bin:${PATH}"
+# Non-interactive SSH does not load .bashrc (where the pnpm installer adds PATH).
+if [[ -s "${HOME}/.bashrc" ]]; then
+  set +u
+  # shellcheck disable=SC1091
+  . "${HOME}/.bashrc" || true
+  set -u
+fi
+
+echo "$(date -Is) host-release start"
+echo "APP_DIR=${APP_DIR} HOME=${HOME}"
+echo "node=$(command -v node || true) $(node -v 2>/dev/null || true)"
+echo "pnpm=$(command -v pnpm || true)"
+
+if [[ ! -f "${APP_DIR}/package.json" && -f "${APP_DIR}/homyz/package.json" ]]; then
+  echo "Using nested ${APP_DIR}/homyz (scp layout)"
+  APP_DIR="${APP_DIR}/homyz"
+fi
 
 cd "${APP_DIR}"
+ls -l package.json pnpm-lock.yaml .env 2>/dev/null || ls -l
 
 if [[ ! -f .env ]]; then
   echo "Missing ${APP_DIR}/.env — create it on the server; CI never overwrites it." >&2
