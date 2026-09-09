@@ -4,7 +4,17 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GuestDashboardSidebar, GUEST_NAV_ITEMS } from "@/components/dashboard/guest-sidebar";
+import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import {
+  GUEST_NAV_ITEMS,
+  normalizeTabId,
+  extractTabFromQuery,
+  extractSubTabFromQuery,
+  extractProfileRoute,
+  getProfileTabHref,
+  getMgmtSubTabSlug,
+  ProfileMgmtSubTab,
+} from "@/lib/profile/tab-utils";
 import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { LogoutButton } from "@/components/admin/logout-button";
@@ -55,14 +65,6 @@ export type UserStatsData = {
   yearsOnHomyz?: number;
 };
 
-type ProfileClientProps = {
-  initial: ProfileData;
-  initialTripPhotos?: unknown[];
-  initialStats?: UserStatsData;
-  initialReservations?: ReservationCardData[];
-  isOwner?: boolean;
-};
-
 const IconTranslate = () => (
   <svg className="w-4.5 h-4.5 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1 4c-1.5 3-3.5 5.5-6 7m2-7c1.5 2 3.5 4.5 5 7m6 3l4-8 4 8m-7-2h6" />
@@ -100,12 +102,15 @@ const MobileAccountIcon = ({ type }: { type: string }) => {
   return <svg {...commonProps}><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15.5a4.5 4.5 0 0 1 6.5 3.5" /></svg>;
 };
 
-function normalizeTabId(tab: string | null | undefined): string {
-  if (!tab || tab === "about_me") return "about_me";
-  if (tab === "upcoming" || tab === "upcoming_trips") return "upcoming_trips";
-  if (tab === "past" || tab === "past_bookings") return "past_bookings";
-  return tab;
-}
+type ProfileClientProps = {
+  initial: ProfileData;
+  initialTripPhotos?: unknown[];
+  initialStats?: UserStatsData;
+  initialReservations?: ReservationCardData[];
+  isOwner?: boolean;
+  initialTab?: string;
+  initialSubTab?: ProfileMgmtSubTab;
+};
 
 export function ProfileClient({
   initial,
@@ -113,22 +118,29 @@ export function ProfileClient({
   initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
   initialReservations = [],
   isOwner = true,
+  initialTab,
+  initialSubTab,
 }: ProfileClientProps) {
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<string>(() =>
-    normalizeTabId(searchParams.get("tab"))
+    initialTab ? normalizeTabId(initialTab) : extractProfileRoute({ searchParams }).tab
+  );
+  const [activeSubTab, setActiveSubTab] = useState<ProfileMgmtSubTab>(() =>
+    initialSubTab || extractProfileRoute({ searchParams }).subTab
   );
 
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    setActiveTab(normalizeTabId(tabParam));
+    const route = extractProfileRoute({ searchParams });
+    setActiveTab(route.tab);
+    setActiveSubTab(route.subTab);
   }, [searchParams]);
 
   useEffect(() => {
     const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setActiveTab(normalizeTabId(params.get("tab")));
+      const route = extractProfileRoute();
+      setActiveTab(route.tab);
+      setActiveSubTab(route.subTab);
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -137,8 +149,7 @@ export function ProfileClient({
   const handleSelectTab = (tabId: string) => {
     const normalized = normalizeTabId(tabId);
     setActiveTab(normalized);
-    const item = GUEST_NAV_ITEMS.find((n) => n.id === normalized || n.id === tabId);
-    const href = item ? item.href : normalized === "about_me" ? "/profile" : `/profile?tab=${normalized}`;
+    const href = getProfileTabHref(normalized);
     window.history.pushState(null, "", href);
   };
 
@@ -377,6 +388,12 @@ export function ProfileClient({
                 initialStats={initialStats}
                 isOwner={isOwner}
                 embedded={true}
+                initialSubTab={activeSubTab}
+                onSubTabChange={(sub) => {
+                  setActiveSubTab(sub);
+                  const href = getProfileTabHref("profile_management", sub);
+                  window.history.pushState(null, "", href);
+                }}
                 onCancel={() => handleSelectTab("about_me")}
               />
             )}

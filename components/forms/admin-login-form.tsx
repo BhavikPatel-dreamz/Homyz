@@ -74,8 +74,7 @@ export function AdminLoginForm() {
         }
       }
 
-      router.push(destination);
-      router.refresh();
+      window.location.href = destination;
     });
   }
 

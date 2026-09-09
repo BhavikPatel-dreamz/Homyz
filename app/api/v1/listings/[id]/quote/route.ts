@@ -16,6 +16,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     startDate: searchParams.get("checkIn") || searchParams.get("startDate"),
     endDate: searchParams.get("checkOut") || searchParams.get("endDate"),
     guests: searchParams.get("guests") || 1,
+    pets: searchParams.get("pets") || 0,
   });
 
   const quote = await bookingService.getBookingQuote({
@@ -23,6 +24,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     checkIn: parsed.startDate,
     checkOut: parsed.endDate,
     guests: parsed.guests,
+    pets: parsed.pets,
   });
 
   return ok(quote);

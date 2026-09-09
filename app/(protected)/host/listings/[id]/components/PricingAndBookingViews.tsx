@@ -1,8 +1,10 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor callback and copy surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
 
 import React from "react";
+import { isReservedSlug } from "@/lib/utils/slug";
 
 interface PricingAndBookingViewsProps {
   activeSection: string;
@@ -35,13 +37,14 @@ interface PricingAndBookingViewsProps {
   // Booking Settings
   bookingMethod: "instant" | "approve";
   setBookingMethod: (val: "instant" | "approve") => void;
-  customBookingMessage: string;
   setIsTurnOffInstantBookModalOpen: (open: boolean) => void;
   setIsCustomMessageModalOpen: (open: boolean) => void;
 
   // Cancellation Policy & Custom Link
   cancellationPolicy: string;
   setCancellationPolicy: (val: string) => void;
+  longTermCancellationPolicy: "FIRM" | "STRICT";
+  setLongTermCancellationPolicy: (val: "FIRM" | "STRICT") => void;
   customSlug?: string;
   setCustomSlug?: (val: string) => void;
 }
@@ -54,7 +57,7 @@ export function PricingAndBookingViews({
   editPrice,
   setEditPrice,
   smartPricing = false,
-  setSmartPricing,
+  setSmartPricing: _setSmartPricing,
   weekendPrice = 0,
   setWeekendPrice,
   weeklyDiscount,
@@ -71,13 +74,14 @@ export function PricingAndBookingViews({
   setSameDayCutoff,
   allowSameDayRequests = true,
   setAllowSameDayRequests,
-  bookingMethod,
-  setBookingMethod,
-  customBookingMessage,
+  bookingMethod: _bookingMethod,
+  setBookingMethod: _setBookingMethod,
   setIsTurnOffInstantBookModalOpen,
   setIsCustomMessageModalOpen,
   cancellationPolicy,
   setCancellationPolicy,
+  longTermCancellationPolicy,
+  setLongTermCancellationPolicy,
   customSlug = "",
   setCustomSlug,
 }: PricingAndBookingViewsProps) {
@@ -117,7 +121,8 @@ export function PricingAndBookingViews({
                   <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
                   <button
                     type="button"
-                    onClick={() => setSmartPricing?.(!smartPricing)}
+                    disabled
+                    aria-label="Smart pricing is not available yet"
                     className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
                       smartPricing ? "bg-amber-400" : "bg-zinc-300"
                     }`}
@@ -291,6 +296,7 @@ export function PricingAndBookingViews({
 
             {/* 2. Advance notice */}
             <div className="space-y-2">
+              <p className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">Advance notice and same-day request settings are not configured for this listing yet.</p>
               <div>
                 <label className="block text-xs font-semibold text-zinc-800">Advance notice</label>
                 <p className="text-[11px] text-zinc-400 font-normal pt-0.5">
@@ -301,6 +307,7 @@ export function PricingAndBookingViews({
               {/* Dropdown 1: Same day */}
               <div className="relative">
                 <select
+                  disabled
                   value={advanceNotice}
                   onChange={(e) => setAdvanceNotice?.(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
@@ -325,6 +332,7 @@ export function PricingAndBookingViews({
               {/* Dropdown 2: 12:00 AM */}
               <div className="relative">
                 <select
+                  disabled
                   value={sameDayCutoff}
                   onChange={(e) => setSameDayCutoff?.(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
@@ -354,6 +362,7 @@ export function PricingAndBookingViews({
               </div>
               <button
                 type="button"
+                disabled
                 onClick={() => setAllowSameDayRequests?.(!allowSameDayRequests)}
                 className={`w-9 h-5 rounded-full transition-colors p-0.5 flex items-center shrink-0 cursor-pointer ${
                   allowSameDayRequests ? "bg-[#F43F5E] justify-end" : "bg-zinc-300 justify-start"
@@ -409,12 +418,13 @@ export function PricingAndBookingViews({
                 <div className="space-y-2">
                   <div className="space-y-0.5">
                     <h4 className="font-semibold text-xs text-[#1F1F1F]">Require a good track record</h4>
-                    <p className="text-[11px] text-zinc-400 font-normal">Only guests with positive reviews can instant book</p>
+                    <p className="text-[11px] text-zinc-400 font-normal">Unavailable until Homyz has an authoritative guest reputation model</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => {}}
-                    className="w-9 h-5 rounded-full bg-zinc-300 transition-colors p-0.5 flex items-center cursor-pointer"
+                    disabled
+                    aria-label="Good track record requirement is not available"
+                    className="w-9 h-5 rounded-full bg-zinc-300 transition-colors p-0.5 flex items-center cursor-not-allowed"
                   >
                     <span className="w-4 h-4 rounded-full bg-white shadow-2xs" />
                   </button>
@@ -425,7 +435,7 @@ export function PricingAndBookingViews({
                   <div className="flex items-start justify-between">
                     <div className="space-y-0.5">
                       <h4 className="font-semibold text-xs text-[#1F1F1F]">Add a custom message</h4>
-                      <p className="text-[11px] text-zinc-400 font-normal">Send a welcome message automatically after booking</p>
+                      <p className="text-[11px] text-zinc-400 font-normal">Show a note to guests before they reserve</p>
                     </div>
                     <button
                       type="button"
@@ -474,41 +484,82 @@ export function PricingAndBookingViews({
       {/* --------------------------------------------------------- */}
       {/* VIEW: CUSTOM LINK (Matches Figma Screenshot 100%) */}
       {/* --------------------------------------------------------- */}
-      {activeSection === "custom-link" && (
-        <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
-          <div className="flex flex-col items-center justify-center space-y-7 w-full py-12">
-            {/* Counter text */}
-            <span className="text-xs font-semibold text-zinc-700 tracking-tight">
-              {Math.max(0, 100 - (customSlug?.length || 0))}/100 available
-            </span>
-
-            {/* homyz/ slug input field */}
-            <div className="flex items-center justify-center text-4xl sm:text-5xl font-semibold text-[#1F1F1F] tracking-tight">
-              <span className="text-[#1F1F1F]">homyz/</span>
-              <input
-                type="text"
-                value={customSlug}
-                onChange={(e) =>
-                  setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
-                }
-                placeholder=""
-                className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[20px] max-w-[280px]"
-                autoFocus
-              />
-            </div>
-
-            {/* Save pill button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveSection("custom-link")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </button>
-          </div>
-        </div>
+      {activeSection === "cancellation-policy" && (
+        <CancellationPolicyView
+          cancellationPolicy={cancellationPolicy}
+          setCancellationPolicy={setCancellationPolicy}
+          longTermCancellationPolicy={longTermCancellationPolicy}
+          setLongTermCancellationPolicy={setLongTermCancellationPolicy}
+          setActiveSection={setActiveSection}
+          isSaving={isSaving}
+          handleSaveSection={handleSaveSection}
+        />
       )}
+
+      {activeSection === "custom-link" && (() => {
+        const trimmedSlug = (customSlug || "").trim();
+        const hasInput = trimmedSlug.length > 0;
+        const tooShort = hasInput && trimmedSlug.length < 3;
+        const tooLong = trimmedSlug.length > 100;
+        const reserved = hasInput && isReservedSlug(trimmedSlug);
+        const invalidChars = hasInput && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trimmedSlug);
+        const isSlugValid = !hasInput || (!tooShort && !tooLong && !reserved && !invalidChars);
+
+        return (
+          <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
+            <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
+              {/* Counter text */}
+              <span className="text-xs font-semibold text-zinc-700 tracking-tight">
+                {Math.max(0, 100 - (customSlug?.length || 0))}/100 characters available
+              </span>
+
+              {/* homyz/stay/ slug input field */}
+              <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight">
+                <span className="text-zinc-500">homyz/stay/</span>
+                <input
+                  type="text"
+                  value={customSlug}
+                  onChange={(e) =>
+                    setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
+                  }
+                  placeholder="your-space"
+                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[60px] max-w-[280px]"
+                  autoFocus
+                />
+              </div>
+
+              {/* Validation feedback */}
+              <div className="text-xs text-center min-h-[20px]">
+                {tooShort && (
+                  <span className="text-red-500 font-medium">Link must be at least 3 characters.</span>
+                )}
+                {reserved && (
+                  <span className="text-red-500 font-medium">This link is a reserved system route.</span>
+                )}
+                {invalidChars && !tooShort && (
+                  <span className="text-red-500 font-medium">Use lowercase letters, numbers, and single hyphens.</span>
+                )}
+                {hasInput && isSlugValid && !tooShort && (
+                  <span className="text-emerald-600 font-medium">Valid link: homyz.com/stay/{trimmedSlug}</span>
+                )}
+                {!hasInput && (
+                  <span className="text-zinc-400 font-normal">Create a memorable web address for your listing.</span>
+                )}
+              </div>
+
+              {/* Save pill button */}
+              <button
+                type="button"
+                disabled={isSaving || (hasInput && !isSlugValid)}
+                onClick={() => handleSaveSection("custom-link")}
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }
@@ -522,52 +573,49 @@ function CancellationPolicyView({
   setActiveSection,
   isSaving,
   handleSaveSection,
+  longTermCancellationPolicy,
+  setLongTermCancellationPolicy,
 }: {
   cancellationPolicy: string;
   setCancellationPolicy: (val: string) => void;
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
+  longTermCancellationPolicy: "FIRM" | "STRICT";
+  setLongTermCancellationPolicy: (val: "FIRM" | "STRICT") => void;
 }) {
   const [editingShortTerm, setEditingShortTerm] = React.useState(false);
   const [editingLongTerm, setEditingLongTerm] = React.useState(false);
-  const [selectedShortPolicy, setSelectedShortPolicy] = React.useState(cancellationPolicy || "Flexible");
-  const [longTermPolicy, setLongTermPolicy] = React.useState("Firm long term");
-  const [nonRefundable, setNonRefundable] = React.useState(false);
+  const [selectedShortPolicy, setSelectedShortPolicy] = React.useState(cancellationPolicy || "FLEXIBLE");
+  const [longTermPolicy, setLongTermPolicy] = React.useState<"FIRM" | "STRICT">(longTermCancellationPolicy);
 
   const shortTermPolicies = [
     {
-      id: "Flexible",
+      id: "FLEXIBLE",
       title: "Flexible",
-      bullets: ["Full refund at least 1 day before check-in", "Partial refund within 1 day of check-in"],
     },
     {
-      id: "Moderate",
+      id: "MODERATE",
       title: "Moderate",
-      bullets: ["Full refund at least 5 days before check-in", "Partial refund within 5 days of check-in"],
     },
     {
-      id: "Limited",
+      id: "LIMITED",
       title: "Limited",
-      bullets: ["Full refund at least 14 days before check-in", "Partial refund 7-14 days of check-in"],
     },
     {
-      id: "Firm",
+      id: "FIRM",
       title: "Firm",
-      bullets: ["Full refund at least 30 days before check-in", "Partial refund 7-30 days of check-in"],
     },
   ];
 
   const longTermPolicies = [
     {
-      id: "Firm long term",
+      id: "FIRM" as const,
       title: "Firm long term",
-      bullets: ["Full refund up to 30 days before check-in", "After that, the first 30 days of the stay are non-refundable"],
     },
     {
-      id: "Strict long term",
+      id: "STRICT" as const,
       title: "Strict long term",
-      bullets: ["Full refund if cancelled within 48 hours of booking and at least 28 days before check-in", "After that, the first 30 days of the stay are non-refundable"],
     },
   ];
 
@@ -580,7 +628,7 @@ function CancellationPolicyView({
           <h1>Cancellation policy</h1>
         </div>
         <p className="text-xs text-zinc-500 font-normal pl-11">
-          Choose how flexible your refund policy is for cancellations before check-in.
+          Select the policy label recorded with each booking. Refund eligibility is not calculated in Homyz.
         </p>
       </div>
 
@@ -592,7 +640,7 @@ function CancellationPolicyView({
           </span>
 
           <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-            Applies to stays under 28 nights, All standard stays policies include a 24-hour free cancellation period.
+            Applies to stays under 28 nights. Exact refund terms are not represented until product rules are approved.
           </p>
 
           <div className="border-t border-zinc-200/80 w-full max-w-xs" />
@@ -632,14 +680,6 @@ function CancellationPolicyView({
                     }`}
                   >
                     <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
-                    <ul className="space-y-0.5">
-                      {policy.bullets.map((b, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${selectedShortPolicy === policy.id ? "bg-amber-400" : "bg-zinc-400"}`} />
-                          <span className="text-[10px] text-zinc-500 leading-tight">{b}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </button>
                 ))}
               </div>
@@ -660,7 +700,7 @@ function CancellationPolicyView({
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedShortPolicy(cancellationPolicy || "Flexible");
+                    setSelectedShortPolicy(cancellationPolicy || "FLEXIBLE");
                     setEditingShortTerm(false);
                   }}
                   className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-6 py-2.5 hover:bg-zinc-50 transition-all cursor-pointer"
@@ -672,26 +712,18 @@ function CancellationPolicyView({
           )}
 
           {/* Non-refundable option */}
-          <div className="flex items-start justify-between pt-2">
+          <div className="flex items-start justify-between pt-2 opacity-60">
             <div className="space-y-1 max-w-sm">
               <h4 className="font-semibold text-xs text-[#1F1F1F]">Non-refundable option</h4>
               <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-                Guests can pay 10% less in exchange for you keeping full payout if they cancel.
+                Unavailable: non-refundable discount and refund terms are not defined.
               </p>
-              <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="underline font-semibold text-[#1F1F1F] text-[11px] block pt-0.5"
-              >
-                Learn more
-              </a>
             </div>
             <button
               type="button"
-              onClick={() => setNonRefundable((v) => !v)}
-              className={`w-9 h-5 rounded-full transition-colors p-0.5 flex items-center cursor-pointer shrink-0 mt-1 ${
-                nonRefundable ? "bg-zinc-900 justify-end" : "bg-zinc-300 justify-start"
-              }`}
+              disabled
+              aria-label="Non-refundable rates are not available"
+              className="w-9 h-5 rounded-full bg-zinc-300 p-0.5 flex items-center cursor-not-allowed shrink-0 mt-1"
             >
               <span className="w-4 h-4 rounded-full bg-white shadow-2xs" />
             </button>
@@ -705,7 +737,7 @@ function CancellationPolicyView({
           </span>
 
           <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-            Applies to stays longer than 28 nights.
+            Applies to stays of 28 nights or more. Exact refund terms are not represented until product rules are approved.
           </p>
 
           <div className="border-t border-zinc-200/80 w-full max-w-xs" />
@@ -745,14 +777,6 @@ function CancellationPolicyView({
                     }`}
                   >
                     <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
-                    <ul className="space-y-0.5">
-                      {policy.bullets.map((b, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${longTermPolicy === policy.id ? "bg-amber-400" : "bg-zinc-400"}`} />
-                          <span className="text-[10px] text-zinc-500 leading-tight">{b}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </button>
                 ))}
               </div>
@@ -760,7 +784,11 @@ function CancellationPolicyView({
               <div className="flex items-center gap-3 pt-1">
                 <button
                   type="button"
-                  onClick={() => setEditingLongTerm(false)}
+                  onClick={() => {
+                    setLongTermCancellationPolicy(longTermPolicy);
+                    handleSaveSection("cancellation-policy");
+                    setEditingLongTerm(false);
+                  }}
                   className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   Save
@@ -768,7 +796,7 @@ function CancellationPolicyView({
                 <button
                   type="button"
                   onClick={() => {
-                    setLongTermPolicy("Firm long term");
+                    setLongTermPolicy(longTermCancellationPolicy);
                     setEditingLongTerm(false);
                   }}
                   className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-6 py-2.5 hover:bg-zinc-50 transition-all cursor-pointer"

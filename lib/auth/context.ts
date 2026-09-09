@@ -14,9 +14,35 @@ export async function getAuthContext(
 ): Promise<AuthUser | null> {
   const authHeader = req.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
-    const claims = await verifyAccessToken(authHeader.slice(7).trim());
-    if (!claims) return null;
-    return { id: claims.sub, role: claims.role, email: null };
+    const rawBearer = authHeader.slice(7).trim();
+    const claims = await verifyAccessToken(rawBearer);
+    if (claims) {
+      return { id: claims.sub, role: claims.role, email: null };
+    }
+
+    // Also support passing NextAuth session tokens via Bearer header
+    const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+    if (nextAuthSecret) {
+      try {
+        const { decode } = await import("next-auth/jwt");
+        const decoded = await decode({
+          token: rawBearer,
+          secret: nextAuthSecret,
+        });
+        if (decoded?.id && decoded?.role) {
+          return {
+            id: decoded.id as string,
+            role: decoded.role as any,
+            email: typeof decoded.email === "string" ? decoded.email : null,
+            status: decoded.status as string | undefined,
+            adminRoleSlug: decoded.adminRoleSlug as string | null | undefined,
+            permissions: (decoded.permissions as string[]) || ["*"],
+          };
+        }
+      } catch {}
+    }
+
+    return null;
   }
 
   const secret = process.env.NEXTAUTH_SECRET;

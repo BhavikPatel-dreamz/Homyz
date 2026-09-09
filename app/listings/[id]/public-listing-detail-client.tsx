@@ -17,13 +17,24 @@ interface PublicListingDetailClientProps {
     host?: {
       name?: string | null;
       image?: string | null;
-      bio?: string | null;
       createdAt?: Date | string;
+      publicProfile?: Record<string, unknown> | null;
     } | null;
   };
+  guidebooks?: Array<{
+    id: string;
+    title: string;
+    coverImage?: string | null;
+    city?: string | null;
+    itemsCount: number;
+    host?: { id: string; name: string | null; image: string | null };
+  }>;
 }
 
-export function PublicListingDetailClient({ listing }: PublicListingDetailClientProps) {
+export function PublicListingDetailClient({
+  listing,
+  guidebooks = [],
+}: PublicListingDetailClientProps) {
   const router = useRouter();
 
   // Modal States
@@ -50,6 +61,29 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
   const locationString = listing.city
     ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
     : listing.country || "Saudi Arabia";
+  const publicCoordinates =
+    typeof listing.latitude === "number" && Number.isFinite(listing.latitude) &&
+    typeof listing.longitude === "number" && Number.isFinite(listing.longitude)
+      ? { latitude: listing.latitude, longitude: listing.longitude }
+      : null;
+  const publicProfile = listing.host?.publicProfile?.profileVisible === false ? null : listing.host?.publicProfile ?? null;
+  const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
+  const hostPrompts = publicProfile?.prompts && typeof publicProfile.prompts === "object" ? publicProfile.prompts as Record<string, unknown> : {};
+  const hostInterests = Array.isArray(publicProfile?.interests) ? publicProfile.interests.filter((value): value is string => typeof value === "string") : [];
+  const hostStamps = publicProfile?.stampsVisible !== false && Array.isArray(publicProfile?.selectedStamps) ? publicProfile.selectedStamps.filter((value): value is string => typeof value === "string") : [];
+  const descriptionSections = listing.descriptionSections && typeof listing.descriptionSections === "object" ? listing.descriptionSections as Record<string, unknown> : {};
+  const structuredDescription = [["Your property", descriptionSections.property], ["Guest access", descriptionSections.guestAccess], ["Interaction with guests", descriptionSections.guestInteraction], ["Other details to note", descriptionSections.otherDetails]] as const;
+  const formatTime = (time: string | null | undefined) => {
+    if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
+    const [hour, minute] = time.split(":").map(Number);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${suffix}`;
+  };
+  const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const publicSafetyEquipment = Array.isArray(listing.safetyEquipment) ? listing.safetyEquipment : [];
+  const publicSafetyHazards = Array.isArray(listing.safetyHazards) ? listing.safetyHazards : [];
+  const cancellationLabel = listing.cancellationPolicy.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const longTermCancellationLabel = listing.longTermCancellationPolicy.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   // Fetch quote when valid dates are selected
   useEffect(() => {
@@ -236,7 +270,7 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
               <div className="flex items-center justify-between pb-6 border-b border-zinc-200/80">
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold text-zinc-900">
-                    {listing.listingType || "Entire place"} hosted by {listing.host?.name || "Verified Host"}
+                    {listing.listingType || "Entire place"} hosted by {listing.host?.name || "Homyz host"}
                   </h2>
                   <p className="text-xs text-zinc-500 font-normal">
                     {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} ·{" "}
@@ -325,6 +359,24 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                 </div>
               )}
 
+              {structuredDescription.some(([, value]) => typeof value === "string" && value.trim()) && (
+                <section className="space-y-4 pb-6 border-b border-zinc-200/80">
+                  {structuredDescription.map(([heading, value]) => typeof value === "string" && value.trim() ? <div key={heading} className="space-y-1"><h3 className="text-sm font-bold text-zinc-900">{heading}</h3><p className="text-xs leading-relaxed text-zinc-700">{value}</p></div> : null)}
+                </section>
+              )}
+
+              {(hostBio || Object.values(hostPrompts).some((value) => typeof value === "string" && value) || hostInterests.length > 0 || hostStamps.length > 0) && (
+                <section className="space-y-3 pb-6 border-b border-zinc-200/80">
+                  <h3 className="text-base font-bold text-zinc-900">About your host</h3>
+                  {hostBio && <p className="text-xs leading-relaxed text-zinc-700">{hostBio}</p>}
+                  {Object.entries(hostPrompts).filter(([, value]) => typeof value === "string" && value).map(([key, value]) => (
+                    <div key={key} className="text-xs text-zinc-700"><span className="font-semibold">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}: </span>{value as string}</div>
+                  ))}
+                  {hostInterests.length > 0 && <div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] capitalize text-zinc-700">{interest}</span>)}</div>}
+                  {hostStamps.length > 0 && <p className="text-xs text-zinc-600"><span className="font-semibold">Where I&apos;ve been: </span>{hostStamps.join(", ")}</p>}
+                </section>
+              )}
+
               {/* Amenities Grid */}
               <div className="space-y-4 pb-6 border-b border-zinc-200/80">
                 <h3 className="text-base font-bold text-zinc-900">What this place offers</h3>
@@ -352,45 +404,33 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
               <div className="space-y-3 pb-6 border-b border-zinc-200/80">
                 <h3 className="text-base font-bold text-zinc-900">House rules</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-zinc-700">
-                  <div className="flex items-center gap-2">
-                    <span>🕒</span>
-                    <span>Check-in: after {listing.checkInStart || "3:00 PM"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>⏱️</span>
-                    <span>Checkout: before {listing.checkOutTime || "11:00 AM"}</span>
-                  </div>
+                  {formatTime(listing.checkInStart) && <div className="flex items-center gap-2"><span>🕒</span><span>Check-in: {formatTime(listing.checkInStart)}–{formatTime(listing.checkInEnd) || "open"}</span></div>}
+                  {formatTime(listing.checkOutTime) && <div className="flex items-center gap-2"><span>⏱️</span><span>Checkout: by {formatTime(listing.checkOutTime)}</span></div>}
                   <div className="flex items-center gap-2">
                     <span>👥</span>
                     <span>{listing.guests || 1} guest maximum</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>{listing.petsAllowed ? "🐾" : "🚫"}</span>
-                    <span>{listing.petsAllowed ? "Pets allowed" : "No pets"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>{listing.smokingAllowed ? "🚬" : "🚭"}</span>
-                    <span>{listing.smokingAllowed ? "Smoking allowed" : "No smoking inside"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>{listing.eventsAllowed ? "🎉" : "🔇"}</span>
-                    <span>{listing.eventsAllowed ? "Events allowed" : "No parties or events"}</span>
-                  </div>
+                  {listing.petsAllowed !== null && <div className="flex items-center gap-2"><span>{listing.petsAllowed ? "🐾" : "🚫"}</span><span>{listing.petsAllowed ? `Pets allowed${listing.maxPets ? ` · up to ${listing.maxPets}` : ""}` : "No pets"}</span></div>}
+                  {listing.smokingAllowed !== null && <div className="flex items-center gap-2"><span>{listing.smokingAllowed ? "🚬" : "🚭"}</span><span>{listing.smokingAllowed ? `Smoking: ${listing.smokingLocation ? humanize(listing.smokingLocation) : "allowed"}` : "No smoking"}</span></div>}
+                  {listing.eventsAllowed !== null && <div className="flex items-center gap-2"><span>{listing.eventsAllowed ? "🎉" : "🔇"}</span><span>{listing.eventsAllowed ? "Events allowed" : "No parties or events"}</span></div>}
+                  {listing.photographyAllowed !== null && <div className="flex items-center gap-2"><span>📷</span><span>{listing.photographyAllowed ? "Commercial photography allowed" : "No commercial photography"}</span></div>}
+                  {listing.quietHours && formatTime(listing.quietHoursStart) && formatTime(listing.quietHoursEnd) && <div className="flex items-center gap-2"><span>🤫</span><span>Quiet hours: {formatTime(listing.quietHoursStart)}–{formatTime(listing.quietHoursEnd)}</span></div>}
+                  {listing.additionalRules && <div className="flex items-start gap-2 sm:col-span-2"><span>📋</span><span className="whitespace-pre-line">{listing.additionalRules}</span></div>}
                 </div>
+              </div>
+
+              <div className="space-y-2 pb-6 border-b border-zinc-200/80">
+                <h3 className="text-base font-bold text-zinc-900">Cancellation policy</h3>
+                <p className="text-xs text-zinc-600">{cancellationLabel} for stays under 28 nights.</p>
+                <p className="text-xs text-zinc-600">{longTermCancellationLabel} long-term policy for stays of 28 nights or more.</p>
               </div>
 
               {/* Safety Disclosures */}
               <div className="space-y-3 pb-6 border-b border-zinc-200/80">
                 <h3 className="text-base font-bold text-zinc-900">Safety & property</h3>
                 <div className="space-y-2 text-xs text-zinc-600">
-                  <div className="flex items-center gap-2">
-                    <span>🔔</span>
-                    <span>Smoke alarm installed</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>🛡️</span>
-                    <span>Carbon monoxide alarm installed</span>
-                  </div>
+                  {publicSafetyEquipment.map((item) => <div key={item} className="flex items-center gap-2"><span>🛡️</span><span>{humanize(item)}</span></div>)}
+                  {publicSafetyHazards.map((item) => <div key={item} className="flex items-center gap-2"><span>⚠️</span><span>{item}</span></div>)}
                   {Array.isArray(listing.safetyDisclosures) &&
                     listing.safetyDisclosures.map((d: string, i: number) => {
                       const [k, v] = d.split(":");
@@ -403,6 +443,7 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                         </div>
                       );
                     })}
+                  {publicSafetyEquipment.length === 0 && publicSafetyHazards.length === 0 && (!listing.safetyDisclosures || listing.safetyDisclosures.length === 0) && <p>No safety equipment or property hazards have been reported.</p>}
                 </div>
               </div>
 
@@ -413,14 +454,61 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                   {locationString}
                   {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
                 </p>
-                <div className="h-72 w-full rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
-                  <RealMap
-                    lat={listing.latitude || 24.7136}
-                    lng={listing.longitude || 46.6753}
-                    address={locationString}
-                    showExactLocation={listing.showExactLocation ?? false}
-                  />
-                </div>
+                {publicCoordinates ? (
+                  <div className="h-72 w-full rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
+                    <RealMap
+                      lat={publicCoordinates.latitude}
+                      lng={publicCoordinates.longitude}
+                      address={locationString}
+                      showExactLocation={listing.showExactLocation ?? false}
+                    />
+                  </div>
+                ) : (
+                  <p className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-6 text-xs text-zinc-600">
+                    Map location is not available for this listing.
+                  </p>
+                )}
+                {(listing.neighborhoodDescription || listing.gettingAround || listing.locationFeatures?.length || listing.views?.length) && <div className="space-y-4 pt-3 text-xs text-zinc-700">
+                  {listing.neighborhoodDescription && <div><h4 className="font-semibold text-zinc-900">Neighborhood</h4><p className="mt-1 leading-relaxed">{listing.neighborhoodDescription}</p></div>}
+                  {listing.gettingAround && <div><h4 className="font-semibold text-zinc-900">Getting around</h4><p className="mt-1 leading-relaxed">{listing.gettingAround}</p></div>}
+                  {listing.locationFeatures && listing.locationFeatures.length > 0 && <div><h4 className="font-semibold text-zinc-900">Location features</h4><p className="mt-1 capitalize">{listing.locationFeatures.map((feature) => feature.replace(/_/g, " ")).join(" · ")}</p></div>}
+                  {listing.views && listing.views.length > 0 && <div><h4 className="font-semibold text-zinc-900">Views</h4><p className="mt-1 capitalize">{listing.views.map((view) => view.replace(/_/g, " ")).join(" · ")}</p></div>}
+                </div>}
+
+                {guidebooks.length > 0 && (
+                  <div className="pt-5 border-t border-zinc-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-zinc-900">Local Host Guidebook</h4>
+                      <span className="text-[11px] text-zinc-400">Curated recommendations</span>
+                    </div>
+                    <div className="space-y-2.5">
+                      {guidebooks.map((gb) => (
+                        <div
+                          key={gb.id}
+                          className="rounded-2xl border border-zinc-200 bg-white p-4 flex items-center justify-between gap-4 hover:border-zinc-300 transition-all shadow-2xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-lg shrink-0">
+                              📖
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="text-xs font-bold text-zinc-900 truncate">{gb.title}</h5>
+                              <p className="text-[11px] text-zinc-500 truncate">
+                                {gb.itemsCount} recommendations by {gb.host?.name || "Host"}
+                              </p>
+                            </div>
+                          </div>
+                          <Link
+                            href={`/guidebooks/${gb.id}`}
+                            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
+                          >
+                            View guidebook
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -432,7 +520,7 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                     <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                       ✓
                     </div>
-                    <h3 className="text-base font-bold text-zinc-900">Reservation Request Submitted</h3>
+                    <h3 className="text-base font-bold text-zinc-900">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
                     <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                       Your stay has been recorded. You can manage your bookings in your trips dashboard.
                     </p>
@@ -502,6 +590,8 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                       </div>
                     </div>
 
+                    {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-zinc-600 whitespace-pre-wrap">{listing.bookingMessage}</p>}
+
                     {/* Live Quote Breakdown */}
                     {isQuoteLoading && (
                       <div className="py-4 text-center text-xs text-zinc-400 animate-pulse font-medium">
@@ -539,10 +629,52 @@ export function PublicListingDetailClient({ listing }: PublicListingDetailClient
                           </div>
                         )}
 
-                        <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
-                          <span>Total before taxes</span>
-                          <span>SAR {Math.round(quote.totalPrice / 100)}</span>
-                        </div>
+                        {quote.discountAmount > 0 && <div className="flex items-center justify-between text-emerald-700"><span>{quote.discountPercentage}% length-of-stay discount</span><span>−SAR {Math.round(quote.discountAmount / 100)}</span></div>}
+
+                        {quote.taxes && quote.taxes.length > 0 ? (
+                          <>
+                            <div className="flex items-center justify-between text-zinc-600">
+                              <span>Total before taxes</span>
+                              <span>SAR {Math.round((quote.subtotal ?? quote.totalPrice) / 100)}</span>
+                            </div>
+
+                            <div className="pt-2 border-t border-zinc-100 space-y-1.5">
+                              <div className="flex items-center justify-between text-zinc-600">
+                                <span className="flex items-center gap-1.5 font-medium">
+                                  Taxes & fees
+                                  {quote.taxes.some((t: any) => t.isExempt) && (
+                                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
+                                      Exemption applied
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="font-medium">SAR {Math.round((quote.taxTotal || 0) / 100)}</span>
+                              </div>
+                              <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-[11px] text-zinc-500">
+                                {quote.taxes.map((t: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between">
+                                    <span>
+                                      {t.taxName}
+                                      {t.rate ? ` (${t.rate}%)` : ""}
+                                      {t.isExempt ? ` • ${t.exemptionReason || "Exempt"}` : ""}
+                                    </span>
+                                    <span>{t.isExempt ? "SAR 0" : `SAR ${Math.round(t.taxAmount / 100)}`}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
+                              <span>Total</span>
+                              <span>SAR {Math.round((quote.guestTotal ?? quote.totalPrice) / 100)}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
+                            <span>Total before taxes</span>
+                            <span>SAR {Math.round(quote.totalPrice / 100)}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 

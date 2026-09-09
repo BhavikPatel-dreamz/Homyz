@@ -66,12 +66,14 @@ export function MainHeader() {
 
         {/* Right Navigation Actions */}
         <div className="w-1/3 flex items-center justify-end gap-3.5 relative" ref={menuRef}>
-          <Link
-            className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
-            href="/host/onboarding"
-          >
-            Become a host
-          </Link>
+          {user && (
+            <Link
+              className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
+              href="/host/onboarding"
+            >
+              Become a host
+            </Link>
+          )}
 
           {/* Language button */}
           <button

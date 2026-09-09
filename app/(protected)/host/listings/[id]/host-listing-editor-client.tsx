@@ -1,23 +1,42 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect -- legacy editor integration surface; narrowed incrementally outside E4. */
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { updateListingAction, deleteListingAction } from "@/actions/host/listings";
+import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { EditorSidebar } from "./components/EditorSidebar";
 import { GuestsSafetyView } from "./components/GuestsSafetyView";
-import { EditorModals } from "./components/EditorModals";
 import { PropertyDetailsViews } from "./components/PropertyDetailsViews";
 import { PricingAndBookingViews } from "./components/PricingAndBookingViews";
 import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
+import { PhotoTourManager } from "./components/PhotoTourManager";
+import { RemoveListingModal } from "./components/RemoveListingModal";
+import { TaxesManager } from "./components/TaxesManager";
+import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
 import { normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
+import {
+  canonicalCancellationPolicy,
+  canonicalListingType,
+  canonicalPropertyType,
+  normalizeAccessibilityFeatureIds,
+  propertyTypeLabel,
+} from "@/lib/constants/listing-enums";
+import { normalizeSlug } from "@/lib/utils/slug";
+
+function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: "weekly" | "monthly") {
+  const entry = discounts?.[period];
+  if (!entry || typeof entry !== "object") return 0;
+  const value = (entry as Record<string, unknown>).percentage;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
 
 export interface HostListingData {
   id: string;
@@ -29,6 +48,15 @@ export interface HostListingData {
   hostingType: string;
   propertyType: string;
   listingType: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  showExactLocation?: boolean;
+  locationSearch?: string | null;
+  shortAddress?: string | null;
+  apartment?: string | null;
+  highlights?: string[];
+  discounts?: Record<string, unknown> | null;
+  safetyDisclosures?: string[];
   address: string;
   city: string;
   district: string;
@@ -67,6 +95,7 @@ export interface HostListingData {
   safetyHazards?: string[];
   accessibilityFeatures?: string[];
   views?: string[];
+  locationFeatures?: string[];
   petsAllowed?: boolean | null;
   maxPets?: number | null;
   petFee?: number | null;
@@ -99,6 +128,8 @@ export interface HostListingData {
   checkInEnd: string;
   checkOutTime: string;
   cancellationPolicy: string;
+  longTermCancellationPolicy?: string | null;
+  bookingMessage?: string | null;
   instantBook: boolean;
   minNights: number;
   maxNights: number;
@@ -108,6 +139,7 @@ export interface HostListingData {
   weekendPrice: number | null;
   isPaused: boolean;
   isFeatured: boolean;
+  customSlug?: string | null;
   requestedChanges: any;
   rejectionReason: string | null;
   host: {
@@ -115,71 +147,16 @@ export interface HostListingData {
     name: string | null;
     email: string | null;
     image: string | null;
+    createdAt: Date | string;
+    publicProfile: Record<string, unknown> | null;
   };
+  coHosts?: Array<{
+    id: string; email: string | null; phone: string | null; status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
+    invitedAt: Date | string; expiresAt: Date | string | null; acceptedAt: Date | string | null;
+    user: { id: string; name: string | null; image: string | null } | null;
+  }>;
 }
 
-
-interface AmenityItem {
-  id: string;
-  name: string;
-  category: string;
-  description?: string;
-  icon: string;
-}
-
-const ALL_AMENITIES_CATALOG: AmenityItem[] = [
-  { id: "air_conditioning", name: "Air conditioning", category: "Basics", description: "A system that cools and controls the humidity of an indoor space", icon: "💨" },
-  { id: "arcade_games", name: "Arcade games", category: "Entertainment", icon: "🕹️" },
-  { id: "baby_bath", name: "Baby bath", category: "Family", icon: "🛁" },
-  { id: "baby_monitor", name: "Baby monitor", category: "Family", icon: "📻" },
-  { id: "baby_safety_gates", name: "Baby safety gates", category: "Family", icon: "🚪" },
-  { id: "babysitter_recommendation", name: "Babysitter recommendation", category: "Family", icon: "👶" },
-  { id: "backyard", name: "Backyard", category: "Outdoor", icon: "🏡" },
-  { id: "backing_sheet", name: "Backing sheet", category: "Bedroom and laundry", icon: "🛏️" },
-  { id: "barbecue_utensils", name: "Barbecue utensils", category: "Kitchen and dining", icon: "🍢" },
-  { id: "bathtub", name: "Bathtub", category: "Bathroom", icon: "🛁" },
-  { id: "bbq_grill", name: "BBQ grill", category: "Outdoor", icon: "🍖" },
-  { id: "beach_access", name: "Beach access", category: "Location features", icon: "🏖️" },
-  { id: "beach_essentials", name: "Beach essentials", category: "Location features", icon: "🏖️" },
-  { id: "bed_linens", name: "Bed linens", category: "Bedroom and laundry", description: "Cotton", icon: "🛌" },
-  { id: "bidet", name: "Bidet", category: "Bathroom", icon: "🚽" },
-  { id: "bikes", name: "Bikes", category: "Services", icon: "🚲" },
-  { id: "blender", name: "Blender", category: "Kitchen and dining", icon: "🥤" },
-  { id: "board_games", name: "Board games", category: "Entertainment", icon: "🎲" },
-  { id: "boat_slip", name: "Boat slip", category: "Parking and facilities", icon: "🚤" },
-  { id: "body_soap", name: "Body soap", category: "Bathroom", icon: "🧼" },
-  { id: "fire_extinguisher", name: "Fire extinguisher", category: "Home safety", icon: "🧯" },
-  { id: "first_aid_kit", name: "First aid kit", category: "Home safety", icon: "🩹" },
-  { id: "free_parking", name: "Free parking on premises", category: "Parking and facilities", description: "Parking garage", icon: "🅿️" },
-  { id: "hair_dryer", name: "Hair dryer", category: "Bathroom", icon: "💨" },
-  { id: "hangers", name: "Hangers", category: "Bedroom and laundry", icon: "👔" },
-  { id: "hot_water", name: "Hot water", category: "Basics", icon: "🚿" },
-  { id: "iron", name: "Iron", category: "Bedroom and laundry", icon: "👔" },
-  { id: "kitchen", name: "Kitchen", category: "Kitchen and dining", description: "A space for cooking meals that includes at least a refrigerator, oven and stovetop", icon: "🍳" },
-  { id: "shampoo", name: "Shampoo", category: "Bathroom", icon: "🧴" },
-  { id: "shower_gel", name: "Shower gel", category: "Bathroom", icon: "🧼" },
-  { id: "smoke_alarm", name: "Smoke alarm", category: "Home safety", description: "Operational smoke detector installed in property.", icon: "🚨" },
-  { id: "carbon_monoxide_alarm", name: "Carbon monoxide alarm", category: "Home safety", description: "CO detector installed", icon: "🚨" },
-  { id: "tv", name: "TV", category: "Entertainment", description: "Television available in property.", icon: "📺" },
-  { id: "wifi", name: "Wifi", category: "Internet and office", description: "High-speed wireless internet access.", icon: "📶" },
-];
-
-const AMENITY_CATEGORIES = [
-  "All",
-  "Basics",
-  "Bathroom",
-  "Bedroom and laundry",
-  "Entertainment",
-  "Family",
-  "Heating and cooling",
-  "Home safety",
-  "Internet and office",
-  "Kitchen and dining",
-  "Location features",
-  "Outdoor",
-  "Parking and facilities",
-  "Services",
-];
 
 interface AccessibilityFeature {
   id: string;
@@ -192,6 +169,7 @@ interface AccessibilityFeature {
 const ARRIVAL_SECTIONS: SectionKey[] = [
   "arrival-guide",
   "check-in-out",
+  "parking",
   "directions",
   "check-in-method",
   "wifi-details",
@@ -222,6 +200,9 @@ const PREFERENCE_SECTIONS: SectionKey[] = [
   "taxes",
   "homyz-stays",
   "homyzstays",
+  "homyz-org-stays",
+  "airbnb-org-stays",
+  "airbnb-stays",
   "remove-listing",
   "removelisting",
 ];
@@ -287,10 +268,19 @@ export function HostListingEditorClient({
   // Editable Form States
   const [editTitle, setEditTitle] = useState(listing.title);
   const [editDescription, setEditDescription] = useState(listing.description);
+  const [structuredDescription, setStructuredDescription] = useState<Record<string, string>>(() => {
+    const value = (listing as any).descriptionSections ?? {};
+    return {
+      property: typeof value.property === "string" ? value.property : "",
+      guestAccess: typeof value.guestAccess === "string" ? value.guestAccess : "",
+      guestInteraction: typeof value.guestInteraction === "string" ? value.guestInteraction : "",
+      otherDetails: typeof value.otherDetails === "string" ? value.otherDetails : "",
+    };
+  });
   const [editHostingType, setEditHostingType] = useState(listing.hostingType || "HOME");
-  const [whichIsMostLike, setWhichIsMostLike] = useState("Apartment");
-  const [editPropertyType, setEditPropertyType] = useState(listing.propertyType || "Rental unit*");
-  const [editListingType, setEditListingType] = useState(listing.listingType || "Entire place");
+  const [whichIsMostLike, setWhichIsMostLike] = useState(() => propertyTypeLabel(listing.propertyType || "APARTMENT"));
+  const [editPropertyType, setEditPropertyType] = useState(() => canonicalPropertyType(listing.propertyType));
+  const [editListingType, setEditListingType] = useState(() => canonicalListingType(listing.listingType));
   const [buildingFloors, setBuildingFloors] = useState(listing.totalFloors ?? 1);
   const [listingFloor, setListingFloor] = useState(listing.listingFloor ?? 1);
   const [yearBuilt, setYearBuilt] = useState(listing.yearBuilt ? String(listing.yearBuilt) : "");
@@ -300,11 +290,52 @@ export function HostListingEditorClient({
   const [elevatorAvailable, setElevatorAvailable] = useState(listing.elevatorAvailable ?? false);
 
   const [editAddress, setEditAddress] = useState(listing.address || "");
+  const [neighborhoodDescription, setNeighborhoodDescription] = useState<string>(() => {
+    const value = (listing as any).neighborhoodDescription;
+    return typeof value === "string" ? value : "";
+  });
+  const [gettingAround, setGettingAround] = useState<string>(() => {
+    const value = (listing as any).gettingAround;
+    return typeof value === "string" ? value : "";
+  });
+  const [scenicViews, setScenicViews] = useState<Record<string, boolean>>(() => {
+    const viewSet = new Set((Array.isArray((listing as any).views) ? (listing as any).views : []) as string[]);
+    const map: Record<string, boolean> = {};
+    [
+      "bay_view",
+      "marina_view",
+      "beach_view",
+      "mountain_view",
+      "canal_view",
+      "ocean_view",
+      "city_skyline_view",
+      "park_view",
+      "courtyard_view",
+      "pool_view",
+      "desert_view",
+      "resort_view",
+      "garden_view",
+      "river_view",
+      "golf_course_view",
+      "sea_view",
+      "harbor_view",
+      "valley_view",
+      "lake_view",
+      "vineyard_view",
+    ].forEach((key) => {
+      map[key] = viewSet.has(key);
+    });
+    return map;
+  });
   const [editCity, setEditCity] = useState(listing.city || "");
   const [editDistrict, setEditDistrict] = useState(listing.district || "");
   const [editPostalCode, setEditPostalCode] = useState(listing.postalCode || "");
   const [editCountry, setEditCountry] = useState(listing.country || "Saudi Arabia");
-  const [showExactLocation, setShowExactLocation] = useState(true);
+  const [showExactLocation, setShowExactLocation] = useState(Boolean(listing.showExactLocation ?? true));
+  const [latitude, setLatitude] = useState<number | null>(listing.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(listing.longitude ?? null);
+  const [locationResolutionError, setLocationResolutionError] = useState<string | null>(null);
+  const [locationIsResolving, setLocationIsResolving] = useState(false);
 
   const [editGuests, setEditGuests] = useState(listing.guests || 2);
   const [editBedrooms, setEditBedrooms] = useState(listing.bedrooms || 1);
@@ -344,133 +375,36 @@ export function HostListingEditorClient({
   const [editPrice, setEditPrice] = useState(listing.price / 100);
   const [smartPricing, setSmartPricing] = useState(false);
   const [weekendPrice, setWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
-  const [weeklyDiscount, setWeeklyDiscount] = useState(5);
-  const [monthlyDiscount, setMonthlyDiscount] = useState(10);
+  const [weeklyDiscount, setWeeklyDiscount] = useState(() => discountPercentage(listing.discounts, "weekly"));
+  const [monthlyDiscount, setMonthlyDiscount] = useState(() => discountPercentage(listing.discounts, "monthly"));
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
   const [maxNights, setMaxNights] = useState(listing.maxNights || 365);
-  const [advanceNotice, setAdvanceNotice] = useState("Same day");
-  const [sameDayCutoff, setSameDayCutoff] = useState("12:00 AM");
-  const [allowSameDay, setAllowSameDay] = useState(true);
 
   // Photos & Amenities
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
-  const [newPhotoUrl, setNewPhotoUrl] = useState("");
-  const [editAmenities, setEditAmenities] = useState<string[]>(() =>
-    normalizeAmenities(listing.amenities?.length ? listing.amenities : ["air_conditioning", "kitchen", "wifi", "tv", "smoke_alarm"])
-  );
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [editAmenities, setEditAmenities] = useState<string[]>(() => normalizeAmenities(listing.amenities || []));
 
   // Accessibility State (Matches Figma Screenshots #1 & #2)
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState<AccessibilityFeature[]>([
-    {
-      id: "disabled_parking",
-      name: "Disabled parking spot",
-      icon: "🚗",
-      description: "Dedicated parking space accessible for guests with mobility disabilities.",
-      hasFeature: false,
-    },
-    { id: "lit_path", name: "Lit path to the guest entrance", icon: "💡", hasFeature: false },
-    { id: "step_free", name: "Step-free access", icon: "🪜", hasFeature: false },
-    { id: "entrance_32", name: "Guest entrance wider than 32 inches", icon: "↔️", hasFeature: false },
-    { id: "pool_hoist", name: "Swimming pool or hot tub hoist", icon: "🏊", hasFeature: false },
-    { id: "ceiling_hoist", name: "Ceiling or mobile hoist", icon: "🏗️", hasFeature: false },
-  ]);
+  const [accessibilityFeatures, setAccessibilityFeatures] = useState<string[]>(() =>
+    normalizeAccessibilityFeatureIds(listing.accessibilityFeatures || [])
+  );
   const [expandedAccessibility, setExpandedAccessibility] = useState<string | null>("disabled_parking");
 
   // Accordion open state for Description view
   const [openDescAccordion, setOpenDescAccordion] = useState<string | null>("description");
-  const [editPropertyDetails, setEditPropertyDetails] = useState("");
-  const [editGuestAccess, setEditGuestAccess] = useState("");
-  const [editGuestInteraction, setEditGuestInteraction] = useState("");
-  const [editOtherDetails, setEditOtherDetails] = useState("");
+  const [editPropertyDetails, setEditPropertyDetails] = useState(structuredDescription.property);
+  const [editGuestAccess, setEditGuestAccess] = useState(structuredDescription.guestAccess);
+  const [editGuestInteraction, setEditGuestInteraction] = useState(structuredDescription.guestInteraction);
+  const [editOtherDetails, setEditOtherDetails] = useState(structuredDescription.otherDetails);
   const [isEditingAmenities, setIsEditingAmenities] = useState(false);
 
   // Location Accordion & Sub-sections state
   const [openLocationAccordion, setOpenLocationAccordion] = useState<string | null>("address");
   const [addressPrivacyForCancellation, setAddressPrivacyForCancellation] = useState(false);
-  const [neighborhoodDescription, setNeighborhoodDescription] = useState("");
-  const [gettingAround, setGettingAround] = useState("");
-  const [locationFeatures, setLocationFeatures] = useState<Record<string, boolean>>({
-    beachAccess: false,
-    resortAccess: false,
-    lakeAccess: false,
-    skiInOut: false,
-    laundromatNearby: false,
-    waterfront: false,
-    privateEntrance: false,
-  });
-  const [scenicViews, setScenicViews] = useState<Record<string, boolean>>({
-    bayView: false,
-    marinaView: false,
-    beachView: false,
-    mountainView: false,
-    canalView: false,
-    oceanView: false,
-    citySkylineView: false,
-    parkView: false,
-    poolView: false,
-    courtyardView: false,
-    desertView: false,
-    resortView: false,
-    gardenView: false,
-    riverView: false,
-    golfCourseView: false,
-    seaView: false,
-    harborView: false,
-    valleyView: false,
-    lakeView: false,
-    vineyardView: false,
-  });
-
-  // About the Host State (Matches Figma Screenshot)
-  const [hostAboutBio, setHostAboutBio] = useState(
-    "Hey, I'm host... born & raised in Saudi I have been greeting guests for 5+ years. Host is warm, kind & open to welcoming guests from all around the world."
-  );
-  const [hostWantedToGo, setHostWantedToGo] = useState("Tokyo, Japan");
-  const [hostUselessSkill, setHostUselessSkill] = useState("Juggling three oranges");
-  const [hostWork, setHostWork] = useState("Architect");
-  const [hostFunFact, setHostFunFact] = useState("I love singing in the shower");
-  const [hostFavSong, setHostFavSong] = useState("Summer of '69");
-  const [hostObsessed, setHostObsessed] = useState("Cooking");
-  const [hostHomeUnique, setHostHomeUnique] = useState("Natural lighting & panoramic city view");
-  const [hostLanguageSpeak, setHostLanguageSpeak] = useState("English, Arabic");
-  const [hostPets, setHostPets] = useState("Cat");
-  const [hostBiographyTitle, setHostBiographyTitle] = useState("Life's a journey");
-  const [hostDecadeBorn, setHostDecadeBorn] = useState("1990s");
-  const [hostWhereILive, setHostWhereILive] = useState("Riyadh, Saudi Arabia");
-  const [hostSchool, setHostSchool] = useState("King Saud University");
-  const [hostForGuests, setHostForGuests] = useState("Fresh coffee & local dates");
-  const [hostTimeSpent, setHostTimeSpent] = useState("Ocean");
-  const [hostWhatsForBreakfast, setHostWhatsForBreakfast] = useState("Shakshuka & Karak Tea");
-  const [showWhereIveBeen, setShowWhereIveBeen] = useState(true);
-  const [selectedTravelStamp, setSelectedTravelStamp] = useState("Paris");
-  const [hostInterests, setHostInterests] = useState([
-    "Architecture",
-    "Cooking",
-    "Food scenes",
-    "History",
-    "Live sports",
-    "Museums",
-    "Outdoors",
-    "Shopping",
-    "Video games",
-  ]);
-
-  // Modals state for About the Host
-  const [isEditingHostProfile, setIsEditingHostProfile] = useState(false);
-  const [isEditingTravelStamp, setIsEditingTravelStamp] = useState(false);
-  const [isEditingInterests, setIsEditingInterests] = useState(false);
-
-  // Co-host State & Modal
-  const [isAddCoHostModalOpen, setIsAddCoHostModalOpen] = useState(false);
-  const [coHostCountryCode, setCoHostCountryCode] = useState("Italy (+39)");
-  const [coHostPhone, setCoHostPhone] = useState("");
-  const [coHostEmail, setCoHostEmail] = useState("");
-  const [coHostsList, setCoHostsList] = useState<
-    Array<{ id: string; phone?: string; email?: string; countryCode?: string; status: string; dateAdded: string }>
-  >([]);
+  const [locationFeatures, setLocationFeatures] = useState<string[]>(listing.locationFeatures || []);
+  const [coHosts, setCoHosts] = useState<NonNullable<HostListingData["coHosts"]>>(listing.coHosts || []);
 
   const initialRules = Array.isArray(listing.houseRules) ? listing.houseRules : [];
   const normalizedListingAmenities = (listing.amenities || []).map(normalizeAmenityId);
@@ -479,10 +413,12 @@ export function HostListingEditorClient({
   const [bookingMethod, setBookingMethod] = useState<"instant" | "approve">(
     listing.instantBook === false ? "approve" : "instant"
   );
-  const [requireTrackRecord, setRequireTrackRecord] = useState(false);
-  const [customBookingMessage, setCustomBookingMessage] = useState("");
+  const [customBookingMessage, setCustomBookingMessage] = useState(listing.bookingMessage || "");
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
+  const [listingStatusSetting, setListingStatusSetting] = useState<"listed" | "unlisted">(
+    listing.published && listing.status === "ACTIVE" && !listing.isPaused ? "listed" : "unlisted"
+  );
 
   // House Rules State (Structured & Real Database Backed)
   const [petsAllowed, setPetsAllowed] = useState<boolean | null>(() => {
@@ -493,7 +429,6 @@ export function HostListingEditorClient({
   });
   const [maxPetsAllowedToggle, setMaxPetsAllowedToggle] = useState<boolean | null>(null);
   const [maxPetsCount, setMaxPetsCount] = useState<number>(listing.maxPets ?? 1);
-  const [petFee, setPetFee] = useState<string>(listing.petFee ? String(listing.petFee / 100) : "");
   const [petRestrictions, setPetRestrictions] = useState<string>(listing.petRestrictions || "");
   const [dogsAllowed, setDogsAllowed] = useState<boolean>(listing.dogsAllowed ?? true);
   const [catsAllowed, setCatsAllowed] = useState<boolean>(listing.catsAllowed ?? true);
@@ -518,6 +453,7 @@ export function HostListingEditorClient({
   const [quietHoursStart, setQuietHoursStart] = useState<string>(listing.quietHoursStart || "22:00");
   const [quietHoursEnd, setQuietHoursEnd] = useState<string>(listing.quietHoursEnd || "08:00");
   const [commercialFilmingAllowed, setCommercialFilmingAllowed] = useState<boolean | null>(() => {
+    if (listing.photographyAllowed !== null && listing.photographyAllowed !== undefined) return listing.photographyAllowed;
     if (initialRules.some((r) => /no commercial filming/i.test(r))) return false;
     if (initialRules.some((r) => /commercial filming allowed/i.test(r))) return true;
     return false;
@@ -544,23 +480,28 @@ export function HostListingEditorClient({
   const [fireExtinguisher, setFireExtinguisher] = useState<boolean>(
     normalizedListingAmenities.includes("fire_extinguisher")
   );
-  const [cancellationPolicy, setCancellationPolicy] = useState<string>(
-    listing.cancellationPolicy || "Flexible"
+  const [cancellationPolicy, setCancellationPolicy] = useState<string>(() =>
+    canonicalCancellationPolicy(listing.cancellationPolicy)
   );
-  const [customSlug, setCustomSlug] = useState<string>("");
+  const [longTermCancellationPolicy, setLongTermCancellationPolicy] = useState<"FIRM" | "STRICT">(
+    listing.longTermCancellationPolicy === "STRICT" ? "STRICT" : "FIRM"
+  );
+  const [customSlug, setCustomSlug] = useState<string>(listing.customSlug || "");
 
   const [isSafetyConsiderationsModalOpen, setIsSafetyConsiderationsModalOpen] = useState(false);
   const [isSafetyDevicesModalOpen, setIsSafetyDevicesModalOpen] = useState(false);
   const [isPropertyInfoModalOpen, setIsPropertyInfoModalOpen] = useState(false);
 
-  const [safetyConsiderations, setSafetyConsiderations] = useState<string[]>([]);
+  const [safetyConsiderations, setSafetyConsiderations] = useState<string[]>(() =>
+    Array.isArray(listing.safetyHazards) ? listing.safetyHazards.filter(Boolean).map(String) : []
+  );
   const [propertyInfoDetails, setPropertyInfoDetails] = useState<string[]>([]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Save changes handler
-  async function handleSaveSection(sectionToSave: SectionKey) {
+  async function handleSaveSection(sectionToSave: SectionKey, sectionSubtype?: "property" | "access" | "interaction" | "other") {
     setIsSaving(true);
     setFeedbackMsg(null);
 
@@ -569,23 +510,59 @@ export function HostListingEditorClient({
     if (sectionToSave === "title") {
       payload = { title: editTitle };
     } else if (sectionToSave === "description") {
-      payload = { description: editDescription };
+      if (sectionSubtype === "property") {
+        const nextSections = {
+          ...(listing as any).descriptionSections ?? {},
+          property: editPropertyDetails,
+        };
+        payload = { descriptionSections: nextSections };
+      } else if (sectionSubtype === "access") {
+        const nextSections = {
+          ...(listing as any).descriptionSections ?? {},
+          guestAccess: editGuestAccess,
+        };
+        payload = { descriptionSections: nextSections };
+      } else if (sectionSubtype === "interaction") {
+        const nextSections = {
+          ...(listing as any).descriptionSections ?? {},
+          guestInteraction: editGuestInteraction,
+        };
+        payload = { descriptionSections: nextSections };
+      } else if (sectionSubtype === "other") {
+        const nextSections = {
+          ...(listing as any).descriptionSections ?? {},
+          otherDetails: editOtherDetails,
+        };
+        payload = { descriptionSections: nextSections };
+      } else {
+        payload = { description: editDescription };
+      }
     } else if (sectionToSave === "propertyType") {
+      const propertyTypeValue = canonicalPropertyType(editPropertyType);
+      const listingTypeValue = canonicalListingType(editListingType);
       const isApartment = [
-        "Apartment", "Condo", "Loft", "Serviced apartment", "Rental unit*",
-        "RENTAL_UNIT", "CONDO", "LOFT", "SERVICED_APARTMENT", "APARTMENT",
-      ].includes(whichIsMostLike) || [
-        "Apartment", "Condo", "Loft", "Serviced apartment", "Rental unit*",
-      ].includes(editPropertyType);
+        "APARTMENT",
+        "CONDO",
+        "LOFT",
+        "RENTAL_UNIT",
+        "SERVICED_APARTMENT",
+      ].includes(propertyTypeValue) || [
+        "APARTMENT",
+        "CONDO",
+        "LOFT",
+        "RENTAL_UNIT",
+        "SERVICED_APARTMENT",
+      ].includes(canonicalPropertyType(whichIsMostLike));
 
       payload = {
         hostingType: editHostingType,
-        propertyType: editPropertyType,
-        listingType: editListingType,
+        propertyType: propertyTypeValue,
+        listingType: listingTypeValue,
         propertySize: propertySize ? parseInt(propertySize, 10) : null,
         propertySizeUnit,
         listingFloor: isApartment ? Number(listingFloor) : null,
-        totalFloors: isApartment ? Number(buildingFloors) : null,
+        // Total floors applies to any multi-storey building, including houses and villas.
+        totalFloors: Number(buildingFloors) || null,
         yearBuilt: yearBuilt ? parseInt(yearBuilt, 10) : null,
         elevatorAvailable: isApartment ? elevatorAvailable : null,
         privateEntrance: !isApartment ? privateEntrance : null,
@@ -603,9 +580,21 @@ export function HostListingEditorClient({
         rooms,
       };
     } else if (sectionToSave === "pricing") {
+      const nextDiscounts = {
+        ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
+        weekly: {
+          enabled: Number(weeklyDiscount) > 0,
+          percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
+        },
+        monthly: {
+          enabled: Number(monthlyDiscount) > 0,
+          percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
+        },
+      };
       payload = {
         price: Math.round(editPrice * 100),
         weekendPrice: Math.round(weekendPrice * 100),
+        discounts: nextDiscounts,
       };
     } else if (sectionToSave === "availability") {
       payload = {
@@ -615,15 +604,29 @@ export function HostListingEditorClient({
     } else if (sectionToSave === "photos") {
       payload = { photos: editPhotos };
     } else if (sectionToSave === "amenities" || sectionToSave === "add-amenities") {
-      payload = { amenities: editAmenities };
+      payload = { amenities: normalizeAmenities(editAmenities) };
     } else if (sectionToSave === "location") {
+      if (latitude === null || longitude === null || locationResolutionError || locationIsResolving) {
+        setIsSaving(false);
+        setFeedbackMsg({ type: "error", text: locationResolutionError || "Choose a precise location on the map before saving." });
+        return;
+      }
+      const selectedViews = Object.entries(scenicViews)
+        .filter(([, isEnabled]) => Boolean(isEnabled))
+        .map(([key]) => key.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""));
       payload = {
         address: editAddress,
+        neighborhoodDescription,
+        gettingAround,
         city: editCity,
         district: editDistrict,
         postalCode: editPostalCode,
         country: editCountry,
+        latitude,
+        longitude,
         showExactLocation,
+        views: selectedViews,
+        locationFeatures,
       };
     } else if (sectionToSave === "parking") {
       payload = {
@@ -664,6 +667,7 @@ export function HostListingEditorClient({
     } else if (sectionToSave === "booking-settings") {
       payload = {
         instantBook: bookingMethod === "instant",
+        bookingMessage: customBookingMessage.trim() || null,
       };
     } else if (sectionToSave === "house-rules") {
       const rules: string[] = [];
@@ -702,15 +706,19 @@ export function HostListingEditorClient({
 
       payload = {
         houseRules: rules,
+        guests: Math.max(1, Number(maxGuestsCount) || 1),
         petsAllowed,
         maxPets: petsAllowed ? Number(maxPetsCount) : null,
-        petFee: petsAllowed && petFee ? Math.round(Number(petFee) * 100) : null,
+        // Pet count is not collected in the booking flow. Do not persist a fee
+        // which the authoritative quote cannot charge.
+        petFee: null,
         petRestrictions: petsAllowed ? petRestrictions : null,
         dogsAllowed: petsAllowed ? dogsAllowed : null,
         catsAllowed: petsAllowed ? catsAllowed : null,
         smokingAllowed,
         smokingLocation: smokingAllowed ? smokingLocation : null,
         eventsAllowed,
+        photographyAllowed: commercialFilmingAllowed,
         quietHours: quietHoursToggle,
         quietHoursStart: quietHoursToggle ? quietHoursStart : null,
         quietHoursEnd: quietHoursToggle ? quietHoursEnd : null,
@@ -737,16 +745,51 @@ export function HostListingEditorClient({
         safetyHazards: safetyConsiderations,
         amenities: newAmenitiesList,
       };
+    } else if (sectionToSave === "accessibility") {
+      payload = {
+        accessibilityFeatures: normalizeAccessibilityFeatureIds(accessibilityFeatures),
+      };
     } else if (sectionToSave === "cancellation-policy") {
       payload = {
-        cancellationPolicy,
+        cancellationPolicy: canonicalCancellationPolicy(cancellationPolicy),
+        longTermCancellationPolicy,
       };
     } else if (sectionToSave === "custom-link") {
+      const normalized = normalizeSlug(customSlug);
+      payload = {
+        customSlug: normalized || null,
+      };
+    } else if (sectionToSave === "listing-status" || sectionToSave === "listingstatus") {
+      try {
+        if (listingStatusSetting === "listed") {
+          const res = await publishListingAction(listing.id);
+          setIsSaving(false);
+          if (res.ok && res.data) {
+            setListing((prev) => ({ ...prev, published: true, status: "ACTIVE", isPaused: false }));
+            setListingStatusSetting("listed");
+            setFeedbackMsg({ type: "success", text: "Listing published successfully!" });
+          } else {
+            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to publish listing. Please verify all required listing fields." });
+          }
+        } else {
+          const res = await unpublishListingAction(listing.id);
+          setIsSaving(false);
+          if (res.ok && res.data) {
+            setListing((prev) => ({ ...prev, published: false, status: "DRAFT" }));
+            setListingStatusSetting("unlisted");
+            setFeedbackMsg({ type: "success", text: "Listing unpublished successfully." });
+          } else {
+            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to unpublish listing." });
+          }
+        }
+      } catch (err: any) {
+        setIsSaving(false);
+        setFeedbackMsg({ type: "error", text: "Error saving listing status: " + err.message });
+      }
+      return;
+    } else {
       setIsSaving(false);
-      setFeedbackMsg({
-        type: "success",
-        text: "Custom link preview updated.",
-      });
+      setFeedbackMsg({ type: "error", text: "This setting is not available yet." });
       return;
     }
 
@@ -755,6 +798,27 @@ export function HostListingEditorClient({
       setIsSaving(false);
       if (res.ok && res.data) {
         setListing((prev) => ({ ...prev, ...payload }));
+        if (payload.amenities !== undefined) {
+          const freshAmenities = normalizeAmenities((res.data as any).amenities || payload.amenities);
+          setEditAmenities(freshAmenities);
+        }
+        if (payload.descriptionSections) {
+          setStructuredDescription({
+            property: payload.descriptionSections.property ?? editPropertyDetails,
+            guestAccess: payload.descriptionSections.guestAccess ?? editGuestAccess,
+            guestInteraction: payload.descriptionSections.guestInteraction ?? editGuestInteraction,
+            otherDetails: payload.descriptionSections.otherDetails ?? editOtherDetails,
+          });
+        }
+        if (payload.neighborhoodDescription !== undefined) {
+          setNeighborhoodDescription(payload.neighborhoodDescription ?? "");
+        }
+        if (payload.gettingAround !== undefined) {
+          setGettingAround(payload.gettingAround ?? "");
+        }
+        if (payload.customSlug !== undefined) {
+          setCustomSlug(payload.customSlug || "");
+        }
         setFeedbackMsg({ type: "success", text: "Changes saved successfully!" });
       } else {
         setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to update section." });
@@ -765,6 +829,32 @@ export function HostListingEditorClient({
     }
   }
 
+  const handleSaveOrgStays = async (orgConfig: OrgStaysConfig) => {
+    setIsSaving(true);
+    try {
+      const nextDiscounts = {
+        ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
+        orgStays: orgConfig,
+      };
+      const res = await updateListingAction(listing.id, { discounts: nextDiscounts });
+      if (res.ok) {
+        setListing((prev) => ({
+          ...prev,
+          discounts: nextDiscounts,
+        }));
+        setFeedbackMsg({ type: "success", text: "Airbnb.org stays preferences saved successfully!" });
+      } else {
+        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save preferences." });
+      }
+    } catch (err: any) {
+      console.error("Failed to save Airbnb.org stays preferences:", err);
+      setFeedbackMsg({ type: "error", text: err?.message || "Failed to save preferences." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const [isRemoveListingModalOpen, setIsRemoveListingModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -779,10 +869,6 @@ export function HostListingEditorClient({
       setShowDeleteModal(false);
     }
   }
-
-  const filteredCatalog = ALL_AMENITIES_CATALOG.filter((item) =>
-    selectedCategory === "All" ? true : item.category === selectedCategory
-  );
 
   return (
     <div
@@ -801,11 +887,15 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
         {/* ============================================================ */}
-        <main className="lg:col-span-7 xl:col-span-7 flex flex-col space-y-6 pb-12">
+        <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
           {feedbackMsg && (
             <div className={`p-4 rounded-2xl text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
               {feedbackMsg.text}
             </div>
+          )}
+
+          {activeSection === "photos" && (
+            <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} />
           )}
 
           <PropertyDetailsViews
@@ -893,48 +983,68 @@ export function HostListingEditorClient({
             setMinNights={setMinNights}
             maxNights={maxNights}
             setMaxNights={setMaxNights}
-            advanceNotice={advanceNotice}
-            setAdvanceNotice={setAdvanceNotice}
-            sameDayCutoff={sameDayCutoff}
-            setSameDayCutoff={setSameDayCutoff}
-            allowSameDayRequests={allowSameDay}
-            setAllowSameDayRequests={setAllowSameDay}
             bookingMethod={bookingMethod}
             setBookingMethod={setBookingMethod}
-            customBookingMessage={customBookingMessage}
             setIsTurnOffInstantBookModalOpen={setIsTurnOffInstantBookModalOpen}
             setIsCustomMessageModalOpen={setIsCustomMessageModalOpen}
             cancellationPolicy={cancellationPolicy}
             setCancellationPolicy={setCancellationPolicy}
+            longTermCancellationPolicy={longTermCancellationPolicy}
+            setLongTermCancellationPolicy={setLongTermCancellationPolicy}
             customSlug={customSlug}
             setCustomSlug={setCustomSlug}
           />
 
           <HostAndLocationViews
             activeSection={activeSection}
-            setActiveSection={setActiveSection}
             isSaving={isSaving}
             handleSaveSection={handleSaveSection}
             editAddress={editAddress}
             setEditAddress={setEditAddress}
             editCity={editCity}
             setEditCity={setEditCity}
+            editDistrict={editDistrict}
+            setEditDistrict={setEditDistrict}
+            editPostalCode={editPostalCode}
+            setEditPostalCode={setEditPostalCode}
             editCountry={editCountry}
             setEditCountry={setEditCountry}
+            latitude={latitude}
+            longitude={longitude}
+            setLatitude={setLatitude}
+            setLongitude={setLongitude}
+            locationResolutionError={locationResolutionError}
+            setLocationResolutionError={setLocationResolutionError}
+            locationIsResolving={locationIsResolving}
+            setLocationIsResolving={setLocationIsResolving}
             showExactLocation={showExactLocation}
             setShowExactLocation={setShowExactLocation}
-            coHostsList={coHostsList}
-            setIsAddCoHostModalOpen={setIsAddCoHostModalOpen}
-            editPhotos={editPhotos}
-            setEditPhotos={setEditPhotos}
-            listing={listing}
-            hostInterests={hostInterests}
-            setHostInterests={setHostInterests}
-            isEditingInterests={isEditingInterests}
-            setIsEditingInterests={setIsEditingInterests}
+            neighborhoodDescription={neighborhoodDescription}
+            setNeighborhoodDescription={setNeighborhoodDescription}
+            gettingAround={gettingAround}
+            setGettingAround={setGettingAround}
+            scenicViews={scenicViews}
+            setScenicViews={setScenicViews}
+            locationFeatures={locationFeatures}
+            setLocationFeatures={setLocationFeatures}
+            listingId={listing.id}
+            coHosts={coHosts}
+            setCoHosts={setCoHosts}
+            hostProfile={listing.host}
+            onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
+              ...prev,
+              host: { ...prev.host, publicProfile, ...hostUpdate },
+            }))}
           />
 
           <HouseRulesAndArrivalViews
+            listingId={listing.id}
+            listingCity={editCity || listing.city}
+            listingCountry={editCountry || listing.country}
+            listingLatitude={listing.latitude}
+            listingLongitude={listing.longitude}
+            listingDiscounts={listing.discounts}
+            onSaveOrgStays={handleSaveOrgStays}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}
@@ -951,8 +1061,6 @@ export function HostListingEditorClient({
             setPetsAllowed={setPetsAllowed}
             maxPetsCount={maxPetsCount}
             setMaxPetsCount={setMaxPetsCount}
-            petFee={petFee}
-            setPetFee={setPetFee}
             petRestrictions={petRestrictions}
             setPetRestrictions={setPetRestrictions}
             dogsAllowed={dogsAllowed}
@@ -967,6 +1075,8 @@ export function HostListingEditorClient({
             setQuietHoursEnd={setQuietHoursEnd}
             eventsAllowed={eventsAllowed}
             setEventsAllowed={setEventsAllowed}
+            commercialFilmingAllowed={commercialFilmingAllowed}
+            setCommercialFilmingAllowed={setCommercialFilmingAllowed}
             smokingAllowed={smokingAllowed}
             setSmokingAllowed={setSmokingAllowed}
             smokingLocation={smokingLocation}
@@ -1000,6 +1110,8 @@ export function HostListingEditorClient({
             setParkingReservation={setParkingReservation}
             parkingInstructions={parkingInstructions}
             setParkingInstructions={setParkingInstructions}
+            listingStatusSetting={listingStatusSetting}
+            setListingStatusSetting={setListingStatusSetting}
           />
 
           <GuestsSafetyView
@@ -1028,30 +1140,26 @@ export function HostListingEditorClient({
           />
 
           {(activeSection === "remove-listing" || activeSection === "removelisting") && (
-            <div className="rounded-3xl border border-rose-200 bg-rose-50/40 p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in">
-              <div className="flex items-center gap-3 text-rose-600">
-                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-semibold text-lg">
-                  🗑️
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
+              <div className="flex items-center gap-3 text-zinc-900">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
+                  🏠
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-[#1F1F1F]">Remove Property Listing</h2>
-                  <p className="text-xs text-zinc-600">Permanently delete your property listing from Homyz.</p>
+                  <h2 className="text-base font-semibold text-[#1F1F1F]">Remove listing</h2>
+                  <p className="text-xs text-zinc-500">Permanently remove your listing from Homyz.</p>
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-white border border-rose-200 text-zinc-700 leading-relaxed space-y-2">
-                <p className="font-semibold text-rose-700">Warning: Deletion is permanent!</p>
-                <p>
-                  Deleting <strong>{listing.title}</strong> will immediately remove the listing from public search, cancel active host settings, and clear all property data.
-                </p>
-              </div>
+              <p className="text-zinc-600 leading-relaxed">
+                If you no longer wish to host or need to remove <strong>{listing.title}</strong>, please complete our quick removal survey to permanently remove your listing.
+              </p>
               <div className="pt-2 flex justify-end">
                 <button
                   type="button"
-                  disabled={isDeleting}
-                  onClick={() => setShowDeleteModal(true)}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-sm"
+                  onClick={() => setIsRemoveListingModalOpen(true)}
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
                 >
-                  Permanently Delete Listing
+                  Remove listing
                 </button>
               </div>
             </div>
@@ -1084,8 +1192,7 @@ export function HostListingEditorClient({
           editCountry={editCountry}
           showExactLocation={showExactLocation}
           listing={listing}
-          coHostsList={coHostsList}
-          setIsAddCoHostModalOpen={setIsAddCoHostModalOpen}
+          coHosts={coHosts}
           bookingMethod={bookingMethod}
           checkInStart={checkInStart}
           checkOutTime={checkOutTime}
@@ -1103,137 +1210,10 @@ export function HostListingEditorClient({
           editBeds={editBeds}
           parkingAvailable={parkingAvailable}
           parkingType={parkingType}
+          setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
         />
       </Container>
 
-      {/* --------------------------------------------------------- */}
-      {/* GLOBAL MODAL: ADD YOUR CO-HOST'S INFO */}
-      {/* --------------------------------------------------------- */}
-      {isAddCoHostModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
-            {/* Top Close Button */}
-            <button
-              type="button"
-              onClick={() => setIsAddCoHostModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
-            >
-              ✕
-            </button>
-
-            {/* Modal Title & Subtitle */}
-            <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add your co-host's info</h3>
-              <p className="text-xs text-zinc-500 font-normal">
-                We will text or email them the invite
-              </p>
-            </div>
-
-            {/* Form Fields */}
-            <div className="space-y-4">
-              {/* Country Code + Phone Row */}
-              <div className="grid grid-cols-5 gap-3">
-                <div className="col-span-2 space-y-1.5">
-                  <label className="block text-xs font-semibold text-zinc-800">
-                    Country code *
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={coHostCountryCode}
-                      onChange={(e) => setCoHostCountryCode(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-zinc-300/90 bg-white px-3.5 py-3 text-xs text-zinc-600 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
-                    >
-                      <option value="Italy (+39)">Italy (+39)</option>
-                      <option value="Saudi Arabia (+966)">Saudi Arabia (+966)</option>
-                      <option value="United States (+1)">United States (+1)</option>
-                      <option value="United Kingdom (+44)">United Kingdom (+44)</option>
-                      <option value="UAE (+971)">UAE (+971)</option>
-                      <option value="Germany (+49)">Germany (+49)</option>
-                      <option value="France (+33)">France (+33)</option>
-                    </select>
-                    <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-span-3 space-y-1.5">
-                  <label className="block text-xs font-semibold text-zinc-800">
-                    Phone number *
-                  </label>
-                  <input
-                    type="text"
-                    value={coHostPhone}
-                    onChange={(e) => setCoHostPhone(e.target.value)}
-                    placeholder="xxxx-xxx-xx-xxx"
-                    className="w-full rounded-2xl border border-zinc-300/90 bg-white px-4 py-3 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
-                  />
-                </div>
-              </div>
-
-              {/* Divider with 'or' */}
-              <div className="relative flex items-center justify-center my-3">
-                <div className="w-full border-t border-zinc-200" />
-                <span className="bg-white px-4 text-xs font-medium text-zinc-400 absolute">
-                  or
-                </span>
-              </div>
-
-              {/* Email Input */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-zinc-800">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={coHostEmail}
-                  onChange={(e) => setCoHostEmail(e.target.value)}
-                  placeholder="xxxx-xxx-xx-xxx"
-                  className="w-full rounded-2xl border border-zinc-300/90 bg-white px-4 py-3 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
-                />
-              </div>
-            </div>
-
-            {/* Footer Action Buttons */}
-            <div className="pt-2 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setIsAddCoHostModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const finalPhone = coHostPhone.trim() || "+39 340 123 4567";
-                  const finalEmail = coHostEmail.trim() || "cohost@example.com";
-                  setCoHostsList([
-                    ...coHostsList,
-                    {
-                      id: Date.now().toString(),
-                      phone: finalPhone,
-                      email: finalEmail,
-                      countryCode: coHostCountryCode,
-                      status: "Invite Sent",
-                      dateAdded: "Just now",
-                    },
-                  ]);
-                  setCoHostEmail("");
-                  setCoHostPhone("");
-                  setIsAddCoHostModalOpen(false);
-                }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}
       {/* --------------------------------------------------------- */}
@@ -1353,7 +1333,7 @@ export function HostListingEditorClient({
             <div className="space-y-1">
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add a custom message</h3>
               <p className="text-xs text-zinc-500 font-normal">
-                Send a welcoming message automatically when guests instant book your space.
+                This note appears to guests before they reserve. Do not include access codes or other private arrival information.
               </p>
             </div>
 
@@ -1362,13 +1342,17 @@ export function HostListingEditorClient({
               value={customBookingMessage}
               onChange={(e) => setCustomBookingMessage(e.target.value)}
               placeholder="Write a custom message for your guests..."
+              maxLength={1000}
               className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setIsCustomMessageModalOpen(false)}
+                onClick={() => {
+                  handleSaveSection("booking-settings");
+                  setIsCustomMessageModalOpen(false);
+                }}
                 className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
@@ -1434,40 +1418,18 @@ export function HostListingEditorClient({
         </ModalOverlay>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 border border-zinc-200 animate-in zoom-in-95 font-sans">
-            <div className="flex items-center gap-3 text-rose-600">
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-semibold text-lg">
-                ⚠️
-              </div>
-              <h3 className="text-base font-semibold text-[#1F1F1F]">Permanently Delete Listing?</h3>
-            </div>
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              Are you sure you want to delete <strong className="text-[#1F1F1F]">{listing.title}</strong>? This action will permanently remove your property listing and cannot be undone.
-            </p>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-100">
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-5 py-2 text-xs font-semibold border border-zinc-300 hover:bg-zinc-50 text-zinc-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={handleDeleteListing}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
+      {/* Remove Listing Survey & Confirmation Modal (Airbnb Pixel Match) */}
+      <RemoveListingModal
+        isOpen={isRemoveListingModalOpen || activeSection === "remove-listing" || activeSection === "removelisting"}
+        onClose={() => {
+          setIsRemoveListingModalOpen(false);
+          if (activeSection === "remove-listing" || activeSection === "removelisting") {
+            setActiveSection("description");
+          }
+        }}
+        listingId={listing.id}
+        listingTitle={listing.title}
+      />
     </div>
   );
 }

@@ -126,6 +126,20 @@ export async function sendPasswordResetEmail(
   });
 }
 
+export async function sendListingCoHostInvitationEmail(params: {
+  to: string;
+  hostName?: string | null;
+  listingTitle: string;
+  invitationUrl: string;
+}): Promise<void> {
+  const host = params.hostName?.trim() || "A Homyz host";
+  await deliver({
+    to: params.to,
+    subject: `You're invited to co-host “${params.listingTitle}” on Homyz`,
+    text: `${host} invited you to co-host “${params.listingTitle}” on Homyz. Sign in or create an account, then accept the invitation:\n${params.invitationUrl}\n\nThis invitation expires in 7 days.`,
+  });
+}
+
 export async function sendOtpEmail(to: string, code: string): Promise<void> {
   await deliver({
     to,
@@ -517,7 +531,6 @@ export async function sendHostApplicationSubmittedEmail(params: {
 
   await deliver({ to, subject: `[Homyz] Host Application Received (${applicationId})`, text, html });
 }
-
 
 
 

@@ -6,6 +6,7 @@ export const createBookingSchema = z
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
     guests: z.number().int().min(1).max(50).optional().default(1),
+    pets: z.number().int().min(0).max(20).optional(),
   })
   .refine((obj) => obj.endDate > obj.startDate, {
     message: "endDate must be after startDate",
@@ -19,6 +20,7 @@ export const quoteBookingSchema = z
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
     guests: z.coerce.number().int().min(1).max(50).optional().default(1),
+    pets: z.coerce.number().int().min(0).max(20).optional(),
   })
   .refine((obj) => obj.endDate > obj.startDate, {
     message: "endDate must be after startDate",

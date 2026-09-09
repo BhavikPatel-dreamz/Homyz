@@ -306,8 +306,31 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/login" },
+  // Over plain HTTP (such as testing with live IP http://8.213.86.216:3000), browsers reject
+  // any cookie with Secure flag or __Secure- prefix. Only enable secure cookies when using HTTPS.
+  useSecureCookies:
+    process.env.NEXTAUTH_URL?.startsWith("https://") ||
+    process.env.APP_URL?.startsWith("https://") ||
+    false,
   providers: buildProviders(),
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs without forcing NEXTAUTH_URL origin
+      if (url.startsWith("/")) {
+        return url;
+      }
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) {
+          return url;
+        }
+        // If the URL has a path on a different host (e.g. localhost vs server IP), extract internal relative path
+        if (parsed.pathname) {
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        }
+      } catch {}
+      return baseUrl;
+    },
     async signIn({ user, account, profile }) {
       // For OAuth sign-ins, allow linking and ensure user exists in DB
       if (account && account.provider !== "credentials" && profile?.email) {

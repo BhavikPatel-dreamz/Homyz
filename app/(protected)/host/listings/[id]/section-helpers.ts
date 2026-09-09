@@ -49,6 +49,9 @@ export type SectionKey =
   | "taxes"
   | "homyz-stays"
   | "homyzstays"
+  | "homyz-org-stays"
+  | "airbnb-org-stays"
+  | "airbnb-stays"
   | "remove-listing"
   | "removelisting";
 
@@ -120,6 +123,12 @@ export const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "taxes": "taxes",
   "homyz-stays": "homyz-stays",
   "homyzstays": "homyz-stays",
+  "homyz-org-stays": "homyz-org-stays",
+  "homyzorgstays": "homyz-org-stays",
+  "airbnb-org-stays": "airbnb-org-stays",
+  "airbnb-stays": "airbnb-org-stays",
+  "airbnborgstays": "airbnb-org-stays",
+  "airbnbstays": "airbnb-org-stays",
   "remove-listing": "remove-listing",
   "removelisting": "remove-listing",
 };

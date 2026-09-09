@@ -163,7 +163,7 @@ Host Node in `~/homyz`, **no sudo**. Push to `main` (or run the workflow by hand
 
 **GitHub → Settings → Secrets and variables → Actions**
 
-Secrets: `ECS_SSH_HOST` (e.g. `8.213.86.216`), `ECS_SSH_USER` (`developer1`), `ECS_SSH_PASSWORD`.
+Secrets: `VPS_SERVER` (e.g. `8.213.86.216`), `VPS_USER` (`developer1`), `VPS_KEY` (SSH **password**, or a full PEM private key including `BEGIN`/`END` lines). Do not wrap the password in quotes and do not leave a trailing space. Optional aliases: `ECS_SSH_HOST`, `ECS_SSH_USER`, `ECS_SSH_PASSWORD`.
 
 Variables: `ENABLE_ECS_DEPLOY` = `true`. Optional: `APP_URL` = `http://8.213.86.216:3000`, `RUN_DB_MIGRATE` = `true` only when you want migrations.
 

@@ -158,8 +158,14 @@ export function HostSubNav({
       id: "listing",
       label: "Listing",
       href: listingHref,
-      icon: <ListingNavIcon />,
-      minWidthClass: "w-[84px] shrink-0",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <path d="M10 13h4M10 17h3" />
+          <path d="M16 11l2-2" />
+        </svg>
+      ),
     },
     {
       id: "messages",

@@ -12,7 +12,7 @@ import path from "node:path";
  * AWS_SECRET_ACCESS_KEY only when a role is unavailable (local/CI).
  */
 
-export type PublicMediaKind = "listing-photos" | "stamp-icons";
+export type PublicMediaKind = "listing-photos" | "stamp-icons" | "guidebook-photos";
 export type PrivateMediaKind = "host-documents";
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 

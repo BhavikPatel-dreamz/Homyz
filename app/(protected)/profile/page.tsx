@@ -1,47 +1,33 @@
-import { requirePageUser } from "@/lib/permissions/page-guards";
-import { userService } from "@/services/user.service";
-import { bookingService } from "@/services/booking.service";
-import { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { redirect } from "next/navigation";
+import { extractProfileRoute, getProfileTabHref } from "@/lib/profile/tab-utils";
+import { loadProfilePageData } from "@/lib/profile/profile-loader";
 import { ProfileClient } from "./profile-client";
 
-export default async function ProfilePage() {
-  const actor = await requirePageUser();
-  const user = await userService.getById(actor.id);
-  const tripPhotos = await userService.getTripPhotos(actor.id);
-  const stats = await userService.getUserStats(actor.id);
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const route = extractProfileRoute({ searchParams: resolvedSearchParams });
 
-  let initialReservations: ReservationCardData[] = [];
-  try {
-    const { items } = await bookingService.listForUser(actor, {
-      skip: 0,
-      take: 50,
-    });
-
-    initialReservations = items.map((b) => ({
-      id: b.id,
-      propertyName: b.listing?.title || "Luxury Villa Stay",
-      location: "Malibu Beach, CA",
-      propertyImage: null,
-      startDate: b.startDate,
-      endDate: b.endDate,
-      guestName: actor.name || actor.email || "Guest",
-      guestCount: 2,
-      status: b.status,
-      checkInTime: "3:00 PM",
-      actionType: "check_in",
-      isToday: false,
-    }));
-  } catch (err) {
-    console.error("Failed to load user reservations:", err);
+  // Convert old query format (e.g. /profile?tab/notifications) to clean pathname /profile/tab/notifications
+  if (route.hasQueryTab) {
+    const target = getProfileTabHref(route.tab, route.subTab);
+    redirect(target);
   }
+
+  const data = await loadProfilePageData();
 
   return (
     <ProfileClient
-      initial={user}
-      initialTripPhotos={tripPhotos}
-      initialStats={stats}
-      initialReservations={initialReservations}
+      initial={data.user}
+      initialTripPhotos={data.tripPhotos}
+      initialStats={data.stats}
+      initialReservations={data.initialReservations}
       isOwner={true}
+      initialTab={route.tab}
+      initialSubTab={route.subTab}
     />
   );
 }

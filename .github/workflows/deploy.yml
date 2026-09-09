@@ -166,47 +166,79 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Sync code to ECS (never overwrites .env)
+      - name: Detect SSH password vs private key
+        id: auth
         env:
-          SSHPASS: ${{ secrets.VPS_KEY }}
-          HOST: ${{ secrets.VPS_SERVER }}
-          USER: ${{ secrets.VPS_USER }}
+          AUTH_BLOB: ${{ secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -z "${HOST}" ] || [ -z "${USER}" ] || [ -z "${SSHPASS}" ]; then
-            echo "Set secrets VPS_SERVER, VPS_USER, VPS_KEY" >&2
+          if [ -z "${AUTH_BLOB}" ]; then
+            echo "Set VPS_KEY (password or PEM) or ECS_SSH_PASSWORD" >&2
             exit 1
           fi
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq sshpass rsync
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H "${HOST}" >> ~/.ssh/known_hosts
-          rsync -az --delete \
-            --exclude '.git/' \
-            --exclude 'node_modules/' \
-            --exclude '.next/' \
-            --exclude '.env' \
-            --exclude '.env.local' \
-            --exclude 'app.log' \
-            --exclude 'homyz.pid' \
-            -e "sshpass -e ssh -o StrictHostKeyChecking=yes" \
-            ./ "${USER}@${HOST}:homyz/"
+          if printf '%s' "${AUTH_BLOB}" | grep -q "BEGIN .*PRIVATE KEY"; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+            echo "SSH will use a private key"
+          else
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+            echo "SSH will use a password"
+          fi
+
+      - name: SSH check
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_SERVER || secrets.ECS_SSH_HOST }}
+          username: ${{ secrets.VPS_USER || secrets.ECS_SSH_USER }}
+          password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
+          key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
+          script: |
+            set -euo pipefail
+            whoami
+            hostname
+            mkdir -p "${HOME}/homyz"
+            test -d "${HOME}/homyz"
+            echo "ssh ok"
+
+      - name: Sync code to ECS (never overwrites .env)
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_SERVER || secrets.ECS_SSH_HOST }}
+          username: ${{ secrets.VPS_USER || secrets.ECS_SSH_USER }}
+          password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
+          key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
+          source: ".,!node_modules,!.git,!.next,!.env,!.env.local,!app.log,!homyz.pid"
+          target: homyz
+          overwrite: true
+          rm: false
+          timeout: 10m
 
       - name: Build and restart on ECS
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.ECS_SSH_HOST }}
-          username: ${{ secrets.ECS_SSH_USER }}
-          password: ${{ secrets.ECS_SSH_PASSWORD }}
+          host: ${{ secrets.VPS_SERVER || secrets.ECS_SSH_HOST }}
+          username: ${{ secrets.VPS_USER || secrets.ECS_SSH_USER }}
+          password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
+          key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
           command_timeout: 40m
+          script_stop: true
           script: |
             set -euo pipefail
+            echo "remote deploy starting"
             export SKIP_GIT=1
             export APP_DIR="${HOME}/homyz"
             export RUN_DB_MIGRATE="${{ vars.RUN_DB_MIGRATE }}"
-            chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
-            bash "${APP_DIR}/scripts/deploy/host-release.sh"
+            if [[ -f "${APP_DIR}/scripts/deploy/host-release.sh" ]]; then
+              chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
+              bash "${APP_DIR}/scripts/deploy/host-release.sh"
+            elif [[ -f "${APP_DIR}/homyz/scripts/deploy/host-release.sh" ]]; then
+              chmod +x "${APP_DIR}/homyz/scripts/start-prod.sh" "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
+              APP_DIR="${APP_DIR}/homyz" bash "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
+            else
+              echo "host-release.sh not found under ${APP_DIR}" >&2
+              ls -la "${APP_DIR}" >&2 || true
+              exit 1
+            fi
+            echo "remote deploy finished"
 
   deploy:
     name: Deploy (PM2 VPS)

@@ -8,7 +8,7 @@ export default async function BookingsPage({
   const params = await searchParams;
   const tab = params.tab;
   if (tab === "past") {
-    redirect("/profile?tab=past");
+    redirect("/profile?tab/past");
   }
-  redirect("/profile?tab=upcoming");
+  redirect("/profile?tab/upcoming");
 }

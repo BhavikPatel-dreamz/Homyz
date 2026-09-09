@@ -1,244 +1,351 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { BackButton } from "@/components/ui/back-button";
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { RealMap, type LocationDetails } from "@/components/ui/real-map";
+import {
+  inviteListingCoHostAction,
+  revokeListingCoHostAction,
+} from "@/actions/host/cohosts";
+import { updateProfileAction } from "@/actions/user/updateProfile";
+import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
+import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 
-import React from "react";
-import { RealMap } from "@/components/ui/real-map";
-
-interface HostAndLocationViewsProps {
+type CoHost = {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
+  invitedAt: Date | string;
+  expiresAt: Date | string | null;
+  acceptedAt: Date | string | null;
+  user: { id: string; name: string | null; image: string | null } | null;
+};
+export type HostProfile = {
+  name: string | null;
+  image: string | null;
+  createdAt: Date | string;
+  publicProfile: Record<string, unknown> | null;
+};
+interface Props {
   activeSection: string;
-  setActiveSection: (section: any) => void;
   isSaving: boolean;
-  handleSaveSection: (sectionKey: any) => void;
-
-  // Location
+  handleSaveSection: (sectionKey: "location") => void;
   editAddress: string;
-  setEditAddress: (val: string) => void;
+  setEditAddress: (value: string) => void;
+  neighborhoodDescription: string;
+  setNeighborhoodDescription: (value: string) => void;
+  gettingAround: string;
+  setGettingAround: (value: string) => void;
+  scenicViews: Record<string, boolean>;
+  setScenicViews: (value: Record<string, boolean>) => void;
+  locationFeatures: string[];
+  setLocationFeatures: (value: string[]) => void;
   editCity: string;
-  setEditCity: (val: string) => void;
+  setEditCity: (value: string) => void;
   editCountry: string;
-  setEditCountry: (val: string) => void;
+  setEditCountry: (value: string) => void;
   showExactLocation: boolean;
-  setShowExactLocation: (val: boolean) => void;
-
-  // Co-Hosts
-  coHostsList: any[];
-  setIsAddCoHostModalOpen: (open: boolean) => void;
-
-  // Photos
-  editPhotos: string[];
-  setEditPhotos: (photos: string[]) => void;
-
-  // About Host
-  listing: any;
-  hostInterests: string[];
-  setHostInterests: (val: string[]) => void;
-  isEditingInterests: boolean;
-  setIsEditingInterests: (val: boolean) => void;
+  setShowExactLocation: (value: boolean) => void;
+  listingId: string;
+  coHosts: CoHost[];
+  setCoHosts: React.Dispatch<React.SetStateAction<CoHost[]>>;
+  hostProfile: HostProfile;
+  onHostProfileSaved: (
+    profile: Record<string, unknown>,
+    hostUpdate?: Pick<HostProfile, "image">,
+  ) => void;
 }
-
-export function HostAndLocationViews({
-  activeSection,
-  setActiveSection,
-  isSaving,
-  handleSaveSection,
-  editAddress,
-  setEditAddress,
-  editCity,
-  setEditCity,
-  editCountry,
-  setEditCountry,
-  showExactLocation,
-  setShowExactLocation,
-  coHostsList,
-  setIsAddCoHostModalOpen,
-  editPhotos,
-  setEditPhotos,
-  listing,
-  hostInterests,
-  setHostInterests,
-  isEditingInterests,
-  setIsEditingInterests,
-}: HostAndLocationViewsProps) {
+const LOCATION_FEATURES = [
+  ["near_public_transport", "Near public transport"],
+  ["near_landmarks", "Near landmarks"],
+  ["resort_access", "Resort access"],
+] as const;
+const SCENIC_VIEWS = [
+  ["city_view", "City view"],
+  ["mountain_view", "Mountain view"],
+  ["ocean_view", "Ocean view"],
+  ["garden_view", "Garden view"],
+  ["river_view", "River view"],
+  ["lake_view", "Lake view"],
+] as const;
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: () => void;
+}) {
   return (
-    <>
-      {/* --------------------------------------------------------- */}
-      {/* VIEW 3: LOCATION */}
-      {/* --------------------------------------------------------- */}
-      {activeSection === "location" && (
-        <LocationAccordionView
-          editAddress={editAddress}
-          setEditAddress={setEditAddress}
-          editCity={editCity}
-          setEditCity={setEditCity}
-          editCountry={editCountry}
-          setEditCountry={setEditCountry}
-          showExactLocation={showExactLocation}
-          setShowExactLocation={setShowExactLocation}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-          setActiveSection={setActiveSection}
-        />
-      )}
-
-      {/* --------------------------------------------------------- */}
-      {/* VIEW 11: CO-HOST MANAGEMENT */}
-      {/* --------------------------------------------------------- */}
-      {/* --------------------------------------------------------- */}
-      {/* VIEW: CO-HOST MANAGEMENT (Matches Figma Screenshot 100%) */}
-      {/* --------------------------------------------------------- */}
-      {activeSection === "co-host" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          {/* Main Empty State Container */}
-          <div className="flex flex-col items-center justify-center text-center space-y-4 py-12 px-4">
-            {/* Balloon Envelope Illustration Graphic */}
-            <div className="relative w-48 h-44 flex items-center justify-center">
-              <div className="relative w-36 h-32 bg-amber-50/60 rounded-3xl border-2 border-dashed border-amber-200/90 flex flex-col items-center justify-center shadow-2xs">
-                {/* Balloons */}
-                <div className="absolute -top-6 flex items-center gap-1">
-                  <span className="w-5 h-7 rounded-full bg-rose-400 opacity-90 shadow-xs block transform -rotate-12" />
-                  <span className="w-6 h-8 rounded-full bg-amber-300 opacity-90 shadow-xs block transform -translate-y-2" />
-                  <span className="w-5 h-7 rounded-full bg-rose-300 opacity-90 shadow-xs block transform rotate-12" />
-                </div>
-                {/* Envelope Graphic */}
-                <div className="w-20 h-16 bg-white border border-zinc-200 rounded-xl shadow-xs flex items-center justify-center relative mt-3">
-                  <span className="text-xl">✉️</span>
-                  <div className="absolute bottom-1 w-8 h-0.5 bg-rose-300 rounded-full" />
-                </div>
-              </div>
-            </div>
-
-            {/* Title & Description */}
-            <div className="space-y-2 max-w-sm">
-              <h2 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">Invite a co-host</h2>
-              <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-                A co-host can help you with everything from managing your calendar to welcoming guests.
-              </p>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsAddCoHostModalOpen(true);
-                }}
-                className="text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-700 block pt-0.5"
-              >
-                Learn more about
-              </a>
-            </div>
-
-            {/* Action Button */}
-            <button
-              type="button"
-              onClick={() => setIsAddCoHostModalOpen(true)}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-9 py-3 shadow-2xs transition-all cursor-pointer mt-2"
-            >
-              Get started
-            </button>
-          </div>
-
-          {/* Invited Co-hosts list */}
-          {coHostsList.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-zinc-200/80">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Invited Co-hosts ({coHostsList.length})</h3>
-              <div className="space-y-2.5">
-                {coHostsList.map((ch) => (
-                  <div key={ch.id} className="flex items-center justify-between p-4 rounded-2xl border border-zinc-200 bg-white shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center font-semibold text-amber-800 text-xs">
-                        CH
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#1F1F1F]">{ch.email || ch.phone}</p>
-                        <p className="text-[10px] text-zinc-400">{ch.status} · {ch.dateAdded}</p>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-rose-500 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
-                      Pending
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* --------------------------------------------------------- */}
-      {/* VIEW 15: PHOTOS */}
-      {/* --------------------------------------------------------- */}
-      {activeSection === "photos" && (
-        <div className="space-y-6 animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-zinc-150 pb-4">
-            <div className="flex items-center gap-3">
-              <BackButton onClick={() => setActiveSection("description")} />
-              <h1>Photos tour</h1>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {editPhotos.map((photo, i) => (
-              <div key={i} className="relative group aspect-[4/3] rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
-                <img src={photo} alt={`Listing photo ${i + 1}`} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setEditPhotos(editPhotos.filter((_, index) => index !== i))}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveSection("photos")}
-              className="whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
-            >
-              {isSaving ? "Saving..." : "Save Photo Tour"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* --------------------------------------------------------- */}
-      {/* VIEW: ABOUT THE HOST (Matches Figma Screenshots 100%) */}
-      {/* --------------------------------------------------------- */}
-      {activeSection === "about-host" && (
-        <AboutHostFullView
-          listing={listing}
-          hostInterests={hostInterests}
-          setHostInterests={setHostInterests}
-          isEditingInterests={isEditingInterests}
-          setIsEditingInterests={setIsEditingInterests}
-          setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-        />
-      )}
-    </>
+    <button
+      type="button"
+      aria-pressed={checked}
+      onClick={onChange}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-rose-500" : "bg-zinc-300"}`}
+    >
+      <span
+        className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
+      />
+    </button>
   );
 }
-
-interface LocationAccordionViewProps {
-  editAddress: string;
-  setEditAddress: (val: string) => void;
-  editCity: string;
-  setEditCity: (val: string) => void;
-  editCountry: string;
-  setEditCountry: (val: string) => void;
-  showExactLocation: boolean;
-  setShowExactLocation: (val: boolean) => void;
-  isSaving: boolean;
-  handleSaveSection: (sectionKey: any) => void;
-  setActiveSection: (val: string) => void;
+interface Props {
+  editDistrict: string;
+  setEditDistrict: (value: string) => void;
+  editPostalCode: string;
+  setEditPostalCode: (value: string) => void;
+  latitude: number | null;
+  longitude: number | null;
+  setLatitude: (value: number | null) => void;
+  setLongitude: (value: number | null) => void;
+  locationResolutionError: string | null;
+  setLocationResolutionError: (value: string | null) => void;
+  locationIsResolving: boolean;
+  setLocationIsResolving: (value: boolean) => void;
 }
-
-function LocationAccordionView({
+function initials(name: string | null) {
+  return (name || "Host")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+export function HostAndLocationViews(props: Props) {
+  if (props.activeSection === "location")
+    return (
+      <>
+        <EnhancedLocationView {...props} />
+        <LocationContextEditor {...props} />
+      </>
+    );
+  if (props.activeSection === "about-host") return <AboutHostView {...props} />;
+  if (props.activeSection === "co-host") return <CoHostView {...props} />;
+  return null;
+}
+function LocationContextEditor(props: Props) {
+  const toggleFeature = (id: string) =>
+    props.setLocationFeatures(
+      props.locationFeatures.includes(id)
+        ? props.locationFeatures.filter((value) => value !== id)
+        : [...props.locationFeatures, id],
+    );
+  const toggleView = (id: string) =>
+    props.setScenicViews({
+      ...props.scenicViews,
+      [id]: !props.scenicViews[id],
+    });
+  return (
+    <section className="max-w-xl space-y-5 pb-10">
+      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Location features</h2>
+        <p className="text-xs text-zinc-500">
+          Choose up to three location advantages. Beach access is managed as an
+          amenity.
+        </p>
+        {LOCATION_FEATURES.map(([id, label]) => (
+          <FeatureToggle
+            key={id}
+            label={label}
+            checked={props.locationFeatures.includes(id)}
+            onChange={() => toggleFeature(id)}
+          />
+        ))}
+        <SaveButton
+          saving={props.isSaving}
+          onSave={() => props.handleSaveSection("location")}
+        />
+      </section>
+      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Neighborhood</h2>
+        <p className="text-xs text-zinc-500">
+          Tell guests what they can expect from the neighborhood and what is
+          nearby.
+        </p>
+        <textarea
+          value={props.neighborhoodDescription}
+          maxLength={2000}
+          onChange={(event) =>
+            props.setNeighborhoodDescription(event.target.value)
+          }
+          placeholder="Describe the area, attractions, and local conveniences."
+          className="input min-h-28"
+        />
+        <SaveButton
+          saving={props.isSaving}
+          onSave={() => props.handleSaveSection("location")}
+        />
+      </section>
+      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Getting around</h2>
+        <textarea
+          value={props.gettingAround}
+          maxLength={2000}
+          onChange={(event) => props.setGettingAround(event.target.value)}
+          placeholder="Share transit, parking, walking, rideshare, or nearby stations."
+          className="input min-h-28"
+        />
+        <SaveButton
+          saving={props.isSaving}
+          onSave={() => props.handleSaveSection("location")}
+        />
+      </section>
+      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Scenic views</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {SCENIC_VIEWS.map(([id, label]) => (
+            <FeatureToggle
+              key={id}
+              label={label}
+              checked={Boolean(props.scenicViews[id])}
+              onChange={() => toggleView(id)}
+            />
+          ))}
+        </div>
+        <SaveButton
+          saving={props.isSaving}
+          onSave={() => props.handleSaveSection("location")}
+        />
+      </section>
+    </section>
+  );
+}
+function EnhancedLocationView(props: Props) {
+  const updateFromMap = (
+    lat: number,
+    lng: number,
+    details?: LocationDetails,
+  ) => {
+    props.setLatitude(lat);
+    props.setLongitude(lng);
+    props.setLocationIsResolving(false);
+    props.setLocationResolutionError(null);
+    if (details?.address) props.setEditAddress(details.address);
+    if (details?.city) props.setEditCity(details.city);
+    if (details?.district) props.setEditDistrict(details.district);
+    if (details?.postalCode) props.setEditPostalCode(details.postalCode);
+    if (details?.country) props.setEditCountry(details.country);
+  };
+  const onAddressChange = (value: string) => {
+    props.setEditAddress(value);
+    props.setLocationResolutionError(null);
+    props.setLocationIsResolving(Boolean(value || props.editCity));
+  };
+  return (
+    <div className="max-w-xl space-y-5 pb-10">
+      <div>
+        <h1>Location</h1>
+        <p className="mt-1 text-xs text-zinc-500">
+          Saved map coordinates are retained until you change the address or
+          move the pin.
+        </p>
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-zinc-200">
+        <RealMap
+          address={props.editAddress}
+          city={props.editCity}
+          country={props.editCountry}
+          lat={props.latitude ?? undefined}
+          lng={props.longitude ?? undefined}
+          preferInitialCoordinates
+          showExactLocation={props.showExactLocation}
+          onLocationChange={updateFromMap}
+          onLocationError={(message) => {
+            props.setLocationIsResolving(false);
+            props.setLocationResolutionError(message);
+          }}
+          className="h-64 w-full"
+        />
+      </div>
+      {props.locationIsResolving && (
+        <p className="text-xs text-amber-700">Finding this address…</p>
+      )}
+      {props.locationResolutionError && (
+        <p
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700"
+        >
+          {props.locationResolutionError}
+        </p>
+      )}
+      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
+        <h2 className="text-sm font-semibold">Address</h2>
+        <input
+          value={props.editAddress}
+          onChange={(event) => onAddressChange(event.target.value)}
+          placeholder="Street address"
+          className="input"
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            value={props.editCity}
+            onChange={(event) => {
+              props.setEditCity(event.target.value);
+              props.setLocationIsResolving(true);
+              props.setLocationResolutionError(null);
+            }}
+            placeholder="City"
+            className="input"
+          />
+          <input
+            value={props.editDistrict}
+            onChange={(event) => props.setEditDistrict(event.target.value)}
+            placeholder="District"
+            className="input"
+          />
+          <input
+            value={props.editPostalCode}
+            onChange={(event) => props.setEditPostalCode(event.target.value)}
+            placeholder="Postal code"
+            className="input"
+          />
+          <input
+            value={props.editCountry}
+            onChange={(event) => {
+              props.setEditCountry(event.target.value);
+              props.setLocationIsResolving(true);
+              props.setLocationResolutionError(null);
+            }}
+            placeholder="Country"
+            className="input"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <div>
+            <p className="text-sm font-medium">Show exact location</p>
+            <p className="text-xs text-zinc-500">
+              Guests otherwise see an approximate map area.
+            </p>
+          </div>
+          <Toggle
+            checked={props.showExactLocation}
+            onChange={() =>
+              props.setShowExactLocation(!props.showExactLocation)
+            }
+          />
+        </div>
+        <SaveButton
+          saving={props.isSaving || props.locationIsResolving}
+          onSave={() => props.handleSaveSection("location")}
+        />
+      </section>
+    </div>
+  );
+}
+function LocationView({
   editAddress,
   setEditAddress,
+  neighborhoodDescription,
+  setNeighborhoodDescription,
+  gettingAround,
+  setGettingAround,
+  scenicViews,
+  setScenicViews,
+  locationFeatures,
+  setLocationFeatures,
   editCity,
   setEditCity,
   editCountry,
@@ -247,758 +354,553 @@ function LocationAccordionView({
   setShowExactLocation,
   isSaving,
   handleSaveSection,
-  setActiveSection,
-}: LocationAccordionViewProps) {
-  const [openAccordion, setOpenAccordion] = React.useState<string | null>("sharing");
-  const [addressPrivacyCancellation, setAddressPrivacyCancellation] = React.useState(false);
-  const [locationFeatures, setLocationFeatures] = React.useState<Record<string, boolean>>({
-    beachAccess: false,
-    lakeAccess: false,
-    laundromatNearby: false,
-    privateEntrance: false,
-    resortAccess: false,
-    skiInOut: false,
-    waterfront: false,
-  });
-  const [scenicViews, setScenicViews] = React.useState<Record<string, boolean>>({});
-
+}: Props) {
+  const [open, setOpen] = useState("address");
+  const save = () => {
+    handleSaveSection("location");
+    setOpen("");
+  };
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("description")} />
+    <div className="max-w-xl space-y-4 pb-10">
+      <div>
         <h1>Location</h1>
+        <p className="mt-1 text-xs text-zinc-500">
+          Share useful area context without making safety guarantees.
+        </p>
       </div>
-
-      {/* Map Preview Box */}
-      <div className="rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs h-64 relative bg-zinc-100">
+      <div className="h-60 overflow-hidden rounded-2xl border border-zinc-200">
         <RealMap
           address={editAddress}
           city={editCity}
           country={editCountry}
           showExactLocation={showExactLocation}
-          className="w-full h-full"
         />
       </div>
-
-      {/* Accordion Cards Container */}
-      <div className="space-y-3">
-        {/* CARD 1: ADDRESS */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "address" ? null : "address")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Address</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">
-                {editAddress || editCity || editCountry
-                  ? `${editAddress}, ${editCity}, ${editCountry}`
-                  : "Add location, Post Code, Country"}
-              </p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">
-              {openAccordion === "address" ? "›" : "›"}
-            </span>
-          </div>
-
-          {openAccordion === "address" && (
-            <div className="px-5 pb-5 pt-1 space-y-4 border-t border-zinc-100 animate-in fade-in">
-              <div className="space-y-3 pt-2">
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-semibold text-zinc-700">Street address</label>
-                  <input
-                    type="text"
-                    value={editAddress}
-                    onChange={(e) => setEditAddress(e.target.value)}
-                    placeholder="e.g. 123 Main St"
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">City</label>
-                    <input
-                      type="text"
-                      value={editCity}
-                      onChange={(e) => setEditCity(e.target.value)}
-                      placeholder="e.g. Riyadh"
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">Country</label>
-                    <input
-                      type="text"
-                      value={editCountry}
-                      onChange={(e) => setEditCountry(e.target.value)}
-                      placeholder="e.g. Saudi Arabia"
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={() => {
-                    handleSaveSection("location");
-                    setOpenAccordion(null);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+      <Card
+        title="Address"
+        open={open === "address"}
+        onToggle={() => setOpen(open === "address" ? "" : "address")}
+      >
+        <input
+          value={editAddress}
+          onChange={(e) => setEditAddress(e.target.value)}
+          placeholder="Street address"
+          className="input"
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            value={editCity}
+            onChange={(e) => setEditCity(e.target.value)}
+            placeholder="City"
+            className="input"
+          />
+          <input
+            value={editCountry}
+            onChange={(e) => setEditCountry(e.target.value)}
+            placeholder="Country"
+            className="input"
+          />
         </div>
-
-        {/* CARD 2: LOCATION SHARING (Matches Figma Screenshot 1 Left/Middle 100%) */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "sharing" ? null : "sharing")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Location sharing</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">
-                Show listing's specific location
-              </p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">›</span>
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
+      <Card
+        title="Location sharing"
+        open={open === "sharing"}
+        onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium">Show exact location</p>
+            <p className="text-xs text-zinc-500">
+              Otherwise guests see only an approximate map area.
+            </p>
           </div>
-
-          {openAccordion === "sharing" && (
-            <div className="px-5 pb-5 pt-1 space-y-5 border-t border-zinc-100 animate-in fade-in">
-              {/* Toggle 1: Show your specific location */}
-              <div className="flex items-start justify-between gap-4 pt-2">
-                <div className="space-y-1 max-w-md">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Show your specific location</h4>
-                  <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                    Shows a precise pin on the public map instead of a generalized approximate neighborhood circle.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowExactLocation(!showExactLocation)}
-                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-0.5 ${
-                    showExactLocation ? "bg-rose-500" : "bg-zinc-300"
-                  }`}
-                >
-                  <span
-                    className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                      showExactLocation ? "translate-x-5" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Toggle 2: Address privacy for cancellation */}
-              <div className="flex items-start justify-between gap-4 border-t border-zinc-100 pt-4">
-                <div className="space-y-1 max-w-md">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Address privacy for cancellation</h4>
-                  <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                    Hides your exact street address from confirmed guests who cancel before the full refund period.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAddressPrivacyCancellation(!addressPrivacyCancellation)}
-                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-0.5 ${
-                    addressPrivacyCancellation ? "bg-rose-500" : "bg-zinc-300"
-                  }`}
-                >
-                  <span
-                    className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                      addressPrivacyCancellation ? "translate-x-5" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={() => {
-                    handleSaveSection("location");
-                    setOpenAccordion(null);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+          <Toggle
+            checked={showExactLocation}
+            onChange={() => setShowExactLocation(!showExactLocation)}
+          />
         </div>
-
-        {/* CARD 3: LOCATION FEATURES (Matches Figma Screenshot 1 Right 100%) */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "features" ? null : "features")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Location features</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">›</span>
-          </div>
-
-          {openAccordion === "features" && (
-            <div className="px-5 pb-5 pt-2 space-y-5 border-t border-zinc-100 animate-in fade-in">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4 pt-1">
-                {/* Feature 1 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Beach access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Direct walking path to the beach</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({ ...locationFeatures, beachAccess: !locationFeatures.beachAccess })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.beachAccess ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.beachAccess ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 2 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Resort access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Access to nearby resort amenities</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({ ...locationFeatures, resortAccess: !locationFeatures.resortAccess })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.resortAccess ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.resortAccess ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 3 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Lake access</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Guests can access water via path or dock</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({ ...locationFeatures, lakeAccess: !locationFeatures.lakeAccess })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.lakeAccess ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.lakeAccess ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 4 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Ski-in/ski-out</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Access slopes directly from the property</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({ ...locationFeatures, skiInOut: !locationFeatures.skiInOut })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.skiInOut ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.skiInOut ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 5 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Laundromat nearby</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({
-                        ...locationFeatures,
-                        laundromatNearby: !locationFeatures.laundromatNearby,
-                      })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.laundromatNearby ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.laundromatNearby ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 6 */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Waterfront</span>
-                    <p className="text-[10px] text-zinc-400 font-normal">Located right on the water’s edge</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({ ...locationFeatures, waterfront: !locationFeatures.waterfront })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.waterfront ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.waterfront ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Feature 7: Private entrance */}
-                <div className="flex items-center justify-between col-span-2 pt-1 border-t border-zinc-100">
-                  <div className="space-y-0.5">
-                    <span className="font-semibold text-xs text-[#1F1F1F]">Private entrance</span>
-                    <p className="text-[11px] text-zinc-400 font-normal">An entrance that's only available to guests</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setLocationFeatures({
-                        ...locationFeatures,
-                        privateEntrance: !locationFeatures.privateEntrance,
-                      })
-                    }
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      locationFeatures.privateEntrance ? "bg-rose-500" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        locationFeatures.privateEntrance ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={() => {
-                    handleSaveSection("location");
-                    setOpenAccordion(null);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
+      <Card
+        title="Location features"
+        open={open === "features"}
+        onToggle={() => setOpen(open === "features" ? "" : "features")}
+      >
+        {LOCATION_FEATURES.map(([id, label]) => (
+          <FeatureToggle
+            key={id}
+            label={label}
+            checked={locationFeatures.includes(id)}
+            onChange={() =>
+              setLocationFeatures(
+                locationFeatures.includes(id)
+                  ? locationFeatures.filter((value) => value !== id)
+                  : [...locationFeatures, id],
+              )
+            }
+          />
+        ))}
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
+      <Card
+        title="Neighborhood description"
+        open={open === "neighborhood"}
+        onToggle={() => setOpen(open === "neighborhood" ? "" : "neighborhood")}
+      >
+        <textarea
+          value={neighborhoodDescription}
+          maxLength={2000}
+          onChange={(e) => setNeighborhoodDescription(e.target.value)}
+          placeholder="Describe the area, attractions, and local conveniences."
+          className="input min-h-28"
+        />
+        <p className="text-right text-xs text-zinc-400">
+          {neighborhoodDescription.length}/2000
+        </p>
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
+      <Card
+        title="Getting around"
+        open={open === "getting-around"}
+        onToggle={() =>
+          setOpen(open === "getting-around" ? "" : "getting-around")
+        }
+      >
+        <textarea
+          value={gettingAround}
+          maxLength={2000}
+          onChange={(e) => setGettingAround(e.target.value)}
+          placeholder="Share transit, parking, walking, or rideshare details."
+          className="input min-h-28"
+        />
+        <p className="text-right text-xs text-zinc-400">
+          {gettingAround.length}/2000
+        </p>
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
+      <Card
+        title="Scenic views"
+        open={open === "views"}
+        onToggle={() => setOpen(open === "views" ? "" : "views")}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          {SCENIC_VIEWS.map(([id, label]) => (
+            <FeatureToggle
+              key={id}
+              label={label}
+              checked={Boolean(scenicViews[id])}
+              onChange={() =>
+                setScenicViews({ ...scenicViews, [id]: !scenicViews[id] })
+              }
+            />
+          ))}
         </div>
-
-        {/* CARD 4: NEIGHBORHOOD DESCRIPTION */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "neighborhood" ? null : "neighborhood")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Neighborhood description</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">›</span>
-          </div>
-
-          {openAccordion === "neighborhood" && (
-            <div className="px-5 pb-5 pt-1 space-y-4 border-t border-zinc-100 animate-in fade-in">
-              <textarea
-                rows={3}
-                placeholder="Describe your neighborhood..."
-                className="w-full rounded-xl border border-zinc-300 bg-white p-3.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900"
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* CARD 5: GETTING AROUND */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "gettingAround" ? null : "gettingAround")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Getting around</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">›</span>
-          </div>
-
-          {openAccordion === "gettingAround" && (
-            <div className="px-5 pb-5 pt-1 space-y-4 border-t border-zinc-100 animate-in fade-in">
-              <textarea
-                rows={3}
-                placeholder="Add information about transit, parking, or walking..."
-                className="w-full rounded-xl border border-zinc-300 bg-white p-3.5 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900"
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* CARD 6: SCENIC VIEWS (Matches Figma Screenshot 1 100%) */}
-        <div className="rounded-2xl border border-zinc-200/90 bg-white shadow-2xs overflow-hidden transition-all">
-          <div
-            onClick={() => setOpenAccordion(openAccordion === "views" ? null : "views")}
-            className="p-5 flex items-center justify-between cursor-pointer hover:bg-zinc-50/60 select-none"
-          >
-            <div className="space-y-0.5">
-              <h3 className="font-semibold text-xs text-[#1F1F1F]">Scenic views</h3>
-              <p className="text-[11px] text-zinc-400 font-normal">Add details</p>
-            </div>
-            <span className="text-zinc-400 text-xs font-semibold">
-              {openAccordion === "views" ? "∨" : "›"}
-            </span>
-          </div>
-
-          {openAccordion === "views" && (
-            <div className="px-5 pb-5 pt-2 space-y-5 border-t border-zinc-100 animate-in fade-in bg-zinc-50/40">
-              <div className="grid grid-cols-2 gap-x-8 gap-y-3.5 pt-1">
-                {[
-                  "Bay view", "Marina view",
-                  "Beach view", "Mountain view",
-                  "Canal view", "Ocean view",
-                  "City skyline view", "Park view",
-                  "Courtyard view", "Pool view",
-                  "Desert view", "Resort view",
-                  "Garden view", "River view",
-                  "Golf course view", "Sea view",
-                  "Harbor view", "Valley view",
-                  "Lake view", "Vineyard view"
-                ].map((viewName) => {
-                  const isChecked = Boolean(scenicViews[viewName]);
-                  return (
-                    <div key={viewName} className="flex items-center justify-between py-0.5">
-                      <span className="font-semibold text-xs text-zinc-800 tracking-tight">{viewName}</span>
-                      <button
-                        type="button"
-                        onClick={() => setScenicViews({ ...scenicViews, [viewName]: !isChecked })}
-                        className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                          isChecked ? "bg-rose-500" : "bg-zinc-300"
-                        }`}
-                      >
-                        <span
-                          className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                            isChecked ? "translate-x-5" : "translate-x-0.5"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-3 border-t border-zinc-200/60">
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={() => {
-                    handleSaveSection("location");
-                    setOpenAccordion(null);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenAccordion(null)}
-                  className="rounded-full bg-white border border-zinc-200 text-zinc-700 font-semibold text-xs px-6 py-2 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+        <SaveButton saving={isSaving} onSave={save} />
+      </Card>
     </div>
   );
 }
+function Card({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between p-5 text-left"
+      >
+        <span className="text-sm font-semibold">{title}</span>
+        <span>{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-zinc-100 p-5">{children}</div>
+      )}
+    </section>
+  );
+}
+function FeatureToggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm text-zinc-700">{label}</span>
+      <Toggle checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+function SaveButton({
+  saving,
+  onSave,
+}: {
+  saving: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={saving}
+      onClick={onSave}
+      className="rounded-full bg-[#FEE08B] px-5 py-2 text-xs font-semibold disabled:opacity-60"
+    >
+      {saving ? "Saving…" : "Save"}
+    </button>
+  );
+}
+const PROFILE_FIELDS = [
+  ["whereIWantToGo", "Where I’ve always wanted to go"],
+  ["uselessSkill", "My most useless skill"],
+  ["myWork", "My work"],
+  ["funFact", "My fun fact"],
+  ["favoriteSong", "My favorite song in high school"],
+  ["obsessedWith", "I’m obsessed with"],
+  ["homeUnique", "What makes my home unique"],
+  ["spokenLanguages", "Languages I speak"],
+  ["pets", "Pets"],
+  ["bioTitle", "My biography title would be"],
+  ["decadeBorn", "Decade I was born"],
+  ["whereILive", "Where I live"],
+  ["school", "Where I went to school"],
+  ["guestsShouldKnow", "For guests I always"],
+  ["spendTooMuchTime", "I spend too much time"],
+  ["breakfast", "What’s for breakfast"],
+] as const;
 
-interface AboutHostFullViewProps {
-  listing: any;
-  hostInterests: string[];
-  setHostInterests: (interests: string[]) => void;
-  isEditingInterests: boolean;
-  setIsEditingInterests: (val: boolean) => void;
-  setActiveSection: (section: any) => void;
-  isSaving: boolean;
-  handleSaveSection: (sectionKey: any) => void;
+const REFERENCE_INTERESTS = [
+  ["architecture", "Architecture"],
+  ["cooking", "Cooking"],
+  ["food_scenes", "Food scenes"],
+  ["history", "History"],
+  ["live_sports", "Live sports"],
+  ["museums", "Museums"],
+  ["outdoors", "Outdoors"],
+  ["shopping", "Shopping"],
+  ["video_games", "Video games"],
+] as const;
+
+type ProfileFieldKey = (typeof PROFILE_FIELDS)[number][0];
+type ProfileDetails = Record<ProfileFieldKey, string>;
+
+function profileDetailsFrom(raw: Record<string, unknown>): ProfileDetails {
+  const prompts = raw.prompts && typeof raw.prompts === "object" && !Array.isArray(raw.prompts)
+    ? raw.prompts as Record<string, unknown>
+    : {};
+  const languageValue = raw.languages;
+  const spokenLanguages = Array.isArray(languageValue)
+    ? languageValue.filter((value): value is string => typeof value === "string").join(", ")
+    : typeof languageValue === "string" ? languageValue : "";
+  return Object.fromEntries(PROFILE_FIELDS.map(([key]) => {
+    const value = key === "spokenLanguages"
+      ? spokenLanguages
+      : raw[key] ?? prompts[key];
+    return [key, typeof value === "string" ? value : ""];
+  })) as ProfileDetails;
 }
 
-export function AboutHostFullView({
-  listing,
-  hostInterests,
-  setHostInterests,
-  isEditingInterests,
-  setIsEditingInterests,
-  setActiveSection,
-  isSaving,
-  handleSaveSection,
-}: AboutHostFullViewProps) {
-  const [aboutText, setAboutText] = React.useState(listing.host?.about || "");
-  const [whereBeenStamp, setWhereBeenStamp] = React.useState(true);
+function ProfilePromptIcon() {
+  return (
+    <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600">
+      ✦
+    </span>
+  );
+}
 
-  const qnaItems = [
-    { label: "Where I've always wanted to go", icon: "🌍" },
-    { label: "My most useless skill", icon: "🎨" },
-    { label: "My work: Architect", icon: "📐" },
-    { label: "My fun fact", icon: "💡" },
-    { label: "My favorite song in high school", icon: "🎵" },
-    { label: "I'm obsessed with", icon: "💖" },
-    { label: "What makes my home unique", icon: "🏡" },
-    { label: "Language I speak", icon: "🌐" },
-    { label: "Pets", icon: "🐾" },
-    { label: "My biography title would be", icon: "📖" },
-    { label: "Decade I was born", icon: "⏳" },
-    { label: "Where I live", icon: "📍" },
-    { label: "Where I went to school", icon: "🎓" },
-    { label: "For guests I always", icon: "☕" },
-    { label: "I spend too much time", icon: "⏰" },
-    { label: "What's for breakfast", icon: "🍳" },
-  ];
+function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
+  const router = useRouter();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const raw = hostProfile.publicProfile ?? {};
+  const [bio, setBio] = useState(String(raw.bio ?? ""));
+  const [details, setDetails] = useState<ProfileDetails>(() => profileDetailsFrom(raw));
+  const [interests, setInterests] = useState<string[]>(
+    Array.isArray(raw.interests)
+      ? raw.interests.filter((v): v is string => typeof v === "string")
+      : [],
+  );
+  const [stampsVisible, setStampsVisible] = useState(raw.stampsVisible !== false);
+  const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [editingInterests, setEditingInterests] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const interestList = [
-    { name: "Architecture", icon: "🏛️" },
-    { name: "Cooking", icon: "🍳" },
-    { name: "Food scenes", icon: "🍲" },
-    { name: "History", icon: "📜" },
-    { name: "Live sports", icon: "⚽" },
-    { name: "Museums", icon: "🎨" },
-    { name: "Outdoors", icon: "🌲" },
-    { name: "Shopping", icon: "🛍️" },
-    { name: "Video games", icon: "🎮" },
-  ];
+  useEffect(() => {
+    const next = hostProfile.publicProfile ?? {};
+    setBio(String(next.bio ?? ""));
+    setDetails(profileDetailsFrom(next));
+    setInterests(Array.isArray(next.interests) ? next.interests.filter((v): v is string => typeof v === "string") : []);
+    setStampsVisible(next.stampsVisible !== false);
+    setAvatarUrl(hostProfile.image);
+  }, [hostProfile.image, hostProfile.publicProfile]);
+
+  const selectedStamps = Array.isArray(raw.selectedStamps)
+    ? raw.selectedStamps.filter((v): v is string => typeof v === "string")
+    : [];
+  const selectedStamp = BUILTIN_TRAVEL_STAMPS.find((stamp) => selectedStamps.includes(stamp.id));
+
+  const save = async () => {
+    setSaving(true);
+    setMessage(null);
+    const currentPrompts = raw.prompts && typeof raw.prompts === "object" && !Array.isArray(raw.prompts)
+      ? raw.prompts as Record<string, unknown>
+      : {};
+    const result = await updateProfileAction({
+      publicProfile: {
+        ...raw,
+        ...details,
+        bio,
+        interests,
+        stampsVisible,
+        // Keep the original public prompt contract current for existing listing and public views.
+        prompts: {
+          ...currentPrompts,
+          homeUnique: details.homeUnique,
+          guestsShouldKnow: details.guestsShouldKnow,
+          hobbies: details.spendTooMuchTime,
+          education: details.school,
+        },
+        languages: details.spokenLanguages,
+      },
+    });
+    setSaving(false);
+    if (result.ok) {
+      onHostProfileSaved((result.data.publicProfile as Record<string, unknown>) ?? {});
+      setMessage("Host profile saved and shared across your listings.");
+    } else {
+      setMessage(result.error);
+    }
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    setMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/v1/upload/listing-photo", { method: "POST", body: formData });
+      const data = await response.json();
+      if (!response.ok || typeof data.url !== "string") throw new Error(data.error || "Could not upload the profile photo.");
+      const result = await updateProfileAction({ image: data.url });
+      if (!result.ok) throw new Error(result.error || "Could not save the profile photo.");
+      setAvatarUrl(data.url);
+      onHostProfileSaved(raw, { image: data.url });
+      setMessage("Profile photo updated.");
+      router.refresh();
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : "Could not update the profile photo.");
+    } finally {
+      setUploadingImage(false);
+      event.target.value = "";
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      {/* Back button & Title Header */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("description")} />
-        <h1>About the host</h1>
-      </div>
+    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full space-y-5 pb-12">
+      <header className="flex items-center gap-3">
+        <Link href="/host/listings" aria-label="Back to listings" className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-300 text-sm text-zinc-500 transition-colors hover:bg-zinc-100">‹</Link>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">About the host</h1>
+      </header>
 
-      {/* 1. Host Photo & Info Card */}
-      <div className="flex items-start gap-5 pt-1">
-        {/* Photo Container */}
-        <div className="relative w-52 h-44 rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs shrink-0 group">
-          <img
-            src={listing.host?.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"}
-            alt="Host profile"
-            className="w-full h-full object-cover"
-          />
-          <button
-            type="button"
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-4 py-1.5 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            <span>📷</span>
-            <span>Edit</span>
+      <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
+        <div className="relative h-48 w-full shrink-0 overflow-visible sm:h-44 sm:w-60">
+          <div className="h-full w-full overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100 shadow-2xs">
+            {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
+          </div>
+          <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
+            <span aria-hidden="true">▧</span>{uploadingImage ? "Uploading…" : "Edit"}
           </button>
+          <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
         </div>
+        <p className="max-w-sm text-sm leading-6 text-[#727272]">Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></p>
+      </section>
 
-        {/* Info Text */}
-        <div className="pt-2 space-y-1 text-xs text-zinc-500 font-normal leading-relaxed">
-          <p>
-            Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.{" "}
-            <a href="#" onClick={(e) => e.preventDefault()} className="underline font-semibold text-zinc-700 hover:text-[#1F1F1F]">
-              Learn more
-            </a>
+      <section className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
+        {PROFILE_FIELDS.map(([key, label]) => (
+          <label key={key} className="flex min-w-0 items-center gap-3 border-b border-zinc-200 py-3.5">
+            <ProfilePromptIcon />
+            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+              <span className="shrink-0 text-sm text-zinc-500">{label}{details[key] ? ":" : ""}</span>
+              <input value={details[key]} maxLength={300} onChange={(event) => setDetails((current) => ({ ...current, [key]: event.target.value }))} aria-label={label} className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1F1F1F] outline-none" />
+            </span>
+          </label>
+        ))}
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 shadow-2xs">
+        <label htmlFor="host-bio" className="block text-sm font-semibold text-[#1F1F1F]">About me</label>
+        <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Tell guests a little about yourself." className="mt-3 min-h-28 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-zinc-500" />
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 pb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-[#1F1F1F]">Where I’ve been</h2>
+            <p className="mt-0.5 text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
+          </div>
+          <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} />
+        </div>
+        <div className="flex min-h-32 items-center justify-between gap-4 py-4">
+          {selectedStamp ? <TravelStampGraphic stamp={selectedStamp} size="md" /> : <p className="text-sm text-zinc-500">{selectedStamps.length ? `${selectedStamps.length} travel stamp${selectedStamps.length === 1 ? "" : "s"} selected.` : "No travel stamps selected yet."}</p>}
+          <div className="min-w-0 text-right">
+            {selectedStamps.length > 0 && <p className="truncate text-xs text-zinc-500">{selectedStamps.length} selected</p>}
+            <Link href="/profile?tab/profile_management/where_ive_been" className="mt-2 inline-flex rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Edit travel stamps</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
+        <div className="border-b border-zinc-200 pb-3">
+          <h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2>
+          <p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+          {REFERENCE_INTERESTS.map(([interest, label]) => {
+            const selected = interests.includes(interest);
+            const rowClass = "flex w-full items-center gap-3 border-b border-zinc-200 py-3 text-left text-sm text-[#1F1F1F]";
+            const content = <><span className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs ${selected && editingInterests ? "border-[#1F1F1F] bg-[#1F1F1F] text-white" : "border-zinc-300 text-zinc-500"}`}>{selected && editingInterests ? "✓" : "◫"}</span>{label}</>;
+            return editingInterests ? <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value !== interest) : [...current, interest])} className={`${rowClass} transition-colors hover:text-zinc-600`}>{content}</button> : <div key={interest} className={rowClass}>{content}</div>;
+          })}
+        </div>
+        <button type="button" onClick={() => setEditingInterests((editing) => !editing)} className="mt-4 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">{editingInterests ? "Done editing interests" : "Edit interests"}</button>
+      </section>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
+        <button type="submit" disabled={saving} className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button>
+      </div>
+    </form>
+  );
+}
+function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const invite = async () => {
+    setSaving(true);
+    const result = await inviteListingCoHostAction(listingId, { email });
+    setSaving(false);
+    if (result.ok) {
+      setCoHosts((items) => [result.data as CoHost, ...items]);
+      setOpen(false);
+      setEmail("");
+      setMessage("Invitation sent.");
+    } else setMessage(result.error);
+  };
+  const revoke = async (id: string) => {
+    if (!window.confirm("Remove this co-host or cancel this invitation?"))
+      return;
+    const result = await revokeListingCoHostAction(listingId, id);
+    if (result.ok)
+      setCoHosts((items) =>
+        items.map((item) => (item.id === id ? (result.data as CoHost) : item)),
+      );
+    else setMessage(result.error);
+  };
+  const active = coHosts.filter(
+    (item) => item.status === "PENDING" || item.status === "ACCEPTED",
+  );
+  return (
+    <div className="max-w-xl space-y-5 pb-10">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1>Co-hosts</h1>
+          <p className="mt-1 text-xs text-zinc-500">
+            Accepted co-hosts are active; pending invitations are not.
           </p>
         </div>
-      </div>
-
-      {/* 2. 2-Column Host Q&A Items */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-4 border-y border-zinc-200/80">
-        {qnaItems.map((item) => (
-          <div key={item.label} className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs">
-              {item.icon}
-            </div>
-            <span className="text-xs font-semibold text-zinc-700 truncate">{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* 3. About me Card */}
-      <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 space-y-2.5 shadow-2xs">
-        <h3 className="font-semibold text-xs text-[#1F1F1F]">About me</h3>
-        <textarea
-          rows={3}
-          value={aboutText}
-          onChange={(e) => setAboutText(e.target.value)}
-          placeholder="Type something about you"
-          className="w-full rounded-xl bg-white border border-zinc-200 p-4 text-xs font-medium text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-zinc-900 shadow-2xs leading-relaxed"
-        />
-      </div>
-
-      {/* 4. Where I've been Card */}
-      <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-4 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm text-[#1F1F1F]">Where I've been</h3>
-          <button
-            type="button"
-            onClick={() => setWhereBeenStamp(!whereBeenStamp)}
-            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-              whereBeenStamp ? "bg-rose-500" : "bg-zinc-300"
-            }`}
-          >
-            <span
-              className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                whereBeenStamp ? "translate-x-5" : "translate-x-0.5"
-              }`}
-            />
-          </button>
-        </div>
-
-        <p className="text-xs text-zinc-500 font-normal">Pick the stamp you want to appear on your profile</p>
-
-        {/* Eiffel Tower Travel Stamp Illustration */}
-        <div className="w-36 h-36 relative flex items-center justify-center">
-          <div className="w-32 h-32 rounded-full border-2 border-dashed border-rose-300 p-2 flex flex-col items-center justify-center text-center bg-rose-50/30">
-            <span className="text-xs font-serif tracking-widest text-zinc-700">stay like a homyz</span>
-            <span className="text-2xl pt-1">🗼</span>
-            <span className="text-xs font-semibold text-[#1F1F1F] tracking-wider">Paris</span>
-          </div>
-        </div>
-
         <button
           type="button"
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
+          onClick={() => setOpen(true)}
+          className="rounded-full bg-[#FEE08B] px-4 py-2 text-xs font-semibold"
         >
-          Edit travel stamp
+          Invite co-host
         </button>
       </div>
-
-      {/* 5. My interests Card */}
-      <div className="rounded-2xl border border-zinc-200/90 bg-white p-6 space-y-5 shadow-2xs">
-        <h3 className="font-semibold text-sm text-[#1F1F1F]">My interests</h3>
-
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-          {interestList.map((interest) => (
-            <div key={interest.name} className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                {interest.icon}
+      {message && <p className="text-sm text-zinc-600">{message}</p>}
+      {active.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+          No co-hosts or pending invitations.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {active.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 p-4"
+            >
+              <div>
+                <p className="font-medium">
+                  {item.user?.name || item.email || item.phone}
+                </p>
+                <p className="text-xs text-zinc-500">
+                  {item.status === "PENDING"
+                    ? "Invitation pending"
+                    : "Accepted co-host"}
+                </p>
               </div>
-              <span className="text-xs font-semibold text-zinc-800">{interest.name}</span>
+              <button
+                type="button"
+                onClick={() => revoke(item.id)}
+                className="text-xs font-semibold underline"
+              >
+                {item.status === "PENDING" ? "Cancel" : "Remove"}
+              </button>
             </div>
           ))}
         </div>
-
-        <button
-          type="button"
-          onClick={() => setIsEditingInterests(!isEditingInterests)}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs cursor-pointer transition-all"
-        >
-          Edit interests
-        </button>
-      </div>
+      )}
+      {open && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6">
+            <h2 className="text-lg font-semibold">Invite a co-host</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              They will receive a secure email invitation.
+            </p>
+            <input
+              autoFocus
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              className="input mt-5"
+            />
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={invite}
+                className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+              >
+                {saving ? "Sending…" : "Send invitation"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
     </div>
   );
 }

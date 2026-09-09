@@ -61,11 +61,15 @@ const CHECK_IN_METHODS = [
 ];
 
 const CANCELLATION_POLICIES = [
-  { id: "FLEXIBLE", label: "Flexible: Full refund up to 1 day before check-in" },
-  { id: "MODERATE", label: "Moderate: Full refund up to 5 days before check-in" },
-  { id: "STRICT", label: "Strict: Full refund up to 14 days before check-in" },
-  { id: "SUPER_STRICT", label: "Super Strict: 50% refund up to 30 days before check-in" },
+  { id: "FLEXIBLE", label: "Flexible" },
+  { id: "MODERATE", label: "Moderate" },
+  { id: "STRICT", label: "Strict" },
+  { id: "SUPER_STRICT", label: "Super Strict" },
 ];
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
 
 export function HostListingsWorkspace({
   initialListings,
@@ -246,7 +250,7 @@ export function HostListingsWorkspace({
         setShowEditorModal(false);
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to save listing.", "error");
+        showToast(errorMessage(err, "Failed to save listing."), "error");
       }
     });
   }
@@ -264,7 +268,7 @@ export function HostListingsWorkspace({
         showToast("Listing submitted for Admin Review!", "success");
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to submit listing.", "error");
+        showToast(errorMessage(err, "Failed to submit listing."), "error");
       }
     });
   }
@@ -282,7 +286,7 @@ export function HostListingsWorkspace({
         showToast(nextState ? "Listing paused (unpublished from search)." : "Listing resumed!", "success");
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to update listing state.", "error");
+        showToast(errorMessage(err, "Failed to update listing state."), "error");
       }
     });
   }
@@ -299,7 +303,7 @@ export function HostListingsWorkspace({
         showToast("Listing duplicated to new Draft!", "success");
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to duplicate listing.", "error");
+        showToast(errorMessage(err, "Failed to duplicate listing."), "error");
       }
     });
   }
@@ -319,7 +323,7 @@ export function HostListingsWorkspace({
         setListingToDelete(null);
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to delete listing.", "error");
+        showToast(errorMessage(err, "Failed to delete listing."), "error");
       }
     });
   }
@@ -346,7 +350,7 @@ export function HostListingsWorkspace({
         setShowAvailabilityModal(false);
         router.refresh();
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : "Failed to update availability.", "error");
+        showToast(errorMessage(err, "Failed to update availability."), "error");
       }
     });
   }
@@ -558,9 +562,7 @@ export function HostListingsWorkspace({
                       <Link
                         key={item.id}
                         href={
-                          item.status === "DRAFT"
-                            ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                            : `/host/listings/${item.id}`
+                          `/host/listings/${item.id}`
                         }
                         className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
                       >
@@ -695,10 +697,7 @@ export function HostListingsWorkspace({
                       <div className="px-0 pt-3 sm:px-3 lg:pt-6">
                         <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
                           <Link
-                            href={
-                              item.status === "DRAFT"
-                                ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                                : `/host/listings/${item.id}`
+                            href={ `/host/listings/${item.id}`
                             }
                             className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
                           >
@@ -1018,7 +1017,7 @@ export function HostListingsWorkspace({
                                 showToast(data.error || "Failed to upload photo.", "error");
                               }
                             } catch (err: unknown) {
-                              showToast("Upload failed: " + (err instanceof Error ? err.message : "Network error"), "error");
+                              showToast(`Upload failed: ${errorMessage(err, "Please try again.")}`, "error");
                             }
                             e.target.value = "";
                           }}

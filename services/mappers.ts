@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
 import type { Booking, Listing, User } from "@/generated/prisma/client";
 
 // DTO mappers. The ONLY shape of a user/listing/booking that leaves the service
@@ -32,6 +33,7 @@ export function toListingDTO(l: Listing) {
     hostId: l.hostId,
     title: l.title,
     description: l.description,
+    descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
     published: l.published,
     status: l.status,
@@ -41,6 +43,8 @@ export function toListingDTO(l: Listing) {
     locationSearch: l.locationSearch,
     shortAddress: l.shortAddress,
     address: l.address,
+    neighborhoodDescription: l.neighborhoodDescription ?? null,
+    gettingAround: l.gettingAround ?? null,
     apartment: l.apartment,
     city: l.city,
     district: l.district,
@@ -85,6 +89,7 @@ export function toListingDTO(l: Listing) {
     safetyHazards: l.safetyHazards || [],
     accessibilityFeatures: l.accessibilityFeatures || [],
     views: l.views || [],
+    locationFeatures: l.locationFeatures || [],
     // Structured House Rules
     houseRules: l.houseRules || [],
     petsAllowed: l.petsAllowed,
@@ -117,10 +122,13 @@ export function toListingDTO(l: Listing) {
     doorCode: l.doorCode,
     lockboxCode: l.lockboxCode,
     cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
+    longTermCancellationPolicy: l.longTermCancellationPolicy || "FIRM",
+    bookingMessage: l.bookingMessage ?? null,
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
     instantBook: l.instantBook ?? true,
     isPaused: l.isPaused ?? false,
+    customSlug: (l as any).customSlug ?? null,
     blockedDates: l.blockedDates || [],
     cleaningFee: l.cleaningFee ?? 0,
     securityDeposit: l.securityDeposit ?? 0,
@@ -136,6 +144,7 @@ export function toListingDTO(l: Listing) {
     requestedChanges: l.requestedChanges,
     approvedAt: l.approvedAt,
     approvedById: l.approvedById,
+    deletedAt: l.deletedAt ?? null,
     createdAt: l.createdAt,
     updatedAt: l.updatedAt,
   };
@@ -151,9 +160,9 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
   const showExact = Boolean(l.showExactLocation);
   return {
     id: l.id,
-    hostId: l.hostId,
     title: l.title,
     description: l.description,
+    descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
     published: l.published,
     status: l.status,
@@ -164,8 +173,12 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     rating: (l as any).rating ?? null,
     reviewsCount: (l as any).reviewsCount ?? 0,
     // When showExactLocation is false, mask exact street address and unit
-    shortAddress: l.shortAddress || (l.city ? `${l.city}${l.country ? `, ${l.country}` : ""}` : null),
+    shortAddress: showExact
+      ? l.shortAddress || (l.city ? `${l.city}${l.country ? `, ${l.country}` : ""}` : null)
+      : l.city ? `${l.city}${l.country ? `, ${l.country}` : ""}` : null,
     address: showExact ? l.address : null,
+    neighborhoodDescription: l.neighborhoodDescription ?? null,
+    gettingAround: l.gettingAround ?? null,
     apartment: null as string | null, // Apartment/unit is NEVER exposed publicly
     city: l.city,
     district: l.district,
@@ -221,11 +234,11 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     safetyHazards: l.safetyHazards || [],
     accessibilityFeatures: l.accessibilityFeatures || [],
     views: l.views || [],
+    locationFeatures: l.locationFeatures || [],
     // Structured House Rules
     houseRules: l.houseRules || [],
     petsAllowed: l.petsAllowed ?? null,
     maxPets: l.maxPets ?? null,
-    petFee: l.petFee ?? null,
     petRestrictions: l.petRestrictions ?? null,
     dogsAllowed: l.dogsAllowed ?? null,
     catsAllowed: l.catsAllowed ?? null,
@@ -246,9 +259,12 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     checkOutTime: l.checkOutTime || "11:00",
     // SENSITIVE ACCESS DATA IS EXPLICITLY OMITTED FROM PUBLIC DTO
     cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
+    longTermCancellationPolicy: l.longTermCancellationPolicy || "FIRM",
+    bookingMessage: l.bookingMessage ?? null,
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
     instantBook: l.instantBook ?? true,
+    customSlug: (l as any).customSlug ?? null,
     cleaningFee: l.cleaningFee ?? 0,
     securityDeposit: l.securityDeposit ?? 0,
     weekendPrice: l.weekendPrice,
@@ -286,6 +302,7 @@ export function toBookingDTO(
     cleaningFee: b.cleaningFee,
     currency: b.currency,
     priceBreakdown: b.priceBreakdown,
+    cancellationPolicy: b.cancellationPolicy,
     createdAt: b.createdAt,
     listing: b.listing
       ? {

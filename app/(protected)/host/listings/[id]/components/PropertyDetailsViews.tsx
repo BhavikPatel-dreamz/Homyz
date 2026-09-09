@@ -1,8 +1,10 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor integration */
 
 import { BackButton } from "@/components/ui/back-button";
 
 import React from "react";
+import { CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
 
 export interface BedItem {
   type: string;
@@ -21,7 +23,7 @@ interface PropertyDetailsViewsProps {
   setActiveSection: (section: any) => void;
   feedbackMsg: { type: "success" | "error"; text: string } | null;
   isSaving: boolean;
-  handleSaveSection: (sectionKey: any) => void;
+  handleSaveSection: (sectionKey: any, sectionSubtype?: "property" | "access" | "interaction" | "other") => void;
 
   // Description
   editDescription: string;
@@ -98,6 +100,8 @@ interface PropertyDetailsViewsProps {
   setExpandedAccessibility?: (val: string | null) => void;
 }
 
+const MAX_GUEST_CAPACITY = 50;
+
 export function PropertyDetailsViews({
   activeSection,
   setActiveSection,
@@ -163,18 +167,26 @@ export function PropertyDetailsViews({
   expandedAccessibility = "disabled_parking",
   setExpandedAccessibility,
 }: PropertyDetailsViewsProps) {
+  const [amenityCategory, setAmenityCategory] = React.useState<string>("all");
+  const [amenitySearch, setAmenitySearch] = React.useState<string>("");
+
   const isApartmentLike = [
+    "APARTMENT",
+    "CONDO",
+    "LOFT",
+    "RENTAL_UNIT",
+    "SERVICED_APARTMENT",
     "Apartment",
     "Condo",
     "Loft",
     "Serviced apartment",
     "Rental unit*",
-    "RENTAL_UNIT",
+  ].includes(whichIsMostLike) || [
+    "APARTMENT",
     "CONDO",
     "LOFT",
+    "RENTAL_UNIT",
     "SERVICED_APARTMENT",
-    "APARTMENT",
-  ].includes(whichIsMostLike) || [
     "Apartment",
     "Condo",
     "Loft",
@@ -273,13 +285,13 @@ export function PropertyDetailsViews({
                     rows={4}
                     value={editPropertyDetails}
                     onChange={(e) => setEditPropertyDetails(e.target.value)}
-                    placeholder="Provide additional details about your property layout or unique features..."
+                    placeholder="Tell guests more about the property itself."
                     className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs text-zinc-800 outline-none focus:border-amber-400 leading-relaxed shadow-2xs"
                   />
                   <button
                     type="button"
                     disabled={isSaving}
-                    onClick={() => handleSaveSection("description")}
+                    onClick={() => handleSaveSection("description", "property")}
                     className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
@@ -309,13 +321,13 @@ export function PropertyDetailsViews({
                     rows={4}
                     value={editAccessDetails}
                     onChange={(e) => setEditAccessDetails(e.target.value)}
-                    placeholder="Specify which parts of the building or grounds guests can access..."
+                    placeholder="Explain which spaces guests can use."
                     className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs text-zinc-800 outline-none focus:border-amber-400 leading-relaxed shadow-2xs"
                   />
                   <button
                     type="button"
                     disabled={isSaving}
-                    onClick={() => handleSaveSection("description")}
+                    onClick={() => handleSaveSection("description", "access")}
                     className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
@@ -345,13 +357,13 @@ export function PropertyDetailsViews({
                     rows={4}
                     value={interactionDetails}
                     onChange={(e) => setInteractionDetails?.(e.target.value)}
-                    placeholder="Share how much contact or assistance you provide to guests..."
+                    placeholder="Let guests know how much interaction they can expect."
                     className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs text-zinc-800 outline-none focus:border-amber-400 leading-relaxed shadow-2xs"
                   />
                   <button
                     type="button"
                     disabled={isSaving}
-                    onClick={() => handleSaveSection("description")}
+                    onClick={() => handleSaveSection("description", "interaction")}
                     className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
@@ -381,13 +393,13 @@ export function PropertyDetailsViews({
                     rows={4}
                     value={otherDetails}
                     onChange={(e) => setOtherDetails?.(e.target.value)}
-                    placeholder="Add any extra notes like stair access, elevator availability, or parking tips..."
+                    placeholder="Share anything else guests should know before booking."
                     className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs text-zinc-800 outline-none focus:border-amber-400 leading-relaxed shadow-2xs"
                   />
                   <button
                     type="button"
                     disabled={isSaving}
-                    onClick={() => handleSaveSection("description")}
+                    onClick={() => handleSaveSection("description", "other")}
                     className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
@@ -455,12 +467,12 @@ export function PropertyDetailsViews({
                   onChange={(e) => setWhichIsMostLike(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                 >
-                  <option value="Apartment">Apartment</option>
-                  <option value="House">House</option>
-                  <option value="Secondary unit">Secondary unit</option>
-                  <option value="Unique space">Unique space</option>
-                  <option value="Bed & breakfast">Bed & breakfast</option>
-                  <option value="Boutique hotel">Boutique hotel</option>
+                  <option value="APARTMENT">Apartment</option>
+                  <option value="HOUSE">House</option>
+                  <option value="SECONDARY_UNIT">Secondary unit</option>
+                  <option value="UNIQUE_SPACE">Unique space</option>
+                  <option value="BED_AND_BREAKFAST">Bed & breakfast</option>
+                  <option value="BOUTIQUE_HOTEL">Boutique hotel</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -479,11 +491,16 @@ export function PropertyDetailsViews({
                   onChange={(e) => setEditPropertyType(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                 >
-                  <option value="Rental unit*">Rental unit*</option>
-                  <option value="Condo">Condo</option>
-                  <option value="Loft">Loft</option>
-                  <option value="Serviced apartment">Serviced apartment</option>
-                  <option value="Vacation home">Vacation home</option>
+                  <option value="APARTMENT">Apartment</option>
+                  <option value="HOUSE">House</option>
+                  <option value="VILLA">Villa</option>
+                  <option value="CABIN">Cabin</option>
+                  <option value="COTTAGE">Cottage</option>
+                  <option value="STUDIO">Studio</option>
+                  <option value="LOFT">Loft</option>
+                  <option value="PENTHOUSE">Penthouse</option>
+                  <option value="TOWNHOUSE">Townhouse</option>
+                  <option value="GUEST_HOUSE">Guest house</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -505,9 +522,9 @@ export function PropertyDetailsViews({
                   onChange={(e) => setEditListingType(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                 >
-                  <option value="Entire place">Entire place</option>
-                  <option value="Private room">Private room</option>
-                  <option value="Shared room">Shared room</option>
+                  <option value="ENTIRE_PLACE">Entire place</option>
+                  <option value="ROOM">Private room</option>
+                  <option value="SHARED_ROOM">Shared room</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -789,7 +806,7 @@ export function PropertyDetailsViews({
                 <span className="w-6 text-center text-sm font-semibold text-zinc-950">{editGuests}</span>
                 <button
                   type="button"
-                  onClick={() => setEditGuests(Math.min(50, editGuests + 1))}
+                  onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
                   className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 font-semibold text-sm hover:bg-zinc-100 cursor-pointer transition-all shadow-2xs"
                 >
                   +
@@ -1147,212 +1164,306 @@ export function PropertyDetailsViews({
       {/* --------------------------------------------------------- */}
       {/* VIEW 5: AMENITIES */}
       {/* --------------------------------------------------------- */}
-      {(activeSection === "amenities" || activeSection === "add-amenities") && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <BackButton onClick={() => setActiveSection("description")} />
-                <h1>Amenities</h1>
-              </div>
-              <p className="text-xs text-zinc-400 font-normal pl-11">
-                You've added these to your listing so far.
-              </p>
-            </div>
+      {(activeSection === "amenities" || activeSection === "add-amenities") && (() => {
+        const AMENITY_FILTER_CATEGORIES = [
+          { id: "all", label: "All" },
+          { id: "favorites", label: "Favorites" },
+          { id: "kitchen_dining", label: "Kitchen & dining" },
+          { id: "bathroom", label: "Bathroom" },
+          { id: "bedroom_laundry", label: "Bedroom & laundry" },
+          { id: "climate", label: "Heating & cooling" },
+          { id: "entertainment", label: "Entertainment" },
+          { id: "outdoor", label: "Outdoor" },
+          { id: "standout", label: "Standout & pool" },
+          { id: "facilities", label: "Parking & facilities" },
+          { id: "safety", label: "Safety" },
+          { id: "services", label: "Services" },
+        ] as const;
 
-            {/* Edit Pill & Plus Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveSection(activeSection === "add-amenities" ? "amenities" : "add-amenities")}
-                className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs flex items-center gap-1.5 transition-all"
-              >
-                <span>✏️</span>
-                <span>{activeSection === "add-amenities" ? "Done" : "Edit"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveSection(activeSection === "add-amenities" ? "amenities" : "add-amenities")}
-                className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold cursor-pointer shadow-2xs transition-all"
-              >
-                {activeSection === "add-amenities" ? "✕" : "+"}
-              </button>
-            </div>
-          </div>
+        const normalizedSelectedIds = new Set(
+          editAmenities.map((a) => normalizeAmenityId(a)).filter(Boolean)
+        );
 
-          {activeSection === "add-amenities" ? (
-            /* Add Amenities Selection View matching Figma Screenshot 100% */
-            <div className="space-y-6 pt-1">
-              {/* Category Filter Chips */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {[
-                  "All", "Basics", "Bathroom", "Bedroom and laundry", "Entertainment",
-                  "Family", "Heating and cooling", "Home safety", "Internet and office",
-                  "Kitchen and dining", "Location features", "Outdoor", "Parking and facilities", "Services"
-                ].map((cat, idx) => (
+        const filteredCatalog = CANONICAL_AMENITIES.filter((item) => {
+          if (amenityCategory !== "all") {
+            if (amenityCategory === "favorites") {
+              if (!item.isPopular && item.category !== "favorites" && item.category !== "essentials") {
+                return false;
+              }
+            } else if (amenityCategory === "facilities") {
+              if (item.category !== "facilities" && item.category !== "parking") {
+                return false;
+              }
+            } else if (amenityCategory === "standout") {
+              if (item.category !== "standout" && item.category !== "premium") {
+                return false;
+              }
+            } else if (amenityCategory === "services") {
+              if (item.category !== "services" && item.category !== "family" && item.category !== "accessibility") {
+                return false;
+              }
+            } else if (item.category !== amenityCategory) {
+              return false;
+            }
+          }
+          if (!amenitySearch.trim()) return true;
+          const q = amenitySearch.toLowerCase().trim();
+          return (
+            item.label.toLowerCase().includes(q) ||
+            (item.description && item.description.toLowerCase().includes(q)) ||
+            item.id.toLowerCase().includes(q)
+          );
+        });
+
+        const toggleAmenity = (idOrLabel: string) => {
+          const canon = normalizeAmenityId(idOrLabel);
+          if (!canon) return;
+          const current: string[] = normalizeAmenities(editAmenities);
+          if (current.includes(canon)) {
+            setEditAmenities(current.filter((a: string) => a !== canon));
+          } else {
+            setEditAmenities([...current, canon]);
+          }
+        };
+
+        return (
+          <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
                   <button
-                    key={cat}
                     type="button"
-                    className={`rounded-full px-3.5 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-2xs ${
-                      idx === 0
-                        ? "bg-zinc-900 text-white"
-                        : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
-                    }`}
+                    onClick={() => {
+                      if (activeSection === "add-amenities") {
+                        setActiveSection("amenities");
+                      } else {
+                        setActiveSection("description");
+                      }
+                    }}
+                    className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
                   >
-                    {cat}
+                    ‹
                   </button>
-                ))}
+                  <h1 className="tracking-tight text-[#1F1F1F]">
+                    {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
+                  </h1>
+                </div>
+                <p className="text-xs text-zinc-400 font-normal pl-11">
+                  {activeSection === "add-amenities"
+                    ? `${normalizedSelectedIds.size} amenities selected for your listing.`
+                    : `You've added ${normalizedSelectedIds.size} ${normalizedSelectedIds.size === 1 ? "amenity" : "amenities"} to your listing.`}
+                </p>
               </div>
 
-              {/* Full Amenities List */}
-              <div className="divide-y divide-zinc-150/80 pt-2">
-                {[
-                  { name: "Air conditioning", icon: "🌬️", category: "Heating and cooling" },
-                  { name: "Arcade games", icon: "🕹️", category: "Entertainment" },
-                  { name: "Baby bath", icon: "🛁", category: "Family" },
-                  { name: "Baby monitor", icon: "👶", category: "Family" },
-                  { name: "Baby safety gates", icon: "🚪", category: "Family" },
-                  { name: "Babysitter recommendation", icon: "👶", category: "Services" },
-                  { name: "Backyard", icon: "🏡", category: "Outdoor" },
-                  { name: "Baking sheet", icon: "🍪", category: "Kitchen and dining" },
-                  { name: "Barbecue utensils", icon: "🥩", category: "Outdoor" },
-                  { name: "Bathtub", icon: "🛁", category: "Bathroom" },
-                  { name: "BBQ grill", icon: "🍖", category: "Outdoor" },
-                  { name: "Beach access", icon: "🏖️", category: "Location features" },
-                  { name: "Beach essentials", icon: "🏖️", category: "Location features" },
-                  { name: "Bed linens", icon: "🛏️", category: "Bedroom and laundry" },
-                  { name: "Bidet", icon: "🚽", category: "Bathroom" },
-                  { name: "Bikes", icon: "🚲", category: "Services" },
-                  { name: "Blender", icon: "🥤", category: "Kitchen and dining" },
-                  { name: "Board games", icon: "🎲", category: "Entertainment" },
-                  { name: "Boat slip", icon: "🚤", category: "Location features" },
-                  { name: "Body soap", icon: "🧴", category: "Bathroom" },
-                  { name: "Fire extinguisher", icon: "🧯", category: "Home safety" },
-                  { name: "First aid kit", icon: "🩹", category: "Home safety" },
-                  { name: "Free parking on premises", icon: "🅿️", category: "Parking and facilities" },
-                  { name: "Hair dryer", icon: "💨", category: "Bathroom" },
-                  { name: "Hangers", icon: "👔", category: "Bedroom and laundry" },
-                  { name: "Hot water", icon: "♨️", category: "Basics" },
-                  { name: "Iron", icon: "👔", category: "Bedroom and laundry" },
-                  { name: "Kitchen", icon: "🍳", category: "Kitchen and dining" },
-                  { name: "Shampoo", icon: "🧴", category: "Bathroom" },
-                  { name: "Shower gel", icon: "🧼", category: "Bathroom" },
-                  { name: "Smoke alarm", icon: "🚨", category: "Home safety" },
-                  { name: "TV", icon: "📺", category: "Entertainment" },
-                  { name: "Wifi", icon: "📶", category: "Internet and office" }
-                ].map((item) => {
-                  const isSelected = editAmenities.includes(item.name);
-                  return (
-                    <div
-                      key={item.name}
-                      onClick={() => {
-                        if (isSelected) {
-                          setEditAmenities(editAmenities.filter((a) => a !== item.name));
-                        } else {
-                          setEditAmenities([...editAmenities, item.name]);
-                        }
-                      }}
-                      className="py-3 flex items-center justify-between cursor-pointer group select-none"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs group-hover:border-zinc-300">
-                          {item.icon}
-                        </div>
-                        <span className="font-semibold text-xs text-[#1F1F1F]">{item.name}</span>
-                      </div>
-
-                      {isSelected ? (
-                        <div className="w-6 h-6 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-zinc-950 font-semibold text-xs shadow-2xs">
-                          ✓
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all">
-                          +
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Bottom Done Button */}
-              <div className="pt-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("amenities")}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* Main Amenities List View matching Figma screenshot 100% */
-            <div className="space-y-4 pt-2">
-              <div className="divide-y divide-zinc-150/80">
-                {editAmenities.map((am) => {
-                  const detailsMap: Record<string, { icon: string; desc?: string }> = {
-                    "Air conditioning": { icon: "🌬️", desc: "A system that cools and controls the humidity of an indoor space" },
-                    "Bed linens": { icon: "🛏️", desc: "Cotton." },
-                    "Body soap": { icon: "🧴" },
-                    "Fire extinguisher": { icon: "🧯" },
-                    "First aid kit": { icon: "🩹" },
-                    "Free parking": { icon: "🅿️", desc: "Parking garage" },
-                    "Free parking on premises": { icon: "🅿️", desc: "Parking garage" },
-                    "Hair dryer": { icon: "💨" },
-                    "Hangers": { icon: "👔" },
-                    "Hot water": { icon: "♨️" },
-                    "Iron": { icon: "👔" },
-                    "Kitchen": { icon: "🍳", desc: "A space for cooking meals that includes at least a refrigerator, oven and stovetop" },
-                    "Shampoo": { icon: "🧴" },
-                    "Shower gel": { icon: "🧼" },
-                    "Smoke alarm": { icon: "🚨", desc: "Working smoke detector installed according to building safety regulations" },
-                    "TV": { icon: "📺", desc: "High-definition television with streaming or cable capabilities" },
-                    "Wifi": { icon: "📶", desc: "High-speed wireless internet connection available throughout the space" },
-                  };
-                  const meta = detailsMap[am] || { icon: "🛋️" };
-
-                  return (
-                    <div key={am} className="py-3.5 flex items-start gap-4">
-                      <div className="w-9 h-9 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs">
-                        {meta.icon}
-                      </div>
-                      <div className="flex-1 min-w-0 pt-0.5 space-y-0.5">
-                        <h4 className="font-semibold text-xs text-[#1F1F1F] tracking-tight">{am}</h4>
-                        {meta.desc && (
-                          <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
-                            {meta.desc}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setEditAmenities(editAmenities.filter((a) => a !== am))}
-                        className="text-[11px] text-zinc-400 hover:text-rose-600 font-medium cursor-pointer pt-1 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Save Button */}
-              <div className="pt-4">
+              {/* Edit / Add Switch Buttons */}
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   disabled={isSaving}
-                  onClick={() => handleSaveSection("amenities")}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  onClick={async () => {
+                    if (activeSection === "add-amenities") {
+                      await handleSaveSection("amenities");
+                      setActiveSection("amenities");
+                    } else {
+                      setActiveSection("add-amenities");
+                    }
+                  }}
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs flex items-center gap-1.5 transition-all"
                 >
-                  {isSaving ? "Saving..." : "Save"}
+                  <span>{activeSection === "add-amenities" ? "✓" : "✏️"}</span>
+                  <span>{activeSection === "add-amenities" ? (isSaving ? "Saving..." : "Done") : "Add amenities"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection(activeSection === "add-amenities" ? "amenities" : "add-amenities")}
+                  className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold cursor-pointer shadow-2xs transition-all"
+                >
+                  {activeSection === "add-amenities" ? "✕" : "+"}
                 </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {activeSection === "add-amenities" ? (
+              /* Add Amenities Selection View */
+              <div className="space-y-5 pt-1">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={amenitySearch}
+                    onChange={(e) => setAmenitySearch(e.target.value)}
+                    placeholder="Search amenities (e.g. Wifi, Pool, Kitchen)..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 focus:bg-white focus:border-amber-400 focus:outline-none text-xs text-[#1F1F1F] placeholder-zinc-400 transition-all"
+                  />
+                  {amenitySearch && (
+                    <button
+                      type="button"
+                      onClick={() => setAmenitySearch("")}
+                      className="absolute right-3 top-2.5 text-xs text-zinc-400 hover:text-zinc-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Filter Chips */}
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {AMENITY_FILTER_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setAmenityCategory(cat.id)}
+                      className={`rounded-full px-3.5 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-2xs ${
+                        amenityCategory === cat.id
+                          ? "bg-zinc-900 text-white"
+                          : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Filtered Amenities List */}
+                <div className="divide-y divide-zinc-150/80 pt-1 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
+                  {filteredCatalog.length === 0 ? (
+                    <div className="py-12 text-center text-zinc-400 text-xs">
+                      No amenities found matching "{amenitySearch}".
+                    </div>
+                  ) : (
+                    filteredCatalog.map((item) => {
+                      const isSelected = normalizedSelectedIds.has(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => toggleAmenity(item.id)}
+                          className="py-3 flex items-center justify-between cursor-pointer group select-none hover:bg-zinc-50/70 px-2 rounded-xl transition-all"
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0 pr-4">
+                            <div className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs group-hover:border-zinc-300">
+                              {item.icon || "✨"}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-semibold text-xs text-[#1F1F1F] block tracking-tight">
+                                {item.label}
+                              </span>
+                              {item.description && (
+                                <span className="text-[10px] text-zinc-400 font-normal truncate block">
+                                  {item.description}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {isSelected ? (
+                            <div className="w-6 h-6 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-zinc-950 font-semibold text-xs shadow-2xs shrink-0">
+                              ✓
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all shrink-0">
+                              +
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Bottom Save & Done Buttons */}
+                <div className="flex items-center gap-3 pt-3 border-t border-zinc-200/60">
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={async () => {
+                      await handleSaveSection("amenities");
+                      setActiveSection("amenities");
+                    }}
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  >
+                    {isSaving ? "Saving..." : "Save & apply"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("amenities")}
+                    className="rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  >
+                    Back to list
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Main Amenities List View */
+              <div className="space-y-4 pt-1">
+                {editAmenities.length === 0 ? (
+                  <div className="p-10 text-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 space-y-3">
+                    <p className="text-xs text-zinc-500 font-normal">
+                      No amenities added yet. Tell guests what makes your place special!
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("add-amenities")}
+                      className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                    >
+                      + Add amenities
+                    </button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-zinc-150/80">
+                    {editAmenities.map((am) => {
+                      const meta = getAmenityMeta(am);
+                      return (
+                        <div key={am} className="py-3.5 flex items-start gap-4">
+                          <div className="w-9 h-9 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs">
+                            {meta.icon || "✨"}
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5 space-y-0.5">
+                            <h4 className="font-semibold text-xs text-[#1F1F1F] tracking-tight">
+                              {meta.label}
+                            </h4>
+                            {meta.description && (
+                              <p className="text-[11px] text-zinc-400 font-normal leading-relaxed">
+                                {meta.description}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleAmenity(am)}
+                            className="text-[11px] text-zinc-400 hover:text-rose-600 font-medium cursor-pointer pt-1 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Save & Add More Buttons */}
+                <div className="flex items-center gap-3 pt-4 border-t border-zinc-200/60">
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() => handleSaveSection("amenities")}
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("add-amenities")}
+                    className="rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  >
+                    + Add more amenities
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* --------------------------------------------------------- */}
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
