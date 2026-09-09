@@ -6,6 +6,10 @@
 #   APP_DIR     — default $HOME/homyz
 set -euo pipefail
 
+# Non-interactive SSH has no TTY. pnpm otherwise aborts removing node_modules.
+export CI=true
+export PNPM_CONFIRM_MODULES_PURGE=false
+
 APP_DIR="${APP_DIR:-${HOME}/homyz}"
 export PNPM_HOME="${PNPM_HOME:-${HOME}/.local/share/pnpm}"
 export PATH="${PNPM_HOME}:${HOME}/.local/bin:${HOME}/.local/share/pnpm:/usr/bin:${PATH}"
