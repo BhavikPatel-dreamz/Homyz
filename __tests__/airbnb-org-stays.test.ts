@@ -10,7 +10,7 @@ function assert(condition: unknown, message: string) {
 }
 
 console.log("\n==================================================================");
-console.log("     AIRBNB.ORG STAYS (PREFERENCES) VERIFICATION SUITE           ");
+console.log("     homyz.ORG STAYS (PREFERENCES) VERIFICATION SUITE           ");
 console.log("==================================================================\n");
 
 // -----------------------------------------------------------------------------
@@ -20,30 +20,30 @@ console.log("--- [1] Component File Existence & Architecture ---");
 
 const viewFilePath = path.resolve(
   __dirname,
-  "../app/(protected)/host/listings/[id]/components/AirbnbOrgStaysView.tsx"
+  "../app/(protected)/host/listings/[id]/components/homyzOrgStaysView.tsx"
 );
-assert(fs.existsSync(viewFilePath), "AirbnbOrgStaysView.tsx file must exist");
+assert(fs.existsSync(viewFilePath), "homyzOrgStaysView.tsx file must exist");
 const viewCode = fs.readFileSync(viewFilePath, "utf-8");
 
 // -----------------------------------------------------------------------------
-// [2] Exact Text & UI Match with Airbnb Reference Screenshot
+// [2] Exact Text & UI Match with homyz Reference Screenshot
 // -----------------------------------------------------------------------------
 console.log("\n--- [2] Copy & Reference Text Integrity (100% Match) ---");
 
 // Heading
-assert(viewCode.includes("Airbnb.org stays"), "Must contain exact page title 'Airbnb.org stays'");
+assert(viewCode.includes("homyz.org stays"), "Must contain exact page title 'homyz.org stays'");
 
 // Sub-branding
-assert(viewCode.includes("airbnb.org"), "Must contain brand mark 'airbnb.org'");
+assert(viewCode.includes("homyz.org"), "Must contain brand mark 'homyz.org'");
 assert(
-  viewCode.includes("Available for Airbnb.org guests for free or at a discount"),
-  "Must contain exact subtitle 'Available for Airbnb.org guests for free or at a discount'"
+  viewCode.includes("Available for homyz.org guests for free or at a discount"),
+  "Must contain exact subtitle 'Available for homyz.org guests for free or at a discount'"
 );
 
 // Section Header
 assert(
-  viewCode.includes("How Airbnb.org stays work"),
-  "Must contain section heading 'How Airbnb.org stays work'"
+  viewCode.includes("How homyz.org stays work"),
+  "Must contain section heading 'How homyz.org stays work'"
 );
 
 // All 4 bullets matching screenshot exactly
@@ -57,12 +57,12 @@ assert(
 );
 
 assert(
-  normalizedCode.includes("Airbnb.org or its partner checks guests' eligibility."),
+  normalizedCode.includes("homyz.org or its partner checks guests' eligibility."),
   "Bullet 2: Eligibility verification partner check"
 );
 
 assert(
-  normalizedCode.includes("Airbnb.org's partners may send requests on behalf of their clients."),
+  normalizedCode.includes("homyz.org's partners may send requests on behalf of their clients."),
   "Bullet 3: Partner request delegation"
 );
 
@@ -73,8 +73,8 @@ assert(
 
 // Link
 assert(
-  viewCode.includes("Learn more about Airbnb.org"),
-  "Must contain 'Learn more about Airbnb.org' interactive link"
+  viewCode.includes("Learn more about homyz.org"),
+  "Must contain 'Learn more about homyz.org' interactive link"
 );
 
 // -----------------------------------------------------------------------------
@@ -114,8 +114,8 @@ const sidebarFilePath = path.resolve(
 const sidebarCode = fs.readFileSync(sidebarFilePath, "utf-8");
 
 assert(
-  sidebarCode.includes("Airbnb.org stays"),
-  "EditorSidebar must display 'Airbnb.org stays' card"
+  sidebarCode.includes("homyz.org stays"),
+  "EditorSidebar must display 'homyz.org stays' card"
 );
 
 assert(
@@ -124,8 +124,8 @@ assert(
 );
 
 assert(
-  sidebarCode.includes('setActiveSection("airbnb-org-stays")'),
-  "EditorSidebar must navigate to 'airbnb-org-stays' on click"
+  sidebarCode.includes('setActiveSection("homyz-org-stays")'),
+  "EditorSidebar must navigate to 'homyz-org-stays' on click"
 );
 
 const sectionHelpersPath = path.resolve(
@@ -135,8 +135,8 @@ const sectionHelpersPath = path.resolve(
 const helpersCode = fs.readFileSync(sectionHelpersPath, "utf-8");
 
 assert(
-  helpersCode.includes('"airbnb-org-stays"'),
-  "section-helpers.ts must support 'airbnb-org-stays' in SectionKey and mapping"
+  helpersCode.includes('"homyz-org-stays"'),
+  "section-helpers.ts must support 'homyz-org-stays' in SectionKey and mapping"
 );
 
 // -----------------------------------------------------------------------------
@@ -151,8 +151,8 @@ const houseRulesPath = path.resolve(
 const houseRulesCode = fs.readFileSync(houseRulesPath, "utf-8");
 
 assert(
-  houseRulesCode.includes("<AirbnbOrgStaysView"),
-  "HouseRulesAndArrivalViews must mount <AirbnbOrgStaysView"
+  houseRulesCode.includes("<homyzOrgStaysView"),
+  "HouseRulesAndArrivalViews must mount <homyzOrgStaysView"
 );
 
 const editorClientPath = path.resolve(
@@ -162,8 +162,8 @@ const editorClientPath = path.resolve(
 const editorClientCode = fs.readFileSync(editorClientPath, "utf-8");
 
 assert(
-  editorClientCode.includes('"airbnb-org-stays"'),
-  "host-listing-editor-client must include 'airbnb-org-stays' in PREFERENCE_SECTIONS"
+  editorClientCode.includes('"homyz-org-stays"'),
+  "host-listing-editor-client must include 'homyz-org-stays' in PREFERENCE_SECTIONS"
 );
 
 assert(
@@ -177,5 +177,5 @@ assert(
 );
 
 console.log("\n==================================================================");
-console.log("   🎉 ALL AIRBNB.ORG STAYS VERIFICATION TESTS PASSED (100%)!      ");
+console.log("   🎉 ALL homyz.ORG STAYS VERIFICATION TESTS PASSED (100%)!      ");
 console.log("==================================================================\n");

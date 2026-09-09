@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getSafeTaxItems } from "../lib/tax/safe-simulator";
 import { TaxCalculator } from "../lib/tax/tax-calculator";
 import { resolveTaxJurisdiction } from "../lib/tax/jurisdiction-resolver";
 import type { ListingTaxDTO, TaxRuleDTO } from "../lib/tax/types";
@@ -379,6 +380,9 @@ assert(
   publicClientCode.includes("Exemption applied"),
   "Public listing detail must support showing 'Exemption applied' badge"
 );
+
+assert(getSafeTaxItems(undefined).length === 0, "Missing simulator tax data should normalize to an empty list");
+assert(getSafeTaxItems([{ taxName: "VAT" } as any]).length === 1, "Valid simulator tax data should be retained");
 
 console.log("\n==================================================================");
 console.log("   🎉 ALL 18 TAX ENGINE TESTS PASSED WITH 100% PRECISION!         ");

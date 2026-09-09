@@ -10,6 +10,21 @@ type Ctx = { params: Promise<{ id: string }> };
 export const GET = apiHandler(async (req, ctx: Ctx) => {
   const actor = await requireApiAuth(req);
   const { id } = await ctx.params;
+  const action = req.nextUrl.searchParams.get("action");
+
+  if (action === "preview") {
+    const nightsParam = Number(req.nextUrl.searchParams.get("nights") ?? "3");
+    const guestsParam = Number(req.nextUrl.searchParams.get("guests") ?? "2");
+
+    const preview = await taxService.simulateTaxPreview({
+      listingId: id,
+      nights: Number.isFinite(nightsParam) ? Math.max(1, nightsParam) : 3,
+      guests: Number.isFinite(guestsParam) ? Math.max(1, guestsParam) : 2,
+    });
+
+    return ok(preview);
+  }
+
   const overview = await taxService.getListingTaxOverview(actor, id);
   return ok(overview);
 });

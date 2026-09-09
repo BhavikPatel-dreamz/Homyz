@@ -300,7 +300,7 @@ export function EditorSidebar({
               >
                 <div>
                   <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
-                    Airbnb.org stays
+                    homyz.org stays
                   </span>
                   <p className="text-[11px] text-zinc-500 font-normal">
                     Learn how you can help

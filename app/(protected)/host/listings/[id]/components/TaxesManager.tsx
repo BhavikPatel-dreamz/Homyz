@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { getSafeTaxItems } from "@/lib/tax/safe-simulator";
 import type {
   ListingTaxDTO,
   ReservationTaxReportItem,
@@ -91,6 +92,8 @@ export function TaxesManager({
   // Invoice modal state
   const [selectedInvoice, setSelectedInvoice] = useState<TaxInvoiceData | null>(null);
   const [isInvoiceLoading, setIsInvoiceLoading] = useState(false);
+
+  const simulatorTaxes = getSafeTaxItems(simulatorResult);
 
   const [isPending, startTransition] = useTransition();
 
@@ -915,13 +918,13 @@ export function TaxesManager({
                   {/* Itemized Taxes */}
                   <div className="space-y-2">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                      Calculated Taxes ({simulatorResult.taxes.length})
+                      Calculated Taxes ({simulatorTaxes.length})
                     </div>
-                    {simulatorResult.taxes.length === 0 ? (
+                    {simulatorTaxes.length === 0 ? (
                       <p className="text-zinc-400 text-xs italic">No taxes apply to this reservation.</p>
                     ) : (
                       <div className="grid gap-2">
-                        {simulatorResult.taxes.map((tax, i) => (
+                        {simulatorTaxes.map((tax, i) => (
                           <div
                             key={i}
                             className={`p-3 rounded-xl border flex items-center justify-between ${
