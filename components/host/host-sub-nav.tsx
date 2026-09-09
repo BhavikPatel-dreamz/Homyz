@@ -229,12 +229,12 @@ export function HostSubNav({
                     key={tab.id}
                     href={tab.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={`group flex h-[76px] flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
+                    className={`group flex h-[76px] min-w-[108px] px-3.5 border flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
                       tab.minWidthClass
                     } ${
                       isActive
-                        ? "bg-[#FCDF9C] text-[#1F1F1F]"
-                        : "bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
+                      ? "bg-[#FCDF9C] border-[#FCDF9C] text-[#1F1F1F]"
+                        : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
                     }`}
                   >
                     <div className="shrink-0">{tab.icon}</div>

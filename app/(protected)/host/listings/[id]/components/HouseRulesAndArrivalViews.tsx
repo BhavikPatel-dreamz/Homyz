@@ -228,7 +228,7 @@ export function HouseRulesAndArrivalViews({
             <div className="py-3.5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Pets allowed</span>
+                  <span className="font-medium text-base text-[#1F1F1F] block">Pets allowed</span>
                   <span className="text-[11px] text-zinc-400">Do you welcome pets in your space?</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -333,7 +333,7 @@ export function HouseRulesAndArrivalViews({
             {/* Row 2: Events allowed */}
             <div className="py-3.5 flex items-center justify-between">
               <div>
-                <span className="font-semibold text-xs text-[#1F1F1F] block">Events & parties allowed</span>
+                <span className="font-medium text-base text-[#1F1F1F] block">Events & parties allowed</span>
                 <span className="text-[11px] text-zinc-400">Can guests host gatherings or parties?</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -366,7 +366,7 @@ export function HouseRulesAndArrivalViews({
             <div className="py-3.5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Smoking, vaping, e-cigarettes</span>
+                  <span className="font-medium text-base text-[#1F1F1F] block">Smoking, vaping, e-cigarettes</span>
                   <span className="text-[11px] text-zinc-400">Is smoking permitted anywhere on premises?</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -427,7 +427,7 @@ export function HouseRulesAndArrivalViews({
             <div className="py-3.5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Quiet hours</span>
+                  <span className="font-medium text-base text-[#1F1F1F] block">Quiet hours</span>
                   <span className="text-[11px] text-zinc-400">Enforce quiet hours during night times</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -544,7 +544,7 @@ export function HouseRulesAndArrivalViews({
             <div className="py-3.5 space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Additional house rules</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">Additional house rules</h4>
                   <p className="text-[11px] text-zinc-400">Specify any custom rules or property considerations</p>
                 </div>
               </div>
@@ -564,7 +564,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("house-rules")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -735,7 +735,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -831,7 +831,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -867,7 +867,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -1330,7 +1330,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-semibold text-xs text-[#1F1F1F]">Listed</h3>
+          <h3 className="font-medium text-base text-[#1F1F1F]">Listed</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Guests can find your listing in search results and book available dates.
           </p>
@@ -1345,7 +1345,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-semibold text-xs text-[#1F1F1F]">Unlisted</h3>
+          <h3 className="font-medium text-base text-[#1F1F1F]">Unlisted</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Your listing is hidden from search results and guests cannot book dates.
           </p>
@@ -1840,7 +1840,7 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -1986,7 +1986,7 @@ function CheckInMethodView({
             type="button"
             disabled={isSaving}
             onClick={() => handleSaveSection("check-in-method")}
-            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+            className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
           >
             {isSaving ? "Saving..." : "Save"}
           </button>

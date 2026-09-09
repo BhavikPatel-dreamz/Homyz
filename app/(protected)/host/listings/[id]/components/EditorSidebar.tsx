@@ -115,7 +115,7 @@ export function EditorSidebar({
               setEditorTab("space");
               setActiveSection("description");
             }}
-            className={`rounded-full font-semibold text-xs px-4 py-1.5 transition-all cursor-pointer ${
+            className={`rounded-full font-medium text-sm px-4 py-1.5 transition-all cursor-pointer ${
               editorTab === "space"
                 ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
@@ -130,7 +130,7 @@ export function EditorSidebar({
               setEditorTab("arrival");
               setActiveSection("check-in-out");
             }}
-            className={`rounded-full font-semibold text-xs px-4 py-1.5 transition-all cursor-pointer ${
+            className={`rounded-full font-medium text-sm px-4 py-1.5 transition-all cursor-pointer ${
               editorTab === "arrival"
                 ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
                 : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
@@ -148,7 +148,7 @@ export function EditorSidebar({
             className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs transition-all cursor-pointer ${
               editorTab === "preferences"
                 ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
-                : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+                : "bg-white border-zinc-200 text-[#727272] hover:bg-zinc-100"
             }`}
           >
             ⚙️
@@ -169,14 +169,14 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-1">
+                <span className="text-base font-medium text-[#727272] block mb-1">
                   Listing status
                 </span>
                 {(() => {
                   const isListed = Boolean(listing?.published && listing?.status === "ACTIVE" && !listing?.isPaused);
                   return (
                     <span
-                      className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
+                      className={`inline-flex items-center gap-1.5 text-base font-semibold px-2.5 py-0.5 rounded-full ${
                         isListed
                           ? "text-emerald-700 bg-emerald-100/70"
                           : "text-amber-700 bg-amber-100/70"
@@ -199,10 +199,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Languages
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     English
                   </p>
                 </div>
@@ -219,10 +219,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Guest requirements
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     Profile photo not required
                   </p>
                 </div>
@@ -239,10 +239,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Local laws
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     Review your local laws
                   </p>
                 </div>
@@ -259,7 +259,7 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Regulations
                   </span>
                 </div>
@@ -276,10 +276,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Taxes
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     Learn how taxes work for Hosts
                   </p>
                 </div>
@@ -298,10 +298,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     homyz.org stays
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     Learn how you can help
                   </p>
                 </div>
@@ -321,10 +321,10 @@ export function EditorSidebar({
                 }`}
               >
                 <div>
-                  <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Remove listing
                   </span>
-                  <p className="text-[11px] text-zinc-500 font-normal">
+                  <p className="text-base text-zinc-500 font-normal">
                     Permanently remove your listing
                   </p>
                 </div>
@@ -354,7 +354,7 @@ export function EditorSidebar({
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
-                    <span className="bg-white/95 backdrop-blur-md text-[#1F1F1F] text-[11px] font-semibold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
+                    <span className="bg-white/95 backdrop-blur-md text-[#1F1F1F] text-base font-semibold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
               {editPhotos.length} photos
                     </span>
                   </div>
@@ -370,10 +370,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Title
                 </span>
-                <span className="text-xs font-semibold text-[#1F1F1F] block truncate">
+                <span className="text-base font-normal text-[#727272] block truncate">
                   {editTitle || "Property Name"}
                 </span>
               </div>
@@ -387,10 +387,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Property type
                 </span>
-                <span className="text-xs font-semibold text-[#1F1F1F] block">
+                <span className="text-base font-medium text-[#727272] block">
                   {editListingType} · {editPropertyType}
                 </span>
               </div>
@@ -404,13 +404,13 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Pricing
                 </span>
                 <div className="text-xs text-zinc-800 space-y-0.5">
-                  <p className="font-semibold text-[#1F1F1F]">SR{editPrice} per night</p>
-                  <p className="text-[11px] text-zinc-500">{weeklyDiscount}% weekly discount</p>
-                  <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
+                    <p className="text-base font-medium text-[#727272]">SR{editPrice} per night</p>
+                    <p className="text-base font-medium text-[#727272]">{weeklyDiscount}% weekly discount</p>
+                    <p className="text-base font-medium text-[#727272]">{monthlyDiscount}% monthly discount</p>
                 </div>
               </div>
 
@@ -423,15 +423,15 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Availability
                 </span>
                 <div className="text-xs text-zinc-800 space-y-0.5">
-                  <p className="font-semibold text-[#1F1F1F]">
+                    <p className="text-base font-medium text-[#727272]">
                     {minNights}-{maxNights} night stays
                   </p>
-                  <p className="text-[11px] text-zinc-500">Advance notice not configured</p>
-                  <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
+                    <p className="text-base font-medium text-[#727272]">Advance notice not configured</p>
+                    <p className="text-base font-medium text-[#727272]">{monthlyDiscount}% monthly discount</p>
                 </div>
               </div>
 
@@ -444,10 +444,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Number of guests
                 </span>
-                <span className="text-xs font-semibold text-[#1F1F1F] block">
+                <span className="text-base font-medium text-[#727272] block">
                   {editGuests} guests
                 </span>
               </div>
@@ -461,10 +461,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Sleeping arrangements
                 </span>
-                <span className="text-xs font-semibold text-[#1F1F1F] block">
+                <span className="text-base font-medium text-[#727272] block">
                   {editBedrooms || 1} {editBedrooms === 1 ? "bedroom" : "bedrooms"} · {editBeds || 1} {editBeds === 1 ? "bed" : "beds"}
                 </span>
               </div>
@@ -478,10 +478,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Description
                 </span>
-                <p className="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
+                  <p className="text-base font-medium text-[#727272] line-clamp-3 leading-relaxed">
                   {editDescription || "No description provided yet."}
                 </p>
               </div>
@@ -489,31 +489,31 @@ export function EditorSidebar({
               {/* 7. Amenities */}
               <div
                 onClick={() => setActiveSection("amenities")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
+                  className={`rounded-2xl p-4 border transition-all cursor-pointer text-base font-medium text-[#727272] ${
                   activeSection === "amenities" || activeSection === "add-amenities"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-1">
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-1">
                   Amenities
                 </span>
-                <div className="space-y-1.5 text-xs text-zinc-800">
+                  <div className="space-y-1.5 text-base font-medium text-[#727272]">
                   {editAmenities.length === 0 ? (
-                    <span className="text-xs text-zinc-400 font-medium">Add amenities</span>
+                      <span className="text-base font-medium text-[#727272]">Add amenities</span>
                   ) : (
                     <>
                       {editAmenities.slice(0, 3).map((am, i) => {
                         const meta = getAmenityMeta(am);
                         return (
                           <div key={i} className="flex items-center gap-2">
-                            <span className="text-xs">{meta.icon || "✨"}</span>
-                            <span className="font-semibold text-zinc-800">{meta.label}</span>
+                            <span className="text-base font-medium text-[#727272]">{meta.icon || "✨"}</span>
+                            <span className="text-base font-medium text-[#727272]">{meta.label}</span>
                           </div>
                         );
                       })}
                       {editAmenities.length > 3 && (
-                        <span className="text-[10px] font-semibold text-zinc-400 block pt-0.5">
+                        <span className="text-base font-semibold text-zinc-400 block pt-0.5">
                           +{editAmenities.length - 3} more
                         </span>
                       )}
@@ -531,7 +531,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Accessibility features
                 </span>
                 <span className="text-xs text-zinc-400 font-medium">Add details</span>
@@ -546,7 +546,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2">Location</span>
+                <span className="text-base font-medium text-[#1F1F1F] block mb-2">Location</span>
                 <RealMap
                   address={editAddress}
                   city={editCity}
@@ -554,7 +554,7 @@ export function EditorSidebar({
                   showExactLocation={showExactLocation}
                   className="rounded-xl overflow-hidden border border-zinc-200/80 relative h-24 mb-2.5 pointer-events-none"
                 />
-                <span className="text-[11px] font-medium text-zinc-500 block truncate">
+                <span className="text-base font-medium text-zinc-500 block truncate">
                   {editAddress
                     ? `${editAddress}, ${editCity}, ${editCountry}`
                     : "Location name, Postal Code, Country"}
@@ -570,7 +570,7 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-3">About the host</span>
+                <span className="text-base font-medium text-[#1F1F1F] block mb-3">About the host</span>
 
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col items-center text-center space-y-1 pr-2">
@@ -578,8 +578,8 @@ export function EditorSidebar({
                     <h4 className="text-xs font-semibold text-[#1F1F1F] leading-tight">{listing.host?.name || "Host"}</h4>
                   </div>
                   <div className="flex-1 pl-4 text-center">
-                    <span className="text-xs font-semibold text-[#1F1F1F] block leading-tight">{listing.host?.createdAt ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear()) : 0}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">years hosting</span>
+                    <span className="text-base font-medium text-[#727272] block leading-tight">{listing.host?.createdAt ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear()) : 0}</span>
+                    <span className="text-base text-zinc-500 font-medium">years hosting</span>
                   </div>
                 </div>
               </div>
@@ -596,15 +596,15 @@ export function EditorSidebar({
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-[#1F1F1F] block">Co-host</span>
+                  <span className="text-base font-medium text-[#1F1F1F] block">Co-host</span>
                   {coHostSummary && (
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                    <span className="text-base bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
                       {coHostSummary}
                     </span>
                   )}
                 </div>
                 {coHosts.filter((item) => item.status === "PENDING" || item.status === "ACCEPTED").length > 0 ? (
-                  <div className="text-[11px] text-zinc-700 font-medium space-y-0.5 pt-0.5">
+                  <div className="text-base text-zinc-700 font-medium space-y-0.5 pt-0.5">
                     {coHosts.filter((item) => item.status === "PENDING" || item.status === "ACCEPTED").map((ch) => (
                       <p key={ch.id} className="truncate">
                         • {ch.user?.name || ch.email} ({ch.status.toLowerCase()})
@@ -612,7 +612,7 @@ export function EditorSidebar({
                     ))}
                   </div>
                 ) : (
-                  <span className="text-[11px] text-zinc-400 font-medium block">Add details</span>
+                  <span className="text-base text-[#727272] font-normal block block">Add details</span>
                 )}
               </div>
 
@@ -625,10 +625,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1f1f1f] block mb-0.5">
                   Booking settings
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {bookingMethod === "instant" ? "Use instant book" : "Approve all bookings"}
                 </p>
               </div>
@@ -642,8 +642,8 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2">House rules</span>
-                <div className="space-y-1 text-[11px] text-zinc-600 font-medium">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-2">House rules</span>
+                <div className="space-y-1 text-base text-[#727272] font-medium">
                   <div className="flex items-center gap-2">
                     <span>🕒</span>
                     <span>Check-in after {checkInStart || "3:00PM"}</span>
@@ -656,7 +656,7 @@ export function EditorSidebar({
                     <span>👥</span>
                     <span>{maxGuestsCount || editGuests || 2} guest maximum</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400 pt-0.5 font-semibold">+3 more</p>
+                  <p className="text-base text-zinc-400 pt-0.5 font-semibold">+3 more</p>
                 </div>
               </div>
 
@@ -669,15 +669,15 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-2.5">Guests safety</span>
-                <div className="space-y-2 text-[11px] text-zinc-700 font-medium">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">Guests safety</span>
+                <div className="space-y-2 text-base text-zinc-700 font-medium">
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M12 3v1.5M15.75 3v1.5M12 7.5A4.5 4.5 0 007.5 12v3h9v-3A4.5 4.5 0 0012 7.5zM6 19.5h12" />
                       </svg>
                     </div>
-                    <span className="text-zinc-700 text-[11px] font-medium leading-tight">
+                    <span className="text-[#727272] text-base font-medium leading-tight">
                       {carbonMonoxideAlarm
                         ? "Carbon monoxide alarm reported"
                         : "Carbon monoxide alarm not reported"}
@@ -689,7 +689,7 @@ export function EditorSidebar({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636" />
                       </svg>
                     </div>
-                    <span className="text-zinc-700 text-[11px] font-medium leading-tight">
+                    <span className="text-[#727272] text-base font-medium leading-tight">
                       {smokeAlarm ? "Smoke alarm installed" : "Smoke alarm not reported"}
                     </span>
                   </div>
@@ -705,10 +705,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Cancellation policy
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">{cancellationPolicy}</p>
+                <p className="text-base text-zinc-500 font-normal">{cancellationPolicy}</p>
               </div>
 
               {/* 16. Custom link */}
@@ -720,10 +720,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Custom link
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {customSlug ? `homyz/${customSlug}` : "Add details"}
                 </p>
               </div>
@@ -743,9 +743,9 @@ export function EditorSidebar({
                 }`}
               >
                 <span className="mb-1 block text-xs font-semibold text-[#1F1F1F]">Check-in</span>
-                <span className="block border-b border-zinc-300 pb-2 text-[11px] text-zinc-600">{checkInStart || "3:00 PM"}</span>
+                <span className="block border-b border-zinc-300 pb-2 text-base text-[#727272]">{checkInStart || "3:00 PM"}</span>
                 <span className="mt-2 block text-xs font-semibold text-[#1F1F1F]">Check-out</span>
-                <span className="block text-[11px] text-zinc-600">{checkOutTime || "12:00 PM"}</span>
+                <span className="block text-base text-[#727272]">{checkOutTime || "12:00 PM"}</span>
               </button>
 
               {/* Card 2: Check-in method */}
@@ -757,10 +757,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Check-in method
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {checkInMethod === "SMART_LOCK" || checkInMethod === "Smart lock" ? "Smart lock" : checkInMethod || "Smart lock"}
                 </p>
               </div>
@@ -774,10 +774,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Wifi details
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {wifiNetwork ? wifiNetwork : "Add details"}
                 </p>
               </div>
@@ -791,10 +791,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   House manual
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {houseManual ? houseManual.slice(0, 30) + "..." : "Add details"}
                 </p>
               </div>
@@ -808,10 +808,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Parking
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   {parkingAvailable ? `${parkingType || "Free"} parking` : "No parking specified"}
                 </p>
               </div>
@@ -828,10 +828,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Check-out instructions
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   Add details
                 </p>
               </div>
@@ -845,10 +845,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Guidebooks
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal line-clamp-2 leading-relaxed">
+                <p className="text-base text-zinc-500 font-normal line-clamp-2 leading-relaxed">
                   Create a guidebook to share your location tips with guests.
                 </p>
               </div>
@@ -864,10 +864,10 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Interaction preferences
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-zinc-500 font-normal">
                   Add details
                 </p>
               </div>

@@ -89,7 +89,7 @@ export function GuestsSafetyView({
               <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Safety considerations
               </h4>
-              <p className="text-[11px] text-zinc-400 font-normal">
+              <p className="text-base text-[#727272] font-normal">
                 {safetyConsiderations.length > 0
                   ? `${safetyConsiderations.length} reported`
                   : "Add details"}
@@ -107,7 +107,7 @@ export function GuestsSafetyView({
               <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Safety devices
               </h4>
-              <p className="text-[11px] text-zinc-400 font-normal">
+              <p className="text-base text-[#727272] font-normal">
                 {smokeAlarm || carbonMonoxideAlarm
                   ? `${smokeAlarm ? "Smoke alarm" : ""}${
                       smokeAlarm && carbonMonoxideAlarm ? ", " : ""
@@ -127,7 +127,7 @@ export function GuestsSafetyView({
               <h4 className="text-xs font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">
                 Property info
               </h4>
-              <p className="text-[11px] text-zinc-400 font-normal">
+              <p className="text-base text-[#727272] font-normal">
                 {propertyInfoDetails.length > 0
                   ? `${propertyInfoDetails.length} items added`
                   : "Add details"}
@@ -203,7 +203,7 @@ export function GuestsSafetyView({
                   setIsSafetyConsiderationsModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
               >
                 Save
               </button>
@@ -299,7 +299,7 @@ export function GuestsSafetyView({
                   setIsSafetyDevicesModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
               >
                 Save
               </button>
@@ -372,7 +372,7 @@ export function GuestsSafetyView({
                   setIsPropertyInfoModalOpen?.(false);
                   handleSaveSection?.("guests-safety");
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
               >
                 Save
               </button>
