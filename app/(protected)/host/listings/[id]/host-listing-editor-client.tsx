@@ -18,6 +18,7 @@ import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
+import { TaxesManager } from "./components/TaxesManager";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
 import { normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
@@ -199,6 +200,7 @@ const PREFERENCE_SECTIONS: SectionKey[] = [
   "taxes",
   "homyz-stays",
   "homyzstays",
+  "homyz-org-stays",
   "airbnb-org-stays",
   "airbnb-stays",
   "remove-listing",

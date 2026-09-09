@@ -286,12 +286,11 @@ export function EditorSidebar({
                 <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
 
-              {/* Card 7: Airbnb.org stays */}
+              {/* Card 7: homyz.org stays */}
               <div
-                onClick={() => setActiveSection("airbnb-org-stays")}
+                onClick={() => setActiveSection("homyz-org-stays")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                   activeSection === "airbnb-org-stays" ||
-                  activeSection === "airbnb-stays" ||
                   activeSection === "homyz-stays" ||
                   activeSection === "homyzstays"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"

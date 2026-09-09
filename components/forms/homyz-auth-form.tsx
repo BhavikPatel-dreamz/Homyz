@@ -137,19 +137,17 @@ export function HomyzAuthForm({
           redirect: false,
         });
         if (fallbackRes?.ok) {
-          router.push(targetCallbackUrl);
-          router.refresh();
+          window.location.href = targetCallbackUrl;
           return;
         }
         setError(`Failed to authenticate with ${providerName}.`);
       } else if (res?.url) {
-        router.push(getSafeCallbackUrl(res.url, targetCallbackUrl));
+        window.location.href = getSafeCallbackUrl(res.url, targetCallbackUrl);
       } else {
-        router.push(targetCallbackUrl);
-        router.refresh();
+        window.location.href = targetCallbackUrl;
       }
     } catch {
-      router.push(targetCallbackUrl);
+      window.location.href = targetCallbackUrl;
     }
   }
 
@@ -235,8 +233,7 @@ export function HomyzAuthForm({
           return;
         }
 
-        router.push(targetCallbackUrl);
-        router.refresh();
+        window.location.href = targetCallbackUrl;
       });
       return;
     }
@@ -266,13 +263,14 @@ export function HomyzAuthForm({
       }
 
       // Check session to determine intelligent redirection
-      const session = await getSession();
-      if (session?.user?.role === "ADMIN" || session?.user?.adminRoleSlug) {
-        router.push("/admin");
-      } else {
-        router.push(targetCallbackUrl);
-      }
-      router.refresh();
+      try {
+        const session = await getSession();
+        if (session?.user?.role === "ADMIN" || session?.user?.adminRoleSlug) {
+          window.location.href = "/admin";
+          return;
+        }
+      } catch {}
+      window.location.href = targetCallbackUrl;
     });
   }
 
@@ -358,8 +356,7 @@ export function HomyzAuthForm({
           }
 
           setSuccess("Verification successful! Redirecting to dashboard...");
-          router.push(targetCallbackUrl);
-          router.refresh();
+          window.location.href = targetCallbackUrl;
         } catch {
           setError("Verification failed. Please try again.");
         }

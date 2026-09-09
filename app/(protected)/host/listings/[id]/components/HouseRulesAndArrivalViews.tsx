@@ -982,7 +982,8 @@ export function HouseRulesAndArrivalViews({
         />
       )}
 
-      {(activeSection === "airbnb-org-stays" ||
+      {(activeSection === "homyz-org-stays" ||
+        activeSection === "airbnb-org-stays" ||
         activeSection === "airbnb-stays" ||
         activeSection === "homyz-stays" ||
         activeSection === "homyzstays") && (

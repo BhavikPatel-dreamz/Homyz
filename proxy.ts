@@ -12,10 +12,40 @@ import type { NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const token = await getToken({
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  if (host) {
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+    const isIp = /^\d+\.\d+\.\d+\.\d+/.test(host);
+    const forwardedProto = request.headers.get("x-forwarded-proto");
+    const proto = forwardedProto || (isLocal || isIp ? "http" : "https");
+    const detectedOrigin = `${proto}://${host}`;
+
+    process.env.NEXTAUTH_URL = detectedOrigin;
+    process.env.APP_URL = detectedOrigin;
+    process.env.AUTH_TRUST_HOST = "true";
+  }
+
+  let token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
+
+  // Fallback: If running over plain HTTP in production or if cookie prefix differs,
+  // ensure token is resolved regardless of whether secureCookie defaults to true or false.
+  if (!token) {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: false,
+    });
+  }
+  if (!token) {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: true,
+    });
+  }
 
   // Dedicated /admin/login route handling
   if (pathname === "/admin/login") {

@@ -562,9 +562,7 @@ export function HostListingsWorkspace({
                       <Link
                         key={item.id}
                         href={
-                          item.status === "DRAFT"
-                            ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                            : `/host/listings/${item.id}`
+                          `/host/listings/${item.id}`
                         }
                         className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
                       >
@@ -699,10 +697,7 @@ export function HostListingsWorkspace({
                       <div className="px-0 pt-3 sm:px-3 lg:pt-6">
                         <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
                           <Link
-                            href={
-                              item.status === "DRAFT"
-                                ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                                : `/host/listings/${item.id}`
+                            href={ `/host/listings/${item.id}`
                             }
                             className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
                           >
