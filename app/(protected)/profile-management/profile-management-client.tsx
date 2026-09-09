@@ -16,6 +16,11 @@ import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
 import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
+import {
+  extractSubTabFromQuery,
+  getMgmtSubTabSlug,
+  ProfileMgmtSubTab,
+} from "@/lib/profile/tab-utils";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -69,6 +74,8 @@ type ProfileManagementClientProps = {
   isOwner?: boolean;
   embedded?: boolean;
   onCancel?: () => void;
+  initialSubTab?: ProfileMgmtSubTab;
+  onSubTabChange?: (subTab: ProfileMgmtSubTab) => void;
 };
 
 // Hand-drawn Paris Eiffel Tower Stamp
@@ -239,11 +246,38 @@ export function ProfileManagementClient({
   isOwner = true,
   embedded = false,
   onCancel,
+  initialSubTab,
+  onSubTabChange,
 }: ProfileManagementClientProps) {
   const router = useRouter();
-  const [activeMgmtTab, setActiveMgmtTab] = useState<
-    "info" | "photos" | "stamps" | "privacy"
-  >("info");
+  const [activeMgmtTab, setActiveMgmtTab] = useState<ProfileMgmtSubTab>(() =>
+    initialSubTab || extractSubTabFromQuery()
+  );
+
+  React.useEffect(() => {
+    if (initialSubTab) {
+      setActiveMgmtTab(initialSubTab);
+    }
+  }, [initialSubTab]);
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const sub = extractSubTabFromQuery(null, window.location.search);
+      setActiveMgmtTab(sub);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleSubTabClick = (tab: ProfileMgmtSubTab) => {
+    setActiveMgmtTab(tab);
+    if (onSubTabChange) {
+      onSubTabChange(tab);
+    } else {
+      const slug = getMgmtSubTabSlug(tab);
+      window.history.pushState(null, "", `/profile?tab/profile_management/${slug}`);
+    }
+  };
 
   const [profileData, setProfileData] = useState<ProfileData>(initial);
   const [tripPhotos, setTripPhotos] =
@@ -482,9 +516,12 @@ export function ProfileManagementClient({
 
       {/* 2. DEDICATED PROFILE MANAGEMENT TABS */}
       <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setActiveMgmtTab("info")}
+        <Link
+          href="/profile?tab/profile_management/profile_information"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubTabClick("info");
+          }}
           className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "info"
               ? "bg-zinc-900 text-white shadow-2xs"
@@ -492,11 +529,14 @@ export function ProfileManagementClient({
           }`}
         >
           Profile Information
-        </button>
+        </Link>
 
-        <button
-          type="button"
-          onClick={() => setActiveMgmtTab("photos")}
+        <Link
+          href="/profile?tab/profile_management/trip_photos"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubTabClick("photos");
+          }}
           className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "photos"
               ? "bg-zinc-900 text-white shadow-2xs"
@@ -504,11 +544,14 @@ export function ProfileManagementClient({
           }`}
         >
           Trip Photos ({tripPhotos.length})
-        </button>
+        </Link>
 
-        <button
-          type="button"
-          onClick={() => setActiveMgmtTab("stamps")}
+        <Link
+          href="/profile?tab/profile_management/where_ive_been"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubTabClick("stamps");
+          }}
           className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "stamps"
               ? "bg-zinc-900 text-white shadow-2xs"
@@ -516,11 +559,14 @@ export function ProfileManagementClient({
           }`}
         >
           Where I&apos;ve Been
-        </button>
+        </Link>
 
-        <button
-          type="button"
-          onClick={() => setActiveMgmtTab("privacy")}
+        <Link
+          href="/profile?tab/profile_management/privacy_visibility"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubTabClick("privacy");
+          }}
           className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "privacy"
               ? "bg-zinc-900 text-white shadow-2xs"
@@ -528,7 +574,7 @@ export function ProfileManagementClient({
           }`}
         >
           Privacy & Visibility
-        </button>
+        </Link>
       </div>
 
       {/* TAB 1: PROFILE INFORMATION */}

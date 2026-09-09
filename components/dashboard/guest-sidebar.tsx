@@ -4,24 +4,28 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export const GUEST_NAV_ITEMS = [
-  { id: "about_me", label: "About me", href: "/profile", image: "/images/icons/profile-img.jpg" },
-  { id: "upcoming_trips", label: "Upcoming Trips", href: "/profile?tab=upcoming", image: "/images/icons/upcoming-trips.svg" },
-  { id: "past_bookings", label: "Past Bookings", href: "/profile?tab=past", image: "/images/icons/post-bookings.svg" },
-  { id: "loyalty", label: "Loyalty Points Wallet", href: "/profile?tab=loyalty", image: "/images/icons/loyalty-points-wallet.svg" },
-  { id: "invite", label: "Invite & Earn", href: "/profile?tab=invite", image: "/images/icons/invite-earn.svg" },
-  { id: "saved", label: "Saved Listings", href: "/profile?tab=saved", image: "/images/icons/saved-listing.svg" },
-  { id: "profile_management", label: "Profile Management", href: "/profile?tab=profile_management", image: "/images/icons/profile-management.svg" },
-  { id: "support", label: "Support / Chat with Agent", href: "/profile?tab=support", image: "/images/icons/support-chat-with-agent.svg" },
-  { id: "notifications", label: "Notifications", href: "/profile?tab=notifications", image: "/images/icons/Notifications.svg" },
-];
-
-function normalizeTabId(tab: string | null | undefined): string {
-  if (!tab || tab === "about_me") return "about_me";
-  if (tab === "upcoming" || tab === "upcoming_trips") return "upcoming_trips";
-  if (tab === "past" || tab === "past_bookings") return "past_bookings";
-  return tab;
-}
+export {
+  GUEST_NAV_ITEMS,
+  normalizeTabId,
+  extractTabFromQuery,
+  extractSubTabFromQuery,
+  extractProfileRoute,
+  parseProfilePathname,
+  PROFILE_MGMT_SUB_TABS,
+  normalizeMgmtSubTab,
+  getMgmtSubTabSlug,
+  getMgmtSubTabHref,
+  getProfileTabHref,
+} from "@/lib/profile/tab-utils";
+export type {
+  ProfileMgmtSubTab,
+  ProfileMgmtSubTabItem,
+  ParsedProfileRoute,
+} from "@/lib/profile/tab-utils";
+import {
+  GUEST_NAV_ITEMS,
+  normalizeTabId,
+} from "@/lib/profile/tab-utils";
 
 export function GuestDashboardSidebar({
   activeId,

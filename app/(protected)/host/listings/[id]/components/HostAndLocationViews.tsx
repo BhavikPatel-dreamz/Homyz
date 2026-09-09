@@ -727,7 +727,7 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
           </button>
           <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
         </div>
-        <p className="max-w-sm text-sm leading-6 text-[#727272]">Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile-management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></p>
+        <p className="max-w-sm text-sm leading-6 text-[#727272]">Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></p>
       </section>
 
       <section className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
@@ -759,7 +759,7 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
           {selectedStamp ? <TravelStampGraphic stamp={selectedStamp} size="md" /> : <p className="text-sm text-zinc-500">{selectedStamps.length ? `${selectedStamps.length} travel stamp${selectedStamps.length === 1 ? "" : "s"} selected.` : "No travel stamps selected yet."}</p>}
           <div className="min-w-0 text-right">
             {selectedStamps.length > 0 && <p className="truncate text-xs text-zinc-500">{selectedStamps.length} selected</p>}
-            <Link href="/profile-management" className="mt-2 inline-flex rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Edit travel stamps</Link>
+            <Link href="/profile?tab/profile_management/where_ive_been" className="mt-2 inline-flex rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Edit travel stamps</Link>
           </div>
         </div>
       </section>
