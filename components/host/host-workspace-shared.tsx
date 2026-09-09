@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { CloseButton } from "@/components/ui/close-button";
 import type { ListingDTO } from "@/services/mappers";
 
 export type HostReservation = {
@@ -69,12 +70,14 @@ export function WorkspaceDialog({
   onClose,
   dark = false,
   maxWidth = "max-w-md",
+  variant = "default",
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   dark?: boolean;
   maxWidth?: string;
+  variant?: "default" | "listing-filter";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -125,7 +128,7 @@ export function WorkspaceDialog({
   }, []);
   return (
     <ModalOverlay
-      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : "items-center"} justify-center bg-black/30 p-4 backdrop-blur-xs`}
+      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : "items-center"} justify-center ${variant === "listing-filter" ? "bg-black/10 p-6" : "bg-black/30 p-4 backdrop-blur-xs"}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -136,19 +139,16 @@ export function WorkspaceDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`max-h-[88dvh] w-full ${maxWidth} overflow-y-auto rounded-2xl p-6 shadow-2xl outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
+        className={`${variant === "listing-filter" ? "max-h-[calc(100dvh-48px)] rounded-[12px] p-6 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:rounded-[28px]" : "max-h-[88dvh] rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} overflow-y-auto overscroll-contain outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
       >
-        <div className="mb-5 flex items-center justify-between gap-3 border-b border-zinc-100 dark:border-white/10 pb-4">
-          <h2 id={titleId} className="text-lg font-semibold tracking-tight">
+        <div className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}>
+          <h2 id={titleId} className={variant === "listing-filter" ? "text-lg font-normal leading-7 sm:font-medium" : "text-lg font-semibold tracking-tight"}>
             {title}
           </h2>
-          <button
+          <CloseButton
             onClick={onClose}
-            aria-label="Close dialog"
-            className="flex size-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-700 transition-colors"
-          >
-            ✕
-          </button>
+            className={dark ? "text-white hover:bg-white/10" : ""}
+          />
         </div>
         {children}
       </div>

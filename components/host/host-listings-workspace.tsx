@@ -67,13 +67,21 @@ const CANCELLATION_POLICIES = [
   { id: "SUPER_STRICT", label: "Super Strict: 50% refund up to 30 days before check-in" },
 ];
 
-export function HostListingsWorkspace({ initialListings }: { initialListings: ListingDTO[] }) {
+export function HostListingsWorkspace({
+  initialListings,
+  initialShowSearch = false,
+  initialSearchQuery = "",
+}: {
+  initialListings: ListingDTO[];
+  initialShowSearch?: boolean;
+  initialSearchQuery?: string;
+}) {
   const router = useRouter();
   const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const [activeTab, setActiveTab] = useState<string>("ALL");
-  const [showSearch, setShowSearch] = useState(false);
+  const [showSearch, setShowSearch] = useState(initialShowSearch);
   const [compactGrid, setCompactGrid] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
 
   // Editor Modal State
@@ -375,7 +383,7 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
       <HostSubNav activeTab="listing" />
 
       {/* ── 2. MAIN CONTENT AREA ── */}
-      <main className="listing-main min-w-0 flex-1 pt-16 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
+      <main className="listing-main min-w-0 flex-1 pt-7.5 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
         <Container className="max-sm:px-6">
           {/* Toast Alert */}
           {toastMsg && (
@@ -385,74 +393,333 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
             </div>
           )}
 
-          {/* Page Title & Mobile Action Icons */}
-          <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:mb-9 lg:mb-12">
-            <h1 className="min-w-0 text-[22px] leading-[1.15] font-medium tracking-[-0.025em] sm:text-[40px] lg:text-[48px]">
-              <span className="sm:hidden">Your listing</span>
-              <span className="hidden sm:inline">Your listings</span>
-            </h1>
-
-            {/* Right Mobile Action Icons (Search, Filter, Plus) */}
-            <div className="flex shrink-0 items-center gap-2">
-              <button type="button" aria-label="Search listings" aria-expanded={showSearch} onClick={() => setShowSearch(!showSearch)} className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5] sm:hidden">
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="10.5" cy="10.5" r="7" /><path d="m16 16 5 5" /></svg>
-              </button>
-              <button type="button" aria-label="Toggle compact listing layout" aria-pressed={compactGrid} onClick={() => setCompactGrid(!compactGrid)} className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5] sm:hidden">
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="4" y="3" width="16" height="4" rx="1" /><rect x="4" y="11" width="6" height="10" rx="1" /><rect x="14" y="11" width="6" height="6" rx="1" /></svg>
-              </button>
+          {/* Mobile Search Bar Row (When search is active on mobile - matches listing-search-mobile.jpg) */}
+          {showSearch ? (
+            <div className="mb-8 flex items-center gap-3 sm:hidden">
+              <div className="relative flex-1">
+                <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#1F1F1F"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="10.5" cy="10.5" r="7" />
+                    <path d="m16 16 5 5" />
+                  </svg>
+                </div>
+                <input
+                  type="search"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder=""
+                  aria-label="Search listings"
+                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F]"
+                />
+              </div>
               <button
                 type="button"
-                onClick={handleOpenCreate}
-                disabled={pending}
-                className="inline-flex sm:hidden items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs"
-                title="Create New Listing"
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchQuery("");
+                }}
+                className="flex h-11 shrink-0 items-center justify-center rounded-full border border-[#727272] bg-white px-6 font-['Poppins'] text-base font-normal text-[#717171] transition-colors hover:bg-zinc-50 active:scale-95 cursor-pointer"
               >
-                +
-              </button>
-              <button
-                type="button"
-                onClick={handleOpenCreate}
-                disabled={pending}
-                className="hidden sm:inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-5 py-2.5 transition-all shadow-2xs active:scale-95"
-              >
-                + Create New Listing
+                Cancel
               </button>
             </div>
-          </div>
+          ) : (
+            /* Mobile Title & Action Icons (When search is closed on mobile) */
+            <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:hidden">
+              <h1 className="min-w-0 text-[22px] leading-[1.15] font-medium tracking-[-0.025em]">
+                Your listing
+              </h1>
 
-          {showSearch && (
-            <div className="mb-6 sm:hidden">
-              <input aria-label="Search listings by name or city" placeholder="Search listings" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="w-full rounded-full border border-zinc-300 px-4 py-3 text-base outline-offset-2" />
-            </div>
-          )}
-
-          {/* Property Cards Grid */}
-          {filteredListings.length === 0 && searchQuery ? (
-            <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
-          ) : filteredListings.length === 0 ? (
-            <div className={`grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-9 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-9`}>
-              {["listing-img-01.png", "listing-img-02.png", "listing-img-03.png", null].map((photo, index) => (
+              <div className="flex shrink-0 items-center gap-2">
                 <button
-                  key={photo ?? "placeholder"}
+                  type="button"
+                  aria-label="Search listings"
+                  aria-expanded={false}
+                  onClick={() => setShowSearch(true)}
+                  className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5]"
+                >
+                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                    <circle cx="10.5" cy="10.5" r="7" />
+                    <path d="m16 16 5 5" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Toggle compact listing layout"
+                  aria-pressed={compactGrid}
+                  onClick={() => setCompactGrid(!compactGrid)}
+                  className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5]"
+                >
+                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                    <rect x="4" y="3" width="16" height="4" rx="1" />
+                    <rect x="4" y="11" width="6" height="10" rx="1" />
+                    <rect x="14" y="11" width="6" height="6" rx="1" />
+                  </svg>
+                </button>
+                <button
                   type="button"
                   onClick={handleOpenCreate}
                   disabled={pending}
-                  aria-label={`Create a new listing from preview ${index + 1}`}
-                  className="group min-w-0 text-left rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs"
+                  title="Create New Listing"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Desktop Title & Action (Always shown on sm: and up) */}
+          <div className="listing-title mb-8 hidden items-center justify-between gap-3 sm:mb-9 sm:flex lg:mb-12">
+            <h1 className="min-w-0 font-medium tracking-[-0.025em] sm:text-[40px] lg:text-[48px] leading-[1.15]">
+              Your listings
+            </h1>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              disabled={pending}
+              className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-base px-5 py-2.5 transition-all shadow-2xs active:scale-95"
+            >
+              + Create New Listing
+            </button>
+          </div>
+
+          {/* Mobile Search View (100% matches listing-search-mobile.jpg) */}
+          {showSearch && (
+            <div className="sm:hidden">
+              {filteredListings.length === 0 && searchQuery ? (
+                <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
+              ) : filteredListings.length === 0 ? (
+                <div className="flex flex-col space-y-5">
+                  {[
+                    { photo: "listing-img-01.png", alt: "Bright home office with an orange desk" },
+                    { photo: "listing-img-02.png", alt: "Light-filled living room with neutral furnishings" },
+                    { photo: "listing-img-03.png", alt: "Green-paneled lounge with a pink sofa" },
+                    { photo: null, alt: "Property placeholder" },
+                  ].map((item, index) => (
+                    <button
+                      key={item.photo ?? `search-preview-${index}`}
+                      type="button"
+                      onClick={handleOpenCreate}
+                      disabled={pending}
+                      aria-label={`Create a new listing from preview ${index + 1}`}
+                      className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                    >
+                      <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
+                        {item.photo ? (
+                          <Image
+                            src={`/images/listing/${item.photo}`}
+                            alt={item.alt}
+                            fill
+                            sizes="110px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-[#D9D9D9]" />
+                        )}
+                        <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
+                          <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
+                        </span>
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
+                        <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
+                          Property name
+                        </h3>
+                        <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
+                          Address, Country
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-5">
+                  {filteredListings.map((item, index) => {
+                    const photos = Array.isArray(item.photos) ? item.photos : [];
+                    const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
+                    const coverPhoto = photos[0] || fallbackPhoto;
+                    const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+
+                    return (
+                      <Link
+                        key={item.id}
+                        href={
+                          item.status === "DRAFT"
+                            ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
+                            : `/host/listings/${item.id}`
+                        }
+                        className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                      >
+                        <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
+                          {coverPhoto ? (
+                            <img
+                              src={coverPhoto}
+                              alt={item.title || "Property name"}
+                              onError={(event) => {
+                                const image = event.currentTarget;
+                                if (image.getAttribute("src") !== fallbackPhoto) {
+                                  image.src = fallbackPhoto;
+                                }
+                              }}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-[#D9D9D9]" />
+                          )}
+                          <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
+                            <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
+                          </span>
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
+                          <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
+                            {item.title || "Property name"}
+                          </h3>
+                          <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
+                            {item.city || item.country
+                              ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
+                              : "Address, Country"}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
+          <div className={showSearch ? "hidden sm:block" : "block"}>
+            {filteredListings.length === 0 && searchQuery ? (
+              <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
+            ) : filteredListings.length === 0 ? (
+              <div className={`grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
+                {["listing-img-01.png", "listing-img-02.png", "listing-img-03.png", null].map((photo, index) => (
+                  <button
+                    key={photo ?? "placeholder"}
+                    type="button"
+                    onClick={handleOpenCreate}
+                    disabled={pending}
+                    aria-label={`Create a new listing from preview ${index + 1}`}
+                    className="group min-w-0 text-left rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
+                  >
+                    <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                      {photo && (
+                        <Image
+                          src={`/images/listing/${photo}`}
+                          alt={["Bright home office with an orange desk", "Light-filled living room with neutral furnishings", "Green-paneled lounge with a pink sofa"][index]}
+                          fill
+                          sizes="(min-width: 1600px) 375px, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+                        />
+                      )}
+                      <span className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                        <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
+                        Listed
+                      </span>
+                    </div>
+                    <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                      <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
+                      <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
+                {filteredListings.map((item, index) => {
+                  const photos = Array.isArray(item.photos) ? item.photos : [];
+                  const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
+                  const coverPhoto = photos[0] || fallbackPhoto;
+                  const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="group relative min-w-0 text-left"
+                    >
+                      {/* Photo Container */}
+                      <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                        {coverPhoto ? (
+                          <img
+                            src={coverPhoto}
+                            alt={item.title}
+                            onError={(event) => {
+                              const image = event.currentTarget;
+                              if (image.getAttribute("src") !== fallbackPhoto) {
+                                image.src = fallbackPhoto;
+                              }
+                            }}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-[#f1f1f1]" />
+                        )}
+
+                        {/* White Pill Badge matching screenshot */}
+                        <div className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                          <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`}></span>
+                          {isListed ? "Listed" : "Action Required"}
+                        </div>
+
+                        {/* Delete Action Icon Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setListingToDelete(item);
+                            setShowDeleteModal(true);
+                          }}
+                          title="Delete Property Listing"
+                          className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+
+                      {/* Below Card Information */}
+                      <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                        <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
+                          <Link
+                            href={
+                              item.status === "DRAFT"
+                                ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
+                                : `/host/listings/${item.id}`
+                            }
+                            className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
+                          >
+                            {item.title || "Property name"}
+                          </Link>
+                        </h3>
+                        <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
+                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={handleOpenCreate}
+                  disabled={pending}
+                  aria-label="Create a new listing"
+                  className="min-w-0 rounded-[22px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
                 >
                   <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                    {photo && (
-                      <Image
-                        src={`/images/listing/${photo}`}
-                        alt={["Bright home office with an orange desk", "Light-filled living room with neutral furnishings", "Green-paneled lounge with a pink sofa"][index]}
-                        fill
-                        sizes="(min-width: 1600px) 375px, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                        className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
-                      />
-                    )}
-                    <span className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                      <span className="size-2 shrink-0 rounded-full bg-[#69ff00]" />
-                      listed
+                    <span className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                      <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
+                      Listed
                     </span>
                   </div>
                   <div className="px-0 pt-3 sm:px-3 lg:pt-6">
@@ -460,106 +727,14 @@ export function HostListingsWorkspace({ initialListings }: { initialListings: Li
                     <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
                   </div>
                 </button>
-              ))}
-            </div>
-          ) : (
-            <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-9 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-9`}>
-              {filteredListings.map((item, index) => {
-                const photos = Array.isArray(item.photos) ? item.photos : [];
-                const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
-                const coverPhoto = photos[0] || fallbackPhoto;
-                const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
-
-                return (
-                  <div
-                    key={item.id}
-                    className="group relative min-w-0 text-left"
-                  >
-                    {/* Photo Container */}
-                    <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                      {coverPhoto ? (
-                        <img
-                          src={coverPhoto}
-                          alt={item.title}
-                          onError={(event) => {
-                            const image = event.currentTarget;
-                            if (image.getAttribute("src") !== fallbackPhoto) {
-                              image.src = fallbackPhoto;
-                            }
-                          }}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-[#f1f1f1]" />
-                      )}
-
-                      {/* White Pill Badge matching screenshot */}
-                      <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                        <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#69ff00]" : "bg-rose-500"}`}></span>
-                        {isListed ? "listed" : "action required"}
-                      </div>
-
-                      {/* Delete Action Icon Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setListingToDelete(item);
-                          setShowDeleteModal(true);
-                        }}
-                        title="Delete Property Listing"
-                        className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-
-                    {/* Below Card Information */}
-                    <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                      <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
-                        <Link
-                          href={
-                            item.status === "DRAFT"
-                              ? `/host/listings/new?type=${item.hostingType}&draftId=${item.id}`
-                              : `/host/listings/${item.id}`
-                          }
-                          className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
-                        >
-                          {item.title || "Property name"}
-                        </Link>
-                      </h3>
-                      <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
-                        {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              <button
-                type="button"
-                onClick={handleOpenCreate}
-                disabled={pending}
-                aria-label="Create a new listing"
-                className="min-w-0 rounded-[22px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
-              >
-                <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                  <span className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                    <span className="size-2 shrink-0 rounded-full bg-[#69ff00]" />
-                    listed
-                  </span>
-                </div>
-                <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                  <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
-                  <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
-                </div>
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </Container>
       </main>
 
       {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
-      <div className="hidden sm:block"><Footer /></div>
+      <Footer />
 
       <BecomeHostModal
         isOpen={becomeHostModalOpen}

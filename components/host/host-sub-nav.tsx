@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "../ui";
 import Image from "next/image";
+import styles from "./host-mobile-nav.module.css";
 
 export interface HostSubNavProps {
   activeTab?: "today" | "calendar" | "listing" | "messages";
@@ -169,13 +170,20 @@ export function HostSubNav({
     },
   ];
 
+  const mobileActiveIndex = Math.max(0, tabs.findIndex((tab) => tab.id === activeTab));
+  const notchX = 81.9 + mobileActiveIndex * 70.2;
+
   return (
     <>
       {/* Mobile Bottom Navigation */}
       <nav
         aria-label="Mobile host navigation"
-        className="fixed inset-x-0 bottom-0 z-40 flex h-[calc(84px+env(safe-area-inset-bottom))] items-start justify-evenly bg-[#FCDF9C] px-5 pb-[env(safe-area-inset-bottom)] sm:hidden shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+        className={styles.nav}
       >
+        <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
+          <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
+        </svg>
+        <div className={styles.tabs}>
         {tabs.map((tab) => {
           const selected = activeTab === tab.id;
           return (
@@ -184,27 +192,22 @@ export function HostSubNav({
               href={tab.href}
               aria-label={tab.label}
               aria-current={selected ? "page" : undefined}
-              className="flex min-w-14 flex-col items-center gap-1 text-xs text-[#1F1F1F] focus-visible:outline-2"
+              className={`${styles.tab} ${selected ? styles.active : ""}`}
             >
               <span
-                className={`flex size-11 items-center justify-center rounded-full border border-[#727272] ${
-                  selected
-                    ? "-mt-5 size-14 border-[6px] border-white bg-[#FCDF9C] shadow-sm text-[#1F1F1F]"
-                    : "mt-3 bg-white text-[#727272]"
-                }`}
+                className={styles.iconCircle}
               >
                 {tab.icon}
               </span>
               <span
-                className={`font-['Poppins'] text-[11px] ${
-                  selected ? "sr-only font-semibold text-[#1F1F1F]" : "font-normal text-[#727272]"
-                }`}
+                className={styles.label}
               >
                 {tab.label}
               </span>
             </Link>
           );
         })}
+        </div>
       </nav>
 
       {/* Desktop Sub Navigation matching nav bar.jpg */}

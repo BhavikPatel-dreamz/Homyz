@@ -203,20 +203,18 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
   const actualReservations = bookings.filter(
     (b) =>
       b.status !== "CANCELLED" &&
-      (filters.length === 0 || filters.includes(b.listingId)) &&
       (tab === "today"
         ? b.startDate.slice(0, 10) === today || b.endDate.slice(0, 10) === today
         : b.startDate.slice(0, 10) > today),
   );
 
-  const reservations =
-    actualReservations.length > 0
+  const reservations = (
+    bookings.length > 0
       ? actualReservations
-      : filters.length === 0
-        ? tab === "today"
-          ? SAMPLE_TODAY_RESERVATIONS
-          : SAMPLE_UPCOMING_RESERVATIONS
-        : [];
+      : tab === "today"
+        ? SAMPLE_TODAY_RESERVATIONS
+        : SAMPLE_UPCOMING_RESERVATIONS
+  ).filter((booking) => filters.length === 0 || filters.includes(booking.listingId));
 
   const effectiveListings = listings.length > 0 ? listings : Object.values(DEMO_LISTINGS);
   const selectedListing =
@@ -233,10 +231,10 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
         filterActive={filters.length > 0}
       />
 
-      <main className="w-full px-6 pb-24 pt-8 sm:pt-10">
+      <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
         <Container>
           {/* Toggle & Mobile Filter Bar */}
-          <div className="mb-8 pb-8 inline-flex items-center justify-between sm:mb-13 border-b border-[#1F1F1F]">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:w-fit sm:pb-7">
             {/* Reservation Period Pill Switcher */}
             <div
               className="flex items-center gap-2"
@@ -247,9 +245,9 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 role="tab"
                 aria-selected={tab === "today"}
                 onClick={() => setTab("today")}
-                className={`rounded-full px-6 py-2.5 text-sm sm:text-base font-medium transition-all duration-300 ease-in-out font-['Poppins'] ${tab === "today"
+                className={`rounded-full px-4 py-3 text-base sm:px-4.25 sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${tab === "today"
                     ? "bg-[#1F1F1F] text-white shadow-xs"
-                    : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50"
+                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                   }`}
               >
                 Today
@@ -258,9 +256,9 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 role="tab"
                 aria-selected={tab === "upcoming"}
                 onClick={() => setTab("upcoming")}
-                className={`rounded-full px-6 py-2.5 text-sm sm:text-base font-medium transition-all duration-300 ease-in-out font-['Poppins'] ${tab === "upcoming"
+                className={`rounded-full px-4 py-3 text-base sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${tab === "upcoming"
                     ? "bg-[#1F1F1F] text-white shadow-xs"
-                  : "bg-white text-zinc-700 border border-zinc-200 hover:bg-[#1F1F1F] hover:text-white"
+                  : "bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F]"
                   }`}
               >
                 Upcoming
@@ -275,7 +273,7 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 setDraft(filters);
                 setFiltersOpen(true);
               }}
-              className={`flex size-11 items-center justify-center rounded-2xl border sm:hidden transition-all duration-300 ease-in-out ${filters.length ? "bg-[#1F1F1F] text-white border-zinc-900" : "bg-white border-zinc-200 text-zinc-700"
+              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${filters.length ? "bg-[#1F1F1F] text-white border-zinc-900" : "bg-[#F3F4F5] text-[#1F1F1F]"
                 }`}
             >
               <svg
@@ -301,14 +299,14 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
           </div>
 
           {/* Section Headline */}
-          <h1 className="mb-8 font-['Poppins'] text-[28px] sm:text-[36px] font-semibold text-[#1F1F1F] tracking-normal">
+          <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
             You have {reservations.length} {tab === "upcoming" ? "upcoming " : ""}
             {reservations.length === 1 ? "reservation" : "reservations"}
           </h1>
 
           {/* Reservation Cards Flex Row matching Figma */}
           {reservations.length > 0 ? (
-            <div className="flex flex-row items-center gap-[24px] overflow-x-auto pb-6 max-w-full xl:overflow-visible">
+            <div className="grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
               {reservations.map((b, index) => {
                 const listing =
                   listings.find((l) => l.id === b.listingId) ||
@@ -366,21 +364,21 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                         setSelected(b);
                       }
                     }}
-                    className={`group relative flex h-[362px] w-[362px] shrink-0 flex-col items-center justify-center rounded-[20px] transition-colors duration-300 ease-in-out cursor-pointer select-none font-['Poppins'] ${isSelected ? "bg-[#FCDF9C]" : "bg-white hover:bg-[#FCDF9C]"
+                    className={`group relative flex min-h-[330px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-8 sm:min-h-[362px] sm:rounded-[20px] transition-colors duration-300 ease-in-out cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F] font-sans ${isSelected ? "bg-[#FCDF9C]" : "bg-white hover:bg-[#FCDF9C]"
                       }`}
                     style={{
-                      boxShadow: "2px 0px 4px rgba(0, 0, 0, 0.25), 0px 2px 4px rgba(0, 0, 0, 0.25)",
+                      boxShadow: "0 1px 5px rgba(0, 0, 0, 0.20)",
                     }}
                   >
                     {/* Frame 1996663767 */}
                     <div className="relative flex w-[170px] flex-col items-center gap-[32px]">
                       {/* Frame 1996663765: Header (Time + Subtitle) */}
                       <div className="flex flex-col items-center justify-center text-center">
-                        <span className="font-['Poppins'] text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
+                        <span className="font-sans text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
                           {timeDisplay}
                         </span>
                         <span
-                          className={`font-['Poppins'] text-[14px] font-normal leading-[21px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
+                          className={`font-sans text-[14px] font-normal leading-[21px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
                             }`}
                         >
                           {subtitleDisplay}
@@ -416,7 +414,7 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
 
                           {/* Avatar Badge: Frame 1996663769 */}
                           <div className="absolute -top-[20px] left-1/2 flex h-[40px] w-[40px] -translate-x-1/2 items-center justify-center rounded-full border border-black bg-white z-10 shadow-xs">
-                            <span className="font-['Poppins'] text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
+                            <span className="font-sans text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
                               {badgeLetter}
                             </span>
                           </div>
@@ -424,11 +422,11 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
 
                         {/* Property name, Location */}
                         <div
-                          className={`flex h-[36px] w-[112px] flex-col items-center justify-center text-center font-['Poppins'] text-[12px] font-normal leading-[18px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
+                          className={`flex min-h-[36px] w-full min-w-0 flex-col items-center justify-center text-center font-sans text-[12px] font-normal leading-[18px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
                             }`}
                         >
-                          <span className="truncate max-w-full">Property name,</span>
-                          <span className="truncate max-w-full">Location</span>
+                          <span className="line-clamp-2 max-w-full break-words">{listing.title},</span>
+                          <span className="line-clamp-2 max-w-full break-words">{[listing.district, listing.city].filter(Boolean).join(", ") || "Location"}</span>
                         </div>
 
                         {/* Action Button: slide */}
@@ -493,19 +491,24 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
             <WorkspaceDialog
               title="Filter listings"
               onClose={() => setFiltersOpen(false)}
-              maxWidth="max-w-md"
+              maxWidth="max-w-[520px]"
+              variant="listing-filter"
             >
-              <div className="space-y-3 py-1">
+              <div className="space-y-1.5 sm:space-y-2 sm:py-1">
                 {effectiveListings.map((l) => (
                   <label
                     key={l.id}
-                    className="flex cursor-pointer items-center gap-4 rounded-xl p-2 hover:bg-zinc-50 transition-colors"
+                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl hover:bg-zinc-50 transition-colors sm:min-h-[68px] sm:gap-5 sm:py-1"
                   >
-                    <PropertyPhoto
-                      listing={l}
-                      className="size-12 rounded-full border border-zinc-200 object-cover"
-                    />
-                    <span className="flex-1 text-sm font-medium text-zinc-900 truncate">
+                    {l.photos[0] ? (
+                      <PropertyPhoto
+                        listing={l}
+                        className="size-12 shrink-0 rounded-full border border-[#727272] object-cover sm:size-[60px]"
+                      />
+                    ) : (
+                      <span aria-hidden="true" className="size-12 shrink-0 rounded-full border border-[#727272] bg-[#F3F4F5] sm:size-[60px]" />
+                    )}
+                    <span className="min-w-0 flex-1 break-words text-sm font-normal leading-5 text-[#1F1F1F] sm:text-base sm:leading-6">
                       {l.title}
                     </span>
                     <input
@@ -518,17 +521,17 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                             : draft.filter((id) => id !== l.id),
                         )
                       }
-                      className="size-5 rounded-full border-zinc-300 accent-[#1F1F1F]"
+                      className="size-[22px] shrink-0 appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[6px] checked:bg-[#FCDF9C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
                     />
                   </label>
                 ))}
               </div>
 
-              <div className="mt-8 flex items-center justify-between border-t border-zinc-100 pt-4">
+              <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#D7D7D7] pt-4 sm:mt-5 sm:justify-start sm:gap-6 sm:pt-8">
                 <button
                   type="button"
                   onClick={() => setDraft([])}
-                  className="text-xs font-medium text-zinc-500 underline hover:text-zinc-900"
+                  className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-zinc-900"
                 >
                   Clear filters
                 </button>
@@ -538,7 +541,7 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                     setFilters(draft);
                     setFiltersOpen(false);
                   }}
-                  className="rounded-full bg-[#FDE29B] hover:bg-[#fed673] px-8 py-2.5 text-xs font-bold text-zinc-900 transition-colors shadow-2xs"
+                  className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
                 >
                   Apply
                 </button>
