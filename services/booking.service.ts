@@ -109,7 +109,13 @@ export async function getBookingQuote(opts: {
   }
 
   const basePrice = listing.price; // cents
-  const weekendPrice = listing.weekendPrice && listing.weekendPrice > 0 ? listing.weekendPrice : null;
+  // Smart pricing owns the nightly rate. Manual weekend and long-stay
+  // adjustments remain stored for a future manual-pricing switch, but are not
+  // applied to a smart-priced quote.
+  const usesManualAdjustments = listing.smartPricing !== true;
+  const weekendPrice = usesManualAdjustments && listing.weekendPrice && listing.weekendPrice > 0
+    ? listing.weekendPrice
+    : null;
   const cleaningFee = listing.cleaningFee || 0; // cents
 
   let weekdayNights = 0;
@@ -139,7 +145,7 @@ export async function getBookingQuote(opts: {
     });
   }
 
-  const discountConfig = listing.discounts && typeof listing.discounts === "object"
+  const discountConfig = usesManualAdjustments && listing.discounts && typeof listing.discounts === "object"
     ? listing.discounts as Record<string, unknown> : {};
   const discountKey = nights >= 28 ? "monthly" : nights >= 7 ? "weekly" : null;
   const discountEntry = discountKey && discountConfig[discountKey] && typeof discountConfig[discountKey] === "object"

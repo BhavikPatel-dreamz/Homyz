@@ -5,6 +5,7 @@ import React, { useState, useTransition, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { updateProfileAction } from "@/actions/user/updateProfile";
 import {
   uploadTripPhotosAction,
@@ -403,6 +404,10 @@ export function ProfileManagementClient({
 
       if (!saveRes.ok) {
         throw new Error(saveRes.error || "Failed to save updated avatar.");
+      }
+
+      if (session?.user) {
+        await updateSession({ user: { ...session.user, image: data.url } });
       }
 
       setMsg({ tone: "success", text: "Profile image updated and saved." });

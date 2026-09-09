@@ -32,6 +32,11 @@ export async function updateListingAction(id: string, input: unknown) {
     // Ownership (host must own; ADMIN bypasses) is enforced in the service.
     const listing = await listingService.update(actor, id, data);
     revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath("/host/listings/[id]");
+    if (data.propertyType !== undefined || data.listingType !== undefined) {
+      revalidatePath(`/host/listings/${id}/property-type`);
+    }
     revalidatePath("/host/calendar");
     revalidatePath("/host/today");
     return listing;

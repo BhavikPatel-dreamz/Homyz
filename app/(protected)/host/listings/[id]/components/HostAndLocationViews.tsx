@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap, type LocationDetails } from "@/components/ui/real-map";
 import {
@@ -13,6 +14,7 @@ import {
 import { updateProfileAction } from "@/actions/user/updateProfile";
 import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
+import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 
 type CoHost = {
   id: string;
@@ -63,14 +65,32 @@ const LOCATION_FEATURES = [
   ["near_public_transport", "Near public transport"],
   ["near_landmarks", "Near landmarks"],
   ["resort_access", "Resort access"],
+  ["beach_access", "Beach access"],
+  ["lake_access", "Lake access"],
+  ["quiet_neighborhood", "Quiet neighborhood"],
 ] as const;
+
 const SCENIC_VIEWS = [
-  ["city_view", "City view"],
+  ["bay_view", "Bay view"],
+  ["marina_view", "Marina view"],
+  ["beach_view", "Beach view"],
   ["mountain_view", "Mountain view"],
+  ["canal_view", "Canal view"],
   ["ocean_view", "Ocean view"],
+  ["city_skyline_view", "City skyline view"],
+  ["park_view", "Park view"],
+  ["courtyard_view", "Courtyard view"],
+  ["pool_view", "Pool view"],
+  ["desert_view", "Desert view"],
+  ["resort_view", "Resort view"],
   ["garden_view", "Garden view"],
   ["river_view", "River view"],
+  ["golf_course_view", "Golf course view"],
+  ["sea_view", "Sea view"],
+  ["harbor_view", "Harbor view"],
+  ["valley_view", "Valley view"],
   ["lake_view", "Lake view"],
+  ["vineyard_view", "Vineyard view"],
 ] as const;
 function Toggle({
   checked,
@@ -84,10 +104,10 @@ function Toggle({
       type="button"
       aria-pressed={checked}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-rose-500" : "bg-zinc-300"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-[#E9C979]" : "bg-zinc-300"}`}
     >
       <span
-        className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
+        className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
       />
     </button>
   );
@@ -115,13 +135,7 @@ function initials(name: string | null) {
     .toUpperCase();
 }
 export function HostAndLocationViews(props: Props) {
-  if (props.activeSection === "location")
-    return (
-      <>
-        <EnhancedLocationView {...props} />
-        <LocationContextEditor {...props} />
-      </>
-    );
+  if (props.activeSection === "location") return <LocationView {...props} />;
   if (props.activeSection === "about-host") return <AboutHostView {...props} />;
   if (props.activeSection === "co-host") return <CoHostView {...props} />;
   return null;
@@ -427,21 +441,36 @@ function LocationView({
         open={open === "features"}
         onToggle={() => setOpen(open === "features" ? "" : "features")}
       >
-        {LOCATION_FEATURES.map(([id, label]) => (
-          <FeatureToggle
-            key={id}
-            label={label}
-            checked={locationFeatures.includes(id)}
-            onChange={() =>
-              setLocationFeatures(
-                locationFeatures.includes(id)
-                  ? locationFeatures.filter((value) => value !== id)
-                  : [...locationFeatures, id],
-              )
-            }
-          />
-        ))}
-        <SaveButton saving={isSaving} onSave={save} />
+        <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-8">
+          {LOCATION_FEATURES.map(([id, label]) => (
+            <div key={id} className="py-2.5 pr-2">
+              <div className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[15px] font-normal leading-5 text-[#1F1F1F]">{label}</div>
+                  <div className="mt-1 text-xs leading-4 text-zinc-400">Lorem ipsum integer habitant</div>
+                </div>
+                <Toggle
+                  checked={locationFeatures.includes(id)}
+                  onChange={() =>
+                    setLocationFeatures(
+                      locationFeatures.includes(id)
+                        ? locationFeatures.filter((value) => value !== id)
+                        : [...locationFeatures, id],
+                    )
+                  }
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 pt-3">
+          <button type="button" onClick={save} disabled={isSaving} className="rounded-full bg-[#F5D98C] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60">
+            {isSaving ? "Saving…" : "Save"}
+          </button>
+          <button type="button" onClick={() => setOpen("")} className="rounded-full border border-zinc-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100">
+            Cancel
+          </button>
+        </div>
       </Card>
       <Card
         title="Neighborhood description"
@@ -484,7 +513,7 @@ function LocationView({
         open={open === "views"}
         onToggle={() => setOpen(open === "views" ? "" : "views")}
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-6">
           {SCENIC_VIEWS.map(([id, label]) => (
             <FeatureToggle
               key={id}
@@ -496,7 +525,14 @@ function LocationView({
             />
           ))}
         </div>
-        <SaveButton saving={isSaving} onSave={save} />
+        <div className="flex items-center gap-3 pt-1">
+          <button type="button" onClick={save} disabled={isSaving} className="rounded-full bg-[#F5D98C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60">
+            {isSaving ? "Saving…" : "Save"}
+          </button>
+          <button type="button" onClick={() => setOpen("")} className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100">
+            Cancel
+          </button>
+        </div>
       </Card>
     </div>
   );
@@ -517,13 +553,13 @@ function Card({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between p-5 text-left"
+        className="flex w-full items-center justify-between px-4 py-3.5 text-left"
       >
-        <span className="text-sm font-semibold">{title}</span>
-        <span>{open ? "−" : "+"}</span>
+        <span className="text-sm font-semibold text-[#1F1F1F]">{title}</span>
+        <span className="text-base text-zinc-500">{open ? "−" : "+"}</span>
       </button>
       {open && (
-        <div className="space-y-4 border-t border-zinc-100 p-5">{children}</div>
+        <div className="space-y-4 border-t border-zinc-100 p-4">{children}</div>
       )}
     </section>
   );
@@ -538,8 +574,10 @@ function FeatureToggle({
   onChange: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-sm text-zinc-700">{label}</span>
+    <div className="flex items-center justify-between gap-3 border-b border-zinc-200 py-3.5 last:border-b-0">
+      <div className="min-w-0 flex-1">
+        <span className="block text-sm text-zinc-700">{label}</span>
+      </div>
       <Toggle checked={checked} onChange={onChange} />
     </div>
   );
@@ -622,8 +660,13 @@ function ProfilePromptIcon() {
 
 function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
   const router = useRouter();
+  const { data: session, update: updateSession } = useSession();
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const raw = hostProfile.publicProfile ?? {};
+  const [publicProfile, setPublicProfile] = useState<Record<string, unknown>>(
+    hostProfile.publicProfile ?? {},
+  );
+  const [isStampEditorOpen, setIsStampEditorOpen] = useState(false);
+  const raw = publicProfile;
   const [bio, setBio] = useState(String(raw.bio ?? ""));
   const [details, setDetails] = useState<ProfileDetails>(() => profileDetailsFrom(raw));
   const [interests, setInterests] = useState<string[]>(
@@ -636,10 +679,12 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editingInterests, setEditingInterests] = useState(false);
+  const [interestDraft, setInterestDraft] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const next = hostProfile.publicProfile ?? {};
+    setPublicProfile(next);
     setBio(String(next.bio ?? ""));
     setDetails(profileDetailsFrom(next));
     setInterests(Array.isArray(next.interests) ? next.interests.filter((v): v is string => typeof v === "string") : []);
@@ -651,6 +696,7 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
     ? raw.selectedStamps.filter((v): v is string => typeof v === "string")
     : [];
   const selectedStamp = BUILTIN_TRAVEL_STAMPS.find((stamp) => selectedStamps.includes(stamp.id));
+  const visibleSelectedStamps = selectedStamps.slice(0, 4);
 
   const save = async () => {
     setSaving(true);
@@ -700,6 +746,9 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
       if (!result.ok) throw new Error(result.error || "Could not save the profile photo.");
       setAvatarUrl(data.url);
       onHostProfileSaved(raw, { image: data.url });
+      if (session?.user) {
+        await updateSession({ user: { ...session.user, image: data.url } });
+      }
       setMessage("Profile photo updated.");
       router.refresh();
     } catch (error: unknown) {
@@ -755,29 +804,159 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
           </div>
           <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} />
         </div>
-        <div className="flex min-h-32 items-center justify-between gap-4 py-4">
-          {selectedStamp ? <TravelStampGraphic stamp={selectedStamp} size="md" /> : <p className="text-sm text-zinc-500">{selectedStamps.length ? `${selectedStamps.length} travel stamp${selectedStamps.length === 1 ? "" : "s"} selected.` : "No travel stamps selected yet."}</p>}
-          <div className="min-w-0 text-right">
-            {selectedStamps.length > 0 && <p className="truncate text-xs text-zinc-500">{selectedStamps.length} selected</p>}
-            <Link href="/profile?tab/profile_management/where_ive_been" className="mt-2 inline-flex rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Edit travel stamps</Link>
+        <div className="flex min-h-32 flex-col gap-4 py-4">
+          <div className="flex items-center gap-3">
+            {selectedStamps.length > 0 ? (
+              <>
+                <div className="flex -space-x-2">
+                  {visibleSelectedStamps.map((stampId) => {
+                    const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
+                    if (!stamp) return null;
+                    return (
+                      <div key={stamp.id} className="rounded-full border border-white bg-white shadow-sm">
+                        <TravelStampGraphic stamp={stamp} size="sm" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-zinc-500">No travel stamps selected yet.</p>
+            )}
           </div>
+          <button
+            type="button"
+            onClick={() => setIsStampEditorOpen(true)}
+            className="inline-flex w-fit rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
+          >
+            Edit travel stamps
+          </button>
         </div>
       </section>
+
+      {isStampEditorOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
+            <div className="mb-4 flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
+              <div>
+                <h3 className="text-lg font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
+                <p className="text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStampEditorOpen(false)}
+                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+              >
+                Close
+              </button>
+            </div>
+            <WhereIveBeenSelector
+              initialSelectedStamps={selectedStamps}
+              initialStampsVisible={stampsVisible}
+              currentPublicProfile={publicProfile}
+              maxStamps={10}
+              isOwner={true}
+              onSaved={(updatedProfile) => {
+                const nextProfile = { ...publicProfile, ...updatedProfile };
+                setPublicProfile(nextProfile);
+                setStampsVisible(updatedProfile.stampsVisible ?? nextProfile.stampsVisible ?? true);
+                onHostProfileSaved(nextProfile as Record<string, unknown>);
+                setIsStampEditorOpen(false);
+              }}
+            />
+          </div>
+        </ModalOverlay>
+      )}
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
         <div className="border-b border-zinc-200 pb-3">
           <h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2>
           <p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p>
         </div>
-        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-          {REFERENCE_INTERESTS.map(([interest, label]) => {
-            const selected = interests.includes(interest);
-            const rowClass = "flex w-full items-center gap-3 border-b border-zinc-200 py-3 text-left text-sm text-[#1F1F1F]";
-            const content = <><span className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs ${selected && editingInterests ? "border-[#1F1F1F] bg-[#1F1F1F] text-white" : "border-zinc-300 text-zinc-500"}`}>{selected && editingInterests ? "✓" : "◫"}</span>{label}</>;
-            return editingInterests ? <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value !== interest) : [...current, interest])} className={`${rowClass} transition-colors hover:text-zinc-600`}>{content}</button> : <div key={interest} className={rowClass}>{content}</div>;
-          })}
+
+        <div className="mt-4 space-y-4">
+          {interests.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {interests.map((interest) => (
+                <button
+                  key={interest}
+                  type="button"
+                  onClick={() => setInterests((current) => current.filter((value) => value !== interest))}
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:border-zinc-300 hover:bg-zinc-100"
+                >
+                  <span>{interest}</span>
+                  <span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500">Suggested interests</p>
+            <div className="flex flex-wrap gap-2">
+              {REFERENCE_INTERESTS.map(([interest, label]) => {
+                const selected = interests.includes(interest) || interests.includes(label);
+                return (
+                  <button
+                    key={interest}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setInterests((current) =>
+                      current.includes(interest)
+                        ? current.filter((value) => value !== interest)
+                        : [...current, interest],
+                    )}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      selected
+                        ? "border-[#1F1F1F] bg-[#1F1F1F] text-white"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              value={interestDraft}
+              onChange={(event) => setInterestDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  const value = interestDraft.trim();
+                  if (!value) return;
+                  setInterests((current) =>
+                    current.some((item) => item.toLowerCase() === value.toLowerCase())
+                      ? current
+                      : [...current, value],
+                  );
+                  setInterestDraft("");
+                }
+              }}
+              placeholder="Add a custom interest"
+              className="min-w-0 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-400 focus:bg-white"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const value = interestDraft.trim();
+                if (!value) return;
+                setInterests((current) =>
+                  current.some((item) => item.toLowerCase() === value.toLowerCase())
+                    ? current
+                    : [...current, value],
+                );
+                setInterestDraft("");
+              }}
+              className="rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
+            >
+              Add
+            </button>
+          </div>
         </div>
-        <button type="button" onClick={() => setEditingInterests((editing) => !editing)} className="mt-4 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">{editingInterests ? "Done editing interests" : "Edit interests"}</button>
       </section>
 
       <div className="flex flex-wrap items-center justify-between gap-3">

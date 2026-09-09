@@ -383,64 +383,66 @@ export function WhereIveBeenSelector({
       )}
 
       {/* Stamps Display Grid — Reference Design Layout */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-zinc-200/80 shadow-2xs">
+      <div className="rounded-3xl border border-zinc-200/80 bg-white p-4 shadow-2xs sm:p-6">
         {allStamps.length === 0 ? (
           <div className="py-12 text-center text-xs text-zinc-400">
             No travel stamps available. Click &quot;+ Add Stamp&quot; to search for your
             first destination!
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center justify-items-center">
-            {allStamps.map((stamp) => {
-              const isSelected = selectedStamps.includes(stamp.id);
-              const isDisabled = !isOwner || (isLimitReached && !isSelected);
+          <div className="max-h-[420px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {allStamps.map((stamp) => {
+                const isSelected = selectedStamps.includes(stamp.id);
+                const isDisabled = !isOwner || (isLimitReached && !isSelected);
 
-              return (
-                <div
-                  key={stamp.id}
-                  onClick={() => !isDisabled && handleToggleStamp(stamp.id)}
-                  className={`group relative p-2 transition-all flex flex-col items-center select-none ${
-                    isDisabled
-                      ? "cursor-not-allowed opacity-40"
-                      : "cursor-pointer hover:scale-105"
-                  }`}
-                >
-                  {/* Selected Checkmark Badge */}
-                  {isSelected && (
-                    <div className="absolute -top-1 -right-1 z-10 w-5 h-5 rounded-full bg-[#FA595D] text-white flex items-center justify-center text-[10px] font-semibold shadow-sm">
-                      ✓
-                    </div>
-                  )}
+                return (
+                  <div
+                    key={stamp.id}
+                    onClick={() => !isDisabled && handleToggleStamp(stamp.id)}
+                    className={`group relative flex flex-col items-center justify-center p-2 transition-all select-none ${
+                      isDisabled
+                        ? "cursor-not-allowed opacity-40"
+                        : "cursor-pointer hover:scale-105"
+                    }`}
+                  >
+                    {/* Selected Checkmark Badge */}
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 z-10 w-5 h-5 rounded-full bg-[#FA595D] text-white flex items-center justify-center text-[10px] font-semibold shadow-sm">
+                        ✓
+                      </div>
+                    )}
 
-                  {/* Edit / Delete Overlay for Custom Stamps */}
-                  {stamp.isCustom && isOwner && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={(e) => openEditModal(e, stamp)}
-                        className="w-6 h-6 rounded-full bg-white hover:bg-zinc-100 text-zinc-700 flex items-center justify-center text-[11px] shadow-2xs border border-zinc-200"
-                        title="Edit stamp"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDeleteId(stamp.id);
-                        }}
-                        className="w-6 h-6 rounded-full bg-white hover:bg-rose-500 hover:text-white text-zinc-700 flex items-center justify-center text-[11px] shadow-2xs border border-zinc-200"
-                        title="Delete stamp"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
+                    {/* Edit / Delete Overlay for Custom Stamps */}
+                    {stamp.isCustom && isOwner && (
+                      <div className="absolute left-2 top-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={(e) => openEditModal(e, stamp)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-[11px] text-zinc-700 shadow-2xs hover:bg-zinc-100"
+                          title="Edit stamp"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(stamp.id);
+                          }}
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-[11px] text-zinc-700 shadow-2xs hover:bg-rose-500 hover:text-white"
+                          title="Delete stamp"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
 
-                  <TravelStampGraphic stamp={stamp} size="md" />
-                </div>
-              );
-            })}
+                    <TravelStampGraphic stamp={stamp} size="md" />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

@@ -26,10 +26,13 @@ import {
   canonicalCancellationPolicy,
   canonicalListingType,
   canonicalPropertyType,
+  normalizeAccessibilityFeatureDetails,
   normalizeAccessibilityFeatureIds,
-  propertyTypeLabel,
+  normalizeMostLikeSelection,
+  type AccessibilityFeatureDetail,
 } from "@/lib/constants/listing-enums";
 import { normalizeSlug } from "@/lib/utils/slug";
+import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
 
 function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: "weekly" | "monthly") {
   const entry = discounts?.[period];
@@ -43,9 +46,13 @@ export interface HostListingData {
   title: string;
   description: string;
   price: number; // in cents
+  smartPricing?: boolean;
+  smartPricingMinPrice?: number | null;
+  smartPricingMaxPrice?: number | null;
   published: boolean;
   status: string;
   hostingType: string;
+  placeCategory?: string | null;
   propertyType: string;
   listingType: string;
   latitude?: number | null;
@@ -91,9 +98,11 @@ export interface HostListingData {
   parkingSpaces?: number | null;
   parkingReservation?: boolean | null;
   guestAccess?: string[];
+  languages?: string[];
   safetyEquipment?: string[];
   safetyHazards?: string[];
   accessibilityFeatures?: string[];
+  accessibilityDetails?: AccessibilityFeatureDetail[];
   views?: string[];
   locationFeatures?: string[];
   petsAllowed?: boolean | null;
@@ -133,10 +142,14 @@ export interface HostListingData {
   instantBook: boolean;
   minNights: number;
   maxNights: number;
+  advanceNotice?: string | null;
+  sameDayCutoff?: string | null;
+  allowSameDayRequests?: boolean | null;
   blockedDates: string[];
   cleaningFee: number;
   securityDeposit: number;
   weekendPrice: number | null;
+  weekendPremium?: number | null;
   isPaused: boolean;
   isFeatured: boolean;
   customSlug?: string | null;
@@ -278,7 +291,7 @@ export function HostListingEditorClient({
     };
   });
   const [editHostingType, setEditHostingType] = useState(listing.hostingType || "HOME");
-  const [whichIsMostLike, setWhichIsMostLike] = useState(() => propertyTypeLabel(listing.propertyType || "APARTMENT"));
+  const [whichIsMostLike, setWhichIsMostLike] = useState(() => normalizeMostLikeSelection(listing.placeCategory || listing.propertyType || "APARTMENT"));
   const [editPropertyType, setEditPropertyType] = useState(() => canonicalPropertyType(listing.propertyType));
   const [editListingType, setEditListingType] = useState(() => canonicalListingType(listing.listingType));
   const [buildingFloors, setBuildingFloors] = useState(listing.totalFloors ?? 1);
@@ -373,22 +386,53 @@ export function HostListingEditorClient({
 
   // Pricing & Discounts
   const [editPrice, setEditPrice] = useState(listing.price / 100);
-  const [smartPricing, setSmartPricing] = useState(false);
-  const [weekendPrice, setWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
+  const [smartPricing, setSmartPricing] = useState(Boolean(listing.smartPricing ?? false));
+  const [smartPricingMinPrice, setSmartPricingMinPrice] = useState(() => {
+    const value = listing.smartPricingMinPrice ?? Math.max(0, Math.round((listing.price || 0) * 0.9));
+    return value / 100;
+  });
+  const [smartPricingMaxPrice, setSmartPricingMaxPrice] = useState(() => {
+    const value = listing.smartPricingMaxPrice ?? Math.max(0, Math.round((listing.price || 0) * 1.1));
+    return value / 100;
+  });
+  const [weekendPremium, setWeekendPremium] = useState(() => {
+    const premiumFromListing = listing.weekendPremium ?? deriveWeekendPremium(listing.price, listing.weekendPrice ?? null);
+    return clampWeekendPremium(premiumFromListing);
+  });
+  const [weekendPrice, setWeekendPrice] = useState(() => {
+    const baseCents = Math.round((listing.price || 0) * 100);
+    const derived = computeWeekendPrice(baseCents, weekendPremium);
+    return (listing.weekendPrice ?? derived) / 100;
+  });
+  useEffect(() => {
+    const nextWeekendPrice = computeWeekendPrice(Math.round(editPrice * 100), weekendPremium) / 100;
+    setWeekendPrice(nextWeekendPrice);
+  }, [editPrice, weekendPremium]);
   const [weeklyDiscount, setWeeklyDiscount] = useState(() => discountPercentage(listing.discounts, "weekly"));
   const [monthlyDiscount, setMonthlyDiscount] = useState(() => discountPercentage(listing.discounts, "monthly"));
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
   const [maxNights, setMaxNights] = useState(listing.maxNights || 365);
+  const [advanceNotice, setAdvanceNotice] = useState(listing.advanceNotice || "Same day");
+  const [sameDayCutoff, setSameDayCutoff] = useState(listing.sameDayCutoff || "12:00 AM");
+  const [allowSameDayRequests, setAllowSameDayRequests] = useState(listing.allowSameDayRequests ?? true);
 
   // Photos & Amenities
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
   const [editAmenities, setEditAmenities] = useState<string[]>(() => normalizeAmenities(listing.amenities || []));
+  const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>(() =>
+    Array.isArray(listing.languages) && listing.languages.length > 0
+      ? listing.languages.filter((language) => typeof language === "string" && language.trim().length > 0)
+      : ["en"]
+  );
 
   // Accessibility State (Matches Figma Screenshots #1 & #2)
   const [accessibilityFeatures, setAccessibilityFeatures] = useState<string[]>(() =>
     normalizeAccessibilityFeatureIds(listing.accessibilityFeatures || [])
+  );
+  const [accessibilityDetails, setAccessibilityDetails] = useState<AccessibilityFeatureDetail[]>(() =>
+    normalizeAccessibilityFeatureDetails(listing.accessibilityDetails || [])
   );
   const [expandedAccessibility, setExpandedAccessibility] = useState<string | null>("disabled_parking");
 
@@ -556,6 +600,7 @@ export function HostListingEditorClient({
 
       payload = {
         hostingType: editHostingType,
+        placeCategory: normalizeMostLikeSelection(whichIsMostLike),
         propertyType: propertyTypeValue,
         listingType: listingTypeValue,
         propertySize: propertySize ? parseInt(propertySize, 10) : null,
@@ -580,26 +625,38 @@ export function HostListingEditorClient({
         rooms,
       };
     } else if (sectionToSave === "pricing") {
+      const manualPricing = !smartPricing;
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
-        weekly: {
-          enabled: Number(weeklyDiscount) > 0,
-          percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
-        },
-        monthly: {
-          enabled: Number(monthlyDiscount) > 0,
-          percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
-        },
+        ...(manualPricing ? {
+          weekly: {
+            enabled: Number(weeklyDiscount) > 0,
+            percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
+          },
+          monthly: {
+            enabled: Number(monthlyDiscount) > 0,
+            percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
+          },
+        } : {}),
       };
       payload = {
         price: Math.round(editPrice * 100),
-        weekendPrice: Math.round(weekendPrice * 100),
-        discounts: nextDiscounts,
+        smartPricing,
+        smartPricingMinPrice: smartPricing ? Math.round(Number(smartPricingMinPrice || 0) * 100) : listing.smartPricingMinPrice ?? null,
+        smartPricingMaxPrice: smartPricing ? Math.round(Number(smartPricingMaxPrice || 0) * 100) : listing.smartPricingMaxPrice ?? null,
+        ...(manualPricing ? {
+          weekendPrice: computeWeekendPrice(Math.round(editPrice * 100), weekendPremium),
+          weekendPremium: clampWeekendPremium(weekendPremium),
+          discounts: nextDiscounts,
+        } : {}),
       };
     } else if (sectionToSave === "availability") {
       payload = {
         minNights: Number(minNights),
         maxNights: Number(maxNights),
+        advanceNotice,
+        sameDayCutoff,
+        allowSameDayRequests,
       };
     } else if (sectionToSave === "photos") {
       payload = { photos: editPhotos };
@@ -627,6 +684,10 @@ export function HostListingEditorClient({
         showExactLocation,
         views: selectedViews,
         locationFeatures,
+      };
+    } else if (sectionToSave === "language" || sectionToSave === "languages") {
+      payload = {
+        languages: [...new Set(selectedLanguageIds.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20),
       };
     } else if (sectionToSave === "parking") {
       payload = {
@@ -746,8 +807,12 @@ export function HostListingEditorClient({
         amenities: newAmenitiesList,
       };
     } else if (sectionToSave === "accessibility") {
+      const selectedFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
+      const details = normalizeAccessibilityFeatureDetails(accessibilityDetails)
+        .filter((detail) => selectedFeatures.includes(detail.featureId) && detail.photos.length > 0);
       payload = {
-        accessibilityFeatures: normalizeAccessibilityFeatureIds(accessibilityFeatures),
+        accessibilityFeatures: selectedFeatures,
+        accessibilityDetails: details,
       };
     } else if (sectionToSave === "cancellation-policy") {
       payload = {
@@ -798,6 +863,15 @@ export function HostListingEditorClient({
       setIsSaving(false);
       if (res.ok && res.data) {
         setListing((prev) => ({ ...prev, ...payload }));
+        if (payload.smartPricing !== undefined) {
+          setSmartPricing(Boolean((res.data as any).smartPricing ?? payload.smartPricing));
+        }
+        if (payload.smartPricingMinPrice !== undefined) {
+          setSmartPricingMinPrice((Number((res.data as any).smartPricingMinPrice ?? payload.smartPricingMinPrice ?? 0)) / 100);
+        }
+        if (payload.smartPricingMaxPrice !== undefined) {
+          setSmartPricingMaxPrice((Number((res.data as any).smartPricingMaxPrice ?? payload.smartPricingMaxPrice ?? 0)) / 100);
+        }
         if (payload.amenities !== undefined) {
           const freshAmenities = normalizeAmenities((res.data as any).amenities || payload.amenities);
           setEditAmenities(freshAmenities);
@@ -960,6 +1034,8 @@ export function HostListingEditorClient({
             setEditAmenities={setEditAmenities}
             accessibilityFeatures={accessibilityFeatures}
             setAccessibilityFeatures={setAccessibilityFeatures}
+            accessibilityDetails={accessibilityDetails}
+            setAccessibilityDetails={setAccessibilityDetails}
             expandedAccessibility={expandedAccessibility}
             setExpandedAccessibility={setExpandedAccessibility}
           />
@@ -973,8 +1049,13 @@ export function HostListingEditorClient({
             setEditPrice={setEditPrice}
             smartPricing={smartPricing}
             setSmartPricing={setSmartPricing}
+            smartPricingMinPrice={smartPricingMinPrice}
+            setSmartPricingMinPrice={setSmartPricingMinPrice}
+            smartPricingMaxPrice={smartPricingMaxPrice}
+            setSmartPricingMaxPrice={setSmartPricingMaxPrice}
             weekendPrice={weekendPrice}
-            setWeekendPrice={setWeekendPrice}
+            weekendPremium={weekendPremium}
+            setWeekendPremium={(nextValue) => setWeekendPremium(clampWeekendPremium(nextValue))}
             weeklyDiscount={weeklyDiscount}
             setWeeklyDiscount={setWeeklyDiscount}
             monthlyDiscount={monthlyDiscount}
@@ -983,6 +1064,12 @@ export function HostListingEditorClient({
             setMinNights={setMinNights}
             maxNights={maxNights}
             setMaxNights={setMaxNights}
+            advanceNotice={advanceNotice}
+            setAdvanceNotice={setAdvanceNotice}
+            sameDayCutoff={sameDayCutoff}
+            setSameDayCutoff={setSameDayCutoff}
+            allowSameDayRequests={allowSameDayRequests}
+            setAllowSameDayRequests={setAllowSameDayRequests}
             bookingMethod={bookingMethod}
             setBookingMethod={setBookingMethod}
             setIsTurnOffInstantBookModalOpen={setIsTurnOffInstantBookModalOpen}
@@ -1110,6 +1197,8 @@ export function HostListingEditorClient({
             setParkingReservation={setParkingReservation}
             parkingInstructions={parkingInstructions}
             setParkingInstructions={setParkingInstructions}
+            selectedLanguageIds={selectedLanguageIds}
+            setSelectedLanguageIds={setSelectedLanguageIds}
             listingStatusSetting={listingStatusSetting}
             setListingStatusSetting={setListingStatusSetting}
           />
@@ -1179,10 +1268,18 @@ export function HostListingEditorClient({
           editListingType={editListingType}
           editPropertyType={editPropertyType}
           editPrice={editPrice}
+          smartPricing={smartPricing}
+          smartPricingMinPrice={smartPricingMinPrice}
+          smartPricingMaxPrice={smartPricingMaxPrice}
           weeklyDiscount={weeklyDiscount}
           monthlyDiscount={monthlyDiscount}
           minNights={minNights}
           maxNights={maxNights}
+          advanceNotice={advanceNotice}
+          sameDayCutoff={sameDayCutoff}
+          allowSameDayRequests={allowSameDayRequests}
+          accessibilityFeatures={accessibilityFeatures}
+          accessibilityDetails={accessibilityDetails}
           editGuests={editGuests}
           editDescription={editDescription}
           editAmenities={editAmenities}

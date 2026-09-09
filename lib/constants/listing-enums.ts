@@ -99,6 +99,11 @@ const ACCESSIBILITY_ALIASES: Record<string, string> = {
   "ceiling or mobile hoist": "ceiling_hoist",
 };
 
+export interface AccessibilityFeatureDetail {
+  featureId: string;
+  photos: string[];
+}
+
 const PROPERTY_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   PROPERTY_TYPES.map(({ id, label }) => [id, label])
 );
@@ -134,6 +139,24 @@ export function canonicalPropertyType(value: string | undefined | null): string 
 export function propertyTypeLabel(value: string | undefined | null): string {
   const canonical = canonicalPropertyType(value);
   return PROPERTY_TYPE_LABELS[canonical] ?? canonical.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+export function normalizeMostLikeSelection(value: string | undefined | null): string {
+  const canonical = canonicalPropertyType(value);
+
+  if (["HOUSE", "VILLA", "CABIN", "COTTAGE", "TOWNHOUSE", "GUEST_HOUSE"].includes(canonical)) {
+    return "HOUSE";
+  }
+
+  if (["APARTMENT", "LOFT", "PENTHOUSE", "STUDIO"].includes(canonical)) {
+    return "APARTMENT";
+  }
+
+  if (["SECONDARY_UNIT", "BED_AND_BREAKFAST", "BOUTIQUE_HOTEL", "UNIQUE_SPACE"].includes(canonical)) {
+    return canonical;
+  }
+
+  return "APARTMENT";
 }
 
 export function canonicalListingType(value: string | undefined | null): string {
@@ -176,4 +199,23 @@ export function normalizeAccessibilityFeatureIds(values: unknown): string[] {
     result.push(normalized);
   }
   return result;
+}
+
+export function normalizeAccessibilityFeatureDetails(values: unknown): AccessibilityFeatureDetail[] {
+  if (!Array.isArray(values)) return [];
+
+  const details = new Map<string, string[]>();
+  for (const value of values) {
+    if (!value || typeof value !== "object") continue;
+    const record = value as Record<string, unknown>;
+    const featureId = normalizeAccessibilityFeature(typeof record.featureId === "string" ? record.featureId : "");
+    if (!featureId) continue;
+    const photos = Array.isArray(record.photos)
+      ? record.photos.filter((photo): photo is string => typeof photo === "string" && photo.trim().length > 0)
+      : [];
+    const existing = details.get(featureId) ?? [];
+    details.set(featureId, [...new Set([...existing, ...photos])].slice(0, 10));
+  }
+
+  return Array.from(details, ([featureId, photos]) => ({ featureId, photos }));
 }

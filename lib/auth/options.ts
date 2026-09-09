@@ -387,6 +387,10 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       // `user` is only present at sign-in. Persist id, role, status, adminRoleSlug, tokenVersion, and permissions.
       if (user) {
+        const userImage = (user as { image?: string | null; picture?: string | null })?.image ?? (user as { picture?: string | null })?.picture ?? null;
+        if (userImage) {
+          (token as { picture?: string | null }).picture = userImage;
+        }
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? token.role;
         token.status = (user as { status?: string }).status;
@@ -404,11 +408,15 @@ export const authOptions: NextAuthOptions = {
             select: {
               status: true,
               role: true,
+              image: true,
               tokenVersion: true,
               adminRole: { select: { slug: true } },
             },
           });
           if (dbUser) {
+            if (dbUser.image) {
+              (token as { picture?: string | null }).picture = dbUser.image;
+            }
             if (
               token.tokenVersion !== undefined &&
               token.tokenVersion < dbUser.tokenVersion
@@ -440,6 +448,7 @@ export const authOptions: NextAuthOptions = {
         session.user.adminRoleSlug = token.adminRoleSlug as string | null | undefined;
         session.user.permissions = token.permissions as string[] | undefined;
         session.user.tokenVersion = token.tokenVersion as number | undefined;
+        session.user.image = ((token as { picture?: string | null }).picture ?? session.user.image) as string | undefined;
       }
       return session;
     },

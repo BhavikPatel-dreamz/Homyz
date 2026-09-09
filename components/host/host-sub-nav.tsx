@@ -145,14 +145,14 @@ export function HostSubNav({
       label: "Today",
       href: "/host/today",
       icon: <TodayNavIcon />,
-      minWidthClass: "w-[84px] shrink-0",
+      minWidthClass: "w-[92px] shrink-0",
     },
     {
       id: "calendar",
       label: "Calendar",
       href: "/host/calendar",
       icon: <CalendarNavIcon />,
-      minWidthClass: "min-w-[108px] px-3.5",
+      minWidthClass: "w-[110px] shrink-0",
     },
     {
       id: "listing",
@@ -166,13 +166,14 @@ export function HostSubNav({
           <path d="M16 11l2-2" />
         </svg>
       ),
+      minWidthClass: "w-[98px] shrink-0",
     },
     {
       id: "messages",
       label: "Messages",
       href: "/host/messages",
       icon: <MessagesNavIcon />,
-      minWidthClass: "min-w-[114px] px-3.5",
+      minWidthClass: "w-[118px] shrink-0",
     },
   ];
 
