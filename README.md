@@ -66,7 +66,7 @@ scripts/smoke.sh  end-to-end API smoke test
 
 ## Prerequisites
 
-- Node.js 20+ and **pnpm**
+- Node.js 22+ and **npm** (CI and Docker use `package-lock.json`)
 - **PostgreSQL** running locally (or a reachable `DATABASE_URL`)
 
 ## Setup

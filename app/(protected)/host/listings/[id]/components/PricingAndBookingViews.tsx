@@ -1,6 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor callback and copy surface; narrowed incrementally outside E4. */
 
+import { BackButton } from "@/components/ui/back-button";
+
 import React from "react";
 import { isReservedSlug } from "@/lib/utils/slug";
 
@@ -96,13 +98,7 @@ export function PricingAndBookingViews({
           {/* Header & Back Button */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("description")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("description")} />
               <h1>Pricing</h1>
             </div>
 
@@ -259,13 +255,7 @@ export function PricingAndBookingViews({
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("description")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("description")} />
               <h1>Availability</h1>
             </div>
             <p className="text-xs text-zinc-400 font-normal pl-11">
@@ -407,13 +397,7 @@ export function PricingAndBookingViews({
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           {/* Header & Back arrow button */}
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("description")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-            >
-              ‹
-            </button>
+            <BackButton onClick={() => setActiveSection("description")} />
             <h1>Booking settings</h1>
           </div>
 
@@ -640,13 +624,7 @@ function CancellationPolicyView({
       {/* Header & Subtitle */}
       <div className="space-y-1">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setActiveSection("description")}
-            className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-          >
-            ‹
-          </button>
+          <BackButton onClick={() => setActiveSection("description")} />
           <h1>Cancellation policy</h1>
         </div>
         <p className="text-xs text-zinc-500 font-normal pl-11">

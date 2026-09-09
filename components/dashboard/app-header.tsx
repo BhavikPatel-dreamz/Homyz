@@ -94,20 +94,11 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
             />
           </Link>
 
-          {isHostRoute ? (
-            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-700 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-              <Link href="/host/today" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/today' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Today</Link>
-              <Link href="/host/calendar" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/calendar' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Calendar</Link>
-              <Link href="/host/listings" className={`hover:text-[#1F1F1F] transition-colors ${pathname?.startsWith('/host/listings') ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Listing</Link>
-              <Link href="/host/messages" className={`hover:text-[#1F1F1F] transition-colors ${pathname === '/host/messages' ? 'text-[#1F1F1F] font-semibold border-b-2 border-zinc-900 pb-1' : ''}`}>Messages</Link>
-            </nav>
-          ) : (
-            <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
-              <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
-                <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
-              </span>
-            </Link>
-          )}
+          <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
+            <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
+              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
+            </span>
+          </Link>
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
             {isHostRoute ? (

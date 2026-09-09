@@ -319,3 +319,70 @@ input[type="number"] {
 .social-facebook-border {
   background-image: none !important;
 }
+
+/* Visible calendar panel scrollbars, matching the pricing reference. */
+.calendar-panel-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #d1d1d1 #f3f4f5;
+  scrollbar-gutter: stable;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .calendar-panel-scrollbar {
+    scrollbar-color: auto;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #f3f4f5;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 46px;
+    border: 3px solid #f3f4f5;
+    border-radius: 999px;
+    background: #d1d1d1;
+    box-shadow: inset 0 0 0 1px #c5c5c5;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bcbcbc;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start,
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end {
+    display: block;
+    height: 22px;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    background-color: #e8e8e8;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23858585' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 10 4-4 4 4'/%3E%3C/svg%3E");
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23858585' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start:hover,
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end:hover {
+    background-color: #d1d1d1;
+    border-color: #aaa;
+  }
+
+}

@@ -1,6 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
+import { BackButton } from "@/components/ui/back-button";
+
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React from "react";
 
@@ -65,16 +67,10 @@ export function GuestsSafetyView({
         {/* Header with Back Button */}
         <div className="space-y-1 border-b border-zinc-150 pb-4">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
+            <BackButton onClick={() => {
                 setEditorTab?.("space");
                 setActiveSection("description");
-              }}
-              className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm cursor-pointer transition-all"
-            >
-              ‹
-            </button>
+              }} />
             <h1>Guests safety</h1>
           </div>
           <p className="text-xs text-zinc-500 font-normal pl-11">

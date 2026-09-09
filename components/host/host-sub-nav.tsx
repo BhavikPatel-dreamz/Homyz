@@ -2,13 +2,131 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Container } from "../ui";
+import Image from "next/image";
+import styles from "./host-mobile-nav.module.css";
 
 export interface HostSubNavProps {
   activeTab?: "today" | "calendar" | "listing" | "messages";
   listingId?: string;
+  onFilterClick?: () => void;
+  filterActive?: boolean;
+  onMenuClick?: () => void;
+  showRightActions?: boolean;
 }
 
-export function HostSubNav({ activeTab: explicitActiveTab, listingId }: HostSubNavProps) {
+export function TodayNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="26"
+      viewBox="0 0 28 30"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M5.5 4.8C9.5 4.3 18.5 4.3 22.5 4.8C23.3 4.9 23.8 5.6 23.7 6.4L22.8 25.4C22.7 26.1 21.9 26.5 21.3 26.1L14 21.2L6.7 26.1C6.1 26.5 5.3 26.1 5.2 25.4L4.3 6.4C4.2 5.6 4.7 4.9 5.5 4.8Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.5 13.8L13 17.5L19.2 10"
+        stroke="currentColor"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CalendarNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/icons/date-picker-icon.svg"
+      alt="Calendar Icon"
+      width={24}
+      height={19}
+      priority
+    />
+  );
+}
+
+export function ListingNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/icons/listing-edit-icon.svg"
+      alt="Listing Edit Icon"
+      width={24}
+      height={24}
+      priority
+    />
+  );
+}
+
+export function MessagesNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/icons/message-icon.svg"
+      alt="Message Icon"
+      width={24}
+      height={24}
+      priority
+    />
+  );
+}
+
+export function MenuNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="4" y1="6.5" x2="20" y2="6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="4" y1="17.5" x2="20" y2="17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function FiltersNavIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 26 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="5.5" y1="3" x2="5.5" y2="25" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="5.5" cy="18" r="2.6" stroke="currentColor" strokeWidth="1.6" fill="white" />
+      <line x1="13" y1="3" x2="13" y2="25" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="13" cy="9.5" r="2.6" stroke="currentColor" strokeWidth="1.6" fill="white" />
+      <line x1="20.5" y1="3" x2="20.5" y2="25" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="20.5" cy="18" r="2.6" stroke="currentColor" strokeWidth="1.6" fill="white" />
+    </svg>
+  );
+}
+
+export function HostSubNav({
+  activeTab: explicitActiveTab,
+  listingId,
+  onFilterClick,
+  filterActive = false,
+  onMenuClick,
+  showRightActions = true,
+}: HostSubNavProps) {
   const pathname = usePathname();
 
   let activeTab = explicitActiveTab;
@@ -26,28 +144,15 @@ export function HostSubNav({ activeTab: explicitActiveTab, listingId }: HostSubN
       id: "today",
       label: "Today",
       href: "/host/today",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="5" y="3" width="14" height="18" rx="3" />
-          <path d="M9 12l2 2 4-4" />
-        </svg>
-      ),
+      icon: <TodayNavIcon />,
+      minWidthClass: "w-[84px] shrink-0",
     },
     {
       id: "calendar",
       label: "Calendar",
       href: "/host/calendar",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="4" width="16" height="16" rx="3" />
-          <path d="M16 2v4M8 2v4M4 9.5h16" />
-          <circle cx="9" cy="14" r="0.75" fill="currentColor" />
-          <circle cx="12" cy="14" r="0.75" fill="currentColor" />
-          <circle cx="15" cy="14" r="0.75" fill="currentColor" />
-          <circle cx="9" cy="17.5" r="0.75" fill="currentColor" />
-          <circle cx="12" cy="17.5" r="0.75" fill="currentColor" />
-        </svg>
-      ),
+      icon: <CalendarNavIcon />,
+      minWidthClass: "min-w-[108px] px-3.5",
     },
     {
       id: "listing",
@@ -66,41 +171,128 @@ export function HostSubNav({ activeTab: explicitActiveTab, listingId }: HostSubN
       id: "messages",
       label: "Messages",
       href: "/host/messages",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          <path d="M8 11.5h8M8 14.5h5" />
-        </svg>
-      ),
+      icon: <MessagesNavIcon />,
+      minWidthClass: "min-w-[114px] px-3.5",
     },
   ];
 
+  const mobileActiveIndex = Math.max(0, tabs.findIndex((tab) => tab.id === activeTab));
+  const notchX = 81.9 + mobileActiveIndex * 70.2;
+
   return (
-    <div className="w-full min-w-0 bg-white border-b border-zinc-200/80 px-3 py-3 shrink-0 select-none sm:px-8 sm:py-3.5">
-      <nav aria-label="Host navigation" className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto overscroll-x-contain p-1 sm:flex-wrap sm:gap-3.5">
+    <>
+      {/* Mobile Bottom Navigation */}
+      <nav
+        aria-label="Mobile host navigation"
+        className={styles.nav}
+      >
+        <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
+          <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
+        </svg>
+        <div className={styles.tabs}>
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
+          const selected = activeTab === tab.id;
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex flex-1 shrink-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-2 min-w-[64px] h-[66px] sm:flex-none sm:rounded-[22px] sm:px-4 sm:py-2.5 sm:min-w-[82px] sm:h-[74px] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
-                isActive
-                  ? "bg-[#FDE29B] border border-amber-300/90 text-zinc-950 font-semibold"
-                  : "bg-white border border-zinc-200 text-zinc-600 font-medium hover:border-zinc-300 hover:bg-zinc-50/80 hover:text-[#1F1F1F]"
-              }`}
+              aria-label={tab.label}
+              aria-current={selected ? "page" : undefined}
+              className={`${styles.tab} ${selected ? styles.active : ""}`}
             >
-              <div className={isActive ? "text-zinc-950" : "text-zinc-500"}>
+              <span
+                className={styles.iconCircle}
+              >
                 {tab.icon}
-              </div>
-              <span className={`whitespace-nowrap text-[11px] sm:text-[12px] leading-none ${isActive ? "font-medium text-zinc-950" : "font-medium text-zinc-600"}`}>
+              </span>
+              <span
+                className={styles.label}
+              >
                 {tab.label}
               </span>
             </Link>
           );
         })}
+        </div>
       </nav>
-    </div>
+
+      {/* Desktop Sub Navigation matching nav bar.jpg */}
+      <div className="host-sub-nav hidden pt-8 sm:block">
+        <Container>
+          <div className="mx-auto flex w-full items-center justify-between">
+            {/* Left Nav Tabs */}
+            <nav aria-label="Host navigation" className="flex items-center gap-4">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <Link
+                    key={tab.id}
+                    href={tab.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`group flex h-[76px] flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
+                      tab.minWidthClass
+                    } ${
+                      isActive
+                        ? "bg-[#FCDF9C] text-[#1F1F1F]"
+                        : "bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
+                    }`}
+                  >
+                    <div className="shrink-0">{tab.icon}</div>
+                    <span
+                      className={`font-['Poppins'] font-normal text-base leading-tight whitespace-nowrap ${
+                        isActive
+                          ? "text-[#1F1F1F]"
+                          : "text-[#727272] group-hover:text-[#1F1F1F]"
+                      }`}
+                    >
+                      {tab.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Right Actions: Menu & Filters */}
+            {showRightActions && (
+              <div className="flex items-center gap-4">
+                {/* Menu Button */}
+                <button
+                  type="button"
+                  onClick={onMenuClick}
+                  className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer"
+                >
+                  <MenuNavIcon className="shrink-0" />
+                  <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F]">
+                    Menu
+                  </span>
+                </button>
+
+                {/* Filters Button */}
+                <button
+                  type="button"
+                  onClick={onFilterClick}
+                  className={`group flex h-[76px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer ${
+                    filterActive
+                      ? "bg-[#1F1F1F] border-[#1F1F1F] text-[#FCDF9C]"
+                      : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
+                  }`}
+                >
+                  <FiltersNavIcon className="shrink-0" />
+                  <span
+                    className={`font-['Poppins'] text-[14px] leading-tight ${
+                      filterActive
+                        ? "font-medium text-[#FCDF9C]"
+                        : "font-normal text-[#727272] group-hover:text-[#1F1F1F]"
+                    }`}
+                  >
+                    Filters
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        </Container>
+      </div>
+    </>
   );
 }

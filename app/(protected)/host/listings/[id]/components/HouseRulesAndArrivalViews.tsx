@@ -1,6 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
+import { BackButton } from "@/components/ui/back-button";
+
 import React from "react";
 import { GuidebooksManager } from "./GuidebooksManager";
 import { LocalLawsView } from "./LocalLawsView";
@@ -207,13 +209,7 @@ export function HouseRulesAndArrivalViews({
           {/* Header & Subtitle */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("description")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
+              <BackButton onClick={() => setActiveSection("description")} />
               <h1>House rules</h1>
             </div>
             <p className="text-xs text-zinc-500 font-normal pl-11">
@@ -797,13 +793,7 @@ export function HouseRulesAndArrivalViews({
       {activeSection === "wifi-details" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("check-in-out")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-            >
-              ‹
-            </button>
+            <BackButton onClick={() => setActiveSection("check-in-out")} />
             <h1>Wifi details</h1>
           </div>
 
@@ -850,13 +840,7 @@ export function HouseRulesAndArrivalViews({
       {activeSection === "house-manual" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("check-in-out")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-            >
-              ‹
-            </button>
+            <BackButton onClick={() => setActiveSection("check-in-out")} />
             <h1>House manual</h1>
           </div>
           <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2">
@@ -1025,13 +1009,7 @@ function CheckOutInstructionsView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Check-out instructions</h1>
       </div>
 
@@ -1098,13 +1076,7 @@ function GuidebooksView({
       {/* Header & Back Button & Plus Circle Icon (Matches Figma Screenshot 100%) */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setActiveSection("arrival-guide")}
-            className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-          >
-            ‹
-          </button>
+          <BackButton onClick={() => setActiveSection("arrival-guide")} />
           <h1 className="tracking-tight text-[#1F1F1F]">Create a guidebooks</h1>
         </div>
 
@@ -1217,13 +1189,7 @@ function InteractionPreferencesView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Interaction with guests</h1>
       </div>
 
@@ -1313,13 +1279,7 @@ function ListingStatusView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Listing status</h1>
       </div>
 
@@ -1447,13 +1407,7 @@ function LanguagesView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Languages</h1>
       </div>
 
@@ -1581,13 +1535,7 @@ function GuestRequirementsView({
     <div className="space-y-7 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Guest requirements</h1>
       </div>
 
@@ -1712,13 +1660,7 @@ function CheckInCheckOutView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("check-in-out")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("check-in-out")} />
         <h1>Check-in and check-out times</h1>
       </div>
 
@@ -1861,13 +1803,7 @@ function DirectionsView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("check-in-out")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("check-in-out")} />
         <h1>Directions</h1>
       </div>
 
@@ -1939,13 +1875,7 @@ function CheckInMethodView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("check-in-out")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("check-in-out")} />
         <h1>Check-in method</h1>
       </div>
 
@@ -2077,16 +2007,10 @@ function RegulationsView({
       <div className="animate-in fade-in pb-12 font-sans w-full max-w-4xl">
         {/* Top Back Button */}
         <div className="flex items-center justify-between pb-4">
-          <button
-            type="button"
-            onClick={() => {
+          <BackButton onClick={() => {
               setShowDetails(false);
               setIsEditingReg(false);
-            }}
-            className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-          >
-            ‹
-          </button>
+            }} />
         </div>
 
         {/* 2-Column Grid Layout: Left Content + Right Thumbs-Up Illustration */}
@@ -2253,13 +2177,7 @@ function RegulationsView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("description")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Regulations</h1>
       </div>
 
@@ -2307,13 +2225,7 @@ function TaxesView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("description")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Taxes</h1>
       </div>
 
@@ -2371,13 +2283,7 @@ function HomyzStaysView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-        >
-          ‹
-        </button>
+        <BackButton onClick={() => setActiveSection("description")} />
         <h1 className="tracking-tight text-[#1F1F1F]">Homyz.com stays</h1>
       </div>
 
