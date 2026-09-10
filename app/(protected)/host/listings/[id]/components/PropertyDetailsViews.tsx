@@ -5,6 +5,11 @@ import { BackButton } from "@/components/ui/back-button";
 
 import React from "react";
 import { CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
+import {
+  normalizeAccessibilityFeature,
+  normalizeMostLikeSelection,
+  type AccessibilityFeatureDetail,
+} from "@/lib/constants/listing-enums";
 
 export interface BedItem {
   type: string;
@@ -96,6 +101,8 @@ interface PropertyDetailsViewsProps {
   // Accessibility
   accessibilityFeatures: any;
   setAccessibilityFeatures: (val: any) => void;
+  accessibilityDetails?: AccessibilityFeatureDetail[];
+  setAccessibilityDetails?: (val: AccessibilityFeatureDetail[]) => void;
   expandedAccessibility?: string | null;
   setExpandedAccessibility?: (val: string | null) => void;
 }
@@ -164,11 +171,55 @@ export function PropertyDetailsViews({
   setEditAmenities,
   accessibilityFeatures,
   setAccessibilityFeatures,
+  accessibilityDetails = [],
+  setAccessibilityDetails,
   expandedAccessibility = "disabled_parking",
   setExpandedAccessibility,
 }: PropertyDetailsViewsProps) {
   const [amenityCategory, setAmenityCategory] = React.useState<string>("all");
   const [amenitySearch, setAmenitySearch] = React.useState<string>("");
+  const accessibilityPhotoInput = React.useRef<HTMLInputElement>(null);
+  const [accessibilityPhotoFeatureId, setAccessibilityPhotoFeatureId] = React.useState<string | null>(null);
+  const [uploadingAccessibilityPhoto, setUploadingAccessibilityPhoto] = React.useState(false);
+  const [accessibilityPhotoError, setAccessibilityPhotoError] = React.useState<string | null>(null);
+
+  const updateAccessibilityDetail = (featureId: string, updater: (detail: AccessibilityFeatureDetail) => AccessibilityFeatureDetail) => {
+    const current = accessibilityDetails.find((detail) => detail.featureId === featureId) ?? { featureId, photos: [] };
+    const next = updater(current);
+    setAccessibilityDetails?.([
+      ...accessibilityDetails.filter((detail) => detail.featureId !== featureId),
+      { featureId, photos: [...new Set(next.photos)].slice(0, 10) },
+    ]);
+  };
+
+  const uploadAccessibilityPhotos = async (featureId: string, files: File[]) => {
+    if (!files.length) return;
+    const invalidFile = files.find((file) => !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size <= 0 || file.size > 10 * 1024 * 1024);
+    if (invalidFile) {
+      setAccessibilityPhotoError("Use JPEG, PNG, WebP, or AVIF images up to 10 MB each.");
+      return;
+    }
+
+    setUploadingAccessibilityPhoto(true);
+    setAccessibilityPhotoError(null);
+    try {
+      const uploadedPhotos = await Promise.all(files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch("/api/v1/upload/listing-photo", { method: "POST", body: formData });
+        const result: unknown = await response.json().catch(() => null);
+        if (!response.ok || !result || typeof result !== "object" || !("url" in result)) {
+          throw new Error(result && typeof result === "object" && "error" in result ? String((result as { error: unknown }).error) : "Photo upload failed. Please retry.");
+        }
+        return String((result as { url: string }).url);
+      }));
+      updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: [...detail.photos, ...uploadedPhotos] }));
+    } catch (error) {
+      setAccessibilityPhotoError(error instanceof Error ? error.message : "Photo upload failed. Please retry.");
+    } finally {
+      setUploadingAccessibilityPhoto(false);
+    }
+  };
 
   const isApartmentLike = [
     "APARTMENT",
@@ -520,7 +571,10 @@ export function PropertyDetailsViews({
               <div className="relative">
                 <select
                   value={editPropertyType}
-                  onChange={(e) => setEditPropertyType(e.target.value)}
+                  onChange={(e) => {
+                    setEditPropertyType(e.target.value);
+                    setWhichIsMostLike(normalizeMostLikeSelection(e.target.value));
+                  }}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
                 >
                   <option value="APARTMENT">Apartment</option>
@@ -1509,16 +1563,26 @@ export function PropertyDetailsViews({
               <h1>Accessibility features</h1>
             </div>
 
-            {/* Top Right Done Button */}
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveSection("accessibility")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-            >
-              {isSaving ? "Saving..." : "Done"}
-            </button>
           </div>
+
+          <input
+            ref={accessibilityPhotoInput}
+            className="hidden"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            multiple
+            onChange={(event) => {
+              const featureId = event.currentTarget.dataset.featureId;
+              const files = Array.from(event.target.files || []);
+              event.target.value = "";
+              if (featureId) void uploadAccessibilityPhotos(featureId, files);
+            }}
+          />
+          {accessibilityPhotoError && (
+            <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+              {accessibilityPhotoError}
+            </p>
+          )}
 
           {/* List of Accessibility Features */}
           <div className="space-y-3 pt-2">
@@ -1560,9 +1624,11 @@ export function PropertyDetailsViews({
                 desc: "Equipped with a mobile or ceiling lift device."
               }
             ].map((feature) => {
+              const featureId = normalizeAccessibilityFeature(feature.id);
               const isSelected = Array.isArray(accessibilityFeatures)
-                ? accessibilityFeatures.includes(feature.name) || accessibilityFeatures.includes(feature.id)
+                ? accessibilityFeatures.some((value: string) => normalizeAccessibilityFeature(value) === featureId)
                 : false;
+              const featurePhotos = accessibilityDetails.find((detail) => detail.featureId === featureId)?.photos ?? [];
               const isExpanded = expandedAccessibility === feature.id;
 
               if (isExpanded) {
@@ -1619,9 +1685,10 @@ export function PropertyDetailsViews({
                         onClick={() => {
                           if (Array.isArray(accessibilityFeatures)) {
                             setAccessibilityFeatures(
-                              accessibilityFeatures.filter((f: string) => f !== feature.name && f !== feature.id)
+                              accessibilityFeatures.filter((value: string) => normalizeAccessibilityFeature(value) !== featureId)
                             );
                           }
+                          setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
                         }}
                         className={`rounded-xl p-3.5 flex items-center gap-3 cursor-pointer transition-all ${
                           !isSelected
@@ -1642,10 +1709,10 @@ export function PropertyDetailsViews({
                         onClick={() => {
                           if (Array.isArray(accessibilityFeatures)) {
                             if (!isSelected) {
-                              setAccessibilityFeatures([...accessibilityFeatures, feature.name]);
+                              setAccessibilityFeatures([...accessibilityFeatures, featureId]);
                             }
                           } else {
-                            setAccessibilityFeatures([feature.name]);
+                            setAccessibilityFeatures([featureId]);
                           }
                         }}
                         className={`rounded-xl p-3.5 flex items-center gap-3 cursor-pointer transition-all ${
@@ -1662,6 +1729,51 @@ export function PropertyDetailsViews({
                         <span className="font-medium text-base text-[#1F1F1F]">I have this feature</span>
                       </div>
                     </div>
+
+                    {isSelected && (
+                      <div className="rounded-xl border border-zinc-200 bg-white p-3.5 space-y-3">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-xs font-semibold text-[#1F1F1F]">Photos of this feature</h4>
+                            <p className="mt-0.5 text-[11px] text-zinc-500">Add at least one photo to verify this accessibility feature.</p>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={uploadingAccessibilityPhoto}
+                            onClick={() => {
+                              setAccessibilityPhotoFeatureId(featureId);
+                              if (accessibilityPhotoInput.current) {
+                                accessibilityPhotoInput.current.dataset.featureId = featureId;
+                              }
+                              accessibilityPhotoInput.current?.click();
+                            }}
+                            className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-wait disabled:opacity-60"
+                          >
+                            {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? "Uploading…" : "Add photos"}
+                          </button>
+                        </div>
+
+                        {featurePhotos.length > 0 ? (
+                          <div className="grid grid-cols-3 gap-2">
+                            {featurePhotos.map((photo) => (
+                              <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100">
+                                <img src={photo} alt={`${feature.name} evidence`} className="h-full w-full object-cover" />
+                                <button
+                                  type="button"
+                                  aria-label={`Remove ${feature.name} photo`}
+                                  onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
+                                  className="absolute right-1 top-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">A photo is required before this feature can be saved.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -1698,11 +1810,11 @@ export function PropertyDetailsViews({
           <div className="pt-4">
             <button
               type="button"
-              disabled={isSaving}
+              disabled={isSaving || uploadingAccessibilityPhoto}
               onClick={() => handleSaveSection("accessibility")}
               className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {uploadingAccessibilityPhoto ? "Uploading..." : isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

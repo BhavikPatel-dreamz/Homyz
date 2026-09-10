@@ -310,6 +310,7 @@ model Listing {
   hostingType         HostingType   @default(HOME)
 
   // Step 1 — Property & Location Details
+  placeCategory       String?       // Broad category selected in "Which is most like your place?"
   propertyType        String?       // House, Apartment, Villa, Cabin, Cottage, etc.
   listingType         String?       // Entire place, Private room, Shared room
   locationSearch      String?
@@ -359,6 +360,7 @@ model Listing {
 
   // Guest Access
   guestAccess         String[]      @default([])
+  languages           String[]      @default([]) // ISO language codes chosen by host
 
   // Step 2 — Photos & Content Details
   photos              String[]      @default([]) // Min 5 photos required for submission
@@ -368,6 +370,7 @@ model Listing {
   safetyEquipment     String[]      @default([]) // Smoke alarm, CO alarm, Extinguisher, First aid
   safetyHazards       String[]      @default([]) // Water, Heights, Stairs, Animals, etc.
   accessibilityFeatures String[]    @default([]) // Step-free, Wide doors, Grab rails, etc.
+  accessibilityDetails Json?        // Per-feature evidence photos supplied by the host
   views               String[]      @default([]) // City, Sea, Mountain, Garden, etc.
   // Location context distinct from amenities (for example, nearby transit).
   // Beach access remains a canonical amenity and is intentionally not duplicated here.
@@ -412,6 +415,9 @@ model Listing {
   bookingMessage      String?       @db.Text // Public pre-booking message from the host
   minNights           Int           @default(1)
   maxNights           Int           @default(365)
+  advanceNotice       String        @default("Same day")
+  sameDayCutoff       String        @default("12:00 AM")
+  allowSameDayRequests Boolean      @default(true)
   instantBook         Boolean       @default(true)
   isPaused            Boolean       @default(false)
   isFeatured          Boolean       @default(false)
@@ -423,6 +429,9 @@ model Listing {
   // Pricing & Fees
   cleaningFee         Int?          @default(0) // Fee in cents
   securityDeposit     Int?          @default(0) // Fee in cents
+  smartPricing        Boolean       @default(false)
+  smartPricingMinPrice Int?          // Minimum nightly price in cents when Smart Pricing is enabled
+  smartPricingMaxPrice Int?          // Maximum nightly price in cents when Smart Pricing is enabled
   weekendPrice        Int?          // Weekend price in cents
   weekendPremium      Int?          // Weekend premium percentage
   discounts           Json?         // Discounts configuration
@@ -1088,4 +1097,3 @@ model ListingRemovalFeedback {
   @@index([listingId])
   @@index([hostId])
 }
-

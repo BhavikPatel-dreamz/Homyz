@@ -8,6 +8,9 @@ export const LOCATION_FEATURE_IDS = [
   "near_public_transport",
   "near_landmarks",
   "resort_access",
+  "beach_access",
+  "lake_access",
+  "quiet_neighborhood",
 ] as const;
 
 const toCanonicalIdentifier = (value: string) =>
@@ -34,12 +37,23 @@ const normalizedListingType = z.preprocess(
   z.enum(LISTING_TYPES).nullable().optional(),
 );
 
+const percentageDiscountSchema = z.object({
+  enabled: z.boolean(),
+  percentage: z.number().finite().min(0).max(100),
+}).strict();
+
 const discountsSchema = z.preprocess(
   (value) => {
     if (!Array.isArray(value)) return value;
     return Object.fromEntries(value.map((discount) => [String(discount), true]));
   },
-  z.record(z.string(), z.boolean()).optional().nullable(),
+  z.object({
+    weekly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    monthly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    last_minute: z.boolean().optional(),
+    new_listing: z.boolean().optional(),
+    orgStays: z.record(z.string(), z.unknown()).optional(),
+  }).passthrough().optional().nullable(),
 );
 
 const listingPhotoUrl = z.string().trim().refine(
@@ -118,13 +132,22 @@ export const roomsSchema = z.array(roomSchema).max(50);
 export type RoomInput = z.infer<typeof roomSchema>;
 export type BedItemInput = z.infer<typeof bedItemSchema>;
 
+const accessibilityDetailSchema = z.object({
+  featureId: z.string().trim().min(1).max(80),
+  photos: z.array(listingPhotoUrl).min(1).max(10),
+}).strict();
+
 const listingFields = {
   title: z.string().trim().max(50).optional().default("Draft Listing"),
   description: z.string().trim().max(5000).optional().default(""),
   descriptionSections: DESCRIPTION_SECTIONS_SCHEMA.optional().nullable(),
   price: z.number().int().min(0).optional().default(10000), // minor units
+  smartPricing: z.boolean().optional().default(false),
+  smartPricingMinPrice: z.number().int().min(0).max(10000000).optional().nullable(),
+  smartPricingMaxPrice: z.number().int().min(0).max(10000000).optional().nullable(),
   published: z.boolean().optional().default(false),
   hostingType: z.enum(HOSTING_TYPES).optional().default("HOME"),
+  placeCategory: z.enum(["APARTMENT", "HOUSE", "SECONDARY_UNIT", "UNIQUE_SPACE", "BED_AND_BREAKFAST", "BOUTIQUE_HOTEL"]).optional().nullable(),
   propertyType: normalizedPropertyType,
   listingType: normalizedListingType,
   locationSearch: z.string().trim().max(500).optional().nullable(),
@@ -173,6 +196,7 @@ const listingFields = {
 
   // Guest Access
   guestAccess: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+  languages: z.array(z.string().trim().regex(/^[a-z]{2,3}(?:-[A-Z]{2})?$/)).max(20).optional().default([]),
 
   // Photos & Highlights & Features
   photos: z.array(listingPhotoUrl).max(100).optional().default([]),
@@ -182,6 +206,7 @@ const listingFields = {
   safetyEquipment: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
   safetyHazards: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
   accessibilityFeatures: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+  accessibilityDetails: z.array(accessibilityDetailSchema).max(50).optional().default([]),
   views: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
   locationFeatures: z.array(z.enum(LOCATION_FEATURE_IDS)).max(3).optional().default([]),
 
@@ -223,6 +248,9 @@ const listingFields = {
   bookingMessage: z.string().trim().max(1000).optional().nullable(),
   minNights: z.number().int().min(1).max(365).optional().default(1),
   maxNights: z.number().int().min(1).max(365).optional().default(365),
+  advanceNotice: z.enum(["Same day", "At least 1 day", "At least 2 days", "At least 3 days", "At least 7 days"]).optional().default("Same day"),
+  sameDayCutoff: z.enum(["12:00 AM", "6:00 AM", "12:00 PM", "3:00 PM", "6:00 PM", "9:00 PM"]).optional().default("12:00 AM"),
+  allowSameDayRequests: z.boolean().optional().default(true),
   instantBook: z.boolean().optional().default(true),
   isPaused: z.boolean().optional().default(false),
   blockedDates: z.array(z.string().date()).max(730).optional().default([]),

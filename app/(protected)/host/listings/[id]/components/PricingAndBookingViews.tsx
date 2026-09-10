@@ -17,8 +17,13 @@ interface PricingAndBookingViewsProps {
   setEditPrice: (val: number) => void;
   smartPricing?: boolean;
   setSmartPricing?: (val: boolean) => void;
+  smartPricingMinPrice?: number;
+  setSmartPricingMinPrice?: (val: number) => void;
+  smartPricingMaxPrice?: number;
+  setSmartPricingMaxPrice?: (val: number) => void;
   weekendPrice?: number;
-  setWeekendPrice?: (val: number) => void;
+  weekendPremium?: number;
+  setWeekendPremium?: (val: number) => void;
   weeklyDiscount: number;
   setWeeklyDiscount: (val: number) => void;
   monthlyDiscount: number;
@@ -57,9 +62,14 @@ export function PricingAndBookingViews({
   editPrice,
   setEditPrice,
   smartPricing = false,
-  setSmartPricing: _setSmartPricing,
+  setSmartPricing,
+  smartPricingMinPrice = 0,
+  setSmartPricingMinPrice,
+  smartPricingMaxPrice = 0,
+  setSmartPricingMaxPrice,
   weekendPrice = 0,
-  setWeekendPrice,
+  weekendPremium = 0,
+  setWeekendPremium,
   weeklyDiscount,
   setWeeklyDiscount,
   monthlyDiscount,
@@ -102,27 +112,19 @@ export function PricingAndBookingViews({
               <h1>Pricing</h1>
             </div>
 
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveSection("pricing")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </button>
           </div>
 
           <div className="space-y-5 pt-1">
             {/* 1. Nightly Price Card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-base text-[#1F1F1F]">Nightly price</span>
+                <span className="font-semibold text-xs text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Nightly price"}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
                   <button
                     type="button"
-                    disabled
-                    aria-label="Smart pricing is not available yet"
+                    aria-label="Toggle smart pricing"
+                    onClick={() => setSmartPricing?.(!smartPricing)}
                     className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
                       smartPricing ? "bg-amber-400" : "bg-zinc-300"
                     }`}
@@ -136,44 +138,88 @@ export function PricingAndBookingViews({
                 </div>
               </div>
 
-              {/* Price Display / Input */}
-              <div className="flex items-baseline gap-2 pt-1">
-                <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
-                <input
-                  type="number"
-                  value={editPrice || ""}
-                  onChange={(e) => setEditPrice(Number(e.target.value))}
-                  placeholder="100"
-                  className="w-full text-2xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
-                />
-              </div>
-            </div>
+              {smartPricing ? (
+                <div className="space-y-3 pt-1">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                    <label className="mb-2 block text-xs font-semibold text-zinc-700">Minimum price*</label>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={smartPricingMinPrice || ""}
+                        onChange={(e) => setSmartPricingMinPrice?.(Number(e.target.value || 0))}
+                        className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                      />
+                    </div>
+                  </div>
 
-            {/* 2. Custom weekend price */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-[#1F1F1F]">Custom weekend price</label>
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 flex items-center justify-between shadow-2xs">
-                <div className="flex items-baseline gap-1.5 flex-1">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                    <label className="mb-2 block text-xs font-semibold text-zinc-700">Maximum price</label>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={smartPricingMaxPrice || ""}
+                        onChange={(e) => setSmartPricingMaxPrice?.(Number(e.target.value || 0))}
+                        className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-2 pt-1">
+                  <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
                   <input
-                    type="text"
-                    value={weekendPrice ? `SR ${weekendPrice}` : ""}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value.replace(/[^0-9.]/g, ""));
-                      setWeekendPrice?.(isNaN(val) ? 0 : val);
-                    }}
-                    placeholder="XX"
-                    className="w-full text-sm font-semibold text-zinc-400 focus:text-[#1F1F1F] outline-none bg-transparent placeholder:text-zinc-400 font-mono"
+                    type="number"
+                    value={editPrice || ""}
+                    onChange={(e) => setEditPrice(Number(e.target.value))}
+                    placeholder="100"
+                    className="w-full text-2xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!weekendPrice) setWeekendPrice?.(120);
-                  }}
-                  className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all cursor-pointer shrink-0"
-                >
-                  +
-                </button>
+              )}
+            </div>
+
+            {!smartPricing && (
+              <>
+            {/* 2. Weekend adjustment */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-[#1F1F1F]">Weekend adjustment</label>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">% premium</span>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-2xs">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      aria-label="Decrease weekend premium"
+                      onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
+                      className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    >
+                      −
+                    </button>
+                    <div className="min-w-[72px] text-center">
+                      <span className="text-lg font-semibold text-[#1F1F1F]">{weekendPremium || 0}%</span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Increase weekend premium"
+                      onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
+                      className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Weekend rate</div>
+                    <div className="text-sm font-semibold text-[#1F1F1F]">SR {weekendPrice || 0}</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -225,6 +271,8 @@ export function PricingAndBookingViews({
                 </span>
               </div>
             </div>
+              </>
+            )}
 
             {/* 4. Calendar notice card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 hover:bg-zinc-100/80 p-4 flex items-center gap-3 shadow-2xs transition-all cursor-pointer">
@@ -296,7 +344,6 @@ export function PricingAndBookingViews({
 
             {/* 2. Advance notice */}
             <div className="space-y-2">
-              <p className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">Advance notice and same-day request settings are not configured for this listing yet.</p>
               <div>
                 <label className="block text-xs font-semibold text-zinc-800">Advance notice</label>
                 <p className="text-base text-[#727272] font-normal pt-0.5">
@@ -307,7 +354,6 @@ export function PricingAndBookingViews({
               {/* Dropdown 1: Same day */}
               <div className="relative">
                 <select
-                  disabled
                   value={advanceNotice}
                   onChange={(e) => setAdvanceNotice?.(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
@@ -332,7 +378,6 @@ export function PricingAndBookingViews({
               {/* Dropdown 2: 12:00 AM */}
               <div className="relative">
                 <select
-                  disabled
                   value={sameDayCutoff}
                   onChange={(e) => setSameDayCutoff?.(e.target.value)}
                   className="w-full appearance-none rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 pr-10 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-2xs"
@@ -362,7 +407,6 @@ export function PricingAndBookingViews({
               </div>
               <button
                 type="button"
-                disabled
                 onClick={() => setAllowSameDayRequests?.(!allowSameDayRequests)}
                 className={`w-9 h-5 rounded-full transition-colors p-0.5 flex items-center shrink-0 cursor-pointer ${
                   allowSameDayRequests ? "bg-[#F43F5E] justify-end" : "bg-zinc-300 justify-start"

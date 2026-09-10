@@ -26,10 +26,13 @@ import {
   canonicalCancellationPolicy,
   canonicalListingType,
   canonicalPropertyType,
+  normalizeAccessibilityFeatureDetails,
   normalizeAccessibilityFeatureIds,
-  propertyTypeLabel,
+  normalizeMostLikeSelection,
+  type AccessibilityFeatureDetail,
 } from "@/lib/constants/listing-enums";
 import { normalizeSlug } from "@/lib/utils/slug";
+import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
 
 function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: "weekly" | "monthly") {
   const entry = discounts?.[period];
@@ -43,9 +46,13 @@ export interface HostListingData {
   title: string;
   description: string;
   price: number; // in cents
+  smartPricing?: boolean;
+  smartPricingMinPrice?: number | null;
+  smartPricingMaxPrice?: number | null;
   published: boolean;
   status: string;
   hostingType: string;
+  placeCategory?: string | null;
   propertyType: string;
   listingType: string;
   latitude?: number | null;
@@ -91,9 +98,11 @@ export interface HostListingData {
   parkingSpaces?: number | null;
   parkingReservation?: boolean | null;
   guestAccess?: string[];
+  languages?: string[];
   safetyEquipment?: string[];
   safetyHazards?: string[];
   accessibilityFeatures?: string[];
+  accessibilityDetails?: AccessibilityFeatureDetail[];
   views?: string[];
   locationFeatures?: string[];
   petsAllowed?: boolean | null;
@@ -133,10 +142,14 @@ export interface HostListingData {
   instantBook: boolean;
   minNights: number;
   maxNights: number;
+  advanceNotice?: string | null;
+  sameDayCutoff?: string | null;
+  allowSameDayRequests?: boolean | null;
   blockedDates: string[];
   cleaningFee: number;
   securityDeposit: number;
   weekendPrice: number | null;
+  weekendPremium?: number | null;
   isPaused: boolean;
   isFeatured: boolean;
   customSlug?: string | null;
@@ -278,7 +291,7 @@ export function HostListingEditorClient({
     };
   });
   const [editHostingType, setEditHostingType] = useState(listing.hostingType || "HOME");
-  const [whichIsMostLike, setWhichIsMostLike] = useState(() => propertyTypeLabel(listing.propertyType || "APARTMENT"));
+  const [whichIsMostLike, setWhichIsMostLike] = useState(() => normalizeMostLikeSelection(listing.placeCategory || listing.propertyType || "APARTMENT"));
   const [editPropertyType, setEditPropertyType] = useState(() => canonicalPropertyType(listing.propertyType));
   const [editListingType, setEditListingType] = useState(() => canonicalListingType(listing.listingType));
   const [buildingFloors, setBuildingFloors] = useState(listing.totalFloors ?? 1);
@@ -373,22 +386,53 @@ export function HostListingEditorClient({
 
   // Pricing & Discounts
   const [editPrice, setEditPrice] = useState(listing.price / 100);
-  const [smartPricing, setSmartPricing] = useState(false);
-  const [weekendPrice, setWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
+  const [smartPricing, setSmartPricing] = useState(Boolean(listing.smartPricing ?? false));
+  const [smartPricingMinPrice, setSmartPricingMinPrice] = useState(() => {
+    const value = listing.smartPricingMinPrice ?? Math.max(0, Math.round((listing.price || 0) * 0.9));
+    return value / 100;
+  });
+  const [smartPricingMaxPrice, setSmartPricingMaxPrice] = useState(() => {
+    const value = listing.smartPricingMaxPrice ?? Math.max(0, Math.round((listing.price || 0) * 1.1));
+    return value / 100;
+  });
+  const [weekendPremium, setWeekendPremium] = useState(() => {
+    const premiumFromListing = listing.weekendPremium ?? deriveWeekendPremium(listing.price, listing.weekendPrice ?? null);
+    return clampWeekendPremium(premiumFromListing);
+  });
+  const [weekendPrice, setWeekendPrice] = useState(() => {
+    const baseCents = Math.round((listing.price || 0) * 100);
+    const derived = computeWeekendPrice(baseCents, weekendPremium);
+    return (listing.weekendPrice ?? derived) / 100;
+  });
+  useEffect(() => {
+    const nextWeekendPrice = computeWeekendPrice(Math.round(editPrice * 100), weekendPremium) / 100;
+    setWeekendPrice(nextWeekendPrice);
+  }, [editPrice, weekendPremium]);
   const [weeklyDiscount, setWeeklyDiscount] = useState(() => discountPercentage(listing.discounts, "weekly"));
   const [monthlyDiscount, setMonthlyDiscount] = useState(() => discountPercentage(listing.discounts, "monthly"));
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
   const [maxNights, setMaxNights] = useState(listing.maxNights || 365);
+  const [advanceNotice, setAdvanceNotice] = useState(listing.advanceNotice || "Same day");
+  const [sameDayCutoff, setSameDayCutoff] = useState(listing.sameDayCutoff || "12:00 AM");
+  const [allowSameDayRequests, setAllowSameDayRequests] = useState(listing.allowSameDayRequests ?? true);
 
   // Photos & Amenities
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
   const [editAmenities, setEditAmenities] = useState<string[]>(() => normalizeAmenities(listing.amenities || []));
+  const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>(() =>
+    Array.isArray(listing.languages) && listing.languages.length > 0
+      ? listing.languages.filter((language) => typeof language === "string" && language.trim().length > 0)
+      : ["en"]
+  );
 
   // Accessibility State (Matches Figma Screenshots #1 & #2)
   const [accessibilityFeatures, setAccessibilityFeatures] = useState<string[]>(() =>
     normalizeAccessibilityFeatureIds(listing.accessibilityFeatures || [])
+  );
+  const [accessibilityDetails, setAccessibilityDetails] = useState<AccessibilityFeatureDetail[]>(() =>
+    normalizeAccessibilityFeatureDetails(listing.accessibilityDetails || [])
   );
   const [expandedAccessibility, setExpandedAccessibility] = useState<string | null>("disabled_parking");
 
@@ -556,6 +600,7 @@ export function HostListingEditorClient({
 
       payload = {
         hostingType: editHostingType,
+        placeCategory: normalizeMostLikeSelection(whichIsMostLike),
         propertyType: propertyTypeValue,
         listingType: listingTypeValue,
         propertySize: propertySize ? parseInt(propertySize, 10) : null,
@@ -580,26 +625,38 @@ export function HostListingEditorClient({
         rooms,
       };
     } else if (sectionToSave === "pricing") {
+      const manualPricing = !smartPricing;
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
-        weekly: {
-          enabled: Number(weeklyDiscount) > 0,
-          percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
-        },
-        monthly: {
-          enabled: Number(monthlyDiscount) > 0,
-          percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
-        },
+        ...(manualPricing ? {
+          weekly: {
+            enabled: Number(weeklyDiscount) > 0,
+            percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
+          },
+          monthly: {
+            enabled: Number(monthlyDiscount) > 0,
+            percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
+          },
+        } : {}),
       };
       payload = {
         price: Math.round(editPrice * 100),
-        weekendPrice: Math.round(weekendPrice * 100),
-        discounts: nextDiscounts,
+        smartPricing,
+        smartPricingMinPrice: smartPricing ? Math.round(Number(smartPricingMinPrice || 0) * 100) : listing.smartPricingMinPrice ?? null,
+        smartPricingMaxPrice: smartPricing ? Math.round(Number(smartPricingMaxPrice || 0) * 100) : listing.smartPricingMaxPrice ?? null,
+        ...(manualPricing ? {
+          weekendPrice: computeWeekendPrice(Math.round(editPrice * 100), weekendPremium),
+          weekendPremium: clampWeekendPremium(weekendPremium),
+          discounts: nextDiscounts,
+        } : {}),
       };
     } else if (sectionToSave === "availability") {
       payload = {
         minNights: Number(minNights),
         maxNights: Number(maxNights),
+        advanceNotice,
+        sameDayCutoff,
+        allowSameDayRequests,
       };
     } else if (sectionToSave === "photos") {
       payload = { photos: editPhotos };
@@ -627,6 +684,10 @@ export function HostListingEditorClient({
         showExactLocation,
         views: selectedViews,
         locationFeatures,
+      };
+    } else if (sectionToSave === "language" || sectionToSave === "languages") {
+      payload = {
+        languages: [...new Set(selectedLanguageIds.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20),
       };
     } else if (sectionToSave === "parking") {
       payload = {
@@ -746,8 +807,12 @@ export function HostListingEditorClient({
         amenities: newAmenitiesList,
       };
     } else if (sectionToSave === "accessibility") {
+      const selectedFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
+      const details = normalizeAccessibilityFeatureDetails(accessibilityDetails)
+        .filter((detail) => selectedFeatures.includes(detail.featureId) && detail.photos.length > 0);
       payload = {
-        accessibilityFeatures: normalizeAccessibilityFeatureIds(accessibilityFeatures),
+        accessibilityFeatures: selectedFeatures,
+        accessibilityDetails: details,
       };
     } else if (sectionToSave === "cancellation-policy") {
       payload = {
@@ -798,6 +863,15 @@ export function HostListingEditorClient({
       setIsSaving(false);
       if (res.ok && res.data) {
         setListing((prev) => ({ ...prev, ...payload }));
+        if (payload.smartPricing !== undefined) {
+          setSmartPricing(Boolean((res.data as any).smartPricing ?? payload.smartPricing));
+        }
+        if (payload.smartPricingMinPrice !== undefined) {
+          setSmartPricingMinPrice((Number((res.data as any).smartPricingMinPrice ?? payload.smartPricingMinPrice ?? 0)) / 100);
+        }
+        if (payload.smartPricingMaxPrice !== undefined) {
+          setSmartPricingMaxPrice((Number((res.data as any).smartPricingMaxPrice ?? payload.smartPricingMaxPrice ?? 0)) / 100);
+        }
         if (payload.amenities !== undefined) {
           const freshAmenities = normalizeAmenities((res.data as any).amenities || payload.amenities);
           setEditAmenities(freshAmenities);
@@ -1177,16 +1251,92 @@ export function HostListingEditorClient({
             setActiveSection={setActiveSection}
             editTitle={editTitle}
             editListingType={editListingType}
-            editPropertyType={editPropertyType}
+            setEditListingType={setEditListingType}
+            buildingFloors={buildingFloors}
+            setBuildingFloors={setBuildingFloors}
+            listingFloor={listingFloor}
+            setListingFloor={setListingFloor}
+            yearBuilt={yearBuilt}
+            setYearBuilt={setYearBuilt}
+            propertySize={propertySize}
+            setPropertySize={setPropertySize}
+            propertySizeUnit={propertySizeUnit}
+            setPropertySizeUnit={setPropertySizeUnit}
+            editGuests={editGuests}
+            setEditGuests={setEditGuests}
+            editBedrooms={editBedrooms}
+            setEditBedrooms={setEditBedrooms}
+            editBeds={editBeds}
+            setEditBeds={setEditBeds}
+            editBathrooms={editBathrooms}
+            setEditBathrooms={setEditBathrooms}
+            fullBathrooms={fullBathrooms}
+            setFullBathrooms={setFullBathrooms}
+            halfBathrooms={halfBathrooms}
+            setHalfBathrooms={setHalfBathrooms}
+            privateBathrooms={privateBathrooms}
+            setPrivateBathrooms={setPrivateBathrooms}
+            sharedBathrooms={sharedBathrooms}
+            setSharedBathrooms={setSharedBathrooms}
+            privateEntrance={privateEntrance}
+            setPrivateEntrance={setPrivateEntrance}
+            elevatorAvailable={elevatorAvailable}
+            setElevatorAvailable={setElevatorAvailable}
+            rooms={rooms}
+            setRooms={setRooms}
+            editAmenities={editAmenities}
+            setEditAmenities={setEditAmenities}
+            accessibilityFeatures={accessibilityFeatures}
+            setAccessibilityFeatures={setAccessibilityFeatures}
+            accessibilityDetails={accessibilityDetails}
+            setAccessibilityDetails={setAccessibilityDetails}
+            expandedAccessibility={expandedAccessibility}
+            setExpandedAccessibility={setExpandedAccessibility}
+          />
+
+          <PricingAndBookingViews
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
             editPrice={editPrice}
+            setEditPrice={setEditPrice}
+            smartPricing={smartPricing}
+            setSmartPricing={setSmartPricing}
+            smartPricingMinPrice={smartPricingMinPrice}
+            setSmartPricingMinPrice={setSmartPricingMinPrice}
+            smartPricingMaxPrice={smartPricingMaxPrice}
+            setSmartPricingMaxPrice={setSmartPricingMaxPrice}
+            weekendPrice={weekendPrice}
+            weekendPremium={weekendPremium}
+            setWeekendPremium={(nextValue) => setWeekendPremium(clampWeekendPremium(nextValue))}
             weeklyDiscount={weeklyDiscount}
             monthlyDiscount={monthlyDiscount}
             minNights={minNights}
             maxNights={maxNights}
-            editGuests={editGuests}
-            editDescription={editDescription}
-            editAmenities={editAmenities}
-            editPhotos={editPhotos}
+            setMaxNights={setMaxNights}
+            advanceNotice={advanceNotice}
+            setAdvanceNotice={setAdvanceNotice}
+            sameDayCutoff={sameDayCutoff}
+            setSameDayCutoff={setSameDayCutoff}
+            allowSameDayRequests={allowSameDayRequests}
+            setAllowSameDayRequests={setAllowSameDayRequests}
+            bookingMethod={bookingMethod}
+            setBookingMethod={setBookingMethod}
+            setIsTurnOffInstantBookModalOpen={setIsTurnOffInstantBookModalOpen}
+            setIsCustomMessageModalOpen={setIsCustomMessageModalOpen}
+            cancellationPolicy={cancellationPolicy}
+            setCancellationPolicy={setCancellationPolicy}
+            longTermCancellationPolicy={longTermCancellationPolicy}
+            setLongTermCancellationPolicy={setLongTermCancellationPolicy}
+            customSlug={customSlug}
+            setCustomSlug={setCustomSlug}
+          />
+
+          <HostAndLocationViews
+            activeSection={activeSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
             editAddress={editAddress}
             editCity={editCity}
             editCountry={editCountry}
@@ -1197,6 +1347,73 @@ export function HostListingEditorClient({
             checkInStart={checkInStart}
             checkOutTime={checkOutTime}
             maxGuestsCount={maxGuestsCount}
+            setMaxGuestsCount={setMaxGuestsCount}
+            petsAllowed={petsAllowed}
+            setPetsAllowed={setPetsAllowed}
+            maxPetsCount={maxPetsCount}
+            setMaxPetsCount={setMaxPetsCount}
+            petRestrictions={petRestrictions}
+            setPetRestrictions={setPetRestrictions}
+            dogsAllowed={dogsAllowed}
+            setDogsAllowed={setDogsAllowed}
+            catsAllowed={catsAllowed}
+            setCatsAllowed={setCatsAllowed}
+            quietHours={quietHoursToggle}
+            setQuietHours={setQuietHoursToggle}
+            quietHoursStart={quietHoursStart}
+            setQuietHoursStart={setQuietHoursStart}
+            quietHoursEnd={quietHoursEnd}
+            setQuietHoursEnd={setQuietHoursEnd}
+            eventsAllowed={eventsAllowed}
+            setEventsAllowed={setEventsAllowed}
+            commercialFilmingAllowed={commercialFilmingAllowed}
+            setCommercialFilmingAllowed={setCommercialFilmingAllowed}
+            smokingAllowed={smokingAllowed}
+            setSmokingAllowed={setSmokingAllowed}
+            smokingLocation={smokingLocation}
+            setSmokingLocation={setSmokingLocation}
+            additionalHouseRules={additionalHouseRules}
+            setAdditionalHouseRules={setAdditionalHouseRules}
+            setIsEditingAdditionalRulesModalOpen={setIsEditingAdditionalRulesModalOpen}
+            checkInMethod={checkInMethod}
+            setCheckInMethod={setCheckInMethod}
+            wifiNetwork={wifiNetwork}
+            setWifiNetwork={setWifiNetwork}
+            wifiPassword={wifiPassword}
+            setWifiPassword={setWifiPassword}
+            houseManual={houseManual}
+            setHouseManual={setHouseManual}
+            directions={directions}
+            setDirections={setDirections}
+            checkInInstructions={checkInInstructions}
+            setCheckInInstructions={setCheckInInstructions}
+            doorCode={doorCode}
+            setDoorCode={setDoorCode}
+            lockboxCode={lockboxCode}
+            setLockboxCode={setLockboxCode}
+            parkingAvailable={parkingAvailable}
+            setParkingAvailable={setParkingAvailable}
+            parkingType={parkingType}
+            setParkingType={setParkingType}
+            parkingSpaces={parkingSpaces}
+            setParkingSpaces={setParkingSpaces}
+            parkingReservation={parkingReservation}
+            setParkingReservation={setParkingReservation}
+            parkingInstructions={parkingInstructions}
+            setParkingInstructions={setParkingInstructions}
+            selectedLanguageIds={selectedLanguageIds}
+            setSelectedLanguageIds={setSelectedLanguageIds}
+            listingStatusSetting={listingStatusSetting}
+            setListingStatusSetting={setListingStatusSetting}
+          />
+
+          <GuestsSafetyView
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
+            safetyConsiderations={safetyConsiderations}
+            setSafetyConsiderations={setSafetyConsiderations}
             carbonMonoxideAlarm={carbonMonoxideAlarm}
             smokeAlarm={smokeAlarm}
             cancellationPolicy={cancellationPolicy}
@@ -1212,7 +1429,88 @@ export function HostListingEditorClient({
             parkingType={parkingType}
             setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
           />
-        </div>
+
+          {(activeSection === "remove-listing" || activeSection === "removelisting") && (
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
+              <div className="flex items-center gap-3 text-zinc-900">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
+                  🏠
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-[#1F1F1F]">Remove listing</h2>
+                  <p className="text-xs text-zinc-500">Permanently remove your listing from Homyz.</p>
+                </div>
+              </div>
+              <p className="text-zinc-600 leading-relaxed">
+                If you no longer wish to host or need to remove <strong>{listing.title}</strong>, please complete our quick removal survey to permanently remove your listing.
+              </p>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsRemoveListingModalOpen(true)}
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
+                >
+                  Remove listing
+                </button>
+              </div>
+            </div>
+          )}
+
+        </main>
+
+        {/* ============================================================ */}
+        {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
+        {/* ============================================================ */}
+        <EditorSidebar
+          editorTab={editorTab}
+          setEditorTab={setEditorTab}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          editTitle={editTitle}
+          editListingType={editListingType}
+          editPropertyType={editPropertyType}
+          editPrice={editPrice}
+          smartPricing={smartPricing}
+          smartPricingMinPrice={smartPricingMinPrice}
+          smartPricingMaxPrice={smartPricingMaxPrice}
+          weeklyDiscount={weeklyDiscount}
+          monthlyDiscount={monthlyDiscount}
+          minNights={minNights}
+          maxNights={maxNights}
+          advanceNotice={advanceNotice}
+          sameDayCutoff={sameDayCutoff}
+          allowSameDayRequests={allowSameDayRequests}
+          accessibilityFeatures={accessibilityFeatures}
+          accessibilityDetails={accessibilityDetails}
+          editGuests={editGuests}
+          editDescription={editDescription}
+          editAmenities={editAmenities}
+          editPhotos={editPhotos}
+          editAddress={editAddress}
+          editCity={editCity}
+          editCountry={editCountry}
+          showExactLocation={showExactLocation}
+          listing={listing}
+          coHosts={coHosts}
+          bookingMethod={bookingMethod}
+          checkInStart={checkInStart}
+          checkOutTime={checkOutTime}
+          maxGuestsCount={maxGuestsCount}
+          carbonMonoxideAlarm={carbonMonoxideAlarm}
+          smokeAlarm={smokeAlarm}
+          cancellationPolicy={cancellationPolicy}
+          customSlug={customSlug}
+          checkInMethod={checkInMethod}
+          checkInEnd={checkInEnd}
+          wifiNetwork={wifiNetwork}
+          houseManual={houseManual}
+          directions={directions}
+          editBedrooms={editBedrooms}
+          editBeds={editBeds}
+          parkingAvailable={parkingAvailable}
+          parkingType={parkingType}
+          setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
+        />
       </Container>
 
       {/* --------------------------------------------------------- */}

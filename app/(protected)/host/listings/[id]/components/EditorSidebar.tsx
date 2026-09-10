@@ -4,6 +4,20 @@
 import React from "react";
 import { RealMap } from "@/components/ui/real-map";
 import { getAmenityMeta } from "@/lib/constants/amenities";
+import {
+  normalizeAccessibilityFeatureDetails,
+  normalizeAccessibilityFeatureIds,
+  type AccessibilityFeatureDetail,
+} from "@/lib/constants/listing-enums";
+
+const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
+  accessible_parking: "Accessible parking spot",
+  lit_path: "Lit path to entrance",
+  step_free_access: "Step-free access",
+  wide_entrance: "Guest entrance wider than 32 in",
+  pool_hoist: "Pool or hot tub hoist",
+  ceiling_hoist: "Ceiling or mobile hoist",
+};
 
 interface EditorSidebarProps {
   editorTab: "space" | "arrival" | "preferences";
@@ -14,10 +28,18 @@ interface EditorSidebarProps {
   editListingType: string;
   editPropertyType: string;
   editPrice: number;
+  smartPricing?: boolean;
+  smartPricingMinPrice?: number;
+  smartPricingMaxPrice?: number;
   weeklyDiscount: number;
   monthlyDiscount: number;
   minNights: number;
   maxNights: number;
+  advanceNotice?: string;
+  sameDayCutoff?: string;
+  allowSameDayRequests?: boolean;
+  accessibilityFeatures?: string[];
+  accessibilityDetails?: AccessibilityFeatureDetail[];
   editGuests: number;
   editDescription: string;
   editAmenities: string[];
@@ -57,10 +79,18 @@ export function EditorSidebar({
   editListingType,
   editPropertyType,
   editPrice,
+  smartPricing = false,
+  smartPricingMinPrice = 0,
+  smartPricingMaxPrice = 0,
   weeklyDiscount,
   monthlyDiscount,
   minNights,
   maxNights,
+  advanceNotice = "Same day",
+  sameDayCutoff = "12:00 AM",
+  allowSameDayRequests = true,
+  accessibilityFeatures = [],
+  accessibilityDetails = [],
   editGuests,
   editDescription,
   editAmenities,
@@ -90,6 +120,13 @@ export function EditorSidebar({
   parkingType = "Free",
   setIsRemoveListingModalOpen,
 }: EditorSidebarProps) {
+  const selectedAccessibilityFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
+  const accessibilityDetailsByFeature = new Map(
+    normalizeAccessibilityFeatureDetails(accessibilityDetails).map((detail) => [detail.featureId, detail]),
+  );
+  const confirmedAccessibilityFeatures = selectedAccessibilityFeatures.filter(
+    (featureId) => (accessibilityDetailsByFeature.get(featureId)?.photos.length ?? 0) > 0,
+  );
   const acceptedCoHostCount = coHosts.filter((item) => item.status === "ACCEPTED").length;
   const pendingCoHostCount = coHosts.filter((item) => item.status === "PENDING").length;
   const coHostSummary = acceptedCoHostCount > 0
@@ -408,9 +445,20 @@ export function EditorSidebar({
                   Pricing
                 </span>
                 <div className="text-xs text-zinc-800 space-y-0.5">
-                    <p className="text-base font-medium text-[#727272]">SR{editPrice} per night</p>
-                    <p className="text-base font-medium text-[#727272]">{weeklyDiscount}% weekly discount</p>
-                    <p className="text-base font-medium text-[#727272]">{monthlyDiscount}% monthly discount</p>
+                  {smartPricing ? (
+                    <>
+                      <p className="font-semibold text-[#1F1F1F]">Smart pricing</p>
+                      <p className="text-[11px] text-zinc-500">
+                        SR{smartPricingMinPrice} – SR{smartPricingMaxPrice}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-[#1F1F1F]">SR{editPrice}</p>
+                      <p className="text-[11px] text-zinc-500">{weeklyDiscount}% weekly discount</p>
+                      <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -430,8 +478,10 @@ export function EditorSidebar({
                     <p className="text-base font-medium text-[#727272]">
                     {minNights}-{maxNights} night stays
                   </p>
-                    <p className="text-base font-medium text-[#727272]">Advance notice not configured</p>
-                    <p className="text-base font-medium text-[#727272]">{monthlyDiscount}% monthly discount</p>
+                  <p className="text-[11px] text-zinc-500">{advanceNotice} notice</p>
+                  <p className="text-[11px] text-zinc-500">
+                    {allowSameDayRequests ? `Same-day requests until ${sameDayCutoff}` : "Same-day requests unavailable"}
+                  </p>
                 </div>
               </div>
 
@@ -534,7 +584,29 @@ export function EditorSidebar({
                 <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
                   Accessibility features
                 </span>
-                <span className="text-xs text-zinc-400 font-medium">Add details</span>
+                {confirmedAccessibilityFeatures.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    {confirmedAccessibilityFeatures.map((featureId) => {
+                      const detail = accessibilityDetailsByFeature.get(featureId);
+                      const photo = detail?.photos[0];
+                      return (
+                        <div key={featureId} className="flex items-center gap-2 text-[11px] text-zinc-700">
+                          {photo ? (
+                            <img src={photo} alt="" className="h-7 w-7 rounded-md border border-zinc-200 object-cover" />
+                          ) : (
+                            <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-[10px] text-amber-700">!</span>
+                          )}
+                          <span className="min-w-0 flex-1 truncate font-medium">
+                            {ACCESSIBILITY_FEATURE_LABELS[featureId] ?? featureId.replace(/_/g, " ")}
+                          </span>
+                          <span className="shrink-0 text-[10px] text-zinc-400">{detail?.photos.length ?? 0} photo{detail?.photos.length === 1 ? "" : "s"}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <span className="text-xs text-zinc-400 font-medium">Add details</span>
+                )}
               </div>
 
               {/* 9. Location */}

@@ -373,14 +373,6 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         await updateSession({ role: "HOST" });
       }
 
-      // The host should complete both a newly created draft and an existing
-      // listing in the same editor.  Once its ID exists, that editor owns the
-      // section URL, persistence feedback, and publish checklist.
-      if (isNewDraft) {
-        router.replace(`/host/listings/${activeDraftId}/property-type`);
-        return activeDraftId;
-      }
-
       setStep(nextStepIndex);
       updateUrlForStep(nextStepIndex, activeDraftId);
       return activeDraftId;

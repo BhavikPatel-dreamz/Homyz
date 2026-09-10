@@ -451,8 +451,12 @@ async function create(
       description: input.description || "",
       descriptionSections: input.descriptionSections ? JSON.parse(JSON.stringify(input.descriptionSections)) : null,
       price: input.price ?? 10000,
+      smartPricing: input.smartPricing ?? false,
+      smartPricingMinPrice: input.smartPricingMinPrice ?? null,
+      smartPricingMaxPrice: input.smartPricingMaxPrice ?? null,
       published: false, // Strictly enforced: Host submission requires Admin approval before activation
       hostingType: input.hostingType || "HOME",
+      placeCategory: input.placeCategory ?? null,
       propertyType: input.propertyType || null,
       listingType: input.listingType || null,
       locationSearch: input.locationSearch || null,
@@ -467,7 +471,7 @@ async function create(
       country: input.country || null,
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
-      showExactLocation: input.showExactLocation ?? false,
+      showExactLocation: input.showExactLocation ?? true,
       guests: input.guests ?? 1,
       bedrooms: input.bedrooms ?? 1,
       beds: input.beds ?? 1,
@@ -492,6 +496,7 @@ async function create(
       parkingSpaces: input.parkingSpaces ?? null,
       parkingReservation: input.parkingReservation ?? null,
       guestAccess: input.guestAccess || [],
+      languages: input.languages || [],
       photos: input.photos || [],
       highlights: input.highlights || [],
       amenities: input.amenities ? normalizeAmenities(input.amenities) : [],
@@ -499,6 +504,7 @@ async function create(
       safetyEquipment: input.safetyEquipment || [],
       safetyHazards: input.safetyHazards || [],
       accessibilityFeatures: input.accessibilityFeatures || [],
+      accessibilityDetails: input.accessibilityDetails ? JSON.parse(JSON.stringify(input.accessibilityDetails)) : null,
       views: input.views || [],
       locationFeatures: input.locationFeatures || [],
       houseRules: input.houseRules || [],
@@ -535,6 +541,9 @@ async function create(
       bookingMessage: input.bookingMessage ?? null,
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
+      advanceNotice: input.advanceNotice ?? "Same day",
+      sameDayCutoff: input.sameDayCutoff ?? "12:00 AM",
+      allowSameDayRequests: input.allowSameDayRequests ?? true,
       instantBook: input.instantBook ?? true,
       isPaused: input.isPaused ?? false,
       blockedDates: input.blockedDates || [],
@@ -597,6 +606,15 @@ async function update(
   if (dataToUpdate.descriptionSections !== undefined) {
     dataToUpdate.descriptionSections = dataToUpdate.descriptionSections ? JSON.parse(JSON.stringify(dataToUpdate.descriptionSections)) : null;
   }
+  if (dataToUpdate.accessibilityDetails !== undefined) {
+    dataToUpdate.accessibilityDetails = dataToUpdate.accessibilityDetails ? JSON.parse(JSON.stringify(dataToUpdate.accessibilityDetails)) : null;
+  }
+  if (dataToUpdate.smartPricingMinPrice !== undefined) {
+    dataToUpdate.smartPricingMinPrice = dataToUpdate.smartPricingMinPrice ?? null;
+  }
+  if (dataToUpdate.smartPricingMaxPrice !== undefined) {
+    dataToUpdate.smartPricingMaxPrice = dataToUpdate.smartPricingMaxPrice ?? null;
+  }
   if (dataToUpdate.neighborhoodDescription !== undefined) {
     dataToUpdate.neighborhoodDescription = dataToUpdate.neighborhoodDescription ?? null;
   }
@@ -608,6 +626,9 @@ async function update(
   }
   if (Array.isArray(dataToUpdate.amenities)) {
     dataToUpdate.amenities = normalizeAmenities(dataToUpdate.amenities);
+  }
+  if (Array.isArray(dataToUpdate.languages)) {
+    dataToUpdate.languages = [...new Set(dataToUpdate.languages.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20);
   }
   if (dataToUpdate.rooms !== undefined) {
     dataToUpdate.rooms = dataToUpdate.rooms ? JSON.parse(JSON.stringify(dataToUpdate.rooms)) : null;
@@ -999,6 +1020,7 @@ async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
       published: false,
       status: ListingStatus.DRAFT,
       hostingType: existing.hostingType,
+      placeCategory: existing.placeCategory,
       propertyType: existing.propertyType,
       listingType: existing.listingType,
       locationSearch: existing.locationSearch,

@@ -1,7 +1,7 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
 import { NewListingGetStarted } from "@/components/host/new-listing-get-started";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type NewListingPageProps = {
   searchParams: Promise<{ type?: string | string[]; draftId?: string | string[] }>;
@@ -17,11 +17,8 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
     notFound();
   }
 
-  // Drafts and published listings share the same editor. The destination
-  // performs the authoritative ownership check before rendering any data.
-  if (draftId) {
-    redirect(`/host/listings/${encodeURIComponent(draftId)}/property-type`);
-  }
-
+  // Keep the creation flow in the step-based wizard even when a draft ID is
+  // present in the URL. Redirects to a listing section only happen in the
+  // dedicated edit screens, not while the host is creating a new listing.
   return <NewListingGetStarted initialHostingType={hostingType} />;
 }

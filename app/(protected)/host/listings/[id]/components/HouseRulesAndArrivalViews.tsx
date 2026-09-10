@@ -2,6 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import {
+  DEFAULT_LANGUAGE_IDS,
+  getLanguageDisplayNames,
+  LANGUAGE_OPTIONS,
+  type LanguageOption,
+} from "@/lib/utils/language-options";
 
 import React from "react";
 import { GuidebooksManager } from "./GuidebooksManager";
@@ -85,6 +91,8 @@ interface HouseRulesAndArrivalViewsProps {
   setAdditionalHouseRules?: (val: string) => void;
   listingStatusSetting?: "listed" | "unlisted";
   setListingStatusSetting?: (val: "listed" | "unlisted") => void;
+  selectedLanguageIds?: string[];
+  setSelectedLanguageIds?: (val: string[]) => void;
 
   // Modals trigger
   setIsEditingAdditionalRulesModalOpen: (open: boolean) => void;
@@ -200,6 +208,8 @@ export function HouseRulesAndArrivalViews({
   setParkingInstructions,
   listingStatusSetting = "unlisted",
   setListingStatusSetting,
+  selectedLanguageIds = DEFAULT_LANGUAGE_IDS,
+  setSelectedLanguageIds,
 }: HouseRulesAndArrivalViewsProps) {
   return (
     <>
@@ -940,6 +950,8 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          selectedLanguageIds={selectedLanguageIds}
+          setSelectedLanguageIds={setSelectedLanguageIds}
         />
       )}
 
@@ -1214,24 +1226,34 @@ function InteractionPreferencesView({
         {options.map((option, index) => {
           const isActive = selectedOption === index;
           return (
-            <div
+            <button
               key={option}
+              type="button"
               onClick={() => setSelectedOption(index)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between text-xs font-semibold shadow-2xs ${
+              className={`w-full rounded-[18px] border px-4 py-4 text-left transition-all cursor-pointer flex items-center justify-between gap-4 shadow-[0_0_0_1px_rgba(0,0,0,0.02)] ${
                 isActive
-                  ? "bg-[#FEF9EC] border-amber-300 text-zinc-950"
-                  : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300"
+                  ? "bg-[#FEF9EC] border-[#E4C86B] text-[#1F1F1F]"
+                  : "bg-white border-[#D9D9D9] text-[#1F1F1F] hover:border-[#B7B7B7]"
               }`}
+              aria-pressed={isActive}
+              aria-label={option}
             >
-              <span>{option}</span>
-              <div
-                className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                  isActive ? "border-amber-400 bg-amber-400 text-white" : "border-zinc-300 bg-white"
+              <span className="flex-1 text-[15px] md:text-[16px] font-normal leading-relaxed tracking-[-0.01em] text-current">
+                {option}
+              </span>
+
+              <span
+                className={`relative inline-flex h-9 w-16 shrink-0 items-center rounded-full border transition-all duration-200 ${
+                  isActive ? "bg-[#D8D8D8] border-[#D8D8D8]" : "bg-[#F0F0F0] border-[#D2D2D2]"
                 }`}
               >
-                {isActive && <span className="text-[10px] leading-none">✓</span>}
-              </div>
-            </div>
+                <span
+                  className={`absolute h-7 w-7 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-[#DADADA] transition-all duration-200 ${
+                    isActive ? "translate-x-8" : "translate-x-1"
+                  }`}
+                />
+              </span>
+            </button>
           );
         })}
       </div>
@@ -1386,32 +1408,30 @@ function LanguagesView({
   setActiveSection,
   isSaving: _isSaving,
   handleSaveSection,
+  selectedLanguageIds,
+  setSelectedLanguageIds,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
+  selectedLanguageIds: string[];
+  setSelectedLanguageIds?: (value: string[]) => void;
 }) {
-  const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>(["English"]);
   const [isAdding, setIsAdding] = React.useState(false);
   const [searchLang, setSearchLang] = React.useState("");
 
-  const availableLanguages = [
-    "Arabic",
-    "English",
-    "French",
-    "German",
-    "Spanish",
-    "Italian",
-    "Chinese",
-    "Japanese",
-    "Russian",
-    "Portuguese",
-    "Turkish",
-    "Hindi",
-  ];
+  const selectedLanguages = React.useMemo(
+    () => getLanguageDisplayNames(selectedLanguageIds.length > 0 ? selectedLanguageIds : DEFAULT_LANGUAGE_IDS),
+    [selectedLanguageIds]
+  );
 
-  const filteredLanguages = availableLanguages.filter((l) =>
-    l.toLowerCase().includes(searchLang.toLowerCase())
+  const filteredLanguages: LanguageOption[] = React.useMemo(
+    () =>
+      LANGUAGE_OPTIONS.filter((language) =>
+        language.name.toLowerCase().includes(searchLang.toLowerCase()) ||
+        (language.nativeName ?? "").toLowerCase().includes(searchLang.toLowerCase())
+      ),
+    [searchLang]
   );
 
   return (
@@ -1428,25 +1448,29 @@ function LanguagesView({
 
       {/* List of currently selected languages */}
       <div className="flex flex-wrap gap-2 pt-2">
-        {selectedLanguages.map((lang) => (
-          <div
-            key={lang}
-            className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-250 text-[#1F1F1F] text-xs font-semibold px-4 py-2 rounded-full shadow-2xs"
-          >
-            <span>{lang}</span>
-            {selectedLanguages.length > 1 && (
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedLanguages(selectedLanguages.filter((l) => l !== lang))
-                }
-                className="text-zinc-400 hover:text-zinc-700 font-semibold"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
+        {selectedLanguageIds.map((languageId) => {
+          const languageName = getLanguageDisplayNames([languageId])[0] ?? languageId;
+          return (
+            <div
+              key={languageId}
+              className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-250 text-[#1F1F1F] text-xs font-semibold px-4 py-2 rounded-full shadow-2xs"
+            >
+              <span>{languageName}</span>
+              {selectedLanguageIds.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!setSelectedLanguageIds) return;
+                    setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== languageId));
+                  }}
+                  className="text-zinc-400 hover:text-zinc-700 font-semibold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Add a language Modal / Expandable selector */}
@@ -1473,24 +1497,25 @@ function LanguagesView({
 
           <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
             {filteredLanguages.map((lang) => {
-              const isSelected = selectedLanguages.includes(lang);
+              const isSelected = selectedLanguageIds.includes(lang.id);
               return (
                 <div
-                  key={lang}
+                  key={lang.id}
                   onClick={() => {
+                    if (!setSelectedLanguageIds) return;
                     if (isSelected) {
-                      if (selectedLanguages.length > 1) {
-                        setSelectedLanguages(selectedLanguages.filter((l) => l !== lang));
+                      if (selectedLanguageIds.length > 1) {
+                        setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== lang.id));
                       }
                     } else {
-                      setSelectedLanguages([...selectedLanguages, lang]);
+                      setSelectedLanguageIds([...selectedLanguageIds, lang.id]);
                     }
                   }}
                   className={`p-3 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between ${
                     isSelected ? "bg-[#FEF9EC] text-zinc-950 border border-amber-300" : "hover:bg-zinc-50 text-zinc-700"
                   }`}
                 >
-                  <span>{lang}</span>
+                  <span>{lang.name}</span>
                   {isSelected && <span>✓</span>}
                 </div>
               );
