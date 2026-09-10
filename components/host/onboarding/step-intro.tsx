@@ -1,7 +1,10 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
+import { CloseIcon } from "@/components/ui/close-icon";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 import React from "react";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 interface StepIntroProps {
   onBack: () => void;
@@ -10,31 +13,50 @@ interface StepIntroProps {
 }
 
 export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps) {
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (!isLoading) {
+      router.back();
+    }
+  };
   return (
-    <main className="py-10">
+    <main className="sm:py-10">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center my-auto">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+          {/* Mobile close button */}
+          <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={isLoading}
+              aria-label="Close"
+              className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+          <div className="step-intro-panel max-w-219.25 w-full grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center sm:m-auto mx-auto">
             {/* Left Column: Step Badge, Title & Description */}
-            <div className="lg:col-span-6 flex flex-col justify-center max-w-xl">
-              <div className="mb-6">
-                <span className="inline-flex items-center rounded-full border border-zinc-300 px-4 py-1 text-xs font-semibold text-zinc-700 bg-white">
+            <div className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
+              <div className="mb-5">
+                <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
                   Step 1
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1F1F1F] tracking-tight leading-[1.15] mb-6">
-                Tell us about <br />
+              <h1>
+                Tell us about <br className="sm:block hidden" />
                 your place
               </h1>
-              <p className="text-base font-normal text-[#727272] leading-relaxed">
+              <p className="text-base font-normal text-[#727272] leading-relaxed mt-5">
                 In this step, we&apos;ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
               </p>
             </div>
 
             {/* Right Column: Room & Armchair Vector Illustration */}
-            <div className="lg:col-span-6 flex justify-center lg:justify-end w-full">
-              <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 bg-[#6A9FB5]">
-                <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <div className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
+              <div className="w-full sm:max-w-md rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 bg-[#6A9FB5]">
+                <svg width="362" height="362" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
                   <rect width="400" height="400" fill="#6A9FB5" />
                   <path d="M 0 0 L 220 0 L 120 400 L 0 400 Z" fill="white" fillOpacity="0.15" />
                   <path d="M 180 0 L 340 0 L 240 400 L 80 400 Z" fill="white" fillOpacity="0.1" />
@@ -76,27 +98,20 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
           </div>
 
           {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-8">
-            <button
-              type="button"
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end pt-8 mt-8">
+            <OnboardingBackButton
               onClick={onBack}
               disabled={isLoading}
-              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              Back
-            </button>
+            />
             <button
               type="button"
               onClick={onNext}
               disabled={isLoading}
-              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
+              className="inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 lg:px-6 py-2.25 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0 lg:flex-none"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-[#1F1F1F] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <LoadingIcon className="mr-2 size-4 shrink-0 animate-spin" />
                   <span>Loading...</span>
                 </>
               ) : (

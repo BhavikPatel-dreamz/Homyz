@@ -4,6 +4,7 @@ import React from "react";
 
 import { normalizeAmenityId } from "@/lib/constants/amenities";
 import { Container } from "@/components/ui";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 interface AmenityOption {
   id: string;
@@ -312,13 +313,10 @@ export function StepAmenities({
 
           {/* Bottom Action Footer Bar */}
           <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
-            <button
-              type="button"
+            <OnboardingBackButton
               onClick={onBack}
-              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
-            >
-              Back
-            </button>
+              disabled={isLoading}
+            />
             <button
               type="button"
               onClick={onNext}
