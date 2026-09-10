@@ -10,6 +10,15 @@ import {
   normalizeMostLikeSelection,
   type AccessibilityFeatureDetail,
 } from "@/lib/constants/listing-enums";
+import {
+  TitleSkeleton,
+  PropertyTypeSkeleton,
+  GuestsSkeleton,
+  SleepingArrangementsSkeleton,
+  DescriptionSkeleton,
+  AmenitiesSkeleton,
+  AccessibilitySkeleton,
+} from "./YourSpaceSkeletons";
 
 export interface BedItem {
   type: string;
@@ -28,6 +37,7 @@ interface PropertyDetailsViewsProps {
   setActiveSection: (section: any) => void;
   feedbackMsg: { type: "success" | "error"; text: string } | null;
   isSaving: boolean;
+  isLoading?: boolean;
   handleSaveSection: (sectionKey: any, sectionSubtype?: "property" | "access" | "interaction" | "other") => void;
 
   // Description
@@ -114,6 +124,7 @@ export function PropertyDetailsViews({
   setActiveSection,
   feedbackMsg,
   isSaving,
+  isLoading,
   handleSaveSection,
   editDescription,
   setEditDescription,
@@ -244,6 +255,9 @@ export function PropertyDetailsViews({
     "Serviced apartment",
     "Rental unit*",
   ].includes(editPropertyType);
+
+
+
   return (
     <>
       {/* --------------------------------------------------------- */}
@@ -265,7 +279,10 @@ export function PropertyDetailsViews({
             </p>
           </div>
 
-          <div className="space-y-3 pt-1">
+          {isLoading ? (
+            <DescriptionSkeleton />
+          ) : (
+            <div className="space-y-3 pt-1">
             {/* 1. Listing description */}
             <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-4 space-y-3 shadow-2xs">
               <div
@@ -491,6 +508,7 @@ export function PropertyDetailsViews({
               )}
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -504,7 +522,10 @@ export function PropertyDetailsViews({
             <h1>Listing title</h1>
           </div>
 
-          <div className="space-y-3">
+          {isLoading ? (
+            <TitleSkeleton />
+          ) : (
+            <div className="space-y-3">
             <input
               type="text"
               value={editTitle}
@@ -526,6 +547,7 @@ export function PropertyDetailsViews({
               {isSaving ? "Saving..." : "Save Title"}
             </button>
           </div>
+          )}
         </div>
       )}
 
@@ -540,7 +562,10 @@ export function PropertyDetailsViews({
             <h1>Property type</h1>
           </div>
 
-          <div className="space-y-5 pt-1">
+          {isLoading ? (
+            <PropertyTypeSkeleton />
+          ) : (
+            <div className="space-y-5 pt-1">
             {/* 1. Which is most like your place? */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-zinc-800">Which is most like your place?</label>
@@ -849,6 +874,7 @@ export function PropertyDetailsViews({
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -874,6 +900,14 @@ export function PropertyDetailsViews({
             </p>
           </div>
 
+          {isLoading ? (
+            activeSection === "sleeping-arrangements" ? (
+              <SleepingArrangementsSkeleton />
+            ) : (
+              <GuestsSkeleton />
+            )
+          ) : (
+            <>
           {/* Section 1: Guest Capacity Counter */}
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
             <div className="flex items-center justify-between">
@@ -1244,6 +1278,8 @@ export function PropertyDetailsViews({
               {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
+          </>
+          )}
         </div>
       )}
 
@@ -1370,7 +1406,9 @@ export function PropertyDetailsViews({
               </div>
             </div>
 
-            {activeSection === "add-amenities" ? (
+            {isLoading ? (
+              <AmenitiesSkeleton />
+            ) : activeSection === "add-amenities" ? (
               /* Add Amenities Selection View */
               <div className="space-y-5 pt-1">
                 {/* Search Bar */}
@@ -1584,6 +1622,10 @@ export function PropertyDetailsViews({
             </p>
           )}
 
+          {isLoading ? (
+            <AccessibilitySkeleton />
+          ) : (
+            <>
           {/* List of Accessibility Features */}
           <div className="space-y-3 pt-2">
             {[
@@ -1817,6 +1859,8 @@ export function PropertyDetailsViews({
               {uploadingAccessibilityPhoto ? "Uploading..." : isSaving ? "Saving..." : "Save"}
             </button>
           </div>
+          </>
+          )}
         </div>
       )}
     </>

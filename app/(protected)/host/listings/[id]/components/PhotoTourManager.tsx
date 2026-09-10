@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { PhotosSkeleton } from "./YourSpaceSkeletons";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -10,9 +11,11 @@ interface PhotoTourManagerProps {
   onChange: (photos: string[]) => void;
   onSave: () => void;
   isSaving: boolean;
+  isLoading?: boolean;
 }
 
-export function PhotoTourManager({ photos, onChange, onSave, isSaving }: PhotoTourManagerProps) {
+export function PhotoTourManager({ photos, onChange, onSave, isSaving, isLoading }: PhotoTourManagerProps) {
+
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
@@ -62,9 +65,13 @@ export function PhotoTourManager({ photos, onChange, onSave, isSaving }: PhotoTo
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h1>Photo tour</h1><p className="mt-1 text-xs text-zinc-500">Upload several photos, drag to reorder, and keep your cover photo first.</p></div><button type="button" disabled={isSaving || uploading} onClick={onSave} className="rounded-full bg-[#FEE08B] px-5 py-2 text-xs font-semibold disabled:opacity-60">{isSaving ? "Saving…" : "Save photo tour"}</button></div>
     {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error} Choose the photo again to retry.</p>}
     {uploading && <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">Uploading securely…</p>}
-    <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const files = Array.from(event.dataTransfer.files); if (files.length) void uploadFiles(files); }} className="grid grid-cols-2 gap-3 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-3 sm:grid-cols-3">
-      {photos.map((photo, index) => <div key={`${photo}-${index}`} draggable onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); if (dragIndex !== null) reorder(dragIndex, index); setDragIndex(null); }} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-zinc-200"><img src={photo} alt={index === 0 ? "Cover photo" : `Listing photo ${index + 1}`} className="h-full w-full object-cover" /><div className="absolute inset-x-1 bottom-1 flex flex-wrap gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"><button type="button" onClick={() => { const next = [...photos]; const [cover] = next.splice(index, 1); next.unshift(cover); onChange(next); }} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold">{index === 0 ? "Cover" : "Make cover"}</button><button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold">Replace</button><button type="button" onClick={() => onChange(photos.filter((_, itemIndex) => itemIndex !== index))} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold text-rose-700">Delete</button></div></div>)}
-      <button type="button" onClick={() => addInput.current?.click()} disabled={uploading} className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl border border-dashed border-zinc-400 bg-white text-xs font-semibold text-zinc-600 disabled:opacity-60"><span className="text-xl">＋</span>Add photos</button>
-    </div>
+    {isLoading ? (
+      <PhotosSkeleton />
+    ) : (
+      <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const files = Array.from(event.dataTransfer.files); if (files.length) void uploadFiles(files); }} className="grid grid-cols-2 gap-3 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-3 sm:grid-cols-3">
+        {photos.map((photo, index) => <div key={`${photo}-${index}`} draggable onDragStart={() => setDragIndex(index)} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); if (dragIndex !== null) reorder(dragIndex, index); setDragIndex(null); }} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-zinc-200"><img src={photo} alt={index === 0 ? "Cover photo" : `Listing photo ${index + 1}`} className="h-full w-full object-cover" /><div className="absolute inset-x-1 bottom-1 flex flex-wrap gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"><button type="button" onClick={() => { const next = [...photos]; const [cover] = next.splice(index, 1); next.unshift(cover); onChange(next); }} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold">{index === 0 ? "Cover" : "Make cover"}</button><button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold">Replace</button><button type="button" onClick={() => onChange(photos.filter((_, itemIndex) => itemIndex !== index))} className="rounded bg-white px-1.5 py-1 text-[10px] font-semibold text-rose-700">Delete</button></div></div>)}
+        <button type="button" onClick={() => addInput.current?.click()} disabled={uploading} className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl border border-dashed border-zinc-400 bg-white text-xs font-semibold text-zinc-600 disabled:opacity-60"><span className="text-xl">＋</span>Add photos</button>
+      </div>
+    )}
   </section>;
 }

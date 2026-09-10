@@ -16,6 +16,11 @@ import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
+import {
+  LocationSkeleton,
+  AboutHostSkeleton,
+  CoHostSkeleton,
+} from "./YourSpaceSkeletons";
 
 type CoHost = {
   id: string;
@@ -36,6 +41,7 @@ export type HostProfile = {
 interface Props {
   activeSection: string;
   isSaving: boolean;
+  isLoading?: boolean;
   handleSaveSection: (sectionKey: "location") => void;
   editAddress: string;
   setEditAddress: (value: string) => void;
@@ -136,6 +142,7 @@ function initials(name: string | null) {
     .toUpperCase();
 }
 export function HostAndLocationViews(props: Props) {
+
   if (props.activeSection === "location") return <LocationView {...props} />;
   if (props.activeSection === "about-host") return <AboutHostView {...props} />;
   if (props.activeSection === "co-host") return <CoHostView {...props} />;
@@ -350,26 +357,28 @@ function EnhancedLocationView(props: Props) {
     </div>
   );
 }
-function LocationView({
-  editAddress,
-  setEditAddress,
-  neighborhoodDescription,
-  setNeighborhoodDescription,
-  gettingAround,
-  setGettingAround,
-  scenicViews,
-  setScenicViews,
-  locationFeatures,
-  setLocationFeatures,
-  editCity,
-  setEditCity,
-  editCountry,
-  setEditCountry,
-  showExactLocation,
-  setShowExactLocation,
-  isSaving,
-  handleSaveSection,
-}: Props) {
+function LocationView(props: Props) {
+  const {
+    editAddress,
+    setEditAddress,
+    neighborhoodDescription,
+    setNeighborhoodDescription,
+    gettingAround,
+    setGettingAround,
+    scenicViews,
+    setScenicViews,
+    locationFeatures,
+    setLocationFeatures,
+    editCity,
+    setEditCity,
+    editCountry,
+    setEditCountry,
+    showExactLocation,
+    setShowExactLocation,
+    isSaving,
+    handleSaveSection,
+    isLoading,
+  } = props;
   const [open, setOpen] = useState("address");
   const save = () => {
     handleSaveSection("location");
@@ -383,6 +392,10 @@ function LocationView({
           Share useful area context without making safety guarantees.
         </p>
       </div>
+      {props.isLoading ? (
+        <LocationSkeleton />
+      ) : (
+        <>
       <div className="h-60 overflow-hidden rounded-2xl border border-zinc-200">
         <RealMap
           address={editAddress}
@@ -535,6 +548,8 @@ function LocationView({
           </button>
         </div>
       </Card>
+      </>
+      )}
     </div>
   );
 }
@@ -659,7 +674,8 @@ function ProfilePromptIcon() {
   );
 }
 
-function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
+function AboutHostView(props: Props) {
+  const { hostProfile, onHostProfileSaved } = props;
   const router = useRouter();
   const { data: session, update: updateSession } = useSession();
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -767,6 +783,10 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
         <h1 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">About the host</h1>
       </header>
 
+      {props.isLoading ? (
+        <AboutHostSkeleton />
+      ) : (
+        <>
       <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
         <div className="relative h-48 w-full shrink-0 overflow-visible sm:h-44 sm:w-60">
           <div className="h-full w-full overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100 shadow-2xs">
@@ -964,10 +984,13 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
         <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
         <button type="submit" disabled={saving} className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button>
       </div>
+      </>
+      )}
     </form>
   );
 }
-function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
+function CoHostView(props: Props) {
+  const { listingId, coHosts, setCoHosts } = props;
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+39");
@@ -1059,6 +1082,10 @@ function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
           Invite co-host
         </button>
       </div>
+      {props.isLoading ? (
+        <CoHostSkeleton />
+      ) : (
+        <>
       {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
       {active.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
@@ -1091,6 +1118,8 @@ function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
       {open && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 sm:p-6">

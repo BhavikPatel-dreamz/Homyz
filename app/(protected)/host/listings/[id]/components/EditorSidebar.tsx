@@ -17,6 +17,7 @@ import {
   getActiveSafetyItems,
   parseSafetyData,
 } from "./guest-safety-helpers";
+import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   if (type === "co") {
@@ -141,6 +142,7 @@ interface EditorSidebarProps {
   parkingAvailable?: boolean;
   parkingType?: string;
   setIsRemoveListingModalOpen?: (open: boolean) => void;
+  isLoading?: boolean;
 }
 
 export function EditorSidebar({
@@ -148,6 +150,7 @@ export function EditorSidebar({
   setEditorTab,
   activeSection,
   setActiveSection,
+  isLoading = false,
   editTitle,
   editListingType,
   editPropertyType,
@@ -248,6 +251,7 @@ export function EditorSidebar({
     commercialFilmingAllowed !== null && commercialFilmingAllowed !== undefined ? (commercialFilmingAllowed ? "Commercial filming allowed" : "No commercial filming") : null,
     additionalHouseRules?.trim() ? "Additional house rules" : null,
   ].filter(Boolean);
+
   return (
     <aside className="lg:col-span-4 xl:col-span-4 flex min-w-0 flex-col lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)]">
       <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
@@ -484,33 +488,117 @@ export function EditorSidebar({
             </div>
           ) : editorTab === "space" ? (
             <div className="space-y-3">
-              {/* Photo Card Stack Preview (Only shown under "Your space") */}
+              {/* Photo Card Stack Preview (Matches reference image: 4 overlapping cards with hover animation) */}
               {activeSection !== "about-host" && (
-              <div
-                onClick={() => setActiveSection("photos")}
-                className="relative cursor-pointer group my-2 p-3"
-              >
-                <div className="absolute inset-0 translate-x-1.25 -translate-y-0.5 rounded-2xl border border-zinc-200 bg-white shadow-2xs" />
-
-                <div className="relative aspect-[16/7] rounded-2xl overflow-hidden border border-zinc-300 bg-zinc-100 shadow-xs flex items-center justify-center">
-                  {editPhotos.length > 0 ? (
-                    <img
-                      src={editPhotos[0]}
-                      alt="Property cover"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
-                      <span className="text-2xl mb-1">🏡</span>
+                <div
+                  onClick={() => setActiveSection("photos")}
+                  className={`relative cursor-pointer group my-2 p-2 rounded-3xl transition-all ${
+                    activeSection === "photos"
+                      ? "bg-[#ECE9FE] border border-indigo-200 shadow-2xs"
+                      : "hover:bg-zinc-100/50"
+                  }`}
+                  aria-label="Photo tour preview"
+                >
+                  <div className="relative h-36 sm:h-40 w-full overflow-visible">
+                    {/* Card 0 (Leftmost, z-0) */}
+                    <div
+                      className="absolute top-0 bottom-0 left-0 w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-0 transition-all duration-300 ease-out group-hover:-translate-x-2.5 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                    >
+                      {editPhotos.length > 3 ? (
+                        <img
+                          src={editPhotos[3]}
+                          alt="Listing photo 4"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      ) : editPhotos.length > 0 ? (
+                        <img
+                          src={editPhotos[editPhotos.length - 1]}
+                          alt="Listing photo"
+                          className="w-full h-full object-cover opacity-80"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xl">
+                          🏡
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
-                    <span className="bg-white/95 backdrop-blur-md text-[#1F1F1F] text-base font-semibold px-3.5 py-1.5 rounded-xl shadow-xs border border-white/60">
-              {editPhotos.length} photos
-                    </span>
+
+                    {/* Card 1 (z-10) */}
+                    <div
+                      className="absolute top-0 bottom-0 left-[15%] w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-10 transition-all duration-300 ease-out group-hover:-translate-x-1 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                    >
+                      {editPhotos.length > 2 ? (
+                        <img
+                          src={editPhotos[2]}
+                          alt="Listing photo 3"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      ) : editPhotos.length > 0 ? (
+                        <img
+                          src={editPhotos[0]}
+                          alt="Listing photo"
+                          className="w-full h-full object-cover opacity-85"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xl">
+                          🏡
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card 2 (z-20) */}
+                    <div
+                      className="absolute top-0 bottom-0 left-[30%] w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-20 transition-all duration-300 ease-out group-hover:translate-x-1 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                    >
+                      {editPhotos.length > 1 ? (
+                        <img
+                          src={editPhotos[1]}
+                          alt="Listing photo 2"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      ) : editPhotos.length > 0 ? (
+                        <img
+                          src={editPhotos[0]}
+                          alt="Listing photo"
+                          className="w-full h-full object-cover opacity-90"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xl">
+                          🏡
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card 3 (Rightmost / Front, z-30) */}
+                    <div
+                      className="absolute top-0 bottom-0 left-[46%] w-[54%] rounded-2xl border border-zinc-300 bg-zinc-100 shadow-xs overflow-hidden z-30 transition-all duration-300 ease-out group-hover:translate-x-2.5 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg flex items-center justify-center"
+                    >
+                      {editPhotos.length > 0 ? (
+                        <img
+                          src={editPhotos[0]}
+                          alt="Property cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                          <span className="text-2xl mb-1">🏡</span>
+                        </div>
+                      )}
+
+                      {/* Centered Pill/Card Badge matching reference image */}
+                      <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none">
+                        <div className="bg-white/90 backdrop-blur-md text-[#1F1F1F] px-4 py-2.5 rounded-2xl shadow-xs border border-white/70 flex flex-col items-center justify-center text-center transition-transform group-hover:scale-105">
+                          <span className="text-sm font-bold tracking-tight text-[#1F1F1F] leading-tight">
+                            {editPhotos.length}
+                          </span>
+                          <span className="text-[11px] font-medium text-zinc-600 leading-tight mt-0.5">
+                            photos
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
               {/* 1. Title */}
               <div

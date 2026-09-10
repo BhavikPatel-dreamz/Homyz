@@ -11,12 +11,14 @@ import {
   SafetyConsiderationsState,
   sanitizeGuestSafetyState,
 } from "./guest-safety-helpers";
+import { GuestsSafetySkeleton } from "./YourSpaceSkeletons";
 
 interface GuestsSafetyViewProps {
   activeSection: string;
   setActiveSection: (section: any) => void;
   setEditorTab?: (tab: "space" | "arrival" | "preferences") => void;
   isSaving?: boolean;
+  isLoading?: boolean;
   guestSafetyState: GuestSafetyState;
   setGuestSafetyState: React.Dispatch<React.SetStateAction<GuestSafetyState>>;
   onSaveSafety: (state: GuestSafetyState) => Promise<boolean | void>;
@@ -93,6 +95,7 @@ export function GuestsSafetyView({
   setActiveSection,
   setEditorTab,
   isSaving = false,
+  isLoading = false,
   guestSafetyState,
   setGuestSafetyState,
   onSaveSafety,
@@ -288,6 +291,8 @@ export function GuestsSafetyView({
     closeModal();
   };
 
+
+
   return (
     <>
       {/* --------------------------------------------------------- */}
@@ -311,7 +316,10 @@ export function GuestsSafetyView({
         </div>
 
         {/* 3 Clickable Category Rows */}
-        <div className="divide-y divide-zinc-200/80 pt-1">
+        {isLoading ? (
+          <GuestsSafetySkeleton />
+        ) : (
+          <div className="divide-y divide-zinc-200/80 pt-1">
           {/* 1. Safety considerations */}
           <div
             onClick={() => openModal("considerations")}
@@ -360,6 +368,7 @@ export function GuestsSafetyView({
             </svg>
           </div>
         </div>
+        )}
       </div>
 
       {/* ========================================================= */}
