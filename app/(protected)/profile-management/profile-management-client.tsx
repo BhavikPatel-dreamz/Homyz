@@ -284,6 +284,7 @@ export function ProfileManagementClient({
   const [tripPhotos, setTripPhotos] =
     useState<TripPhotoItem[]>(initialTripPhotos);
   const [pending, startTransition] = useTransition();
+  const { data: session, update: updateSession } = useSession();
 
   const [msg, setMsg] = useState<{
     tone: "success" | "error";

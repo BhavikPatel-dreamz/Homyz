@@ -5,6 +5,7 @@ import { BackButton } from "@/components/ui/back-button";
 
 import React from "react";
 import { isReservedSlug } from "@/lib/utils/slug";
+import { CancellationPolicyView } from "./CancellationPolicyView";
 
 interface PricingAndBookingViewsProps {
   activeSection: string;
@@ -44,9 +45,10 @@ interface PricingAndBookingViewsProps {
   requireGoodTrackRecord: boolean;
   approvedBookingCount: number;
   hasCustomBookingMessage: boolean;
-  saveBookingSettings: (next: {
+  saveBookingSettings: (settings: {
     bookingMethod: "first-three" | "instant" | "approve";
     requireGoodTrackRecord: boolean;
+    bookingMessage?: string;
   }) => Promise<boolean>;
   openCustomMessage: () => void;
 
@@ -57,6 +59,12 @@ interface PricingAndBookingViewsProps {
   setLongTermCancellationPolicy: (val: "FIRM" | "STRICT") => void;
   customSlug?: string;
   setCustomSlug?: (val: string) => void;
+  onSaveCancellationPolicy?: (data: {
+    cancellationPolicy: string;
+    longTermCancellationPolicy: "FIRM" | "STRICT";
+    nonRefundable?: boolean;
+  }) => Promise<boolean | void>;
+  discounts?: Record<string, unknown> | null;
 }
 
 export function PricingAndBookingViews({
@@ -101,6 +109,8 @@ export function PricingAndBookingViews({
   setLongTermCancellationPolicy,
   customSlug = "",
   setCustomSlug,
+  onSaveCancellationPolicy,
+  discounts,
 }: PricingAndBookingViewsProps) {
   return (
     <>
@@ -514,6 +524,8 @@ export function PricingAndBookingViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          onSaveCancellationPolicy={onSaveCancellationPolicy}
+          discounts={discounts}
         />
       )}
 
@@ -536,7 +548,7 @@ export function PricingAndBookingViews({
 
               {/* homyz/stay/ slug input field */}
               <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight">
-                <span className="text-zinc-500">homyz/stay/</span>
+                <span className="text-zinc-500">homyz.com/stay/</span>
                 <input
                   type="text"
                   value={customSlug}
@@ -582,253 +594,5 @@ export function PricingAndBookingViews({
         );
       })()}
     </>
-  );
-}
-
-/* ================================================================= */
-/* CANCELLATION POLICY INNER COMPONENT (handles local edit state)    */
-/* ================================================================= */
-function CancellationPolicyView({
-  cancellationPolicy,
-  setCancellationPolicy,
-  setActiveSection,
-  isSaving,
-  handleSaveSection,
-  longTermCancellationPolicy,
-  setLongTermCancellationPolicy,
-}: {
-  cancellationPolicy: string;
-  setCancellationPolicy: (val: string) => void;
-  setActiveSection: (s: any) => void;
-  isSaving: boolean;
-  handleSaveSection: (key: any) => void;
-  longTermCancellationPolicy: "FIRM" | "STRICT";
-  setLongTermCancellationPolicy: (val: "FIRM" | "STRICT") => void;
-}) {
-  const [editingShortTerm, setEditingShortTerm] = React.useState(false);
-  const [editingLongTerm, setEditingLongTerm] = React.useState(false);
-  const [selectedShortPolicy, setSelectedShortPolicy] = React.useState(cancellationPolicy || "FLEXIBLE");
-  const [longTermPolicy, setLongTermPolicy] = React.useState<"FIRM" | "STRICT">(longTermCancellationPolicy);
-
-  const shortTermPolicies = [
-    {
-      id: "FLEXIBLE",
-      title: "Flexible",
-    },
-    {
-      id: "MODERATE",
-      title: "Moderate",
-    },
-    {
-      id: "LIMITED",
-      title: "Limited",
-    },
-    {
-      id: "FIRM",
-      title: "Firm",
-    },
-  ];
-
-  const longTermPolicies = [
-    {
-      id: "FIRM" as const,
-      title: "Firm long term",
-    },
-    {
-      id: "STRICT" as const,
-      title: "Strict long term",
-    },
-  ];
-
-  return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      {/* Header & Subtitle */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => setActiveSection("description")} />
-          <h1>Cancellation policy</h1>
-        </div>
-        <p className="text-xs text-zinc-500 font-normal pl-11">
-          Select the policy label recorded with each booking. Refund eligibility is not calculated in Homyz.
-        </p>
-      </div>
-
-      <div className="space-y-5 pt-2">
-        {/* -------- Card 1: Short-term stays -------- */}
-        <div className="rounded-2xl bg-white border border-zinc-200/90 p-6 space-y-4 shadow-2xs">
-          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-semibold px-3 py-1 rounded-md inline-block">
-            Short-term stays
-          </span>
-
-          <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-            Applies to stays under 28 nights. Exact refund terms are not represented until product rules are approved.
-          </p>
-
-          <div className="border-t border-zinc-200/80 w-full max-w-xs" />
-
-          {/* Policy Row */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-zinc-400 block">Your policy</span>
-              <span className="font-semibold text-sm text-[#1F1F1F] block">{selectedShortPolicy}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEditingShortTerm((v) => !v)}
-              className={`rounded-full font-semibold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
-                editingShortTerm
-                  ? "bg-zinc-900 text-white hover:bg-zinc-800"
-                  : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950"
-              }`}
-            >
-              Edit
-            </button>
-          </div>
-
-          {/* Inline Policy Picker (shown when editing) */}
-          {editingShortTerm && (
-            <div className="space-y-3 pt-1 animate-in fade-in slide-in-from-top-1">
-              <div className="grid grid-cols-2 gap-3">
-                {shortTermPolicies.map((policy) => (
-                  <button
-                    key={policy.id}
-                    type="button"
-                    onClick={() => setSelectedShortPolicy(policy.id)}
-                    className={`text-left p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                      selectedShortPolicy === policy.id
-                        ? "bg-[#FEF9EC] border-amber-300 shadow-2xs"
-                        : "bg-white border-zinc-200 hover:border-zinc-300"
-                    }`}
-                  >
-                    <h4 className="font-medium text-base text-[#1F1F1F] mb-1.5">{policy.title}</h4>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 pt-1">
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={() => {
-                    setCancellationPolicy(selectedShortPolicy);
-                    handleSaveSection("cancellation-policy");
-                    setEditingShortTerm(false);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedShortPolicy(cancellationPolicy || "FLEXIBLE");
-                    setEditingShortTerm(false);
-                  }}
-                  className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-6 py-2.5 hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Non-refundable option */}
-          <div className="flex items-start justify-between pt-2 opacity-60">
-            <div className="space-y-1 max-w-sm">
-              <h4 className="font-medium text-base text-[#1F1F1F]">Non-refundable option</h4>
-              <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-                Unavailable: non-refundable discount and refund terms are not defined.
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled
-              aria-label="Non-refundable rates are not available"
-              className="w-9 h-5 rounded-full bg-zinc-300 p-0.5 flex items-center cursor-not-allowed shrink-0 mt-1"
-            >
-              <span className="w-4 h-4 rounded-full bg-white shadow-2xs" />
-            </button>
-          </div>
-        </div>
-
-        {/* -------- Card 2: Long-term stays -------- */}
-        <div className="rounded-2xl bg-white border border-zinc-200/90 p-6 space-y-4 shadow-2xs">
-          <span className="bg-zinc-100 text-zinc-800 text-[11px] font-semibold px-3 py-1 rounded-md inline-block">
-            Long-term stays
-          </span>
-
-          <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-            Applies to stays of 28 nights or more. Exact refund terms are not represented until product rules are approved.
-          </p>
-
-          <div className="border-t border-zinc-200/80 w-full max-w-xs" />
-
-          {/* Policy Row */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-zinc-400 block">Your policy</span>
-              <span className="font-semibold text-sm text-[#1F1F1F] block">{longTermPolicy}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEditingLongTerm((v) => !v)}
-              className={`rounded-full font-semibold text-xs px-5 py-1.5 shadow-2xs transition-all cursor-pointer ${
-                editingLongTerm
-                  ? "bg-zinc-900 text-white hover:bg-zinc-800"
-                  : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950"
-              }`}
-            >
-              Edit
-            </button>
-          </div>
-
-          {/* Inline Long-term Policy Picker */}
-          {editingLongTerm && (
-            <div className="space-y-3 pt-1 animate-in fade-in slide-in-from-top-1">
-              <div className="flex flex-col gap-3">
-                {longTermPolicies.map((policy) => (
-                  <button
-                    key={policy.id}
-                    type="button"
-                    onClick={() => setLongTermPolicy(policy.id)}
-                    className={`text-left p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                      longTermPolicy === policy.id
-                        ? "bg-[#FEF9EC] border-amber-300 shadow-2xs"
-                        : "bg-white border-zinc-200 hover:border-zinc-300"
-                    }`}
-                  >
-                    <h4 className="font-medium text-base text-[#1F1F1F] mb-1.5">{policy.title}</h4>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLongTermCancellationPolicy(longTermPolicy);
-                    handleSaveSection("cancellation-policy");
-                    setEditingLongTerm(false);
-                  }}
-                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLongTermPolicy(longTermCancellationPolicy);
-                    setEditingLongTerm(false);
-                  }}
-                  className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-6 py-2.5 hover:bg-zinc-50 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }
