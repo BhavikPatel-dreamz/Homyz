@@ -246,6 +246,8 @@ const listingFields = {
   cancellationPolicy: z.string().trim().max(80).optional().default("FLEXIBLE"),
   longTermCancellationPolicy: z.enum(["FIRM", "STRICT"]).optional().default("FIRM"),
   bookingMessage: z.string().trim().max(1000).optional().nullable(),
+  requireGoodTrackRecord: z.boolean().optional().default(false),
+  bookingApprovalMode: z.enum(["FIRST_THREE", "INSTANT", "MANUAL"]).optional().default("INSTANT"),
   minNights: z.number().int().min(1).max(365).optional().default(1),
   maxNights: z.number().int().min(1).max(365).optional().default(365),
   advanceNotice: z.enum(["Same day", "At least 1 day", "At least 2 days", "At least 3 days", "At least 7 days"]).optional().default("Same day"),

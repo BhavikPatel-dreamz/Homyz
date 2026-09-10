@@ -18,6 +18,7 @@ export default async function HostListingsPage({
   return (
     <HostListingsWorkspace
       initialListings={items}
+      currentUserId={actor.id}
       initialShowSearch={Boolean(sp?.search === "true" || sp?.search === "1" || sp?.q)}
       initialSearchQuery={sp?.q || ""}
     />

@@ -10,10 +10,17 @@ import {
 } from "@/lib/utils/language-options";
 
 import React from "react";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { GuidebooksManager } from "./GuidebooksManager";
 import { LocalLawsView } from "./LocalLawsView";
 import { TaxesManager } from "./TaxesManager";
 import { AirbnbOrgStaysView } from "./AirbnbOrgStaysView";
+import {
+  formatTimeDisplay,
+  QUIET_HOURS_START_OPTIONS,
+  QUIET_HOURS_END_OPTIONS,
+  ALL_HOURS_OPTIONS,
+} from "../section-helpers";
 
 function AllowDenyButtons({
   value,
@@ -25,24 +32,36 @@ function AllowDenyButtons({
   label: string;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-1.5" aria-label={label}>
+    <div className="flex shrink-0 items-center gap-2" aria-label={label}>
       <button
         type="button"
         aria-label={`Do not allow ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-colors ${value === false ? "border-amber-300 bg-[#FEE08B] text-zinc-950" : "border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50"}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
+          value === false
+            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
+            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+        }`}
       >
-        ✕
+        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
       <button
         type="button"
         aria-label={`Allow ${label}`}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-colors ${value === true ? "border-amber-300 bg-[#FEE08B] text-zinc-950" : "border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50"}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
+          value === true
+            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
+            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+        }`}
       >
-        ✓
+        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
       </button>
     </div>
   );
@@ -73,6 +92,8 @@ interface HouseRulesAndArrivalViewsProps {
   setDogsAllowed?: (val: boolean) => void;
   catsAllowed?: boolean;
   setCatsAllowed?: (val: boolean) => void;
+  petFee?: number | string;
+  setPetFee?: (val: number | string) => void;
   quietHours: boolean | null;
   setQuietHours: (val: any) => void;
   quietHoursStart?: string;
@@ -163,6 +184,8 @@ export function HouseRulesAndArrivalViews({
   setDogsAllowed,
   catsAllowed = true,
   setCatsAllowed,
+  petFee = "",
+  setPetFee,
   quietHours,
   setQuietHours,
   quietHoursStart = "22:00",
@@ -175,11 +198,11 @@ export function HouseRulesAndArrivalViews({
   setCommercialFilmingAllowed,
   smokingAllowed,
   setSmokingAllowed,
-  smokingLocation = "OUTSIDE_ONLY",
-  setSmokingLocation,
+  smokingLocation: _smokingLocation = "OUTSIDE_ONLY",
+  setSmokingLocation: _setSmokingLocation,
   additionalHouseRules = "",
-  setAdditionalHouseRules,
-  setIsEditingAdditionalRulesModalOpen: _setIsEditingAdditionalRulesModalOpen,
+  setAdditionalHouseRules: _setAdditionalHouseRules,
+  setIsEditingAdditionalRulesModalOpen,
   checkInMethod,
   setCheckInMethod,
   wifiNetwork,
@@ -211,6 +234,8 @@ export function HouseRulesAndArrivalViews({
   selectedLanguageIds = DEFAULT_LANGUAGE_IDS,
   setSelectedLanguageIds,
 }: HouseRulesAndArrivalViewsProps) {
+  const [isCheckInOutModalOpen, setIsCheckInOutModalOpen] = React.useState(false);
+
   return (
     <>
       {/* --------------------------------------------------------- */}
@@ -225,66 +250,62 @@ export function HouseRulesAndArrivalViews({
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <BackButton onClick={() => setActiveSection("description")} />
-              <h1>House rules</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F]">House rules</h1>
             </div>
-            <p className="text-xs text-zinc-500 font-normal pl-11">
-              Set clear expectations for your guests regarding pets, smoking, events, quiet hours, and property rules.
+            <p className="text-xs text-zinc-500 font-normal pl-11 leading-relaxed">
+              Guests are expected to follow your rules and may be removed from Airbnb if they don&apos;t.
             </p>
           </div>
 
           {/* List of Rules Rows */}
           <div className="divide-y divide-zinc-200/80 pt-2">
             {/* Row 1: Pets allowed */}
-            <div className="py-3.5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Pets allowed</span>
-                  <span className="text-[11px] text-zinc-400">Do you welcome pets in your space?</span>
+            <div className="py-5 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="font-semibold text-sm text-[#1F1F1F] block">Pets allowed</span>
+                  <p className="text-xs text-zinc-500 leading-relaxed max-w-md">
+                    You can refuse pets, but must reasonably accommodate service animals.{" "}
+                    <a
+                      href="#service-animals"
+                      onClick={(e) => e.preventDefault()}
+                      className="underline font-semibold text-zinc-900 hover:text-zinc-700 inline-block"
+                    >
+                      Learn more
+                    </a>
+                  </p>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setPetsAllowed(false)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      petsAllowed === false
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPetsAllowed(true)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      petsAllowed === true
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✓
-                  </button>
-                </div>
+                <AllowDenyButtons
+                  label="pets"
+                  value={petsAllowed}
+                  onChange={(val) => setPetsAllowed(val)}
+                />
               </div>
 
               {/* Conditional Pet Details */}
               {petsAllowed === true && (
-                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-3 text-xs">
+                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-zinc-800">Maximum number of pets</span>
-                    <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-800">Maximum number of pets allowed</span>
+                    <div className="flex items-center gap-3 shrink-0">
                       <button
                         type="button"
+                        aria-label="Decrease maximum pets"
+                        disabled={(maxPetsCount || 1) <= 1}
                         onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs"
+                        className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
-                        -
+                        −
                       </button>
-                      <span className="text-xs font-semibold text-[#1F1F1F] min-w-[16px] text-center">{maxPetsCount || 1}</span>
+                      <span className="text-sm font-semibold text-[#1F1F1F] min-w-[20px] text-center">
+                        {maxPetsCount || 1}
+                      </span>
                       <button
                         type="button"
+                        aria-label="Increase maximum pets"
+                        disabled={(maxPetsCount || 1) >= 10}
                         onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs"
+                        className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
                         +
                       </button>
@@ -299,7 +320,7 @@ export function HouseRulesAndArrivalViews({
                         onChange={(e) => setDogsAllowed?.(e.target.checked)}
                         className="rounded text-amber-500 accent-zinc-900"
                       />
-                      <span className="text-zinc-700">Dogs allowed</span>
+                      <span className="text-xs font-medium text-zinc-700">Dogs allowed</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -308,32 +329,34 @@ export function HouseRulesAndArrivalViews({
                         onChange={(e) => setCatsAllowed?.(e.target.checked)}
                         className="rounded text-amber-500 accent-zinc-900"
                       />
-                      <span className="text-zinc-700">Cats allowed</span>
+                      <span className="text-xs font-medium text-zinc-700">Cats allowed</span>
                     </label>
                   </div>
 
-                  <div className="space-y-1 pt-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">Pet fee per stay (optional, SAR)</label>
+                  <div className="space-y-1.5 pt-1">
+                    <label className="block text-xs font-semibold text-zinc-700">
+                      Pet fee per stay (optional, SAR)
+                    </label>
                     <input
                       type="number"
-                      value=""
-                      disabled
-                      aria-describedby="pet-fee-unavailable"
-                      placeholder="Unavailable"
                       min={0}
-                      className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-xs text-zinc-500 outline-none shadow-2xs cursor-not-allowed"
+                      value={petFee ?? ""}
+                      onChange={(e) => setPetFee?.(e.target.value)}
+                      placeholder="e.g. 50"
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
                     />
-                    <p id="pet-fee-unavailable" className="text-[11px] text-zinc-500">Pet fees are unavailable until guests can declare pets during booking.</p>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">Pet restrictions or guidelines</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-zinc-700">
+                      Pet restrictions or guidelines
+                    </label>
                     <input
                       type="text"
-                      value={petRestrictions}
+                      value={petRestrictions || ""}
                       onChange={(e) => setPetRestrictions?.(e.target.value)}
                       placeholder="e.g. Under 20kg only, house-trained, please bring own bed"
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs"
+                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
                     />
                   </div>
                 </div>
@@ -341,154 +364,84 @@ export function HouseRulesAndArrivalViews({
             </div>
 
             {/* Row 2: Events allowed */}
-            <div className="py-3.5 flex items-center justify-between">
+            <div className="py-5 flex items-center justify-between">
               <div>
-                <span className="font-semibold text-xs text-[#1F1F1F] block">Events & parties allowed</span>
-                <span className="text-[11px] text-zinc-400">Can guests host gatherings or parties?</span>
+                <span className="font-semibold text-sm text-[#1F1F1F] block">Events allowed</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setEventsAllowed(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    eventsAllowed === false
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✕
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEventsAllowed(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                    eventsAllowed === true
-                      ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                      : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
-                >
-                  ✓
-                </button>
-              </div>
+              <AllowDenyButtons
+                label="events"
+                value={eventsAllowed}
+                onChange={(val) => setEventsAllowed(val)}
+              />
             </div>
 
-            {/* Row 3: Smoking, vaping allowed */}
-            <div className="py-3.5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Smoking, vaping, e-cigarettes</span>
-                  <span className="text-[11px] text-zinc-400">Is smoking permitted anywhere on premises?</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setSmokingAllowed(false)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      smokingAllowed === false
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSmokingAllowed(true)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      smokingAllowed === true
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✓
-                  </button>
-                </div>
+            {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
+            <div className="py-5 flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-sm text-[#1F1F1F] block">Smoking, vaping, e-cigarettes allowed</span>
               </div>
-
-              {/* Conditional Smoking Location */}
-              {smokingAllowed === true && (
-                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-2 text-xs">
-                  <label className="block text-[11px] font-semibold text-zinc-800">Allowed smoking location</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { val: "OUTSIDE_ONLY", label: "Outside only (balcony / patio)" },
-                      { val: "DESIGNATED_AREA", label: "Designated area only" },
-                      { val: "INSIDE", label: "Inside permitted" },
-                    ].map((loc) => (
-                      <button
-                        key={loc.val}
-                        type="button"
-                        onClick={() => setSmokingLocation?.(loc.val)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                          smokingLocation === loc.val
-                            ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
-                            : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-                        }`}
-                      >
-                        {loc.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AllowDenyButtons
+                label="smoking"
+                value={smokingAllowed}
+                onChange={(val) => setSmokingAllowed(val)}
+              />
             </div>
 
             {/* Row 4: Quiet hours */}
-            <div className="py-3.5 space-y-3">
+            <div className="py-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-xs text-[#1F1F1F] block">Quiet hours</span>
-                  <span className="text-[11px] text-zinc-400">Enforce quiet hours during night times</span>
+                  <span className="font-semibold text-sm text-[#1F1F1F] block">Quiet hours</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setQuietHours(false)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      quietHours === false
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setQuietHours(true)}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold transition-all cursor-pointer ${
-                      quietHours === true
-                        ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                        : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                    }`}
-                  >
-                    ✓
-                  </button>
-                </div>
+                <AllowDenyButtons
+                  label="quiet hours"
+                  value={quietHours}
+                  onChange={(val) => setQuietHours(val)}
+                />
               </div>
 
-              {/* Conditional Quiet Hours Schedule */}
+              {/* Conditional Quiet Hours Schedule: Side-by-side dropdown container */}
               {quietHours === true && (
-                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 grid grid-cols-2 gap-3 text-xs">
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">Quiet hours start</label>
+                <div className="rounded-2xl border border-zinc-400 bg-white grid grid-cols-2 overflow-hidden shadow-2xs">
+                  <div className="p-3 relative group hover:bg-zinc-50 transition-colors">
+                    <span className="block text-[11px] font-medium text-zinc-500">Start time</span>
+                    <div className="flex items-center justify-between mt-0.5 pointer-events-none">
+                      <span className="text-sm font-normal text-zinc-900">
+                        {formatTimeDisplay(quietHoursStart, "11:00 pm")}
+                      </span>
+                      <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </div>
                     <select
-                      value={quietHoursStart}
+                      aria-label="Quiet hours start time"
+                      value={formatTimeDisplay(quietHoursStart, "11:00 pm")}
                       onChange={(e) => setQuietHoursStart?.(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     >
-                      {["20:00", "21:00", "22:00", "23:00", "00:00"].map((t) => (
+                      {QUIET_HOURS_START_OPTIONS.map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-zinc-700">Quiet hours end</label>
+
+                  <div className="p-3 border-l border-zinc-400 relative group hover:bg-zinc-50 transition-colors">
+                    <span className="block text-[11px] font-medium text-zinc-500">End time</span>
+                    <div className="flex items-center justify-between mt-0.5 pointer-events-none">
+                      <span className="text-sm font-normal text-zinc-900">
+                        {formatTimeDisplay(quietHoursEnd, "7:00 am")}
+                      </span>
+                      <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </div>
                     <select
-                      value={quietHoursEnd}
+                      aria-label="Quiet hours end time"
+                      value={formatTimeDisplay(quietHoursEnd, "7:00 am")}
                       onChange={(e) => setQuietHoursEnd?.(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     >
-                      {["06:00", "07:00", "08:00", "09:00", "10:00"].map((t) => (
+                      {QUIET_HOURS_END_OPTIONS.map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}
                     </select>
@@ -497,11 +450,10 @@ export function HouseRulesAndArrivalViews({
               )}
             </div>
 
-            {/* Row 5: Commercial photography and filming */}
-            <div className="flex items-center justify-between gap-5 py-3.5">
+            {/* Row 5: Commercial photography and filming allowed */}
+            <div className="py-5 flex items-center justify-between gap-5">
               <div>
-                <span className="block text-xs font-semibold text-[#1F1F1F]">Commercial photography and filming allowed</span>
-                <span className="text-[11px] text-zinc-400">Can guests use the space for commercial photo or film shoots?</span>
+                <span className="block text-sm font-semibold text-[#1F1F1F]">Commercial photography and filming allowed</span>
               </div>
               <AllowDenyButtons
                 label="commercial photography and filming"
@@ -510,71 +462,79 @@ export function HouseRulesAndArrivalViews({
               />
             </div>
 
-            {/* Row 6: Guest limit */}
-            <div className="flex items-center justify-between gap-5 py-3.5">
+            {/* Row 6: Number of guests */}
+            <div className="py-5 flex items-center justify-between gap-5">
               <div>
-                <span className="block text-xs font-semibold text-[#1F1F1F]">Number of guests</span>
-                <span className="text-[11px] text-zinc-400">Maximum guests allowed to stay at your place</span>
+                <span className="block text-sm font-semibold text-[#1F1F1F]">Number of guests</span>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-3">
                 <button
                   type="button"
                   aria-label="Decrease maximum guests"
+                  disabled={maxGuestsCount <= 1}
                   onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600 transition-colors hover:bg-zinc-50"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   −
                 </button>
-                <span className="min-w-3 text-center text-xs font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
+                <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
                 <button
                   type="button"
                   aria-label="Increase maximum guests"
-                  onClick={() => setMaxGuestsCount(Math.min(100, maxGuestsCount + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600 transition-colors hover:bg-zinc-50"
+                  disabled={maxGuestsCount >= 50}
+                  onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   +
                 </button>
               </div>
             </div>
 
-            {/* Row 7: Arrival times */}
+            {/* Row 7: Check-in and checkout times */}
             <button
               type="button"
-              onClick={() => setActiveSection("check-in-out")}
-              className="flex w-full items-center justify-between gap-5 py-3.5 text-left transition-colors hover:text-zinc-600"
+              onClick={() => setIsCheckInOutModalOpen(true)}
+              className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
             >
-              <span>
-                <span className="block text-xs font-semibold text-[#1F1F1F]">Check-in and check-out times</span>
-                <span className="text-[11px] text-zinc-400">Set the arrival window and guest departure time.</span>
-              </span>
-              <span aria-hidden="true" className="text-xl leading-none text-zinc-700">›</span>
+              <div className="space-y-0.5">
+                <span className="block text-sm font-semibold text-[#1F1F1F]">Check-in and checkout times</span>
+                <p className="text-xs text-zinc-500 font-normal">
+                  Arrive between {formatTimeDisplay(checkInStart, "3:00 pm")} and {checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}
+                </p>
+                <p className="text-xs text-zinc-500 font-normal">
+                  Leave before {formatTimeDisplay(checkOutTime, "6:00 pm")}
+                </p>
+              </div>
+              <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </button>
 
             {/* Row 8: Additional rules */}
-            <div className="py-3.5 space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">Additional house rules</h4>
-                  <p className="text-[11px] text-zinc-400">Specify any custom rules or property considerations</p>
-                </div>
+            <button
+              type="button"
+              onClick={() => setIsEditingAdditionalRulesModalOpen(true)}
+              className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
+            >
+              <div className="space-y-0.5 max-w-md">
+                <span className="block text-sm font-semibold text-[#1F1F1F]">Additional rules</span>
+                <p className="text-xs text-zinc-500 font-normal line-clamp-2">
+                  {additionalHouseRules?.trim() || "Add rules"}
+                </p>
               </div>
-              <textarea
-                rows={4}
-                value={additionalHouseRules}
-                onChange={(e) => setAdditionalHouseRules?.(e.target.value)}
-                placeholder="e.g. Please remove shoes at the entrance. No outdoor footwear inside. Do not leave food outdoors."
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs text-zinc-800 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
-              />
-            </div>
+              <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3 pt-4">
+          <div className="flex items-center gap-3 pt-6">
             <button
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("house-rules")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -586,6 +546,104 @@ export function HouseRulesAndArrivalViews({
               Cancel
             </button>
           </div>
+
+          {/* Check-in and checkout times Modal */}
+          {isCheckInOutModalOpen && (
+            <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-[28px] p-8 max-w-lg w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => setIsCheckInOutModalOpen(false)}
+                  className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
+                >
+                  ✕
+                </button>
+
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
+                    Check-in and checkout times
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-normal">
+                    Set arrival windows and checkout times for your guests.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Check-in window */}
+                  <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-3">
+                    <label className="text-xs font-semibold text-zinc-800 block">Check-in window</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-[11px] font-medium text-zinc-500 block mb-1">Start time</span>
+                        <select
+                          value={formatTimeDisplay(checkInStart, "3:00 pm")}
+                          onChange={(e) => setCheckInStart(e.target.value)}
+                          className="w-full rounded-xl border border-zinc-300 bg-white p-2.5 text-xs font-semibold text-[#1F1F1F] outline-none cursor-pointer focus:border-zinc-900 shadow-2xs"
+                        >
+                          {ALL_HOURS_OPTIONS.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-medium text-zinc-500 block mb-1">End time</span>
+                        <select
+                          value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
+                          onChange={(e) => setCheckInEnd(e.target.value)}
+                          className="w-full rounded-xl border border-zinc-300 bg-white p-2.5 text-xs font-semibold text-[#1F1F1F] outline-none cursor-pointer focus:border-zinc-900 shadow-2xs"
+                        >
+                          <option value="Flexible">Flexible</option>
+                          {ALL_HOURS_OPTIONS.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Checkout time */}
+                  <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2">
+                    <label className="text-xs font-semibold text-zinc-800 block">Checkout time</label>
+                    <div>
+                      <span className="text-[11px] font-medium text-zinc-500 block mb-1">Guests must leave before</span>
+                      <select
+                        value={formatTimeDisplay(checkOutTime, "11:00 am")}
+                        onChange={(e) => setCheckOutTime(e.target.value)}
+                        className="w-full rounded-xl border border-zinc-300 bg-white p-2.5 text-xs font-semibold text-[#1F1F1F] outline-none cursor-pointer focus:border-zinc-900 shadow-2xs"
+                      >
+                        {ALL_HOURS_OPTIONS.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() => setIsCheckInOutModalOpen(false)}
+                    className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={async () => {
+                      await handleSaveSection("house-rules");
+                      setIsCheckInOutModalOpen(false);
+                    }}
+                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? "Saving..." : "Save Times"}
+                  </button>
+                </div>
+              </div>
+            </ModalOverlay>
+          )}
         </div>
       )}
 
@@ -1676,27 +1734,13 @@ function CheckInCheckOutView({
   const [editingEnd, setEditingEnd] = React.useState(false);
   const [editingCheckOut, setEditingCheckOut] = React.useState(false);
 
-  const timesList = [
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-    "8:00 PM",
-    "9:00 PM",
-    "10:00 PM",
-    "11:00 PM",
-    "Flexible",
-  ];
+  const timesList = [...ALL_HOURS_OPTIONS, "Flexible"];
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("check-in-out")} />
+        <BackButton onClick={() => setActiveSection("house-rules")} />
         <h1>Check-in and check-out times</h1>
       </div>
 

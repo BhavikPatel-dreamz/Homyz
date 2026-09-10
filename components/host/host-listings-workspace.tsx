@@ -3,7 +3,6 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
@@ -71,17 +70,48 @@ function errorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
+function EmptyListingsState({
+  onCreate,
+  pending,
+}: {
+  onCreate: () => void;
+  pending: boolean;
+}) {
+  return (
+    <section className="mx-auto flex max-w-xl flex-col items-center rounded-3xl border border-dashed border-zinc-300 bg-[#FAFAF9] px-6 py-12 text-center sm:px-10">
+      <span className="grid size-13 place-items-center rounded-2xl bg-[#FCDF9C] text-[#1F1F1F]">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-7">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6M9 10h.01M15 10h.01" />
+        </svg>
+      </span>
+      <h2 className="mt-5 text-xl font-semibold tracking-[-0.025em] text-[#1F1F1F]">No listings yet</h2>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-[#717171]">
+        Your real listings and the properties you co-host will appear here. Start by creating your first listing.
+      </p>
+      <button
+        type="button"
+        onClick={onCreate}
+        disabled={pending}
+        className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#FEE08B] px-5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60"
+      >
+        Create your first listing
+      </button>
+    </section>
+  );
+}
+
 export function HostListingsWorkspace({
   initialListings,
+  currentUserId,
   initialShowSearch = false,
   initialSearchQuery = "",
 }: {
   initialListings: ListingDTO[];
+  currentUserId: string;
   initialShowSearch?: boolean;
   initialSearchQuery?: string;
 }) {
   const router = useRouter();
-  const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [showSearch, setShowSearch] = useState(initialShowSearch);
   const [compactGrid, setCompactGrid] = useState(false);
@@ -508,54 +538,12 @@ export function HostListingsWorkspace({
               {filteredListings.length === 0 && searchQuery ? (
                 <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
               ) : filteredListings.length === 0 ? (
-                <div className="flex flex-col space-y-5">
-                  {[
-                    { photo: "listing-img-01.png", alt: "Bright home office with an orange desk" },
-                    { photo: "listing-img-02.png", alt: "Light-filled living room with neutral furnishings" },
-                    { photo: "listing-img-03.png", alt: "Green-paneled lounge with a pink sofa" },
-                    { photo: null, alt: "Property placeholder" },
-                  ].map((item, index) => (
-                    <button
-                      key={item.photo ?? `search-preview-${index}`}
-                      type="button"
-                      onClick={handleOpenCreate}
-                      disabled={pending}
-                      aria-label={`Create a new listing from preview ${index + 1}`}
-                      className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-                    >
-                      <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
-                        {item.photo ? (
-                          <Image
-                            src={`/images/listing/${item.photo}`}
-                            alt={item.alt}
-                            fill
-                            sizes="110px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-[#D9D9D9]" />
-                        )}
-                        <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
-                          <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
-                        </span>
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
-                        <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
-                          Property name
-                        </h3>
-                        <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
-                          Address, Country
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
               ) : (
                 <div className="flex flex-col space-y-5">
-                  {filteredListings.map((item, index) => {
+                  {filteredListings.map((item) => {
                     const photos = Array.isArray(item.photos) ? item.photos : [];
-                    const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
-                    const coverPhoto = photos[0] || fallbackPhoto;
+                    const coverPhoto = photos[0] || null;
                     const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
 
                     return (
@@ -570,17 +558,11 @@ export function HostListingsWorkspace({
                           {coverPhoto ? (
                             <img
                               src={coverPhoto}
-                              alt={item.title || "Property name"}
-                              onError={(event) => {
-                                const image = event.currentTarget;
-                                if (image.getAttribute("src") !== fallbackPhoto) {
-                                  image.src = fallbackPhoto;
-                                }
-                              }}
+                              alt={item.title || "Listing photo"}
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="h-full w-full bg-[#D9D9D9]" />
+                            <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">No photo yet</div>
                           )}
                           <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
                             <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
@@ -588,12 +570,12 @@ export function HostListingsWorkspace({
                         </div>
                         <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
                           <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
-                            {item.title || "Property name"}
+                            {item.title === "Draft Listing" ? "Untitled draft" : item.title || "Untitled listing"}
                           </h3>
                           <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
                             {item.city || item.country
                               ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
-                              : "Address, Country"}
+                              : "Location not added yet"}
                           </p>
                         </div>
                       </Link>
@@ -609,45 +591,14 @@ export function HostListingsWorkspace({
             {filteredListings.length === 0 && searchQuery ? (
               <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
             ) : filteredListings.length === 0 ? (
-              <div className={`grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
-                {["listing-img-01.png", "listing-img-02.png", "listing-img-03.png", null].map((photo, index) => (
-                  <button
-                    key={photo ?? "placeholder"}
-                    type="button"
-                    onClick={handleOpenCreate}
-                    disabled={pending}
-                    aria-label={`Create a new listing from preview ${index + 1}`}
-                    className="group min-w-0 text-left rounded-[22px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
-                  >
-                    <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                      {photo && (
-                        <Image
-                          src={`/images/listing/${photo}`}
-                          alt={["Bright home office with an orange desk", "Light-filled living room with neutral furnishings", "Green-paneled lounge with a pink sofa"][index]}
-                          fill
-                          sizes="(min-width: 1600px) 375px, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                          className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
-                        />
-                      )}
-                      <span className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                        <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
-                        Listed
-                      </span>
-                    </div>
-                    <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                      <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
-                      <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
             ) : (
               <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
-                {filteredListings.map((item, index) => {
+                {filteredListings.map((item) => {
                   const photos = Array.isArray(item.photos) ? item.photos : [];
-                  const fallbackPhoto = `/images/listing/listing-img-0${(index % 3) + 1}.png`;
-                  const coverPhoto = photos[0] || fallbackPhoto;
+                  const coverPhoto = photos[0] || null;
                   const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+                  const isCoHosted = item.hostId !== currentUserId;
 
                   return (
                     <div
@@ -659,38 +610,34 @@ export function HostListingsWorkspace({
                         {coverPhoto ? (
                           <img
                             src={coverPhoto}
-                            alt={item.title}
-                            onError={(event) => {
-                              const image = event.currentTarget;
-                              if (image.getAttribute("src") !== fallbackPhoto) {
-                                image.src = fallbackPhoto;
-                              }
-                            }}
+                            alt={item.title || "Listing photo"}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="h-full w-full bg-[#f1f1f1]" />
+                          <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-sm text-[#717171]">No photo yet</div>
                         )}
 
                         {/* White Pill Badge matching screenshot */}
                         <div className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
                           <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`}></span>
-                          {isListed ? "Listed" : "Action Required"}
+                          {isCoHosted ? "Co-host" : isListed ? "Listed" : "Action Required"}
                         </div>
 
                         {/* Delete Action Icon Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setListingToDelete(item);
-                            setShowDeleteModal(true);
-                          }}
-                          title="Delete Property Listing"
-                          className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
-                        >
-                          🗑️
-                        </button>
+                        {!isCoHosted && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setListingToDelete(item);
+                              setShowDeleteModal(true);
+                            }}
+                            title="Delete Property Listing"
+                            className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
+                          >
+                            🗑️
+                          </button>
+                        )}
                       </div>
 
                       {/* Below Card Information */}
@@ -701,34 +648,16 @@ export function HostListingsWorkspace({
                             }
                             className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
                           >
-                            {item.title || "Property name"}
+                            {item.title === "Draft Listing" ? "Untitled draft" : item.title || "Untitled listing"}
                           </Link>
                         </h3>
                         <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
-                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Address, Country"}
+                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Location not added yet"}
                         </p>
                       </div>
                     </div>
                   );
                 })}
-                <button
-                  type="button"
-                  onClick={handleOpenCreate}
-                  disabled={pending}
-                  aria-label="Create a new listing"
-                  className="min-w-0 rounded-[22px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 disabled:cursor-wait"
-                >
-                  <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                    <span className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                      <span className="size-2 shrink-0 rounded-full bg-[#37BE01]" />
-                      Listed
-                    </span>
-                  </div>
-                  <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                    <h3 className="text-base font-semibold leading-6 text-[#252525]">Property name</h3>
-                    <p className="mt-1 text-sm leading-6 text-[#858585]">Address, Country</p>
-                  </div>
-                </button>
               </div>
             )}
           </div>

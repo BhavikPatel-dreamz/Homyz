@@ -139,6 +139,9 @@ export interface HostListingData {
   cancellationPolicy: string;
   longTermCancellationPolicy?: string | null;
   bookingMessage?: string | null;
+  requireGoodTrackRecord?: boolean;
+  bookingApprovalMode?: "FIRST_THREE" | "INSTANT" | "MANUAL";
+  approvedBookingCount?: number;
   instantBook: boolean;
   minNights: number;
   maxNights: number;
@@ -454,10 +457,13 @@ export function HostListingEditorClient({
   const normalizedListingAmenities = (listing.amenities || []).map(normalizeAmenityId);
 
   // Booking Settings State (Matches Figma Screenshots 1 & 2)
-  const [bookingMethod, setBookingMethod] = useState<"instant" | "approve">(
-    listing.instantBook === false ? "approve" : "instant"
+  const [bookingMethod, setBookingMethod] = useState<"first-three" | "instant" | "approve">(
+    listing.bookingApprovalMode === "FIRST_THREE" ? "first-three"
+      : listing.bookingApprovalMode === "MANUAL" || listing.instantBook === false ? "approve" : "instant"
   );
   const [customBookingMessage, setCustomBookingMessage] = useState(listing.bookingMessage || "");
+  const [customBookingMessageDraft, setCustomBookingMessageDraft] = useState(listing.bookingMessage || "");
+  const [requireGoodTrackRecord, setRequireGoodTrackRecord] = useState(listing.requireGoodTrackRecord ?? false);
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
   const [listingStatusSetting, setListingStatusSetting] = useState<"listed" | "unlisted">(
@@ -476,6 +482,12 @@ export function HostListingEditorClient({
   const [petRestrictions, setPetRestrictions] = useState<string>(listing.petRestrictions || "");
   const [dogsAllowed, setDogsAllowed] = useState<boolean>(listing.dogsAllowed ?? true);
   const [catsAllowed, setCatsAllowed] = useState<boolean>(listing.catsAllowed ?? true);
+  const [petFee, setPetFee] = useState<number | string>(() => {
+    if (listing.petFee !== null && listing.petFee !== undefined) {
+      return listing.petFee / 100;
+    }
+    return "";
+  });
 
   const [eventsAllowed, setEventsAllowed] = useState<boolean | null>(() => {
     if (listing.eventsAllowed !== null && listing.eventsAllowed !== undefined) return listing.eventsAllowed;
@@ -494,8 +506,8 @@ export function HostListingEditorClient({
     if (listing.quietHours !== null && listing.quietHours !== undefined) return listing.quietHours;
     return initialRules.some((r) => /quiet hours/i.test(r));
   });
-  const [quietHoursStart, setQuietHoursStart] = useState<string>(listing.quietHoursStart || "22:00");
-  const [quietHoursEnd, setQuietHoursEnd] = useState<string>(listing.quietHoursEnd || "08:00");
+  const [quietHoursStart, setQuietHoursStart] = useState<string>(listing.quietHoursStart || "11:00 pm");
+  const [quietHoursEnd, setQuietHoursEnd] = useState<string>(listing.quietHoursEnd || "7:00 am");
   const [commercialFilmingAllowed, setCommercialFilmingAllowed] = useState<boolean | null>(() => {
     if (listing.photographyAllowed !== null && listing.photographyAllowed !== undefined) return listing.photographyAllowed;
     if (initialRules.some((r) => /no commercial filming/i.test(r))) return false;
@@ -729,6 +741,8 @@ export function HostListingEditorClient({
       payload = {
         instantBook: bookingMethod === "instant",
         bookingMessage: customBookingMessage.trim() || null,
+        requireGoodTrackRecord,
+        bookingApprovalMode: bookingMethod === "first-three" ? "FIRST_THREE" : bookingMethod === "instant" ? "INSTANT" : "MANUAL",
       };
     } else if (sectionToSave === "house-rules") {
       const rules: string[] = [];
@@ -765,14 +779,17 @@ export function HostListingEditorClient({
         rules.push(...customLines);
       }
 
+      const parsedPetFee =
+        petsAllowed && petFee !== "" && petFee !== null && !isNaN(Number(petFee))
+          ? Math.round(Number(petFee) * 100)
+          : null;
+
       payload = {
         houseRules: rules,
         guests: Math.max(1, Number(maxGuestsCount) || 1),
         petsAllowed,
         maxPets: petsAllowed ? Number(maxPetsCount) : null,
-        // Pet count is not collected in the booking flow. Do not persist a fee
-        // which the authoritative quote cannot charge.
-        petFee: null,
+        petFee: parsedPetFee,
         petRestrictions: petsAllowed ? petRestrictions : null,
         dogsAllowed: petsAllowed ? dogsAllowed : null,
         catsAllowed: petsAllowed ? catsAllowed : null,
@@ -784,6 +801,9 @@ export function HostListingEditorClient({
         quietHoursStart: quietHoursToggle ? quietHoursStart : null,
         quietHoursEnd: quietHoursToggle ? quietHoursEnd : null,
         additionalRules: additionalHouseRules,
+        checkInStart,
+        checkInEnd,
+        checkOutTime,
       };
     } else if (sectionToSave === "guests-safety" || sectionToSave === "safety-equipment") {
       const currentAmenitySet = new Set(editAmenities.map(normalizeAmenityId));
@@ -863,6 +883,10 @@ export function HostListingEditorClient({
       setIsSaving(false);
       if (res.ok && res.data) {
         setListing((prev) => ({ ...prev, ...payload }));
+        if (payload.guests !== undefined) {
+          setEditGuests(payload.guests);
+          setMaxGuestsCount(payload.guests);
+        }
         if (payload.smartPricing !== undefined) {
           setSmartPricing(Boolean((res.data as any).smartPricing ?? payload.smartPricing));
         }
@@ -900,6 +924,55 @@ export function HostListingEditorClient({
     } catch (err: any) {
       setIsSaving(false);
       setFeedbackMsg({ type: "error", text: "Error saving: " + err.message });
+    }
+  }
+
+  async function saveBookingSettings(next: {
+    bookingMethod: "first-three" | "instant" | "approve";
+    requireGoodTrackRecord: boolean;
+    bookingMessage?: string;
+  }) {
+    if (isSaving) return false;
+
+    const nextMessage = next.bookingMessage ?? customBookingMessage;
+    const previous = { bookingMethod, requireGoodTrackRecord, bookingMessage: customBookingMessage };
+    const bookingApprovalMode: NonNullable<HostListingData["bookingApprovalMode"]> = next.bookingMethod === "first-three"
+      ? "FIRST_THREE"
+      : next.bookingMethod === "instant" ? "INSTANT" : "MANUAL";
+    const payload = {
+      instantBook: next.bookingMethod === "instant",
+      requireGoodTrackRecord: next.requireGoodTrackRecord,
+      bookingApprovalMode,
+      bookingMessage: nextMessage.trim() || null,
+    };
+
+    setBookingMethod(next.bookingMethod);
+    setRequireGoodTrackRecord(next.requireGoodTrackRecord);
+    setCustomBookingMessage(nextMessage);
+    setIsSaving(true);
+    setFeedbackMsg(null);
+
+    try {
+      const res = await updateListingAction(listing.id, payload);
+      if (res.ok && res.data) {
+        setListing((current) => ({ ...current, ...payload }));
+        setFeedbackMsg({ type: "success", text: "Booking settings saved." });
+        return true;
+      } else {
+        setBookingMethod(previous.bookingMethod);
+        setRequireGoodTrackRecord(previous.requireGoodTrackRecord);
+        setCustomBookingMessage(previous.bookingMessage);
+        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save booking settings." });
+        return false;
+      }
+    } catch (error: any) {
+      setBookingMethod(previous.bookingMethod);
+      setRequireGoodTrackRecord(previous.requireGoodTrackRecord);
+      setCustomBookingMessage(previous.bookingMessage);
+      setFeedbackMsg({ type: "error", text: `Error saving booking settings: ${error.message}` });
+      return false;
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -1071,9 +1144,14 @@ export function HostListingEditorClient({
             allowSameDayRequests={allowSameDayRequests}
             setAllowSameDayRequests={setAllowSameDayRequests}
             bookingMethod={bookingMethod}
-            setBookingMethod={setBookingMethod}
-            setIsTurnOffInstantBookModalOpen={setIsTurnOffInstantBookModalOpen}
-            setIsCustomMessageModalOpen={setIsCustomMessageModalOpen}
+            requireGoodTrackRecord={requireGoodTrackRecord}
+            approvedBookingCount={listing.approvedBookingCount ?? 0}
+            hasCustomBookingMessage={Boolean(customBookingMessage.trim())}
+            saveBookingSettings={saveBookingSettings}
+            openCustomMessage={() => {
+              setCustomBookingMessageDraft(customBookingMessage);
+              setIsCustomMessageModalOpen(true);
+            }}
             cancellationPolicy={cancellationPolicy}
             setCancellationPolicy={setCancellationPolicy}
             longTermCancellationPolicy={longTermCancellationPolicy}
@@ -1143,7 +1221,10 @@ export function HostListingEditorClient({
             checkOutTime={checkOutTime}
             setCheckOutTime={setCheckOutTime}
             maxGuestsCount={maxGuestsCount}
-            setMaxGuestsCount={setMaxGuestsCount}
+            setMaxGuestsCount={(val: number) => {
+              setMaxGuestsCount(val);
+              setEditGuests(val);
+            }}
             petsAllowed={petsAllowed}
             setPetsAllowed={setPetsAllowed}
             maxPetsCount={maxPetsCount}
@@ -1154,6 +1235,8 @@ export function HostListingEditorClient({
             setDogsAllowed={setDogsAllowed}
             catsAllowed={catsAllowed}
             setCatsAllowed={setCatsAllowed}
+            petFee={petFee}
+            setPetFee={setPetFee}
             quietHours={quietHoursToggle}
             setQuietHours={setQuietHoursToggle}
             quietHoursStart={quietHoursStart}
@@ -1291,9 +1374,19 @@ export function HostListingEditorClient({
           listing={listing}
           coHosts={coHosts}
           bookingMethod={bookingMethod}
+          requireGoodTrackRecord={requireGoodTrackRecord}
           checkInStart={checkInStart}
           checkOutTime={checkOutTime}
           maxGuestsCount={maxGuestsCount}
+          petsAllowed={petsAllowed}
+          maxPetsCount={maxPetsCount}
+          eventsAllowed={eventsAllowed}
+          smokingAllowed={smokingAllowed}
+          quietHours={quietHoursToggle}
+          quietHoursStart={quietHoursStart}
+          quietHoursEnd={quietHoursEnd}
+          commercialFilmingAllowed={commercialFilmingAllowed}
+          additionalHouseRules={additionalHouseRules}
           carbonMonoxideAlarm={carbonMonoxideAlarm}
           smokeAlarm={smokeAlarm}
           cancellationPolicy={cancellationPolicy}
@@ -1400,9 +1493,10 @@ export function HostListingEditorClient({
 
               <button
                 type="button"
-                onClick={() => {
-                  setBookingMethod("approve");
-                  setIsTurnOffInstantBookModalOpen(false);
+                onClick={async () => {
+                  if (await saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })) {
+                    setIsTurnOffInstantBookModalOpen(false);
+                  }
                 }}
                 className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
               >
@@ -1421,8 +1515,9 @@ export function HostListingEditorClient({
           <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
             <button
               type="button"
+              disabled={isSaving}
               onClick={() => setIsCustomMessageModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ✕
             </button>
@@ -1436,8 +1531,9 @@ export function HostListingEditorClient({
 
             <textarea
               rows={4}
-              value={customBookingMessage}
-              onChange={(e) => setCustomBookingMessage(e.target.value)}
+              value={customBookingMessageDraft}
+              onChange={(e) => setCustomBookingMessageDraft(e.target.value)}
+              disabled={isSaving}
               placeholder="Write a custom message for your guests..."
               maxLength={1000}
               className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
@@ -1446,20 +1542,30 @@ export function HostListingEditorClient({
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"
+                disabled={isSaving}
                 onClick={() => {
-                  handleSaveSection("booking-settings");
                   setIsCustomMessageModalOpen(false);
                 }}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => setIsCustomMessageModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                disabled={isSaving}
+                onClick={async () => {
+                  if (await saveBookingSettings({
+                    bookingMethod,
+                    requireGoodTrackRecord,
+                    bookingMessage: customBookingMessageDraft,
+                  })) {
+                    setIsCustomMessageModalOpen(false);
+                  }
+                }}
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                Save Message
+                {isSaving && <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-zinc-600/35 border-t-zinc-950" />}
+                {isSaving ? "Saving..." : "Save Message"}
               </button>
             </div>
           </div>
@@ -1505,10 +1611,14 @@ export function HostListingEditorClient({
               </button>
               <button
                 type="button"
-                onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                disabled={isSaving}
+                onClick={async () => {
+                  await handleSaveSection("house-rules");
+                  setIsEditingAdditionalRulesModalOpen(false);
+                }}
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
               >
-                Save Rules
+                {isSaving ? "Saving..." : "Save Rules"}
               </button>
             </div>
           </div>

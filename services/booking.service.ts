@@ -241,6 +241,28 @@ async function create(
     throw AppError.badRequest("Hosts cannot book their own listings");
   }
 
+  const bookingApprovalMode = listing.bookingApprovalMode === "FIRST_THREE"
+    ? "FIRST_THREE"
+    : listing.bookingApprovalMode === "MANUAL" || !listing.instantBook ? "MANUAL"
+    : "INSTANT";
+
+  if (bookingApprovalMode === "INSTANT" && listing.requireGoodTrackRecord) {
+    const completedConfirmedStay = await prisma.booking.findFirst({
+      where: {
+        userId: actor.id,
+        status: BookingStatus.CONFIRMED,
+        endDate: { lt: new Date() },
+      },
+      select: { id: true },
+    });
+
+    if (!completedConfirmedStay) {
+      throw AppError.badRequest(
+        "This listing requires guests to have at least one completed confirmed stay before using Instant Book.",
+      );
+    }
+  }
+
   // Calculate authoritative quote
   const quote = await getBookingQuote({
     listingId: input.listingId,
@@ -266,6 +288,12 @@ async function create(
     const conflict = await tx.booking.findFirst({ where: { listingId: input.listingId, status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] }, startDate: { lt: input.endDate }, endDate: { gt: input.startDate } } });
     if (conflict) throw AppError.conflict("The selected dates are no longer available");
 
+    const approvedBookings = bookingApprovalMode === "FIRST_THREE"
+      ? await tx.booking.count({ where: { listingId: input.listingId, status: BookingStatus.CONFIRMED } })
+      : 0;
+    const automaticallyApprove = bookingApprovalMode === "INSTANT"
+      || (bookingApprovalMode === "FIRST_THREE" && approvedBookings >= 3);
+
     const createdBooking = await tx.booking.create({ data: {
       userId: actor.id,
       listingId: input.listingId,
@@ -278,7 +306,7 @@ async function create(
       currency: quote.currency,
       priceBreakdown: quote as unknown as Prisma.InputJsonValue,
       cancellationPolicy: quote.cancellationPolicy,
-      status: listing.instantBook ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
+      status: automaticallyApprove ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
     } });
 
     // Snapshot each calculated tax item for immutable reservation auditing

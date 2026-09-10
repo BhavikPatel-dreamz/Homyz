@@ -30,6 +30,10 @@ export const updateHostPublicProfileSchema = z.object({
 export type UpdateHostPublicProfileInput = z.infer<typeof updateHostPublicProfileSchema>;
 
 export const coHostInvitationSchema = z.object({
-  email: z.string().trim().email().max(320),
-});
+  email: z.string().trim().email().max(320).optional(),
+  phone: z.string().trim().min(7).max(32).optional(),
+}).refine(
+  (value) => Boolean(value.email) !== Boolean(value.phone),
+  { message: "Enter either an email address or a phone number", path: ["email"] },
+);
 export type CoHostInvitationInput = z.infer<typeof coHostInvitationSchema>;

@@ -40,10 +40,15 @@ interface PricingAndBookingViewsProps {
   setAllowSameDayRequests?: (val: boolean) => void;
 
   // Booking Settings
-  bookingMethod: "instant" | "approve";
-  setBookingMethod: (val: "instant" | "approve") => void;
-  setIsTurnOffInstantBookModalOpen: (open: boolean) => void;
-  setIsCustomMessageModalOpen: (open: boolean) => void;
+  bookingMethod: "first-three" | "instant" | "approve";
+  requireGoodTrackRecord: boolean;
+  approvedBookingCount: number;
+  hasCustomBookingMessage: boolean;
+  saveBookingSettings: (next: {
+    bookingMethod: "first-three" | "instant" | "approve";
+    requireGoodTrackRecord: boolean;
+  }) => Promise<boolean>;
+  openCustomMessage: () => void;
 
   // Cancellation Policy & Custom Link
   cancellationPolicy: string;
@@ -85,9 +90,11 @@ export function PricingAndBookingViews({
   allowSameDayRequests = true,
   setAllowSameDayRequests,
   bookingMethod: _bookingMethod,
-  setBookingMethod: _setBookingMethod,
-  setIsTurnOffInstantBookModalOpen,
-  setIsCustomMessageModalOpen,
+  requireGoodTrackRecord,
+  approvedBookingCount,
+  hasCustomBookingMessage,
+  saveBookingSettings,
+  openCustomMessage,
   cancellationPolicy,
   setCancellationPolicy,
   longTermCancellationPolicy,
@@ -438,90 +445,60 @@ export function PricingAndBookingViews({
       {/* VIEW: BOOKING SETTINGS (Matches Figma Screenshots 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "booking-settings" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          {/* Header & Back arrow button */}
+        <div className="max-w-[608px] space-y-4 pb-10 font-sans animate-in fade-in">
           <div className="flex items-center gap-3">
             <BackButton onClick={() => setActiveSection("description")} />
             <h1>Booking settings</h1>
           </div>
 
-          <div className="space-y-4 pt-1">
-            {/* Card 1: Use instant book */}
-            <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 space-y-4 shadow-2xs">
-              <div className="space-y-1">
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Use instant book</h3>
-                <p className="text-xs text-zinc-500 font-normal">
-                  Allow guests to book automatically without waiting for host confirmation.
-                </p>
+          <section className={`rounded-2xl border-2 bg-white px-6 py-5 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
+            <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "first-three" && saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
+              <div>
+                <h2 className="text-base font-semibold text-zinc-900">Approve your first 3 bookings</h2>
+                <p className="mt-0.5 text-sm font-medium text-emerald-600">{Math.min(approvedBookingCount, 3)} of 3 approved</p>
+                <p className="mt-1 text-sm leading-5 text-zinc-600">Review your first three requests. After three confirmed bookings, new guests can book automatically.</p>
               </div>
+              <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5"/></svg>
+            </button>
+          </section>
 
-              <div className="border-t border-zinc-200/80" />
+          <section className={`rounded-2xl border-2 bg-white px-6 py-5 transition-colors ${_bookingMethod === "instant" ? "border-zinc-900" : "border-zinc-200"}`}>
+            <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
+              <div>
+                <h2 className="text-base font-semibold text-zinc-900">Use Instant Book</h2>
+                <p className="mt-0.5 text-sm leading-5 text-zinc-600">Let guests book automatically, which can help you get more bookings.</p>
+              </div>
+              <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z"/></svg>
+            </button>
 
-              <div className="grid grid-cols-2 gap-4 pt-1">
-                {/* Left Column: Require a good track record */}
-                <div className="space-y-2">
-                  <div className="space-y-0.5">
-                    <h4 className="font-semibold text-xs text-[#1F1F1F]">Require a good track record</h4>
-                    <p className="text-[11px] text-zinc-400 font-normal">Unavailable until Homyz has an authoritative guest reputation model</p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled
-                    aria-label="Good track record requirement is not available"
-                    className="w-9 h-5 rounded-full bg-zinc-300 transition-colors p-0.5 flex items-center cursor-not-allowed"
-                  >
-                    <span className="w-4 h-4 rounded-full bg-white shadow-2xs" />
-                  </button>
+            <div className="my-5 border-t border-zinc-200" />
+            <div className="space-y-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900">Require a good track record</h3>
+                  <p className="mt-0.5 text-sm leading-5 text-zinc-600">Only allow guests with a previous completed, confirmed stay on Homyz.</p>
                 </div>
-
-                {/* Right Column: Add a custom message */}
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-0.5">
-                      <h4 className="font-semibold text-xs text-[#1F1F1F]">Add a custom message</h4>
-                      <p className="text-[11px] text-zinc-400 font-normal">Show a note to guests before they reserve</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsCustomMessageModalOpen(true)}
-                      className="w-6 h-6 rounded-full hover:bg-zinc-200/80 flex items-center justify-center text-zinc-700 text-sm font-semibold transition-all cursor-pointer shrink-0"
-                    >
-                      ›
-                    </button>
-                  </div>
-                </div>
+                <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label="Require a good track record" disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#E9C979]" : "bg-zinc-300"}`}>
+                  <span className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5" : "translate-x-0.5"}`} />
+                </button>
               </div>
-            </div>
-
-            {/* Card 2: Approve all bookings */}
-            <div
-              onClick={() => setIsTurnOffInstantBookModalOpen(true)}
-              className="rounded-2xl bg-white border border-zinc-200/90 p-5 flex items-center justify-between shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
-            >
-              <div className="space-y-0.5">
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Approve all bookings</h3>
-                <p className="text-xs text-zinc-500 font-normal">Always review reservation requests</p>
-              </div>
-
-              <div className="w-10 h-10 rounded-full border border-zinc-200 bg-white group-hover:bg-zinc-50 flex items-center justify-center text-zinc-700 shadow-2xs shrink-0 transition-all">
-                <svg className="w-5 h-5 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                disabled={isSaving}
-                onClick={() => handleSaveSection("booking-settings")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
-              >
-                {isSaving ? "Saving..." : "Save"}
+              <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
+                <div><h3 className="text-sm font-semibold text-zinc-900">Add a custom message</h3><p className="mt-0.5 text-sm leading-5 text-zinc-600">{hasCustomBookingMessage ? "Custom message added for guests." : "Guests must read this before booking."}</p></div>
+                <span aria-hidden="true" className="text-3xl font-light leading-none text-zinc-800">›</span>
               </button>
             </div>
-          </div>
+          </section>
+
+          <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "approve" && saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })} className={`flex w-full items-center justify-between gap-5 rounded-2xl border-2 bg-white px-6 py-5 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
+            <div><h2 className="text-base font-semibold text-zinc-900">Approve all bookings</h2><p className="mt-0.5 text-sm leading-5 text-zinc-600">Always review reservation requests.</p></div>
+            <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z"/><path strokeLinecap="round" d="M8 9h8M8 13h5"/></svg>
+          </button>
+          {isSaving && (
+            <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-zinc-600">
+              <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+              Saving booking preference…
+            </div>
+          )}
         </div>
       )}
 
