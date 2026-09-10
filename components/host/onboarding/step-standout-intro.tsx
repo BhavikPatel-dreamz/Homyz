@@ -13,7 +13,7 @@ interface StepStandoutIntroProps {
 
 export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepStandoutIntroProps) {
   return (
-    <main className="py-10">
+    <main className="py-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center my-auto">

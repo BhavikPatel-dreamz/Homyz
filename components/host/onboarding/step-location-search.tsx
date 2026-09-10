@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { CloseIcon } from "@/components/ui/close-icon";
 import React, { useState } from "react";
 import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
@@ -119,32 +121,53 @@ export function StepLocationSearch({
     setSuggestions([]);
   };
 
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (!isLoading) {
+      router.back();
+    }
+  };  
   return (
-    <main className="py-10">
+    <main className="pb-8 sm:pt-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
-          <div className="max-w-3xl mx-auto w-full flex flex-col items-center text-center my-auto">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-4">
+          {/* Mobile close button */}
+          <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={isLoading}
+              aria-label="Close"
+              className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+          <div className="max-w-124.25 mx-auto w-full flex flex-col items-start text-left my-auto">
+            <h1 className="mb-4">
               Where’s your place located?
             </h1>
-            <p className="text-sm sm:text-base font-medium text-zinc-500 max-w-xl leading-relaxed mb-8">
+            <p className="mb-8">
               Your address is only shared with guests after they have made a confirmed reservation.
             </p>
 
-            <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/90 bg-white">
+            <div className="relative w-full max-w-xl">
               {/* Autocomplete Search Input Field */}
-              <div className="absolute top-5 left-1/2 -translate-x-1/2 z-30 w-[90%] bg-white/95 backdrop-blur-md rounded-2xl border border-zinc-300 shadow-lg px-4 py-3">
+              <div className="sm:absolute relative sm:top-5 sm:left-1/2 sm:-translate-x-1/2 z-30 sm:w-[90%] bg-white/95 backdrop-blur-md sm:h-18 h-12 sm:rounded-[20px] rounded-[10px] border border-[#1F1F1F] shadow-lg px-4 sm:py-3 flex items-center">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                  </svg>
+                  <span className="sm:w-8 sm:h-8 rounded-full sm:border border-[#1F1F1F] shrink-0 flex justify-center items-center">
+                    <svg className="w-4 h-5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                    </svg>
+                  </span>
                   <input
                     type="text"
                     placeholder="Add your location"
                     value={searchQuery}
                     onChange={(e) => handleInputChange(e.target.value)}
-                    className="w-full text-sm font-semibold text-[#1F1F1F] bg-transparent outline-none placeholder:text-zinc-400"
+                    className="w-full text-base font-normal text-[#1F1F1F] bg-transparent outline-none placeholder:text-[#1F1F1F] placeholder:opacity-50"
                   />
                   {isSearching && (
                     <span className="w-4 h-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin shrink-0" />
@@ -177,7 +200,7 @@ export function StepLocationSearch({
                 lng={coords.lng}
                 showExactLocation={true}
                 onLocationChange={onLocationChange}
-                className="h-[400px] sm:h-[450px] w-full relative z-0"
+                className="h-100 sm:h-112.5 w-full relative z-0 rounded-3xl overflow-hidden shadow-2xl border-2 border-[#1F1F1F] bg-white sm:mt-0 mt-3"
               />
             </div>
           </div>

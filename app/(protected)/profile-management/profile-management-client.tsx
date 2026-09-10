@@ -1353,7 +1353,7 @@ function MultiImageUploadModal({
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-[#1F1F1F] tracking-tight">
+            <h3 className="sm:text-lg text-sm sm:font-semibold font-normal text-[#1F1F1F] tracking-tight">
               Upload Trip Photos
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
