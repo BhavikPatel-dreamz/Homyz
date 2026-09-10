@@ -300,11 +300,11 @@ export function RealMap({
       )}
 
       {/* Zoom Controls Overlay (Top Right - Matches Figma Layout) */}
-      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs border border-zinc-200 rounded-lg shadow-md flex flex-col items-center divide-y divide-zinc-200 text-xs font-semibold text-zinc-800 z-10">
+      <div className="absolute top-3 right-3 flex flex-col gap-3 items-center divide-y divide-zinc-200 text-xs font-semibold text-zinc-800 z-10">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-8 h-8 flex items-center justify-center hover:bg-zinc-100 cursor-pointer rounded-t-lg transition-colors text-sm font-black"
+          className="w-8 h-8 flex items-center justify-center bg-white hover:bg-zinc-100 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
           title="Zoom in"
         >
           +
@@ -312,7 +312,7 @@ export function RealMap({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="w-8 h-8 flex items-center justify-center hover:bg-zinc-100 cursor-pointer rounded-b-lg transition-colors text-sm font-black"
+          className="w-8 h-8 flex items-center justify-center bg-white hover:bg-zinc-100 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
           title="Zoom out"
         >
           -

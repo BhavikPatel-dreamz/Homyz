@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Container } from "@/components/ui";
 import { CloseIcon } from "@/components/ui/close-icon";
+import { Container } from "@/components/ui";
 import React from "react";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";

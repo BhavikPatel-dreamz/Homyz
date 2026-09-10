@@ -153,7 +153,7 @@ export function StepPhotoManagement({
       className="py-10"
     >
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           <div className="max-w-4xl mx-auto w-full flex flex-col my-auto">
             {/* Top Header Bar with Title & Plus (+) Button */}
             <div className="flex items-center justify-between w-full mb-8">

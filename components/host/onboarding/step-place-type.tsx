@@ -35,7 +35,7 @@ export function StepPlaceType({
   return (
     <main className="py-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           {/* Mobile close button */}
           <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
             <button

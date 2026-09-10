@@ -86,10 +86,10 @@ export function StepHighlights({
   return (
     <main className="py-10">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
             {/* Main Title & Subtitle */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
+            <h1 className="mb-2">
               Let’s describe your house
             </h1>
             <p className="text-sm font-medium text-zinc-500 mb-10">

@@ -5,6 +5,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef } from "react";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import Image from "next/image";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -115,13 +116,13 @@ export function StepPhotos({
   return (
     <main className="py-10">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
-          <div className="max-w-4xl mx-auto w-full flex flex-col items-center text-center my-auto">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+          <div className="max-w-lg mx-auto w-full flex flex-col items-start text-left justify-center my-auto">
             {/* Main Title & Subtitle */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
+            <h1 className="mb-5">
               Add some photos of your house
             </h1>
-            <p className="text-sm font-medium text-zinc-500 mb-10">
+            <p className="sm:text-base text-sm font-normal text-[#727272] mb-10">
               You’ll need 5 photos to get started. You can add more or make changes later.
             </p>
 
@@ -137,30 +138,17 @@ export function StepPhotos({
 
             {/* Main Upload Box Container */}
             {photos.length === 0 ? (
-              <div className="w-full max-w-xl h-80 rounded-3xl border border-zinc-300/80 bg-zinc-50/70 flex flex-col items-center justify-center p-6 text-center shadow-xs">
+              <div className="w-full max-w-xl sm:h-[446px] h-[338px] rounded-3xl border-2 border-[#1F1F1F] bg-[#F3F4F5] flex flex-col items-center justify-center p-6 text-center shadow-xs">
                 {/* Cute Camera Icon Illustration */}
                 <div className="w-20 h-20 mb-4 flex items-center justify-center relative">
-                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Orange Camera Strap */}
-                    <path d="M 22 28 C 22 15 58 15 58 28" stroke="#E67E22" strokeWidth="5" strokeLinecap="round" fill="none" />
-                    {/* Purple Camera Body */}
-                    <rect x="14" y="26" width="52" height="36" rx="10" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-                    <rect x="26" y="20" width="16" height="8" rx="3" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-                    {/* Camera Lens Outer */}
-                    <circle cx="40" cy="44" r="14" fill="#4A235A" />
-                    {/* Camera Lens Inner Ring */}
-                    <circle cx="40" cy="44" r="9" fill="#FFF9C4" />
-                    <circle cx="40" cy="44" r="5" fill="#4A235A" />
-                    {/* Flash & Accent Dots */}
-                    <circle cx="56" cy="33" r="2.5" fill="#E67E22" />
-                  </svg>
+                  <Image src="/images/icons/camera-icon.svg" alt="camera-icon.svg" width={90} height={90} />
                 </div>
 
                 {/* Add Photos Action Button */}
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(true)}
-                  className="px-7 py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors cursor-pointer"
+                  className="rounded-full border border-transparent bg-[#FCDF9C] px-5 py-2.75 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-13 lg:min-h-0 lg:flex-none lg:px-6"
                 >
                   Add photos
                 </button>
@@ -208,12 +196,12 @@ export function StepPhotos({
           {/* Upload Modal */}
           {isModalOpen && (
             <ModalOverlay className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-              <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative flex flex-col items-center text-center">
+              <div className="bg-white rounded-[20px] p-8 max-w-[340px] w-full shadow-2xl relative flex flex-col items-center text-center">
                 {/* Close Button (X) */}
                 <button
                   type="button"
                   onClick={() => !isUploading && setIsModalOpen(false)}
-                  className="absolute top-5 right-5 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                  className="absolute top-5 right-5 text-[#1F1F1F] hover:text-zinc-700 transition-colors cursor-pointer"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -221,7 +209,7 @@ export function StepPhotos({
                 </button>
 
                 {/* Modal Header Title */}
-                <h2 className="text-lg sm:text-xl font-semibold text-[#1F1F1F] mb-6">
+                <h2 className="text-xl font-medium text-[#1F1F1F] mb-6 mt-6">
                   {filePreviews.length === 0
                     ? "You can upload best 5 images of your place"
                     : "Choose at least 5 photos"}
@@ -238,17 +226,15 @@ export function StepPhotos({
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center bg-zinc-50/60 transition-colors cursor-pointer"
+                  className="w-full h-[202px] border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-[20px] p-6 sm:p-8 flex flex-col items-center justify-center bg-zinc-50/60 transition-colors cursor-pointer"
                 >
                   {filePreviews.length === 0 ? (
                     /* Empty Dropzone State */
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-[#1F1F1F] shadow-2xs">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                        </svg>
+                      <div className="w-16 h-16 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-[#1F1F1F] shadow-2xs">
+                        <Image src="/images/icons/upload-icon.svg" alt="upload-icon.svg" width={24} height={24} />
                       </div>
-                      <span className="text-xs font-semibold text-zinc-700">Drop files here</span>
+                      <span className="text-base font-normal text-black">Drop files here</span>
                     </div>
                   ) : (
                     /* Photo Grid Previews State inside Modal */
@@ -282,7 +268,7 @@ export function StepPhotos({
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full py-3 rounded-full border border-zinc-300 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors mt-6 cursor-pointer"
+                    className="w-full mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 py-2.25 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-14 min-h-12 lg:flex-none lg:px-6"
                   >
                     Cancel
                   </button>
@@ -291,7 +277,7 @@ export function StepPhotos({
                     type="button"
                     onClick={handleConfirmUpload}
                     disabled={isUploading}
-                    className="w-full py-3 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors mt-6 cursor-pointer disabled:opacity-50"
+                      className="w-full mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 py-2.25 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-14 min-h-12 lg:flex-none lg:px-6"
                   >
                     {isUploading ? "Uploading..." : "Upload selected photos"}
                   </button>
@@ -301,7 +287,7 @@ export function StepPhotos({
           )}
 
           {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end pt-8 mt-8">
             <OnboardingBackButton
               onClick={onBack}
               disabled={isLoading}
