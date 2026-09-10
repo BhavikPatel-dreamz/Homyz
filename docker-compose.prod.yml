@@ -24,6 +24,10 @@ services:
       NODE_ENV: production
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
+      AUTH_TRUST_HOST: "true"
+    volumes:
+      # Survive container recreate. Prefer S3_BUCKET in .env for multi-host.
+      - homyz_uploads:/app/public/uploads
     healthcheck:
       test:
         [
@@ -41,3 +45,6 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+
+volumes:
+  homyz_uploads:

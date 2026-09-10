@@ -141,6 +141,7 @@ export function WhereIveBeenSelector({
 
       const res = await fetch("/api/v1/upload/stamp-icon", {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 

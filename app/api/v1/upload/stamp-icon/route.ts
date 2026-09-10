@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import path from "path";
-import { getSessionUser } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/context";
 import { savePublicMedia } from "@/lib/storage/media";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const actor = await getSessionUser();
+    const actor = await getAuthContext(req);
     if (!actor) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -305,6 +305,8 @@ export const authOptions: NextAuthOptions = {
   // (cookie) + mobile (Bearer) since both carry the same signed claims.
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
+  // HTTP (IP:3000) must not use Secure cookies — the browser will drop them and uploads return 401.
+  useSecureCookies: (process.env.NEXTAUTH_URL || process.env.APP_URL || "").startsWith("https://"),
   pages: { signIn: "/login" },
   // Over plain HTTP (such as testing with live IP http://8.213.86.216:3000), browsers reject
   // any cookie with Secure flag or __Secure- prefix. Only enable secure cookies when using HTTPS.
