@@ -30,7 +30,7 @@ export class TaxCalculator {
     const extraGuestFee = Math.max(0, params.extraGuestFee ?? 0);
 
     const calculatedTaxes: CalculatedTaxItem[] = [];
-    const processedTaxTypes = new Set<TaxType>();
+    const platformManagedTaxTypes = new Set<TaxType>();
 
     // 1. Process System-Managed Rules first (Platform Priority)
     const systemRules = (params.rules || []).filter((r) => r.isActive);
@@ -47,14 +47,14 @@ export class TaxCalculator {
       });
 
       calculatedTaxes.push(taxItem);
-      processedTaxTypes.add(rule.taxType);
+      platformManagedTaxTypes.add(rule.taxType);
     }
 
     // 2. Process Host-Configured Listing Taxes (Avoiding duplicate tax types)
     const hostTaxes = (params.hostTaxes || []).filter((t) => t.isActive);
     for (const hostTax of hostTaxes) {
       // Prevent duplicate tax if platform already collected this tax type
-      if (processedTaxTypes.has(hostTax.taxType)) {
+      if (platformManagedTaxTypes.has(hostTax.taxType)) {
         continue;
       }
 
@@ -70,7 +70,6 @@ export class TaxCalculator {
       });
 
       calculatedTaxes.push(taxItem);
-      processedTaxTypes.add(hostTax.taxType);
     }
 
     // 3. Aggregate Tax Totals
@@ -233,7 +232,7 @@ export class TaxCalculator {
     }
 
     const taxableBase = this.calculateTaxableBase(opts, hostTax.taxableComponents);
-    const taxAmount = this.computeAmount({
+    const uncappedTaxAmount = this.computeAmount({
       method: hostTax.calculationMethod,
       rate: hostTax.rate,
       fixedAmount: hostTax.amount,
@@ -241,6 +240,12 @@ export class TaxCalculator {
       nights,
       guests,
     });
+    const taxAmount = hostTax.maximumAmountPerPersonPerNight
+      ? Math.min(
+          uncappedTaxAmount,
+          hostTax.maximumAmountPerPersonPerNight * guests * nights,
+        )
+      : uncappedTaxAmount;
 
     return {
       id: hostTax.id,
@@ -346,4 +351,3 @@ export class TaxCalculator {
     }
   }
 }
-

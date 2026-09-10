@@ -96,60 +96,67 @@ assert(
 
 // Field 1: Tax name
 assert(viewCode.includes("Tax name"), "Field 1: Must contain 'Tax name' label");
-assert(viewCode.includes("Transient occupancy tax"), "Field 1: Must include Transient occupancy tax option");
+assert(viewCode.includes("Hotel tax"), "Field 1: Must include Hotel tax option");
+assert(viewCode.includes("Room tax"), "Field 1: Must include Room tax option");
 assert(viewCode.includes("Tourist tax"), "Field 1: Must include Tourist tax option");
-assert(viewCode.includes("City tax"), "Field 1: Must include City tax option");
-assert(viewCode.includes("Value-added tax (VAT)"), "Field 1: Must include VAT option");
+assert(viewCode.includes("Transient Occupancy Tax"), "Field 1: Must include Transient Occupancy Tax option");
+assert(viewCode.includes("VAT/GST"), "Field 1: Must include VAT/GST option");
+assert(viewCode.includes("Tourism Assessment/Fee"), "Field 1: Must include Tourism Assessment/Fee option");
 
 // Field 2: Tax type
 assert(viewCode.includes("Tax type"), "Field 2: Must contain 'Tax type' label");
 assert(viewCode.includes("Percentage per booking"), "Field 2: Must include 'Percentage per booking' option");
-assert(viewCode.includes("Flat amount per guest"), "Field 2: Must include 'Flat amount per guest' option");
-assert(viewCode.includes("Flat amount per night"), "Field 2: Must include 'Flat amount per night' option");
-assert(viewCode.includes("Flat amount per guest per night"), "Field 2: Must include 'Flat amount per guest per night' option");
+assert(viewCode.includes("Per guest"), "Field 2: Must include 'Per guest' option");
+assert(viewCode.includes("Per night"), "Field 2: Must include 'Per night' option");
+assert(viewCode.includes("Per guest, per night"), "Field 2: Must include 'Per guest, per night' option");
 
 // Field 3: Tax rate
 assert(viewCode.includes("Tax rate"), "Field 3: Must contain 'Tax rate' label");
 
-// Field 4: Partial-stay exemption
+// Field 4: Taxable base and cap
+assert(viewCode.includes("Taxable base"), "Field 4: Must contain 'Taxable base' label");
+assert(viewCode.includes("Management fee"), "Field 4: Must include Management fee taxable component");
+assert(viewCode.includes("Maximum cap per person per night"), "Field 5: Must contain maximum cap field");
+
+// Field 6: Partial-stay exemption
 assert(viewCode.includes("Partial-stay exemption"), "Field 4: Must contain 'Partial-stay exemption' label");
 assert(
   viewCode.includes(
     "If local laws exempt taxes after a certain number of nights, select that number of nights."
   ),
-  "Field 4: Must contain partial-stay exemption explanation"
+  "Field 6: Must contain partial-stay exemption explanation"
 );
 
-// Field 5: Full-stay exemption
+// Field 7: Full-stay exemption
 assert(viewCode.includes("Full-stay exemption"), "Field 5: Must contain 'Full-stay exemption' label");
 assert(
   viewCode.includes(
     "If local laws exempt taxes for the entire stay after a certain number of nights, select that number of nights."
   ),
-  "Field 5: Must contain full-stay exemption explanation"
+  "Field 7: Must contain full-stay exemption explanation"
 );
 
-// Field 6: Accommodation tax registration number
+// Field 8: Accommodation tax registration number
 assert(
   viewCode.includes("Accommodation tax registration number"),
-  "Field 6: Must contain 'Accommodation tax registration number' label"
+  "Field 8: Must contain 'Accommodation tax registration number' label"
 );
 assert(
   viewCode.includes("This number is on your tax regulation documents."),
-  "Field 6: Must contain regulatory number explanation"
+  "Field 8: Must contain regulatory number explanation"
 );
 assert(
   viewCode.includes("Tax registration number"),
-  "Field 6: Must contain placeholder 'Tax registration number'"
+  "Field 8: Must contain placeholder 'Tax registration number'"
 );
 
-// Field 7: Terms for adding taxes
+// Field 9: Terms for adding taxes
 assert(viewCode.includes("Terms for adding taxes"), "Field 7: Must contain 'Terms for adding taxes' heading");
 const expectedTermsText =
   "I confirm the tax information is correct and will remit any tax collected on my bookings to the appropriate tax authorities. I grant Homyz permission to disclose tax-related and transaction information (such as name, listing address, tax amount and registration number) to the relevant tax authorities.";
 assert(
   viewCode.includes(expectedTermsText),
-  "Field 7: Must contain exact legal terms confirmation with Homyz grant"
+  "Field 9: Must contain exact legal terms confirmation with Homyz grant"
 );
 
 // Sticky action bar

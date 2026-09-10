@@ -46,6 +46,7 @@ async function runGuidebookLifecycleTests() {
     const parsed = createGuidebookSchema.parse({
       title: "Bhavik's Guide to Riyadh",
       coverImage: "https://example.com/cover.jpg",
+      description: "A local collection of favorite Riyadh spots.",
       city: "Riyadh",
       country: "Saudi Arabia",
       latitude: 24.7136,
@@ -55,6 +56,7 @@ async function runGuidebookLifecycleTests() {
     });
     assert.equal(parsed.title, "Bhavik's Guide to Riyadh");
     assert.equal(parsed.city, "Riyadh");
+    assert.equal(parsed.description, "A local collection of favorite Riyadh spots.");
     assert.equal(parsed.listingIds?.length, 2);
     assert.equal(parsed.published, true);
   });
@@ -72,6 +74,13 @@ async function runGuidebookLifecycleTests() {
     assert.throws(() => {
       createGuidebookSchema.parse({ title: "x".repeat(101) });
     });
+  });
+
+  test("guidebook schemas accept uploaded media paths for create and update", () => {
+    const uploadPath = "/uploads/guidebook-photos/guidebook_123.jpg";
+    assert.equal(createGuidebookSchema.parse({ title: "My guide", coverImage: uploadPath }).coverImage, uploadPath);
+    assert.equal(updateGuidebookSchema.parse({ description: "Updated details", coverImage: uploadPath }).description, "Updated details");
+    assert.equal(createGuidebookItemSchema.parse({ title: "Cafe", category: "COFFEE_AND_CAFES", photo: uploadPath }).photo, uploadPath);
   });
 
   test("createGuidebookItemSchema parses valid PLACE recommendation", () => {

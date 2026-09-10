@@ -20,6 +20,7 @@ import {
   QUIET_HOURS_START_OPTIONS,
   QUIET_HOURS_END_OPTIONS,
   ALL_HOURS_OPTIONS,
+  type SectionKey,
 } from "../section-helpers";
 import { HouseRulesSkeleton } from "./YourSpaceSkeletons";
 
@@ -73,7 +74,11 @@ interface HouseRulesAndArrivalViewsProps {
   setActiveSection: (section: any) => void;
   isSaving: boolean;
   isLoading?: boolean;
-  handleSaveSection: (sectionKey: any) => void;
+  handleSaveSection: (
+    sectionKey: SectionKey,
+    sectionSubtype?: "property" | "access" | "interaction" | "other",
+    overrides?: Record<string, unknown>,
+  ) => Promise<void>;
 
   // House Rules
   checkInStart: string;
@@ -116,6 +121,10 @@ interface HouseRulesAndArrivalViewsProps {
   setListingStatusSetting?: (val: "listed" | "unlisted") => void;
   selectedLanguageIds?: string[];
   setSelectedLanguageIds?: (val: string[]) => void;
+  requireProfilePhoto?: boolean;
+  setRequireProfilePhoto?: (val: boolean) => void;
+  guestInteractionPreference?: string;
+  setGuestInteractionPreference?: (val: string) => void;
 
   // Modals trigger
   setIsEditingAdditionalRulesModalOpen: (open: boolean) => void;
@@ -133,6 +142,8 @@ interface HouseRulesAndArrivalViewsProps {
   setDirections?: (val: string) => void;
   checkInInstructions?: string;
   setCheckInInstructions?: (val: string) => void;
+  checkOutInstructions?: string;
+  setCheckOutInstructions?: (val: string) => void;
   doorCode?: string;
   setDoorCode?: (val: string) => void;
   lockboxCode?: string;
@@ -154,9 +165,11 @@ interface HouseRulesAndArrivalViewsProps {
   listingLongitude?: number | null;
   listingDiscounts?: any;
   onSaveOrgStays?: (cfg: any) => Promise<void>;
+  initialGuidebooks?: any[];
 }
 
 export function HouseRulesAndArrivalViews({
+  initialGuidebooks,
   listingId,
   listingCity,
   listingCountry,
@@ -217,6 +230,8 @@ export function HouseRulesAndArrivalViews({
   setDirections,
   checkInInstructions = "",
   setCheckInInstructions,
+  checkOutInstructions = "",
+  setCheckOutInstructions,
   doorCode = "",
   setDoorCode,
   lockboxCode = "",
@@ -235,6 +250,10 @@ export function HouseRulesAndArrivalViews({
   setListingStatusSetting,
   selectedLanguageIds = DEFAULT_LANGUAGE_IDS,
   setSelectedLanguageIds,
+  requireProfilePhoto = false,
+  setRequireProfilePhoto,
+  guestInteractionPreference = "",
+  setGuestInteractionPreference,
   isLoading,
 }: HouseRulesAndArrivalViewsProps) {
   const [isCheckInOutModalOpen, setIsCheckInOutModalOpen] = React.useState(false);
@@ -964,6 +983,10 @@ export function HouseRulesAndArrivalViews({
         activeSection === "checkout-page" ||
         activeSection === "check-out-page") && (
         <CheckOutInstructionsView
+          checkOutTime={checkOutTime}
+          setCheckOutTime={setCheckOutTime}
+          checkOutInstructions={checkOutInstructions}
+          setCheckOutInstructions={setCheckOutInstructions}
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
@@ -981,6 +1004,7 @@ export function HouseRulesAndArrivalViews({
           listingLatitude={listingLatitude}
           listingLongitude={listingLongitude}
           setActiveSection={setActiveSection}
+          initialGuidebooks={initialGuidebooks}
         />
       )}
 
@@ -994,6 +1018,8 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          value={guestInteractionPreference}
+          onChange={setGuestInteractionPreference}
         />
       )}
 
@@ -1033,6 +1059,8 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          requireProfilePhoto={requireProfilePhoto}
+          setRequireProfilePhoto={setRequireProfilePhoto}
         />
       )}
 
@@ -1081,21 +1109,66 @@ export function HouseRulesAndArrivalViews({
 }
 
 /* ================================================================= */
-/* CHECK-OUT INSTRUCTIONS INNER COMPONENT (Matches Figma 100%)       */
+/* CHECK-OUT INSTRUCTIONS INNER COMPONENT (Modern & Accessible)      */
 /* ================================================================= */
 function CheckOutInstructionsView({
+  checkOutTime = "11:00",
+  setCheckOutTime: _setCheckOutTime,
+  checkOutInstructions = "",
+  setCheckOutInstructions,
   setActiveSection,
-  isSaving: _isSaving,
+  isSaving,
   handleSaveSection,
 }: {
+  checkOutTime?: string;
+  setCheckOutTime?: (val: string) => void;
+  checkOutInstructions?: string;
+  setCheckOutInstructions?: (val: string) => void;
   setActiveSection: (s: any) => void;
   isSaving: boolean;
-  handleSaveSection: (key: any) => void;
+  handleSaveSection: (
+    key: SectionKey,
+    sectionSubtype?: "property" | "access" | "interaction" | "other",
+    overrides?: Record<string, unknown>,
+  ) => Promise<void>;
 }) {
-  const [isAdding, setIsAdding] = React.useState(false);
-  const [text, setText] = React.useState(
-    "Guests will see these instructions 24 hours before check-out time. Clearly detail garbage disposal, lockup procedures, and key returns."
-  );
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [draftInstructions, setDraftInstructions] = React.useState(checkOutInstructions);
+
+  const suggestionChips = [
+    "🗑️ Throw trash away",
+    "🔑 Leave keys on counter",
+    "🔒 Lock doors & windows",
+    "💡 Turn off lights & AC",
+    "🧺 Gather used towels in hamper",
+    "🍽️ Run dishwasher",
+  ];
+
+  const handleAddSuggestion = (suggestion: string) => {
+    const cleanText = suggestion.replace(/^[^\s]+\s/, "");
+    setDraftInstructions((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return `• ${cleanText}`;
+      if (trimmed.includes(cleanText)) return prev;
+      return `${trimmed}\n• ${cleanText}`;
+    });
+  };
+
+  const handleSave = async () => {
+    const next = draftInstructions.trim();
+    setCheckOutInstructions?.(next);
+    await handleSaveSection("checkout-instructions", undefined, { checkOutInstructions: next });
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    const next = "";
+    setCheckOutInstructions?.(next);
+    setDraftInstructions("");
+    await handleSaveSection("checkout-instructions", undefined, { checkOutInstructions: next });
+  };
+
+  const formattedCheckOut = formatTimeDisplay(checkOutTime, "11:00 AM");
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
@@ -1105,41 +1178,214 @@ function CheckOutInstructionsView({
         <h1 className="tracking-tight text-[#1F1F1F]">Check-out instructions</h1>
       </div>
 
-      {/* Description text matching screenshot 100% */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
-        {text}
+      {/* Description text */}
+      <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+        Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time.
       </p>
 
-      {isAdding && (
-        <div className="pt-2 space-y-3 animate-in fade-in">
-          <textarea
-            rows={4}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Add specific check-out instructions for your guests..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
-          />
+      {/* Card 1: Check-out time info */}
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-[11px] font-medium text-zinc-400 block">Check-out time</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] block">{formattedCheckOut}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveSection("check-in-out")}
+            className="text-xs font-semibold text-[#1F1F1F] hover:text-zinc-600 underline underline-offset-2 transition-colors cursor-pointer"
+          >
+            Change time
+          </button>
+        </div>
+      </div>
+
+      {/* Card 2: Instructions Card or Empty State */}
+      {checkOutInstructions ? (
+        <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-4 shadow-2xs">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <span className="text-xs font-semibold text-zinc-500 block">Instructions for guests</span>
+              <p className="text-xs text-zinc-800 font-medium whitespace-pre-line leading-relaxed">
+                {checkOutInstructions}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDraftInstructions(checkOutInstructions);
+                setIsModalOpen(true);
+              }}
+              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-all cursor-pointer shadow-2xs"
+              aria-label="Edit check-out instructions"
+            >
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+              </svg>
+              Shared 24 hours before check-out
+            </div>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={handleDelete}
+              className="text-[11px] font-semibold text-red-500 hover:text-red-700 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-6 text-center space-y-3">
+          <div className="mx-auto w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-500 shadow-2xs">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-semibold text-[#1F1F1F]">No check-out instructions yet</h3>
+            <p className="text-[11px] text-zinc-400 max-w-sm mx-auto">
+              Add details about returning keys, taking out trash, or locking doors before leaving.
+            </p>
+          </div>
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setDraftInstructions("");
+                setIsModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
+            >
+              <span className="text-sm font-semibold">+</span>
+              Add instructions
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Button */}
-      <div className="pt-2">
-        <button
-          type="button"
-          onClick={() => {
-            if (isAdding) {
-              handleSaveSection("arrival-guide");
-              setIsAdding(false);
-            } else {
-              setIsAdding(true);
-            }
-          }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
-        >
-          <span className="text-sm font-semibold">+</span>
-          {isAdding ? "Save instructions" : "Add instructions"}
-        </button>
-      </div>
+      {/* Button to edit or add if instructions already exist */}
+      {checkOutInstructions && (
+        <div>
+          <button
+            type="button"
+            onClick={() => {
+              setDraftInstructions(checkOutInstructions);
+              setIsModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs hover:border-zinc-300 hover:bg-zinc-50 transition-all cursor-pointer"
+          >
+            <span className="text-sm font-semibold leading-none">✎</span>
+            Edit instructions
+          </button>
+        </div>
+      )}
+
+      {/* ===================================== */}
+      {/* MODAL: Add / Edit Check-out Instructions */}
+      {/* ===================================== */}
+      {isModalOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 max-h-[90vh] overflow-y-auto">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-6 right-6 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="mb-5 space-y-1">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
+                {checkOutInstructions ? "Edit check-out instructions" : "Add check-out instructions"}
+              </h3>
+              <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+                Guests will see these instructions 24 hours before check-out time.
+              </p>
+            </div>
+
+            {/* Quick Suggestions */}
+            <div className="mb-4 space-y-2">
+              <span className="text-[11px] font-semibold text-zinc-500 block">Quick suggestions (click to add)</span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestionChips.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => handleAddSuggestion(chip)}
+                    className="rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-[11px] font-medium text-zinc-700 px-2.5 py-1 transition-colors cursor-pointer"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Textarea */}
+            <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
+              <label className="block text-xs font-semibold text-zinc-800">
+                Instructions for guests
+              </label>
+              <textarea
+                rows={6}
+                value={draftInstructions}
+                onChange={(e) => setDraftInstructions(e.target.value)}
+                placeholder="e.g. Please take all bagged trash to the outdoor bins, place used towels in the hamper, turn off the AC, and lock the door behind you."
+                className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 leading-relaxed resize-none"
+              />
+              <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1">
+                <span className="flex items-center gap-1.5">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+                  </svg>
+                  Shared 24 hours before check-out
+                </span>
+                <span>{draftInstructions.length} characters</span>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={handleSave}
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
     </div>
   );
 }
@@ -1262,63 +1508,76 @@ function InteractionPreferencesView({
   setActiveSection,
   isSaving,
   handleSaveSection,
+  value,
+  onChange,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
-  handleSaveSection: (key: any) => void;
+  handleSaveSection: (
+    key: SectionKey,
+    sectionSubtype?: "property" | "access" | "interaction" | "other",
+    overrides?: Record<string, unknown>,
+  ) => Promise<void>;
+  value: string;
+  onChange?: (value: string) => void;
 }) {
-  const [selectedOption, setSelectedOption] = React.useState<number>(0);
-  const [isSaved, setIsSaved] = React.useState(false);
-
   const options = [
     "I won't be available in person, and prefer communicating through the app.",
     "I like to say hello in person, but keep to myself otherwise",
     "I like socializing and spending time with the guests",
     "No preferences",
   ];
+  const selectedOption = options.indexOf(value || "No preferences");
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="max-w-2xl space-y-6 pb-16 font-sans animate-in fade-in">
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="tracking-tight text-[#1F1F1F]">Interaction with guests</h1>
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-[#1F1F1F]">Interaction with guests</h1>
+          <p className="mt-0.5 text-xs font-normal text-zinc-500">
+            Set expectations before guests arrive.
+          </p>
+        </div>
       </div>
 
       {/* Description */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
+      <p className="max-w-xl text-xs font-normal leading-relaxed text-zinc-500">
         Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy.
       </p>
 
-      {/* Options List with Toggle Switches */}
-      <div className="space-y-3 pt-2">
+      {/* Options List */}
+      <div className="space-y-2" role="radiogroup" aria-label="Guest interaction preference">
         {options.map((option, index) => {
           const isActive = selectedOption === index;
           return (
             <button
               key={option}
               type="button"
-              onClick={() => setSelectedOption(index)}
-              className={`w-full rounded-[18px] border px-4 py-4 text-left transition-all cursor-pointer flex items-center justify-between gap-4 shadow-[0_0_0_1px_rgba(0,0,0,0.02)] ${
+              onClick={() => onChange?.(option)}
+              className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer ${
                 isActive
-                  ? "bg-[#FEF9EC] border-[#E4C86B] text-[#1F1F1F]"
-                  : "bg-white border-[#D9D9D9] text-[#1F1F1F] hover:border-[#B7B7B7]"
+                  ? "border-zinc-900 bg-zinc-50 text-zinc-900"
+                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400"
               }`}
-              aria-pressed={isActive}
+              role="radio"
+              aria-checked={isActive}
               aria-label={option}
             >
-              <span className="flex-1 text-[15px] md:text-[16px] font-normal leading-relaxed tracking-[-0.01em] text-current">
+              <span className="flex-1 text-sm font-medium leading-relaxed text-current">
                 {option}
               </span>
 
               <span
-                className={`relative inline-flex h-9 w-16 shrink-0 items-center rounded-full border transition-all duration-200 ${
-                  isActive ? "bg-[#D8D8D8] border-[#D8D8D8]" : "bg-[#F0F0F0] border-[#D2D2D2]"
+                aria-hidden="true"
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${
+                  isActive ? "bg-zinc-900" : "bg-zinc-200"
                 }`}
               >
                 <span
-                  className={`absolute h-7 w-7 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.12)] border border-[#DADADA] transition-all duration-200 ${
-                    isActive ? "translate-x-8" : "translate-x-1"
+                  className={`h-5 w-5 rounded-full bg-white shadow-xs transition-transform duration-200 ${
+                  isActive ? "translate-x-5" : "translate-x-0.5"
                   }`}
                 />
               </span>
@@ -1332,18 +1591,15 @@ function InteractionPreferencesView({
         <button
           type="button"
           disabled={isSaving}
-          onClick={() => {
-            handleSaveSection("interaction-preferences");
-            setIsSaved(true);
-          }}
+          onClick={() => void handleSaveSection("description", "interaction")}
           className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
+          {isSaving ? "Saving..." : "Save"}
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveSection("description")}
+          onClick={() => setActiveSection("arrival-guide")}
           className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
         >
           Cancel
@@ -1475,7 +1731,7 @@ function ListingStatusView({
 /* ================================================================= */
 function LanguagesView({
   setActiveSection,
-  isSaving: _isSaving,
+  isSaving,
   handleSaveSection,
   selectedLanguageIds,
   setSelectedLanguageIds,
@@ -1488,11 +1744,6 @@ function LanguagesView({
 }) {
   const [isAdding, setIsAdding] = React.useState(false);
   const [searchLang, setSearchLang] = React.useState("");
-
-  const selectedLanguages = React.useMemo(
-    () => getLanguageDisplayNames(selectedLanguageIds.length > 0 ? selectedLanguageIds : DEFAULT_LANGUAGE_IDS),
-    [selectedLanguageIds]
-  );
 
   const filteredLanguages: LanguageOption[] = React.useMemo(
     () =>
@@ -1517,6 +1768,9 @@ function LanguagesView({
 
       {/* List of currently selected languages */}
       <div className="flex flex-wrap gap-2 pt-2">
+        {selectedLanguageIds.length === 0 && (
+          <p className="text-xs text-zinc-500">No languages selected yet.</p>
+        )}
         {selectedLanguageIds.map((languageId) => {
           const languageName = getLanguageDisplayNames([languageId])[0] ?? languageId;
           return (
@@ -1525,18 +1779,17 @@ function LanguagesView({
               className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-250 text-[#1F1F1F] text-xs font-semibold px-4 py-2 rounded-full shadow-2xs"
             >
               <span>{languageName}</span>
-              {selectedLanguageIds.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!setSelectedLanguageIds) return;
-                    setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== languageId));
-                  }}
-                  className="text-zinc-400 hover:text-zinc-700 font-semibold"
-                >
-                  ✕
-                </button>
-              )}
+              <button
+                type="button"
+                aria-label={`Remove ${languageName}`}
+                onClick={() => {
+                  if (!setSelectedLanguageIds) return;
+                  setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== languageId));
+                }}
+                className="text-zinc-400 hover:text-zinc-700 font-semibold"
+              >
+                ✕
+              </button>
             </div>
           );
         })}
@@ -1545,8 +1798,11 @@ function LanguagesView({
       {/* Add a language Modal / Expandable selector */}
       {isAdding && (
         <div className="p-5 rounded-2xl border border-zinc-200 bg-white space-y-4 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-[#1F1F1F]">Select a language</h3>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-[#1F1F1F]">Select languages</h3>
+              <p className="mt-0.5 text-[11px] text-zinc-500">{LANGUAGE_OPTIONS.length} languages available</p>
+            </div>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
@@ -1564,29 +1820,37 @@ function LanguagesView({
             className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
           />
 
-          <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
+          <div className="max-h-80 overflow-y-auto space-y-1 custom-scrollbar pr-1" role="listbox" aria-multiselectable="true">
             {filteredLanguages.map((lang) => {
               const isSelected = selectedLanguageIds.includes(lang.id);
               return (
-                <div
+                <button
                   key={lang.id}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
                   onClick={() => {
                     if (!setSelectedLanguageIds) return;
                     if (isSelected) {
-                      if (selectedLanguageIds.length > 1) {
-                        setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== lang.id));
-                      }
+                      setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== lang.id));
                     } else {
                       setSelectedLanguageIds([...selectedLanguageIds, lang.id]);
                     }
                   }}
-                  className={`p-3 rounded-xl text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between ${
-                    isSelected ? "bg-[#FEF9EC] text-zinc-950 border border-amber-300" : "hover:bg-zinc-50 text-zinc-700"
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-xs font-semibold transition-colors ${
+                    isSelected ? "border-amber-300 bg-[#FEF9EC] text-zinc-950" : "border-transparent text-zinc-700 hover:border-zinc-200 hover:bg-zinc-50"
                   }`}
                 >
-                  <span>{lang.name}</span>
-                  {isSelected && <span>✓</span>}
-                </div>
+                  <span>
+                    <span className="block">{lang.name}</span>
+                    {lang.nativeName && lang.nativeName !== lang.name && (
+                      <span className="mt-0.5 block text-[11px] font-normal text-zinc-500">{lang.nativeName}</span>
+                    )}
+                  </span>
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] ${isSelected ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 bg-white text-transparent"}`}>
+                    ✓
+                  </span>
+                </button>
               );
             })}
           </div>
@@ -1594,20 +1858,21 @@ function LanguagesView({
           <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
             <button
               type="button"
+              disabled={isSaving}
               onClick={() => {
-                handleSaveSection("language");
+                void handleSaveSection("language");
                 setIsAdding(false);
               }}
-              className="px-5 py-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs cursor-pointer"
+              className="px-5 py-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Done
+              {isSaving ? "Saving..." : "Save languages"}
             </button>
           </div>
         </div>
       )}
 
-      {/* Button matching Figma 100%: + Add a language */}
-      <div className="pt-2">
+      {/* Actions */}
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
@@ -1615,6 +1880,14 @@ function LanguagesView({
         >
           <span className="text-sm font-semibold">+</span>
           Add a language
+        </button>
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => void handleSaveSection("language")}
+          className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs transition-all hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSaving ? "Saving..." : "Save changes"}
         </button>
       </div>
     </div>
@@ -1628,14 +1901,15 @@ function GuestRequirementsView({
   setActiveSection,
   isSaving,
   handleSaveSection,
+  requireProfilePhoto,
+  setRequireProfilePhoto,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
+  requireProfilePhoto: boolean;
+  setRequireProfilePhoto?: (value: boolean) => void;
 }) {
-  const [requireProfilePhoto, setRequireProfilePhoto] = React.useState(false);
-  const [isSaved, setIsSaved] = React.useState(false);
-
   return (
     <div className="space-y-7 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
@@ -1656,7 +1930,10 @@ function GuestRequirementsView({
         {/* Toggle Switch matching Figma Screenshot 100% */}
         <button
           type="button"
-          onClick={() => setRequireProfilePhoto(!requireProfilePhoto)}
+          onClick={() => setRequireProfilePhoto?.(!requireProfilePhoto)}
+          role="switch"
+          aria-checked={requireProfilePhoto}
+          aria-label="Require a profile photo"
           className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${
             requireProfilePhoto ? "bg-zinc-900" : "bg-zinc-200"
           }`}
@@ -1695,14 +1972,10 @@ function GuestRequirementsView({
         <button
           type="button"
           disabled={isSaving}
-          onClick={() => {
-            handleSaveSection("guest-requirements");
-            setIsSaved(true);
-            setTimeout(() => setIsSaved(false), 2000);
-          }}
+          onClick={() => void handleSaveSection("guest-requirements")}
           className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+          {isSaving ? "Saving..." : "Save"}
         </button>
 
         <button
@@ -1929,8 +2202,151 @@ function DirectionsView({
   );
 }
 
+
+/* ------------------------------------------------------------------ */
+/* CHECK-IN METHOD DATA                                                  */
+/* ------------------------------------------------------------------ */
+const CHECK_IN_METHODS_DATA = [
+  {
+    id: "SMART_LOCK",
+    label: "Smart lock",
+    description: "Guests will use a code or app to open a wifi-connected lock.",
+    hasCode: true,
+    codeLabel: "Smart lock / door code",
+    codePlaceholder: "e.g. 1234# or app access link",
+  },
+  {
+    id: "KEYPAD",
+    label: "Keypad",
+    description: "Guests will use the code you provide to open an electronic lock.",
+    hasCode: true,
+    codeLabel: "Keypad / door code",
+    codePlaceholder: "e.g. 4567",
+  },
+  {
+    id: "LOCKBOX",
+    label: "Lockbox",
+    description: "Guests will use a code you provide to open a small safe that has a key inside.",
+    hasCode: true,
+    codeLabel: "Lockbox combination code",
+    codePlaceholder: "e.g. 8842",
+  },
+  {
+    id: "BUILDING_STAFF",
+    label: "Building staff",
+    description: "Someone will be available 24 hours a day to let guests in.",
+    hasCode: false,
+    codeLabel: "",
+    codePlaceholder: "",
+  },
+  {
+    id: "IN_PERSON_GREETING",
+    label: "In-person greeting",
+    description: "Guests will meet you or your co-host to pick up keys.",
+    hasCode: false,
+    codeLabel: "",
+    codePlaceholder: "",
+  },
+  {
+    id: "OTHER",
+    label: "Other",
+    description: "Guests will use a different method not listed here.",
+    hasCode: false,
+    codeLabel: "",
+    codePlaceholder: "",
+  },
+] as const;
+
+function CheckInMethodIcon({ id }: { id: string }) {
+  if (id === "SMART_LOCK") {
+    return (
+      <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0v4" />
+        <circle cx="12" cy="16" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (id === "KEYPAD") {
+    return (
+      <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <circle cx="9" cy="7" r="1" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="7" r="1" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="7" r="1" fill="currentColor" stroke="none" />
+        <circle cx="9" cy="11" r="1" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="11" r="1" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="11" r="1" fill="currentColor" stroke="none" />
+        <circle cx="9" cy="15" r="1" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="15" r="1" fill="currentColor" stroke="none" />
+        <rect x="9.5" y="18" width="5" height="1.5" rx="0.5" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (id === "LOCKBOX") {
+    return (
+      <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <rect x="3" y="6" width="18" height="14" rx="2" />
+        <circle cx="12" cy="13" r="3" />
+        <circle cx="12" cy="13" r="1" fill="currentColor" stroke="none" />
+        <rect x="10.5" y="3" width="3" height="4" rx="0.5" />
+      </svg>
+    );
+  }
+  if (id === "BUILDING_STAFF") {
+    return (
+      <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <circle cx="10" cy="7" r="3" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 21a6 6 0 0112 0" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 12l2 2 4-4" />
+      </svg>
+    );
+  }
+  if (id === "IN_PERSON_GREETING") {
+    return (
+      <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 11.25a3.75 3.75 0 107.5 0 3.75 3.75 0 00-7.5 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 9.75V6a3 3 0 00-6 0v3.75" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v4.5M9 19.5h6" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function normalizeCheckInMethod(val: string): string {
+  const map: Record<string, string> = {
+    SMART_LOCK: "SMART_LOCK",
+    "Smart lock": "SMART_LOCK",
+    KEYPAD: "KEYPAD",
+    Keypad: "KEYPAD",
+    LOCKBOX: "LOCKBOX",
+    Lockbox: "LOCKBOX",
+    BUILDING_STAFF: "BUILDING_STAFF",
+    "Building staff": "BUILDING_STAFF",
+    IN_PERSON_GREETING: "IN_PERSON_GREETING",
+    "In-person greeting": "IN_PERSON_GREETING",
+    "Host greets in person": "IN_PERSON_GREETING",
+    OTHER: "OTHER",
+    Other: "OTHER",
+  };
+  return map[val] || val;
+}
+
+function getCheckInMethodLabel(val: string): string {
+  const m = CHECK_IN_METHODS_DATA.find((x) => x.id === normalizeCheckInMethod(val));
+  return m?.label || val || "Smart lock";
+}
+
 /* ================================================================= */
-/* CHECK-IN METHOD INNER COMPONENT (Matches Figma Screenshot 100%)    */
+/* CHECK-IN METHOD INNER COMPONENT (Redesigned with Modals)           */
 /* ================================================================= */
 function CheckInMethodView({
   checkInMethod,
@@ -1957,10 +2373,44 @@ function CheckInMethodView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
-  const [isEditingMethod, setIsEditingMethod] = React.useState(false);
+  const [isSelectModalOpen, setIsSelectModalOpen] = React.useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
+  const [isInstructionModalOpen, setIsInstructionModalOpen] = React.useState(false);
+  const [selectedMethodId, setSelectedMethodId] = React.useState<string | null>(null);
+  const [draftCode, setDraftCode] = React.useState(doorCode || lockboxCode || "");
 
-  const isCodeBased = ["Smart lock", "Keypad", "SMART_LOCK", "KEYPAD"].includes(checkInMethod);
-  const isLockbox = ["Lockbox", "LOCKBOX"].includes(checkInMethod);
+  const normalizedCurrent = normalizeCheckInMethod(checkInMethod);
+  const currentMethodData = CHECK_IN_METHODS_DATA.find((m) => m.id === normalizedCurrent);
+  const codeValue = normalizedCurrent === "LOCKBOX" ? lockboxCode : doorCode;
+
+  const handlePickMethod = (methodId: string) => {
+    const m = CHECK_IN_METHODS_DATA.find((x) => x.id === methodId);
+    setSelectedMethodId(methodId);
+    setIsSelectModalOpen(false);
+    if (m?.hasCode) {
+      const existingCode = methodId === "LOCKBOX" ? (lockboxCode || "") : (doorCode || "");
+      setDraftCode(existingCode);
+      setIsDetailModalOpen(true);
+    } else {
+      setCheckInMethod(methodId);
+      handleSaveSection("check-in-method");
+    }
+  };
+
+  const handleSaveDetail = async () => {
+    if (selectedMethodId) {
+      setCheckInMethod(selectedMethodId);
+      if (selectedMethodId === "LOCKBOX") {
+        setLockboxCode?.(draftCode);
+      } else {
+        setDoorCode?.(draftCode);
+      }
+    }
+    await handleSaveSection("check-in-method");
+    setIsDetailModalOpen(false);
+  };
+
+  const selectedDetailMethod = CHECK_IN_METHODS_DATA.find((m) => m.id === selectedMethodId);
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
@@ -1970,108 +2420,263 @@ function CheckInMethodView({
         <h1>Check-in method</h1>
       </div>
 
-      {/* Card 1: Selected Method Card */}
-      <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-4 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#1F1F1F]">
-            {checkInMethod === "SMART_LOCK" || checkInMethod === "Smart lock" ? "Smart lock" : checkInMethod || "Smart lock"}
-          </span>
+      {/* Card: Selected Method */}
+      <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="text-zinc-600 shrink-0">
+              <CheckInMethodIcon id={normalizedCurrent} />
+            </div>
+            <span className="text-sm font-semibold text-[#1F1F1F]">
+              {getCheckInMethodLabel(checkInMethod)}
+            </span>
+          </div>
+          {/* Pencil edit button */}
           <button
             type="button"
-            onClick={() => setIsEditingMethod((v) => !v)}
-            className="rounded-full bg-zinc-100/90 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3 py-1 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+            onClick={() => setIsSelectModalOpen(true)}
+            className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-all cursor-pointer shadow-2xs"
+            aria-label="Change check-in method"
           >
-            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
-            Edit
           </button>
         </div>
 
-        {isEditingMethod && (
-          <div className="pt-3 border-t border-zinc-100 space-y-2 animate-in fade-in">
-            {["Smart lock", "Keypad", "Lockbox", "Building staff", "Host greets in person"].map((method) => (
-              <div
-                key={method}
-                onClick={() => {
-                  setCheckInMethod(method);
-                  setIsEditingMethod(false);
-                }}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs font-semibold ${
-                  checkInMethod === method
-                    ? "bg-[#FEF9EC] border-amber-300 text-zinc-950"
-                    : "bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700"
-                }`}
-              >
-                <span>{method}</span>
-                {checkInMethod === method && <span>✓</span>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Access Code Input */}
-        {isCodeBased && (
-          <div className="pt-2 border-t border-zinc-100 space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-800">
-              Keypad / Door code (Confidential)
-            </label>
-            <p className="text-[11px] text-zinc-400">This code is only shared with confirmed booked guests.</p>
-            <input
-              type="text"
-              value={doorCode || ""}
-              onChange={(e) => setDoorCode?.(e.target.value)}
-              placeholder="e.g. 1234#"
-              className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
-            />
-          </div>
-        )}
-
-        {isLockbox && (
-          <div className="pt-2 border-t border-zinc-100 space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-800">
-              Lockbox combination code (Confidential)
-            </label>
-            <p className="text-[11px] text-zinc-400">This code is only shared with confirmed booked guests.</p>
-            <input
-              type="text"
-              value={lockboxCode || ""}
-              onChange={(e) => setLockboxCode?.(e.target.value)}
-              placeholder="e.g. 8842"
-              className="w-full rounded-xl border border-zinc-200 bg-white p-3 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Section 2: Check-in instructions */}
-      <div className="pt-2 space-y-2">
-        <h2 className="text-sm font-semibold text-[#1F1F1F]">Check-in instructions for guests</h2>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
-          Share detailed steps for guests to unlock doors, locate keys, access the building, and check in smoothly.
-        </p>
-
-        <div className="pt-1">
-          <textarea
-            rows={4}
-            value={checkInInstructions || ""}
-            onChange={(e) => setCheckInInstructions?.(e.target.value)}
-            placeholder="e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."
-            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
-          />
-        </div>
-
-        <div className="pt-2">
+        {/* Code row — only for code-based methods */}
+        {currentMethodData?.hasCode && (
           <button
             type="button"
-            disabled={isSaving}
-            onClick={() => handleSaveSection("check-in-method")}
-            className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
+            onClick={() => {
+              setSelectedMethodId(normalizedCurrent);
+              setDraftCode(codeValue || "");
+              setIsDetailModalOpen(true);
+            }}
+            className="mt-4 w-full flex items-center justify-between border-t border-zinc-100 pt-4 group cursor-pointer"
           >
-            {isSaving ? "Saving..." : "Save"}
+            <span className={`text-xs font-medium truncate max-w-[80%] ${codeValue ? "text-zinc-600" : "text-zinc-400"}`}>
+              {codeValue || "Add access code"}
+            </span>
+            <svg className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
           </button>
-        </div>
+        )}
       </div>
+
+      {/* Section: Check-in instructions */}
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold text-[#1F1F1F]">Check-in instructions</h2>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+          Help guests have a smooth arrival. Share tips for how to get inside – you can also add photos.
+        </p>
+
+        {checkInInstructions && (
+          <button
+            type="button"
+            onClick={() => setIsInstructionModalOpen(true)}
+            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left space-y-1.5 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-medium text-zinc-700 truncate">{checkInInstructions}</span>
+              <svg className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+              </svg>
+              Shared 48 hours before check-in
+            </div>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setIsInstructionModalOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs hover:border-zinc-300 hover:bg-zinc-50 transition-all cursor-pointer"
+        >
+          <span className="text-base font-medium leading-none">+</span>
+          {checkInInstructions ? "Edit instructions" : "Add instructions"}
+        </button>
+      </div>
+
+      {/* ===================================== */}
+      {/* MODAL: Select a check-in method       */}
+      {/* ===================================== */}
+      {isSelectModalOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 max-h-[90vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setIsSelectModalOpen(false)}
+              className="absolute top-6 right-6 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 transition-colors cursor-pointer"
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="mb-6">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Select a check-in method</h3>
+            </div>
+            <div className="space-y-3">
+              {CHECK_IN_METHODS_DATA.map((method) => {
+                const isSelected = normalizedCurrent === method.id;
+                return (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => handlePickMethod(method.id)}
+                    className={`w-full rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-2xs flex items-start gap-4 ${
+                      isSelected ? "border-zinc-900 bg-white" : "border-zinc-200 bg-white hover:border-zinc-300"
+                    }`}
+                  >
+                    <div className="text-zinc-600 shrink-0 mt-0.5">
+                      <CheckInMethodIcon id={method.id} />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="block text-sm font-semibold text-[#1F1F1F] mb-0.5">{method.label}</span>
+                      <p className="text-xs text-zinc-400 leading-relaxed font-normal">{method.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* ===================================== */}
+      {/* MODAL: Add / Edit code details        */}
+      {/* ===================================== */}
+      {isDetailModalOpen && selectedDetailMethod && (
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => setIsDetailModalOpen(false)}
+              className="absolute top-6 right-6 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="mb-6 flex items-center gap-3">
+              <div className="text-zinc-600">
+                <CheckInMethodIcon id={selectedDetailMethod.id} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">{selectedDetailMethod.label}</h3>
+                <p className="text-xs text-zinc-500 font-normal mt-0.5">{selectedDetailMethod.description}</p>
+              </div>
+            </div>
+            {selectedDetailMethod.hasCode && (
+              <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
+                <label className="block text-xs font-semibold text-zinc-800">
+                  {selectedDetailMethod.codeLabel}{" "}
+                  <span className="font-normal text-zinc-400">(Confidential)</span>
+                </label>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  This code is only shared with confirmed booked guests 48 hours before check-in.
+                </p>
+                <input
+                  type="text"
+                  value={draftCode}
+                  onChange={(e) => setDraftCode(e.target.value)}
+                  placeholder={selectedDetailMethod.codePlaceholder}
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-[#1F1F1F] outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400"
+                />
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => setIsDetailModalOpen(false)}
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={handleSaveDetail}
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* ===================================== */}
+      {/* MODAL: Add / Edit instructions        */}
+      {/* ===================================== */}
+      {isInstructionModalOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => setIsInstructionModalOpen(false)}
+              className="absolute top-6 right-6 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="mb-6 space-y-1">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Check-in instructions</h3>
+              <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+                Help guests have a smooth arrival. Share step-by-step tips to get inside.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
+              <label className="block text-xs font-semibold text-zinc-800">Instructions for guests</label>
+              <textarea
+                rows={5}
+                value={checkInInstructions || ""}
+                onChange={(e) => setCheckInInstructions?.(e.target.value)}
+                placeholder="e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."
+                className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 leading-relaxed resize-none"
+              />
+              <p className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+                </svg>
+                Shared 48 hours before check-in
+              </p>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => setIsInstructionModalOpen(false)}
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={async () => {
+                  await handleSaveSection("check-in-method");
+                  setIsInstructionModalOpen(false);
+                }}
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
     </div>
   );
 }

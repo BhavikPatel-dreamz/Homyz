@@ -128,6 +128,7 @@ export interface HostListingData {
   directions?: string | null;
   parkingInstructions?: string | null;
   checkInInstructions?: string | null;
+  checkOutInstructions?: string | null;
   houseManual?: string | null;
   wifiNetwork?: string | null;
   wifiPassword?: string | null;
@@ -143,6 +144,7 @@ export interface HostListingData {
   cancellationPolicy: string;
   longTermCancellationPolicy?: string | null;
   bookingMessage?: string | null;
+  requireProfilePhoto?: boolean;
   requireGoodTrackRecord?: boolean;
   bookingApprovalMode?: "FIRST_THREE" | "INSTANT" | "MANUAL";
   approvedBookingCount?: number;
@@ -231,10 +233,12 @@ export function HostListingEditorClient({
   listing: initialListing,
   initialSection,
   isLoading = false,
+  initialGuidebooks,
 }: {
   listing: HostListingData;
   initialSection?: SectionKey;
   isLoading?: boolean;
+  initialGuidebooks?: any[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -403,6 +407,7 @@ export function HostListingEditorClient({
   const [houseManual, setHouseManual] = useState(listing.houseManual || "");
   const [directions, setDirections] = useState<string>(listing.directions || "");
   const [checkInInstructions, setCheckInInstructions] = useState<string>(listing.checkInInstructions || "");
+  const [checkOutInstructions, setCheckOutInstructions] = useState<string>(listing.checkOutInstructions || "");
   const [doorCode, setDoorCode] = useState<string>(listing.doorCode || "");
   const [lockboxCode, setLockboxCode] = useState<string>(listing.lockboxCode || "");
 
@@ -451,9 +456,9 @@ export function HostListingEditorClient({
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
   const [editAmenities, setEditAmenities] = useState<string[]>(() => normalizeAmenities(listing.amenities || []));
   const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>(() =>
-    Array.isArray(listing.languages) && listing.languages.length > 0
+    Array.isArray(listing.languages)
       ? listing.languages.filter((language) => typeof language === "string" && language.trim().length > 0)
-      : ["en"]
+      : []
   );
 
   // Accessibility State (Matches Figma Screenshots #1 & #2)
@@ -489,6 +494,7 @@ export function HostListingEditorClient({
   );
   const [customBookingMessage, setCustomBookingMessage] = useState(listing.bookingMessage || "");
   const [customBookingMessageDraft, setCustomBookingMessageDraft] = useState(listing.bookingMessage || "");
+  const [requireProfilePhoto, setRequireProfilePhoto] = useState(listing.requireProfilePhoto ?? false);
   const [requireGoodTrackRecord, setRequireGoodTrackRecord] = useState(listing.requireGoodTrackRecord ?? false);
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
@@ -625,7 +631,11 @@ export function HostListingEditorClient({
   }
 
   // Save changes handler
-  async function handleSaveSection(sectionToSave: SectionKey, sectionSubtype?: "property" | "access" | "interaction" | "other") {
+  async function handleSaveSection(
+    sectionToSave: SectionKey,
+    sectionSubtype?: "property" | "access" | "interaction" | "other",
+    overrides?: Record<string, any>
+  ) {
     setIsSaving(true);
     setFeedbackMsg(null);
 
@@ -769,6 +779,8 @@ export function HostListingEditorClient({
       payload = {
         languages: [...new Set(selectedLanguageIds.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20),
       };
+    } else if (sectionToSave === "guest-requirements") {
+      payload = { requireProfilePhoto };
     } else if (sectionToSave === "parking") {
       payload = {
         parkingAvailable,
@@ -790,6 +802,18 @@ export function HostListingEditorClient({
         doorCode: doorCode || null,
         lockboxCode: lockboxCode || null,
       };
+    } else if (
+      sectionToSave === "checkout-instructions" ||
+      sectionToSave === "check-out-instructions" ||
+      sectionToSave === "checkout" ||
+      sectionToSave === "check-out" ||
+      sectionToSave === "checkout-page" ||
+      sectionToSave === "check-out-page" ||
+      sectionToSave === "checkoutpage"
+    ) {
+      payload = {
+        checkOutInstructions,
+      };
     } else if (sectionToSave === "arrival-guide" || sectionToSave === "check-in-out") {
       payload = {
         checkInMethod,
@@ -799,6 +823,7 @@ export function HostListingEditorClient({
         directions,
         parkingInstructions,
         checkInInstructions,
+        checkOutInstructions,
         houseManual,
         wifiNetwork,
         wifiPassword,
@@ -943,6 +968,11 @@ export function HostListingEditorClient({
       return;
     }
 
+    // Apply explicit overrides (used by inner components to pass freshly typed values)
+    if (overrides && typeof overrides === "object") {
+      payload = { ...payload, ...overrides };
+    }
+
     try {
       const res = await updateListingAction(listing.id, payload);
       setIsSaving(false);
@@ -1054,13 +1084,16 @@ export function HostListingEditorClient({
           ...prev,
           discounts: nextDiscounts,
         }));
-        setFeedbackMsg({ type: "success", text: "Airbnb.org stays preferences saved successfully!" });
+        setFeedbackMsg({ type: "success", text: "Homyz.org stays preferences saved successfully!" });
       } else {
-        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save preferences." });
+        const message = (res as any).error || "Failed to save preferences.";
+        setFeedbackMsg({ type: "error", text: message });
+        throw new Error(message);
       }
     } catch (err: any) {
       console.error("Failed to save Airbnb.org stays preferences:", err);
       setFeedbackMsg({ type: "error", text: err?.message || "Failed to save preferences." });
+      throw err;
     } finally {
       setIsSaving(false);
     }
@@ -1319,6 +1352,7 @@ export function HostListingEditorClient({
             listingLongitude={listing.longitude}
             listingDiscounts={listing.discounts}
             onSaveOrgStays={handleSaveOrgStays}
+            initialGuidebooks={initialGuidebooks}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}
@@ -1376,6 +1410,8 @@ export function HostListingEditorClient({
             setDirections={setDirections}
             checkInInstructions={checkInInstructions}
             setCheckInInstructions={setCheckInInstructions}
+            checkOutInstructions={checkOutInstructions}
+            setCheckOutInstructions={setCheckOutInstructions}
             doorCode={doorCode}
             setDoorCode={setDoorCode}
             lockboxCode={lockboxCode}
@@ -1392,6 +1428,10 @@ export function HostListingEditorClient({
             setParkingInstructions={setParkingInstructions}
             selectedLanguageIds={selectedLanguageIds}
             setSelectedLanguageIds={setSelectedLanguageIds}
+            guestInteractionPreference={editGuestInteraction}
+            setGuestInteractionPreference={setEditGuestInteraction}
+            requireProfilePhoto={requireProfilePhoto}
+            setRequireProfilePhoto={setRequireProfilePhoto}
             listingStatusSetting={listingStatusSetting}
             setListingStatusSetting={setListingStatusSetting}
           />
@@ -1516,6 +1556,7 @@ export function HostListingEditorClient({
           checkInEnd={checkInEnd}
           wifiNetwork={wifiNetwork}
           houseManual={houseManual}
+          checkOutInstructions={checkOutInstructions}
           directions={directions}
           editBedrooms={editBedrooms}
           editBeds={editBeds}

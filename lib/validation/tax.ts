@@ -28,6 +28,9 @@ export const taxRemittanceResponsibilitySchema = z.enum([
 
 export const taxableComponentSchema = z.enum([
   "BASE_PRICE",
+  "MANAGEMENT_FEE",
+  "COMMUNITY_FEE",
+  "LINEN_FEE",
   "CLEANING_FEE",
   "PET_FEE",
   "GUEST_FEE",
@@ -44,6 +47,9 @@ export const createHostTaxSchema = z
     amount: z.number().int().min(1, "Amount must be at least 1 cent").optional().nullable(),
     taxableComponents: z.array(taxableComponentSchema).min(1, "At least one taxable component must be selected").default(["BASE_PRICE"]),
     remittanceResponsibility: taxRemittanceResponsibilitySchema.default("HOST"),
+    maximumAmountPerPersonPerNight: z.number().int().min(1).optional().nullable(),
+    partialStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
+    fullStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
     longStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
   })
   .refine(
@@ -67,6 +73,9 @@ export const updateHostTaxSchema = z
     amount: z.number().int().min(1).optional().nullable(),
     taxableComponents: z.array(taxableComponentSchema).min(1).optional(),
     remittanceResponsibility: taxRemittanceResponsibilitySchema.optional(),
+    maximumAmountPerPersonPerNight: z.number().int().min(1).optional().nullable(),
+    partialStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
+    fullStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
     longStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
     isActive: z.boolean().optional(),
   });
@@ -101,4 +110,3 @@ export const taxPreviewInputSchema = z.object({
   cleaningFee: z.number().int().min(0).default(0),
   baseNightlyPrice: z.number().int().min(0).default(10000), // in cents
 });
-

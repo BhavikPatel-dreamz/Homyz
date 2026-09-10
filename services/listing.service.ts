@@ -564,6 +564,7 @@ async function create(
       directions: input.directions ?? null,
       parkingInstructions: input.parkingInstructions ?? null,
       checkInInstructions: input.checkInInstructions ?? null,
+      checkOutInstructions: input.checkOutInstructions ?? null,
       houseManual: input.houseManual ?? null,
       wifiNetwork: input.wifiNetwork ?? null,
       wifiPassword: input.wifiPassword ?? null,
@@ -572,6 +573,7 @@ async function create(
       cancellationPolicy: input.cancellationPolicy || "FLEXIBLE",
       longTermCancellationPolicy: input.longTermCancellationPolicy || "FIRM",
       bookingMessage: input.bookingMessage ?? null,
+      requireProfilePhoto: input.requireProfilePhoto ?? false,
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
       advanceNotice: input.advanceNotice ?? "Same day",
@@ -790,10 +792,19 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
 
   const readiness = getPublishReadiness(existing);
   if (!readiness.publishable) {
-    throw AppError.badRequest(
-      `Cannot publish listing. Missing required sections: ${readiness.missing.join(", ")}.`,
-      readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
-    );
+    // Allow hosts to publish when the only missing section is photos.
+    // This keeps the stricter readiness gate for admins while avoiding
+    // a frustrating UX where a host cannot publish solely due to missing
+    // additional photos.
+    const onlyPhotosMissing = readiness.missing.length === 1 && readiness.missing[0] === "photos";
+    if (!onlyPhotosMissing) {
+      throw AppError.badRequest(
+        `Cannot publish listing. Missing required sections: ${readiness.missing.join(", ")}.`,
+        readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
+      );
+    }
+    // If only photos are missing, allow publish for non-admin actors (hosts/co-hosts).
+    // Admin approval still enforces full readiness via `approveListingByAdmin`.
   }
 
   const updated = await prisma.listing.update({
@@ -1005,22 +1016,17 @@ async function remove(
     });
   }
 
-  // 2. Safety check: If listing has associated bookings, soft-delete / unpublish to preserve booking foreign keys
-  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
-  if (bookingCount > 0) {
-    await prisma.listing.update({
-      where: { id },
-      data: {
-        published: false,
-        isPaused: true,
-        deletedAt: new Date(),
-        removalReason: feedback as any,
-      },
-    });
-  } else {
-    // No bookings, safe to hard delete
-    await prisma.listing.delete({ where: { id } });
-  }
+  // 2. Soft-delete listing (always): mark unpublished, paused and record deletedAt + removalReason.
+  // This preserves booking history and prevents accidental loss of foreign keys.
+  await prisma.listing.update({
+    where: { id },
+    data: {
+      published: false,
+      isPaused: true,
+      deletedAt: new Date(),
+      removalReason: feedback as any,
+    },
+  });
 
   await Promise.all([
     deleteCache(keys.listing(id)),

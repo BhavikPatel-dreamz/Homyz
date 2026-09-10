@@ -42,6 +42,12 @@ const percentageDiscountSchema = z.object({
   percentage: z.number().finite().min(0).max(100),
 }).strict();
 
+const orgStaysDiscountSchema = z.object({
+  enabled: z.boolean(),
+  discountType: z.enum(["FREE", "DISCOUNT"]),
+  discountPercentage: z.number().finite().min(5).max(100),
+}).strict();
+
 const discountsSchema = z.preprocess(
   (value) => {
     if (!Array.isArray(value)) return value;
@@ -52,7 +58,7 @@ const discountsSchema = z.preprocess(
     monthly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     last_minute: z.boolean().optional(),
     new_listing: z.boolean().optional(),
-    orgStays: z.record(z.string(), z.unknown()).optional(),
+    orgStays: orgStaysDiscountSchema.optional(),
   }).passthrough().optional().nullable(),
 );
 
@@ -237,6 +243,7 @@ const listingFields = {
   directions: z.string().trim().max(5000).optional().nullable(),
   parkingInstructions: z.string().trim().max(5000).optional().nullable(),
   checkInInstructions: z.string().trim().max(5000).optional().nullable(),
+  checkOutInstructions: z.string().trim().max(5000).optional().nullable(),
   houseManual: z.string().trim().max(10000).optional().nullable(),
   wifiNetwork: z.string().trim().max(120).optional().nullable(),
   wifiPassword: z.string().trim().max(120).optional().nullable(),
@@ -246,6 +253,7 @@ const listingFields = {
   cancellationPolicy: z.string().trim().max(80).optional().default("FLEXIBLE"),
   longTermCancellationPolicy: z.enum(["FIRM", "STRICT"]).optional().default("FIRM"),
   bookingMessage: z.string().trim().max(1000).optional().nullable(),
+  requireProfilePhoto: z.boolean().optional().default(false),
   requireGoodTrackRecord: z.boolean().optional().default(false),
   bookingApprovalMode: z.enum(["FIRST_THREE", "INSTANT", "MANUAL"]).optional().default("INSTANT"),
   minNights: z.number().int().min(1).max(365).optional().default(1),

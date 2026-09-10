@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import type { SectionKey } from "../section-helpers";
 
 interface LocalLawsViewProps {
-  setActiveSection: (s: any) => void;
+  setActiveSection: (section: SectionKey) => void;
   isSaving: boolean;
-  handleSaveSection: (key: any) => void;
+  handleSaveSection: (section: SectionKey) => void;
   listingCity?: string | null;
   listingCountry?: string | null;
 }
@@ -258,11 +259,11 @@ export function LocalLawsView({
       </div>
 
       {/* ================================================================= */}
-      {/* 9. RESOURCE CENTRE SLIDE-OVER ARTICLE DRAWER (Pixel-Perfect)       */}
+      {/* 9. RESOURCE CENTRE ARTICLE MODAL                                   */}
       {/* Follows AGENTS.md rule: ModalOverlay outer overlay, locks scroll  */}
       {/* ================================================================= */}
       {showResourceDrawer && (
-        <ModalOverlay className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
           {/* Backdrop Click Dismiss */}
           <div
             className="absolute inset-0"
@@ -270,12 +271,12 @@ export function LocalLawsView({
             aria-hidden="true"
           />
 
-          {/* Side Drawer Container */}
-          <aside
+          {/* Centered modal container */}
+          <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="resource-centre-title"
-            className="relative z-10 w-full sm:max-w-xl md:max-w-2xl bg-white h-full shadow-2xl flex flex-col border-l border-zinc-200 overflow-hidden animate-in slide-in-from-right duration-300"
+            className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200"
           >
             {/* Top Bar (Resource Centre & Close Button) */}
             <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 border-b border-zinc-100 px-6 py-4 flex items-center justify-between shrink-0">
@@ -789,10 +790,9 @@ export function LocalLawsView({
                 </div>
               </div>
             </div>
-          </aside>
+          </section>
         </ModalOverlay>
       )}
     </div>
   );
 }
-

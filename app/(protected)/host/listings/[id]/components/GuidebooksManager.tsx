@@ -45,6 +45,7 @@ interface GuidebookDetailData {
   hostId: string;
   title: string;
   coverImage?: string | null;
+  description?: string | null;
   city?: string | null;
   state?: string | null;
   country?: string | null;
@@ -67,6 +68,7 @@ interface GuidebooksManagerProps {
   listingLatitude?: number | null;
   listingLongitude?: number | null;
   setActiveSection: (s: any) => void;
+  initialGuidebooks?: any[];
 }
 
 export function GuidebooksManager({
@@ -76,12 +78,13 @@ export function GuidebooksManager({
   listingLatitude,
   listingLongitude,
   setActiveSection,
+  initialGuidebooks,
 }: GuidebooksManagerProps) {
   // Navigation & View Mode
   const [viewMode, setViewMode] = useState<"list" | "create" | "editor" | "preview">("list");
-  const [guidebooks, setGuidebooks] = useState<any[]>([]);
+  const [guidebooks, setGuidebooks] = useState<any[]>(initialGuidebooks ?? []);
   const [selectedGuidebook, setSelectedGuidebook] = useState<GuidebookDetailData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(initialGuidebooks === undefined);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,11 +102,13 @@ export function GuidebooksManager({
   // Create Form State
   const [createTitle, setCreateTitle] = useState("");
   const [createCover, setCreateCover] = useState("");
+  const [createDescription, setCreateDescription] = useState("");
   const [createLocation, setCreateLocation] = useState(listingCity || "");
   const [createLocationDetails, setCreateLocationDetails] = useState<StructuredLocation | null>(null);
   const [locationSuggestions, setLocationSuggestions] = useState<StructuredLocation[]>([]);
   const [isLocationSearching, setIsLocationSearching] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [detailsDraft, setDetailsDraft] = useState("");
 
   // Place Modal State
   const [placeSearchInput, setPlaceSearchInput] = useState("");
@@ -145,10 +150,14 @@ export function GuidebooksManager({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch Guidebooks List on mount
+  // Fetch Guidebooks List on mount unless server provided initialGuidebooks
   useEffect(() => {
-    loadGuidebooks();
-  }, []);
+    if (initialGuidebooks === undefined) {
+      loadGuidebooks();
+    } else {
+      setIsLoading(false);
+    }
+  }, [initialGuidebooks]);
 
   const loadGuidebooks = async () => {
     setIsLoading(true);
@@ -164,6 +173,7 @@ export function GuidebooksManager({
     const res = await getGuidebookByIdAction(id);
     if (res.ok && res.data) {
       setSelectedGuidebook(res.data as GuidebookDetailData);
+      setDetailsDraft((res.data as GuidebookDetailData).description || "");
       setViewMode("editor");
       setActiveCategoryFilter("ALL");
       setSearchQuery("");
@@ -261,6 +271,7 @@ export function GuidebooksManager({
     const res = await createGuidebookAction({
       title: createTitle.trim(),
       coverImage: createCover || null,
+      description: createDescription.trim() || null,
       city: createLocationDetails?.city || createLocation || listingCity,
       country: createLocationDetails?.country || listingCountry,
       latitude: createLocationDetails?.latitude ?? listingLatitude,
@@ -274,7 +285,9 @@ export function GuidebooksManager({
       showToast("Guidebook created successfully!");
       setCreateTitle("");
       setCreateCover("");
+      setCreateDescription("");
       setCreateLocation("");
+      setCreateLocationDetails(null);
       await loadGuidebooks();
       await openGuidebookEditor(res.data.id);
     } else {
@@ -704,7 +717,10 @@ export function GuidebooksManager({
                           <span>{gb.itemsCount} {gb.itemsCount === 1 ? "recommendation" : "recommendations"}</span>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                          <span>{gb.listings.length} {gb.listings.length === 1 ? "listing" : "listings"}</span>
+                          {(() => {
+                            const count = Array.isArray(gb.listings) ? gb.listings.length : 0;
+                            return <span>{count} {count === 1 ? "listing" : "listings"}</span>;
+                          })()}
                         </div>
                       </div>
 
@@ -878,6 +894,25 @@ export function GuidebooksManager({
               )}
             </div>
 
+            {/* Guidebook Details */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-zinc-900" htmlFor="guidebook-details">
+                  Guidebook details <span className="text-zinc-400 font-normal">(optional)</span>
+                </label>
+                <span className="text-[10px] text-zinc-400">{createDescription.length}/1200</span>
+              </div>
+              <textarea
+                id="guidebook-details"
+                rows={3}
+                maxLength={1200}
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                placeholder="Tell guests what makes this guidebook useful, such as your favorite neighborhood or the kind of recommendations inside."
+                className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+              />
+            </div>
+
             {/* Associate Listing Note */}
             <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4 text-xs text-zinc-600 space-y-1">
               <span className="font-semibold text-zinc-900 block">Listing Association</span>
@@ -1011,8 +1046,39 @@ export function GuidebooksManager({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Guidebook Overview</span>
                   <span className="text-[11px] text-zinc-500">
-                    Shown on {selectedGuidebook.listings.length} {selectedGuidebook.listings.length === 1 ? "listing" : "listings"}
+                    {(() => {
+                      const count = Array.isArray(selectedGuidebook.listings) ? selectedGuidebook.listings.length : 0;
+                      return <>Shown on {count} {count === 1 ? "listing" : "listings"}</>;
+                    })()}
                   </span>
+                </div>
+
+                <div className="space-y-1.5 border-t border-zinc-100 pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-xs font-bold text-zinc-900" htmlFor="edit-guidebook-details">
+                      Guidebook details
+                    </label>
+                    <span className="text-[10px] text-zinc-400">{detailsDraft.length}/1200</span>
+                  </div>
+                  <textarea
+                    id="edit-guidebook-details"
+                    rows={3}
+                    maxLength={1200}
+                    value={detailsDraft}
+                    onChange={(e) => setDetailsDraft(e.target.value)}
+                    placeholder="Add a short introduction for guests."
+                    className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      disabled={saveStatus === "saving" || detailsDraft === (selectedGuidebook.description || "")}
+                      onClick={() => handleSaveGuidebookMeta({ description: detailsDraft.trim() || null })}
+                      className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-zinc-700 shadow-2xs transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Save details
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">

@@ -3,6 +3,7 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { prisma } from "@/lib/db/prisma";
 import { BookingStatus, Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
+import { guidebookService } from "@/services/guidebook.service";
 import { slugToSection } from "../section-helpers";
 
 interface PageProps {
@@ -80,6 +81,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     beds: listing.beds,
     bathrooms: listing.bathrooms,
     photos: listing.photos || [],
+    languages: listing.languages || [],
     amenities: listing.amenities || [],
     highlights: listing.highlights || [],
     discounts: (listing.discounts as Record<string, unknown>) ?? {},
@@ -91,6 +93,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     cancellationPolicy: listing.cancellationPolicy || "FLEXIBLE",
     longTermCancellationPolicy: listing.longTermCancellationPolicy || "FIRM",
     bookingMessage: listing.bookingMessage ?? null,
+    requireProfilePhoto: listing.requireProfilePhoto ?? false,
     requireGoodTrackRecord: listing.requireGoodTrackRecord ?? false,
     bookingApprovalMode: listing.bookingApprovalMode ?? (listing.instantBook ? "INSTANT" : "MANUAL"),
     approvedBookingCount: listing.bookings.length,
@@ -155,6 +158,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     directions: listing.directions ?? null,
     parkingInstructions: listing.parkingInstructions ?? null,
     checkInInstructions: listing.checkInInstructions ?? null,
+    checkOutInstructions: listing.checkOutInstructions ?? null,
     houseManual: listing.houseManual ?? null,
     wifiNetwork: listing.wifiNetwork ?? null,
     wifiPassword: listing.wifiPassword ?? null,
@@ -173,5 +177,20 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     })),
   };
 
-  return <HostListingEditorClient listing={serializedListing} initialSection={initialSection} />;
+  // Prefetch guidebooks associated with this listing to avoid an extra client fetch
+  let initialGuidebooks: any[] = [];
+  try {
+    initialGuidebooks = await guidebookService.getGuidebooksForListing(listingId);
+  } catch (err) {
+    initialGuidebooks = [];
+  }
+
+  return (
+    <HostListingEditorClient
+      listing={serializedListing}
+      initialSection={initialSection}
+      initialGuidebooks={initialGuidebooks}
+    />
+  );
 }
+
