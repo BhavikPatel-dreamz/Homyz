@@ -63,7 +63,9 @@ export function BecomeHostModal({
 
   // Step 1 Actions
   const handleSelectCreateNew = () => {
-    setStep(2);
+    setIsNavigating(true);
+    onClose();
+    router.push(`/host/listings/new?type=${selectedType || "HOME"}`);
   };
 
   const handleCreateFromExisting = () => {

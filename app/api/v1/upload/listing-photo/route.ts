@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import path from "path";
-import { getSessionUser } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/context";
 import { savePublicMedia } from "@/lib/storage/media";
 
 const MAX_LISTING_PHOTO_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const actor = await getSessionUser();
+    const actor = await getAuthContext(req);
     if (!actor) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

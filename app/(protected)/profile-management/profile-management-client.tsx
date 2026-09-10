@@ -390,6 +390,7 @@ export function ProfileManagementClient({
       fd.append("file", file);
       const res = await fetch("/api/v1/upload/listing-photo", {
         method: "POST",
+        credentials: "include",
         body: fd,
       });
       const data = await res.json();
@@ -1322,6 +1323,7 @@ function MultiImageUploadModal({
         fd.append("file", file);
         const res = await fetch("/api/v1/upload/listing-photo", {
           method: "POST",
+          credentials: "include",
           body: fd,
         });
         const data = await res.json();

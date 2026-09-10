@@ -11,7 +11,17 @@ if [[ ! -f .next/standalone/server.js ]]; then
   exit 1
 fi
 
-cp -a public .next/standalone/
+# Copy public assets into standalone without wiping live uploads.
+mkdir -p .next/standalone/public
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --exclude 'uploads/' public/ .next/standalone/public/
+else
+  find public -mindepth 1 -maxdepth 1 ! -name uploads -exec cp -a {} .next/standalone/public/ \;
+fi
+mkdir -p "${ROOT}/public/uploads"
+# Drop a copied uploads tree inside standalone only — never the live store.
+rm -rf .next/standalone/public/uploads
+ln -sfn "${ROOT}/public/uploads" .next/standalone/public/uploads
 mkdir -p .next/standalone/.next
 cp -a .next/static .next/standalone/.next/static
 if [[ -d generated ]]; then

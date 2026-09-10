@@ -77,6 +77,7 @@ export function StepPhotos({
           formData.append("file", file);
           const response = await fetch("/api/v1/upload/listing-photo", {
             method: "POST",
+            credentials: "include",
             body: formData,
           });
           const result: unknown = await response.json().catch(() => null);

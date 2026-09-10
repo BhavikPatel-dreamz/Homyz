@@ -10,7 +10,22 @@ import type {
 } from "@/lib/validation/user";
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
+import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+
 import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
+
+function customStampIconUrls(profile: unknown): string[] {
+  if (!profile || typeof profile !== "object" || !("customStamps" in profile)) return [];
+  const stamps = (profile as { customStamps?: unknown }).customStamps;
+  if (!Array.isArray(stamps)) return [];
+  return stamps
+    .map((stamp) => {
+      if (!stamp || typeof stamp !== "object" || !("iconUrl" in stamp)) return "";
+      const url = (stamp as { iconUrl?: unknown }).iconUrl;
+      return typeof url === "string" ? url : "";
+    })
+    .filter(Boolean);
+}
 
 // The profile payload is a pure function of the target user row (viewer-
 // independent), so the key is the target id and the entry is safe to share
@@ -43,6 +58,11 @@ async function updateProfile(
   userId: string,
   input: UpdateProfileInput,
 ): Promise<PublicUser> {
+  const current = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { image: true, publicProfile: true },
+  });
+
   const data: {
     name?: string;
     image?: string;
@@ -72,6 +92,14 @@ async function updateProfile(
     const user = await prisma.user.update({ where: { id: userId }, data });
     // Invalidate the cached profile after the write commits (fail-open).
     await deleteCache(keys.userProfile(userId));
+    if (input.image && current?.image && current.image !== input.image) {
+      await deleteManagedMediaUrl(current.image);
+    }
+    if (input.publicProfile !== undefined) {
+      const previousIcons = customStampIconUrls(current?.publicProfile);
+      const nextIcons = customStampIconUrls(data.publicProfile);
+      await deleteManagedMediaUrls(previousIcons.filter((url) => !nextIcons.includes(url)));
+    }
     return toPublicUser(user);
   } catch (err) {
     if (isUniqueViolation(err)) {
@@ -190,6 +218,7 @@ async function deleteTripPhoto(userId: string, photoId: string) {
   }
 
   await prisma.tripPhoto.delete({ where: { id: photoId } });
+  await deleteManagedMediaUrl(photo.url);
   return { success: true };
 }
 

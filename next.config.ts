@@ -7,12 +7,16 @@ function extraOrigins(): string[] {
     "8.213.86.216",
     "dd-33.dynamicdreamz.net",
     "*.dynamicdreamz.net",
+    "homyz.co",
+    "www.homyz.co",
+    "media.homyz.co",
   ]);
 
   const raw = [
     process.env.APP_URL,
     process.env.NEXTAUTH_URL,
     process.env.SERVER_ACTION_ALLOWED_ORIGINS,
+    process.env.MEDIA_PUBLIC_BASE_URL,
   ]
     .filter(Boolean)
     .join(",");
@@ -60,6 +64,24 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.cloudfront.net",
+      },
+      {
+        protocol: "https",
+        hostname: "media.homyz.co",
+      },
+      {
+        protocol: "https",
+        hostname: "homyz.co",
+      },
+      {
+        protocol: "http",
+        hostname: "homyz.co",
+        port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "4001",
       },
     ],
   },

@@ -23,6 +23,7 @@ import {
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { normalizeSlug } from "@/lib/utils/slug";
+import { deleteManagedMediaUrl } from "@/lib/storage/media";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -701,7 +702,29 @@ async function update(
     description: `Updated listing "${listing.title}" details`,
   });
 
+  if (Array.isArray(input.photos)) {
+    await deleteRemovedListingPhotos(id, existing.photos, input.photos);
+  }
+
   return toListingDTO(listing);
+}
+
+async function deleteRemovedListingPhotos(
+  listingId: string,
+  previous: string[],
+  next: string[],
+): Promise<void> {
+  const removed = previous.filter((url) => !next.includes(url));
+  if (!removed.length) return;
+
+  await Promise.all(
+    removed.map(async (url) => {
+      const stillUsed = await prisma.listing.count({
+        where: { id: { not: listingId }, photos: { has: url } },
+      });
+      if (stillUsed === 0) await deleteManagedMediaUrl(url);
+    }),
+  );
 }
 
 async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO> {

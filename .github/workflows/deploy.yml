@@ -87,6 +87,7 @@ jobs:
       id-token: write
     outputs:
       image: ${{ steps.meta.outputs.image }}
+      media_image: ${{ steps.meta.outputs.media_image }}
     steps:
       - uses: actions/checkout@v5
 
@@ -98,6 +99,8 @@ jobs:
           IMAGE="${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}"
           echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
           echo "image_latest=${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          echo "media_image=${IMAGE}:media-${SHA}" >> "$GITHUB_OUTPUT"
+          echo "media_image_latest=${IMAGE}:media-latest" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -126,6 +129,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push media service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./media-server
+          file: ./media-server/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.media_image }}
+            ${{ steps.meta.outputs.media_image_latest }}
+          cache-from: type=gha,scope=media
+          cache-to: type=gha,scope=media,mode=max
+
   deploy-ec2:
     name: Deploy EC2 (Docker)
     needs: [docker]
@@ -139,6 +154,7 @@ jobs:
           SSH_USER: ${{ secrets.EC2_SSH_USER }}
           SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           HOMYZ_IMAGE: ${{ needs.docker.outputs.image }}
+          HOMYZ_MEDIA_IMAGE: ${{ needs.docker.outputs.media_image }}
           AWS_REGION: ${{ vars.AWS_REGION }}
         run: |
           set -euo pipefail
@@ -156,7 +172,7 @@ jobs:
             "${SSH_USER}@${SSH_HOST}:/opt/homyz/scripts/deploy/"
           "${SCP[@]}" docker-compose.prod.yml "${SSH_USER}@${SSH_HOST}:/opt/homyz/"
           "${SSH[@]}" "chmod +x /opt/homyz/scripts/deploy/*.sh"
-          "${SSH[@]}" "HOMYZ_IMAGE='${HOMYZ_IMAGE}' AWS_REGION='${AWS_REGION}' APP_DIR=/opt/homyz bash /opt/homyz/scripts/deploy/release.sh"
+          "${SSH[@]}" "HOMYZ_IMAGE='${HOMYZ_IMAGE}' HOMYZ_MEDIA_IMAGE='${HOMYZ_MEDIA_IMAGE}' AWS_REGION='${AWS_REGION}' APP_DIR=/opt/homyz bash /opt/homyz/scripts/deploy/release.sh"
 
   deploy-ecs:
     name: Deploy ECS (host Node, SSH password)
@@ -206,7 +222,7 @@ jobs:
           username: ${{ secrets.VPS_USER || secrets.ECS_SSH_USER }}
           password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
           key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
-          source: ".,!node_modules,!.git,!.next,!.env,!.env.local,!app.log,!homyz.pid"
+          source: ".,!node_modules,!.git,!.next,!.env,!.env.local,!app.log,!media.log,!homyz.pid,!media.pid,!public/uploads,!public/uploads/**,!media-server/data"
           target: homyz
           overwrite: true
           rm: false
@@ -228,10 +244,10 @@ jobs:
             export APP_DIR="${HOME}/homyz"
             export RUN_DB_MIGRATE="${{ vars.RUN_DB_MIGRATE }}"
             if [[ -f "${APP_DIR}/scripts/deploy/host-release.sh" ]]; then
-              chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh"
+              chmod +x "${APP_DIR}/scripts/start-prod.sh" "${APP_DIR}/scripts/deploy/host-release.sh" "${APP_DIR}/scripts/deploy/restart-media.sh"
               bash "${APP_DIR}/scripts/deploy/host-release.sh"
             elif [[ -f "${APP_DIR}/homyz/scripts/deploy/host-release.sh" ]]; then
-              chmod +x "${APP_DIR}/homyz/scripts/start-prod.sh" "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
+              chmod +x "${APP_DIR}/homyz/scripts/start-prod.sh" "${APP_DIR}/homyz/scripts/deploy/host-release.sh" "${APP_DIR}/homyz/scripts/deploy/restart-media.sh"
               APP_DIR="${APP_DIR}/homyz" bash "${APP_DIR}/homyz/scripts/deploy/host-release.sh"
             else
               echo "host-release.sh not found under ${APP_DIR}" >&2
@@ -266,7 +282,7 @@ jobs:
               git remote set-url origin git@github.com:BhavikPatel-dreamz/Homyz.git
               git fetch origin
               git reset --hard "origin/main"
-              git clean -fd
+              git clean -fd -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
           else
               git clone -b main git@github.com:BhavikPatel-dreamz/Homyz.git "${{ env.VPS_APP_PATH }}"
           fi
@@ -295,6 +311,10 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ env.VPS_APP_PATH }}"
+          mkdir -p "${{ env.VPS_APP_PATH }}/public/uploads/listing-photos" \
+            "${{ env.VPS_APP_PATH }}/public/uploads/stamp-icons" \
+            "${{ env.VPS_APP_PATH }}/public/uploads/guidebook-photos" \
+            "${{ env.VPS_APP_PATH }}/public/uploads/host-documents"
           npm ci || npm install
           npm run build
 
@@ -302,6 +322,8 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ env.VPS_APP_PATH }}"
+          chmod +x scripts/deploy/restart-media.sh scripts/start-prod.sh
+          APP_DIR="${{ env.VPS_APP_PATH }}" bash scripts/deploy/restart-media.sh
           if pm2 list | grep -q "${{ env.PM2_PROCESS_NAME }}"; then
               pm2 restart "${{ env.PM2_PROCESS_NAME }}"
           else

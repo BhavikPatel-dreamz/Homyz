@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
-# Pull an immutable Next.js image and switch traffic only after /api/health succeeds.
-# Postgres / Redis / S3 are NOT started here — they stay external via .env
+# Pull immutable app + media images and recreate containers.
+# Named volume homyz_uploads is NEVER removed (no `compose down -v`).
 #
 # Required:
-#   HOMYZ_IMAGE   e.g. 123.dkr.ecr.region.amazonaws.com/homyz:<git-sha>
-#   APP_DIR       directory with .env  (default /opt/homyz)
-# Optional:
-#   AWS_REGION    if HOMYZ_IMAGE is on ECR, logs in with the instance role
-
+#   HOMYZ_IMAGE         Next.js image
+#   HOMYZ_MEDIA_IMAGE   media service image
+#   APP_DIR             directory with .env and docker-compose.prod.yml
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/homyz}"
-NEW_NAME="homyz-app-next"
-OLD_NAME="homyz-app"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3001/api/health}"
+COMPOSE_FILE="${APP_DIR}/docker-compose.prod.yml"
 
 if [[ -z "${HOMYZ_IMAGE:-}" ]]; then
   echo "HOMYZ_IMAGE is required (use a git-sha tag, not only :latest)" >&2
+  exit 1
+fi
+
+if [[ -z "${HOMYZ_MEDIA_IMAGE:-}" ]]; then
+  echo "HOMYZ_MEDIA_IMAGE is required" >&2
   exit 1
 fi
 
@@ -27,72 +28,43 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
+if [[ ! -f "${COMPOSE_FILE}" ]]; then
+  echo "Missing ${COMPOSE_FILE}" >&2
+  exit 1
+fi
+
 if [[ -n "${AWS_REGION:-}" && "${HOMYZ_IMAGE}" == *".dkr.ecr."* ]]; then
   ECR_HOST="${HOMYZ_IMAGE%%/*}"
   aws ecr get-login-password --region "${AWS_REGION}" \
     | docker login --username AWS --password-stdin "${ECR_HOST}"
 fi
 
+if docker inspect homyz-app >/dev/null 2>&1; then
+  docker inspect -f '{{.Config.Image}}' homyz-app > "${APP_DIR}/.image-previous" || true
+fi
+if docker inspect homyz-media >/dev/null 2>&1; then
+  docker inspect -f '{{.Config.Image}}' homyz-media > "${APP_DIR}/.image-media-previous" || true
+fi
+
+export HOMYZ_IMAGE
+export HOMYZ_MEDIA_IMAGE
+
 echo "Pulling ${HOMYZ_IMAGE}"
 docker pull "${HOMYZ_IMAGE}"
+echo "Pulling ${HOMYZ_MEDIA_IMAGE}"
+docker pull "${HOMYZ_MEDIA_IMAGE}"
+
 echo "${HOMYZ_IMAGE}" > "${APP_DIR}/.image-target"
+echo "${HOMYZ_MEDIA_IMAGE}" > "${APP_DIR}/.image-media-target"
 
-docker rm -f "${NEW_NAME}" >/dev/null 2>&1 || true
-
-echo "Starting candidate on 127.0.0.1:3001"
-docker run -d \
-  --name "${NEW_NAME}" \
-  --env-file "${APP_DIR}/.env" \
-  -e NODE_ENV=production \
-  -e HOSTNAME=0.0.0.0 \
-  -e PORT=3000 \
-  --restart unless-stopped \
-  --stop-timeout 30 \
-  -p 127.0.0.1:3001:3000 \
-  "${HOMYZ_IMAGE}" >/dev/null
-
-healthy=0
-for _ in $(seq 1 30); do
-  if curl -fsS "${HEALTH_URL}" >/dev/null 2>&1; then
-    healthy=1
-    break
-  fi
-  sleep 2
-done
-
-if [[ "${healthy}" -ne 1 ]]; then
-  echo "Candidate unhealthy — keeping ${OLD_NAME} and removing ${NEW_NAME}" >&2
-  docker logs --tail 80 "${NEW_NAME}" >&2 || true
-  docker rm -f "${NEW_NAME}" >/dev/null 2>&1 || true
-  exit 1
-fi
-
-if docker ps -a --format '{{.Names}}' | grep -qx "${OLD_NAME}"; then
-  docker inspect -f '{{.Config.Image}}' "${OLD_NAME}" > "${APP_DIR}/.image-previous" || true
-  docker stop -t 30 "${OLD_NAME}" >/dev/null || true
-  docker rm "${OLD_NAME}" >/dev/null || true
-fi
-
-docker stop -t 5 "${NEW_NAME}" >/dev/null
-docker rm "${NEW_NAME}" >/dev/null
-
-docker run -d \
-  --name "${OLD_NAME}" \
-  --env-file "${APP_DIR}/.env" \
-  -e NODE_ENV=production \
-  -e HOSTNAME=0.0.0.0 \
-  -e PORT=3000 \
-  --restart unless-stopped \
-  --stop-timeout 30 \
-  -p 3000:3000 \
-  --log-driver json-file \
-  --log-opt max-size=10m \
-  --log-opt max-file=5 \
-  "${HOMYZ_IMAGE}" >/dev/null
+echo "Recreating app + media (volume homyz_uploads is kept)"
+# Never add --volumes / -v. That would wipe uploaded files.
+docker compose -f "${COMPOSE_FILE}" up -d --no-build --remove-orphans
 
 live_ok=0
-for _ in $(seq 1 20); do
-  if curl -fsS http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+for _ in $(seq 1 30); do
+  if curl -fsS http://127.0.0.1:3000/api/health >/dev/null 2>&1 \
+    && curl -fsS http://127.0.0.1:4001/health >/dev/null 2>&1; then
     live_ok=1
     break
   fi
@@ -100,16 +72,19 @@ for _ in $(seq 1 20); do
 done
 
 if [[ "${live_ok}" -ne 1 ]]; then
-  echo "Live container failed /api/health." >&2
-  docker logs --tail 80 "${OLD_NAME}" >&2 || true
-  if [[ -f "${APP_DIR}/.image-previous" ]]; then
+  echo "Health check failed (app :3000 and/or media :4001)." >&2
+  docker compose -f "${COMPOSE_FILE}" logs --tail 80 >&2 || true
+  if [[ -f "${APP_DIR}/.image-previous" && -f "${APP_DIR}/.image-media-previous" ]]; then
     PREV="$(tr -d '[:space:]' < "${APP_DIR}/.image-previous")"
-    if [[ -n "${PREV}" ]]; then
-      HOMYZ_IMAGE="${PREV}" APP_DIR="${APP_DIR}" bash "$(dirname "$0")/rollback.sh"
+    PREV_MEDIA="$(tr -d '[:space:]' < "${APP_DIR}/.image-media-previous")"
+    if [[ -n "${PREV}" && -n "${PREV_MEDIA}" ]]; then
+      HOMYZ_IMAGE="${PREV}" HOMYZ_MEDIA_IMAGE="${PREV_MEDIA}" APP_DIR="${APP_DIR}" \
+        bash "$(dirname "$0")/rollback.sh"
     fi
   fi
   exit 1
 fi
 
 echo "${HOMYZ_IMAGE}" > "${APP_DIR}/.image-current"
-echo "Release complete: ${HOMYZ_IMAGE}"
+echo "${HOMYZ_MEDIA_IMAGE}" > "${APP_DIR}/.image-media-current"
+echo "Release complete: app=${HOMYZ_IMAGE} media=${HOMYZ_MEDIA_IMAGE}"

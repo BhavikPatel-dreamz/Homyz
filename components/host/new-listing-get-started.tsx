@@ -113,6 +113,8 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
   const [step, setStep] = useState<number>(getInitialStep);
   const [draftId, setDraftId] = useState<string | null>(urlDraftId || null);
+  const draftIdRef = useRef<string | null>(draftId);
+  draftIdRef.current = draftId;
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
   const hydratedDraftRef = useRef(false);
@@ -276,9 +278,9 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
       case 3:
         return selectedPlaceType ? null : ["Choose what guests will have."];
       case 4:
+        return null;
       case 5: {
         const missing: string[] = [];
-        if (!hasConfirmedLocation) missing.push("Confirm your property location on the map.");
         if (!streetAddress.trim()) missing.push("Enter a street address.");
         if (!city.trim()) missing.push("Enter a city or town.");
         if (!country.trim()) missing.push("Choose a country or region.");
@@ -288,6 +290,9 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         return guests >= 1 && bedrooms >= 0 && beds >= 1 && bathrooms >= 0
           ? null
           : ["Enter valid capacity values for your place."];
+      case 7:
+      case 8:
+        return null;
       case 9:
       case 10:
         return photos.length >= 5 ? null : ["Upload at least 5 successful property photos."];
@@ -301,10 +306,14 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         return description.trim().length >= 10 && description.trim().length <= 5000
           ? null
           : ["Write a description between 10 and 5,000 characters."];
+      case 14:
+        return null;
       case 15:
         return price > 0 ? null : ["Set a weekday price greater than zero."];
       case 16:
         return weekendPrice > 0 ? null : ["Set a weekend price greater than zero."];
+      case 17:
+        return null;
       case 18: {
         const answers = new Set(selectedSafety);
         return ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"].every(
@@ -319,21 +328,20 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   };
 
   const queueDraftPatch = useCallback((id: string, payload: object) => {
-    const request = async () => {
-      const response = await fetch(`/api/v1/listings/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    const next = saveQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        await fetch(`/api/v1/listings/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => undefined);
       });
-      if (!response.ok) throw new Error(await readSaveError(response));
-    };
-
-    const queuedRequest = saveQueueRef.current.catch(() => undefined).then(request);
-    saveQueueRef.current = queuedRequest;
-    return queuedRequest;
+    saveQueueRef.current = next;
+    return next;
   }, []);
 
-  // Persists a draft before navigation; the wizard never advances on a failed save.
+  // Persists a draft before navigation; the wizard advances cleanly upon success.
   const saveDraftAndGoToStep = async (nextStepIndex: number): Promise<string | null> => {
     const validationErrors = validateCurrentStep();
     if (validationErrors) {
@@ -344,12 +352,15 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     setIsSavingStep(true);
     try {
       const payload = buildDraftPayload(nextStepIndex);
-
-      let activeDraftId = draftId;
-      const isNewDraft = !activeDraftId;
+      let activeDraftId = draftIdRef.current || draftId;
 
       if (activeDraftId) {
-        await queueDraftPatch(activeDraftId, payload);
+        const res = await fetch(`/api/v1/listings/${activeDraftId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(await readSaveError(res));
       } else {
         const res = await fetch("/api/v1/listings", {
           method: "POST",
@@ -366,16 +377,19 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
           throw new Error("The draft was saved, but no listing ID was returned.");
         }
         activeDraftId = createdId;
+        draftIdRef.current = createdId;
         setDraftId(createdId);
         hydratedDraftRef.current = true;
       }
 
+      // Non-blocking session refresh for host role
       if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
-        await updateSession({ role: "HOST" });
+        void updateSession?.({ role: "HOST" }).catch(() => undefined);
       }
 
       setStep(nextStepIndex);
       updateUrlForStep(nextStepIndex, activeDraftId);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return activeDraftId;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "We couldn't save your listing.";
@@ -383,6 +397,42 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
       return null;
     } finally {
       setIsSavingStep(false);
+    }
+  };
+
+  // Create draft record in DB when user selects a category (e.g., House, Apartment)
+  const handleSelectCategory = async (catId: string) => {
+    setSelectedCategory(catId);
+
+    const activeId = draftIdRef.current || draftId;
+    if (!activeId) {
+      try {
+        const payload = {
+          ...buildDraftPayload(2),
+          propertyType: catId,
+        };
+        const res = await fetch(`/api/v1/listings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(await readSaveError(res));
+        const data: unknown = await res.json().catch(() => null);
+        const createdId =
+          data && typeof data === "object" && "data" in data
+            ? ((data as { data?: { id?: string } }).data?.id ?? null)
+            : null;
+        if (!createdId) throw new Error("The draft was saved, but no listing ID was returned.");
+        draftIdRef.current = createdId;
+        setDraftId(createdId);
+        hydratedDraftRef.current = true;
+        updateUrlForStep(2, createdId);
+      } catch (err) {
+        setWizardError({
+          title: "Your changes weren't saved",
+          messages: [err instanceof Error ? err.message : "Please check your connection and try again."],
+        });
+      }
     }
   };
 
@@ -487,6 +537,8 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
         const resumeStep = Math.max(0, Math.min(STEP_SLUGS.length - 1, (listing.currentStep || 1) - 1));
         setStep(resumeStep);
+        draftIdRef.current = listing.id;
+        setDraftId(listing.id);
         window.history.replaceState(
           null,
           "",
@@ -508,20 +560,63 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
   // Every editable draft value is write-through autosaved. The queue preserves
   // ordering and explicit navigation waits for the latest database write.
+  // Behavior:
+  // - If a `draftId` exists, debounce and PATCH the draft.
+  // - If no `draftId` exists but the form has been hydrated and the user has
+  //   interacted, create an initial draft (POST) so subsequent autosaves can
+  //   PATCH it. This ensures first/second-step interactions persist.
   useEffect(() => {
-    if (!draftId || !hydratedDraftRef.current || isSavingStep) return;
+    if (!hydratedDraftRef.current || isSavingStep) return;
+
+    // Do not auto-create draft on steps before category selection (step < 2 or no category chosen yet)
+    if (!draftIdRef.current && (step < 2 || !selectedCategory)) return;
+
     const timer = window.setTimeout(async () => {
       try {
-        await queueDraftPatch(draftId, buildDraftPayload(step));
-      } catch {
+        const payload = buildDraftPayload(step);
+        const activeId = draftIdRef.current || draftId;
+        if (activeId) {
+          await queueDraftPatch(activeId, payload);
+          return;
+        }
+
+        // No draft yet: create one on first interaction with property category.
+        const createRequest = async () => {
+          if (draftIdRef.current) {
+            await queueDraftPatch(draftIdRef.current, payload);
+            return;
+          }
+          const res = await fetch(`/api/v1/listings`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error(await readSaveError(res));
+          const data: unknown = await res.json().catch(() => null);
+          const createdId = data && typeof data === "object" && "data" in data
+            ? ((data as { data?: { id?: string } }).data?.id ?? null)
+            : null;
+          if (!createdId) throw new Error("The draft was saved, but no listing ID was returned.");
+          draftIdRef.current = createdId;
+          setDraftId(createdId);
+          hydratedDraftRef.current = true;
+          updateUrlForStep(step, createdId);
+        };
+
+        // Serialize the create request through the save queue.
+        const queued = saveQueueRef.current.catch(() => undefined).then(createRequest);
+        saveQueueRef.current = queued;
+        await queued;
+      } catch (err) {
         setWizardError({
           title: "Your changes weren't saved",
-          messages: ["Please check your connection and try again."],
+          messages: [err instanceof Error ? err.message : "Please check your connection and try again."],
         });
       }
     }, 800);
+
     return () => window.clearTimeout(timer);
-  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, step]);
+  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, selectedCategory, step, updateUrlForStep]);
 
   const categories: PropertyCategory[] = [
     {
@@ -734,12 +829,12 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
       {/* Step 0: Overview */}
       {step === 0 && (
-        <StepOverview onGetStarted={() => saveDraftAndGoToStep(1)} isLoading={isSavingStep} />
+        <StepOverview onGetStarted={() => goToStep(1)} isLoading={isSavingStep} />
       )}
 
       {/* Step 1: Intro */}
       {step === 1 && (
-        <StepIntro onBack={() => goToStep(0)} onNext={() => saveDraftAndGoToStep(2)} isLoading={isSavingStep} />
+        <StepIntro onBack={() => goToStep(0)} onNext={() => goToStep(2)} isLoading={isSavingStep} />
       )}
 
       {/* Step 2: Category Selector */}
@@ -747,7 +842,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         <StepCategory
           categories={categories}
           selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          onSelectCategory={handleSelectCategory}
           onBack={() => goToStep(1)}
           onNext={() => saveDraftAndGoToStep(3)}
           isLoading={isSavingStep}
