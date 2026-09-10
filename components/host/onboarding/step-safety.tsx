@@ -103,7 +103,7 @@ export function StepSafety({
             <OnboardingPrimaryButton
               onClick={onNext}
               isLoading={isLoading}
-              label="Next"
+              label="Save & Continue"
             />
           </div>
         </div>
