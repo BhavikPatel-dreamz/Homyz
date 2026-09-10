@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
@@ -526,146 +527,82 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     {
       id: "House",
       label: "House",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/house.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Apartment",
       label: "Apartment",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6.75h1.5m-1.5 3h1.5m-1.5 3h1.5M9 16.5h1.5m3 0h1.5" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/apartment.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Barn",
       label: "Barn",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L2.25 9v12h19.5V9L12 3zm0 0v6m-4 12v-6h8v6" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/barn.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Bed & breakfast",
       label: "Bed & breakfast",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM8.25 10.5h7.5m-7.5 3h4.5" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/bed-breakfast.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Boat",
       label: "Boat",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 16.5l2.25 4.5h12l2.25-4.5M12 3v13.5m0-13.5L7.5 9h9.5L12 3z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/boat.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Cabin",
       label: "Cabin",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L3 10.5V21h18V10.5L12 3zm0 4.5l6 5V19H6v-6.5l6-5z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/cabin.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Camper / RV",
       label: "Camper / RV",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm7.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM3 9h15l3 4.5V17.25H3V9z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/camper-rv.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Castle",
       label: "Castle",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18V9l-3-3v3h-3V6l-3 3h-3V6L6 9v3H3v9z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/castle.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Container",
       label: "Container",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6h16.5v12H3.75V6zm4.5 0v12m4.5-12v12m4.5-12v12" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/container.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Cycladic home",
       label: "Cycladic home",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 00-9 9v9h18v-9a9 9 0 00-9-9z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/cycladic-home.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Dome",
       label: "Dome",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5a9.75 9.75 0 00-9.75 9.75V21h19.5v-6.75A9.75 9.75 0 0012 4.5z" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/dome.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Earth home",
       label: "Earth home",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm-4.5-9a4.5 4.5 0 019 0" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/earth-home.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Farm",
       label: "Farm",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m-6-6l12-6m0 6L6 9" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/farm.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Guest house",
       label: "Guest house",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/guest-house.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Hotel",
       label: "Hotel",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M6 3h12v18H6V3zm3 3.75h1.5m3 0h1.5m-6 3.75h1.5m3 0h1.5m-6 3.75h1.5m3 0h1.5" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/hotel.svg" alt="" width={20} height={20} />,
     },
     {
       id: "Houseboat",
       label: "Houseboat",
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7.5 6v6h-15v-6L12 3zm-9 15c3 0 4.5 1.5 6 1.5s3-1.5 6-1.5 3 1.5 6 1.5" />
-        </svg>
-      ),
+      icon: <Image src="/images/icons/houseboat.svg" alt="" width={20} height={20} />,
     },
   ];
 

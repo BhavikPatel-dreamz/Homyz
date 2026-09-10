@@ -1,9 +1,9 @@
 "use client";
 
 import { Container } from "@/components/ui";
-import { LoadingIcon } from "@/components/ui/loading-icon";
 import React from "react";
 import { OnboardingBackButton } from "./onboarding-back-button";
+import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 
 interface StepDescriptionProps {
   description: string;
@@ -70,21 +70,11 @@ export function StepDescription({
               onClick={onBack}
               disabled={isLoading}
             />
-            <button
-              type="button"
+            <OnboardingPrimaryButton
               onClick={onNext}
-              disabled={isLoading}
-              className="px-8 py-2.5 rounded-full bg-[#FCDF9C] hover:bg-[#ebd08d] text-sm font-semibold text-[#1F1F1F] shadow-xs transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 min-w-[100px]"
-            >
-              {isLoading ? (
-                <>
-                  <LoadingIcon className="h-4 w-4 shrink-0 animate-spin text-[#1F1F1F]" />
-                  <span>Loading...</span>
-                </>
-              ) : (
-                "Next"
-              )}
-            </button>
+              isLoading={isLoading}
+              label="Next"
+            />
           </div>
         </div>
       </Container>
