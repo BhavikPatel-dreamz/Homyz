@@ -1,16 +1,60 @@
-# Next.js app container only. Postgres, Redis, S3, and email stay EXTERNAL.
+# Next.js app + media service. Postgres, Redis, email stay EXTERNAL.
 #
-#   export HOMYZ_IMAGE=homyz:local   # or registry URI:tag
+#   export HOMYZ_IMAGE=homyz:local
+#   export HOMYZ_MEDIA_IMAGE=homyz-media:local   # optional; compose can build it
 #   docker compose -f docker-compose.prod.yml up -d
 #
 # Bind 0.0.0.0:3000 so a cloud load balancer can reach the private NIC.
 # After the LB is in front, close port 3000 in the security group (LB SG only).
 # Runtime secrets: ./.env on the host (chmod 600). Never bake them into the image.
 # DATABASE_URL is Neon now; switch to RDS later by editing .env and recreating.
+#
+# Uploads live on the media service only (volume homyz_uploads).
+# Next.js calls http://media:4001 for put/get/delete.
+# Browsers load images from MEDIA_PUBLIC_BASE_URL (https://media.homyz.co).
 
 name: homyz
 
 services:
+  media:
+    build:
+      context: ./media-server
+      dockerfile: Dockerfile
+    image: ${HOMYZ_MEDIA_IMAGE:-homyz-media:local}
+    container_name: homyz-media
+    restart: unless-stopped
+    stop_grace_period: 15s
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "4001"
+      MEDIA_DATA_DIR: /data/uploads
+    volumes:
+      - homyz_uploads:/data/uploads
+    ports:
+      # Public image host. Point media.homyz.co (or a load balancer) here.
+      # Next.js still talks to this service internally at http://media:4001.
+      - "4001:4001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4001/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
   app:
     image: ${HOMYZ_IMAGE:-homyz:local}
     container_name: homyz-app
@@ -24,6 +68,11 @@ services:
       NODE_ENV: production
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
+      AUTH_TRUST_HOST: "true"
+      MEDIA_SERVER_URL: http://media:4001
+    depends_on:
+      media:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -41,3 +90,7 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+
+# Never `docker compose down -v` — that deletes uploaded files.
+volumes:
+  homyz_uploads:

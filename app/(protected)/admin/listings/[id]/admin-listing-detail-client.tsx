@@ -751,6 +751,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                     body.append("file", file);
                     const res = await fetch("/api/v1/upload/listing-photo", {
                       method: "POST",
+                      credentials: "include",
                       body,
                     });
                     const data = await res.json();

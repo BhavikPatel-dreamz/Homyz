@@ -75,6 +75,10 @@ const definitions = [
   { key: 'APPLE_CLIENT_ID', required: false, default: '', description: 'Apple OAuth Client ID' },
   { key: 'APPLE_CLIENT_SECRET', required: false, default: '', description: 'Apple OAuth Client Secret' },
 
+  { key: 'MEDIA_SERVER_URL', required: false, default: '', description: 'Dedicated media service base URL' },
+  { key: 'MEDIA_SERVER_SECRET', required: false, default: '', description: 'Shared secret for the media service' },
+  { key: 'MEDIA_PUBLIC_BASE_URL', required: false, default: '', description: 'Public image origin (e.g. https://media.homyz.co)' },
+
   // 7. AWS S3 media (optional in development)
   { key: 'S3_BUCKET', required: false, default: '', description: 'S3 bucket for uploads' },
   { key: 'S3_REGION', required: false, default: '', description: 'S3 region' },

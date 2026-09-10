@@ -5,7 +5,7 @@ import { auditService } from "./audit.service";
 import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
 import { sendHostApplicationSubmittedEmail } from "@/lib/services/email";
-import { readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
+import { deleteManagedMediaUrl, readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
 
 export const REQUIRED_HOST_DOCUMENT_TYPES = [
   "GOVERNMENT_ID",
@@ -383,6 +383,7 @@ export class HostApplicationService {
 
     let doc;
     if (existingDoc) {
+      const previousFileUrl = existingDoc.fileUrl;
       doc = await prisma.hostRegistrationDocument.update({
         where: { id: existingDoc.id },
         data: {
@@ -408,6 +409,9 @@ export class HostApplicationService {
         resourceId: doc.id,
         description: `Replaced host document ${documentType} (${file.fileName}) for application ${req.applicationId}`,
       });
+      if (previousFileUrl && previousFileUrl !== relativeUrl) {
+        await deleteManagedMediaUrl(previousFileUrl);
+      }
     } else {
       doc = await prisma.hostRegistrationDocument.create({
         data: {
@@ -460,6 +464,7 @@ export class HostApplicationService {
     await prisma.hostRegistrationDocument.delete({
       where: { id: documentId },
     });
+    await deleteManagedMediaUrl(doc.fileUrl);
 
     await auditService.record({
       actorId: user.id,

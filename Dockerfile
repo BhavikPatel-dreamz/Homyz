@@ -57,7 +57,7 @@ FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates util-linux \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd --system --gid 999 nodejs \
   && useradd --system --uid 999 --gid nodejs nextjs
@@ -71,11 +71,20 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/generated ./generated
+COPY --chmod=755 docker-entrypoint.sh /app/docker-entrypoint.sh
 
-USER nextjs
+RUN mkdir -p \
+      public/uploads/listing-photos \
+      public/uploads/stamp-icons \
+      public/uploads/guidebook-photos \
+      public/uploads/host-documents \
+    && chown -R nextjs:nodejs public/uploads
+
+# Stay root in the image metadata so the entrypoint can chown a mounted volume,
+# then it drops to uid 999 before starting Node.
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

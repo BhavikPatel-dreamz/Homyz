@@ -121,7 +121,11 @@ export const envSchema = z.object({
   APPLE_CLIENT_ID: z.string().optional(),
   APPLE_CLIENT_SECRET: z.string().optional(),
 
-  // AWS S3 media (optional in development; required for durable uploads in Docker/multi-EC2)
+  MEDIA_SERVER_URL: z.string().optional(),
+  MEDIA_SERVER_SECRET: z.string().optional(),
+  MEDIA_PUBLIC_BASE_URL: z.string().optional(),
+
+  // AWS S3 media (optional; when set, Next.js talks to S3 directly)
   S3_BUCKET: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_PUBLIC_BASE_URL: z.string().optional(),
@@ -182,7 +186,9 @@ export function validateEnv() {
   console.log(`• FACEBOOK OAuth:                  ${data.FACEBOOK_CLIENT_ID ? "ENABLED" : "DISABLED"}`);
   console.log(`• APPLE OAuth:                     ${data.APPLE_CLIENT_ID ? "ENABLED" : "DISABLED"}`);
   console.log(`• Seed Admin Account:              ${data.ADMIN_EMAIL}`);
-  console.log(`• S3 Media:                        ${data.S3_BUCKET ? "ENABLED" : "DISABLED (local disk)"}`);
+  console.log(`• Media server:                    ${data.MEDIA_SERVER_URL ? data.MEDIA_SERVER_URL : "DISABLED"}`);
+  console.log(`• Media public URL:                ${data.MEDIA_PUBLIC_BASE_URL || "same-origin /uploads"}`);
+  console.log(`• S3 Media:                        ${data.S3_BUCKET ? "ENABLED" : "DISABLED"}`);
   console.log("-------------------------------------------------\n");
 
   return data;

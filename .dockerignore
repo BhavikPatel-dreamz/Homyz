@@ -23,6 +23,8 @@ scratch
 .doc
 /doc
 /generated
+public/uploads/**
+!public/uploads/.gitkeep
 *.log
 *.md
 !docs/deployment.md

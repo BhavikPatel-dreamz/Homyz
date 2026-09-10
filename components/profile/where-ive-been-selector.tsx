@@ -12,6 +12,7 @@ import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { updateProfileAction } from "@/actions/user/updateProfile";
 import { Alert } from "@/components/ui";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
+import { deleteUploadedMedia } from "@/lib/media/delete-uploaded";
 
 type WhereIveBeenSelectorProps = {
   initialSelectedStamps?: string[];
@@ -141,6 +142,7 @@ export function WhereIveBeenSelector({
 
       const res = await fetch("/api/v1/upload/stamp-icon", {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 
@@ -149,6 +151,9 @@ export function WhereIveBeenSelector({
         throw new Error(data.error || "Failed to upload image.");
       }
 
+      if (uploadedIconUrl && uploadedIconUrl !== data.url) {
+        deleteUploadedMedia(uploadedIconUrl);
+      }
       setUploadedIconUrl(data.url);
     } catch (err: unknown) {
       setUploadError(err instanceof Error ? err.message : "Error uploading image.");
@@ -223,6 +228,8 @@ export function WhereIveBeenSelector({
   const handleConfirmDelete = (stampId: string) => {
     if (!isOwner || pending) return;
 
+    const removed = customStamps.find((s) => s.id === stampId);
+    if (removed?.iconUrl) deleteUploadedMedia(removed.iconUrl);
     const nextCustom = customStamps.filter((s) => s.id !== stampId);
     const nextSelected = selectedStamps.filter((id) => id !== stampId);
 

@@ -34,6 +34,15 @@ fi
 cd "${APP_DIR}"
 ls -l package.json pnpm-lock.yaml .env 2>/dev/null || ls -l
 
+# Live photos live here (or MEDIA_DATA_DIR). Never rm -rf this tree.
+UPLOAD_STORE="${APP_DIR}/public/uploads"
+mkdir -p \
+  "${UPLOAD_STORE}/listing-photos" \
+  "${UPLOAD_STORE}/stamp-icons" \
+  "${UPLOAD_STORE}/guidebook-photos" \
+  "${UPLOAD_STORE}/host-documents"
+echo "Preserving uploads at ${UPLOAD_STORE}"
+
 if [[ ! -f .env ]]; then
   echo "Missing ${APP_DIR}/.env — create it on the server; CI never overwrites it." >&2
   exit 1
@@ -75,6 +84,8 @@ echo "pnpm=$(command -v pnpm || echo 'npx pnpm@10')"
 if [[ "${SKIP_GIT:-}" != "1" && -d .git ]]; then
   git fetch origin
   git reset --hard origin/main
+  # -fd does not remove gitignored files; still exclude uploads explicitly.
+  git clean -fd -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
 fi
 
 echo "Installing dependencies"
@@ -111,7 +122,11 @@ stop_old() {
   pkill -f "next start" 2>/dev/null || true
 }
 
-echo "Restarting"
+echo "Restarting media server"
+chmod +x "${APP_DIR}/scripts/deploy/restart-media.sh"
+APP_DIR="${APP_DIR}" bash "${APP_DIR}/scripts/deploy/restart-media.sh"
+
+echo "Restarting app"
 stop_old
 sleep 1
 
@@ -136,4 +151,6 @@ fi
 
 echo "Release complete ($(node -v))"
 curl -fsS http://127.0.0.1:3000/api/health
+echo
+curl -fsS http://127.0.0.1:4001/health || echo "(media /health skipped)"
 echo

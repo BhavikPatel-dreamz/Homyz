@@ -19,7 +19,7 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
           <div className="border border-zinc-300 rounded-full px-4 py-1 text-xs font-semibold text-zinc-700 inline-block mb-4">
             Step 3
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-4">
+          <h1 className="mb-5">
             Finish up and publish
           </h1>
           <p className="text-sm text-zinc-500 max-w-md font-medium leading-relaxed mb-8">
