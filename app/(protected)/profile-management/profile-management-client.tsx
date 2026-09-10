@@ -919,7 +919,7 @@ export function ProfileManagementClient({
               <button
                 type="submit"
                 disabled={pending}
-                className="hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
+                className="hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F]  hover:text-[#fff]"
               >
                 {pending ? "Saving..." : "Save profile"}
               </button>

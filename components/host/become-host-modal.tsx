@@ -1,9 +1,11 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { BackButton } from "@/components/ui/back-button";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 export type HostingTypeOption = "HOME" | "EXPERIENCE" | "SERVICE";
 
@@ -85,7 +87,7 @@ export function BecomeHostModal({
   const isTypeSupported = selectedType === "HOME";
 
   return (
-    <ModalOverlay className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <ModalOverlay className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
       {/* Dark overlay backdrop */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
@@ -95,16 +97,16 @@ export function BecomeHostModal({
 
       {/* STEP 1: Welcome back, [Name] - Start a new listing */}
       {step === 1 && (
-        <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
+        <div className="relative z-10 w-full sm:max-w-lg sm:h-auto h-full sm:rounded-3xl bg-white py-6 px-6 sm:px-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
           {/* Header Controls: Close Button */}
           <div className="flex items-center justify-end mb-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1A1A1A" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -112,22 +114,22 @@ export function BecomeHostModal({
 
           {/* Modal Header Titles */}
           <div className="px-2 mb-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#1F1F1F] tracking-tight">
-              Welcome back, <span className="capitalize">{displayName}</span>
+            <h2 className="text-lg sm:text-xl font-medium text-[#727272] tracking-tight">
+              Welcome back, <span className="capitalize text-[#1F1F1F] ">{displayName}</span>
             </h2>
-            <p className="text-sm font-medium text-zinc-500 mt-1">
+            <p className="text-sm font-normal text-[#727272] mt-3">
               Start a new listing
             </p>
           </div>
 
           {/* Options List with Separators */}
-          <div className="border-t border-b border-zinc-100 divide-y divide-zinc-100 my-2">
+          <div className="my-2 divide-y divide-[#727272]">
             {/* Option 1: Create a new listing */}
             <button
               type="button"
               onClick={handleSelectCreateNew}
               disabled={isNavigating}
-              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
+              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
@@ -135,11 +137,11 @@ export function BecomeHostModal({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                 </div>
-                <span className="text-base font-semibold text-[#1F1F1F] group-hover:text-zinc-950 transition-colors">
+                <span className="text-base font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">
                   Create a new listing
                 </span>
               </div>
-              <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#1F1F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-[#1D1D1D] group-hover:text-[#727272] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </button>
@@ -149,19 +151,19 @@ export function BecomeHostModal({
               type="button"
               onClick={handleCreateFromExisting}
               disabled={isNavigating}
-              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors rounded-xl cursor-pointer disabled:opacity-50"
+              className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v2.25A2.25 2.25 0 0113.5 21.75h-9a2.25 2.25 0 01-2.25-2.25v-9A2.25 2.25 0 014.5 8.25h2.25m6 0H19.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9a2.25 2.25 0 012.25-2.25z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                 </div>
-                <span className="text-base font-semibold text-[#1F1F1F] group-hover:text-zinc-950 transition-colors">
+                <span className="text-base font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">
                   Create from an existing listing
                 </span>
               </div>
-              <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#1F1F1F] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-[#1D1D1D] group-hover:text-[#727272] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </button>
@@ -171,81 +173,61 @@ export function BecomeHostModal({
 
       {/* STEP 2: What would you like to host? */}
       {step === 2 && (
-        <div className="relative z-10 w-full max-w-xl rounded-3xl bg-white p-6 sm:p-10 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
+        <div className="relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
           {/* Header Controls: Back Button & Close Button */}
           <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
+            <BackButton
               onClick={() => setStep(1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Back to welcome screen"
               title="Back"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
-            </button>
+            />
 
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1A1A1A" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
           {/* Modal Header Title */}
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F] text-center tracking-tight mb-2">
+          <h2 className="text-2xl sm:text-3xl font-medium text-[#1F1F1F] text-left tracking-tight mb-2">
             What would you like to host?
           </h2>
-          <p className="text-sm text-zinc-500 text-center mb-8">
-            Choose the type of listing you want to create on Homyz
-          </p>
 
           {/* 3 Hosting Category Choice Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 mt-12">
             {/* Option 1: Home */}
             <button
               type="button"
               onClick={() => setSelectedType("HOME")}
-              className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
-                selectedType === "HOME"
-                  ? "border-zinc-800 ring-2 ring-zinc-800/10 shadow-md bg-white"
-                  : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
-              }`}
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${selectedType === "HOME"
+                  ? "border-[#1F1F1F] bg-white"
+                  : "border-white bg-white"
+                }`}
             >
               {/* House Icon */}
               <div className="w-16 h-16 flex items-center justify-center mb-3">
-                <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="8" y="18" width="40" height="30" rx="6" fill="#F4EDE4" />
-                  <circle cx="16" cy="24" r="7" fill="#88C999" />
-                  <rect x="15" y="27" width="2.5" height="10" fill="#8C6D53" />
-                  <rect x="22" y="22" width="22" height="18" rx="2" fill="#FFFFFF" stroke="#4A3E3D" strokeWidth="1.8" />
-                  <path d="M 19 23 L 33 12 L 47 23 Z" fill="#E88399" stroke="#4A3E3D" strokeWidth="1.8" strokeLinejoin="round" />
-                  <rect x="39" y="13" width="3.5" height="6" fill="#C0607D" />
-                  <rect x="30" y="30" width="6" height="10" rx="1" fill="#7A685D" />
-                  <rect x="25" y="25" width="4.5" height="4.5" rx="1" fill="#FFEDC2" stroke="#4A3E3D" strokeWidth="1" />
-                </svg>
+                <Image src="/images/icons/home-icon.svg" alt="" width={37} height={47} />
               </div>
               <span className="text-base font-semibold text-[#1F1F1F]">Home</span>
-              <span className="text-xs text-zinc-500 mt-1">Houses, apartments & more</span>
             </button>
 
             {/* Option 2: Experience */}
             <button
               type="button"
               onClick={() => setSelectedType("EXPERIENCE")}
-              className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${
                 selectedType === "EXPERIENCE"
-                  ? "border-zinc-800 ring-2 ring-zinc-800/10 shadow-md bg-white"
-                  : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
-              }`}
+                  ? "border-[#1F1F1F] bg-white"
+                  : "border-white bg-white"
+                }`}
             >
-              <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800 rounded-full">
+              <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 Soon
               </span>
               {/* Experience Icon */}
@@ -258,20 +240,19 @@ export function BecomeHostModal({
                 </svg>
               </div>
               <span className="text-base font-semibold text-[#1F1F1F]">Experience</span>
-              <span className="text-xs text-zinc-500 mt-1">Activities & tours</span>
             </button>
 
             {/* Option 3: Service */}
             <button
               type="button"
               onClick={() => setSelectedType("SERVICE")}
-              className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all cursor-pointer select-none text-center ${
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${
                 selectedType === "SERVICE"
-                  ? "border-zinc-800 ring-2 ring-zinc-800/10 shadow-md bg-white"
-                  : "border-zinc-200 hover:border-zinc-300 bg-white hover:bg-zinc-50/50"
-              }`}
+                  ? "border-[#1F1F1F] bg-white"
+                  : "border-white bg-white"
+                }`}
             >
-              <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800 rounded-full">
+              <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 Soon
               </span>
               {/* Service Icon */}
@@ -286,7 +267,6 @@ export function BecomeHostModal({
                 </svg>
               </div>
               <span className="text-base font-semibold text-[#1F1F1F]">Service</span>
-              <span className="text-xs text-zinc-500 mt-1">Specialized host services</span>
             </button>
           </div>
 
@@ -307,7 +287,7 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-700 transition-colors cursor-pointer"
+              className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
             >
               Cancel
             </button>
@@ -315,10 +295,10 @@ export function BecomeHostModal({
               type="button"
               onClick={handleStep2Next}
               disabled={!isTypeSupported || isNavigating}
-              className={`px-8 py-2.5 rounded-full text-sm font-semibold shadow-xs transition-colors flex items-center justify-center gap-2 min-w-[100px] ${
+              className={`px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] ${
                 isTypeSupported && !isNavigating
-                  ? "bg-[#FCDF9C] hover:bg-[#ebd08d] text-[#1F1F1F] cursor-pointer"
-                  : "bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                ? "bg-[#FCDF9C] cursor-pointer"
+                : "bg-[#F3F4F5] cursor-not-allowed"
               }`}
             >
               {isNavigating ? "Loading..." : "Next"}

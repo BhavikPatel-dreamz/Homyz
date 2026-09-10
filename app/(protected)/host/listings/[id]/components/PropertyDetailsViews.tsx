@@ -521,7 +521,7 @@ export function PropertyDetailsViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("title")}
-              className="whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
+              className="whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
             >
               {isSaving ? "Saving..." : "Save Title"}
             </button>
