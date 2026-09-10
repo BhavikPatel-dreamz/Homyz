@@ -82,6 +82,9 @@ export class TaxService {
       amount: t.amount,
       taxableComponents: t.taxableComponents as any,
       remittanceResponsibility: t.remittanceResponsibility,
+      maximumAmountPerPersonPerNight: t.maximumAmountPerPersonPerNight,
+      partialStayExemptionNights: t.partialStayExemptionNights,
+      fullStayExemptionNights: t.fullStayExemptionNights,
       longStayExemptionNights: t.longStayExemptionNights,
       isActive: t.isActive,
       createdAt: t.createdAt.toISOString(),
@@ -159,13 +162,12 @@ export class TaxService {
       );
     }
 
-    // Check for existing host tax of same type on this listing
-    const existing = await prisma.listingTax.findUnique({
+    // A listing may have several taxes of the same broad type. The selected
+    // tax name is its user-facing, per-listing identity.
+    const existing = await prisma.listingTax.findFirst({
       where: {
-        listingId_taxType: {
-          listingId: input.listingId,
-          taxType: input.taxType,
-        },
+        listingId: input.listingId,
+        customName: input.customName || null,
       },
     });
 
@@ -173,29 +175,38 @@ export class TaxService {
       throw AppError.conflict(`A tax of type "${input.taxType}" already exists for this listing.`);
     }
 
-    const created = await prisma.listingTax.create({
-      data: {
-        listingId: input.listingId,
-        taxType: input.taxType,
-        customName: input.customName || null,
-        calculationMethod: input.calculationMethod,
-        rate: input.rate ?? null,
-        amount: input.amount ?? null,
-        taxableComponents: input.taxableComponents,
-        remittanceResponsibility: input.remittanceResponsibility,
-        longStayExemptionNights: input.longStayExemptionNights ?? null,
-        isActive: true,
-      },
-    });
+    // Keep the listing-tax record and its audit event in one transaction. A
+    // failed audit write must not make the client receive an error for a tax
+    // that was actually persisted.
+    const created = await prisma.$transaction(async (tx: any) => {
+      const tax = await tx.listingTax.create({
+        data: {
+          listingId: input.listingId,
+          taxType: input.taxType,
+          customName: input.customName || null,
+          calculationMethod: input.calculationMethod,
+          rate: input.rate ?? null,
+          amount: input.amount ?? null,
+          taxableComponents: input.taxableComponents,
+          remittanceResponsibility: input.remittanceResponsibility,
+          maximumAmountPerPersonPerNight: input.maximumAmountPerPersonPerNight ?? null,
+          partialStayExemptionNights: input.partialStayExemptionNights ?? null,
+          fullStayExemptionNights: input.fullStayExemptionNights ?? null,
+          longStayExemptionNights: input.longStayExemptionNights ?? null,
+          isActive: true,
+        },
+      });
 
-    // Audit Log
-    await prisma.taxAuditLog.create({
-      data: {
-        listingId: input.listingId,
-        hostId: actor.id,
-        action: "CREATE_TAX",
-        newValues: created as any,
-      },
+      await tx.taxAuditLog.create({
+        data: {
+          listingId: input.listingId,
+          hostId: actor.id,
+          action: "CREATE_TAX",
+          newValues: tax as any,
+        },
+      });
+
+      return tax;
     });
 
     return created;
@@ -229,6 +240,18 @@ export class TaxService {
         amount: input.amount !== undefined ? input.amount : existing.amount,
         taxableComponents: input.taxableComponents || existing.taxableComponents,
         remittanceResponsibility: input.remittanceResponsibility || existing.remittanceResponsibility,
+        maximumAmountPerPersonPerNight:
+          input.maximumAmountPerPersonPerNight !== undefined
+            ? input.maximumAmountPerPersonPerNight
+            : existing.maximumAmountPerPersonPerNight,
+        partialStayExemptionNights:
+          input.partialStayExemptionNights !== undefined
+            ? input.partialStayExemptionNights
+            : existing.partialStayExemptionNights,
+        fullStayExemptionNights:
+          input.fullStayExemptionNights !== undefined
+            ? input.fullStayExemptionNights
+            : existing.fullStayExemptionNights,
         longStayExemptionNights:
           input.longStayExemptionNights !== undefined
             ? input.longStayExemptionNights
@@ -286,6 +309,17 @@ export class TaxService {
    * Saves or updates a host's tax registration (e.g. VAT ID, GST Number, License).
    */
   async saveTaxRegistration(actor: AuthUser, input: z.infer<typeof saveTaxRegistrationSchema>) {
+    // Jurisdictions returned by the resolver are catalog entries and are not
+    // necessarily persisted in TaxJurisdiction. TaxRegistration's relation is
+    // optional, so retain an ID only when it is a real database record.
+    const jurisdiction = input.jurisdictionId
+      ? await prisma.taxJurisdiction.findUnique({
+          where: { id: input.jurisdictionId },
+          select: { id: true },
+        })
+      : null;
+    const jurisdictionId = jurisdiction?.id ?? null;
+
     const existing = await prisma.taxRegistration.findFirst({
       where: {
         hostId: actor.id,
@@ -293,41 +327,42 @@ export class TaxService {
       },
     });
 
-    let record: any;
-    if (existing) {
-      record = await prisma.taxRegistration.update({
-        where: { id: existing.id },
-        data: {
-          registrationNumber: input.registrationNumber,
-          businessName: input.businessName || null,
-          businessAddress: input.businessAddress || null,
-          documentUrl: input.documentUrl || null,
-          jurisdictionId: input.jurisdictionId || null,
-          status: "PENDING_VERIFICATION",
-        },
-      });
-    } else {
-      record = await prisma.taxRegistration.create({
+    const record = await prisma.$transaction(async (tx: any) => {
+      const registration = existing
+        ? await tx.taxRegistration.update({
+            where: { id: existing.id },
+            data: {
+              registrationNumber: input.registrationNumber,
+              businessName: input.businessName || null,
+              businessAddress: input.businessAddress || null,
+              documentUrl: input.documentUrl || null,
+              jurisdictionId,
+              status: "PENDING_VERIFICATION",
+            },
+          })
+        : await tx.taxRegistration.create({
+            data: {
+              hostId: actor.id,
+              taxType: input.taxType,
+              registrationNumber: input.registrationNumber,
+              businessName: input.businessName || null,
+              businessAddress: input.businessAddress || null,
+              documentUrl: input.documentUrl || null,
+              jurisdictionId,
+              status: "PENDING_VERIFICATION",
+            },
+          });
+
+      await tx.taxAuditLog.create({
         data: {
           hostId: actor.id,
-          taxType: input.taxType,
-          registrationNumber: input.registrationNumber,
-          businessName: input.businessName || null,
-          businessAddress: input.businessAddress || null,
-          documentUrl: input.documentUrl || null,
-          jurisdictionId: input.jurisdictionId || null,
-          status: "PENDING_VERIFICATION",
+          action: existing ? "UPDATE_REGISTRATION" : "ADD_REGISTRATION",
+          oldValues: existing as any,
+          newValues: registration as any,
         },
       });
-    }
 
-    await prisma.taxAuditLog.create({
-      data: {
-        hostId: actor.id,
-        action: existing ? "UPDATE_REGISTRATION" : "ADD_REGISTRATION",
-        oldValues: existing as any,
-        newValues: record as any,
-      },
+      return registration;
     });
 
     return record;
@@ -369,6 +404,9 @@ export class TaxService {
       amount: t.amount,
       taxableComponents: t.taxableComponents as any,
       remittanceResponsibility: t.remittanceResponsibility,
+      maximumAmountPerPersonPerNight: t.maximumAmountPerPersonPerNight,
+      partialStayExemptionNights: t.partialStayExemptionNights,
+      fullStayExemptionNights: t.fullStayExemptionNights,
       longStayExemptionNights: t.longStayExemptionNights,
       isActive: t.isActive,
       createdAt: t.createdAt.toISOString(),
@@ -602,4 +640,3 @@ export class TaxService {
 }
 
 export const taxService = new TaxService();
-

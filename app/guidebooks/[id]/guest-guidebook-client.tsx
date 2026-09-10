@@ -29,6 +29,7 @@ interface PublicGuidebookData {
   id: string;
   title: string;
   coverImage?: string | null;
+  description?: string | null;
   city?: string | null;
   state?: string | null;
   country?: string | null;
@@ -199,6 +200,12 @@ export function GuestGuidebookClient({
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-4 space-y-6">
+        {guidebook.description && (
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 text-sm leading-relaxed text-zinc-700 shadow-2xs">
+            {guidebook.description}
+          </section>
+        )}
+
         {/* Search & Category Filter Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl p-3 border border-zinc-200 shadow-2xs">
           {/* Category Chips */}

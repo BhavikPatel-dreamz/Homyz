@@ -18,6 +18,7 @@ import {
   parseSafetyData,
 } from "./guest-safety-helpers";
 import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   if (type === "co") {
@@ -113,6 +114,7 @@ interface EditorSidebarProps {
   requireGoodTrackRecord?: boolean;
   checkInStart: string;
   checkOutTime: string;
+  checkOutInstructions?: string | null;
   maxGuestsCount: number;
   petsAllowed?: boolean | null;
   maxPetsCount?: number;
@@ -205,6 +207,7 @@ export function EditorSidebar({
   wifiNetwork,
   houseManual,
   directions = "",
+  checkOutInstructions = "",
   editBedrooms = 1,
   editBeds = 1,
   parkingAvailable = false,
@@ -357,8 +360,18 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     Languages
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
-                    English
+                  <p
+                    className="max-w-[15rem] truncate text-sm font-normal text-zinc-500"
+                    title={getLanguageDisplayNames(
+                      Array.isArray(listing?.languages) ? listing.languages : [],
+                    ).join(", ")}
+                  >
+                    {(() => {
+                      const languages = getLanguageDisplayNames(
+                        Array.isArray(listing?.languages) ? listing.languages : [],
+                      );
+                      return languages.length > 0 ? languages.join(", ") : "No languages selected";
+                    })()}
                   </p>
                 </div>
                 <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
@@ -378,7 +391,7 @@ export function EditorSidebar({
                     Guest requirements
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
-                    Profile photo not required
+                    {listing?.requireProfilePhoto ? "Profile photo required" : "Profile photo not required"}
                   </p>
                 </div>
                 <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
@@ -445,6 +458,7 @@ export function EditorSidebar({
               <div
                 onClick={() => setActiveSection("homyz-org-stays")}
                 className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
+                  activeSection === "homyz-org-stays" ||
                   activeSection === "airbnb-org-stays" ||
                   activeSection === "homyz-stays" ||
                   activeSection === "homyzstays"
@@ -456,9 +470,20 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     homyz.org stays
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
-                    Learn how you can help
-                  </p>
+                  {(() => {
+                    const org = listing?.discounts?.orgStays;
+                    if (org && typeof org === "object" && org.enabled) {
+                      const type = org.discountType || org.type || "FREE";
+                      if (type === "DISCOUNT") {
+                        const pct = Number(org.discountPercentage) || Number(org.discount) || 0;
+                        return (
+                          <p className="text-base text-zinc-500 font-normal">{pct}% off for homyz.org guests</p>
+                        );
+                      }
+                      return <p className="text-base text-zinc-500 font-normal">Available for homyz.org guests</p>;
+                    }
+                    return <p className="text-base text-zinc-500 font-normal">Learn how you can help</p>;
+                  })()}
                 </div>
                 <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
               </div>
@@ -1130,11 +1155,11 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-in method
                 </span>
-                <p className="text-base text-zinc-500 font-normal">
-                  {checkInMethod === "SMART_LOCK" || checkInMethod === "Smart lock" ? "Smart lock" : checkInMethod || "Smart lock"}
+                <p className="text-xs text-zinc-500 font-normal">
+                  {({"SMART_LOCK":"Smart lock","Smart lock":"Smart lock","KEYPAD":"Keypad","Keypad":"Keypad","LOCKBOX":"Lockbox","Lockbox":"Lockbox","BUILDING_STAFF":"Building staff","Building staff":"Building staff","IN_PERSON_GREETING":"In-person greeting","In-person greeting":"In-person greeting","Host greets in person":"In-person greeting","OTHER":"Other","Other":"Other"} as Record<string,string>)[checkInMethod] || checkInMethod || "Smart lock"}
                 </p>
               </div>
 
@@ -1201,14 +1226,13 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-out instructions
                 </span>
-                <p className="text-base text-zinc-500 font-normal">
-                  Add details
+                <p className="text-xs text-zinc-500 font-normal truncate">
+                  {checkOutInstructions ? checkOutInstructions : "Add details"}
                 </p>
-              </div>
-
+                </div>
               {/* Card 6: Guidebooks */}
               <div
                 onClick={() => setActiveSection("guidebooks")}

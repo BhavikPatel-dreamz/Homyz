@@ -29,6 +29,9 @@ export type TaxRegistrationStatus =
 
 export type TaxableComponent =
   | "BASE_PRICE"
+  | "MANAGEMENT_FEE"
+  | "COMMUNITY_FEE"
+  | "LINEN_FEE"
   | "CLEANING_FEE"
   | "PET_FEE"
   | "GUEST_FEE"
@@ -75,6 +78,9 @@ export interface ListingTaxDTO {
   amount: number | null;
   taxableComponents: TaxableComponent[];
   remittanceResponsibility: TaxRemittanceResponsibility;
+  maximumAmountPerPersonPerNight: number | null;
+  partialStayExemptionNights: number | null;
+  fullStayExemptionNights: number | null;
   longStayExemptionNights: number | null;
   isActive: boolean;
   createdAt: string;
@@ -218,4 +224,3 @@ export interface TaxInvoiceData {
   grandTotal: number;
   currency: string;
 }
-

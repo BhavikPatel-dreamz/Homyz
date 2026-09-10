@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 export interface OrgStaysConfig {
@@ -30,8 +30,15 @@ export function AirbnbOrgStaysView({
     if (org && typeof org === "object") {
       return {
         enabled: Boolean(org.enabled),
-        discountType: org.type === "DISCOUNT" ? "DISCOUNT" : "FREE",
-        discountPercentage: Number(org.discountPercentage) || (org.type === "DISCOUNT" ? 20 : 100),
+        // `discountType` is the persisted field. Read the legacy `type`
+        // field too, so settings saved by earlier versions still load.
+        discountType:
+          org.discountType === "DISCOUNT" || org.type === "DISCOUNT"
+            ? "DISCOUNT"
+            : "FREE",
+        discountPercentage:
+          Number(org.discountPercentage) ||
+          (org.discountType === "DISCOUNT" || org.type === "DISCOUNT" ? 20 : 100),
       };
     }
     return {
@@ -46,6 +53,14 @@ export function AirbnbOrgStaysView({
   const [discountPercentage, setDiscountPercentage] = useState(initialConfig.discountPercentage);
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Refresh local controls after the server-confirmed listing data changes.
+  useEffect(() => {
+    setIsEnabled(initialConfig.enabled);
+    setDiscountType(initialConfig.discountType);
+    setDiscountPercentage(initialConfig.discountPercentage);
+  }, [initialConfig]);
 
   // Track if host has unsaved modifications
   const isDirty =
@@ -56,11 +71,13 @@ export function AirbnbOrgStaysView({
   const handleToggle = () => {
     setIsEnabled((prev) => !prev);
     setIsSavedSuccess(false);
+    setSaveError(null);
   };
 
   const handleSave = async () => {
     if (!isDirty && !isSavedSuccess) return;
     try {
+      setSaveError(null);
       if (onSave) {
         await onSave({
           enabled: isEnabled,
@@ -72,11 +89,12 @@ export function AirbnbOrgStaysView({
       setTimeout(() => setIsSavedSuccess(false), 3000);
     } catch (e) {
       console.error("Failed to save homyz.org stays preferences:", e);
+      setSaveError(e instanceof Error ? e.message : "Unable to save preferences. Please try again.");
     }
   };
 
   return (
-    <div className="max-w-2xl font-sans animate-in fade-in duration-200 pb-28 text-[#222222]">
+    <div className="max-w-2xl font-sans animate-in fade-in duration-200 pb-10 text-[#222222]">
       {/* 1. Page Title */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-[32px] font-bold tracking-tight text-[#222222] leading-tight">
@@ -258,30 +276,25 @@ export function AirbnbOrgStaysView({
         </div>
       </div>
 
-      {/* 5. Fixed Bottom Right Save Button (Matches homyz UI exactly) */}
-      <div className="fixed bottom-0 right-0 left-0 md:left-80 bg-white/95 backdrop-blur-xs border-t border-zinc-200 px-6 sm:px-12 py-4 flex items-center justify-end z-20">
-        <div className="flex items-center gap-3">
-          {isSavedSuccess && (
-            <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1 animate-in fade-in">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Saved successfully
-            </span>
-          )}
-          <button
-            type="button"
-            disabled={!isDirty || isSaving}
-            onClick={handleSave}
-            className={`font-semibold text-sm px-6 py-2.5 rounded-lg transition-all duration-150 cursor-pointer ${
-              isDirty && !isSaving
-                ? "bg-[#222222] hover:bg-black text-white shadow-xs"
-                : "bg-[#EBEBEB] text-[#B0B0B0] cursor-not-allowed"
-            }`}
-          >
-            {isSaving ? "Saving..." : isSavedSuccess ? "Saved" : "Save"}
-          </button>
-        </div>
+      {/* Save action matches the host editor's standard inline save controls. */}
+      <div className="flex flex-wrap items-center gap-3 pt-10">
+        <button
+          type="button"
+          disabled={!isDirty || isSaving}
+          onClick={handleSave}
+          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          {isSaving ? "Saving..." : isSavedSuccess ? "Saved" : "Save changes"}
+        </button>
+        {isSavedSuccess && (
+          <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1 animate-in fade-in">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Saved successfully
+          </span>
+        )}
+        {saveError && <p role="alert" className="text-xs font-medium text-rose-600">{saveError}</p>}
       </div>
 
       {/* 6. Slide-Over Drawer for "Learn more about homyz.org" (AGENTS.md ModalOverlay Compliant) */}
@@ -411,4 +424,3 @@ export function AirbnbOrgStaysView({
     </div>
   );
 }
-

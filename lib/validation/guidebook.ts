@@ -29,13 +29,28 @@ export const TIP_CATEGORIES = [
 export type GuidebookCategoryId = (typeof GUIDEBOOK_CATEGORIES)[number]["id"];
 export type TipCategoryId = (typeof TIP_CATEGORIES)[number]["id"];
 
+// Images uploaded by this app are stored under /uploads in local development
+// and use an absolute S3 URL in production.  `z.url()` alone rejects the
+// local URL returned by the upload API, which prevented guidebooks containing
+// an uploaded photo from being saved.
+const guidebookMediaUrlSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      value.startsWith("/uploads/guidebook-photos/") ||
+      /^https?:\/\/.+/i.test(value),
+    "Photo must be an uploaded guidebook image or an absolute URL"
+  );
+
 export const createGuidebookSchema = z.object({
   title: z
     .string()
     .trim()
     .min(2, "Guidebook title must be at least 2 characters")
     .max(100, "Guidebook title cannot exceed 100 characters"),
-  coverImage: z.string().url().optional().nullable(),
+  coverImage: guidebookMediaUrlSchema.optional().nullable(),
+  description: z.string().trim().max(1200, "Guidebook details cannot exceed 1200 characters").optional().nullable(),
   city: z.string().trim().max(100).optional().nullable(),
   state: z.string().trim().max(100).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
@@ -56,7 +71,8 @@ export const updateGuidebookSchema = z.object({
     .min(2, "Guidebook title must be at least 2 characters")
     .max(100, "Guidebook title cannot exceed 100 characters")
     .optional(),
-  coverImage: z.string().url().optional().nullable(),
+  coverImage: guidebookMediaUrlSchema.optional().nullable(),
+  description: z.string().trim().max(1200, "Guidebook details cannot exceed 1200 characters").optional().nullable(),
   city: z.string().trim().max(100).optional().nullable(),
   state: z.string().trim().max(100).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
@@ -79,7 +95,7 @@ export const createGuidebookItemSchema = z.object({
   category: z.string().trim().min(1, "Category is required"),
   description: z.string().trim().max(1200, "Recommendation cannot exceed 1200 characters").optional().nullable(),
   hostTip: z.string().trim().max(600, "Host tip cannot exceed 600 characters").optional().nullable(),
-  photo: z.string().url().optional().nullable(),
+  photo: guidebookMediaUrlSchema.optional().nullable(),
   placeProviderId: z.string().trim().max(200).optional().nullable(),
   address: z.string().trim().max(300).optional().nullable(),
   latitude: z.number().min(-90).max(90).optional().nullable(),

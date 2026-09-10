@@ -9,7 +9,18 @@ import type {
   TaxRuleDTO,
   TaxType,
   TaxCalculationMethod,
+  TaxableComponent,
 } from "@/lib/tax/types";
+
+const TAXABLE_BASE_OPTIONS: { value: TaxableComponent; label: string }[] = [
+  { value: "BASE_PRICE", label: "Base price" },
+  { value: "MANAGEMENT_FEE", label: "Management fee" },
+  { value: "COMMUNITY_FEE", label: "Community fee" },
+  { value: "LINEN_FEE", label: "Linen fee" },
+  { value: "RESORT_FEE", label: "Resort fee" },
+  { value: "CLEANING_FEE", label: "Cleaning fee" },
+  { value: "PET_FEE", label: "Pet fee" },
+];
 
 interface TaxesManagerProps {
   listingId: string;
@@ -34,7 +45,7 @@ export function TaxesManager({
   const [hostTaxes, setHostTaxes] = useState<ListingTaxDTO[]>([]);
   const [registrations, setRegistrations] = useState<TaxRegistrationDTO[]>([]);
 
-  // "Add a tax" Modal Drawer state
+  // "Add a tax" modal state
   const [isAddTaxModalOpen, setIsAddTaxModalOpen] = useState(false);
   const [editingTax, setEditingTax] = useState<ListingTaxDTO | null>(null);
 
@@ -43,6 +54,8 @@ export function TaxesManager({
   const [taxType, setTaxType] = useState<string>("");
   const [rateMode, setRateMode] = useState<"Fixed" | "Percentage">("Fixed");
   const [taxRate, setTaxRate] = useState<string>("");
+  const [taxableComponents, setTaxableComponents] = useState<TaxableComponent[]>(["BASE_PRICE"]);
+  const [maximumAmountPerPersonPerNight, setMaximumAmountPerPersonPerNight] = useState<string>("");
   const [partialStayExemption, setPartialStayExemption] = useState<string>("");
   const [fullStayExemption, setFullStayExemption] = useState<string>("");
   const [registrationNumber, setRegistrationNumber] = useState<string>("");
@@ -78,7 +91,11 @@ export function TaxesManager({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`/api/v1/listings/${listingId}/taxes`);
+      // Always request a fresh overview. The tax POST/PATCH has just changed
+      // server state and a cached GET would leave the added tax off this list.
+      const res = await fetch(`/api/v1/listings/${listingId}/taxes`, {
+        cache: "no-store",
+      });
       const json = await res.json();
       if (!res.ok || json.error) {
         throw new Error(json.error?.message || "Failed to load tax settings");
@@ -105,13 +122,15 @@ export function TaxesManager({
     loadOverview();
   }, [listingId]);
 
-  // Open "Add a tax" Modal Drawer
+  // Open "Add a tax" modal
   const handleOpenAddTax = () => {
     setEditingTax(null);
     setTaxName("");
     setTaxType("");
     setRateMode("Fixed");
     setTaxRate("");
+    setTaxableComponents(["BASE_PRICE"]);
+    setMaximumAmountPerPersonPerNight("");
     setPartialStayExemption("");
     setFullStayExemption("");
     setTermsAgreed(false);
@@ -119,7 +138,7 @@ export function TaxesManager({
     setIsAddTaxModalOpen(true);
   };
 
-  // Open "Edit tax" Modal Drawer
+  // Open "Edit tax" modal
   const handleEditTax = (tax: ListingTaxDTO) => {
     setEditingTax(tax);
     setTaxName(tax.customName || formatTaxTypeName(tax.taxType));
@@ -128,8 +147,16 @@ export function TaxesManager({
     const isPct = tax.calculationMethod === "PERCENTAGE";
     setRateMode(isPct ? "Percentage" : "Fixed");
     setTaxRate(isPct ? String(tax.rate ?? "") : String((tax.amount ?? 0) / 100));
-    setFullStayExemption(tax.longStayExemptionNights ? String(tax.longStayExemptionNights) : "");
-    setPartialStayExemption("");
+    setTaxableComponents(tax.taxableComponents);
+    setMaximumAmountPerPersonPerNight(
+      tax.maximumAmountPerPersonPerNight ? String(tax.maximumAmountPerPersonPerNight / 100) : "",
+    );
+    setFullStayExemption(
+      tax.fullStayExemptionNights || tax.longStayExemptionNights
+        ? String(tax.fullStayExemptionNights || tax.longStayExemptionNights)
+        : "",
+    );
+    setPartialStayExemption(tax.partialStayExemptionNights ? String(tax.partialStayExemptionNights) : "");
     setTermsAgreed(true);
     setFormSubmitted(false);
     setIsAddTaxModalOpen(true);
@@ -151,12 +178,28 @@ export function TaxesManager({
     }
   };
 
+  const toggleTaxableComponent = (component: TaxableComponent) => {
+    setTaxableComponents((current) => {
+      if (current.includes(component)) {
+        return current.length === 1 ? current : current.filter((item) => item !== component);
+      }
+      return [...current, component];
+    });
+  };
+
   // Save handler
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setFormSubmitted(true);
 
-    if (!taxName || !taxType || !taxRate || !registrationNumber || !termsAgreed) {
+    if (
+      !taxName ||
+      !taxType ||
+      !taxRate ||
+      !registrationNumber ||
+      !termsAgreed ||
+      (taxType === "Percentage per booking" && taxableComponents.length === 0)
+    ) {
       return;
     }
 
@@ -166,14 +209,27 @@ export function TaxesManager({
       return;
     }
 
+    const normalizedRegistrationNumber = registrationNumber.trim();
+    if (!/^[A-Za-z0-9\-\s]{4,50}$/.test(normalizedRegistrationNumber)) {
+      showError("Enter a valid tax registration number (at least 4 letters or numbers)");
+      return;
+    }
+
+    const mappedTaxType: TaxType = mapNameToTaxType(taxName);
+    const mappedCalcMethod: TaxCalculationMethod = mapTypeToCalcMethod(taxType);
+    const isPlatformManaged = systemRules.some(
+      (rule) => rule.taxType === mappedTaxType && rule.isActive,
+    );
+    if (isPlatformManaged) {
+      showError("Homyz already collects and submits this tax for your listing location.");
+      return;
+    }
+
     setIsSaving(true);
     setErrorMessage(null);
 
     try {
-      // Map UI values to API schemas
-      const mappedTaxType: TaxType = mapNameToTaxType(taxName);
-      const mappedCalcMethod: TaxCalculationMethod = mapTypeToCalcMethod(taxType);
-
+      // Map UI values to API schemas.
       const payload: any = {
         listingId,
         taxType: mappedTaxType,
@@ -181,14 +237,37 @@ export function TaxesManager({
         calculationMethod: mappedCalcMethod,
         rate: mappedCalcMethod === "PERCENTAGE" ? numericRate : null,
         amount: mappedCalcMethod !== "PERCENTAGE" ? Math.round(numericRate * 100) : null,
-        taxableComponents: ["BASE_PRICE"],
+        // Taxable-base checkboxes only affect a percentage calculation. Fixed
+        // taxes have no percentage base, so keep their stored value neutral.
+        taxableComponents:
+          mappedCalcMethod === "PERCENTAGE" ? taxableComponents : ["BASE_PRICE"],
         remittanceResponsibility: "HOST",
-        longStayExemptionNights: fullStayExemption
-          ? parseInt(fullStayExemption, 10)
-          : partialStayExemption
-          ? parseInt(partialStayExemption, 10)
+        maximumAmountPerPersonPerNight: maximumAmountPerPersonPerNight
+          ? Math.round(parseFloat(maximumAmountPerPersonPerNight) * 100)
           : null,
+        partialStayExemptionNights: partialStayExemption ? parseInt(partialStayExemption, 10) : null,
+        fullStayExemptionNights: fullStayExemption ? parseInt(fullStayExemption, 10) : null,
+        // Retain compatibility with bookings that currently use this field to
+        // determine a full-stay exemption.
+        longStayExemptionNights: fullStayExemption ? parseInt(fullStayExemption, 10) : null,
       };
+
+      // The registration field is required by this form. Save it first and
+      // inspect its API response instead of treating a failed request as a
+      // successful tax save. The endpoint is an upsert, so retrying is safe.
+      const registrationRes = await fetch(`/api/v1/taxes/registrations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taxType: mappedTaxType,
+          registrationNumber: normalizedRegistrationNumber,
+          jurisdictionId: jurisdiction?.id,
+        }),
+      });
+      const registrationJson = await registrationRes.json();
+      if (!registrationRes.ok || registrationJson.error) {
+        throw new Error(registrationJson.error?.message || "Failed to save tax registration");
+      }
 
       const endpoint = editingTax
         ? `/api/v1/listings/${listingId}/taxes/${editingTax.id}`
@@ -204,23 +283,6 @@ export function TaxesManager({
       const json = await res.json();
       if (!res.ok || json.error) {
         throw new Error(json.error?.message || "Failed to save tax");
-      }
-
-      // Also save/update accommodation tax registration number
-      if (registrationNumber.trim()) {
-        try {
-          await fetch(`/api/v1/taxes/registrations`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              taxType: mappedTaxType,
-              registrationNumber: registrationNumber.trim(),
-              jurisdictionId: jurisdiction?.id,
-            }),
-          });
-        } catch (regErr) {
-          console.warn("Could not save tax registration:", regErr);
-        }
       }
 
       showSuccess(editingTax ? "Tax updated successfully" : "Tax added successfully");
@@ -437,11 +499,16 @@ export function TaxesManager({
       </div>
 
       {/* ============================================================ */}
-      {/* MODAL DRAWER: "Add a tax" Sidebar as a Slide-Over Modal      */}
+      {/* MODAL: Add or edit a tax                                      */}
       {/* ============================================================ */}
       {isAddTaxModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end">
-          <div className="w-full max-w-lg lg:max-w-xl h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tax-modal-title"
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200"
+          >
             {/* Top Close Header */}
             <div className="p-6 sm:p-8 lg:p-10 overflow-y-auto flex-1">
               <div className="flex items-center justify-between pb-4">
@@ -456,7 +523,7 @@ export function TaxesManager({
               </div>
 
               {/* Title & Subtitle */}
-              <h2 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+              <h2 id="tax-modal-title" className="text-2xl font-semibold text-zinc-900 tracking-tight">
                 {editingTax ? "Edit tax" : "Add a tax"}
               </h2>
               <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
@@ -488,15 +555,16 @@ export function TaxesManager({
                       }`}
                     >
                       <option value="">Select</option>
-                      <option value="Transient occupancy tax">Transient occupancy tax</option>
-                      <option value="Tourist tax">Tourist tax</option>
-                      <option value="City tax">City tax</option>
-                      <option value="County tax">County tax</option>
-                      <option value="Municipal tax">Municipal tax</option>
+                      <option value="Hotel tax">Hotel tax</option>
                       <option value="Lodging tax">Lodging tax</option>
-                      <option value="General sales tax">General sales tax</option>
-                      <option value="Value-added tax (VAT)">Value-added tax (VAT)</option>
-                      <option value="Goods and services tax (GST)">Goods and services tax (GST)</option>
+                      <option value="Room tax">Room tax</option>
+                      <option value="Tourist tax">Tourist tax</option>
+                      <option value="Transient Occupancy Tax">Transient Occupancy Tax</option>
+                      <option value="Sales tax">Sales tax</option>
+                      <option value="VAT/GST">VAT/GST</option>
+                      <option value="Tourism Assessment/Fee">Tourism Assessment/Fee</option>
+                      <option value="Amusement tax">Amusement tax</option>
+                      <option value="City tax">City tax</option>
                       <option value="Other local tax">Other local tax</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500">
@@ -532,11 +600,11 @@ export function TaxesManager({
                       }`}
                     >
                       <option value="">Select</option>
+                      <option value="Per guest">Per guest</option>
+                      <option value="Per guest, per night">Per guest, per night</option>
+                      <option value="Per night">Per night</option>
                       <option value="Percentage per booking">Percentage per booking</option>
-                      <option value="Flat amount per guest">Flat amount per guest</option>
-                      <option value="Flat amount per night">Flat amount per night</option>
-                      <option value="Flat amount per guest per night">Flat amount per guest per night</option>
-                      <option value="Flat amount per booking">Flat amount per booking</option>
+                      <option value="Per booking">Per booking</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -597,7 +665,50 @@ export function TaxesManager({
                   )}
                 </div>
 
-                {/* 4. Partial-stay exemption */}
+                {/* Taxable base applies only to percentage calculations. */}
+                {taxType === "Percentage per booking" && (
+                  <fieldset>
+                    <legend className="block text-xs font-semibold text-zinc-900 mb-2">Taxable base</legend>
+                    <div className="space-y-2">
+                      {TAXABLE_BASE_OPTIONS.map((option) => (
+                        <label key={option.value} className="flex items-center justify-between gap-3 text-xs text-zinc-700 cursor-pointer">
+                          <span>{option.label}</span>
+                          <input
+                            type="checkbox"
+                            checked={taxableComponents.includes(option.value)}
+                            onChange={() => toggleTaxableComponent(option.value)}
+                            className="h-4 w-4 rounded border-zinc-300 accent-black cursor-pointer"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    {formSubmitted && taxableComponents.length === 0 && (
+                      <p className="text-[11px] text-[#C13515] font-medium mt-1.5">Select at least one taxable base.</p>
+                    )}
+                  </fieldset>
+                )}
+
+                {/* 5. Maximum cap */}
+                <div>
+                  <label htmlFor="tax-maximum-cap" className="block text-xs font-semibold text-zinc-900">
+                    Maximum cap per person per night
+                  </label>
+                  <p className="text-[11px] text-zinc-600 mt-0.5 leading-relaxed">
+                    Optional. Set a per-person, per-night maximum if applicable.
+                  </p>
+                  <input
+                    id="tax-maximum-cap"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Optional"
+                    value={maximumAmountPerPersonPerNight}
+                    onChange={(e) => setMaximumAmountPerPersonPerNight(e.target.value)}
+                    className="w-full mt-2 rounded-lg border border-[#B0B0B0] hover:border-black focus:border-black px-3.5 py-3 text-xs text-zinc-900 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                {/* 6. Partial-stay exemption */}
                 <div>
                   <label htmlFor="partial-stay-exemption-input" className="block text-xs font-semibold text-zinc-900">
                     Partial-stay exemption
@@ -623,7 +734,7 @@ export function TaxesManager({
                   />
                 </div>
 
-                {/* 5. Full-stay exemption */}
+                {/* 7. Full-stay exemption */}
                 <div>
                   <label htmlFor="full-stay-exemption-input" className="block text-xs font-semibold text-zinc-900">
                     Full-stay exemption
@@ -649,7 +760,7 @@ export function TaxesManager({
                   />
                 </div>
 
-                {/* 6. Accommodation tax registration number */}
+                {/* 8. Accommodation tax registration number */}
                 <div>
                   <label htmlFor="tax-reg-input" className="block text-xs font-semibold text-zinc-900">
                     Accommodation tax registration number
@@ -672,7 +783,7 @@ export function TaxesManager({
                   <p className="text-[10px] text-zinc-500 mt-1">Required</p>
                 </div>
 
-                {/* 7. Terms for adding taxes */}
+                {/* 9. Terms for adding taxes */}
                 <div>
                   <span className="block text-xs font-semibold text-zinc-900 mb-2">
                     Terms for adding taxes
@@ -722,7 +833,7 @@ export function TaxesManager({
                 {isSaving ? "Saving..." : "Save"}
               </button>
             </div>
-          </div>
+          </section>
         </ModalOverlay>
       )}
 
@@ -930,9 +1041,9 @@ export function TaxesManager({
 function mapNameToTaxType(name: string): TaxType {
   const lower = name.toLowerCase();
   if (lower.includes("transient") || lower.includes("occupancy")) return "OCCUPANCY_TAX";
-  if (lower.includes("tourist")) return "TOURIST_TAX";
+  if (lower.includes("tourist") || lower.includes("tourism")) return "TOURIST_TAX";
   if (lower.includes("city")) return "CITY_TAX";
-  if (lower.includes("lodging")) return "LODGING_TAX";
+  if (lower.includes("hotel") || lower.includes("lodging") || lower.includes("room")) return "LODGING_TAX";
   if (lower.includes("sales")) return "SALES_TAX";
   if (lower.includes("vat") || lower.includes("value-added")) return "VAT";
   if (lower.includes("gst") || lower.includes("goods and services")) return "GST";
@@ -941,10 +1052,10 @@ function mapNameToTaxType(name: string): TaxType {
 
 function mapTypeToCalcMethod(typeStr: string): TaxCalculationMethod {
   if (typeStr === "Percentage per booking") return "PERCENTAGE";
-  if (typeStr === "Flat amount per guest") return "AMOUNT_PER_GUEST";
-  if (typeStr === "Flat amount per night") return "AMOUNT_PER_NIGHT";
-  if (typeStr === "Flat amount per guest per night") return "AMOUNT_PER_GUEST_PER_NIGHT";
-  if (typeStr === "Flat amount per booking") return "FLAT_PER_BOOKING";
+  if (typeStr === "Per guest" || typeStr === "Flat amount per guest") return "AMOUNT_PER_GUEST";
+  if (typeStr === "Per night" || typeStr === "Flat amount per night") return "AMOUNT_PER_NIGHT";
+  if (typeStr === "Per guest, per night" || typeStr === "Flat amount per guest per night") return "AMOUNT_PER_GUEST_PER_NIGHT";
+  if (typeStr === "Per booking" || typeStr === "Flat amount per booking") return "FLAT_PER_BOOKING";
   return "PERCENTAGE";
 }
 
@@ -953,13 +1064,13 @@ function formatCalculationMethod(method: TaxCalculationMethod): string {
     case "PERCENTAGE":
       return "Percentage per booking";
     case "AMOUNT_PER_GUEST":
-      return "Flat amount per guest";
+      return "Per guest";
     case "AMOUNT_PER_NIGHT":
-      return "Flat amount per night";
+      return "Per night";
     case "AMOUNT_PER_GUEST_PER_NIGHT":
-      return "Flat amount per guest per night";
+      return "Per guest, per night";
     case "FLAT_PER_BOOKING":
-      return "Flat amount per booking";
+      return "Per booking";
     default:
       return "Percentage per booking";
   }
@@ -968,7 +1079,7 @@ function formatCalculationMethod(method: TaxCalculationMethod): string {
 function formatTaxTypeName(taxType: TaxType): string {
   switch (taxType) {
     case "OCCUPANCY_TAX":
-      return "Transient occupancy tax";
+      return "Transient Occupancy Tax";
     case "TOURIST_TAX":
       return "Tourist tax";
     case "CITY_TAX":
@@ -976,9 +1087,9 @@ function formatTaxTypeName(taxType: TaxType): string {
     case "LODGING_TAX":
       return "Lodging tax";
     case "SALES_TAX":
-      return "General sales tax";
+      return "Sales tax";
     case "VAT":
-      return "Value-added tax (VAT)";
+      return "VAT/GST";
     case "GST":
       return "Goods and services tax (GST)";
     default:
