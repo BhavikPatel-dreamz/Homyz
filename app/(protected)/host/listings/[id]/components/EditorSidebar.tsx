@@ -6,10 +6,67 @@ import { RealMap } from "@/components/ui/real-map";
 import { getAmenityMeta } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
 import {
+  cancellationPolicyLabel,
   normalizeAccessibilityFeatureDetails,
   normalizeAccessibilityFeatureIds,
   type AccessibilityFeatureDetail,
 } from "@/lib/constants/listing-enums";
+import {
+  type SafetyIconType,
+  type GuestSafetyState,
+  getActiveSafetyItems,
+  parseSafetyData,
+} from "./guest-safety-helpers";
+
+function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
+  if (type === "co") {
+    return (
+      <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+        <circle cx="12" cy="12" r="2.5" />
+        <path strokeLinecap="round" d="M16 8.5a4.5 4.5 0 0 0-8 0" />
+        <path strokeLinecap="round" d="M8 15.5a4.5 4.5 0 0 0 8 0" />
+      </svg>
+    );
+  }
+  if (type === "smoke") {
+    return (
+      <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" />
+        <circle cx="12" cy="12" r="4.5" />
+        <circle cx="12" cy="12" r="1.5" />
+      </svg>
+    );
+  }
+  if (type === "noise") {
+    return (
+      <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+      </svg>
+    );
+  }
+  if (type === "camera") {
+    return (
+      <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M4 6h9a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2z" />
+      </svg>
+    );
+  }
+  if (type === "stairs") {
+    return (
+      <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 19h4v-4h4v-4h4V7h4" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-4 h-4 shrink-0 text-[#1F1F1F] stroke-[1.6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
+  );
+}
 
 const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
   accessible_parking: "Accessible parking spot",
@@ -67,7 +124,12 @@ interface EditorSidebarProps {
   additionalHouseRules?: string;
   carbonMonoxideAlarm: boolean;
   smokeAlarm: boolean;
+  safetyDisclosures?: string[];
+  safetyEquipment?: string[];
+  safetyHazards?: string[];
+  guestSafetyState?: GuestSafetyState;
   cancellationPolicy: string;
+  longTermCancellationPolicy?: "FIRM" | "STRICT" | string;
   customSlug?: string;
   checkInMethod: string;
   checkInEnd: string;
@@ -128,7 +190,12 @@ export function EditorSidebar({
   additionalHouseRules = "",
   carbonMonoxideAlarm,
   smokeAlarm,
+  safetyDisclosures,
+  safetyEquipment,
+  safetyHazards,
+  guestSafetyState,
   cancellationPolicy,
+  longTermCancellationPolicy = "FIRM",
   customSlug = "",
   checkInMethod,
   checkInEnd,
@@ -141,6 +208,24 @@ export function EditorSidebar({
   parkingType = "Free",
   setIsRemoveListingModalOpen,
 }: EditorSidebarProps) {
+  const computedSafetyState = React.useMemo(() => {
+    if (guestSafetyState) return guestSafetyState;
+    return parseSafetyData({
+      ...listing,
+      safetyDisclosures: safetyDisclosures ?? listing?.safetyDisclosures,
+      safetyEquipment: safetyEquipment ?? listing?.safetyEquipment,
+      safetyHazards: safetyHazards ?? listing?.safetyHazards,
+      amenities: [
+        ...(listing?.amenities ?? []),
+        ...(smokeAlarm ? ["smoke_alarm"] : []),
+        ...(carbonMonoxideAlarm ? ["carbon_monoxide_alarm"] : []),
+      ],
+    });
+  }, [guestSafetyState, listing, safetyDisclosures, safetyEquipment, safetyHazards, smokeAlarm, carbonMonoxideAlarm]);
+
+  const activeSafetyItems = React.useMemo(() => {
+    return getActiveSafetyItems(computedSafetyState);
+  }, [computedSafetyState]);
   const selectedAccessibilityFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
   const accessibilityDetailsByFeature = new Map(
     normalizeAccessibilityFeatureDetails(accessibilityDetails).map((detail) => [detail.featureId, detail]),
@@ -665,33 +750,22 @@ export function EditorSidebar({
               {/* 10. About the host (Exact Figma Split Layout) */}
               <div
                 onClick={() => setActiveSection("about-host")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "about-host"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
+                className={`rounded-2xl p-5 border transition-all cursor-pointer shadow-2xs ${
+                    ? "bg-[#ECE9FE] border-indigo-200"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
-              >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-3">About the host</span>
+                  About the host
+                </span>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col items-center text-center space-y-1 pr-2">
-                    {listing.host?.image ? <img src={listing.host.image} alt="Host profile" className="w-14 h-14 rounded-full object-cover border border-zinc-200 shadow-2xs" /> : <div className="w-14 h-14 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold">{(listing.host?.name || "Host").split(/\s+/).slice(0, 2).map((part: string) => part[0]).join("").toUpperCase()}</div>}
-                    <h4 className="text-xs font-semibold text-[#1F1F1F] leading-tight">{listing.host?.name || "Host"}</h4>
-                  </div>
-                  <div className="flex-1 pl-4 text-center">
-                    <span className="text-base font-medium text-[#727272] block leading-tight">{listing.host?.createdAt ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear()) : 0}</span>
-                    <span className="text-base text-zinc-500 font-medium">years hosting</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 11. Co-host */}
-              <div
-                onClick={() => {
-                  setActiveSection("co-host");
-                }}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "co-host"
+                    {listing.host?.image ? (
+                      <img
+                        src={listing.host.image}
+                        alt="Host profile"
+                        className="w-16 h-16 rounded-full object-cover border border-zinc-200 shadow-2xs"
+                      </span>
+                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
+                        review
+                      </span>
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
@@ -789,31 +863,39 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">Guests safety</span>
-                <div className="space-y-2 text-base text-zinc-700 font-medium">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M12 3v1.5M15.75 3v1.5M12 7.5A4.5 4.5 0 007.5 12v3h9v-3A4.5 4.5 0 0012 7.5zM6 19.5h12" />
-                      </svg>
-                    </div>
-                    <span className="text-[#727272] text-base font-medium leading-tight">
-                      {carbonMonoxideAlarm
-                        ? "Carbon monoxide alarm reported"
-                        : "Carbon monoxide alarm not reported"}
-                    </span>
+                <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">Guest safety</span>
+                {activeSafetyItems.length > 0 ? (
+                  <div className="space-y-2 text-base text-[#1F1F1F] font-normal">
+                    {activeSafetyItems.slice(0, 3).map((item) => (
+                      <div key={item.id} className="flex items-center gap-2.5">
+                        <SafetySidebarIcon type={item.iconType} />
+                        <span className="text-[#1F1F1F] text-base font-normal leading-tight">
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                    {activeSafetyItems.length > 3 && (
+                      <p className="pt-1 text-xs text-zinc-500 font-normal">
+                        +{activeSafetyItems.length - 3} more
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636" />
-                      </svg>
+                ) : (
+                  <div className="space-y-2 text-base text-[#727272] font-normal">
+                    <div className="flex items-center gap-2.5">
+                      <SafetySidebarIcon type="co" />
+                      <span className="text-[#727272] text-base font-medium leading-tight">
+                        Carbon monoxide alarm not reported
+                      </span>
                     </div>
-                    <span className="text-[#727272] text-base font-medium leading-tight">
-                      {smokeAlarm ? "Smoke alarm installed" : "Smoke alarm not reported"}
-                    </span>
+                    <div className="flex items-center gap-2.5">
+                      <SafetySidebarIcon type="smoke" />
+                      <span className="text-[#727272] text-base font-medium leading-tight">
+                        Smoke alarm not reported
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* 15. Cancellation policy */}
@@ -825,10 +907,17 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-1">
                   Cancellation policy
                 </span>
-                <p className="text-base text-zinc-500 font-normal">{cancellationPolicy}</p>
+                <div className="space-y-0.5">
+                  <p className="text-base text-zinc-500 font-normal">
+                    {cancellationPolicyLabel(cancellationPolicy)} for short-term stays
+                  </p>
+                  <p className="text-base text-zinc-500 font-normal">
+                    {longTermCancellationPolicy === "STRICT" ? "Strict Long-Term" : "Firm Long-Term"} for long-term stays
+                  </p>
+                </div>
               </div>
 
               {/* 16. Custom link */}
@@ -843,8 +932,8 @@ export function EditorSidebar({
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Custom link
                 </span>
-                <p className="text-base text-zinc-500 font-normal">
-                  {customSlug ? `homyz/${customSlug}` : "Add details"}
+                <p className="text-base text-zinc-500 font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
+                  {customSlug ? `homyz.com/stay/${customSlug}` : "Add details"}
                 </p>
               </div>
             </div>

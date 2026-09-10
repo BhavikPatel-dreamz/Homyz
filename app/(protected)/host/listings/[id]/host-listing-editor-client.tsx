@@ -18,9 +18,13 @@ import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
-import { TaxesManager } from "./components/TaxesManager";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
+import {
+  type GuestSafetyState,
+  parseSafetyData,
+  serializeSafetyData,
+} from "./components/guest-safety-helpers";
 import { normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
 import {
   canonicalCancellationPolicy,
@@ -552,9 +556,51 @@ export function HostListingEditorClient({
     Array.isArray(listing.safetyHazards) ? listing.safetyHazards.filter(Boolean).map(String) : []
   );
   const [propertyInfoDetails, setPropertyInfoDetails] = useState<string[]>([]);
+  const [guestSafetyState, setGuestSafetyState] = useState<GuestSafetyState>(() => parseSafetyData(listing));
 
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  async function handleSaveSafetyState(newState: GuestSafetyState) {
+    setIsSaving(true);
+    setFeedbackMsg(null);
+    try {
+      const serialized = serializeSafetyData({
+        devices: newState.devices,
+        propertyInfo: newState.propertyInfo,
+        considerations: newState.considerations,
+        currentAmenities: editAmenities,
+      });
+      const payload = {
+        safetyDisclosures: serialized.safetyDisclosures,
+        safetyEquipment: serialized.safetyEquipment,
+        safetyHazards: serialized.safetyHazards,
+        amenities: serialized.amenities,
+      };
+      const res = await updateListingAction(listing.id, payload);
+      setIsSaving(false);
+      if (res.ok && res.data) {
+        setListing((prev) => ({
+          ...prev,
+          safetyDisclosures: serialized.safetyDisclosures,
+          safetyEquipment: serialized.safetyEquipment,
+          safetyHazards: serialized.safetyHazards,
+          amenities: serialized.amenities,
+        }));
+        setEditAmenities(serialized.amenities);
+        setSmokeAlarm(newState.devices.smokeAlarm === true);
+        setCarbonMonoxideAlarm(newState.devices.carbonMonoxideAlarm === true);
+        setSafetyConsiderations(serialized.safetyHazards);
+        setGuestSafetyState(newState);
+        setFeedbackMsg({ type: "success", text: "Guest safety saved successfully!" });
+      } else {
+        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save guest safety." });
+      }
+    } catch (err: any) {
+      setIsSaving(false);
+      setFeedbackMsg({ type: "error", text: "Error saving guest safety: " + err.message });
+    }
+  }
 
   // Save changes handler
   async function handleSaveSection(sectionToSave: SectionKey, sectionSubtype?: "property" | "access" | "interaction" | "other") {
@@ -806,26 +852,23 @@ export function HostListingEditorClient({
         checkOutTime,
       };
     } else if (sectionToSave === "guests-safety" || sectionToSave === "safety-equipment") {
-      const currentAmenitySet = new Set(editAmenities.map(normalizeAmenityId));
-      if (smokeAlarm) currentAmenitySet.add("smoke_alarm"); else currentAmenitySet.delete("smoke_alarm");
-      if (carbonMonoxideAlarm) currentAmenitySet.add("carbon_monoxide_alarm"); else currentAmenitySet.delete("carbon_monoxide_alarm");
-      if (firstAidKit) currentAmenitySet.add("first_aid_kit"); else currentAmenitySet.delete("first_aid_kit");
-      if (fireExtinguisher) currentAmenitySet.add("fire_extinguisher"); else currentAmenitySet.delete("fire_extinguisher");
-
-      const newAmenitiesList = Array.from(currentAmenitySet);
-      setEditAmenities(newAmenitiesList);
-
-      const equipment: string[] = [];
-      if (smokeAlarm) equipment.push("SMOKE_ALARM");
-      if (carbonMonoxideAlarm) equipment.push("CARBON_MONOXIDE_ALARM");
-      if (firstAidKit) equipment.push("FIRST_AID_KIT");
-      if (fireExtinguisher) equipment.push("FIRE_EXTINGUISHER");
+      const serialized = serializeSafetyData({
+        devices: guestSafetyState.devices,
+        propertyInfo: guestSafetyState.propertyInfo,
+        considerations: guestSafetyState.considerations,
+        currentAmenities: editAmenities,
+      });
 
       payload = {
-        safetyEquipment: equipment,
-        safetyHazards: safetyConsiderations,
-        amenities: newAmenitiesList,
+        safetyDisclosures: serialized.safetyDisclosures,
+        safetyEquipment: serialized.safetyEquipment,
+        safetyHazards: serialized.safetyHazards,
+        amenities: serialized.amenities,
       };
+      setEditAmenities(serialized.amenities);
+      setSmokeAlarm(guestSafetyState.devices.smokeAlarm === true);
+      setCarbonMonoxideAlarm(guestSafetyState.devices.carbonMonoxideAlarm === true);
+      setSafetyConsiderations(serialized.safetyHazards);
     } else if (sectionToSave === "accessibility") {
       const selectedFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
       const details = normalizeAccessibilityFeatureDetails(accessibilityDetails)
@@ -1001,6 +1044,47 @@ export function HostListingEditorClient({
     }
   };
 
+  async function handleSaveCancellationPolicy(data: {
+    cancellationPolicy: string;
+    longTermCancellationPolicy: "FIRM" | "STRICT";
+    nonRefundable?: boolean;
+  }) {
+    setIsSaving(true);
+    setFeedbackMsg(null);
+    try {
+      const nextDiscounts = {
+        ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
+        ...(data.nonRefundable !== undefined ? { non_refundable: data.nonRefundable } : {}),
+      };
+      const payload = {
+        cancellationPolicy: canonicalCancellationPolicy(data.cancellationPolicy),
+        longTermCancellationPolicy: data.longTermCancellationPolicy,
+        discounts: nextDiscounts,
+      };
+      const res = await updateListingAction(listing.id, payload);
+      setIsSaving(false);
+      if (res.ok && res.data) {
+        setListing((prev) => ({
+          ...prev,
+          cancellationPolicy: payload.cancellationPolicy,
+          longTermCancellationPolicy: payload.longTermCancellationPolicy,
+          discounts: nextDiscounts,
+        }));
+        setCancellationPolicy(payload.cancellationPolicy);
+        setLongTermCancellationPolicy(payload.longTermCancellationPolicy);
+        setFeedbackMsg({ type: "success", text: "Cancellation policy saved successfully!" });
+        return true;
+      } else {
+        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to save cancellation policy." });
+        return false;
+      }
+    } catch (err: any) {
+      setIsSaving(false);
+      setFeedbackMsg({ type: "error", text: "Error saving cancellation policy: " + err.message });
+      return false;
+    }
+  }
+
   const [isRemoveListingModalOpen, setIsRemoveListingModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -1156,6 +1240,8 @@ export function HostListingEditorClient({
             setLongTermCancellationPolicy={setLongTermCancellationPolicy}
             customSlug={customSlug}
             setCustomSlug={setCustomSlug}
+            onSaveCancellationPolicy={handleSaveCancellationPolicy}
+            discounts={listing.discounts as Record<string, unknown> | null}
           />
 
             <HostAndLocationViews
@@ -1288,6 +1374,10 @@ export function HostListingEditorClient({
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               isSaving={isSaving}
+              guestSafetyState={guestSafetyState}
+              setGuestSafetyState={setGuestSafetyState}
+              onSaveSafety={handleSaveSafetyState}
+              initialSafetyState={parseSafetyData(listing)}
               handleSaveSection={handleSaveSection}
               safetyConsiderations={safetyConsiderations}
               setSafetyConsiderations={setSafetyConsiderations}
@@ -1385,9 +1475,14 @@ export function HostListingEditorClient({
           quietHoursEnd={quietHoursEnd}
           commercialFilmingAllowed={commercialFilmingAllowed}
           additionalHouseRules={additionalHouseRules}
-          carbonMonoxideAlarm={carbonMonoxideAlarm}
-          smokeAlarm={smokeAlarm}
+          carbonMonoxideAlarm={guestSafetyState.devices.carbonMonoxideAlarm === true}
+          smokeAlarm={guestSafetyState.devices.smokeAlarm === true}
+          guestSafetyState={guestSafetyState}
+          safetyDisclosures={listing.safetyDisclosures}
+          safetyEquipment={listing.safetyEquipment}
+          safetyHazards={listing.safetyHazards}
           cancellationPolicy={cancellationPolicy}
+          longTermCancellationPolicy={longTermCancellationPolicy}
           customSlug={customSlug}
           checkInMethod={checkInMethod}
           checkInEnd={checkInEnd}
