@@ -3,7 +3,7 @@
 Do this in **order**. Do not move the database until the load balancer is healthy.
 
 ```text
-Phase 1  Docker on the ECS (Next.js only)
+Phase 1  Docker on the ECS (Next.js + media service)
 Phase 2  Load balancer (HTTPS in front of :3000)
 Phase 3  Managed PostgreSQL RDS  ← only after Phase 2
 ```
@@ -16,14 +16,17 @@ Load balancer  (Alibaba ALB / later AWS ALB)
    │ HTTP → private IP:3000
    │ health: GET /api/health
    ▼
-ECS Docker  →  Next.js only (0.0.0.0:3000)
+ECS Docker
+   ├── homyz-app   (Next.js, 0.0.0.0:3000)
+   │     MEDIA_SERVER_URL=http://media:4001
+   └── homyz-media (uploads volume; not published)
+         volume homyz_uploads → /data/uploads
    ├── DATABASE_URL  →  Neon now  →  RDS in Phase 3
    ├── REDIS_URL     →  external (optional)
-   ├── S3 / OSS      →  external
    └── Resend / Twilio / OAuth
 ```
 
-Postgres, Redis, and object storage are **never** in the Docker image.
+Postgres and Redis are **never** in the Docker image. Uploads are a named volume on the media service (later swap that service to S3/OSS).
 
 ---
 
@@ -39,9 +42,12 @@ docker build --network=host --progress=plain \
   --build-arg NEXTAUTH_URL=https://YOUR_DOMAIN \
   -t homyz:local .
 
+docker build -t homyz-media:local ./media-server
+
 # On the server, with /opt/homyz/.env already filled:
 cd /opt/homyz
 export HOMYZ_IMAGE=homyz:local
+export HOMYZ_MEDIA_IMAGE=homyz-media:local
 docker compose -f docker-compose.prod.yml up -d
 curl -fsS http://127.0.0.1:3000/api/health
 curl -fsS http://127.0.0.1:3000/api/ready
@@ -53,6 +59,8 @@ Required in `.env` now:
 
 - `DATABASE_URL` — Neon (TLS)
 - `NEXTAUTH_SECRET`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+- `MEDIA_SERVER_SECRET` — shared secret for the media service (`openssl rand -base64 32`)
+- `MEDIA_PUBLIC_BASE_URL` — browser origin for images (`http://homyz.co:4001` now, `https://media.homyz.co` later)
 - `APP_URL` / `NEXTAUTH_URL` — the **public** URL users will type (the LB hostname once Phase 2 is done)
 
 Rebuild the image whenever `APP_URL` changes (Server Action origins are baked at build time).
@@ -183,8 +191,11 @@ Copy `.env.example` → `/opt/homyz/.env`. Production:
 - `DATABASE_URL` — Neon now; RDS in Phase 3 (`sslmode=require`)
 - `NEXTAUTH_SECRET`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
 - `APP_URL` / `NEXTAUTH_URL` — public `https://` hostname on the **load balancer**
-- `S3_BUCKET` (or equivalent) for durable uploads; without it, files die when the container is recreated
+- `MEDIA_SERVER_SECRET` — required; Compose points the app at `http://media:4001`
+- `MEDIA_PUBLIC_BASE_URL` — public image host (`https://media.homyz.co` when the subdomain is live)
 - `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if you add a second ECS behind the same LB
+
+Never commit `.env`.
 
 Never commit `.env`.
 
@@ -194,6 +205,7 @@ Never commit `.env`.
 
 ```bash
 docker logs -f homyz-app
+docker logs -f homyz-media
 curl -fsS http://127.0.0.1:3000/api/health
 curl -fsS http://127.0.0.1:3000/api/ready
 HOMYZ_IMAGE="<previous-sha-image>" bash /opt/homyz/scripts/deploy/rollback.sh

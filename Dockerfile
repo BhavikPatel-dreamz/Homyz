@@ -76,6 +76,7 @@ COPY --chmod=755 docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN mkdir -p \
       public/uploads/listing-photos \
       public/uploads/stamp-icons \
+      public/uploads/guidebook-photos \
       public/uploads/host-documents \
     && chown -R nextjs:nodejs public/uploads
 

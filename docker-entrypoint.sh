@@ -1,12 +1,11 @@
 #!/bin/sh
-# Runtime as root only long enough to make upload dirs writable for uid 999,
-# then drop privileges. A named volume for /app/public/uploads is root-owned
-# on first create and would otherwise 403/EACCES on media writes.
+# Fallback only: production Compose stores files on the media service volume.
 set -eu
 
 mkdir -p \
   /app/public/uploads/listing-photos \
   /app/public/uploads/stamp-icons \
+  /app/public/uploads/guidebook-photos \
   /app/public/uploads/host-documents
 
 chown -R 999:999 /app/public/uploads
