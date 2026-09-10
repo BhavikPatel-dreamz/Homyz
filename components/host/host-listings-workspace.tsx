@@ -496,7 +496,7 @@ export function HostListingsWorkspace({
               type="button"
               onClick={handleOpenCreate}
               disabled={pending}
-              className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-base px-5 py-2.5 transition-all shadow-2xs active:scale-95"
+              className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs"
             >
               + Create New Listing
             </button>

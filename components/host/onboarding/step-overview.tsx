@@ -173,7 +173,7 @@ export function StepOverview({
               type="button"
               onClick={handleBack}
               disabled={isLoading}
-              className="mr-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-[#1F1F1F] bg-white px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] transition-colors hover:bg-[#F3F4F5] disabled:cursor-not-allowed disabled:opacity-50 sm:mr-3 lg:min-h-0 lg:flex-none lg:px-6"
+              className="mr-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-[#1F1F1F] bg-white hover:bg-[#1F1F1F] px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors delay-100 duration-300 disabled:cursor-not-allowed disabled:opacity-50 sm:mr-3 lg:min-h-0 lg:flex-none lg:px-6"
             >
               Back
             </button>
@@ -182,7 +182,7 @@ export function StepOverview({
               type="button"
               onClick={onGetStarted}
               disabled={isLoading}
-              className="ml-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-[#F3F4F5] disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 lg:min-h-0 lg:flex-none lg:px-6"
+              className="ml-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 lg:min-h-0 lg:flex-none lg:px-6"
             >
               {isLoading ? (
                 <>

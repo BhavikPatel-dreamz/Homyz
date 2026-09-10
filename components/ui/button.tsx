@@ -10,7 +10,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leadingIcon?: ReactNode;
 }
 
-export const primaryButtonInteractionClass = "border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]";
+export const primaryButtonInteractionClass = "border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white";
 const baseClass = `box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium text-[#1F1F1F] transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 ${primaryButtonInteractionClass}`;
 
 const variantClasses: Record<ButtonVariant, string> = {

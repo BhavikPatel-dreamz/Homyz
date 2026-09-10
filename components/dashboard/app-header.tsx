@@ -102,18 +102,18 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
             {isHostRoute ? (
-              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C]  px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to traveling
               </Link>
             ) : role === "HOST" ? (
-              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+                <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to hosting
               </Link>
             ) : user ? (
               <button
                 type="button"
                 onClick={() => setBecomeHostModalOpen(true)}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
+                    className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
               >
                 Become a host
               </button>

@@ -334,7 +334,7 @@ export function ProfileClient({
                   <div>
                     <button
                       type="button"
-                    className="no-brush-border flex h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base leading-6 font-medium text-[#1F1F1F] transition-colors border border-transparent hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F]"
+                    className="no-brush-border flex h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base leading-6 font-medium text-[#1F1F1F] transition-colors border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                     >
                       Show review
                     </button>
