@@ -803,7 +803,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -899,7 +899,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -935,7 +935,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -1410,7 +1410,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-semibold text-xs text-[#1F1F1F]">Listed</h3>
+          <h3 className="font-medium text-base text-[#1F1F1F]">Listed</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Guests can find your listing in search results and book available dates.
           </p>
@@ -1425,7 +1425,7 @@ function ListingStatusView({
               : "bg-white border-zinc-200 hover:border-zinc-300"
           }`}
         >
-          <h3 className="font-semibold text-xs text-[#1F1F1F]">Unlisted</h3>
+          <h3 className="font-medium text-base text-[#1F1F1F]">Unlisted</h3>
           <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
             Your listing is hidden from search results and guests cannot book dates.
           </p>
@@ -1909,7 +1909,7 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -2055,7 +2055,7 @@ function CheckInMethodView({
             type="button"
             disabled={isSaving}
             onClick={() => handleSaveSection("check-in-method")}
-            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+            className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
           >
             {isSaving ? "Saving..." : "Save"}
           </button>

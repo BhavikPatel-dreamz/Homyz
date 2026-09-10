@@ -284,7 +284,7 @@ export function PricingAndBookingViews({
             {/* 4. Calendar notice card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 hover:bg-zinc-100/80 p-4 flex items-center gap-3 shadow-2xs transition-all cursor-pointer">
               <span className="text-lg">🏪</span>
-              <span className="font-semibold text-xs text-[#1F1F1F]">Find more discounts and fees in the calendar</span>
+              <span className="font-medium text-base text-[#1F1F1F]">Find more discounts and fees in the calendar</span>
             </div>
 
             {/* Save Button */}
@@ -293,7 +293,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("pricing")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -313,7 +313,7 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => setActiveSection("description")} />
               <h1>Availability</h1>
             </div>
-            <p className="text-xs text-zinc-400 font-normal pl-11">
+            <p className="text-base text-[#727272] font-normal pl-11">
               *These settings apply to all nights, unless you customize them by date.{" "}
               <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer hover:text-zinc-700">
                 Learn more
@@ -353,7 +353,7 @@ export function PricingAndBookingViews({
             <div className="space-y-2">
               <div>
                 <label className="block text-xs font-semibold text-zinc-800">Advance notice</label>
-                <p className="text-[11px] text-zinc-400 font-normal pt-0.5">
+                <p className="text-base text-[#727272] font-normal pt-0.5">
                   *How much notice do you need between a guest's booking and their arrival?
                 </p>
               </div>
@@ -378,7 +378,7 @@ export function PricingAndBookingViews({
                 </div>
               </div>
 
-              <p className="text-[11px] text-zinc-400 font-normal pt-1">
+              <p className="text-base text-[#727272] font-normal pt-1">
                 Guests can book on the same day as check-in until this time.
               </p>
 
@@ -408,7 +408,7 @@ export function PricingAndBookingViews({
             <div className="flex items-center justify-between pt-2">
               <div className="space-y-0.5">
                 <h4 className="font-semibold text-xs text-zinc-800">Allow requests for the same day</h4>
-                <p className="text-[11px] text-zinc-400 font-normal">
+                <p className="text-base text-[#727272] font-normal">
                   You'll review and approve each reservation request.
                 </p>
               </div>
@@ -429,7 +429,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving}
                 onClick={() => handleSaveSection("availability")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -700,7 +700,7 @@ function CancellationPolicyView({
                         : "bg-white border-zinc-200 hover:border-zinc-300"
                     }`}
                   >
-                    <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] mb-1.5">{policy.title}</h4>
                   </button>
                 ))}
               </div>
@@ -735,7 +735,7 @@ function CancellationPolicyView({
           {/* Non-refundable option */}
           <div className="flex items-start justify-between pt-2 opacity-60">
             <div className="space-y-1 max-w-sm">
-              <h4 className="font-semibold text-xs text-[#1F1F1F]">Non-refundable option</h4>
+              <h4 className="font-medium text-base text-[#1F1F1F]">Non-refundable option</h4>
               <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
                 Unavailable: non-refundable discount and refund terms are not defined.
               </p>
@@ -797,7 +797,7 @@ function CancellationPolicyView({
                         : "bg-white border-zinc-200 hover:border-zinc-300"
                     }`}
                   >
-                    <h4 className="font-semibold text-xs text-[#1F1F1F] mb-1.5">{policy.title}</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] mb-1.5">{policy.title}</h4>
                   </button>
                 ))}
               </div>

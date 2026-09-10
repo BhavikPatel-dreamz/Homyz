@@ -238,8 +238,8 @@ export function HostListingEditorClient({
     initialSection && PREFERENCE_SECTIONS.includes(initialSection)
       ? "preferences"
       : initialSection && ARRIVAL_SECTIONS.includes(initialSection)
-      ? "arrival"
-      : "space"
+        ? "arrival"
+        : "space"
   );
 
   const setActiveSection = useCallback(
@@ -1029,89 +1029,87 @@ export function HostListingEditorClient({
       <HostSubNav activeTab="listing" listingId={listing.id} />
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
-      <Container className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 py-6">
-        
-        {/* ============================================================ */}
-        {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
-        {/* ============================================================ */}
-        <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
-          {feedbackMsg && (
-            <div className={`p-4 rounded-2xl text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
-              {feedbackMsg.text}
-            </div>
-          )}
+      <Container>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 py-16">
+          {/* ============================================================ */}
+          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
+          {/* ============================================================ */}
+          <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
+            {feedbackMsg && (
+              <div className={`p-4 rounded-2xl text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
+                {feedbackMsg.text}
+              </div>
+            )}
 
-          {activeSection === "photos" && (
-            <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} />
-          )}
+            {activeSection === "photos" && (
+              <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} />
+            )}
 
-          <PropertyDetailsViews
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            feedbackMsg={feedbackMsg}
-            isSaving={isSaving}
-            handleSaveSection={handleSaveSection}
-            editDescription={editDescription}
-            setEditDescription={setEditDescription}
-            editPropertyDetails={editPropertyDetails}
-            setEditPropertyDetails={setEditPropertyDetails}
-            editAccessDetails={editGuestAccess}
-            setEditAccessDetails={setEditGuestAccess}
-            interactionDetails={editGuestInteraction}
-            setInteractionDetails={setEditGuestInteraction}
-            otherDetails={editOtherDetails}
-            setOtherDetails={setEditOtherDetails}
-            openDescAccordion={openDescAccordion}
-            setOpenDescAccordion={setOpenDescAccordion}
-            editTitle={editTitle}
-            setEditTitle={setEditTitle}
-            whichIsMostLike={whichIsMostLike}
-            setWhichIsMostLike={setWhichIsMostLike}
-            editPropertyType={editPropertyType}
-            setEditPropertyType={setEditPropertyType}
-            editListingType={editListingType}
-            setEditListingType={setEditListingType}
-            buildingFloors={buildingFloors}
-            setBuildingFloors={setBuildingFloors}
-            listingFloor={listingFloor}
-            setListingFloor={setListingFloor}
-            yearBuilt={yearBuilt}
-            setYearBuilt={setYearBuilt}
-            propertySize={propertySize}
-            setPropertySize={setPropertySize}
-            propertySizeUnit={propertySizeUnit}
-            setPropertySizeUnit={setPropertySizeUnit}
-            editGuests={editGuests}
-            setEditGuests={setEditGuests}
-            editBedrooms={editBedrooms}
-            setEditBedrooms={setEditBedrooms}
-            editBeds={editBeds}
-            setEditBeds={setEditBeds}
-            editBathrooms={editBathrooms}
-            setEditBathrooms={setEditBathrooms}
-            fullBathrooms={fullBathrooms}
-            setFullBathrooms={setFullBathrooms}
-            halfBathrooms={halfBathrooms}
-            setHalfBathrooms={setHalfBathrooms}
-            privateBathrooms={privateBathrooms}
-            setPrivateBathrooms={setPrivateBathrooms}
-            sharedBathrooms={sharedBathrooms}
-            setSharedBathrooms={setSharedBathrooms}
-            privateEntrance={privateEntrance}
-            setPrivateEntrance={setPrivateEntrance}
-            elevatorAvailable={elevatorAvailable}
-            setElevatorAvailable={setElevatorAvailable}
-            rooms={rooms}
-            setRooms={setRooms}
-            editAmenities={editAmenities}
-            setEditAmenities={setEditAmenities}
-            accessibilityFeatures={accessibilityFeatures}
-            setAccessibilityFeatures={setAccessibilityFeatures}
-            accessibilityDetails={accessibilityDetails}
-            setAccessibilityDetails={setAccessibilityDetails}
-            expandedAccessibility={expandedAccessibility}
-            setExpandedAccessibility={setExpandedAccessibility}
-          />
+            <PropertyDetailsViews
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              feedbackMsg={feedbackMsg}
+              isSaving={isSaving}
+              handleSaveSection={handleSaveSection}
+              editDescription={editDescription}
+              setEditDescription={setEditDescription}
+              editPropertyDetails={editPropertyDetails}
+              setEditPropertyDetails={setEditPropertyDetails}
+              editAccessDetails={editGuestAccess}
+              setEditAccessDetails={setEditGuestAccess}
+              interactionDetails={editGuestInteraction}
+              setInteractionDetails={setEditGuestInteraction}
+              otherDetails={editOtherDetails}
+              setOtherDetails={setEditOtherDetails}
+              openDescAccordion={openDescAccordion}
+              setOpenDescAccordion={setOpenDescAccordion}
+              editTitle={editTitle}
+              setEditTitle={setEditTitle}
+              whichIsMostLike={whichIsMostLike}
+              setWhichIsMostLike={setWhichIsMostLike}
+              editPropertyType={editPropertyType}
+              setEditPropertyType={setEditPropertyType}
+              editListingType={editListingType}
+              setEditListingType={setEditListingType}
+              buildingFloors={buildingFloors}
+              setBuildingFloors={setBuildingFloors}
+              listingFloor={listingFloor}
+              setListingFloor={setListingFloor}
+              yearBuilt={yearBuilt}
+              setYearBuilt={setYearBuilt}
+              propertySize={propertySize}
+              setPropertySize={setPropertySize}
+              propertySizeUnit={propertySizeUnit}
+              setPropertySizeUnit={setPropertySizeUnit}
+              editGuests={editGuests}
+              setEditGuests={setEditGuests}
+              editBedrooms={editBedrooms}
+              setEditBedrooms={setEditBedrooms}
+              editBeds={editBeds}
+              setEditBeds={setEditBeds}
+              editBathrooms={editBathrooms}
+              setEditBathrooms={setEditBathrooms}
+              fullBathrooms={fullBathrooms}
+              setFullBathrooms={setFullBathrooms}
+              halfBathrooms={halfBathrooms}
+              setHalfBathrooms={setHalfBathrooms}
+              privateBathrooms={privateBathrooms}
+              setPrivateBathrooms={setPrivateBathrooms}
+              sharedBathrooms={sharedBathrooms}
+              setSharedBathrooms={setSharedBathrooms}
+              privateEntrance={privateEntrance}
+              setPrivateEntrance={setPrivateEntrance}
+              elevatorAvailable={elevatorAvailable}
+              setElevatorAvailable={setElevatorAvailable}
+              rooms={rooms}
+              setRooms={setRooms}
+              editAmenities={editAmenities}
+              setEditAmenities={setEditAmenities}
+              accessibilityFeatures={accessibilityFeatures}
+              setAccessibilityFeatures={setAccessibilityFeatures}
+              expandedAccessibility={expandedAccessibility}
+              setExpandedAccessibility={setExpandedAccessibility}
+            />
 
           <PricingAndBookingViews
             activeSection={activeSection}
@@ -1160,47 +1158,47 @@ export function HostListingEditorClient({
             setCustomSlug={setCustomSlug}
           />
 
-          <HostAndLocationViews
-            activeSection={activeSection}
-            isSaving={isSaving}
-            handleSaveSection={handleSaveSection}
-            editAddress={editAddress}
-            setEditAddress={setEditAddress}
-            editCity={editCity}
-            setEditCity={setEditCity}
-            editDistrict={editDistrict}
-            setEditDistrict={setEditDistrict}
-            editPostalCode={editPostalCode}
-            setEditPostalCode={setEditPostalCode}
-            editCountry={editCountry}
-            setEditCountry={setEditCountry}
-            latitude={latitude}
-            longitude={longitude}
-            setLatitude={setLatitude}
-            setLongitude={setLongitude}
-            locationResolutionError={locationResolutionError}
-            setLocationResolutionError={setLocationResolutionError}
-            locationIsResolving={locationIsResolving}
-            setLocationIsResolving={setLocationIsResolving}
-            showExactLocation={showExactLocation}
-            setShowExactLocation={setShowExactLocation}
-            neighborhoodDescription={neighborhoodDescription}
-            setNeighborhoodDescription={setNeighborhoodDescription}
-            gettingAround={gettingAround}
-            setGettingAround={setGettingAround}
-            scenicViews={scenicViews}
-            setScenicViews={setScenicViews}
-            locationFeatures={locationFeatures}
-            setLocationFeatures={setLocationFeatures}
-            listingId={listing.id}
-            coHosts={coHosts}
-            setCoHosts={setCoHosts}
-            hostProfile={listing.host}
-            onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
-              ...prev,
-              host: { ...prev.host, publicProfile, ...hostUpdate },
-            }))}
-          />
+            <HostAndLocationViews
+              activeSection={activeSection}
+              isSaving={isSaving}
+              handleSaveSection={handleSaveSection}
+              editAddress={editAddress}
+              setEditAddress={setEditAddress}
+              editCity={editCity}
+              setEditCity={setEditCity}
+              editDistrict={editDistrict}
+              setEditDistrict={setEditDistrict}
+              editPostalCode={editPostalCode}
+              setEditPostalCode={setEditPostalCode}
+              editCountry={editCountry}
+              setEditCountry={setEditCountry}
+              latitude={latitude}
+              longitude={longitude}
+              setLatitude={setLatitude}
+              setLongitude={setLongitude}
+              locationResolutionError={locationResolutionError}
+              setLocationResolutionError={setLocationResolutionError}
+              locationIsResolving={locationIsResolving}
+              setLocationIsResolving={setLocationIsResolving}
+              showExactLocation={showExactLocation}
+              setShowExactLocation={setShowExactLocation}
+              neighborhoodDescription={neighborhoodDescription}
+              setNeighborhoodDescription={setNeighborhoodDescription}
+              gettingAround={gettingAround}
+              setGettingAround={setGettingAround}
+              scenicViews={scenicViews}
+              setScenicViews={setScenicViews}
+              locationFeatures={locationFeatures}
+              setLocationFeatures={setLocationFeatures}
+              listingId={listing.id}
+              coHosts={coHosts}
+              setCoHosts={setCoHosts}
+              hostProfile={listing.host}
+              onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
+                ...prev,
+                host: { ...prev.host, publicProfile, ...hostUpdate },
+              }))}
+            />
 
           <HouseRulesAndArrivalViews
             listingId={listing.id}
@@ -1286,58 +1284,58 @@ export function HostListingEditorClient({
             setListingStatusSetting={setListingStatusSetting}
           />
 
-          <GuestsSafetyView
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            isSaving={isSaving}
-            handleSaveSection={handleSaveSection}
-            safetyConsiderations={safetyConsiderations}
-            setSafetyConsiderations={setSafetyConsiderations}
-            carbonMonoxideAlarm={carbonMonoxideAlarm}
-            setCarbonMonoxideAlarm={setCarbonMonoxideAlarm}
-            smokeAlarm={smokeAlarm}
-            setSmokeAlarm={setSmokeAlarm}
-            firstAidKit={firstAidKit}
-            setFirstAidKit={setFirstAidKit}
-            fireExtinguisher={fireExtinguisher}
-            setFireExtinguisher={setFireExtinguisher}
-            propertyInfoDetails={propertyInfoDetails}
-            setPropertyInfoDetails={setPropertyInfoDetails}
-            isSafetyConsiderationsModalOpen={isSafetyConsiderationsModalOpen}
-            setIsSafetyConsiderationsModalOpen={setIsSafetyConsiderationsModalOpen}
-            isSafetyDevicesModalOpen={isSafetyDevicesModalOpen}
-            setIsSafetyDevicesModalOpen={setIsSafetyDevicesModalOpen}
-            isPropertyInfoModalOpen={isPropertyInfoModalOpen}
-            setIsPropertyInfoModalOpen={setIsPropertyInfoModalOpen}
-          />
+            <GuestsSafetyView
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              isSaving={isSaving}
+              handleSaveSection={handleSaveSection}
+              safetyConsiderations={safetyConsiderations}
+              setSafetyConsiderations={setSafetyConsiderations}
+              carbonMonoxideAlarm={carbonMonoxideAlarm}
+              setCarbonMonoxideAlarm={setCarbonMonoxideAlarm}
+              smokeAlarm={smokeAlarm}
+              setSmokeAlarm={setSmokeAlarm}
+              firstAidKit={firstAidKit}
+              setFirstAidKit={setFirstAidKit}
+              fireExtinguisher={fireExtinguisher}
+              setFireExtinguisher={setFireExtinguisher}
+              propertyInfoDetails={propertyInfoDetails}
+              setPropertyInfoDetails={setPropertyInfoDetails}
+              isSafetyConsiderationsModalOpen={isSafetyConsiderationsModalOpen}
+              setIsSafetyConsiderationsModalOpen={setIsSafetyConsiderationsModalOpen}
+              isSafetyDevicesModalOpen={isSafetyDevicesModalOpen}
+              setIsSafetyDevicesModalOpen={setIsSafetyDevicesModalOpen}
+              isPropertyInfoModalOpen={isPropertyInfoModalOpen}
+              setIsPropertyInfoModalOpen={setIsPropertyInfoModalOpen}
+            />
 
-          {(activeSection === "remove-listing" || activeSection === "removelisting") && (
-            <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
-              <div className="flex items-center gap-3 text-zinc-900">
-                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
-                  🏠
+            {(activeSection === "remove-listing" || activeSection === "removelisting") && (
+              <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
+                <div className="flex items-center gap-3 text-zinc-900">
+                  <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
+                    🏠
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-[#1F1F1F]">Remove listing</h2>
+                    <p className="text-xs text-zinc-500">Permanently remove your listing from Homyz.</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-semibold text-[#1F1F1F]">Remove listing</h2>
-                  <p className="text-xs text-zinc-500">Permanently remove your listing from Homyz.</p>
+                <p className="text-zinc-600 leading-relaxed">
+                  If you no longer wish to host or need to remove <strong>{listing.title}</strong>, please complete our quick removal survey to permanently remove your listing.
+                </p>
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsRemoveListingModalOpen(true)}
+                    className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
+                  >
+                    Remove listing
+                  </button>
                 </div>
               </div>
-              <p className="text-zinc-600 leading-relaxed">
-                If you no longer wish to host or need to remove <strong>{listing.title}</strong>, please complete our quick removal survey to permanently remove your listing.
-              </p>
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsRemoveListingModalOpen(true)}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
-                >
-                  Remove listing
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-        </main>
+          </main>
 
         {/* ============================================================ */}
         {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
@@ -1402,6 +1400,7 @@ export function HostListingEditorClient({
           parkingType={parkingType}
           setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
         />
+          </div>
       </Container>
 
       {/* --------------------------------------------------------- */}
@@ -1441,7 +1440,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You may get fewer bookings</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">You may get fewer bookings</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Guests often prefer places they can book immediately without waiting for host approval.
                   </p>
@@ -1456,7 +1455,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to review every booking request</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">You'll need to review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     You manually accept or decline reservation inquiries based on your availability.
                   </p>
@@ -1471,7 +1470,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-semibold text-xs text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Unanswered requests expire automatically after 24 hours and affect your host response rate.
                   </p>

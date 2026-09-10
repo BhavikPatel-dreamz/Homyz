@@ -132,8 +132,8 @@ body {
   @media (min-width: 1280px) {
     h1,
     h2 {
-      font-size: 36px;
-      line-height: 44px;
+      font-size: 32px;
+      line-height: 40px;
     }
   }
 }

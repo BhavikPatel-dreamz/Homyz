@@ -129,7 +129,7 @@ export function ListingCard({ listing, className = "" }: ListingCardProps) {
           {locationString}
         </p>
 
-        <p className="text-[11px] text-zinc-400 font-normal truncate">
+        <p className="text-base text-[#727272] font-normal truncate">
           {listing.propertyType || "Home"} · {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"}
         </p>
 
