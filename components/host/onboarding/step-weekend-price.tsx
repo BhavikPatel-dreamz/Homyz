@@ -2,8 +2,7 @@
 
 import { Container } from "@/components/ui";
 import React, { useState } from "react";
-import { OnboardingBackButton } from "./onboarding-back-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import { StepProgressFooter } from "./step-progress-footer";
 
 interface StepWeekendPriceProps {
   weekdayPrice: number;
@@ -173,18 +172,13 @@ export function StepWeekendPrice({
             </div>
           </div>
 
-          {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
-            <OnboardingBackButton
-              onClick={onBack}
-              disabled={isLoading}
-            />
-            <OnboardingPrimaryButton
-              onClick={onNext}
-              isLoading={isLoading}
-              label="Next"
-            />
-          </div>
+          <StepProgressFooter
+            currentStep={2}
+            totalSteps={4}
+            onBack={onBack}
+            onNext={onNext}
+            isLoading={isLoading}
+          />
         </div>
       </Container>
     </main>

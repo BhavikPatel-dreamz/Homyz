@@ -4,7 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
@@ -17,9 +17,11 @@ type AppHeaderProps = {
 
 export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { data: session, update } = useSession();
   const user = session?.user ?? null;
   const role = user?.role;
+  const [isConvertingRole, setIsConvertingRole] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
@@ -43,6 +45,32 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
   );
   const hasHeaderDivider = showBottomBorder ?? routeHasHeaderDivider;
+
+  const handleBecomeHost = async () => {
+    if (isConvertingRole) return;
+    setIsConvertingRole(true);
+    try {
+      const res = await fetch("/api/v1/host/application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "convert" }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        console.error("Failed to convert to host:", data);
+      }
+
+      await update?.();
+      router.push("/host/listings");
+      router.refresh();
+    } catch (err) {
+      console.error("Error becoming a host:", err);
+      router.push("/host/listings");
+    } finally {
+      setIsConvertingRole(false);
+    }
+  };
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
@@ -101,22 +129,25 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
+            {user && (
+              <button
+                type="button"
+                onClick={handleBecomeHost}
+                disabled={isConvertingRole}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
+              >
+                {isConvertingRole ? "Loading..." : "Become a host"}
+              </button>
+            )}
+
             {isHostRoute ? (
-              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C]  px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to traveling
               </Link>
             ) : role === "HOST" ? (
-                <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to hosting
               </Link>
-            ) : user ? (
-              <button
-                type="button"
-                onClick={() => setBecomeHostModalOpen(true)}
-                    className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
-              >
-                Become a host
-              </button>
             ) : null}
 
             {user?.image ? (
@@ -255,6 +286,17 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                     </div>
 
                     <div className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleBecomeHost();
+                        }}
+                        disabled={isConvertingRole}
+                        className="w-full flex items-center px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl text-amber-900 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer lg:hidden mb-1"
+                      >
+                        {isConvertingRole ? "Loading..." : "Become a host"}
+                      </button>
                       {navItems.map((item) => {
                         if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
                         if (item.requireAdmin && role !== "ADMIN") return null;
