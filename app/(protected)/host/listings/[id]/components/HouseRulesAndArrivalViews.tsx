@@ -21,6 +21,7 @@ import {
   QUIET_HOURS_END_OPTIONS,
   ALL_HOURS_OPTIONS,
 } from "../section-helpers";
+import { HouseRulesSkeleton } from "./YourSpaceSkeletons";
 
 function AllowDenyButtons({
   value,
@@ -71,6 +72,7 @@ interface HouseRulesAndArrivalViewsProps {
   activeSection: string;
   setActiveSection: (section: any) => void;
   isSaving: boolean;
+  isLoading?: boolean;
   handleSaveSection: (sectionKey: any) => void;
 
   // House Rules
@@ -233,8 +235,11 @@ export function HouseRulesAndArrivalViews({
   setListingStatusSetting,
   selectedLanguageIds = DEFAULT_LANGUAGE_IDS,
   setSelectedLanguageIds,
+  isLoading,
 }: HouseRulesAndArrivalViewsProps) {
   const [isCheckInOutModalOpen, setIsCheckInOutModalOpen] = React.useState(false);
+
+
 
   return (
     <>
@@ -257,6 +262,10 @@ export function HouseRulesAndArrivalViews({
             </p>
           </div>
 
+          {isLoading ? (
+            <HouseRulesSkeleton />
+          ) : (
+            <>
           {/* List of Rules Rows */}
           <div className="divide-y divide-zinc-200/80 pt-2">
             {/* Row 1: Pets allowed */}
@@ -546,6 +555,8 @@ export function HouseRulesAndArrivalViews({
               Cancel
             </button>
           </div>
+          </>
+          )}
 
           {/* Check-in and checkout times Modal */}
           {isCheckInOutModalOpen && (

@@ -6,11 +6,19 @@ import { BackButton } from "@/components/ui/back-button";
 import React from "react";
 import { isReservedSlug } from "@/lib/utils/slug";
 import { CancellationPolicyView } from "./CancellationPolicyView";
+import {
+  PricingSkeleton,
+  AvailabilitySkeleton,
+  BookingSettingsSkeleton,
+  CancellationPolicySkeleton,
+  CustomLinkSkeleton,
+} from "./YourSpaceSkeletons";
 
 interface PricingAndBookingViewsProps {
   activeSection: string;
   setActiveSection: (section: any) => void;
   isSaving: boolean;
+  isLoading?: boolean;
   handleSaveSection: (sectionKey: any) => void;
 
   // Pricing & Availability
@@ -111,7 +119,10 @@ export function PricingAndBookingViews({
   setCustomSlug,
   onSaveCancellationPolicy,
   discounts,
+  isLoading,
 }: PricingAndBookingViewsProps) {
+
+
   return (
     <>
       {/* --------------------------------------------------------- */}
@@ -131,7 +142,10 @@ export function PricingAndBookingViews({
 
           </div>
 
-          <div className="space-y-5 pt-1">
+          {isLoading ? (
+            <PricingSkeleton />
+          ) : (
+            <div className="space-y-5 pt-1">
             {/* 1. Nightly Price Card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
@@ -309,6 +323,7 @@ export function PricingAndBookingViews({
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -331,7 +346,10 @@ export function PricingAndBookingViews({
             </p>
           </div>
 
-          <div className="space-y-6 pt-1">
+          {isLoading ? (
+            <AvailabilitySkeleton />
+          ) : (
+            <div className="space-y-6 pt-1">
             {/* 1. Trip length */}
             <div className="space-y-2.5">
               <label className="block text-xs font-semibold text-zinc-800">Trip length</label>
@@ -445,6 +463,7 @@ export function PricingAndBookingViews({
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -461,6 +480,10 @@ export function PricingAndBookingViews({
             <h1>Booking settings</h1>
           </div>
 
+          {isLoading ? (
+            <BookingSettingsSkeleton />
+          ) : (
+            <>
           <section className={`rounded-2xl border-2 bg-white px-6 py-5 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
             <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "first-three" && saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
               <div>
@@ -509,6 +532,8 @@ export function PricingAndBookingViews({
               Saving booking preference…
             </div>
           )}
+          </>
+          )}
         </div>
       )}
 
@@ -523,6 +548,7 @@ export function PricingAndBookingViews({
           setLongTermCancellationPolicy={setLongTermCancellationPolicy}
           setActiveSection={setActiveSection}
           isSaving={isSaving}
+          isLoading={isLoading}
           handleSaveSection={handleSaveSection}
           onSaveCancellationPolicy={onSaveCancellationPolicy}
           discounts={discounts}
@@ -538,7 +564,9 @@ export function PricingAndBookingViews({
         const invalidChars = hasInput && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trimmedSlug);
         const isSlugValid = !hasInput || (!tooShort && !tooLong && !reserved && !invalidChars);
 
-        return (
+        return isLoading ? (
+          <CustomLinkSkeleton />
+        ) : (
           <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
             <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
               {/* Counter text */}

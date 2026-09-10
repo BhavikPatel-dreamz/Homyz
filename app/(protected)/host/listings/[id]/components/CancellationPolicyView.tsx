@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
+import { CancellationPolicySkeleton } from "./YourSpaceSkeletons";
 
 interface CancellationPolicyViewProps {
   cancellationPolicy: string;
@@ -14,6 +15,7 @@ interface CancellationPolicyViewProps {
   setActiveSection: (s: any) => void;
   setEditorTab?: (tab: "space" | "arrival" | "preferences") => void;
   isSaving: boolean;
+  isLoading?: boolean;
   handleSaveSection?: (key: any) => void;
   onSaveCancellationPolicy?: (data: {
     cancellationPolicy: string;
@@ -93,6 +95,7 @@ export function CancellationPolicyView({
   handleSaveSection,
   onSaveCancellationPolicy,
   discounts,
+  isLoading,
 }: CancellationPolicyViewProps) {
   // Modal visibility states
   const [isShortTermModalOpen, setIsShortTermModalOpen] = useState(false);
@@ -181,6 +184,8 @@ export function CancellationPolicyView({
     }
   };
 
+
+
   return (
     <div className="space-y-6 animate-in fade-in max-w-2xl w-full pb-16 font-sans">
       {/* Header */}
@@ -194,7 +199,10 @@ export function CancellationPolicyView({
       </div>
 
       {/* Policy Cards List */}
-      <div className="space-y-4 pt-1">
+      {isLoading ? (
+        <CancellationPolicySkeleton />
+      ) : (
+        <div className="space-y-4 pt-1">
         {/* 1. Short-term stays Card */}
         <div
           onClick={() => {
@@ -279,6 +287,7 @@ export function CancellationPolicyView({
           </button>
         </div>
       </div>
+      )}
 
       {/* Footer note with Help Centre link */}
       <p className="text-xs text-zinc-500 leading-relaxed pt-2">

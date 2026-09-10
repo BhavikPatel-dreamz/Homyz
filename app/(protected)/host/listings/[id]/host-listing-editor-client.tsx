@@ -230,9 +230,11 @@ const PREFERENCE_SECTIONS: SectionKey[] = [
 export function HostListingEditorClient({
   listing: initialListing,
   initialSection,
+  isLoading = false,
 }: {
   listing: HostListingData;
   initialSection?: SectionKey;
+  isLoading?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -260,11 +262,31 @@ export function HostListingEditorClient({
       const slug = sectionToSlug(newSection);
       const targetPath = `/host/listings/${listing.id}/${slug}`;
       if (typeof window !== "undefined" && window.location.pathname !== targetPath) {
-        router.push(targetPath, { scroll: false });
+        window.history.pushState(null, "", targetPath);
       }
     },
-    [listing.id, router]
+    [listing.id]
   );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      if (parts.length >= 3 && parts[0] === "host" && parts[1] === "listings") {
+        const slug = parts[3];
+        const targetSec = slugToSection(slug);
+        setActiveSectionState(targetSec);
+        if (PREFERENCE_SECTIONS.includes(targetSec)) {
+          setEditorTab("preferences");
+        } else if (ARRIVAL_SECTIONS.includes(targetSec)) {
+          setEditorTab("arrival");
+        } else {
+          setEditorTab("space");
+        }
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   useEffect(() => {
     if (!pathname) return;
@@ -1126,7 +1148,7 @@ export function HostListingEditorClient({
             )}
 
             {activeSection === "photos" && (
-              <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} />
+              <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} isLoading={isLoading} />
             )}
 
             <PropertyDetailsViews
@@ -1134,6 +1156,7 @@ export function HostListingEditorClient({
               setActiveSection={setActiveSection}
               feedbackMsg={feedbackMsg}
               isSaving={isSaving}
+              isLoading={isLoading}
               handleSaveSection={handleSaveSection}
               editDescription={editDescription}
               setEditDescription={setEditDescription}
@@ -1199,6 +1222,7 @@ export function HostListingEditorClient({
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}
+            isLoading={isLoading}
             handleSaveSection={handleSaveSection}
             editPrice={editPrice}
             setEditPrice={setEditPrice}
@@ -1247,6 +1271,7 @@ export function HostListingEditorClient({
             <HostAndLocationViews
               activeSection={activeSection}
               isSaving={isSaving}
+              isLoading={isLoading}
               handleSaveSection={handleSaveSection}
               editAddress={editAddress}
               setEditAddress={setEditAddress}
@@ -1297,6 +1322,7 @@ export function HostListingEditorClient({
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}
+            isLoading={isLoading}
             handleSaveSection={handleSaveSection}
             checkInStart={checkInStart}
             setCheckInStart={setCheckInStart}
@@ -1374,6 +1400,7 @@ export function HostListingEditorClient({
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               isSaving={isSaving}
+              isLoading={isLoading}
               guestSafetyState={guestSafetyState}
               setGuestSafetyState={setGuestSafetyState}
               onSaveSafety={handleSaveSafetyState}
@@ -1435,6 +1462,7 @@ export function HostListingEditorClient({
           setEditorTab={setEditorTab}
           activeSection={activeSection}
           setActiveSection={setActiveSection}
+          isLoading={isLoading}
           editTitle={editTitle}
           editListingType={editListingType}
           editPropertyType={editPropertyType}
