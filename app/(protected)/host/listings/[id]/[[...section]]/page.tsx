@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { prisma } from "@/lib/db/prisma";
-import { Role } from "@/generated/prisma/enums";
+import { BookingStatus, Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
 import { slugToSection } from "../section-helpers";
 
@@ -24,6 +24,10 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
         orderBy: { invitedAt: "desc" },
         include: { user: { select: { id: true, name: true, image: true } } },
       },
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED },
+        select: { id: true },
+      },
     },
   });
 
@@ -31,8 +35,12 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     notFound();
   }
 
-  // Security check: Ensure host owns listing unless admin
-  if (actor.role !== Role.ADMIN && listing.hostId !== actor.id) {
+  const isAcceptedCoHost = listing.coHosts.some(
+    (coHost: typeof listing.coHosts[number]) => coHost.status === "ACCEPTED" && coHost.userId === actor.id,
+  );
+
+  // Listing owners, accepted co-hosts, and admins can open the workspace.
+  if (actor.role !== Role.ADMIN && listing.hostId !== actor.id && !isAcceptedCoHost) {
     notFound();
   }
 
@@ -83,6 +91,9 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     cancellationPolicy: listing.cancellationPolicy || "FLEXIBLE",
     longTermCancellationPolicy: listing.longTermCancellationPolicy || "FIRM",
     bookingMessage: listing.bookingMessage ?? null,
+    requireGoodTrackRecord: listing.requireGoodTrackRecord ?? false,
+    bookingApprovalMode: listing.bookingApprovalMode ?? (listing.instantBook ? "INSTANT" : "MANUAL"),
+    approvedBookingCount: listing.bookings.length,
     instantBook: listing.instantBook ?? true,
     minNights: listing.minNights ?? 1,
     maxNights: listing.maxNights ?? 365,

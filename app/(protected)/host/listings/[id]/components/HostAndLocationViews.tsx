@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,6 +15,7 @@ import { updateProfileAction } from "@/actions/user/updateProfile";
 import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
+import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
 
 type CoHost = {
   id: string;
@@ -969,18 +970,64 @@ function AboutHostView({ hostProfile, onHostProfileSaved }: Props) {
 function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+39");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  const selectedCountry = getCountryByCallingCode(countryCode);
+  const phone = phoneNumber.trim()
+    ? `${countryCode}${phoneNumber.replace(/\D/g, "")}`
+    : "";
+  const hasEmail = email.trim().length > 0;
+  const hasPhone = phone.length > countryCode.length;
+
+  const closeModal = () => {
+    if (saving) return;
+    setOpen(false);
+    setInviteError(null);
+  };
+  const openModal = () => {
+    setInviteError(null);
+    setOpen(true);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !saving) {
+        setOpen(false);
+        setInviteError(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, saving]);
   const invite = async () => {
+    if (!hasEmail && !hasPhone) {
+      setInviteError("Enter a phone number or an email address.");
+      return;
+    }
+    if (hasEmail && hasPhone) {
+      setInviteError("Use either a phone number or an email address, not both.");
+      return;
+    }
     setSaving(true);
-    const result = await inviteListingCoHostAction(listingId, { email });
+    setInviteError(null);
+    const result = await inviteListingCoHostAction(listingId, hasEmail ? { email: email.trim() } : { phone });
     setSaving(false);
     if (result.ok) {
       setCoHosts((items) => [result.data as CoHost, ...items]);
       setOpen(false);
       setEmail("");
-      setMessage("Invitation sent.");
-    } else setMessage(result.error);
+      setPhoneNumber("");
+      setMessage(
+        hasEmail
+          ? "Invitation email queued. Ask your co-host to check their inbox and spam folder."
+          : "Text invitation sent.",
+      );
+    } else setInviteError(result.fieldErrors?.email || result.fieldErrors?.phone || result.error);
   };
   const revoke = async (id: string) => {
     if (!window.confirm("Remove this co-host or cancel this invitation?"))
@@ -1006,13 +1053,13 @@ function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
         </div>
         <button
           type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-full bg-[#FEE08B] px-4 py-2 text-xs font-semibold"
+          onClick={openModal}
+          className="rounded-full bg-[#FEE08B] px-4 py-2 text-xs font-semibold transition-colors hover:bg-[#f8d36c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
         >
           Invite co-host
         </button>
       </div>
-      {message && <p className="text-sm text-zinc-600">{message}</p>}
+      {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
       {active.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
           No co-hosts or pending invitations.
@@ -1024,13 +1071,13 @@ function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
               key={item.id}
               className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 p-4"
             >
-              <div>
-                <p className="font-medium">
+              <div className="min-w-0">
+                <p className="truncate font-medium">
                   {item.user?.name || item.email || item.phone}
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="mt-0.5 text-xs text-zinc-500">
                   {item.status === "PENDING"
-                    ? "Invitation pending"
+                    ? `Invitation pending${item.email ? " · sent by email" : " · sent by text"}`
                     : "Accepted co-host"}
                 </p>
               </div>
@@ -1046,37 +1093,117 @@ function CoHostView({ listingId, coHosts, setCoHosts }: Props) {
         </div>
       )}
       {open && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6">
-            <h2 className="text-lg font-semibold">Invite a co-host</h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              They will receive a secure email invitation.
-            </p>
-            <input
-              autoFocus
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="input mt-5"
-            />
-            <div className="mt-5 flex gap-2">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 sm:p-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            aria-describedby={descriptionId}
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-[340px] overflow-y-auto rounded-2xl bg-white px-6 py-7 text-[#222222] shadow-[0_18px_55px_rgba(0,0,0,0.16)] sm:max-w-[390px] sm:px-7"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id={titleId} className="text-[24px] font-semibold leading-8 tracking-[-0.035em] sm:text-[26px]">Add your co-host&apos;s info</h2>
+                <p id={descriptionId} className="mt-1.5 text-[14px] leading-5 text-[#717171]">
+                  We&apos;ll text or email them the invite
+                </p>
+              </div>
               <button
                 type="button"
+                aria-label="Close invite co-host dialog"
+                onClick={closeModal}
                 disabled={saving}
-                onClick={invite}
-                className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                className="-mr-1 -mt-1 grid size-8 shrink-0 place-items-center rounded-full text-[26px] font-light leading-none transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-40"
               >
-                {saving ? "Sending…" : "Send invitation"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold"
-              >
-                Cancel
+                ×
               </button>
             </div>
+
+            <form
+              className="mt-6"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void invite();
+              }}
+            >
+              <div className="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)] gap-2.5">
+                <label className="block min-w-0 text-[13px] font-medium leading-5">
+                  Country code <span aria-hidden="true">*</span>
+                  <span className="relative mt-1.5 block">
+                    <select
+                      value={countryCode}
+                      onChange={(event) => setCountryCode(event.target.value)}
+                      aria-label="Country code"
+                      className="h-11 w-full appearance-none rounded-lg border border-[#b0b0b0] bg-white px-2.5 pr-7 text-[12px] text-[#717171] outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                    >
+                      {COUNTRY_CODES.map((country, index) => (
+                        <option key={`${country.iso2}-${country.code}-${index}`} value={country.code}>
+                          {country.name} ({country.code})
+                        </option>
+                      ))}
+                    </select>
+                    <svg aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                  </span>
+                </label>
+                <label className="block min-w-0 text-[13px] font-medium leading-5">
+                  Phone number <span aria-hidden="true">*</span>
+                  <input
+                    autoFocus
+                    type="tel"
+                    inputMode="tel"
+                    value={phoneNumber}
+                    onChange={(event) => {
+                      setPhoneNumber(event.target.value);
+                      setInviteError(null);
+                    }}
+                    placeholder={selectedCountry?.placeholder || "5XX XXX XXXX"}
+                    aria-describedby={inviteError ? "co-host-invite-error" : undefined}
+                    className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-[12px] text-[#222] outline-none transition placeholder:text-[#9a9a9a] focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                  />
+                </label>
+              </div>
+
+              <div className="my-5 flex items-center gap-3" aria-hidden="true">
+                <span className="h-px flex-1 bg-[#dedede]" />
+                <span className="text-[13px] text-[#555]">or</span>
+                <span className="h-px flex-1 bg-[#dedede]" />
+              </div>
+
+              <label className="block text-[13px] font-medium leading-5">
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setInviteError(null);
+                  }}
+                  placeholder="name@example.com"
+                  aria-describedby={inviteError ? "co-host-invite-error" : undefined}
+                  className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-[12px] text-[#222] outline-none transition placeholder:text-[#9a9a9a] focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                />
+              </label>
+
+              {inviteError && <p id="co-host-invite-error" role="alert" className="mt-3 text-xs text-rose-700">{inviteError}</p>}
+
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  disabled={saving}
+                  className="rounded-full border border-[#777] px-4 py-2 text-[13px] font-medium transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-40"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || (!hasEmail && !hasPhone) || (hasEmail && hasPhone)}
+                  className="rounded-full bg-[#FEE08B] px-5 py-2 text-[13px] font-semibold transition hover:bg-[#f8d36c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saving ? "Sending…" : "Next"}
+                </button>
+              </div>
+            </form>
           </div>
         </ModalOverlay>
       )}

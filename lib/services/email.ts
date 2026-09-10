@@ -11,8 +11,27 @@ interface EmailMessage {
   html?: string;
 }
 
+interface DeliveryOptions {
+  /**
+   * Some development emails are intentionally written to the terminal when a
+   * provider is not configured. Invitations are different: the host needs a
+   * real, usable link, so never report them as delivered in console-only mode.
+   */
+  requireDelivery?: boolean;
+}
+
 function appUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character]!);
 }
 
 let resendClient: Resend | null = null;
@@ -55,7 +74,7 @@ function formatFromAddress(raw?: string): string {
   return "Homyz <onboarding@resend.dev>";
 }
 
-async function deliver(msg: EmailMessage): Promise<void> {
+async function deliver(msg: EmailMessage, options: DeliveryOptions = {}): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = formatFromAddress(process.env.EMAIL_FROM);
 
@@ -73,13 +92,7 @@ async function deliver(msg: EmailMessage): Promise<void> {
     });
 
     if (error) {
-      console.warn(`[email:resend sandbox note] ${error.message}`);
-      if (process.env.NODE_ENV !== "production") {
-        console.log(
-          `\n[email:dev (Sandbox Fallback)] to=${msg.to}\n  subject: ${msg.subject}\n  ${msg.text}\n`,
-        );
-        return;
-      }
+      console.warn(`[email:resend] delivery rejected: ${error.message}`);
       throw new Error(`Resend delivery failed: ${error.message}`);
     }
 
@@ -94,6 +107,9 @@ async function deliver(msg: EmailMessage): Promise<void> {
     console.log(
       `\n[email:dev (Resend not set)] to=${msg.to}\n  from=${from}\n  subject: ${msg.subject}\n  ${msg.text}\n`,
     );
+    if (options.requireDelivery) {
+      throw new Error("Resend is not configured, so the invitation email was only logged locally.");
+    }
     return;
   }
 
@@ -133,11 +149,18 @@ export async function sendListingCoHostInvitationEmail(params: {
   invitationUrl: string;
 }): Promise<void> {
   const host = params.hostName?.trim() || "A Homyz host";
-  await deliver({
-    to: params.to,
-    subject: `You're invited to co-host “${params.listingTitle}” on Homyz`,
-    text: `${host} invited you to co-host “${params.listingTitle}” on Homyz. Sign in or create an account, then accept the invitation:\n${params.invitationUrl}\n\nThis invitation expires in 7 days.`,
-  });
+  const hostHtml = escapeHtml(host);
+  const listingTitleHtml = escapeHtml(params.listingTitle);
+  const invitationUrlHtml = escapeHtml(params.invitationUrl);
+  await deliver(
+    {
+      to: params.to,
+      subject: `You're invited to co-host “${params.listingTitle}” on Homyz`,
+      text: `${host} invited you to co-host “${params.listingTitle}” on Homyz. Sign in or create an account, then accept the invitation:\n${params.invitationUrl}\n\nThis invitation expires in 7 days.`,
+      html: `<p>${hostHtml} invited you to co-host <strong>${listingTitleHtml}</strong> on Homyz.</p><p><a href="${invitationUrlHtml}">Accept co-host invitation</a></p><p>This invitation expires in 7 days.</p>`,
+    },
+    { requireDelivery: true },
+  );
 }
 
 export async function sendOtpEmail(to: string, code: string): Promise<void> {
@@ -531,6 +554,4 @@ export async function sendHostApplicationSubmittedEmail(params: {
 
   await deliver({ to, subject: `[Homyz] Host Application Received (${applicationId})`, text, html });
 }
-
-
 

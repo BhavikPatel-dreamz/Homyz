@@ -413,6 +413,8 @@ model Listing {
   cancellationPolicy  String?       @default("FLEXIBLE") // Short stays: FLEXIBLE, MODERATE, LIMITED, FIRM, STRICT
   longTermCancellationPolicy String? @default("FIRM") // Stays of 28+ nights: FIRM or STRICT
   bookingMessage      String?       @db.Text // Public pre-booking message from the host
+  requireGoodTrackRecord Boolean    @default(false) // Instant Book requires a completed confirmed stay
+  bookingApprovalMode String        @default("INSTANT") // FIRST_THREE, INSTANT, or MANUAL
   minNights           Int           @default(1)
   maxNights           Int           @default(365)
   advanceNotice       String        @default("Same day")

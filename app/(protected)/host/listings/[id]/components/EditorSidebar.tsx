@@ -4,6 +4,7 @@
 import React from "react";
 import { RealMap } from "@/components/ui/real-map";
 import { getAmenityMeta } from "@/lib/constants/amenities";
+import { formatTimeDisplay } from "../section-helpers";
 import {
   normalizeAccessibilityFeatureDetails,
   normalizeAccessibilityFeatureIds,
@@ -50,10 +51,20 @@ interface EditorSidebarProps {
   showExactLocation: boolean;
   listing: any;
   coHosts: Array<{ id: string; email: string | null; status: string; user: { name: string | null; image: string | null } | null }>;
-  bookingMethod: "instant" | "approve";
+  bookingMethod: "first-three" | "instant" | "approve";
+  requireGoodTrackRecord?: boolean;
   checkInStart: string;
   checkOutTime: string;
   maxGuestsCount: number;
+  petsAllowed?: boolean | null;
+  maxPetsCount?: number;
+  eventsAllowed?: boolean | null;
+  smokingAllowed?: boolean | null;
+  quietHours?: boolean | null;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+  commercialFilmingAllowed?: boolean | null;
+  additionalHouseRules?: string;
   carbonMonoxideAlarm: boolean;
   smokeAlarm: boolean;
   cancellationPolicy: string;
@@ -102,9 +113,19 @@ export function EditorSidebar({
   listing,
   coHosts,
   bookingMethod,
+  requireGoodTrackRecord = false,
   checkInStart,
   checkOutTime,
   maxGuestsCount,
+  petsAllowed = null,
+  maxPetsCount = 1,
+  eventsAllowed = null,
+  smokingAllowed = null,
+  quietHours = null,
+  quietHoursStart = "22:00",
+  quietHoursEnd = "08:00",
+  commercialFilmingAllowed = null,
+  additionalHouseRules = "",
   carbonMonoxideAlarm,
   smokeAlarm,
   cancellationPolicy,
@@ -134,6 +155,14 @@ export function EditorSidebar({
     : pendingCoHostCount > 0
       ? `${pendingCoHostCount} pending invitation${pendingCoHostCount === 1 ? "" : "s"}`
       : "";
+  const extraHouseRules = [
+    petsAllowed !== null && petsAllowed !== undefined ? (petsAllowed ? `Pets allowed (up to ${maxPetsCount || 1})` : "No pets") : null,
+    eventsAllowed !== null && eventsAllowed !== undefined ? (eventsAllowed ? "Events allowed" : "No events or parties") : null,
+    smokingAllowed !== null && smokingAllowed !== undefined ? (smokingAllowed ? "Smoking allowed" : "No smoking") : null,
+    quietHours === true ? `Quiet hours ${formatTimeDisplay(quietHoursStart, "11:00 pm")}–${formatTimeDisplay(quietHoursEnd, "7:00 am")}` : (quietHours === false ? "No quiet hours" : null),
+    commercialFilmingAllowed !== null && commercialFilmingAllowed !== undefined ? (commercialFilmingAllowed ? "Commercial filming allowed" : "No commercial filming") : null,
+    additionalHouseRules?.trim() ? "Additional house rules" : null,
+  ].filter(Boolean);
   return (
     <aside className="lg:col-span-4 xl:col-span-4 flex min-w-0 flex-col lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)]">
       <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
@@ -700,8 +729,12 @@ export function EditorSidebar({
                 <span className="text-base font-medium text-[#1f1f1f] block mb-0.5">
                   Booking settings
                 </span>
-                <p className="text-base text-zinc-500 font-normal">
-                  {bookingMethod === "instant" ? "Use instant book" : "Approve all bookings"}
+                <p className="text-[11px] text-zinc-500 font-normal">
+                  {bookingMethod === "first-three"
+                    ? "Approve your first 3 bookings"
+                    : bookingMethod === "instant"
+                    ? requireGoodTrackRecord ? "Instant Book · track record required" : "Use Instant Book"
+                    : "Approve all bookings"}
                 </p>
               </div>
 
@@ -714,21 +747,36 @@ export function EditorSidebar({
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-base font-medium text-[#1F1F1F] block mb-2">House rules</span>
-                <div className="space-y-1 text-base text-[#727272] font-medium">
-                  <div className="flex items-center gap-2">
-                    <span>🕒</span>
-                    <span>Check-in after {checkInStart || "3:00PM"}</span>
+                <span className="text-sm font-semibold text-[#1F1F1F] block mb-3">House rules</span>
+                <div className="space-y-3 text-xs text-zinc-800 font-normal">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>Check-in after {formatTimeDisplay(checkInStart, "3:00 pm")}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>⏱️</span>
-                    <span>Check-out before {checkOutTime || "11:00AM"}</span>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>Checkout before {formatTimeDisplay(checkOutTime, "6:00 pm")}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>👥</span>
-                    <span>{maxGuestsCount || editGuests || 2} guest maximum</span>
+                  <div className="flex items-center gap-3">
+                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <span>
+                      {maxGuestsCount || editGuests || 1} guest{(maxGuestsCount || editGuests || 1) === 1 ? "" : "s"} maximum
+                    </span>
                   </div>
-                  <p className="text-base text-zinc-400 pt-0.5 font-semibold">+3 more</p>
+                  {extraHouseRules.length > 0 && (
+                    <p className="pt-1.5 text-xs text-zinc-500 font-normal">+{extraHouseRules.length} more</p>
+                  )}
                 </div>
               </div>
 

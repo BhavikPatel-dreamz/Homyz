@@ -1,5 +1,10 @@
 import { CoHostInvitationAcceptance } from "./co-host-invitation-acceptance";
 
+export const metadata = {
+  title: "Accept co-host invitation | Homyz",
+  description: "Securely accept a Homyz listing co-host invitation.",
+};
+
 export default async function CoHostInvitationAcceptancePage({
   searchParams,
 }: {

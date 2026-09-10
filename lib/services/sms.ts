@@ -3,11 +3,10 @@
 // console and production no-ops with a warning. OTP codes are only ever printed
 // in non-production.
 
-export async function sendOtpSms(to: string, code: string): Promise<void> {
+async function sendSms(to: string, body: string): Promise<void> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_FROM;
-  const body = `Your Homyz verification code is ${code}`;
 
   if (!sid || !authToken || !from) {
     if (process.env.NODE_ENV !== "production") {
@@ -33,4 +32,21 @@ export async function sendOtpSms(to: string, code: string): Promise<void> {
     const detail = await res.text().catch(() => "");
     throw new Error(`Twilio send failed: ${res.status} ${detail}`);
   }
+}
+
+export async function sendOtpSms(to: string, code: string): Promise<void> {
+  await sendSms(to, `Your Homyz verification code is ${code}`);
+}
+
+export async function sendListingCoHostInvitationSms(params: {
+  to: string;
+  hostName?: string | null;
+  listingTitle: string;
+  invitationUrl: string;
+}): Promise<void> {
+  const host = params.hostName?.trim() || "A Homyz host";
+  await sendSms(
+    params.to,
+    `${host} invited you to co-host “${params.listingTitle}” on Homyz. Sign in or create an account, then accept: ${params.invitationUrl} This invitation expires in 7 days.`,
+  );
 }

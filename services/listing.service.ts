@@ -9,7 +9,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { ListingStatus, Role } from "@/generated/prisma/enums";
+import { ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
 
 import { auditService } from "./audit.service";
@@ -128,6 +128,24 @@ function getPublishReadiness(listing: {
   }
 
   return { publishable: missing.length === 0, missing };
+}
+
+/** Returns true when access comes from an accepted co-host assignment. */
+async function assertListingAccess(actor: AuthUser, listingId: string, hostId: string): Promise<boolean> {
+  if (actor.role === Role.ADMIN || hostId === actor.id) return false;
+
+  const assignment = await prisma.listingCoHost.findFirst({
+    where: {
+      listingId,
+      userId: actor.id,
+      status: ListingCoHostStatus.ACCEPTED,
+    },
+    select: { id: true },
+  });
+  if (!assignment) {
+    throw AppError.forbidden("Only the listing owner or an accepted co-host can access this listing");
+  }
+  return true;
 }
 
 async function queryList(opts: {
@@ -395,14 +413,14 @@ async function getById(id: string): Promise<ListingDTO> {
 
 async function getForOwner(actor: AuthUser, id: string): Promise<ListingDTO> {
   const listing = await getById(id);
-  assertOwnership(actor, listing.hostId);
-  if (actor.role === Role.HOST) {
+  const isCoHost = await assertListingAccess(actor, id, listing.hostId);
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.view");
   }
   return listing;
 }
 
-// A host's own listings.
+// Listings a host owns or has accepted a co-host role for.
 async function listForHost(
   actor: AuthUser,
   opts?: { skip?: number; take?: number },
@@ -413,7 +431,22 @@ async function listForHost(
   }
   const skip = opts?.skip ?? 0;
   const take = opts?.take ?? 50;
-  const where: Prisma.ListingWhereInput = { hostId: actor.id, deletedAt: null };
+  const where: Prisma.ListingWhereInput = actor.role === Role.ADMIN
+    ? { hostId: actor.id, deletedAt: null }
+    : {
+        deletedAt: null,
+        OR: [
+          { hostId: actor.id },
+          {
+            coHosts: {
+              some: {
+                userId: actor.id,
+                status: ListingCoHostStatus.ACCEPTED,
+              },
+            },
+          },
+        ],
+      };
   const [items, total] = await Promise.all([
     prisma.listing.findMany({
       where,
@@ -584,14 +617,14 @@ async function update(
 ): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
-  if (actor.role === Role.HOST) {
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
 
   // Automatically promote regular USER to HOST role upon updating a listing
-  if (actor.role === Role.USER) {
+  if (!isCoHost && actor.role === Role.USER) {
     await prisma.user.update({
       where: { id: actor.id },
       data: { role: Role.HOST },
@@ -672,9 +705,9 @@ async function update(
 async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
-  if (actor.role === Role.HOST) {
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
 
@@ -710,9 +743,9 @@ async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO>
 async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
-  if (actor.role === Role.HOST) {
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
 
@@ -749,9 +782,9 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
 async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
-  if (actor.role === Role.HOST) {
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
 
@@ -789,9 +822,9 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
 async function unpublishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
-  if (actor.role === Role.HOST) {
+  if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
 
@@ -1009,7 +1042,7 @@ async function remove(
 async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  await assertListingAccess(actor, id, existing.hostId);
 
   const duplicated = await prisma.listing.create({
     data: {
@@ -1077,7 +1110,7 @@ async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
 async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  await assertListingAccess(actor, id, existing.hostId);
 
   const updated = await prisma.listing.update({
     where: { id },
@@ -1107,7 +1140,7 @@ async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Prom
 async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  assertOwnership(actor, existing.hostId);
+  await assertListingAccess(actor, id, existing.hostId);
 
   const updated = await prisma.listing.update({
     where: { id },
