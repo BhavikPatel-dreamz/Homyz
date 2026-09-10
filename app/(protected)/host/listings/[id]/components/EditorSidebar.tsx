@@ -747,25 +747,101 @@ export function EditorSidebar({
                 </span>
               </div>
 
-              {/* 10. About the host (Exact Figma Split Layout) */}
+              {/* 10. About the host */}
               <div
                 onClick={() => setActiveSection("about-host")}
                 className={`rounded-2xl p-5 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "about-host"
                     ? "bg-[#ECE9FE] border-indigo-200"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
+              >
+                <span className="text-base font-semibold text-[#1F1F1F] block mb-4">
                   About the host
                 </span>
 
+                <div className="grid grid-cols-2 gap-3 items-center">
+                  {/* Left Column: Avatar, Name, Superhost badge */}
+                  <div className="flex flex-col items-center justify-center text-center">
                     {listing.host?.image ? (
                       <img
                         src={listing.host.image}
                         alt="Host profile"
                         className="w-16 h-16 rounded-full object-cover border border-zinc-200 shadow-2xs"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold text-lg shadow-2xs">
+                        {(listing.host?.name || "Host")
+                          .split(/\s+/)
+                          .slice(0, 2)
+                          .map((part: string) => part[0])
+                          .join("")
+                          .toUpperCase()}
+                      </div>
+                    )}
+                    <h4 className="text-base font-semibold text-[#1F1F1F] mt-2 block leading-tight truncate max-w-[120px]">
+                      {listing.host?.name || "Name"}
+                    </h4>
+                    <span className="text-xs text-zinc-500 font-normal mt-0.5 block leading-tight">
+                      {listing.host?.isSuperhost ? "Superhost" : (listing.host?.badge || "Superhost")}
+                    </span>
+                  </div>
+
+                  {/* Right Column: 3 Stacked Stats with Dividers */}
+                  <div className="flex flex-col items-center justify-center text-center">
+                    {/* Stat 1: Reviews */}
+                    <div className="w-full flex flex-col items-center">
+                      <span className="text-base font-bold text-[#1F1F1F] block leading-tight">
+                        {listing.host?.reviewsCount ?? listing.host?.reviewCount ?? "XX"}
                       </span>
                       <span className="text-xs text-zinc-500 font-normal block mt-0.5">
                         review
                       </span>
+                    </div>
+
+                    {/* Divider 1 */}
+                    <div className="w-full border-t border-zinc-200 my-2" />
+
+                    {/* Stat 2: Rating */}
+                    <div className="w-full flex flex-col items-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-base font-bold text-[#1F1F1F] leading-tight">
+                          {listing.host?.rating ? String(listing.host.rating).replace(".", ",") : "4,98"}
+                        </span>
+                        <svg className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </div>
+                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
+                        rating
+                      </span>
+                    </div>
+
+                    {/* Divider 2 */}
+                    <div className="w-full border-t border-zinc-200 my-2" />
+
+                    {/* Stat 3: Years hosting */}
+                    <div className="w-full flex flex-col items-center">
+                      <span className="text-base font-bold text-[#1F1F1F] block leading-tight">
+                        {listing.host?.createdAt
+                          ? Math.max(1, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear())
+                          : 3}
+                      </span>
+                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
+                        years hosting
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 11. Co-host */}
+              <div
+                onClick={() => {
+                  setActiveSection("co-host");
+                }}
+                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
+                  activeSection === "co-host"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
                     : "bg-white border-zinc-200 hover:border-zinc-300"
                 }`}
