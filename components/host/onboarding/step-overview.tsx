@@ -4,8 +4,8 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
 import { CloseIcon } from "@/components/ui/close-icon";
-import { LoadingIcon } from "@/components/ui/loading-icon";
 import { OnboardingBackButton } from "./onboarding-back-button";
+import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 
 interface StepOverviewProps {
   onGetStarted: () => void;
@@ -133,21 +133,11 @@ export function StepOverview({
               disabled={isLoading}
             />
 
-            <button
-              type="button"
+            <OnboardingPrimaryButton
               onClick={onGetStarted}
-              disabled={isLoading}
-              className="inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 lg:px-6 py-2.25 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0 lg:flex-none"
-            >
-              {isLoading ? (
-                <>
-                  <LoadingIcon className="mr-2 size-4 shrink-0 animate-spin" />
-                  <span>Loading...</span>
-                </>
-              ) : (
-                "Get started"
-              )}
-            </button>
+              isLoading={isLoading}
+              label="Get started"
+            />
           </div>
         </div>
       </Container>

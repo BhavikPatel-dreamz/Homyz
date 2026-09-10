@@ -2,9 +2,9 @@
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
 import { CloseIcon } from "@/components/ui/close-icon";
-import { LoadingIcon } from "@/components/ui/loading-icon";
 import React from "react";
 import { OnboardingBackButton } from "./onboarding-back-button";
+import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 
 interface StepIntroProps {
   onBack: () => void;
@@ -28,7 +28,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
           <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
             <button
               type="button"
-              onClick={onBack}
+              onClick={handleBack}
               disabled={isLoading}
               aria-label="Close"
               className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -103,21 +103,11 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
               onClick={onBack}
               disabled={isLoading}
             />
-            <button
-              type="button"
+            <OnboardingPrimaryButton
               onClick={onNext}
-              disabled={isLoading}
-              className="inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 lg:px-6 py-2.25 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0 lg:flex-none"
-            >
-              {isLoading ? (
-                <>
-                  <LoadingIcon className="mr-2 size-4 shrink-0 animate-spin" />
-                  <span>Loading...</span>
-                </>
-              ) : (
-                "Next"
-              )}
-            </button>
+              isLoading={isLoading}
+              label="Next"
+            />
           </div>
         </div>
       </Container>
