@@ -2,6 +2,7 @@
 
 import { Container } from "@/components/ui";
 import React from "react";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 interface StepStandoutIntroProps {
   onBack: () => void;
@@ -23,7 +24,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
                   Step 2
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1F1F1F] tracking-tight leading-[1.15] mb-6">
+              <h1>
                 Make your place <br />
                 to stand out
               </h1>
@@ -109,14 +110,10 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
 
           {/* Bottom Action Footer Bar */}
           <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-8">
-            <button
-              type="button"
+            <OnboardingBackButton
               onClick={onBack}
               disabled={isLoading}
-              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              Back
-            </button>
+            />
             <button
               type="button"
               onClick={onNext}

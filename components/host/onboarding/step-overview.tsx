@@ -3,6 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
+import { CloseIcon } from "@/components/ui/close-icon";
+import { LoadingIcon } from "@/components/ui/loading-icon";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 interface StepOverviewProps {
   onGetStarted: () => void;
@@ -36,50 +39,6 @@ const STEPS: Step[] = [
   },
 ];
 
-function CloseIcon() {
-  return (
-    <svg
-      className="size-7"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M18 6 6 18M6 6l12 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function LoadingIcon() {
-  return (
-    <svg
-      className="mr-2 size-4 shrink-0 animate-spin"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647Z"
-      />
-    </svg>
-  );
-}
-
 export function StepOverview({
   onGetStarted,
   isLoading = false,
@@ -110,10 +69,10 @@ export function StepOverview({
           </div>
 
           {/* Main content */}
-          <div className="grid w-full grid-cols-1 items-center lg:grid-cols-12">
+          <div className="grid w-full grid-cols-1 items-start lg:grid-cols-12">
             {/* Heading */}
             <div className="mb-10 flex flex-col justify-center sm:mb-24 lg:col-span-4 lg:mb-0 lg:pr-8">
-              <h1 className="text-[clamp(24px,6vw,30px)] font-medium leading-[1.15] tracking-tight text-[#1F1F1F] lg:text-6xl lg:font-semibold">
+              <h1>
                 <span className="lg:hidden">
                   It&rsquo;s easy to get started on
                   <br />
@@ -168,25 +127,21 @@ export function StepOverview({
           </div>
 
           {/* Action buttons */}
-          <div className="mt-12 flex w-full items-center sm:mt-16 lg:mt-auto lg:justify-end lg:border-t lg:border-zinc-100 lg:pt-8">
-            <button
-              type="button"
+          <div className="mt-10.75 flex w-full items-center lg:justify-end">
+            <OnboardingBackButton
               onClick={handleBack}
               disabled={isLoading}
-              className="mr-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-[#1F1F1F] bg-white hover:bg-[#1F1F1F] px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors delay-100 duration-300 disabled:cursor-not-allowed disabled:opacity-50 sm:mr-3 lg:min-h-0 lg:flex-none lg:px-6"
-            >
-              Back
-            </button>
+            />
 
             <button
               type="button"
               onClick={onGetStarted}
               disabled={isLoading}
-              className="ml-2 inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 sm:py-3 py-2 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 lg:min-h-0 lg:flex-none lg:px-6"
+              className="inline-flex min-h-11 sm:min-h-13 flex-1 items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] hover:bg-[#1F1F1F] px-5 lg:px-6 py-2.25 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors  delay-100 duration-300 hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0 lg:flex-none"
             >
               {isLoading ? (
                 <>
-                  <LoadingIcon />
+                  <LoadingIcon className="mr-2 size-4 shrink-0 animate-spin" />
                   <span>Loading...</span>
                 </>
               ) : (

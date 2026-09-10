@@ -3,6 +3,7 @@
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef } from "react";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -300,13 +301,10 @@ export function StepPhotos({
 
           {/* Bottom Action Footer Bar */}
           <div className="max-w-7xl mx-auto w-full flex items-center justify-end gap-3 pt-8 border-t border-zinc-100 mt-12">
-            <button
-              type="button"
+            <OnboardingBackButton
               onClick={onBack}
-              className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors cursor-pointer"
-            >
-              Back
-            </button>
+              disabled={isLoading}
+            />
             <button
               type="button"
               onClick={onNext}

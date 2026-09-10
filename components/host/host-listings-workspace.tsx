@@ -519,7 +519,7 @@ export function HostListingsWorkspace({
 
           {/* Desktop Title & Action (Always shown on sm: and up) */}
           <div className="listing-title mb-8 hidden items-center justify-between gap-3 sm:mb-9 sm:flex lg:mb-12">
-            <h1 className="min-w-0 font-medium tracking-[-0.025em] sm:text-[40px] lg:text-[48px] leading-[1.15]">
+            <h1>
               Your listings
             </h1>
             <button
@@ -632,10 +632,20 @@ export function HostListingsWorkspace({
                               setListingToDelete(item);
                               setShowDeleteModal(true);
                             }}
+                            aria-label="Delete property listing"
                             title="Delete Property Listing"
-                            className="absolute z-20 top-3 right-3 max-sm:hidden bg-white/90 hover:bg-rose-600 hover:text-white backdrop-blur-xs rounded-full text-zinc-700 transition-all shadow-2xs text-xs flex items-center justify-center w-11 h-11 font-semibold"
+                            className="absolute z-20 top-3 right-3 max-sm:hidden bg-white hover:border-[#1F1F1F] backdrop-blur-xs rounded-full text-rose-600 transition-all shadow-2xs text-xs flex items-center justify-center w-8 h-8"
                           >
-                            🗑️
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={1.8}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21H8.084a2.25 2.25 0 0 1-2.244-1.327L4.772 5.79m14.456 0A48.108 48.108 0 0 0 15.75 5.25M4.772 5.79A48.11 48.11 0 0 1 8.25 5.25m0 0V4.5c0-1.02.78-1.86 1.794-1.921a51.966 51.966 0 0 1 3.912 0A1.98 1.98 0 0 1 15.75 4.5v.75m-7.5 0h7.5" />
+                            </svg>
                           </button>
                         )}
                       </div>

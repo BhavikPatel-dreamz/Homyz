@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { OnboardingBackButton } from "./onboarding-back-button";
 
 interface StepProgressFooterProps {
   currentStep: number;
@@ -43,14 +44,10 @@ export function StepProgressFooter({
 
       {/* Action Buttons */}
       <div className="flex items-center justify-end gap-3">
-        <button
-          type="button"
+        <OnboardingBackButton
           onClick={onBack}
           disabled={isLoading}
-          className="px-7 py-2.5 rounded-full border border-zinc-300 hover:bg-zinc-100 text-sm font-semibold text-zinc-800 transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          Back
-        </button>
+        />
         <button
           type="button"
           onClick={onNext}
