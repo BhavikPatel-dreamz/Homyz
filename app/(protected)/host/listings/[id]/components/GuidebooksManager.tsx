@@ -68,6 +68,7 @@ interface GuidebooksManagerProps {
   listingLatitude?: number | null;
   listingLongitude?: number | null;
   setActiveSection: (s: any) => void;
+  initialGuidebooks?: any[];
 }
 
 export function GuidebooksManager({
@@ -77,12 +78,13 @@ export function GuidebooksManager({
   listingLatitude,
   listingLongitude,
   setActiveSection,
+  initialGuidebooks,
 }: GuidebooksManagerProps) {
   // Navigation & View Mode
   const [viewMode, setViewMode] = useState<"list" | "create" | "editor" | "preview">("list");
-  const [guidebooks, setGuidebooks] = useState<any[]>([]);
+  const [guidebooks, setGuidebooks] = useState<any[]>(initialGuidebooks ?? []);
   const [selectedGuidebook, setSelectedGuidebook] = useState<GuidebookDetailData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(initialGuidebooks === undefined);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,10 +150,14 @@ export function GuidebooksManager({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch Guidebooks List on mount
+  // Fetch Guidebooks List on mount unless server provided initialGuidebooks
   useEffect(() => {
-    loadGuidebooks();
-  }, []);
+    if (initialGuidebooks === undefined) {
+      loadGuidebooks();
+    } else {
+      setIsLoading(false);
+    }
+  }, [initialGuidebooks]);
 
   const loadGuidebooks = async () => {
     setIsLoading(true);
@@ -711,7 +717,10 @@ export function GuidebooksManager({
                           <span>{gb.itemsCount} {gb.itemsCount === 1 ? "recommendation" : "recommendations"}</span>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                          <span>{gb.listings.length} {gb.listings.length === 1 ? "listing" : "listings"}</span>
+                          {(() => {
+                            const count = Array.isArray(gb.listings) ? gb.listings.length : 0;
+                            return <span>{count} {count === 1 ? "listing" : "listings"}</span>;
+                          })()}
                         </div>
                       </div>
 
@@ -1037,7 +1046,10 @@ export function GuidebooksManager({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Guidebook Overview</span>
                   <span className="text-[11px] text-zinc-500">
-                    Shown on {selectedGuidebook.listings.length} {selectedGuidebook.listings.length === 1 ? "listing" : "listings"}
+                    {(() => {
+                      const count = Array.isArray(selectedGuidebook.listings) ? selectedGuidebook.listings.length : 0;
+                      return <>Shown on {count} {count === 1 ? "listing" : "listings"}</>;
+                    })()}
                   </span>
                 </div>
 

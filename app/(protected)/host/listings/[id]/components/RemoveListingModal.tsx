@@ -25,15 +25,12 @@ export function RemoveListingModal({
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
 
-  // Accordion open states (first accordion open by default, as in Airbnb)
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    no_longer_able: true,
-  });
+  // Accordion open state: single-open accordion (first open by default)
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("no_longer_able");
 
-  // Selected reasons state: set of option ids
-  const [selectedReasons, setSelectedReasons] = useState<Record<string, string>>({});
-  // Mapping of categoryId -> Set of selected reason IDs
-  const [selectedCategoryMap, setSelectedCategoryMap] = useState<Record<string, string[]>>({});
+  // Selected reason state: single selection across the whole modal
+  const [selectedReasonId, setSelectedReasonId] = useState<string | null>(null);
+  const [selectedReasonLabel, setSelectedReasonLabel] = useState<string | null>(null);
 
   // Optional custom feedback for "Another reason"
   const [customFeedback, setCustomFeedback] = useState("");
@@ -44,55 +41,31 @@ export function RemoveListingModal({
   if (!isOpen) return null;
 
   const toggleCategoryAccordion = (categoryId: string) => {
-    setExpandedCategories((prev) => ({
-      ...prev,
-      [categoryId]: !prev[categoryId],
-    }));
+    setExpandedCategory((prev) => (prev === categoryId ? null : categoryId));
   };
 
   const toggleOption = (category: RemovalCategory, optionId: string, optionLabel: string) => {
-    setSelectedReasons((prev) => {
-      const next = { ...prev };
-      if (next[optionId]) {
-        delete next[optionId];
-      } else {
-        next[optionId] = optionLabel;
-      }
-      return next;
-    });
-
-    setSelectedCategoryMap((prev) => {
-      const currentList = prev[category.id] || [];
-      const exists = currentList.includes(optionId);
-      const nextList = exists
-        ? currentList.filter((id) => id !== optionId)
-        : [...currentList, optionId];
-
-      const nextMap = { ...prev };
-      if (nextList.length === 0) {
-        delete nextMap[category.id];
-      } else {
-        nextMap[category.id] = nextList;
-      }
-      return nextMap;
-    });
+    // Single selection: if same option clicked, clear selection; otherwise set new one
+    setSelectedReasonId((prev) => (prev === optionId ? null : optionId));
+    setSelectedReasonLabel((prev) => (prev === optionLabel ? null : optionLabel));
   };
 
-  const totalSelectedCount = Object.keys(selectedReasons).length;
+  const totalSelectedCount = selectedReasonId ? 1 : 0;
 
   const handleConfirmRemoval = () => {
     setErrorMessage(null);
     startTransition(async () => {
       try {
-        // Collect category titles and reason labels
+        // Collect category title for the selected reason and reason label
         const categoryTitles: string[] = [];
         for (const cat of LISTING_REMOVAL_SURVEY) {
-          if (selectedCategoryMap[cat.id] && selectedCategoryMap[cat.id].length > 0) {
+          if (selectedReasonId && cat.options.some((o) => o.id === selectedReasonId)) {
             categoryTitles.push(cat.title);
+            break;
           }
         }
 
-        const reasonLabels = Object.values(selectedReasons);
+        const reasonLabels = selectedReasonLabel ? [selectedReasonLabel] : [];
 
         const res = await deleteListingAction(listingId, {
           categories: categoryTitles,
@@ -136,14 +109,13 @@ export function RemoveListingModal({
               <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#1F1F1F]">
                 Let us know why you&apos;ve changed your mind about hosting
               </h2>
-              <p className="text-xs text-zinc-500 font-normal mt-1">Choose all that apply</p>
+              <p className="text-xs text-zinc-500 font-normal mt-1">Choose the one option that best describes why</p>
             </div>
 
             {/* Scrollable Accordion List */}
             <div className="flex-1 overflow-y-auto px-6 divide-y divide-zinc-100 space-y-1">
               {LISTING_REMOVAL_SURVEY.map((category) => {
-                const isExpanded = !!expandedCategories[category.id];
-                const selectedInThisCategory = selectedCategoryMap[category.id] || [];
+                const isExpanded = expandedCategory === category.id;
 
                 return (
                   <div key={category.id} className="pt-3 pb-3">
@@ -157,9 +129,10 @@ export function RemoveListingModal({
                         <span className="text-xs sm:text-sm font-semibold text-zinc-900 group-hover:text-zinc-950">
                           {category.title}
                         </span>
-                        {selectedInThisCategory.length > 0 && !isExpanded && (
+                        {/* show badge if any selected and category is collapsed */}
+                        {selectedReasonId && !isExpanded && category.options.some((o) => o.id === selectedReasonId) && (
                           <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-bold flex items-center justify-center">
-                            {selectedInThisCategory.length}
+                            1
                           </span>
                         )}
                       </div>
@@ -180,7 +153,7 @@ export function RemoveListingModal({
                     {isExpanded && (
                       <div className="mt-3 space-y-2.5 pl-0.5 animate-in fade-in duration-150">
                         {category.options.map((option) => {
-                          const isSelected = !!selectedReasons[option.id];
+                          const isSelected = selectedReasonId === option.id;
 
                           return (
                             <div key={option.id} className="space-y-2">
@@ -188,7 +161,7 @@ export function RemoveListingModal({
                                 onClick={() => toggleOption(category, option.id, option.label)}
                                 className="flex items-center gap-3 py-1 cursor-pointer group"
                               >
-                                {/* Round Radio / Checkbox matching Airbnb */}
+                                {/* Round Radio matching single selection */}
                                 <div
                                   className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all shrink-0 ${
                                     isSelected
@@ -206,12 +179,12 @@ export function RemoveListingModal({
                                 </span>
                               </label>
 
-                              {/* Expandable "Another reason" details text input */}
+                              {/* Expandable "Another reason" details text input; required when selected */}
                               {isSelected && option.label === "Another reason" && (
                                 <div className="pl-7 pr-1 pt-1 pb-1 animate-in fade-in duration-150">
                                   <textarea
                                     rows={2}
-                                    placeholder="Please tell us more (optional)"
+                                    placeholder="Please tell us more"
                                     value={customFeedback}
                                     onChange={(e) => setCustomFeedback(e.target.value)}
                                     className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-2.5 text-xs text-zinc-800 placeholder-zinc-400 outline-none focus:bg-white focus:border-zinc-400 resize-none transition-all shadow-2xs"
@@ -240,10 +213,12 @@ export function RemoveListingModal({
 
               <button
                 type="button"
-                disabled={totalSelectedCount === 0}
+                disabled={
+                  !selectedReasonId || (selectedReasonLabel === "Another reason" && customFeedback.trim().length === 0)
+                }
                 onClick={() => setStep(2)}
                 className={`rounded-full px-6 py-2.5 text-xs font-semibold transition-all shadow-2xs ${
-                  totalSelectedCount > 0
+                  selectedReasonId && !(selectedReasonLabel === "Another reason" && customFeedback.trim().length === 0)
                     ? "bg-zinc-950 hover:bg-zinc-800 text-white cursor-pointer"
                     : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
                 }`}
@@ -292,9 +267,7 @@ export function RemoveListingModal({
                   Your Feedback Summary ({totalSelectedCount} reasons)
                 </div>
                 <ul className="space-y-1 text-zinc-700 list-disc pl-4 text-[11px]">
-                  {Object.values(selectedReasons).map((reason, idx) => (
-                    <li key={idx}>{reason}</li>
-                  ))}
+                  {selectedReasonLabel ? <li>{selectedReasonLabel}</li> : null}
                 </ul>
                 {customFeedback && (
                   <div className="pt-2 border-t border-zinc-200 text-[11px] text-zinc-600 italic">

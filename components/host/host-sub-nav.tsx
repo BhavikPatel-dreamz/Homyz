@@ -137,7 +137,7 @@ export function HostSubNav({
     else activeTab = "listing";
   }
 
-  const listingHref = listingId ? `/host/listings/${listingId}` : "/host/listings";
+  const listingHref = "/host/listings";
 
   const tabs = [
     {

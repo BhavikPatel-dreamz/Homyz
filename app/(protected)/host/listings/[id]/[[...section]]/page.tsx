@@ -3,6 +3,7 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { prisma } from "@/lib/db/prisma";
 import { BookingStatus, Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
+import { guidebookService } from "@/services/guidebook.service";
 import { slugToSection } from "../section-helpers";
 
 interface PageProps {
@@ -176,5 +177,20 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     })),
   };
 
-  return <HostListingEditorClient listing={serializedListing} initialSection={initialSection} />;
+  // Prefetch guidebooks associated with this listing to avoid an extra client fetch
+  let initialGuidebooks: any[] = [];
+  try {
+    initialGuidebooks = await guidebookService.getGuidebooksForListing(listingId);
+  } catch (err) {
+    initialGuidebooks = [];
+  }
+
+  return (
+    <HostListingEditorClient
+      listing={serializedListing}
+      initialSection={initialSection}
+      initialGuidebooks={initialGuidebooks}
+    />
+  );
 }
+

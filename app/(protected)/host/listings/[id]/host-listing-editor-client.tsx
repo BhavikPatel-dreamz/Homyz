@@ -233,10 +233,12 @@ export function HostListingEditorClient({
   listing: initialListing,
   initialSection,
   isLoading = false,
+  initialGuidebooks,
 }: {
   listing: HostListingData;
   initialSection?: SectionKey;
   isLoading?: boolean;
+  initialGuidebooks?: any[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -1350,6 +1352,7 @@ export function HostListingEditorClient({
             listingLongitude={listing.longitude}
             listingDiscounts={listing.discounts}
             onSaveOrgStays={handleSaveOrgStays}
+            initialGuidebooks={initialGuidebooks}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             isSaving={isSaving}

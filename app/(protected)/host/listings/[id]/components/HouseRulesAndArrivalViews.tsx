@@ -165,9 +165,11 @@ interface HouseRulesAndArrivalViewsProps {
   listingLongitude?: number | null;
   listingDiscounts?: any;
   onSaveOrgStays?: (cfg: any) => Promise<void>;
+  initialGuidebooks?: any[];
 }
 
 export function HouseRulesAndArrivalViews({
+  initialGuidebooks,
   listingId,
   listingCity,
   listingCountry,
@@ -1002,6 +1004,7 @@ export function HouseRulesAndArrivalViews({
           listingLatitude={listingLatitude}
           listingLongitude={listingLongitude}
           setActiveSection={setActiveSection}
+          initialGuidebooks={initialGuidebooks}
         />
       )}
 
