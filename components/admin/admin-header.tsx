@@ -207,7 +207,7 @@ export function AdminHeader({
 
                 {/* Sign Out Action */}
                 <div className="border-t border-[var(--border-subtle)] pt-2 mt-2">
-                  <LogoutButton variant="menu-item" callbackUrl="/admin/login?logged_out=true">
+                  <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
                     Sign Out
                   </LogoutButton>
                 </div>

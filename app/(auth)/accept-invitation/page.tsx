@@ -29,7 +29,7 @@ export default async function AcceptInvitationPage({
             This invitation link is missing its security token or has already been consumed.
           </p>
           <Link
-            href="/admin/login"
+            href="/login"
             className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
           >
             ← Return to Sign In
@@ -68,7 +68,7 @@ export default async function AcceptInvitationPage({
           </p>
           <div className="pt-2">
             <Link
-              href="/admin/login"
+              href="/login"
               className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
             >
               Go to Sign In →

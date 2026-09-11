@@ -82,7 +82,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
 
         <Link
-          href="/admin/login"
+          href="/login"
           className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
           Sign In to Admin Console →
