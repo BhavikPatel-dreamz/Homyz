@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { formatAddressCountry } from "@/lib/location/address-countries";
 
 import { PropertyCategory, PlaceTypeOption, LocationCoords, LocationDetails } from "./onboarding/types";
 import { StepOverview } from "./onboarding/step-overview";
@@ -154,21 +155,8 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   const [beds, setBeds] = useState<number>(1);
   const [bathrooms, setBathrooms] = useState<number>(1);
 
-  const currencySymbol = country.includes("Saudi")
-    ? "SAR"
-    : country.includes("Emirates")
-      ? "AED"
-      : country.includes("Kuwait")
-        ? "KWD"
-        : country.includes("Qatar")
-          ? "QAR"
-          : country.includes("Bahrain")
-            ? "BHD"
-            : country.includes("Oman")
-              ? "OMR"
-              : country.includes("United Kingdom")
-                ? "GBP"
-                : "USD";
+  // Listing prices are stored and settled in Saudi riyals throughout Homyz.
+  const currencySymbol = "SAR";
 
   // Sync state step with URL search parameters
   const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null) => {
@@ -736,16 +724,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
       if (details.district) setDistrict(details.district);
       if (details.postalCode) setPostalCode(details.postalCode);
       if (details.country) {
-        const c = details.country.toLowerCase();
-        if (c.includes("saudi")) setCountry("Saudi Arabia - SA");
-        else if (c.includes("emirates") || c.includes("uae")) setCountry("United Arab Emirates - AE");
-        else if (c.includes("kuwait")) setCountry("Kuwait - KW");
-        else if (c.includes("qatar")) setCountry("Qatar - QA");
-        else if (c.includes("bahrain")) setCountry("Bahrain - BH");
-        else if (c.includes("oman")) setCountry("Oman - OM");
-        else if (c.includes("united states") || c.includes("usa")) setCountry("United States - US");
-        else if (c.includes("kingdom") || c.includes("uk")) setCountry("United Kingdom - GB");
-        else setCountry(details.country);
+        setCountry(formatAddressCountry(details.country, details.countryCode));
       }
     }
   };
@@ -762,6 +741,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     const districtName = a.suburb || a.neighbourhood || a.city_district || "";
     const postalCodeStr = a.postcode || "";
     const countryName = a.country || "";
+    const countryCode = a.country_code || "";
 
     setStreetAddress(fullAddrStr || street);
     setCity(cityName);
@@ -772,16 +752,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     setSearchQuery(fullAddrStr || street);
 
     if (countryName) {
-      const c = countryName.toLowerCase();
-      if (c.includes("saudi")) setCountry("Saudi Arabia - SA");
-      else if (c.includes("emirates") || c.includes("uae")) setCountry("United Arab Emirates - AE");
-      else if (c.includes("kuwait")) setCountry("Kuwait - KW");
-      else if (c.includes("qatar")) setCountry("Qatar - QA");
-      else if (c.includes("bahrain")) setCountry("Bahrain - BH");
-      else if (c.includes("oman")) setCountry("Oman - OM");
-      else if (c.includes("united states") || c.includes("usa")) setCountry("United States - US");
-      else if (c.includes("kingdom") || c.includes("uk")) setCountry("United Kingdom - GB");
-      else setCountry(countryName);
+      setCountry(formatAddressCountry(countryName, countryCode));
     }
   };
 

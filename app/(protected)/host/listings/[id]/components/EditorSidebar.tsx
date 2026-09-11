@@ -19,6 +19,7 @@ import {
 } from "./guest-safety-helpers";
 import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
+import { computeMissingRequirements, getListingDisplayState } from "./ListingStatusView";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   if (type === "co") {
@@ -255,14 +256,61 @@ export function EditorSidebar({
     additionalHouseRules?.trim() ? "Additional house rules" : null,
   ].filter(Boolean);
 
+  const missingReqs = computeMissingRequirements(listing || {});
+  const displayState = getListingDisplayState(
+    listing?.status || "DRAFT",
+    Boolean(listing?.published),
+    missingReqs.length
+  );
+
   return (
     <aside className="lg:col-span-4 xl:col-span-4 flex min-w-0 flex-col lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)]">
       <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
-        {/* Header Title (Matches Figma: "Edit preferences" when gear active, else "Listing editor") */}
-        <div className="flex items-center justify-between pb-3 shrink-0">
-          <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
-            {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
-          </h2>
+        {/* Header Title & Status Badge */}
+        <div className="flex flex-col pb-3 shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
+              {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
+            </h2>
+          </div>
+          <div className="mt-1.5 flex items-center gap-1.5">
+            {displayState === "PENDING_APPROVAL" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Pending Admin Approval
+              </span>
+            )}
+            {displayState === "REJECTED" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-900 border border-rose-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Changes Required
+              </span>
+            )}
+            {displayState === "PUBLISHED" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                Published · Live
+              </span>
+            )}
+            {displayState === "APPROVED" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                Approved
+              </span>
+            )}
+            {displayState === "READY_TO_SUBMIT" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-900 border border-indigo-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                Ready for review
+              </span>
+            )}
+            {displayState === "DRAFT" && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-200/80 text-zinc-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                Draft · Incomplete
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Sub-Pills: [Your space] [Arrival guide] ⚙️ (Fixed) */}
@@ -330,21 +378,44 @@ export function EditorSidebar({
                 <span className="text-base font-medium text-[#727272] block mb-1">
                   Listing status
                 </span>
-                {(() => {
-                  const isListed = Boolean(listing?.published && listing?.status === "ACTIVE" && !listing?.isPaused);
-                  return (
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-base font-semibold px-2.5 py-0.5 rounded-full ${
-                        isListed
-                          ? "text-emerald-700 bg-emerald-100/70"
-                          : "text-amber-700 bg-amber-100/70"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${isListed ? "bg-emerald-500" : "bg-amber-500"}`} />
-                      {isListed ? "listed" : "unlisted"}
-                    </span>
-                  );
-                })()}
+                <span
+                  className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${
+                    displayState === "PUBLISHED" || displayState === "APPROVED"
+                      ? "text-emerald-700 bg-emerald-100/70"
+                      : displayState === "PENDING_APPROVAL"
+                      ? "text-amber-800 bg-amber-100/70"
+                      : displayState === "REJECTED"
+                      ? "text-rose-800 bg-rose-100/70"
+                      : displayState === "READY_TO_SUBMIT"
+                      ? "text-indigo-800 bg-indigo-100/70"
+                      : "text-zinc-700 bg-zinc-100"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      displayState === "PUBLISHED" || displayState === "APPROVED"
+                        ? "bg-emerald-500"
+                        : displayState === "PENDING_APPROVAL"
+                        ? "bg-amber-500 animate-pulse"
+                        : displayState === "REJECTED"
+                        ? "bg-rose-500"
+                        : displayState === "READY_TO_SUBMIT"
+                        ? "bg-indigo-500"
+                        : "bg-zinc-400"
+                    }`}
+                  />
+                  {displayState === "PUBLISHED"
+                    ? "Published · Live"
+                    : displayState === "PENDING_APPROVAL"
+                    ? "Pending Admin Approval"
+                    : displayState === "REJECTED"
+                    ? "Changes Required"
+                    : displayState === "APPROVED"
+                    ? "Approved"
+                    : displayState === "READY_TO_SUBMIT"
+                    ? "Ready for review"
+                    : "Draft · Incomplete"}
+                </span>
               </div>
 
               {/* Card 2: Languages */}
@@ -676,12 +747,12 @@ export function EditorSidebar({
                     <>
                       <p className="font-semibold text-[#1F1F1F]">Smart pricing</p>
                       <p className="text-[11px] text-zinc-500">
-                        SR{smartPricingMinPrice} – SR{smartPricingMaxPrice}
+                        SAR {smartPricingMinPrice} – SAR {smartPricingMaxPrice}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="font-semibold text-[#1F1F1F]">SR{editPrice}</p>
+                      <p className="font-semibold text-[#1F1F1F]">SAR {editPrice}</p>
                       <p className="text-[11px] text-zinc-500">{weeklyDiscount}% weekly discount</p>
                       <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
                     </>

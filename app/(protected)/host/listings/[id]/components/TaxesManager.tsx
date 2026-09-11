@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { toast } from "@/components/ui/toast";
 import type {
   ListingTaxDTO,
   TaxJurisdictionDTO,
@@ -36,8 +37,6 @@ export function TaxesManager({
   setActiveSection,
 }: TaxesManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Overview data
   const [jurisdiction, setJurisdiction] = useState<TaxJurisdictionDTO | null>(null);
@@ -76,20 +75,17 @@ export function TaxesManager({
 
   // Helper toasts
   const showSuccess = (msg: string) => {
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(null), 4000);
+    toast.success(msg);
   };
 
   const showError = (msg: string) => {
-    setErrorMessage(msg);
-    setTimeout(() => setErrorMessage(null), 6000);
+    toast.error(msg);
   };
 
   // Load listing taxes overview
   const loadOverview = async () => {
     if (!listingId) return;
     setIsLoading(true);
-    setErrorMessage(null);
     try {
       // Always request a fresh overview. The tax POST/PATCH has just changed
       // server state and a cached GET would leave the added tax off this list.
@@ -226,7 +222,6 @@ export function TaxesManager({
     }
 
     setIsSaving(true);
-    setErrorMessage(null);
 
     try {
       // Map UI values to API schemas.
@@ -353,25 +348,6 @@ export function TaxesManager({
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
-      {/* Toast Messages */}
-      {successMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium animate-in fade-in slide-in-from-top-3">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          {successMessage}
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-rose-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium animate-in fade-in slide-in-from-top-3">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          {errorMessage}
-        </div>
-      )}
-
       {/* Main Section Content (Renders in Main Column alongside EditorSidebar) */}
       <div className="space-y-6">
         {/* Back Button & Title */}

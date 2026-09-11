@@ -161,7 +161,7 @@ export function AdminNav() {
             </div>
           ) : null}
 
-          <LogoutButton callbackUrl="/admin/login?logged_out=true">
+          <LogoutButton callbackUrl="/login?logged_out=true">
             Sign out
           </LogoutButton>
 

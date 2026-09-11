@@ -6,9 +6,25 @@ import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
 import { prisma } from "@/lib/db/prisma";
-import { Role, ListingStatus } from "@/generated/prisma/enums";
+import { HostingType, Role, ListingStatus } from "@/generated/prisma/enums";
 import { auditService } from "@/services/audit.service";
 import { listingService } from "@/services/listing.service";
+import { deleteCache, incrCounter } from "@/lib/redis/cache";
+import { keys } from "@/lib/redis/keys";
+import { formatSarFromHalalas } from "@/lib/currency";
+
+function revalidateListingLifecycle(id: string, customSlug?: string | null) {
+  revalidatePath("/admin/listings");
+  revalidatePath(`/admin/listings/${id}`);
+  revalidatePath("/host/listings");
+  revalidatePath(`/host/listings/${id}`);
+  revalidatePath(`/listings/${id}`);
+  if (customSlug) revalidatePath(`/stay/${customSlug}`);
+}
+
+async function invalidateListingPublicCache(id: string) {
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+}
 
 /**
  * 1. Admin Edit Property Details
@@ -50,13 +66,16 @@ export async function adminUpdateListingDetailsAction(input: {
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
+    if (input.hostingType !== undefined && !Object.values(HostingType).includes(input.hostingType as HostingType)) {
+      throw AppError.badRequest("Invalid hosting type.");
+    }
 
     const updated = await prisma.listing.update({
       where: { id: input.listingId },
       data: {
         ...(input.title !== undefined && { title: input.title.trim() }),
         ...(input.description !== undefined && { description: input.description.trim() }),
-        ...(input.hostingType !== undefined && { hostingType: input.hostingType as any }),
+        ...(input.hostingType !== undefined && { hostingType: input.hostingType as HostingType }),
         ...(input.propertyType !== undefined && { propertyType: input.propertyType.trim() }),
         ...(input.listingType !== undefined && { listingType: input.listingType.trim() }),
         ...(input.address !== undefined && { address: input.address.trim() }),
@@ -94,7 +113,8 @@ export async function adminUpdateListingDetailsAction(input: {
       description: `Admin updated property details for listing ${updated.title} (${updated.id})`,
     });
 
-    revalidatePath("/admin/listings");
+    await invalidateListingPublicCache(updated.id);
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }
@@ -132,10 +152,11 @@ export async function adminUpdateListingPricingAction(input: {
       action: "ADMIN_LISTING_PRICING_UPDATED",
       resourceType: "Listing",
       resourceId: updated.id,
-      description: `Admin updated pricing for listing ${updated.title} (${updated.id}) to $${(updated.price / 100).toFixed(2)}`,
+      description: `Admin updated pricing for listing ${updated.title} (${updated.id}) to ${formatSarFromHalalas(updated.price)}`,
     });
 
-    revalidatePath("/admin/listings");
+    await invalidateListingPublicCache(updated.id);
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }
@@ -171,7 +192,8 @@ export async function adminToggleDisableListingAction(input: {
       description: `Admin ${input.isPaused ? "disabled/paused" : "enabled"} listing ${updated.title} (${updated.id})`,
     });
 
-    revalidatePath("/admin/listings");
+    await invalidateListingPublicCache(updated.id);
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }
@@ -206,7 +228,8 @@ export async function adminToggleFeatureListingAction(input: {
       description: `Admin ${input.isFeatured ? "featured" : "unfeatured"} property ${updated.title} (${updated.id})`,
     });
 
-    revalidatePath("/admin/listings");
+    await invalidateListingPublicCache(updated.id);
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }
@@ -225,6 +248,9 @@ export async function adminToggleVisibilityAction(input: {
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
+    if (input.published === true && listing.status !== ListingStatus.ACTIVE) {
+      throw AppError.badRequest("Approve a submitted listing before making it public.");
+    }
 
     const updated = await prisma.listing.update({
       where: { id: input.listingId },
@@ -244,7 +270,8 @@ export async function adminToggleVisibilityAction(input: {
       description: `Admin updated visibility for listing ${updated.title} (Published: ${updated.published})`,
     });
 
-    revalidatePath("/admin/listings");
+    await invalidateListingPublicCache(updated.id);
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }
@@ -261,48 +288,22 @@ export async function adminModerateListingQualityAction(input: {
     const actor = await getSessionUser();
     assertRole(actor, [Role.ADMIN]);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
-    if (!listing) throw AppError.notFound("Listing not found.");
-
-    let status: ListingStatus;
-    let published = listing.published;
-    let rejectionReason = listing.rejectionReason;
-
+    let updated;
     if (input.action === "APPROVE") {
-      status = ListingStatus.APPROVED;
-      published = true;
-      rejectionReason = null;
+      updated = await listingService.approveListingByAdmin(actor, input.listingId);
     } else if (input.action === "REQUEST_CHANGES") {
-      status = ListingStatus.CHANGES_REQUESTED;
-      published = false;
-      rejectionReason = input.reason || "Quality moderation feedback: Changes requested by Admin.";
+      updated = await listingService.requestChangesByAdmin(
+        actor,
+        input.listingId,
+        input.reason?.trim() || "Please correct the requested listing details and resubmit.",
+      );
     } else {
-      status = ListingStatus.REJECTED;
-      published = false;
-      rejectionReason = input.reason || "Quality moderation feedback: Listing rejected by Admin.";
+      const reason = input.reason?.trim();
+      if (!reason) throw AppError.badRequest("A rejection reason is required.");
+      updated = await listingService.rejectListingByAdmin(actor, input.listingId, reason);
     }
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
-        status,
-        published,
-        rejectionReason,
-        reviewerId: actor.id,
-        ...(input.action === "APPROVE" && { approvedAt: new Date(), approvedById: actor.id }),
-      },
-    });
-
-    await auditService.record({
-      actorId: actor.id,
-      actorEmail: actor.email || "",
-      action: `ADMIN_LISTING_MODERATED_${input.action}`,
-      resourceType: "Listing",
-      resourceId: updated.id,
-      description: `Admin quality moderation for listing ${updated.title}: ${input.action} (${rejectionReason || "No note"})`,
-    });
-
-    revalidatePath("/admin/listings");
+    revalidateListingLifecycle(updated.id, updated.customSlug);
     return updated;
   });
 }

@@ -22,7 +22,7 @@ export type HostWorkspaceProps = {
 export const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const money = (price: number) =>
-  `SR ${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(price / 100)}`;
+  `SAR ${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(price / 100)}`;
 export const shortDate = (date: string) =>
   new Date(date).toLocaleDateString("en-GB", {
     day: "numeric",

@@ -27,7 +27,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English (US)");
-  const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
+  const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -385,7 +385,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Currency</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
+                  {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
                     <button
                       key={curr}
                       type="button"

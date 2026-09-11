@@ -14,7 +14,7 @@ interface LogoutButtonProps {
 export function LogoutButton({
   variant = "button",
   className = "",
-  callbackUrl = "/admin/login?logged_out=true",
+  callbackUrl = "/login?logged_out=true",
   children,
 }: LogoutButtonProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);

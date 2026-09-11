@@ -38,6 +38,42 @@ const REQUIRED_SAFETY_RESPONSES = [
   "WEAPONS",
 ] as const;
 
+// These fields are part of the listing a reviewer approves. Availability-only
+// changes deliberately do not interrupt a live listing.
+const REAPPROVAL_FIELDS = new Set<keyof UpdateListingInput>([
+  "title", "description", "descriptionSections", "price", "smartPricing",
+  "smartPricingMinPrice", "smartPricingMaxPrice", "hostingType", "placeCategory",
+  "propertyType", "listingType", "locationSearch", "shortAddress", "address",
+  "neighborhoodDescription", "gettingAround", "apartment", "city", "district",
+  "postalCode", "country", "latitude", "longitude", "showExactLocation", "guests",
+  "bedrooms", "beds", "bathrooms", "propertySize", "propertySizeUnit",
+  "listingFloor", "totalFloors", "yearBuilt", "yearRenovated", "privateEntrance",
+  "elevatorAvailable", "stairsRequired", "rooms", "fullBathrooms", "halfBathrooms",
+  "privateBathrooms", "sharedBathrooms", "parkingAvailable", "parkingType",
+  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "highlights",
+  "amenities", "safetyDisclosures", "safetyEquipment", "safetyHazards",
+  "accessibilityFeatures", "accessibilityDetails", "views", "locationFeatures",
+  "houseRules", "petsAllowed", "maxPets", "petFee", "petRestrictions", "dogsAllowed",
+  "catsAllowed", "smokingAllowed", "smokingLocation", "eventsAllowed", "childrenAllowed",
+  "infantsAllowed", "photographyAllowed", "quietHours", "quietHoursStart", "quietHoursEnd",
+  "additionalRules", "checkInMethod", "checkInStart", "checkInEnd", "checkOutTime",
+  "directions", "parkingInstructions", "checkInInstructions", "checkOutInstructions",
+  "houseManual", "wifiNetwork", "wifiPassword", "doorCode", "lockboxCode",
+  "cancellationPolicy", "longTermCancellationPolicy", "bookingMessage", "requireProfilePhoto",
+  "requireGoodTrackRecord", "bookingApprovalMode", "minNights", "maxNights",
+  "advanceNotice", "sameDayCutoff", "allowSameDayRequests", "instantBook",
+  "cleaningFee", "securityDeposit", "weekendPrice", "weekendPremium", "discounts",
+]);
+
+function requiresReapproval(input: UpdateListingInput): boolean {
+  return Object.keys(input).some((key) => REAPPROVAL_FIELDS.has(key as keyof UpdateListingInput));
+}
+
+function isSaudiArabia(country: string | null | undefined): boolean {
+  const value = country?.trim().toUpperCase() ?? "";
+  return value === "SA" || value === "KSA" || value.includes("SAUDI");
+}
+
 export type ListingPublishReadiness = {
   publishable: boolean;
   missing: string[];
@@ -154,7 +190,9 @@ async function queryList(opts: {
   take: number;
   publishedOnly?: boolean;
 }): Promise<{ items: PublicListingDTO[]; total: number }> {
-  const where = opts.publishedOnly === false ? {} : { published: true, status: ListingStatus.ACTIVE };
+  const where = opts.publishedOnly === false
+    ? {}
+    : { published: true, status: ListingStatus.ACTIVE, isPaused: false, deletedAt: null };
   const [items, total] = await Promise.all([
     prisma.listing.findMany({
       where,
@@ -343,7 +381,7 @@ async function getPublicListingById(id: string): Promise<
     },
   });
 
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
@@ -382,7 +420,7 @@ async function getPublicListingBySlug(slug: string) {
     },
   });
 
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
@@ -676,6 +714,20 @@ async function update(
     dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
   }
 
+  // A host changing reviewed material must not leave that revised content live.
+  // The listing is held for the same Admin review that governs initial launch.
+  const reapprovalRequired = actor.role !== Role.ADMIN
+    && existing.status === ListingStatus.ACTIVE
+    && requiresReapproval(dataToUpdate);
+  if (reapprovalRequired) {
+    dataToUpdate.status = ListingStatus.PENDING_REVIEW;
+    dataToUpdate.published = false;
+    dataToUpdate.isPaused = false;
+    dataToUpdate.submittedAt = new Date();
+    dataToUpdate.reviewerId = null;
+    dataToUpdate.reviewStartedAt = null;
+  }
+
   let listing;
   try {
     listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
@@ -699,7 +751,9 @@ async function update(
     action: "LISTING_UPDATED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Updated listing "${listing.title}" details`,
+    description: reapprovalRequired
+      ? `Updated listing "${listing.title}" details; moved it back to Admin review.`
+      : `Updated listing "${listing.title}" details`,
   });
 
   if (Array.isArray(input.photos)) {
@@ -735,6 +789,9 @@ async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO>
   if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
+  if (![ListingStatus.DRAFT, ListingStatus.IN_PROGRESS].includes(existing.status)) {
+    throw AppError.badRequest("This listing cannot be submitted in its current state. Edit a draft or resubmit a returned listing.");
+  }
 
   const readiness = getPublishReadiness(existing);
   if (!readiness.publishable) {
@@ -753,13 +810,19 @@ async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO>
     },
   });
 
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
   await auditService.record({
     actorId: actor.id,
     actorEmail: actor.email,
     action: "LISTING_SUBMITTED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Submitted listing "${updated.title}" for Admin review`,
+    description: `Submitted listing "${updated.title}" for ${isSaudiArabia(existing.country) ? "Saudi licensing and " : ""}Admin review`,
+    metadata: {
+      reviewRoute: isSaudiArabia(existing.country) ? "SAUDI_LICENSE_REVIEW" : "INTERNATIONAL_ADMIN_REVIEW",
+      locationVerified: Boolean(existing.country && existing.latitude !== null && existing.longitude !== null),
+    },
   });
 
   return toListingDTO(updated);
@@ -772,6 +835,9 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
 
   if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
+  }
+  if (![ListingStatus.CHANGES_REQUESTED, ListingStatus.REJECTED].includes(existing.status)) {
+    throw AppError.badRequest("Only listings returned by Admin can be resubmitted.");
   }
 
   const readiness = getPublishReadiness(existing);
@@ -789,8 +855,12 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
       published: false,
       resubmittedAt: new Date(),
       requestedChanges: Prisma.DbNull,
+      reviewerId: null,
+      reviewStartedAt: null,
     },
   });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
 
   await auditService.record({
     actorId: actor.id,
@@ -805,52 +875,9 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
 }
 
 async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
-  const existing = await prisma.listing.findUnique({ where: { id } });
-  if (!existing) throw AppError.notFound("Listing not found");
-  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
-
-  if (!isCoHost && actor.role === Role.HOST) {
-    await assertHostPermission(actor.id, "listing.edit");
-  }
-
-  const readiness = getPublishReadiness(existing);
-  if (!readiness.publishable) {
-    // Allow hosts to publish when the only missing section is photos.
-    // This keeps the stricter readiness gate for admins while avoiding
-    // a frustrating UX where a host cannot publish solely due to missing
-    // additional photos.
-    const onlyPhotosMissing = readiness.missing.length === 1 && readiness.missing[0] === "photos";
-    if (!onlyPhotosMissing) {
-      throw AppError.badRequest(
-        `Cannot publish listing. Missing required sections: ${readiness.missing.join(", ")}.`,
-        readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
-      );
-    }
-    // If only photos are missing, allow publish for non-admin actors (hosts/co-hosts).
-    // Admin approval still enforces full readiness via `approveListingByAdmin`.
-  }
-
-  const updated = await prisma.listing.update({
-    where: { id },
-    data: {
-      status: ListingStatus.ACTIVE,
-      published: true,
-      isPaused: false,
-      rejectionReason: null,
-      requestedChanges: Prisma.DbNull,
-    },
-  });
-
-  await auditService.record({
-    actorId: actor.id,
-    actorEmail: actor.email,
-    action: "LISTING_PUBLISHED",
-    resourceType: "Listing",
-    resourceId: id,
-    description: `Host directly published listing "${updated.title}"`,
-  });
-
-  return toListingDTO(updated);
+  // Legacy callers may still hit a "publish" endpoint. Never let that bypass
+  // moderation: it now performs the safe submit-for-review transition.
+  return submitForReview(actor, id);
 }
 
 async function unpublishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
@@ -869,6 +896,8 @@ async function unpublishListing(actor: AuthUser, id: string): Promise<ListingDTO
       published: false,
     },
   });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
 
   await auditService.record({
     actorId: actor.id,
@@ -890,6 +919,9 @@ async function approveListingByAdmin(actor: AuthUser, id: string): Promise<Listi
     include: { host: true },
   });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW) {
+    throw AppError.badRequest("Only listings submitted for Admin review can be approved.");
+  }
 
   const readiness = getPublishReadiness(existing);
   if (!readiness.publishable) {
@@ -907,6 +939,8 @@ async function approveListingByAdmin(actor: AuthUser, id: string): Promise<Listi
       published: true,
       approvedAt: new Date(),
       approvedById: actor.id,
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
       rejectionReason: null,
       requestedChanges: Prisma.DbNull,
     },
@@ -948,6 +982,9 @@ async function requestChangesByAdmin(
 
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW) {
+    throw AppError.badRequest("Only listings submitted for Admin review can be returned for changes.");
+  }
 
   const updated = await prisma.listing.update({
     where: { id },
@@ -955,10 +992,12 @@ async function requestChangesByAdmin(
       status: ListingStatus.CHANGES_REQUESTED,
       published: false,
       requestedChanges: JSON.parse(JSON.stringify(requestedChanges)),
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
     },
   });
 
-  await deleteCache(keys.listing(id));
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
 
   await auditService.record({
     actorId: actor.id,
@@ -982,17 +1021,24 @@ async function rejectListingByAdmin(
 
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW) {
+    throw AppError.badRequest("Only listings submitted for Admin review can be rejected.");
+  }
+  const reason = rejectionReason.trim();
+  if (!reason) throw AppError.badRequest("A rejection reason is required.");
 
   const updated = await prisma.listing.update({
     where: { id },
     data: {
       status: ListingStatus.REJECTED,
       published: false,
-      rejectionReason,
+      rejectionReason: reason,
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
     },
   });
 
-  await deleteCache(keys.listing(id));
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
 
   await auditService.record({
     actorId: actor.id,
@@ -1000,8 +1046,8 @@ async function rejectListingByAdmin(
     action: "LISTING_REJECTED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Rejected listing "${updated.title}" (${updated.id}): ${rejectionReason}`,
-    metadata: { rejectionReason },
+    description: `Rejected listing "${updated.title}" (${updated.id}): ${reason}`,
+    metadata: { rejectionReason: reason },
   });
 
   return toListingDTO(updated);
@@ -1047,7 +1093,13 @@ async function remove(
       published: false,
       isPaused: true,
       deletedAt: new Date(),
-      removalReason: feedback as any,
+      removalReason: feedback
+        ? {
+            categories: feedback.categories ?? [],
+            reasons: feedback.reasons ?? [],
+            customFeedback: feedback.customFeedback ?? null,
+          }
+        : Prisma.DbNull,
     },
   });
 
@@ -1145,7 +1197,7 @@ async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Prom
     where: { id },
     data: {
       isPaused,
-      published: isPaused ? false : (existing.status === ListingStatus.ACTIVE || existing.status === ListingStatus.APPROVED),
+      published: isPaused ? false : existing.status === ListingStatus.ACTIVE,
     },
   });
 

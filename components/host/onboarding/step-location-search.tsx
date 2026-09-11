@@ -135,8 +135,8 @@ export function StepLocationSearch({
 
             <div className="relative w-full max-w-xl">
               {/* Autocomplete Search Input Field */}
-              <div className="sm:absolute relative sm:top-5 sm:left-1/2 sm:-translate-x-1/2 z-30 sm:w-[90%] bg-white/95 backdrop-blur-md sm:h-18 h-12 sm:rounded-[20px] rounded-[10px] border border-[#1F1F1F] shadow-lg px-4 sm:py-3 flex items-center">
-                <div className="flex items-center gap-3">
+              <div className="relative sm:absolute sm:top-5 sm:left-1/2 sm:-translate-x-1/2 z-30 w-full sm:w-[90%] bg-white/95 backdrop-blur-md sm:h-18 h-12 sm:rounded-[20px] rounded-[10px] border border-[#1F1F1F] shadow-lg px-4 sm:py-3 flex items-center">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="sm:w-8 sm:h-8 rounded-full sm:border border-[#1F1F1F] shrink-0 flex justify-center items-center">
                     <svg className="w-4 h-5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -148,7 +148,12 @@ export function StepLocationSearch({
                     placeholder="Add your location"
                     value={searchQuery}
                     onChange={(e) => handleInputChange(e.target.value)}
-                    className="w-full text-base font-normal text-[#1F1F1F] bg-transparent outline-none placeholder:text-[#1F1F1F] placeholder:opacity-50"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-haspopup="listbox"
+                    aria-controls="location-suggestions"
+                    aria-expanded={suggestions.length > 0}
+                    className="min-w-0 flex-1 text-base font-normal text-[#1F1F1F] bg-transparent outline-none placeholder:text-[#1F1F1F] placeholder:opacity-50"
                   />
                   {isSearching && (
                     <span className="w-4 h-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin shrink-0" />
@@ -157,13 +162,19 @@ export function StepLocationSearch({
 
                 {/* Suggestions Dropdown */}
                 {suggestions.length > 0 && (
-                  <div className="mt-3 pt-2 border-t border-zinc-100 max-h-60 overflow-y-auto text-left flex flex-col divide-y divide-zinc-100">
+                  <div
+                    id="location-suggestions"
+                    role="listbox"
+                    className="absolute top-full left-0 right-0 z-40 mt-2 max-h-60 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-1 text-left shadow-xl"
+                  >
                     {suggestions.map((item, idx) => (
                       <button
                         key={idx}
                         type="button"
+                        role="option"
+                        aria-selected="false"
                         onClick={() => handleSuggestionClick(item)}
-                        className="py-2.5 px-2 hover:bg-zinc-50 text-xs font-medium text-zinc-800 transition-colors flex items-center gap-2.5 rounded-lg cursor-pointer"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-50"
                       >
                         <span className="text-zinc-400">📍</span>
                         <span className="truncate">{item.display_name}</span>

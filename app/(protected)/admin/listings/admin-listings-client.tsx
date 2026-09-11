@@ -4,6 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatSarFromHalalas } from "@/lib/currency";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import {
   adminUpdateListingDetailsAction,
@@ -431,11 +432,11 @@ export function AdminListingsClient({
     });
     setIsSaving(false);
     if (res.ok) {
-      const newStatus = action === "APPROVE" ? "APPROVED" : action === "REQUEST_CHANGES" ? "CHANGES_REQUESTED" : "REJECTED";
+      const updated = res.data as { status: string; published: boolean; rejectionReason: string | null } | undefined;
       updateLocalListing({
-        status: newStatus,
-        published: action === "APPROVE",
-        rejectionReason: action === "APPROVE" ? null : modReason,
+        status: updated?.status ?? selectedListing.status,
+        published: updated?.published ?? selectedListing.published,
+        rejectionReason: updated?.rejectionReason ?? null,
       });
       setFeedbackMsg({ type: "success", text: `Quality moderation action applied: ${action}` });
     } else {
@@ -466,7 +467,7 @@ export function AdminListingsClient({
       `"${l.id}"`,
       `"${l.title.replace(/"/g, '""')}"`,
       `"${l.host.name || ""}"`,
-      `"$${(l.price / 100).toFixed(2)}"`,
+      `"${formatSarFromHalalas(l.price)}"`,
       `"${l.published ? "Published" : l.status}"`,
       `"${l.isFeatured ? "Yes" : "No"}"`,
       `"${l.isPaused ? "Yes" : "No"}"`,
@@ -631,7 +632,7 @@ export function AdminListingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono text-xs">
-                        ${(item.price / 100).toFixed(2)}
+                        {formatSarFromHalalas(item.price)}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -713,7 +714,7 @@ export function AdminListingsClient({
             </div>
 
             <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-semibold">
-              <span>${(item.price / 100).toFixed(2)} / night</span>
+              <span>{formatSarFromHalalas(item.price)} / night</span>
               <button
                 type="button"
                 onClick={(e) => {
@@ -875,7 +876,7 @@ export function AdminListingsClient({
                     <p><strong className="text-muted-foreground">Property Type:</strong> {selectedListing.propertyType} ({selectedListing.listingType})</p>
                     <p><strong className="text-muted-foreground">Capacity:</strong> {selectedListing.guests} Guests • {selectedListing.bedrooms} Bed • {selectedListing.bathrooms} Bath</p>
                     <p><strong className="text-muted-foreground">Photos Uploaded:</strong> {selectedListing.photos.length} photos ({selectedListing.photos.length >= 5 ? "✓ Meets minimum" : "⚠️ Needs 5 photos"})</p>
-                    <p><strong className="text-muted-foreground">Pricing:</strong> ${(selectedListing.price / 100).toFixed(2)} / night</p>
+                    <p><strong className="text-muted-foreground">Pricing:</strong> {formatSarFromHalalas(selectedListing.price)} / night</p>
                   </div>
                 </div>
               </div>
@@ -1301,7 +1302,7 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="grid gap-3 sm:grid-cols-4">
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Nightly Price ($ USD) *</label>
+                    <label className="block font-semibold text-muted-foreground">Nightly Price (SAR) *</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1313,7 +1314,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Weekend Price ($ USD)</label>
+                    <label className="block font-semibold text-muted-foreground">Weekend Price (SAR)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1325,7 +1326,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Cleaning Fee ($ USD)</label>
+                    <label className="block font-semibold text-muted-foreground">Cleaning Fee (SAR)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1337,7 +1338,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Security Deposit ($ USD)</label>
+                    <label className="block font-semibold text-muted-foreground">Security Deposit (SAR)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1376,7 +1377,7 @@ export function AdminListingsClient({
                   </div>
                   <div className="flex items-center justify-between text-xs border-t border-[var(--border-subtle)] pt-1">
                     <span>Valid Nightly Rate & Location:</span>
-                    <span className="font-semibold text-emerald-600">✓ PASSED (${editPrice}/night, {selectedListing.city})</span>
+                    <span className="font-semibold text-emerald-600">✓ PASSED (SAR {editPrice}/night, {selectedListing.city})</span>
                   </div>
                 </div>
 

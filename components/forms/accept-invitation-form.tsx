@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { acceptInvitationAction } from "@/actions/admin/invitationActions";
+import { Alert, Button } from "@/components/ui";
+import { authFieldErrorClass, authLabelClass } from "@/components/auth/auth-form.styles";
 
 export function AcceptInvitationForm({
   token,
@@ -20,26 +22,45 @@ export function AcceptInvitationForm({
   const [pending, startTransition] = useTransition();
 
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    password?: string;
+    repeatPassword?: string;
+  }>({});
 
-  // Password requirement checks
-  const minLength = password.length >= 8;
-  const hasUpper = /[A-Z]/.test(password);
+  // Password complexity helpers matching register page
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  const matches = password.length > 0 && password === confirmPassword;
+  const passwordsMatch = password.length > 0 && password === repeatPassword;
+  const isFormValid = hasMinLength && hasUppercase && hasNumber && passwordsMatch;
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+    const errors: { password?: string; repeatPassword?: string } = {};
+
+    if (!password) {
+      errors.password = "Password is required.";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters long.";
+    } else if (!/[A-Z]/.test(password)) {
+      errors.password = "Password must contain at least one uppercase letter (A-Z).";
+    } else if (!/[0-9]/.test(password)) {
+      errors.password = "Password must contain at least one number (0-9).";
     }
 
-    if (!minLength || !hasUpper || !hasNumber) {
-      setError("Please ensure your password meets all complexity requirements.");
+    if (!repeatPassword) {
+      errors.repeatPassword = "Confirm password is required.";
+    } else if (password !== repeatPassword) {
+      errors.repeatPassword = "Passwords do not match.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -47,7 +68,7 @@ export function AcceptInvitationForm({
       const res = await acceptInvitationAction({
         token,
         password,
-        confirmPassword,
+        confirmPassword: repeatPassword,
       });
 
       if (!res.ok) {
@@ -69,21 +90,21 @@ export function AcceptInvitationForm({
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-950">
+          <h2 className="text-2xl font-semibold text-zinc-950 font-['Poppins']">
             Account Activated!
           </h2>
-          <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+          <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed font-['Poppins']">
             Your administrator password has been set. You can now sign in to access the Homyz Admin Console.
           </p>
         </div>
 
-        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 font-medium">
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs sm:text-sm text-emerald-900 font-medium font-['Poppins']">
           Admin account for <strong className="font-semibold">{email}</strong> is now active.
         </div>
 
         <Link
-          href="/admin/login"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
+          href="/login"
+          className="auth-action-button box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium text-[#1F1F1F] transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 border border-[#727272] hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] h-12 min-h-12 sm:h-[56px] sm:min-h-[56px] bg-[#FCDF9C] px-6 py-4 sm:text-lg text-base leading-6 active:border-[#1F1F1F] active:bg-[#F3F4F5] w-full mt-2"
         >
           Sign In to Admin Console →
         </Link>
@@ -92,148 +113,147 @@ export function AcceptInvitationForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex flex-col gap-4 lg:gap-5" suppressHydrationWarning>
       {error && (
-        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium animate-in fade-in">
-          {error}
-        </div>
+        <Alert tone="error">{error}</Alert>
       )}
 
-      {/* Invitation Details Info Card */}
-      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 flex items-center gap-3.5 shadow-2xs">
-        <div className="h-10 w-10 rounded-full bg-zinc-900 text-white font-semibold flex items-center justify-center text-sm shrink-0">
-          {(name?.[0] || email?.[0] || "A").toUpperCase()}
+      {/* Account Info Pill */}
+      <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 flex items-center justify-between gap-3 text-xs sm:text-sm font-['Poppins']">
+        <div className="min-w-0 truncate">
+          <span className="text-zinc-500">Account for: </span>
+          <strong className="text-zinc-900 font-semibold">{name ? `${name} (${email})` : email}</strong>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-0.5">
-            <div className="text-xs font-semibold text-[#1F1F1F] truncate">
-              {name || "Administrator"}
-            </div>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
-              Role: {roleName}
-            </span>
-          </div>
-          <div className="text-xs text-zinc-500 font-mono truncate">{email}</div>
-        </div>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+          {roleName}
+        </span>
       </div>
 
-      {/* Create New Password */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-xs font-semibold text-zinc-800">
-          Create New Password *
+      {/* Password */}
+      <div className="flex flex-col gap-2" suppressHydrationWarning>
+        <label className={authLabelClass}>
+          Password *
         </label>
-        <div className="relative">
+        <div className="relative h-[56px]" suppressHydrationWarning>
           <input
-            id="password"
-            name="password"
             type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
-            required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              if (error) setError(null);
+            }}
             placeholder="••••••••••••"
+            required
+            autoComplete="new-password"
+            suppressHydrationWarning
+            className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors p-1"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
               </svg>
             ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             )}
           </button>
         </div>
+        {fieldErrors.password && (
+          <p className={authFieldErrorClass}>{fieldErrors.password}</p>
+        )}
+
+        {/* Password Requirements Box - Exactly matching register page */}
+        <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1 font-['Poppins']">
+          <div className="font-semibold text-zinc-800 mb-0.5 text-xs sm:text-sm">Password Requirements:</div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+              {hasMinLength ? "✓" : "○"}
+            </span>
+            <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+              Minimum 8 characters
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+              {hasUppercase ? "✓" : "○"}
+            </span>
+            <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+              At least one uppercase letter (A-Z)
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+              {hasNumber ? "✓" : "○"}
+            </span>
+            <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+              At least one number (0-9)
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Confirm Password */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="confirmPassword" className="text-xs font-semibold text-zinc-800">
-          Confirm Password *
+      {/* Repeat Password */}
+      <div className="flex flex-col gap-2">
+        <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
+          Repeat password *
         </label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type={showPassword ? "text" : "password"}
-          autoComplete="new-password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
-          placeholder="••••••••••••"
-        />
-      </div>
-
-      {/* Live Complexity Checklist */}
-      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
-        <div className="font-semibold text-zinc-700 uppercase tracking-wider text-[10px]">
-          Password Requirements:
+        <div className="relative h-[56px]">
+          <input
+            type={showRepeatPassword ? "text" : "password"}
+            value={repeatPassword}
+            onChange={(e) => {
+              setRepeatPassword(e.target.value);
+              if (fieldErrors.repeatPassword) setFieldErrors((prev) => ({ ...prev, repeatPassword: undefined }));
+              if (error) setError(null);
+            }}
+            placeholder="••••••••••••"
+            required
+            autoComplete="new-password"
+            className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            aria-label="Toggle repeat password visibility"
+          >
+            {showRepeatPassword ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            )}
+          </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
-              minLength
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
-            }`}
-          >
-            <span className="font-semibold">{minLength ? "✓" : "○"}</span> At least 8 characters
-          </div>
-          <div
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
-              hasUpper
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
-            }`}
-          >
-            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
-          </div>
-          <div
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
-              hasNumber
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
-            }`}
-          >
-            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
-          </div>
-          {confirmPassword ? (
-            <div
-              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
-                matches
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                  : "bg-rose-50 text-rose-800 border-rose-200"
-              }`}
-            >
-              <span className="font-semibold">{matches ? "✓" : "✕"}</span> Passwords match
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
-              <span>○</span> Match confirmation
-            </div>
-          )}
-        </div>
+        {fieldErrors.repeatPassword && (
+          <p className={authFieldErrorClass}>{fieldErrors.repeatPassword}</p>
+        )}
       </div>
 
       {/* Submit Button */}
-      <button
+      <Button
         type="submit"
-        disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        disabled={pending || !isFormValid}
+        fullWidth
+        isLoading={pending}
+        loadingText="Activating Account…"
+        className="auth-action-button mt-2"
       >
-        {pending && (
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
-        )}
-        <span>{pending ? "Activating Account…" : "Set Password & Activate Account"}</span>
-      </button>
+        Set Password & Activate Account
+      </Button>
     </form>
   );
 }

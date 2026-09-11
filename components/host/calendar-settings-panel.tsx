@@ -86,7 +86,7 @@ export function CalendarSettingsPanel({
     <label className={`block ${controlClass}`}>
       <span className="mb-2 block text-sm text-[#1F1F1F]">{label}</span>
       <span className="flex items-center gap-1 text-sm font-medium">
-        {suffix === "SR" && <span>SR</span>}
+        {suffix === "SAR" && <span>SAR</span>}
         <input
           aria-label={label}
           name={name}
@@ -218,11 +218,11 @@ export function CalendarSettingsPanel({
                 </svg>
               </div>
             </div>
-            {input("price", "Per night", listing.price / 100, "SR")}
+            {input("price", "Per night", listing.price / 100, "SAR")}
             <ExpandControl title="Custom weekend price">
               {input(
                 "weekendPrice",
-                "Per night · SR",
+                "Per night · SAR",
                 listing.weekendPrice == null ? "" : listing.weekendPrice / 100,
               )}
             </ExpandControl>
@@ -283,7 +283,7 @@ export function CalendarSettingsPanel({
             <ExpandControl title="Fees" subtitle="Cleaning, pets, extra guests">
               {input(
                 "cleaningFee",
-                "Cleaning fee · SR",
+                "Cleaning fee · SAR",
                 (listing.cleaningFee || 0) / 100,
               )}
               <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F]">
