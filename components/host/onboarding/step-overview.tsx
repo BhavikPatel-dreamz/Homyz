@@ -3,9 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
-import { CloseIcon } from "@/components/ui/close-icon";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 
 interface StepOverviewProps {
   onGetStarted: () => void;
@@ -52,21 +52,12 @@ export function StepOverview({
   };
 
   return (
-    <main className="min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-overview min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          {/* Mobile close button */}
-          <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={isLoading}
-              aria-label="Close"
-              className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CloseIcon />
-            </button>
-          </div>
+          
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
 
           {/* Main content */}
           <div className="grid w-full grid-cols-1 items-start lg:grid-cols-12">

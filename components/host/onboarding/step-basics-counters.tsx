@@ -3,6 +3,8 @@
 import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+
 
 interface StepBasicsCountersProps {
   guests: number;
@@ -32,10 +34,14 @@ export function StepBasicsCounters({
   isLoading = false,
 }: StepBasicsCountersProps) {
   return (
-    <main className="min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-basic-counters min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          <div className="max-w-[748px] mx-auto w-full flex flex-col items-start sm:my-auto">
             {/* Header & Subtitle */}
             <h1 className="mb-5">
               Share some basics about your place

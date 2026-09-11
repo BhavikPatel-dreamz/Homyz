@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
-import { CloseIcon } from "@/components/ui/close-icon";
 import { PlaceTypeOption } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 
 interface StepPlaceTypeProps {
   placeTypes: PlaceTypeOption[];
@@ -25,30 +24,16 @@ export function StepPlaceType({
   isLoading = false,
 }: StepPlaceTypeProps) {
 
-  const router = useRouter();
-  
-    const handleBack = () => {
-      if (!isLoading) {
-        router.back();
-      }
-    };
   return (
-    <main className="py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-photos min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          {/* Mobile close button */}
-          <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={isLoading}
-              aria-label="Close"
-              className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="max-w-187 mx-auto w-full flex flex-col items-start my-auto text-left">
+          
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+
+          <div className="max-w-187 mx-auto w-full flex flex-col items-start sm:my-auto text-left">
             <h1 className="mb-10">
               What type of place will guests have?
             </h1>

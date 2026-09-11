@@ -622,9 +622,9 @@ export function HostListingsWorkspace({
                         )}
 
                         {/* White Pill Badge matching screenshot */}
-                        <div className="capitalize absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                          <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`}></span>
-                          {isCoHosted ? "Co-host" : isListed ? "Listed" : "Action Required"}
+                        <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-[#FFFFFF99] px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                          <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
+                          {isCoHosted ? "Co-host" : isListed ? "listed" : "action required"}
                         </div>
 
                         {/* Delete Action Icon Button */}

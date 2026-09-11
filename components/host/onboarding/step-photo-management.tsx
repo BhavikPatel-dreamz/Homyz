@@ -3,6 +3,8 @@
 import { Container } from "@/components/ui";
 import React, { useState, useRef } from "react";
 import { StepProgressFooter } from "./step-progress-footer";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import Image from "next/image";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -10,16 +12,8 @@ const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "
 // Cute Camera SVG Illustration Component
 function CameraPlaceholder() {
   return (
-    <div className="w-14 h-14 flex items-center justify-center pointer-events-none">
-      <svg width="56" height="56" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M 22 28 C 22 15 58 15 58 28" stroke="#E67E22" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-        <rect x="14" y="26" width="52" height="36" rx="10" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-        <rect x="26" y="20" width="16" height="8" rx="3" fill="#D8B4E2" stroke="#4A235A" strokeWidth="2" />
-        <circle cx="40" cy="44" r="13" fill="#4A235A" />
-        <circle cx="40" cy="44" r="8" fill="#FFF9C4" />
-        <circle cx="40" cy="44" r="4.5" fill="#4A235A" />
-        <circle cx="56" cy="33" r="2.5" fill="#E67E22" />
-      </svg>
+    <div className="w-22.5 h-22.5 flex items-center justify-center pointer-events-none">
+      <Image src="/images/icons/camera-icon.svg" alt="camera-icon.svg" width={90} height={90}/>
     </div>
   );
 }
@@ -150,20 +144,24 @@ export function StepPhotoManagement({
     <main
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className="py-10"
+      className="step-photo-mngmnt min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16"
     >
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-4xl mx-auto w-full flex flex-col my-auto">
+          
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          <div className="max-w-[1006px] mx-auto w-full flex flex-col my-auto">
             {/* Top Header Bar with Title & Plus (+) Button */}
             <div className="flex items-center justify-between w-full mb-8">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F] tracking-tight">
-                  Cool ! How does this look?
+                <h1>
+                  Cool !<br className="sm:hidden block" /> How does this look?
                 </h1>
-                <p className="text-xs font-normal text-[#727272] mt-1">
+                {/* <p className="text-xs font-normal text-[#727272] mt-1">
                   Review your property photos. Click Make cover to change the primary photo, or Replace to swap an image. ({photos.length} photos selected)
-                </p>
+                </p> */}
                 {uploadError && (
                   <p className="text-xs font-semibold text-rose-600 mt-2 bg-rose-50 border border-rose-200 rounded-lg p-2">
                     {uploadError}
@@ -184,10 +182,10 @@ export function StepPhotoManagement({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-10 h-10 rounded-full border border-zinc-300 hover:border-zinc-500 bg-white flex items-center justify-center text-zinc-700 hover:text-[#1F1F1F] transition-colors shadow-2xs cursor-pointer shrink-0"
+                className="sm:w-10 sm:h-10 w-8 h-8 rounded-full border border-[#1f1f1f] hover:border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1F1F1F] flex items-center justify-center hover:text-white text-[#1F1F1F] transition-colors duration-300 shadow-2xs cursor-pointer shrink-0"
                 title="Add more photos"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                <svg className="sm:w-5 w-4 sm:h-5 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
               </button>
@@ -213,13 +211,13 @@ export function StepPhotoManagement({
             />
 
             {/* Primary 5-Photo Collage Layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 w-full mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-12 sm:gap-6 gap-2 w-full mb-8">
               {/* Left Column: Cover Photo (Slot 0) */}
               <div className="sm:col-span-6">
-                <div className="w-full h-72 sm:h-96 rounded-3xl border border-zinc-200 bg-zinc-50 flex items-center justify-center relative overflow-hidden shadow-xs group">
+                <div className="w-full h-72 sm:h-111 sm:rounded-[20px] rounded-[10px] border border-[#727272] hover:border-[#727272] transition-all duration-300 bg-[#F3F4F5] flex items-center justify-center relative overflow-hidden shadow-xs group">
                   {photos[0] ? (
                     <>
-                      <img src={photos[0]} alt="Cover Photo" className="w-full h-full object-cover" />
+                      <img src={photos[0]} alt="Cover Photo" className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
                       <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-xs">
                         Cover photo
                       </span>
@@ -245,33 +243,33 @@ export function StepPhotoManagement({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-100/70 transition-colors"
+                      className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-[#E9EBFF]"
                     >
                       <CameraPlaceholder />
-                      <span className="mt-2 text-xs font-semibold text-zinc-600">Click to add cover photo</span>
+                      <span className="mt-4 text-base font-normal text-[#727272] block">Click to add cover photo</span>
                     </button>
                   )}
                 </div>
               </div>
 
               {/* Right Column: 2x2 Grid (Slots 1, 2, 3, 4) */}
-              <div className="sm:col-span-6 grid grid-cols-2 gap-4">
+              <div className="sm:col-span-6 grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-[234px_234px] xl:gap-5.5">
                 {[1, 2, 3, 4].map((slotIdx) => {
                   const photoUrl = photos[slotIdx];
                   return (
                     <div
                       key={slotIdx}
-                      className="w-full aspect-square rounded-2xl border border-zinc-200 bg-zinc-50 flex items-center justify-center relative overflow-hidden shadow-xs group"
+                      className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[10px] border border-[#727272] bg-[#F3F4F5] shadow-xs group sm:rounded-2xl xl:h-[210px] xl:w-[234px] xl:aspect-auto"
                     >
                       {photoUrl ? (
                         <>
-                          <img src={photoUrl} alt={`Photo ${slotIdx + 1}`} className="w-full h-full object-cover" />
+                          <img src={photoUrl} alt={`Photo ${slotIdx + 1}`} className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
                             <div className="flex items-center justify-between w-full">
                               <button
                                 type="button"
                                 onClick={() => handleSetCoverPhoto(slotIdx)}
-                                className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
+                                className="bg-white/90 text-[#1F1F1F] text-[10px] font-medium px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
                               >
                                 Make cover
                               </button>
@@ -287,7 +285,7 @@ export function StepPhotoManagement({
                             <button
                               type="button"
                               onClick={() => triggerReplace(slotIdx)}
-                              className="bg-white/90 text-[#1F1F1F] text-[11px] font-semibold py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
+                              className="bg-white/90 text-[#1F1F1F] text-[11px] font-medium py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
                             >
                               Replace
                             </button>
@@ -297,7 +295,7 @@ export function StepPhotoManagement({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-100/70 transition-colors"
+                          className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-[#E9EBFF]"
                         >
                           <CameraPlaceholder />
                         </button>
