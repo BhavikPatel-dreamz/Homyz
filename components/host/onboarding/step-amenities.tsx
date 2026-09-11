@@ -307,16 +307,16 @@ export function StepAmenities({
 
           <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
-            <h1 className="mb-2">
+            <h1 data-aos="fade-up" className="mb-2">
               Tell guests what your place has to offer
             </h1>
-            <p className="sm:mb-10 mb-8">
+            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-8">
               You can add more amenities after you publish your listing.
             </p>
 
             <div className="flex flex-col sm:gap-12 gap-8 w-full">
               {/* Section 1: Guest Favorites */}
-              <div>
+              <div data-aos="fade-up" data-aos-delay="200">
                 <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   What about these quest favorites?
                 </h3>
@@ -326,7 +326,7 @@ export function StepAmenities({
               </div>
 
               {/* Section 2: Standout Amenities */}
-              <div>
+              <div data-aos="fade-up" data-aos-delay="300">
                 <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   Do you have any standout amenities?
                 </h3>
@@ -336,7 +336,7 @@ export function StepAmenities({
               </div>
 
               {/* Section 3: Safety Items */}
-              <div>
+              <div data-aos="fade-up" data-aos-delay="400">
                 <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   Do you have any of these safety items?
                 </h3>

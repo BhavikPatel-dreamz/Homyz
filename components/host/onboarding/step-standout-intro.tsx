@@ -25,7 +25,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
           <div className="step-intro-panel max-w-219.25 w-full grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center sm:m-auto mx-auto">
 
             {/* Left Column: Step 2 Badge, Title & Subtitle */}
-            <div className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
+            <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
               <div className="mb-5">
                 <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
                   Step 2
@@ -41,7 +41,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
             </div>
 
             {/* Right Column: Cozy Room Interior Vector Illustration with Floating Accent Blobs */}
-            <div className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
+            <div data-aos="fade-left" data-aos-delay="100" data-aos-duration="700" className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
 
               <div className="w-full relative">
                 {/* Main Illustration Container */}

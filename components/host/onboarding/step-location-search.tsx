@@ -126,14 +126,14 @@ export function StepLocationSearch({
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           <OnboardingMobileCloseButton disabled={isLoading} />
           <div className="max-w-124.25 mx-auto w-full flex flex-col items-start text-left my-auto">
-            <h1 className="mb-4">
+            <h1 data-aos="fade-up" className="mb-4">
               Where’s your place located?
             </h1>
-            <p className="mb-8">
+            <p data-aos="fade-up" data-aos-delay="100" className="mb-8">
               Your address is only shared with guests after they have made a confirmed reservation.
             </p>
 
-            <div className="relative w-full max-w-xl">
+            <div data-aos="fade-up" data-aos-delay="200" className="relative w-full max-w-xl">
               {/* Autocomplete Search Input Field */}
               <div className="relative sm:absolute sm:top-5 sm:left-1/2 sm:-translate-x-1/2 z-30 w-full sm:w-[90%] bg-white/95 backdrop-blur-md sm:h-18 h-12 sm:rounded-[20px] rounded-[10px] border border-[#1F1F1F] shadow-lg px-4 sm:py-3 flex items-center">
                 <div className="flex min-w-0 flex-1 items-center gap-3">

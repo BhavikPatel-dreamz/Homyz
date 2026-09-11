@@ -62,14 +62,14 @@ export function StepWeekendPrice({
           <div className="mx-auto my-auto flex w-full max-w-[620px] flex-col items-start text-center">
             {/* Main Title & Subtitle */}
             <div className="mx-auto max-w-[530px]">
-              <h1 className="sm:mb-5 mb-3">Set a weekend price</h1>
-              <p className="sm:mb-10 mb-6">
+              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">Set a weekend price</h1>
+              <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
                 TIP: Weekend rates typically reflect increased leisure demand for Friday and Saturday nights.
               </p>
             </div>
 
             {/* Pricing Card Box */}
-            <div className="mx-auto flex w-full max-w-sm flex-col items-center justify-center rounded-3xl border border-zinc-200/90 bg-[#f7f7f8] p-8 shadow-2xs transition-all sm:p-10">
+            <div data-aos="fade-up" data-aos-delay="200" className="mx-auto flex w-full max-w-sm flex-col items-center justify-center rounded-3xl border border-zinc-200/90 bg-[#f7f7f8] p-8 shadow-2xs transition-all sm:p-10">
               {/* Big Weekend Price Display */}
               <div className="mb-5 flex w-full items-center justify-center gap-4">
                 {isEditing ? (

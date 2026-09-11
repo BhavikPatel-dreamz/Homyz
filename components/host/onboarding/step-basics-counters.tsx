@@ -43,15 +43,15 @@ export function StepBasicsCounters({
 
           <div className="max-w-[748px] mx-auto w-full flex flex-col items-start sm:my-auto">
             {/* Header & Subtitle */}
-            <h1 className="mb-5">
+            <h1 data-aos="fade-up" className="mb-5">
               Share some basics about your place
             </h1>
-            <p className="sm:mb-10 mb-8">
+            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-8">
               You’ll add more details later, like bed types.
             </p>
 
             {/* Counters List Stack */}
-            <div className="flex flex-col w-full divide-y divide-[#727272] mb-6">
+            <div data-aos="fade-up" data-aos-delay="200" className="flex flex-col w-full divide-y divide-[#727272] mb-6">
               {/* Guests Row */}
               <div className="flex items-center justify-between sm:py-4.5 py-4">
                 <span className="text-lg font-medium text-[#1F1F1F]">Guests</span>

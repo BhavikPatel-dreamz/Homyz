@@ -76,15 +76,15 @@ export function StepAddressConfirm({
           
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
-            <h1 className="mb-2">
+            <h1 data-aos="fade-up" className="mb-2">
               Confirm your address
             </h1>
-            <p className="sm:mb-8.75 mb-8">
+            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-8.75 mb-8">
               Your address is only shared with guests after they’ve made a reservation.
             </p>
 
             {/* Address Form Inputs Stack */}
-            <div className="flex flex-col gap-3.5 w-full">
+            <div data-aos="fade-up" data-aos-delay="200" className="flex flex-col gap-3.5 w-full">
               {/* Country / Region Select */}
               <div className="relative w-full">
                 <select
@@ -187,7 +187,7 @@ export function StepAddressConfirm({
             </div>
 
             {/* Real Interactive Leaflet Map Preview */}
-            <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
+            <div data-aos="fade-up" data-aos-delay="300" className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
               <RealMap
                 address={streetAddress}
                 city={city}

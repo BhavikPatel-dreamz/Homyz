@@ -22,7 +22,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
 
           <div className="step-intro-panel max-w-219.25 w-full grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center sm:m-auto mx-auto">
             {/* Left Column: Step Badge, Title & Description */}
-            <div className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
+            <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
               <div className="mb-5">
                 <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
                   Step 1
@@ -38,7 +38,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
             </div>
 
             {/* Right Column: Room & Armchair Vector Illustration */}
-            <div className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
+            <div data-aos="fade-left" data-aos-delay="100" data-aos-duration="700" className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
               <div className="w-full sm:max-w-md rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 bg-[#6A9FB5]">
                 <svg width="362" height="362" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
                   <rect width="400" height="400" fill="#6A9FB5" />

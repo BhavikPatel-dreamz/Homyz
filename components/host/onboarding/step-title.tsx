@@ -39,15 +39,15 @@ export function StepTitle({
 
           <div className="max-w-187 mx-auto w-full flex flex-col items-start">
             {/* Main Title & Subtitle */}
-            <h1 className="sm:mb-5 mb-3">
+            <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
               Now, it’s time to give your house a title
             </h1>
-            <p className="sm:mb-10 mb-8">
+            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-8">
               Short title work best. Have fun with it - you can always change it later
             </p>
 
             {/* Title Input Card Container */}
-            <div className="w-full max-w-2xl bg-[#F3F4F5] border border-white rounded-xl px-3 sm:py-6 py-3 flex flex-col shadow-[0px_2px_4px_rgba(0,0,0,0.25)]">
+            <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-2xl bg-[#F3F4F5] border border-white rounded-xl px-3 sm:py-6 py-3 flex flex-col shadow-[0px_2px_4px_rgba(0,0,0,0.25)]">
               <div className="flex sm:flex-col flex-row sm:items-start items-center sm:justify-start justify-between">
                 <label htmlFor="property-title" className="text-lg font-medium text-[#1F1F1F] mb-2">
                   Your title

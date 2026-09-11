@@ -69,16 +69,16 @@ export function StepDiscounts({
           <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Main Title & Tip Subtitle */}
             <div className="title-section">
-              <h1 className="sm:mb-5 mb-3">
+              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
                 Add discounts
               </h1>
-              <p className="sm:mb-10 mb-6">
+              <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
                 Help your place stand out to get booked faster and earn your first reviews.
               </p>
             </div>
 
             {/* Discounts List */}
-            <div className="w-full sm:space-y-4 space-y-3">
+            <div data-aos="fade-up" data-aos-delay="200" className="w-full sm:space-y-4 space-y-3">
               {discounts.map((discount) => {
                 const isEnabled = selectedDiscounts.includes(discount.id);
                 return (

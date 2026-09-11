@@ -104,15 +104,15 @@ export function StepHighlights({
 
           <div className="max-w-4xl mx-auto w-full flex flex-col items-start">
             {/* Main Title & Subtitle */}
-            <h1 className="sm:mb-5 mb-3">
+            <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
               Let’s describe your house
             </h1>
-            <p className="text-base font-normal text-[#727272] sm:mb-10 mb-6">
+            <p data-aos="fade-up" data-aos-delay="100" className="text-base font-normal text-[#727272] sm:mb-10 mb-6">
               Choose up to 3 highlights. We’ll use these to help guests understand your place.
             </p>
 
             {/* Highlights Selector Grid */}
-            <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-5">
+            <div data-aos="fade-up" data-aos-delay="200" className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-5">
               {highlightOptions.map((item) => {
                 const isSelected = selectedHighlights.includes(item.id);
                 return (

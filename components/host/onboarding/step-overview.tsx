@@ -52,7 +52,7 @@ export function StepOverview({
   };
 
   return (
-    <main className="step-overview min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-overview min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           
@@ -63,7 +63,7 @@ export function StepOverview({
           <div className="grid w-full grid-cols-1 items-start lg:grid-cols-12">
             {/* Heading */}
             <div className="mb-10 flex flex-col justify-center sm:mb-24 lg:col-span-4 lg:mb-0 lg:pr-8">
-              <h1>
+              <h1 data-aos="fade-up" data-aos-duration="700">
                 <span className="lg:hidden">
                   It&rsquo;s easy to get started on
                   <br />
@@ -83,6 +83,9 @@ export function StepOverview({
               {STEPS.map((step, index) => (
                 <article
                   key={step.number}
+                  data-aos="fade-up"
+                  data-aos-delay={String((index + 1) * 100)}
+                  data-aos-duration="700"
                   className={`relative isolate min-h-[159px] w-full sm:min-h-[175px] ${index !== STEPS.length - 1
                       ? "mb-9 sm:mb-12"
                       : ""
@@ -104,11 +107,11 @@ export function StepOverview({
 
                   {/* Card content */}
                   <div className="relative z-10 flex min-h-[159px] flex-col items-center justify-center px-5 pt-10 pb-6 text-center sm:min-h-[175px] sm:px-9 sm:pt-11 sm:pb-8 lg:items-start lg:px-9 lg:pt-10 lg:text-left">
-                    <h2 className="text-[18px] font-medium leading-tight tracking-tight text-[#1F1F1F] sm:text-xl lg:font-semibold">
+                    <h2 className="font-medium leading-tight tracking-tight text-[#1F1F1F] sm:text-xl text-[18px]  lg:font-semibold">
                       {step.title}
                     </h2>
 
-                    <p className="mt-3 max-w-[540px] text-[15px] font-normal leading-[1.5] text-[#7A7A7A] sm:text-base lg:text-sm lg:font-medium lg:leading-relaxed">
+                    <p className="mt-3 max-w-[540px] font-normal leading-[1.5] text-[#7A7A7A] text-base lg:font-medium lg:leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -118,7 +121,13 @@ export function StepOverview({
           </div>
 
           {/* Action buttons */}
-          <div className="mt-10.75 flex w-full items-center lg:justify-end">
+          <div
+            data-aos="fade"
+            data-aos-anchor="main"
+            data-aos-delay="200"
+            data-aos-duration="700"
+            className="mt-10.75 flex w-full items-center lg:justify-end"
+          >
             <OnboardingBackButton
               onClick={handleBack}
               disabled={isLoading}

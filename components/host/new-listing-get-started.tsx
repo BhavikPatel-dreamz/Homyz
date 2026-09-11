@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import type AOS from "aos";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
@@ -96,6 +97,7 @@ async function readSaveError(response: Response) {
 
 export function NewListingGetStarted({ initialHostingType }: { initialHostingType: HostingType }) {
   const router = useRouter();
+  const aosRef = useRef<typeof AOS | null>(null);
   const searchParams = useSearchParams();
   const { data: session, update: updateSession } = useSession();
   const hostingType = initialHostingType;
@@ -115,7 +117,6 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   const [step, setStep] = useState<number>(getInitialStep);
   const [draftId, setDraftId] = useState<string | null>(urlDraftId || null);
   const draftIdRef = useRef<string | null>(draftId);
-  draftIdRef.current = draftId;
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
   const hydratedDraftRef = useRef(false);
@@ -148,6 +149,43 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   const [coords, setCoords] = useState<LocationCoords>({ lat: 24.7136, lng: 46.6753 });
   const [hasConfirmedLocation, setHasConfirmedLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isAosReady, setIsAosReady] = useState(false);
+
+  useEffect(() => {
+    draftIdRef.current = draftId;
+  }, [draftId]);
+
+  // This wizard is already a Client Component, making it the single safe place
+  // to initialise AOS after hydration. Individual step components own their
+  // `data-aos-*` attributes, so each element can be managed independently.
+  useEffect(() => {
+    let isActive = true;
+
+    void import("aos").then(({ default: AOS }) => {
+      if (!isActive) return;
+
+      aosRef.current = AOS;
+      AOS.init({
+        duration: 700,
+        easing: "ease-out-cubic",
+        once: true,
+        offset: 120,
+        anchorPlacement: "top-bottom",
+        disable: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      });
+      setIsAosReady(true);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const aos = aosRef.current;
+    if (!aos || !isAosReady) return;
+    aos.refreshHard();
+  }, [isAosReady, step]);
 
   // Property Basics Counters (Step 6)
   const [guests, setGuests] = useState<number>(4);
@@ -1056,7 +1094,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
               <button
                 type="button"
                 onClick={() => setWizardError(null)}
-                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#727272] hover:text-white hover:bg-[#1f1f1f] duration-300"
               >
                 Close
               </button>

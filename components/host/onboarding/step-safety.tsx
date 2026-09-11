@@ -51,15 +51,15 @@ export function StepSafety({
 
           <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Heading & Subtitle */}
-            <h1 className="sm:mb-5 mb-3">
+            <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
               Share safety details
             </h1>
-            <p className="sm:mb-10 mb-6">
+            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
               Does your place have any of these?
             </p>
 
             {/* Safety Options List */}
-            <div className="w-full space-y-3">
+            <div data-aos="fade-up" data-aos-delay="200" className="w-full space-y-3">
               {safetyItems.map((item) => {
                 const answer = selectedSafety.find((value) => value.startsWith(`${item.id}:`))?.split(":")[1];
                 return (

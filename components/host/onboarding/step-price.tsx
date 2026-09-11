@@ -52,16 +52,16 @@ export function StepPrice({
 
             <div className="max-w-[530px] mx-auto">
               {/* Main Title & Tip Subtitle */}
-              <h1 className="sm:mb-5 mb-3">
+              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
                 Now, set a weekday base price
               </h1>
-              <p className="sm:mb-10 mb-6">
+              <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
                 TIP: Places like yours in your area typically range from 150 {currencySymbol} to 450 {currencySymbol} per night. You can change this anytime.
               </p>
             </div>
 
             {/* Pricing Card Box Container */}
-            <div className="w-full max-w-[356px] mx-auto rounded-[20px] border border-[#727272] bg-[#F3F4F5] p-5 sm:p-8">
+            <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-[356px] mx-auto rounded-[20px] border border-[#727272] bg-[#F3F4F5] p-5 sm:p-8">
               {/* Editable Base Price Display */}
               <div className="mb-6 flex w-full items-center justify-center gap-4">
                 {isEditing ? (

@@ -26,7 +26,13 @@ export function StepProgressFooter({
   return (
     <div className="sm:mt-18 mt-auto pt-8">
       {/* Action Buttons */}
-      <div className="flex items-center justify-end">
+      <div
+        data-aos="fade"
+        data-aos-anchor="main"
+        data-aos-delay="200"
+        data-aos-duration="700"
+        className="flex items-center justify-end"
+      >
         <OnboardingBackButton
           onClick={onBack}
           disabled={isLoading}

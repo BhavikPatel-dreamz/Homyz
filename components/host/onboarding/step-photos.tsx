@@ -127,8 +127,8 @@ export function StepPhotos({
             {/* Main Title & Subtitle */}
             {photos.length === 0 ? (
               <>
-                <h1 className="mb-5">Add some photos of your house</h1>
-                <p className="sm:text-base text-sm font-normal text-[#727272] mb-10">
+                <h1 data-aos="fade-up" className="mb-5">Add some photos of your house</h1>
+                <p data-aos="fade-up" data-aos-delay="100" className="sm:text-base text-sm font-normal text-[#727272] mb-10">
                   You’ll need 5 photos to get started. You can add more or make changes later.
                 </p>
               </>
@@ -161,7 +161,7 @@ export function StepPhotos({
 
             {/* Main Upload Box Container */}
             {photos.length === 0 ? (
-              <div className="w-full max-w-xl sm:h-[446px] h-[338px] rounded-3xl border-2 border-[#1F1F1F] bg-[#F3F4F5] flex flex-col items-center justify-center p-6 text-center shadow-xs">
+              <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-xl sm:h-[446px] h-[338px] rounded-3xl border-2 border-[#1F1F1F] bg-[#F3F4F5] flex flex-col items-center justify-center p-6 text-center shadow-xs">
                 {/* Cute Camera Icon Illustration */}
                 <div className="w-20 h-20 mb-4 flex items-center justify-center relative">
                   <Image src="/images/icons/camera-icon.svg" alt="camera-icon.svg" width={90} height={90} />
@@ -178,7 +178,7 @@ export function StepPhotos({
               </div>
             ) : (
               /* Uploaded Photos Grid Display */
-              <div className="w-full">
+              <div data-aos="fade-up" data-aos-delay="200" className="w-full">
                 <div className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-6">
                   {photos.map((url, idx) => (
                     <div

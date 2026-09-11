@@ -34,16 +34,18 @@ export function StepPlaceType({
 
 
           <div className="max-w-187 mx-auto w-full flex flex-col items-start sm:my-auto text-left">
-            <h1 className="mb-10">
+            <h1 data-aos="fade-up" className="mb-10">
               What type of place will guests have?
             </h1>
 
             <div className="flex flex-col sm:gap-3.25 gap-3 w-full">
-              {placeTypes.map((pt) => {
+              {placeTypes.map((pt, index) => {
                 const isSelected = selectedPlaceType === pt.id;
                 return (
                   <button
                     key={pt.id}
+                    data-aos="fade-up"
+                    data-aos-delay={String((index + 1) * 100)}
                     type="button"
                     onClick={() => onSelectPlaceType(pt.id)}
                     className={`flex items-start justify-between px-5 py-4 rounded-lg border transition-all text-left cursor-pointer group ${isSelected

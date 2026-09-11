@@ -156,7 +156,7 @@ export function StepPhotoManagement({
             {/* Top Header Bar with Title & Plus (+) Button */}
             <div className="flex items-center justify-between w-full mb-8">
               <div>
-                <h1>
+                <h1 data-aos="fade-up">
                   Cool !<br className="sm:hidden block" /> How does this look?
                 </h1>
                 {/* <p className="text-xs font-normal text-[#727272] mt-1">
@@ -211,7 +211,7 @@ export function StepPhotoManagement({
             />
 
             {/* Primary 5-Photo Collage Layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 sm:gap-6 gap-2 w-full mb-8">
+            <div data-aos="fade-up" data-aos-delay="100" className="grid grid-cols-1 sm:grid-cols-12 sm:gap-6 gap-2 w-full mb-8">
               {/* Left Column: Cover Photo (Slot 0) */}
               <div className="sm:col-span-6">
                 <div className="w-full h-72 sm:h-111 sm:rounded-[20px] rounded-[10px] border border-[#727272] hover:border-[#727272] transition-all duration-300 bg-[#F3F4F5] flex items-center justify-center relative overflow-hidden shadow-xs group">
@@ -308,7 +308,7 @@ export function StepPhotoManagement({
 
             {/* Additional Photos Section (If more than 5 photos uploaded) */}
             {extraPhotos.length > 0 && (
-              <div className="w-full mt-4">
+              <div data-aos="fade-up" data-aos-delay="200" className="w-full mt-4">
                 <h3 className="text-sm font-semibold text-zinc-800 mb-3">Additional photos ({extraPhotos.length})</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
                   {extraPhotos.map((url, idx) => {
