@@ -12,6 +12,7 @@ import { HostPermissionsTab } from "./host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { adminDeleteListingAction } from "@/actions/admin/listingActions";
+import { formatSarFromHalalas } from "@/lib/currency";
 
 export type HostDetailsDTO = HostDetailsData;
 
@@ -906,7 +907,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
           </div>
           <div className="mt-3 flex items-baseline justify-between">
             <p className="text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
-              ${(metrics.totalEarnings / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatSarFromHalalas(metrics.totalEarnings)}
             </p>
           </div>
           <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -1506,7 +1507,7 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                           <div className="font-semibold text-muted-foreground">{item.propertyType || item.hostingType || "Property"}</div>
                           <div className="text-[10px] text-[var(--muted-foreground)]">{item.city || item.address || "Location Pending"}</div>
                         </td>
-                        <td className="py-3.5 px-4 text-muted-foreground font-semibold">${(item.price / 100).toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-muted-foreground font-semibold">{formatSarFromHalalas(item.price)}</td>
                         <td className="py-3.5 px-4 font-mono font-semibold text-xs">
                           <span className={photosCount >= 5 ? "text-emerald-600" : "text-amber-600"}>
                             {photosCount} photos {photosCount < 5 ? "(Min 5 required)" : ""}
@@ -2322,11 +2323,11 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Nightly Rate</span>
-                    <span className="font-semibold text-base text-emerald-600">${(selectedListingForReview.price / 100).toFixed(2)}</span>
+                    <span className="font-semibold text-base text-emerald-600">{formatSarFromHalalas(selectedListingForReview.price)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Cleaning Fee</span>
-                    <span className="font-semibold text-muted-foreground">${((selectedListingForReview.cleaningFee || 0) / 100).toFixed(2)}</span>
+                    <span className="font-semibold text-muted-foreground">{formatSarFromHalalas(selectedListingForReview.cleaningFee || 0)}</span>
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block">Check-in Method</span>

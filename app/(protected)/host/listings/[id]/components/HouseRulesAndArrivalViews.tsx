@@ -23,6 +23,8 @@ import {
   type SectionKey,
 } from "../section-helpers";
 import { HouseRulesSkeleton } from "./YourSpaceSkeletons";
+import { ListingStatusView } from "./ListingStatusView";
+import type { HostListingData } from "../host-listing-editor-client";
 
 function AllowDenyButtons({
   value,
@@ -166,9 +168,13 @@ interface HouseRulesAndArrivalViewsProps {
   listingDiscounts?: any;
   onSaveOrgStays?: (cfg: any) => Promise<void>;
   initialGuidebooks?: any[];
+  listing?: HostListingData;
+  onUpdateListing?: (updated: Partial<HostListingData>) => void;
 }
 
 export function HouseRulesAndArrivalViews({
+  listing,
+  onUpdateListing,
   initialGuidebooks,
   listingId,
   listingCity,
@@ -1023,17 +1029,21 @@ export function HouseRulesAndArrivalViews({
         />
       )}
 
+
+
       {/* --------------------------------------------------------- */}
       {/* VIEW: LISTING STATUS (Matches Figma 100%) */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "listing-status" ||
         activeSection === "listingstatus") && (
         <ListingStatusView
+          listing={listing}
           setActiveSection={setActiveSection}
+          onUpdateListing={onUpdateListing}
+          status={listingStatusSetting || (listing?.published ? "listed" : "unlisted")}
+          setStatus={setListingStatusSetting}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
-          status={listingStatusSetting || "unlisted"}
-          setStatus={setListingStatusSetting}
         />
       )}
 
@@ -1609,122 +1619,7 @@ function InteractionPreferencesView({
   );
 }
 
-/* ================================================================= */
-/* LISTING STATUS INNER COMPONENT (Matches Figma 100%)               */
-/* ================================================================= */
-function ListingStatusView({
-  setActiveSection,
-  isSaving,
-  handleSaveSection,
-  status: propStatus,
-  setStatus: propSetStatus,
-}: {
-  setActiveSection: (s: any) => void;
-  isSaving: boolean;
-  handleSaveSection: (key: any) => void;
-  status?: "listed" | "unlisted";
-  setStatus?: (s: "listed" | "unlisted") => void;
-}) {
-  const [localStatus, setLocalStatus] = React.useState<"listed" | "unlisted">(propStatus || "unlisted");
-  const status = propStatus ?? localStatus;
-  const setStatus = (val: "listed" | "unlisted") => {
-    setLocalStatus(val);
-    propSetStatus?.(val);
-  };
-  const [isSaved, setIsSaved] = React.useState(false);
 
-  return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="tracking-tight text-[#1F1F1F]">Listing status</h1>
-      </div>
-
-      {/* Modern House Illustration (Matching Figma Screenshot 100%) */}
-      <div className="flex justify-center py-6">
-        <svg className="w-56 h-44" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Main House Body */}
-          <rect x="60" y="60" width="75" height="75" rx="3" fill="#F8FAFC" stroke="#1E293B" strokeWidth="2.5" />
-          {/* Slanted Roof */}
-          <polygon points="50,62 97.5,25 145,62" fill="#FDE047" stroke="#1E293B" strokeWidth="2.5" />
-          {/* Windows */}
-          <rect x="72" y="72" width="18" height="24" rx="2" fill="#93C5FD" stroke="#1E293B" strokeWidth="2" />
-          <line x1="81" y1="72" x2="81" y2="96" stroke="#1E293B" strokeWidth="1.5" />
-          <line x1="72" y1="84" x2="90" y2="84" stroke="#1E293B" strokeWidth="1.5" />
-          {/* Door */}
-          <rect x="102" y="95" width="20" height="40" rx="1" fill="#334155" stroke="#1E293B" strokeWidth="2" />
-          <circle cx="106" cy="115" r="1.5" fill="#FDE047" />
-          {/* Ground Line */}
-          <path d="M40 135 H160" stroke="#15803D" strokeWidth="4" strokeLinecap="round" />
-          {/* Tree Left */}
-          <ellipse cx="46" cy="120" rx="10" ry="16" fill="#22C55E" stroke="#15803D" strokeWidth="2" />
-          <line x1="46" y1="128" x2="46" y2="135" stroke="#15803D" strokeWidth="2.5" />
-          {/* Tree Right */}
-          <ellipse cx="152" cy="116" rx="12" ry="18" fill="#16A34A" stroke="#15803D" strokeWidth="2" />
-          <line x1="152" y1="126" x2="152" y2="135" stroke="#15803D" strokeWidth="2.5" />
-        </svg>
-      </div>
-
-      {/* Selectable Status Cards (Listed vs Unlisted) */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Listed Card */}
-        <div
-          onClick={() => setStatus("listed")}
-          className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
-            status === "listed"
-              ? "bg-[#FEF9EC] border-amber-300 shadow-2xs"
-              : "bg-white border-zinc-200 hover:border-zinc-300"
-          }`}
-        >
-          <h3 className="font-medium text-base text-[#1F1F1F]">Listed</h3>
-          <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-            Guests can find your listing in search results and book available dates.
-          </p>
-        </div>
-
-        {/* Unlisted Card */}
-        <div
-          onClick={() => setStatus("unlisted")}
-          className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
-            status === "unlisted"
-              ? "bg-[#FEF9EC] border-amber-300 shadow-2xs"
-              : "bg-white border-zinc-200 hover:border-zinc-300"
-          }`}
-        >
-          <h3 className="font-medium text-base text-[#1F1F1F]">Unlisted</h3>
-          <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
-            Your listing is hidden from search results and guests cannot book dates.
-          </p>
-        </div>
-      </div>
-
-      {/* Save & Cancel Buttons */}
-      <div className="flex items-center gap-3 pt-4">
-        <button
-          type="button"
-          disabled={isSaving}
-          onClick={() => {
-            handleSaveSection("listing-status");
-            setIsSaved(true);
-            setTimeout(() => setIsSaved(false), 2000);
-          }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-        >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /* ================================================================= */
 /* LANGUAGES INNER COMPONENT (Matches Figma 100%)                    */

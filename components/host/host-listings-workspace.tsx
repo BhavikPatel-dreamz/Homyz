@@ -140,7 +140,7 @@ export function HostListingsWorkspace({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    price: 15000, // $150.00
+    price: 15000, // SAR 150.00
     hostingType: "HOME",
     propertyType: "Apartment",
     listingType: "Entire place",
@@ -289,7 +289,9 @@ export function HostListingsWorkspace({
   async function handleSubmitListing(item: ListingDTO) {
     startTransition(async () => {
       try {
-        const actionFn = item.status === "CHANGES_REQUESTED" ? resubmitListingForReviewAction : submitListingForReviewAction;
+        const actionFn = ["CHANGES_REQUESTED", "REJECTED"].includes(item.status)
+          ? resubmitListingForReviewAction
+          : submitListingForReviewAction;
         const res = await actionFn(item.id);
         if (!res.ok) {
           showToast(res.error || "Failed to submit listing.", "error");
@@ -599,6 +601,8 @@ export function HostListingsWorkspace({
                   const coverPhoto = photos[0] || null;
                   const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
                   const isCoHosted = item.hostId !== currentUserId;
+                  const adminFeedback = item.rejectionReason
+                    || (typeof item.requestedChanges === "string" ? item.requestedChanges : null);
 
                   return (
                     <div
@@ -664,6 +668,14 @@ export function HostListingsWorkspace({
                         <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
                           {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Location not added yet"}
                         </p>
+                        {item.status === "PENDING_REVIEW" && (
+                          <p className="mt-1 text-xs font-medium text-amber-700">Submitted for Admin approval</p>
+                        )}
+                        {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
+                          <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>
+                            Admin feedback: {adminFeedback}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
@@ -1084,7 +1096,7 @@ export function HostListingsWorkspace({
                     <h4 className="font-semibold text-muted-foreground mb-3">Pricing & Fees</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ($USD) *</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate (SAR) *</label>
                         <input
                           type="number"
                           min={1}
@@ -1095,7 +1107,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Weekend Rate ($USD)</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Weekend Rate (SAR)</label>
                         <input
                           type="number"
                           min={0}
@@ -1105,7 +1117,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cleaning Fee ($USD)</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cleaning Fee (SAR)</label>
                         <input
                           type="number"
                           min={0}

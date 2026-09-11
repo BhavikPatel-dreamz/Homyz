@@ -4,6 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatSarFromHalalas } from "@/lib/currency";
 import {
   adminUpdateListingDetailsAction,
   adminUpdateListingPricingAction,
@@ -66,6 +67,17 @@ export interface DetailListingData {
     image: string | null;
     phone: string | null;
   };
+  hostVerification: {
+    status: string;
+    complianceStatus: string;
+    documents: Array<{
+      id: string;
+      documentType: string;
+      fileUrl: string;
+      status: string;
+      rejectionReason: string | null;
+    }>;
+  } | null;
   reviewer: { id: string; name: string | null; email: string | null } | null;
   approvedBy: { id: string; name: string | null; email: string | null } | null;
   bookingCount: number;
@@ -354,11 +366,11 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
     });
     setIsSaving(false);
     if (res.ok) {
-      const newStatus = action === "APPROVE" ? "APPROVED" : action === "REQUEST_CHANGES" ? "CHANGES_REQUESTED" : "REJECTED";
+      const updated = res.data as { status: string; published: boolean; rejectionReason: string | null } | undefined;
       updateLocalListing({
-        status: newStatus,
-        published: action === "APPROVE",
-        rejectionReason: action === "APPROVE" ? null : modReason,
+        status: updated?.status ?? listing.status,
+        published: updated?.published ?? listing.published,
+        rejectionReason: updated?.rejectionReason ?? null,
       });
       setFeedbackMsg({ type: "success", text: `Quality moderation action applied: ${action}` });
     } else {
@@ -522,7 +534,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-4 text-xs font-medium">
               <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
                 <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-semibold">Nightly Rate</span>
-                <span className="text-xl font-black text-emerald-600 font-mono">${(listing.price / 100).toFixed(2)}</span>
+                <span className="text-xl font-black text-emerald-600 font-mono">{formatSarFromHalalas(listing.price)}</span>
               </div>
 
               <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
@@ -561,6 +573,28 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                   <span className="text-[10px] text-[var(--muted-foreground)]">{listing.host.email}</span>
                 </div>
               </div>
+            </div>
+
+            <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Host verification & documents</h3>
+              {listing.hostVerification ? (
+                <>
+                  <p><strong className="text-muted-foreground">Application:</strong> {listing.hostVerification.status}</p>
+                  <p><strong className="text-muted-foreground">Compliance:</strong> {listing.hostVerification.complianceStatus}</p>
+                  {listing.hostVerification.documents.length ? (
+                    <ul className="space-y-1">
+                      {listing.hostVerification.documents.map((document) => (
+                        <li key={document.id} className="flex items-center justify-between gap-2">
+                          <a href={document.fileUrl} target="_blank" rel="noreferrer" className="truncate text-amber-700 underline dark:text-amber-300">
+                            {document.documentType.replace(/_/g, " ")}
+                          </a>
+                          <span className="shrink-0 text-[10px] font-semibold">{document.status}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="text-[var(--muted-foreground)]">No verification documents uploaded.</p>}
+                </>
+              ) : <p className="text-[var(--muted-foreground)]">No host verification application found.</p>}
             </div>
 
             <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
@@ -1003,7 +1037,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-4">
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Nightly Rate ($ USD) *</label>
+              <label className="block font-semibold text-muted-foreground mb-1">Nightly Rate (SAR) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -1015,7 +1049,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Weekend Rate ($ USD)</label>
+              <label className="block font-semibold text-muted-foreground mb-1">Weekend Rate (SAR)</label>
               <input
                 type="number"
                 step="0.01"
@@ -1027,7 +1061,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Cleaning Fee ($ USD)</label>
+              <label className="block font-semibold text-muted-foreground mb-1">Cleaning Fee (SAR)</label>
               <input
                 type="number"
                 step="0.01"
@@ -1039,7 +1073,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Security Deposit ($ USD)</label>
+              <label className="block font-semibold text-muted-foreground mb-1">Security Deposit (SAR)</label>
               <input
                 type="number"
                 step="0.01"
@@ -1073,7 +1107,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
             <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
               <span>Standard Nightly Price Set:</span>
-              <span className="font-semibold text-emerald-600">✓ PASSED (${editPrice}/night)</span>
+              <span className="font-semibold text-emerald-600">✓ PASSED (SAR {editPrice}/night)</span>
             </div>
           </div>
 

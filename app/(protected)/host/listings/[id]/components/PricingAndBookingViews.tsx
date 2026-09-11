@@ -174,7 +174,7 @@ export function PricingAndBookingViews({
                   <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                     <label className="mb-2 block text-xs font-semibold text-zinc-700">Minimum price*</label>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
+                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SAR</span>
                       <input
                         type="number"
                         min={0}
@@ -188,7 +188,7 @@ export function PricingAndBookingViews({
                   <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
                     <label className="mb-2 block text-xs font-semibold text-zinc-700">Maximum price</label>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
+                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">SAR</span>
                       <input
                         type="number"
                         min={0}
@@ -201,7 +201,7 @@ export function PricingAndBookingViews({
                 </div>
               ) : (
                 <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">SR</span>
+                  <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">SAR</span>
                   <input
                     type="number"
                     value={editPrice || ""}
@@ -248,7 +248,7 @@ export function PricingAndBookingViews({
 
                   <div className="text-right">
                     <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Weekend rate</div>
-                    <div className="text-sm font-semibold text-[#1F1F1F]">SR {weekendPrice || 0}</div>
+                    <div className="text-sm font-semibold text-[#1F1F1F]">SAR {weekendPrice || 0}</div>
                   </div>
                 </div>
               </div>
@@ -276,7 +276,7 @@ export function PricingAndBookingViews({
                   </div>
                 </div>
                 <span className="text-xs text-zinc-400 font-mono">
-                  weekly average is SR{weeklyDiscount ? Math.round((editPrice || 100) * 7 * (1 - weeklyDiscount / 100)) : 665}
+                  weekly average is SAR {weeklyDiscount ? Math.round((editPrice || 100) * 7 * (1 - weeklyDiscount / 100)) : 665}
                 </span>
               </div>
 
@@ -298,7 +298,7 @@ export function PricingAndBookingViews({
                   </div>
                 </div>
                 <span className="text-xs text-zinc-400 font-mono">
-                  monthly average is SR{monthlyDiscount ? Math.round((editPrice || 100) * 30 * (1 - monthlyDiscount / 100)) : 2700}
+                  monthly average is SAR {monthlyDiscount ? Math.round((editPrice || 100) * 30 * (1 - monthlyDiscount / 100)) : 2700}
                 </span>
               </div>
             </div>

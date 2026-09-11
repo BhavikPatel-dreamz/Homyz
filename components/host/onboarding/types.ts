@@ -19,6 +19,7 @@ export interface LocationDetails {
   district?: string;
   postalCode?: string;
   country?: string;
+  countryCode?: string;
   formattedAddress?: string;
 }
 

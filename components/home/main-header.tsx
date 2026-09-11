@@ -13,7 +13,7 @@ export function MainHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English (US)");
-  const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
+  const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -211,7 +211,7 @@ export function MainHeader() {
                   Select Currency
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map(
+                  {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map(
                     (curr) => (
                       <button
                         key={curr}

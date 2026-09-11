@@ -66,13 +66,11 @@ export async function publishListingAction(id: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    const listing = await listingService.publish(actor, id);
+    // Retained for older editor clients. Publishing is Admin-only; a host's
+    // publish intent always submits the completed listing for review.
+    const listing = await listingService.submitForReview(actor, id);
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
-    revalidatePath(`/listings/${id}`);
-    if (listing.customSlug) {
-      revalidatePath(`/stay/${listing.customSlug}`);
-    }
     return listing;
   });
 }
@@ -98,6 +96,7 @@ export async function submitListingForReviewAction(id: string) {
     if (!actor) throw AppError.unauthorized();
     const listing = await listingService.submitForReview(actor, id);
     revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
     return listing;
   });
 }
@@ -108,6 +107,7 @@ export async function resubmitListingForReviewAction(id: string) {
     if (!actor) throw AppError.unauthorized();
     const listing = await listingService.resubmitForReview(actor, id);
     revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
     return listing;
   });
 }
@@ -175,4 +175,3 @@ export async function updateListingAvailabilityAction(id: string, blockedDates: 
     return listing;
   });
 }
-

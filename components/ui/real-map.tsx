@@ -8,6 +8,7 @@ export interface LocationDetails {
   district?: string;
   postalCode?: string;
   country?: string;
+  countryCode?: string;
   formattedAddress?: string;
 }
 
@@ -92,6 +93,7 @@ export function RealMap({
             const districtName = a.suburb || a.neighbourhood || a.city_district || "";
             const postalCodeStr = a.postcode || "";
             const countryName = a.country || "";
+            const countryCode = a.country_code || "";
             const fullAddress = data.display_name || [streetAddress, districtName, cityName, countryName].filter(Boolean).join(", ");
 
             const details: LocationDetails = {
@@ -100,6 +102,7 @@ export function RealMap({
               district: districtName,
               postalCode: postalCodeStr,
               country: countryName,
+              countryCode,
               formattedAddress: fullAddress,
             };
 

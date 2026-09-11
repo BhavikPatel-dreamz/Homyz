@@ -19,6 +19,7 @@ import { HostAndLocationViews } from "./components/HostAndLocationViews";
 import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalViews";
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
+import { ListingStatusView, computeMissingRequirements, getListingDisplayState } from "./components/ListingStatusView";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
 import {
@@ -165,6 +166,11 @@ export interface HostListingData {
   customSlug?: string | null;
   requestedChanges: any;
   rejectionReason: string | null;
+  submittedAt?: Date | string | null;
+  resubmittedAt?: Date | string | null;
+  approvedAt?: Date | string | null;
+  reapprovalRequired?: boolean;
+  reapprovalReason?: string | null;
   host: {
     id: string;
     name: string | null;
@@ -587,6 +593,13 @@ export function HostListingEditorClient({
   const [propertyInfoDetails, setPropertyInfoDetails] = useState<string[]>([]);
   const [guestSafetyState, setGuestSafetyState] = useState<GuestSafetyState>(() => parseSafetyData(listing));
 
+  const missingRequirements = computeMissingRequirements(listing);
+  const listingDisplayState = getListingDisplayState(
+    listing.status,
+    listing.published,
+    missingRequirements.length
+  );
+
   const [isSaving, setIsSaving] = useState(false);
   const setFeedbackMsg = useCallback((msg: { type: "success" | "error"; text: string } | null) => {
     if (!msg) return;
@@ -948,11 +961,11 @@ export function HostListingEditorClient({
           const res = await publishListingAction(listing.id);
           setIsSaving(false);
           if (res.ok && res.data) {
-            setListing((prev) => ({ ...prev, published: true, status: "ACTIVE", isPaused: false }));
-            setListingStatusSetting("listed");
-            setFeedbackMsg({ type: "success", text: "Listing published successfully!" });
+            setListing((prev) => ({ ...prev, published: false, status: "PENDING_REVIEW", isPaused: false }));
+            setListingStatusSetting("unlisted");
+            setFeedbackMsg({ type: "success", text: "Listing submitted for Admin approval. It will go live after approval." });
           } else {
-            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to publish listing. Please verify all required listing fields." });
+            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to submit listing. Please verify all required listing fields." });
           }
         } else {
           const res = await unpublishListingAction(listing.id);
@@ -1182,6 +1195,130 @@ export function HostListingEditorClient({
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
           <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
+            {/* Persistent Status Indicator Banner across all edit sections */}
+            {activeSection !== "listing-status" && activeSection !== "listingstatus" && (
+              <div className="space-y-3">
+                {listingDisplayState === "PENDING_APPROVAL" && (
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs animate-in fade-in">
+                    <div className="flex items-start gap-3">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse mt-1 shrink-0" />
+                      <div>
+                        <div className="font-semibold text-amber-950 text-sm flex items-center gap-2">
+                          <span>Listing Status: Pending Admin Approval</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">Under Review</span>
+                        </div>
+                        <p className="text-amber-900 mt-1 leading-relaxed">
+                          This listing has already been submitted for approval. You can continue reviewing your listing details, but the property will not become publicly available until the admin approves it.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="shrink-0 px-4 py-2 rounded-xl bg-white border border-amber-300 hover:bg-amber-100/60 font-semibold text-amber-950 transition-all cursor-pointer text-xs"
+                    >
+                      View Status →
+                    </button>
+                  </div>
+                )}
+
+                {listingDisplayState === "REJECTED" && (
+                  <div className="rounded-2xl border border-rose-300 bg-rose-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs animate-in fade-in">
+                    <div className="flex items-start gap-3">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1 shrink-0" />
+                      <div>
+                        <div className="font-semibold text-rose-950 text-sm flex items-center gap-2">
+                          <span>Listing Status: Changes Required</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">Action Needed</span>
+                        </div>
+                        <p className="text-rose-900 mt-1 leading-relaxed line-clamp-2">
+                          The admin requested updates before this listing can be approved:{" "}
+                          <span className="font-medium">{listing.rejectionReason || "Please review feedback and update details."}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold transition-all cursor-pointer text-xs"
+                    >
+                      View Feedback & Resubmit →
+                    </button>
+                  </div>
+                )}
+
+                {listingDisplayState === "PUBLISHED" && (
+                  <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-900 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="font-semibold">Listing Status: Published (Live)</span>
+                      <span className="text-emerald-700 font-normal hidden sm:inline">— Guests can find and book your property</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="font-semibold text-emerald-800 hover:underline cursor-pointer"
+                    >
+                      Manage Status →
+                    </button>
+                  </div>
+                )}
+
+                {listingDisplayState === "APPROVED" && (
+                  <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-900 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="font-semibold">Listing Status: Approved</span>
+                      <span className="text-emerald-700 font-normal hidden sm:inline">— Your listing has passed admin review</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="font-semibold text-emerald-800 hover:underline cursor-pointer"
+                    >
+                      View Status →
+                    </button>
+                  </div>
+                )}
+
+                {listingDisplayState === "READY_TO_SUBMIT" && (
+                  <div className="flex items-center justify-between rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-2.5 text-xs text-indigo-900 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                      <span className="font-semibold">Listing Status: Ready for review</span>
+                      <span className="text-indigo-700 font-normal hidden sm:inline">— All required details are complete</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="font-semibold text-indigo-800 hover:underline cursor-pointer"
+                    >
+                      Submit for Approval →
+                    </button>
+                  </div>
+                )}
+
+                {listingDisplayState === "DRAFT" && (
+                  <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs text-zinc-700 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-zinc-400" />
+                      <span className="font-semibold">Listing Status: Draft (Incomplete)</span>
+                      <span className="text-zinc-500 font-normal hidden sm:inline">
+                        — {missingRequirements.length} required {missingRequirements.length === 1 ? "section" : "sections"} remaining
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("listing-status")}
+                      className="font-semibold text-zinc-900 hover:underline cursor-pointer"
+                    >
+                      View Checklist →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeSection === "photos" && (
               <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} isLoading={isLoading} />
             )}
@@ -1351,6 +1488,8 @@ export function HostListingEditorClient({
             />
 
           <HouseRulesAndArrivalViews
+            listing={listing}
+            onUpdateListing={(updated) => setListing((prev) => ({ ...prev, ...updated }))}
             listingId={listing.id}
             listingCity={editCity || listing.city}
             listingCountry={editCountry || listing.country}

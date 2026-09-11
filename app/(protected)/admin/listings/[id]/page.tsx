@@ -16,7 +16,27 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
   const listing = await prisma.listing.findUnique({
     where: { id: listingId },
     include: {
-      host: { select: { id: true, name: true, email: true, image: true, phone: true } },
+      host: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          hostRegistrations: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+              status: true,
+              complianceStatus: true,
+              documents: {
+                select: { id: true, documentType: true, fileUrl: true, status: true, rejectionReason: true },
+                orderBy: { uploadedAt: "desc" },
+              },
+            },
+          },
+        },
+      },
       _count: { select: { bookings: true } },
     },
   });
@@ -87,6 +107,13 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
     updatedAt: listing.updatedAt.toISOString(),
     approvedAt: listing.approvedAt ? listing.approvedAt.toISOString() : null,
     host: listing.host,
+    hostVerification: listing.host.hostRegistrations[0]
+      ? {
+          status: listing.host.hostRegistrations[0].status,
+          complianceStatus: listing.host.hostRegistrations[0].complianceStatus,
+          documents: listing.host.hostRegistrations[0].documents,
+        }
+      : null,
     reviewer,
     approvedBy,
     bookingCount: listing._count.bookings,

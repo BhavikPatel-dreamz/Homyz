@@ -7,6 +7,7 @@ import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
+import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 interface StepAddressConfirmProps {
   country: string;
@@ -85,14 +86,13 @@ export function StepAddressConfirm({
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full px-4 pt-7 pb-2 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-medium text-[#1F1F1F] bg-white appearance-none cursor-pointer"
                 >
-                  <option value="Saudi Arabia - SA">Saudi Arabia - SA</option>
-                  <option value="United Arab Emirates - AE">United Arab Emirates - AE</option>
-                  <option value="Kuwait - KW">Kuwait - KW</option>
-                  <option value="Qatar - QA">Qatar - QA</option>
-                  <option value="Bahrain - BH">Bahrain - BH</option>
-                  <option value="Oman - OM">Oman - OM</option>
-                  <option value="United States - US">United States - US</option>
-                  <option value="United Kingdom - GB">United Kingdom - GB</option>
+                  <option value="" disabled>Select a country or region</option>
+                  {country && !ADDRESS_COUNTRIES.some((item) => item.value === country) && (
+                    <option value={country}>{country}</option>
+                  )}
+                  {ADDRESS_COUNTRIES.map((item) => (
+                    <option key={item.iso2} value={item.value}>{item.value}</option>
+                  ))}
                 </select>
                 <span className="absolute top-1.5 left-4 text-base font-normal text-[#727272] pointer-events-none">
                   Country / region

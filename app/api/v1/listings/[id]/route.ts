@@ -15,7 +15,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export const GET = apiHandler(async (req, ctx: Ctx) => {
   const { id } = await ctx.params;
   const listing = await listingService.getById(id);
-  if (!listing.published || listing.status !== ListingStatus.ACTIVE) {
+  if (!listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
     const actor = await requireApiAuth(req);
     return ok(await listingService.getForOwner(actor, id));
   }
