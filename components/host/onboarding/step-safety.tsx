@@ -1,9 +1,9 @@
 "use client";
 
-import { Container } from "@/components/ui";
 import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
-import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { OnboardingStepHeading } from "./onboarding-step-heading";
+import { OnboardingStepLayout } from "./onboarding-step-layout";
 
 
 export interface SafetyOption {
@@ -42,21 +42,20 @@ export function StepSafety({
   ];
 
   return (
-    <main className="steps-safety min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
-      <Container>
-        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-
-          {/* Mobile-only close control shared by onboarding steps.  */}
-          <OnboardingMobileCloseButton disabled={isLoading} />
+    <OnboardingStepLayout
+      isLoading={isLoading}
+      mainClassName="steps-safety min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16"
+      wrapperClassName="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]"
+    >
 
           <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Heading & Subtitle */}
-            <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
-              Share safety details
-            </h1>
-            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
-              Does your place have any of these?
-            </p>
+            <OnboardingStepHeading
+              title="Share safety details"
+              description="Does your place have any of these?"
+              titleClassName="sm:mb-5 mb-3"
+              descriptionClassName="sm:mb-10 mb-6"
+            />
 
             {/* Safety Options List */}
             <div data-aos="fade-up" data-aos-delay="200" className="w-full space-y-3">
@@ -104,8 +103,6 @@ export function StepSafety({
             onNext={onNext}
             isLoading={isLoading}
           />
-        </div>
-      </Container>
-    </main>
+    </OnboardingStepLayout>
   );
 }

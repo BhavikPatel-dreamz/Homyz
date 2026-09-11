@@ -178,7 +178,7 @@ export function StepPhotos({
               </div>
             ) : (
               /* Uploaded Photos Grid Display */
-              <div data-aos="fade-up" data-aos-delay="200" className="w-full">
+              <div className="w-full">
                 <div className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-6">
                   {photos.map((url, idx) => (
                     <div

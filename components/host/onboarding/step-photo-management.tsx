@@ -308,7 +308,7 @@ export function StepPhotoManagement({
 
             {/* Additional Photos Section (If more than 5 photos uploaded) */}
             {extraPhotos.length > 0 && (
-              <div data-aos="fade-up" data-aos-delay="200" className="w-full mt-4">
+              <div className="w-full mt-4">
                 <h3 className="text-sm font-semibold text-zinc-800 mb-3">Additional photos ({extraPhotos.length})</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
                   {extraPhotos.map((url, idx) => {

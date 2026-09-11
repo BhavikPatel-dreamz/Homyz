@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 
 import { normalizeAmenityId } from "@/lib/constants/amenities";
-import { Container } from "@/components/ui";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
-import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { OnboardingAmenitySection } from "./onboarding-amenity-section";
+import { OnboardingStepHeading } from "./onboarding-step-heading";
+import { OnboardingStepLayout } from "./onboarding-step-layout";
 
 
 interface AmenityOption {
@@ -267,83 +267,26 @@ export function StepAmenities({
 
   const normalizedSelected = selectedAmenities.map(normalizeAmenityId);
 
-  const renderAmenityCard = (item: AmenityOption) => {
-    const isSelected = normalizedSelected.includes(item.id);
-    return (
-      <button
-        key={item.id}
-        type="button"
-        onClick={() => onToggleAmenity(item.id)}
-        className={`flex items-center gap-3 px-3.25 sm:py-3.25 py-3 rounded-lg border sm:text-base text-sm sm:font-medium font-normal transition-all cursor-pointer select-none text-left ${isSelected
-          ? "bg-[#E9EBFF] text-[#1F1F1F]"
-          : "bg-white text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-[#E9EBFF]"
-          }`}
-      >
-        <div
-          className="w-10 h-10 rounded-full border border-[#1F1F1F] flex items-center justify-center shrink-0 transition-colors"
-        >
-          <Image
-            src={amenityIconPaths[item.id]}
-            alt=""
-            aria-hidden="true"
-            width={24}
-            height={24}
-            unoptimized
-            className="h-6 w-6 object-contain"
-          />
-        </div>
-        <span className="truncate">{item.label}</span>
-      </button>
-    );
-  };
-
   return (
-    <main className="step-amenities min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
-      <Container>
-        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-
-          {/* Mobile-only close control shared by onboarding steps.  */}
-          <OnboardingMobileCloseButton disabled={isLoading} />
+    <OnboardingStepLayout
+      isLoading={isLoading}
+      mainClassName="step-amenities min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16"
+      wrapperClassName="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]"
+    >
 
           <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
-            <h1 data-aos="fade-up" className="mb-2">
-              Tell guests what your place has to offer
-            </h1>
-            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-8">
-              You can add more amenities after you publish your listing.
-            </p>
+            <OnboardingStepHeading
+              title="Tell guests what your place has to offer"
+              description="You can add more amenities after you publish your listing."
+              titleClassName="mb-2"
+              descriptionClassName="sm:mb-10 mb-8"
+            />
 
             <div className="flex flex-col sm:gap-12 gap-8 w-full">
-              {/* Section 1: Guest Favorites */}
-              <div data-aos="fade-up" data-aos-delay="200">
-                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
-                  What about these quest favorites?
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
-                  {favoriteAmenities.map(renderAmenityCard)}
-                </div>
-              </div>
-
-              {/* Section 2: Standout Amenities */}
-              <div data-aos="fade-up" data-aos-delay="300">
-                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
-                  Do you have any standout amenities?
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
-                  {standoutAmenities.map(renderAmenityCard)}
-                </div>
-              </div>
-
-              {/* Section 3: Safety Items */}
-              <div data-aos="fade-up" data-aos-delay="400">
-                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
-                  Do you have any of these safety items?
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
-                  {safetyItems.map(renderAmenityCard)}
-                </div>
-              </div>
+              <OnboardingAmenitySection title="What about these quest favorites?" items={favoriteAmenities} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={200} />
+              <OnboardingAmenitySection title="Do you have any standout amenities?" items={standoutAmenities} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={300} />
+              <OnboardingAmenitySection title="Do you have any of these safety items?" items={safetyItems} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={400} />
             </div>
           </div>
 
@@ -359,8 +302,6 @@ export function StepAmenities({
               label="Next"
             />
           </div>
-        </div>
-      </Container>
-    </main>
+    </OnboardingStepLayout>
   );
 }

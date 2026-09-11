@@ -171,6 +171,10 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         once: true,
         offset: 120,
         anchorPlacement: "top-bottom",
+        // React updates selected/toggled/uploaded content frequently. Let the
+        // wizard refresh AOS only when the active step changes so those updates
+        // cannot reset an already visible element to AOS's hidden state.
+        disableMutationObserver: true,
         disable: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
       });
       setIsAosReady(true);
@@ -1105,7 +1109,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
                     setWizardError(null);
                     goToStep(errorFixStep);
                   }}
-                  className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-[#ebd08d]"
+                  className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white duration-300"
                 >
                   Fix now
                 </button>
