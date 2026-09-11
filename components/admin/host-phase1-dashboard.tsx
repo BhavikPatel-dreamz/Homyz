@@ -94,20 +94,21 @@ export function HostPhase1Dashboard({ analytics, initialHosts }: HostPhase1Dashb
         return true;
       })
       .sort((a, b) => {
-        let valA: string | number = a[sortBy] ?? 0;
-        let valB: string | number = b[sortBy] ?? 0;
-
         if (sortBy === "createdAt") {
-          valA = new Date(a.createdAt).getTime();
-          valB = new Date(b.createdAt).getTime();
-        } else if (sortBy === "name") {
-          valA = (a.name || "").toLowerCase();
-          valB = (b.name || "").toLowerCase();
+          const timeA = new Date(a.createdAt).getTime();
+          const timeB = new Date(b.createdAt).getTime();
+          return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
         }
-
-        if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-        if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-        return 0;
+        if (sortBy === "name") {
+          const nameA = (a.name || "").toLowerCase();
+          const nameB = (b.name || "").toLowerCase();
+          if (nameA < nameB) return sortOrder === "asc" ? -1 : 1;
+          if (nameA > nameB) return sortOrder === "asc" ? 1 : -1;
+          return 0;
+        }
+        const valA = Number(a[sortBy] ?? 0);
+        const valB = Number(b[sortBy] ?? 0);
+        return sortOrder === "asc" ? valA - valB : valB - valA;
       });
   }, [initialHosts, search, statusFilter, sortBy, sortOrder]);
 
