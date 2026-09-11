@@ -7,6 +7,8 @@ import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+
 
 interface StepAddressConfirmProps {
   country: string;
@@ -57,16 +59,21 @@ export function StepAddressConfirm({
 }: StepAddressConfirmProps) {
 
   const router = useRouter();
-  
-    const handleBack = () => {
-      if (!isLoading) {
-        router.back();
-      }
-    };
+
+  const handleBack = () => {
+    if (!isLoading) {
+      router.back();
+    }
+  };
   return (
-    <main className="min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-address-confirm min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
             <h1 className="mb-2">
@@ -108,7 +115,7 @@ export function StepAddressConfirm({
                 placeholder="Short address (if applicable)"
                 value={shortAddress}
                 onChange={(e) => setShortAddress(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
 
               {/* Apt, floor, bldg */}
@@ -117,7 +124,7 @@ export function StepAddressConfirm({
                 placeholder="Apt, floor, bldg (if applicable)"
                 value={aptFloorBldg}
                 onChange={(e) => setAptFloorBldg(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
 
               {/* Street address */}
@@ -126,7 +133,7 @@ export function StepAddressConfirm({
                 placeholder="Street address"
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
 
               {/* District */}
@@ -135,7 +142,7 @@ export function StepAddressConfirm({
                 placeholder="District (if applicable)"
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
 
               {/* Postal code */}
@@ -144,7 +151,7 @@ export function StepAddressConfirm({
                 placeholder="Postal code"
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
 
               {/* City / Town */}
@@ -153,7 +160,7 @@ export function StepAddressConfirm({
                 placeholder="City / Town"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
               />
             </div>
 
@@ -181,7 +188,7 @@ export function StepAddressConfirm({
             </div>
 
             {/* Real Interactive Leaflet Map Preview */}
-            <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg mb-4">
+            <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
               <RealMap
                 address={streetAddress}
                 city={city}

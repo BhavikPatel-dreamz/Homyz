@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { CloseIcon } from "@/components/ui/close-icon";
 import React, { useState } from "react";
 import { RealMap, LocationDetails } from "@/components/ui/real-map";
 import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 
 interface NominatimSuggestion {
   place_id?: number | string;
@@ -121,29 +120,11 @@ export function StepLocationSearch({
     setSuggestions([]);
   };
 
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (!isLoading) {
-      router.back();
-    }
-  };  
   return (
     <main className="pb-8 sm:pt-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          {/* Mobile close button */}
-          <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={isLoading}
-              aria-label="Close"
-              className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CloseIcon />
-            </button>
-          </div>
+          <OnboardingMobileCloseButton disabled={isLoading} />
           <div className="max-w-124.25 mx-auto w-full flex flex-col items-start text-left my-auto">
             <h1 className="mb-4">
               Where’s your place located?

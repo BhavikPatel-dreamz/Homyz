@@ -1,11 +1,14 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 import { normalizeAmenityId } from "@/lib/constants/amenities";
 import { Container } from "@/components/ui";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+
 
 interface AmenityOption {
   id: string;
@@ -13,6 +16,29 @@ interface AmenityOption {
   category: "favorites" | "standout" | "safety";
   icon: React.ReactNode;
 }
+
+const amenityIconPaths: Record<string, string> = {
+  wifi: "/images/icons/wifi.svg",
+  tv: "/images/icons/tv.svg",
+  kitchen: "/images/icons/kitchen.svg",
+  washer: "/images/icons/washer.svg",
+  free_parking: "/images/icons/free-parking.svg",
+  paid_parking: "/images/icons/paid-parking.svg",
+  air_conditioning: "/images/icons/ac.svg",
+  workspace: "/images/icons/workspace.svg",
+  pool: "/images/icons/pool.svg",
+  hot_tub: "/images/icons/hot-tub.svg",
+  patio: "/images/icons/patio.svg",
+  bbq_grill: "/images/icons/bbg-grill.svg",
+  outdoor_dining_area: "/images/icons/outdoor-dining-area.svg",
+  fire_pit: "/images/icons/fire-pit.svg",
+  pool_table: "/images/icons/pool-table.svg",
+  indoor_fireplace: "/images/icons/indoor-fireplace.svg",
+  piano: "/images/icons/piano.svg",
+  smoke_alarm: "/images/icons/smoke-alarm.svg",
+  first_aid_kit: "/images/icons/first-aid-kit.svg",
+  fire_extinguisher: "/images/icons/fire-extinguisher.svg",
+};
 
 interface StepAmenitiesProps {
   selectedAmenities: string[];
@@ -256,7 +282,15 @@ export function StepAmenities({
         <div
           className="w-10 h-10 rounded-full border border-[#1F1F1F] flex items-center justify-center shrink-0 transition-colors"
         >
-          {item.icon}
+          <Image
+            src={amenityIconPaths[item.id]}
+            alt=""
+            aria-hidden="true"
+            width={24}
+            height={24}
+            unoptimized
+            className="h-6 w-6 object-contain"
+          />
         </div>
         <span className="truncate">{item.label}</span>
       </button>
@@ -264,10 +298,14 @@ export function StepAmenities({
   };
 
   return (
-    <main className="py-8 sm:py-12 lg:pt-25 lg:pb-16">
+    <main className="step-amenities min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
             <h1 className="mb-2">
               Tell guests what your place has to offer
@@ -310,7 +348,7 @@ export function StepAmenities({
           </div>
 
           {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end pt-8 mt-8">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end sm:mt-8 sm:pt-0 pt-8 mt-auto">
             <OnboardingBackButton
               onClick={onBack}
               disabled={isLoading}

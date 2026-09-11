@@ -1,14 +1,25 @@
 "use client";
 
 import { Container } from "@/components/ui";
+import Image from "next/image";
 import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 
 export interface HouseHighlightOption {
   id: string;
   label: string;
   icon: React.ReactNode;
 }
+
+const highlightIconPaths: Record<string, string> = {
+  Peaceful: "/images/icons/peaceful.svg",
+  Unique: "/images/icons/unique.svg",
+  "Family-friendly": "/images/icons/family-friendly.svg",
+  Stylish: "/images/icons/stylish.svg",
+  Central: "/images/icons/central.svg",
+  Spacious: "/images/icons/spacious.svg",
+};
 
 interface StepHighlightsProps {
   selectedHighlights: string[];
@@ -83,20 +94,25 @@ export function StepHighlights({
   ];
 
   return (
-    <main className="py-10">
+    <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+
+          <div className="max-w-4xl mx-auto w-full flex flex-col items-start">
             {/* Main Title & Subtitle */}
-            <h1 className="mb-2">
+            <h1 className="sm:mb-5 mb-3">
               Let’s describe your house
             </h1>
-            <p className="text-sm font-medium text-zinc-500 mb-10">
+            <p className="text-base font-normal text-[#727272] sm:mb-10 mb-6">
               Choose up to 3 highlights. We’ll use these to help guests understand your place.
             </p>
 
             {/* Highlights Selector Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 w-full max-w-2xl">
+            <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-5">
               {highlightOptions.map((item) => {
                 const isSelected = selectedHighlights.includes(item.id);
                 return (
@@ -104,18 +120,23 @@ export function StepHighlights({
                     key={item.id}
                     type="button"
                     onClick={() => onToggleHighlight(item.id)}
-                    className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer select-none text-left ${isSelected
-                        ? "border-zinc-900 bg-[#EEF2FF] text-[#1F1F1F] ring-zinc-900 shadow-2xs"
-                        : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
+                    className={`flex w-full items-center gap-3 rounded-lg border px-3.25 py-3 text-left text-sm font-normal transition-all cursor-pointer select-none sm:w-auto sm:py-3.25 sm:text-base sm:font-medium ${isSelected
+                      ? "bg-[#E9EBFF] text-[#1F1F1F]"
+                      : "bg-white text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-[#E9EBFF]"
                       }`}
                   >
                     <div
-                      className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
-                          ? "border-zinc-900 bg-white text-[#1F1F1F]"
-                          : "border-zinc-200 bg-white text-zinc-600"
-                        }`}
+                      className="w-10 h-10 rounded-full border border-[#1F1F1F] flex items-center justify-center shrink-0 transition-colors"
                     >
-                      {item.icon}
+                      <Image
+                        src={highlightIconPaths[item.id]}
+                        alt=""
+                        aria-hidden="true"
+                        width={24}
+                        height={24}
+                        unoptimized
+                        className="h-6 w-6 object-contain"
+                      />
                     </div>
                     <span className="truncate">{item.label}</span>
                   </button>

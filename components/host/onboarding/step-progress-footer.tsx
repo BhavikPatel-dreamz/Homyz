@@ -24,7 +24,7 @@ export function StepProgressFooter({
   disableNext = false,
 }: StepProgressFooterProps) {
   return (
-    <div className="mt-18">
+    <div className="sm:mt-18 mt-auto pt-8">
       {/* Action Buttons */}
       <div className="flex items-center justify-end">
         <OnboardingBackButton

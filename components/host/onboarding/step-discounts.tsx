@@ -3,6 +3,8 @@
 import { Container } from "@/components/ui";
 import React, { useState } from "react";
 import { StepProgressFooter } from "./step-progress-footer";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+
 
 export interface DiscountOption {
   id: string;
@@ -56,49 +58,56 @@ export function StepDiscounts({
   ];
 
   return (
-    <main className="py-10">
+    <main className="step-discounts min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
-            {/* Heading & Subtitle */}
-            <h1 className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
-              Add discounts
-            </h1>
-            <p className="text-xs text-zinc-500 font-medium mb-8 max-w-md">
-              Help your place stand out to get booked faster and earn your first reviews.
-            </p>
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+
+          <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
+            {/* Main Title & Tip Subtitle */}
+            <div className="title-section">
+              <h1 className="sm:mb-5 mb-3">
+                Add discounts
+              </h1>
+              <p className="sm:mb-10 mb-6">
+                Help your place stand out to get booked faster and earn your first reviews.
+              </p>
+            </div>
 
             {/* Discounts List */}
-            <div className="w-full space-y-4">
+            <div className="w-full sm:space-y-4 space-y-3">
               {discounts.map((discount) => {
                 const isEnabled = selectedDiscounts.includes(discount.id);
                 return (
                   <div
                     key={discount.id}
                     onClick={() => onToggleDiscount(discount.id)}
-                    className={`w-full border rounded-2xl p-5 sm:p-6 bg-white transition-all flex items-center justify-between shadow-2xs cursor-pointer select-none ${isEnabled ? "border-zinc-900 ring-1 ring-zinc-900" : "border-zinc-200 hover:border-zinc-300"
+                    className={`w-full border sm:rounded-2xl rounded-[6px] sm:p-4 p-3 bg-white transition-all flex items-end justify-between shadow-2xs cursor-pointer select-none ${isEnabled ? "border-[#727272]" : "border-[#727272] hover:border-[#1f1f1f]"
                       }`}
                   >
                     {/* Left Side Info */}
                     <div className="flex flex-col items-start pr-4">
-                      <span className="text-sm font-semibold text-zinc-800 mb-1">
+                      <span className="text-xs font-normal text-[#1f1f1f] mb-1.5">
                         {discount.title}
                       </span>
-                      <span className="text-xs text-zinc-500 mb-2 leading-relaxed">
+                      <span className="text-xs text-[#727272] font-normal mb-2 leading-relaxed">
                         {discount.description}
                       </span>
-                      <span className="text-xl font-semibold text-[#1F1F1F]">
+                      <span className="text-2xl font-medium text-[#1F1F1F]">
                         {discount.percentage}%
                       </span>
                     </div>
 
                     {/* Right Side Toggle Switch */}
                     <div
-                      className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-0.5 shrink-0 ${isEnabled ? "bg-zinc-900" : "bg-zinc-200"
+                      className={`w-10.75 h-4.75 rounded-full transition-colors relative flex items-center px-0.5 shrink-0 ${isEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"
                         }`}
                     >
                       <div
-                        className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ${isEnabled ? "translate-x-6" : "translate-x-0"
+                        className={`w-3.75 h-3.75 rounded-full bg-white shadow-md transform transition-transform duration-200 ${isEnabled ? "translate-x-6" : "translate-x-0"
                           }`}
                       />
                     </div>
@@ -109,12 +118,12 @@ export function StepDiscounts({
 
             {/* Footnote Notice & Read more Toggle */}
             <div className="mt-4 w-full">
-              <p className="text-xs text-zinc-500 font-medium">
+              <p>
                 Only one promotional or length-of-stay discount applies per booking.{" "}
                 <button
                   type="button"
                   onClick={() => setShowExplanation(!showExplanation)}
-                  className="underline hover:text-zinc-800 cursor-pointer font-semibold"
+                  className="underline text-[#1F1F1F] hover:text-[#727272] cursor-pointer font-normal"
                 >
                   {showExplanation ? "Hide details" : "Read more"}
                 </button>

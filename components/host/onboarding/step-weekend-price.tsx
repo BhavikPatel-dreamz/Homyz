@@ -1,7 +1,9 @@
 "use client";
 
 import { Container } from "@/components/ui";
+import Image from "next/image";
 import React, { useState } from "react";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { StepProgressFooter } from "./step-progress-footer";
 
 interface StepWeekendPriceProps {
@@ -18,7 +20,7 @@ export function StepWeekendPrice({
   weekdayPrice,
   weekendPrice,
   onChangeWeekendPrice,
-  currencySymbol = "SAR",
+  currencySymbol = "SR",
   onBack,
   onNext,
   isLoading = false,
@@ -30,14 +32,14 @@ export function StepWeekendPrice({
   const baseWeekday = weekdayPrice > 0 ? weekdayPrice : 100;
   // Authoritative weekend price (falls back to baseWeekday if not yet set)
   const activeWeekendPrice = weekendPrice > 0 ? weekendPrice : baseWeekday;
-  // Calculate percentage premium relative to base weekday price
   const currentPercentage = Math.max(0, Math.round(((activeWeekendPrice - baseWeekday) / baseWeekday) * 100));
+  const guestServiceFee = Math.round(activeWeekendPrice * 0.2);
+  const guestPriceBeforeTaxes = activeWeekendPrice + guestServiceFee;
+  const hostEarnings = Math.round(activeWeekendPrice * 0.97);
 
-  // Update calculated weekend price when dragging slider (0% to 50% premium)
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pct = parseInt(e.target.value, 10);
-    const newWeekendPrice = Math.round(baseWeekday * (1 + pct / 100));
-    onChangeWeekendPrice(newWeekendPrice);
+    onChangeWeekendPrice(Math.round(baseWeekday * (1 + pct / 100)));
   };
 
   // Direct manual input for weekend price
@@ -52,25 +54,27 @@ export function StepWeekendPrice({
   };
 
   return (
-    <main className="py-10">
+    <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
-          <div className="max-w-4xl mx-auto w-full flex flex-col items-center my-auto text-center">
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          <div className="mx-auto my-auto flex w-full max-w-[620px] flex-col items-start text-center">
             {/* Main Title & Subtitle */}
-            <h1 className="mb-2">
-              Set a weekend price
-            </h1>
-            <p className="text-xs font-semibold text-zinc-500 mb-10 max-w-md uppercase tracking-wider">
-              TIP: Weekend rates typically reflect increased leisure demand for Friday and Saturday nights.
-            </p>
+            <div className="mx-auto max-w-[530px]">
+              <h1 className="sm:mb-5 mb-3">Set a weekend price</h1>
+              <p className="sm:mb-10 mb-6">
+                TIP: Weekend rates typically reflect increased leisure demand for Friday and Saturday nights.
+              </p>
+            </div>
 
             {/* Pricing Card Box */}
-            <div className="w-full max-w-sm bg-[#f7f7f8] border border-zinc-200/90 rounded-3xl p-8 sm:p-10 flex flex-col items-center justify-center shadow-2xs transition-all">
+            <div className="mx-auto flex w-full max-w-sm flex-col items-center justify-center rounded-3xl border border-zinc-200/90 bg-[#f7f7f8] p-8 shadow-2xs transition-all sm:p-10">
               {/* Big Weekend Price Display */}
-              <div className="flex items-center justify-center gap-2 mb-2 w-full">
+              <div className="mb-5 flex w-full items-center justify-center gap-4">
                 {isEditing ? (
                   <div className="flex items-center justify-center gap-1 border-b-2 border-zinc-900 pb-1">
-                    <span className="text-2xl sm:text-3xl font-semibold text-[#1F1F1F]">{currencySymbol}</span>
+                    <span className="text-2xl font-semibold text-[#1F1F1F] sm:text-3xl">{currencySymbol}</span>
                     <input
                       type="number"
                       min={10}
@@ -79,35 +83,31 @@ export function StepWeekendPrice({
                       onChange={handleInputChange}
                       onBlur={() => setIsEditing(false)}
                       autoFocus
-                      className="text-3xl sm:text-4xl font-semibold text-[#1F1F1F] bg-transparent outline-none w-32 text-center"
+                      className="w-32 bg-transparent text-center text-3xl font-semibold text-[#1F1F1F] outline-none sm:text-4xl"
                     />
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="group flex items-center justify-center gap-2 text-4xl sm:text-5xl font-semibold text-[#1F1F1F] tracking-tight hover:opacity-80 transition-opacity cursor-pointer"
+                    className="group flex items-center justify-center gap-4 text-3xl font-medium tracking-tight text-[#1F1F1F] transition-opacity hover:opacity-80 cursor-pointer sm:text-4xl"
                   >
-                    <span>
-                      {currencySymbol} {activeWeekendPrice.toLocaleString()}
-                    </span>
-                    <div className="w-9 h-9 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 shadow-2xs group-hover:border-zinc-900 group-hover:bg-zinc-100 transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                      </svg>
+                    <span>{currencySymbol}{activeWeekendPrice.toLocaleString()}</span>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-zinc-700 transition-colors group-hover:bg-zinc-100">
+                      <Image src="/images/icons/edit-pen.svg" alt="" aria-hidden="true" width={24} height={24} className="h-4 w-4 object-contain" unoptimized />
                     </div>
                   </button>
                 )}
               </div>
 
-              {/* Guest Price Dropdown Toggle */}
+              {/* Guest price summary */}
               <button
                 type="button"
                 onClick={() => setShowBreakdown(!showBreakdown)}
-                className="text-xs font-semibold text-zinc-500 flex items-center justify-center gap-1.5 hover:text-zinc-800 transition-colors cursor-pointer select-none mb-6"
+                className="mb-5 flex w-full items-center justify-center gap-4 text-base font-normal text-[#1F1F1F] transition-colors hover:text-zinc-800 cursor-pointer select-none"
               >
                 <span>
-                  Weekend rate {currencySymbol} {activeWeekendPrice.toLocaleString()} ({currentPercentage}% premium)
+                  Guest price before taxes <span className="font-medium">{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -120,55 +120,47 @@ export function StepWeekendPrice({
                 </svg>
               </button>
 
-              {/* Collapsible Fee Breakdown */}
               {showBreakdown && (
-                <div className="w-full mb-6 pt-3 border-t border-zinc-200 text-left text-xs space-y-2 animate-in fade-in duration-150">
-                  <div className="flex justify-between text-zinc-600">
-                    <span>Weekday base price</span>
-                    <span>
-                      {currencySymbol} {baseWeekday.toLocaleString()}
-                    </span>
+                <div className="mb-1 w-full rounded-xl border border-[#727272] bg-white px-6 py-4 text-left text-sm text-[#1F1F1F] animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <span>Base price</span>
+                    <span>{currencySymbol}{activeWeekendPrice.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-zinc-600">
-                    <span>Weekend premium</span>
-                    <span>
-                      +{currentPercentage}% ({currencySymbol} {(activeWeekendPrice - baseWeekday).toLocaleString()})
-                    </span>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span>Guest service fee</span>
+                    <span>{currencySymbol}{guestServiceFee.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between font-semibold text-[#1F1F1F] pt-1 border-t border-zinc-200">
-                    <span>Total weekend nightly price</span>
-                    <span>
-                      {currencySymbol} {activeWeekendPrice.toLocaleString()}
-                    </span>
+                  <div className="my-5 border-t border-[#727272]/60" />
+                  <div className="flex items-center justify-between">
+                    <span>Guest price before taxes</span>
+                    <span>{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
+                  </div>
+                  <div className="my-5 border-t border-[#727272]/60" />
+                  <div className="flex items-center justify-between">
+                    <span>You earn</span>
+                    <span className="font-medium">{currencySymbol}{hostEarnings.toLocaleString()}</span>
                   </div>
                 </div>
               )}
 
-              {/* Weekend Premium Drag Slider Section */}
-              <div className="w-full flex flex-col items-start pt-3 border-t border-zinc-200/80">
-                <label className="text-xs font-semibold text-zinc-500 mb-3">
-                  Weekend premium over weekday base
-                </label>
-
-                <div className="relative w-full flex items-center">
-                  <input
-                    type="range"
-                    min={0}
-                    max={50}
-                    step={1}
-                    value={currentPercentage}
-                    onChange={handleSliderChange}
-                    style={{
-                      background: `linear-gradient(to right, #18181b 0%, #18181b ${(currentPercentage / 50) * 100}%, #e4e4e7 ${(currentPercentage / 50) * 100}%, #e4e4e7 100%)`,
-                    }}
-                    className="w-full h-1.5 rounded-lg appearance-none cursor-pointer outline-none transition-all [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-md"
-                  />
+              {!showBreakdown && (
+                <div className="flex w-full flex-col items-start border-t border-zinc-200/80 pt-4">
+                  <label className="mb-3 text-xs font-normal text-[#1F1F1F]">Weekend premium</label>
+                  <div className="relative flex w-full items-center">
+                    <input
+                      type="range"
+                      min={0}
+                      max={50}
+                      step={1}
+                      value={currentPercentage}
+                      onChange={handleSliderChange}
+                      style={{ background: `linear-gradient(to right, #18181b 0%, #18181b ${(currentPercentage / 50) * 100}%, #e4e4e7 ${(currentPercentage / 50) * 100}%, #e4e4e7 100%)` }}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg outline-none transition-all [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:shadow-md"
+                    />
+                  </div>
+                  <span className="mt-2.5 text-xs font-normal text-[#1F1F1F]">Try 5%</span>
                 </div>
-
-                <span className="text-xs font-medium text-zinc-600 mt-2.5">
-                  +{currentPercentage}% premium ({currencySymbol} {activeWeekendPrice.toLocaleString()} / night)
-                </span>
-              </div>
+              )}
             </div>
           </div>
 
