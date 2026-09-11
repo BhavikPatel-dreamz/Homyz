@@ -59,6 +59,8 @@ interface Props {
   setEditCountry: (value: string) => void;
   showExactLocation: boolean;
   setShowExactLocation: (value: boolean) => void;
+  openLocationAccordion?: string | null;
+  setOpenLocationAccordion?: (val: string | null) => void;
   listingId: string;
   coHosts: CoHost[];
   setCoHosts: React.Dispatch<React.SetStateAction<CoHost[]>>;
@@ -378,11 +380,14 @@ function LocationView(props: Props) {
     isSaving,
     handleSaveSection,
     isLoading,
+    openLocationAccordion,
+    setOpenLocationAccordion,
   } = props;
-  const [open, setOpen] = useState("address");
+  const [internalOpen, setInternalOpen] = useState<string | null>("address");
+  const open = openLocationAccordion !== undefined ? openLocationAccordion : internalOpen;
+  const setOpen = setOpenLocationAccordion ?? setInternalOpen;
   const save = () => {
     handleSaveSection("location");
-    setOpen("");
   };
   return (
     <div className="max-w-xl space-y-4 pb-10">

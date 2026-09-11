@@ -10,6 +10,7 @@ import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
+import { toast } from "@/components/ui/toast";
 import { EditorSidebar } from "./components/EditorSidebar";
 import { GuestsSafetyView } from "./components/GuestsSafetyView";
 import { PropertyDetailsViews } from "./components/PropertyDetailsViews";
@@ -587,7 +588,14 @@ export function HostListingEditorClient({
   const [guestSafetyState, setGuestSafetyState] = useState<GuestSafetyState>(() => parseSafetyData(listing));
 
   const [isSaving, setIsSaving] = useState(false);
-  const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const setFeedbackMsg = useCallback((msg: { type: "success" | "error"; text: string } | null) => {
+    if (!msg) return;
+    if (msg.type === "success") {
+      toast.success(msg.text);
+    } else {
+      toast.error(msg.text);
+    }
+  }, []);
 
   async function handleSaveSafetyState(newState: GuestSafetyState) {
     setIsSaving(true);
@@ -1174,12 +1182,6 @@ export function HostListingEditorClient({
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
           <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
-            {feedbackMsg && (
-              <div className={`p-4 rounded-2xl text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
-                {feedbackMsg.text}
-              </div>
-            )}
-
             {activeSection === "photos" && (
               <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} isLoading={isLoading} />
             )}
@@ -1187,7 +1189,7 @@ export function HostListingEditorClient({
             <PropertyDetailsViews
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              feedbackMsg={feedbackMsg}
+              feedbackMsg={null}
               isSaving={isSaving}
               isLoading={isLoading}
               handleSaveSection={handleSaveSection}
@@ -1247,6 +1249,8 @@ export function HostListingEditorClient({
               setEditAmenities={setEditAmenities}
               accessibilityFeatures={accessibilityFeatures}
               setAccessibilityFeatures={setAccessibilityFeatures}
+              accessibilityDetails={accessibilityDetails}
+              setAccessibilityDetails={setAccessibilityDetails}
               expandedAccessibility={expandedAccessibility}
               setExpandedAccessibility={setExpandedAccessibility}
             />
@@ -1334,6 +1338,8 @@ export function HostListingEditorClient({
               setScenicViews={setScenicViews}
               locationFeatures={locationFeatures}
               setLocationFeatures={setLocationFeatures}
+              openLocationAccordion={openLocationAccordion}
+              setOpenLocationAccordion={setOpenLocationAccordion}
               listingId={listing.id}
               coHosts={coHosts}
               setCoHosts={setCoHosts}

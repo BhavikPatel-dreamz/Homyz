@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from "@/components/ui/toast";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { GuidebookMap, MapPlacePin } from "@/components/guidebook/guidebook-map";
 import {
@@ -90,7 +91,6 @@ export function GuidebooksManager({
   const [searchQuery, setSearchQuery] = useState("");
   const [activePinId, setActivePinId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"content" | "map">("content");
-  const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
 
   // Modals
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -131,12 +131,13 @@ export function GuidebooksManager({
   const [simplePhoto, setSimplePhoto] = useState("");
 
   const addMenuRef = useRef<HTMLDivElement>(null);
-  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const showToast = (msg: string) => {
-    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
-    setFeedbackToast(msg);
-    toastTimeoutRef.current = setTimeout(() => setFeedbackToast(null), 3000);
+  const showToast = (msg: string, type?: "success" | "error") => {
+    if (type === "error" || msg.toLowerCase().includes("failed") || msg.toLowerCase().includes("error")) {
+      toast.error(msg);
+    } else {
+      toast.success(msg);
+    }
   };
 
   // Close add dropdown when clicking outside
@@ -597,13 +598,6 @@ export function GuidebooksManager({
 
   return (
     <div className="space-y-6 animate-in fade-in pb-16 font-sans">
-      {/* Toast Notification */}
-      {feedbackToast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-semibold shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
-          <span>✓</span>
-          <span>{feedbackToast}</span>
-        </div>
-      )}
 
       {/* ========================================================= */}
       {/* 1. LIST VIEW MODE (MAIN GUIDEBOOKS LIST)                  */}
