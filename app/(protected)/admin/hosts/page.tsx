@@ -6,7 +6,7 @@ import { HostPhase1Dashboard } from "@/components/admin/host-phase1-dashboard";
 
 export const metadata = {
   title: "Host Management | Homyz Admin",
-  description: "Unified administrative host management dashboard, onboarding lifecycle, and host registry.",
+  description: "Administrative dashboard for host accounts, listings, reservations, and account activity.",
 };
 
 export default async function AdminHostManagementPage() {

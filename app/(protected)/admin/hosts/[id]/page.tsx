@@ -5,7 +5,7 @@ import { HostDetailsView } from "@/components/admin/host-details-view";
 
 export const metadata = {
   title: "Host Details — Homyz Admin",
-  description: "Detailed host overview, onboarding request lifecycle, listings, reservations, compliance, and controls.",
+  description: "Host account details, listings, reservations, earnings, and account activity.",
 };
 
 export default async function AdminHostDetailsPage({
@@ -20,7 +20,7 @@ export default async function AdminHostDetailsPage({
 
   return (
     <div className="w-full">
-      <HostDetailsView initialData={hostDetailsData as any} />
+      <HostDetailsView initialData={hostDetailsData} />
     </div>
   );
 }
