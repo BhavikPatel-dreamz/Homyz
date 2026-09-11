@@ -187,7 +187,7 @@ export function HostAlertsCenter() {
                   </span>
                 </div>
 
-                <h3 className="text-base font-semibold text-[#1F1F1F]">{alert.title}</h3>
+                <h3 className="text-lg font-medium text-[#1F1F1F]">{alert.title}</h3>
                 <p className="text-xs text-zinc-600">{alert.details}</p>
                 <div className="text-xs text-zinc-400 mt-1">
                   Host: <strong className="text-zinc-700">{alert.hostName}</strong> ({alert.applicationId}) | Assigned: {alert.assignedUser?.name || "Unassigned"}

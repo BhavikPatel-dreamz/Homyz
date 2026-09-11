@@ -4,7 +4,8 @@ import React from "react";
 
 import { normalizeAmenityId } from "@/lib/constants/amenities";
 import { Container } from "@/components/ui";
-import { StepProgressFooter } from "./step-progress-footer";
+import { OnboardingBackButton } from "./onboarding-back-button";
+import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 
 interface AmenityOption {
   id: string;
@@ -247,16 +248,13 @@ export function StepAmenities({
         key={item.id}
         type="button"
         onClick={() => onToggleAmenity(item.id)}
-        className={`flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm font-semibold transition-all cursor-pointer select-none text-left ${isSelected
-            ? "border-indigo-400 bg-[#EEF2FF] text-[#1F1F1F] ring-1 ring-indigo-400 shadow-xs"
-            : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
+        className={`flex items-center gap-3 px-3.25 sm:py-3.25 py-3 rounded-lg border sm:text-base text-sm sm:font-medium font-normal transition-all cursor-pointer select-none text-left ${isSelected
+          ? "bg-[#E9EBFF] text-[#1F1F1F]"
+          : "bg-white text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-[#E9EBFF]"
           }`}
       >
         <div
-          className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-colors ${isSelected
-              ? "border-indigo-500 bg-white text-indigo-600"
-              : "border-zinc-200 bg-white text-zinc-600"
-            }`}
+          className="w-10 h-10 rounded-full border border-[#1F1F1F] flex items-center justify-center shrink-0 transition-colors"
         >
           {item.icon}
         </div>
@@ -266,58 +264,63 @@ export function StepAmenities({
   };
 
   return (
-    <main className="py-10">
+    <main className="py-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           <div className="max-w-4xl mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-2">
+            <h1 className="mb-2">
               Tell guests what your place has to offer
             </h1>
-            <p className="text-sm font-medium text-zinc-500 mb-10">
+            <p className="sm:mb-10 mb-8">
               You can add more amenities after you publish your listing.
             </p>
 
-            <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col sm:gap-12 gap-8 w-full">
               {/* Section 1: Guest Favorites */}
               <div>
-                <h3 className="text-base font-semibold text-[#1F1F1F] mb-4">
+                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   What about these quest favorites?
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
                   {favoriteAmenities.map(renderAmenityCard)}
                 </div>
               </div>
 
               {/* Section 2: Standout Amenities */}
               <div>
-                <h3 className="text-base font-semibold text-[#1F1F1F] mb-4">
+                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   Do you have any standout amenities?
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
                   {standoutAmenities.map(renderAmenityCard)}
                 </div>
               </div>
 
               {/* Section 3: Safety Items */}
               <div>
-                <h3 className="text-base font-semibold text-[#1F1F1F] mb-4">
+                <h3 className="text-lg font-medium text-[#1F1F1F] mb-4">
                   Do you have any of these safety items?
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 sm:gap-3.5 gap-2 w-full">
                   {safetyItems.map(renderAmenityCard)}
                 </div>
               </div>
             </div>
           </div>
 
-          <StepProgressFooter
-            currentStep={1}
-            totalSteps={6}
-            onBack={onBack}
-            onNext={onNext}
-            isLoading={isLoading}
-          />
+          {/* Bottom Action Footer Bar */}
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end pt-8 mt-8">
+            <OnboardingBackButton
+              onClick={onBack}
+              disabled={isLoading}
+            />
+            <OnboardingPrimaryButton
+              onClick={onNext}
+              isLoading={isLoading}
+              label="Next"
+            />
+          </div>
         </div>
       </Container>
     </main>

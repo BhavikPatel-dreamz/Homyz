@@ -32,23 +32,23 @@ export function StepBasicsCounters({
   isLoading = false,
 }: StepBasicsCountersProps) {
   return (
-    <main className="py-10">
+    <main className="min-h-dvh bg-white py-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="wrapper flex-1 w-full flex flex-col justify-between animate-in fade-in duration-200">
-          <div className="max-w-xl mx-auto w-full flex flex-col items-start my-auto">
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+          <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1F1F1F] tracking-tight leading-tight mb-3">
+            <h1 className="mb-5">
               Share some basics about your place
             </h1>
-            <p className="text-sm font-medium text-zinc-500 mb-10">
+            <p className="sm:mb-10 mb-8">
               You’ll add more details later, like bed types.
             </p>
 
             {/* Counters List Stack */}
-            <div className="flex flex-col w-full divide-y divide-zinc-200/80 border-t border-b border-zinc-200/80 mb-6">
+            <div className="flex flex-col w-full divide-y divide-[#727272] mb-6">
               {/* Guests Row */}
-              <div className="flex items-center justify-between py-6">
-                <span className="text-base font-semibold text-[#1F1F1F]">Guests</span>
+              <div className="flex items-center justify-between sm:py-4.5 py-4">
+                <span className="text-lg font-medium text-[#1F1F1F]">Guests</span>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -58,7 +58,7 @@ export function StepBasicsCounters({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                  <span className="w-5 text-center text-lg font-normal text-[#1F1F1F] select-none">
                     {guests}
                   </span>
                   <button
@@ -72,8 +72,8 @@ export function StepBasicsCounters({
               </div>
 
               {/* Bedrooms Row */}
-              <div className="flex items-center justify-between py-6">
-                <span className="text-base font-semibold text-[#1F1F1F]">Bedrooms</span>
+              <div className="flex items-center justify-between sm:py-4.5 py-4">
+                <span className="text-lg font-medium text-[#1F1F1F]">Bedrooms</span>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -83,7 +83,7 @@ export function StepBasicsCounters({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                  <span className="w-5 text-center text-lg font-normal text-[#1F1F1F] select-none">
                     {bedrooms}
                   </span>
                   <button
@@ -97,8 +97,8 @@ export function StepBasicsCounters({
               </div>
 
               {/* Beds Row */}
-              <div className="flex items-center justify-between py-6">
-                <span className="text-base font-semibold text-[#1F1F1F]">Beds</span>
+              <div className="flex items-center justify-between sm:py-4.5 py-4">
+                <span className="text-lg font-medium text-[#1F1F1F]">Beds</span>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -108,7 +108,7 @@ export function StepBasicsCounters({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                  <span className="w-5 text-center text-lg font-normal text-[#1F1F1F] select-none">
                     {beds}
                   </span>
                   <button
@@ -122,8 +122,8 @@ export function StepBasicsCounters({
               </div>
 
               {/* Bathrooms Row */}
-              <div className="flex items-center justify-between py-6">
-                <span className="text-base font-semibold text-[#1F1F1F]">Bathrooms</span>
+              <div className="flex items-center justify-between sm:py-4.5 py-4">
+                <span className="text-lg font-medium text-[#1F1F1F]">Bathrooms</span>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -133,7 +133,7 @@ export function StepBasicsCounters({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center text-base font-semibold text-[#1F1F1F] select-none">
+                  <span className="w-5 text-center text-lg font-medium text-[#1F1F1F] select-none">
                     {bathrooms}
                   </span>
                   <button
