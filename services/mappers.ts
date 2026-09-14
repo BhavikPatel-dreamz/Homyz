@@ -86,6 +86,7 @@ export function toListingDTO(l: Listing) {
     // Guest Access, Equipment, Hazards, Accessibility, Views
     guestAccess: l.guestAccess || [],
     photos: l.photos,
+    photoRoomAssignments: (l as any).photoRoomAssignments ?? [],
     highlights: l.highlights,
     amenities: l.amenities || [],
     safetyDisclosures: l.safetyDisclosures || [],

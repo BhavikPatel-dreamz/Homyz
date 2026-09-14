@@ -39,6 +39,10 @@ import {
 } from "@/lib/constants/listing-enums";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
+import {
+  normalizePhotoRoomAssignments,
+  type PhotoRoomAssignment,
+} from "@/lib/listing/photo-room-assignments";
 
 type ConfigurableDiscount = "weekly" | "monthly" | "last_minute";
 
@@ -156,6 +160,7 @@ export interface HostListingData {
   doorCode?: string | null;
   lockboxCode?: string | null;
   photos: string[];
+  photoRoomAssignments?: PhotoRoomAssignment[];
   amenities: string[];
   houseRules: string[];
   checkInMethod: string;
@@ -482,6 +487,13 @@ export function HostListingEditorClient({
 
   // Photos & Amenities
   const [editPhotos, setEditPhotos] = useState<string[]>(listing.photos || []);
+  const [editPhotoRoomAssignments, setEditPhotoRoomAssignments] = useState<PhotoRoomAssignment[]>(() =>
+    normalizePhotoRoomAssignments(listing.photoRoomAssignments, listing.photos || []),
+  );
+  const handlePhotoTourChange = useCallback((nextPhotos: string[]) => {
+    setEditPhotos(nextPhotos);
+    setEditPhotoRoomAssignments((current) => normalizePhotoRoomAssignments(current, nextPhotos));
+  }, []);
   const [editAmenities, setEditAmenities] = useState<string[]>(() => normalizeAmenities(listing.amenities || []));
   const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>(() =>
     Array.isArray(listing.languages)
@@ -795,7 +807,10 @@ export function HostListingEditorClient({
         allowSameDayRequests,
       };
     } else if (sectionToSave === "photos") {
-      payload = { photos: editPhotos };
+      payload = {
+        photos: editPhotos,
+        photoRoomAssignments: editPhotoRoomAssignments,
+      };
     } else if (sectionToSave === "amenities" || sectionToSave === "add-amenities") {
       payload = { amenities: normalizeAmenities(editAmenities) };
     } else if (sectionToSave === "location") {
@@ -1329,7 +1344,15 @@ export function HostListingEditorClient({
             )}
 
             {activeSection === "photos" && (
-              <PhotoTourManager photos={editPhotos} onChange={setEditPhotos} onSave={() => handleSaveSection("photos")} isSaving={isSaving} isLoading={isLoading} />
+              <PhotoTourManager
+                photos={editPhotos}
+                photoRoomAssignments={editPhotoRoomAssignments}
+                onChange={handlePhotoTourChange}
+                onChangeRoomAssignments={setEditPhotoRoomAssignments}
+                onSave={() => handleSaveSection("photos")}
+                isSaving={isSaving}
+                isLoading={isLoading}
+              />
             )}
 
             <PropertyDetailsViews

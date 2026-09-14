@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeSlug, isReservedSlug } from "@/lib/utils/slug";
+import { PHOTO_ROOM_TYPES } from "@/lib/listing/photo-room-assignments";
 
 export const HOSTING_TYPES = ["HOME", "EXPERIENCE", "SERVICE"] as const;
 export const LISTING_TYPES = ["ENTIRE_PLACE", "ROOM", "SHARED_ROOM"] as const;
@@ -80,6 +81,11 @@ const listingPhotoUrl = z.string().trim().refine(
   },
   { message: "Photo must be an uploaded listing-media URL." },
 );
+
+const photoRoomAssignmentSchema = z.object({
+  url: listingPhotoUrl,
+  roomType: z.enum(PHOTO_ROOM_TYPES).nullable(),
+}).strict();
 
 const customSlugSchema = z.preprocess(
   (value) => {
@@ -208,6 +214,7 @@ const listingFields = {
 
   // Photos & Highlights & Features
   photos: z.array(listingPhotoUrl).max(100).optional().default([]),
+  photoRoomAssignments: z.array(photoRoomAssignmentSchema).max(100).optional().nullable(),
   highlights: z.array(z.string().trim().min(1).max(80)).max(3).optional().default([]),
   amenities: z.array(z.string().trim().min(1).max(80)).max(200).optional().default([]),
   safetyDisclosures: z.array(z.string().trim().min(1).max(500)).max(50).optional().default([]),

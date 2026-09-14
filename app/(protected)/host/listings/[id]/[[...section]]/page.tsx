@@ -81,6 +81,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     beds: listing.beds,
     bathrooms: listing.bathrooms,
     photos: listing.photos || [],
+    photoRoomAssignments: listing.photoRoomAssignments ? JSON.parse(JSON.stringify(listing.photoRoomAssignments)) : [],
     languages: listing.languages || [],
     amenities: listing.amenities || [],
     highlights: listing.highlights || [],
@@ -198,4 +199,3 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     />
   );
 }
-

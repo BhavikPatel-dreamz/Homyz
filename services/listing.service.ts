@@ -24,6 +24,7 @@ import {
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
+import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -50,7 +51,7 @@ const REAPPROVAL_FIELDS = new Set<keyof UpdateListingInput>([
   "listingFloor", "totalFloors", "yearBuilt", "yearRenovated", "privateEntrance",
   "elevatorAvailable", "stairsRequired", "rooms", "fullBathrooms", "halfBathrooms",
   "privateBathrooms", "sharedBathrooms", "parkingAvailable", "parkingType",
-  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "highlights",
+  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "photoRoomAssignments", "highlights",
   "amenities", "safetyDisclosures", "safetyEquipment", "safetyHazards",
   "accessibilityFeatures", "accessibilityDetails", "views", "locationFeatures",
   "houseRules", "petsAllowed", "maxPets", "petFee", "petRestrictions", "dogsAllowed",
@@ -562,6 +563,9 @@ async function create(
       guestAccess: input.guestAccess || [],
       languages: input.languages || [],
       photos: input.photos || [],
+      photoRoomAssignments: input.photoRoomAssignments
+        ? JSON.parse(JSON.stringify(normalizePhotoRoomAssignments(input.photoRoomAssignments, input.photos || [])))
+        : null,
       highlights: input.highlights || [],
       amenities: input.amenities ? normalizeAmenities(input.amenities) : [],
       safetyDisclosures: input.safetyDisclosures || [],
@@ -676,6 +680,17 @@ async function update(
   }
   if (dataToUpdate.accessibilityDetails !== undefined) {
     dataToUpdate.accessibilityDetails = dataToUpdate.accessibilityDetails ? JSON.parse(JSON.stringify(dataToUpdate.accessibilityDetails)) : null;
+  }
+  if (dataToUpdate.photoRoomAssignments !== undefined) {
+    const photosForAssignments = Array.isArray(dataToUpdate.photos) ? dataToUpdate.photos : existing.photos;
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(dataToUpdate.photoRoomAssignments, photosForAssignments),
+    ));
+  } else if (Array.isArray(dataToUpdate.photos)) {
+    // Removing or replacing a gallery photo also removes its stale room metadata.
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(existing.photoRoomAssignments, dataToUpdate.photos),
+    ));
   }
   if (dataToUpdate.smartPricingMinPrice !== undefined) {
     dataToUpdate.smartPricingMinPrice = dataToUpdate.smartPricingMinPrice ?? null;

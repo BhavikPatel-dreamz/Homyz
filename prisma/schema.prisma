@@ -361,6 +361,7 @@ model Listing {
 
   // Step 2 — Photos & Content Details
   photos                String[] @default([]) // Min 5 photos required for submission
+  photoRoomAssignments  Json? // Optional room metadata for existing photo URLs; gallery remains photos[]
   highlights            String[] @default([]) // Max 3 highlights
   amenities             String[] @default([]) // Canonical amenities list
   safetyDisclosures     String[] @default([]) // Cameras, Noise monitor, Weapons disclosures
