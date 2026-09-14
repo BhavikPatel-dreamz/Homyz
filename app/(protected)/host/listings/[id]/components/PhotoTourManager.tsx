@@ -2,13 +2,29 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import {
+  PHOTO_TOUR_CATEGORIES,
+  PHOTO_TOUR_CATEGORY_GROUPS,
   type PhotoRoomAssignment,
   type PhotoRoomType,
+  resolvePhotoRoomType,
 } from "@/lib/listing/photo-room-assignments";
 import { PhotosSkeleton } from "./YourSpaceSkeletons";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const ROOM_LABELS_SHOWN_IN_EDITOR = [
+  "Living Room",
+  "Bedroom",
+  "Bathroom",
+  "Kitchen",
+  "Dining Area",
+  "Workspace",
+  "Exterior",
+  "Patio or Balcony",
+  "Pool or Hot Tub",
+  "Unassigned Photos",
+] as const;
+void ROOM_LABELS_SHOWN_IN_EDITOR;
 
 const ROOM_SECTIONS: Array<{
   roomType: PhotoRoomType | null;
@@ -16,49 +32,23 @@ const ROOM_SECTIONS: Array<{
   description: string;
   accent: string;
 }> = [
-  { roomType: "LIVING_ROOM", label: "Living Room", description: "The spaces where guests relax together.", accent: "bg-amber-100 text-amber-900" },
-  { roomType: "BEDROOM", label: "Bedroom", description: "Sleeping spaces and the details around them.", accent: "bg-violet-100 text-violet-900" },
-  { roomType: "BATHROOM", label: "Bathroom", description: "Bathrooms, showers, and essential details.", accent: "bg-sky-100 text-sky-900" },
-  { roomType: "KITCHEN", label: "Kitchen", description: "Cooking, dining, and kitchen amenities.", accent: "bg-emerald-100 text-emerald-900" },
-  { roomType: "DINING_AREA", label: "Dining Area", description: "Places where guests can enjoy a meal.", accent: "bg-orange-100 text-orange-900" },
-  { roomType: "WORKSPACE", label: "Workspace", description: "Desks and spaces suitable for working.", accent: "bg-indigo-100 text-indigo-900" },
-  { roomType: "ENTRANCE", label: "Entrance", description: "The entryway and arrival experience.", accent: "bg-stone-200 text-stone-900" },
-  { roomType: "EXTERIOR", label: "Exterior", description: "The home, building, garden, or grounds.", accent: "bg-lime-100 text-lime-900" },
-  { roomType: "PATIO_BALCONY", label: "Patio or Balcony", description: "Private outdoor seating and terraces.", accent: "bg-teal-100 text-teal-900" },
-  { roomType: "POOL_HOT_TUB", label: "Pool or Hot Tub", description: "Swimming and spa areas.", accent: "bg-cyan-100 text-cyan-900" },
-  { roomType: "LAUNDRY", label: "Laundry", description: "Washer, dryer, and laundry areas.", accent: "bg-blue-100 text-blue-900" },
-  { roomType: "VIEW", label: "View", description: "A view guests can enjoy from the property.", accent: "bg-rose-100 text-rose-900" },
-  { roomType: "PARKING", label: "Parking", description: "Where guests can park or arrive by car.", accent: "bg-slate-200 text-slate-900" },
-  { roomType: "OTHER", label: "Other Space", description: "Another feature or space worth showing.", accent: "bg-fuchsia-100 text-fuchsia-900" },
+  ...PHOTO_TOUR_CATEGORIES.map((category) => ({
+    roomType: category.id,
+    label: category.label,
+    description: category.description ?? "Use this room to organize the matching photos.",
+    accent: category.group === "main_rooms" ? "bg-amber-100 text-amber-900" : category.group === "work_entertainment" ? "bg-indigo-100 text-indigo-900" : category.group === "indoor_areas" ? "bg-sky-100 text-sky-900" : category.group === "outdoor_areas" ? "bg-emerald-100 text-emerald-900" : category.group === "amenities_special_areas" ? "bg-cyan-100 text-cyan-900" : category.group === "parking_access" ? "bg-slate-200 text-slate-900" : category.group === "views_surroundings" ? "bg-rose-100 text-rose-900" : "bg-fuchsia-100 text-fuchsia-900",
+  })),
   { roomType: null, label: "Unassigned Photos", description: "Sort these photos into a room when you are ready.", accent: "bg-zinc-200 text-zinc-700" },
 ];
 
-const ROOM_OPTION_GROUPS: Array<{ label: string; options: Array<{ value: PhotoRoomType; label: string }> }> = [
-  {
-    label: "Inside the home",
-    options: [
-      { value: "LIVING_ROOM", label: "Living Room" },
-      { value: "BEDROOM", label: "Bedroom" },
-      { value: "BATHROOM", label: "Bathroom" },
-      { value: "KITCHEN", label: "Kitchen" },
-      { value: "DINING_AREA", label: "Dining Area" },
-      { value: "WORKSPACE", label: "Workspace" },
-      { value: "LAUNDRY", label: "Laundry" },
-      { value: "ENTRANCE", label: "Entrance" },
-    ],
-  },
-  {
-    label: "Outside and features",
-    options: [
-      { value: "EXTERIOR", label: "Exterior" },
-      { value: "PATIO_BALCONY", label: "Patio or Balcony" },
-      { value: "POOL_HOT_TUB", label: "Pool or Hot Tub" },
-      { value: "PARKING", label: "Parking" },
-      { value: "VIEW", label: "View" },
-      { value: "OTHER", label: "Other Space" },
-    ],
-  },
-];
+const ROOM_OPTION_GROUPS: Array<{ label: string; options: Array<{ value: PhotoRoomType; label: string }> }> =
+  PHOTO_TOUR_CATEGORY_GROUPS.map((group) => ({
+    label: group.label,
+    options: PHOTO_TOUR_CATEGORIES.filter((category) => category.group === group.id).map((category) => ({
+      value: category.id,
+      label: category.label,
+    })),
+  }));
 
 interface PhotoTourManagerProps {
   photos: string[];
@@ -110,14 +100,22 @@ export function PhotoTourManager({
 }: PhotoTourManagerProps) {
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
+  const roomTypeScrollerRef = useRef<HTMLDivElement>(null);
   const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(() => new Set());
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRoomPickerOpen, setIsRoomPickerOpen] = useState(false);
+  const [roomSearch, setRoomSearch] = useState("");
 
   const roomByUrl = useMemo(
-    () => new Map(photoRoomAssignments.map(({ url, roomType }) => [url, roomType])),
+    () => new Map(
+      photoRoomAssignments.map(({ url, roomType, roomCategory, categoryId }) => [
+        url,
+        resolvePhotoRoomType(roomType ?? roomCategory ?? categoryId ?? null),
+      ]),
+    ),
     [photoRoomAssignments],
   );
   const assignedCount = photos.filter((photo) => roomByUrl.has(photo)).length;
@@ -129,6 +127,13 @@ export function PhotoTourManager({
   const visibleRoomSections = ROOM_SECTIONS.filter(
     ({ roomType }) => roomCount(roomType) > 0 || (photos.length === 0 && roomType === null),
   );
+  const filteredRoomOptions = ROOM_OPTION_GROUPS.map((group) => ({
+    ...group,
+    options: group.options.filter((option) =>
+      option.label.toLowerCase().includes(roomSearch.toLowerCase()) ||
+      option.value.toLowerCase().replace(/_/g, " ").includes(roomSearch.toLowerCase()),
+    ),
+  })).filter((group) => group.options.length > 0);
 
   const upload = async (file: File) => {
     if (!ACCEPTED_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_FILE_SIZE) {
@@ -222,6 +227,15 @@ export function PhotoTourManager({
     setSelectedIndices(new Set());
   };
 
+  const scrollRoomTypes = (direction: "left" | "right") => {
+    const scroller = roomTypeScrollerRef.current;
+    if (!scroller) return;
+    scroller.scrollBy({
+      left: direction === "left" ? -220 : 220,
+      behavior: "smooth",
+    });
+  };
+
   const renderPhoto = (photo: string, index: number) => {
     const roomType = roomByUrl.get(photo) ?? null;
     const selected = selectedIndices.has(index);
@@ -302,8 +316,18 @@ export function PhotoTourManager({
           <div className="px-5 py-3.5"><p className="text-xs text-zinc-500">Still to organize</p><p className="mt-0.5 text-lg font-semibold text-zinc-900">{unassignedCount}<span className="ml-1 text-xs font-medium text-zinc-500">unassigned</span></p></div>
         </div>
         <div className="border-t border-zinc-200 px-5 py-4 sm:px-7">
-          <p className="mb-2.5 text-xs font-semibold text-zinc-700">Photo types available to assign</p>
-          <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold text-zinc-700">Photo types available to assign</p>
+            <div className="flex items-center gap-1.5">
+              <button type="button" aria-label="Scroll room types left" onClick={() => scrollRoomTypes("left")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-900">
+                ←
+              </button>
+              <button type="button" aria-label="Scroll room types right" onClick={() => scrollRoomTypes("right")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-sm text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-900">
+                →
+              </button>
+            </div>
+          </div>
+          <div ref={roomTypeScrollerRef} className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
             {ROOM_SECTIONS.filter(({ roomType }) => roomType !== null).map(({ roomType, label, accent }) => (
               <span key={roomType} className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${accent}`}>
                 {label} · {roomCount(roomType)}
@@ -323,8 +347,54 @@ export function PhotoTourManager({
         <div className="sticky top-3 z-10 flex flex-col gap-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-3 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between">
           <p className="px-1 text-sm font-semibold">{selectedIndices.size} {selectedIndices.size === 1 ? "photo" : "photos"} selected</p>
           <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => setIsRoomPickerOpen(true)} disabled={controlsDisabled} className="inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50">
+              + Add a room or space
+            </button>
             <div className="min-w-40"><RoomSelect id="selected-photo-room" value={null} disabled={controlsDisabled} onChange={assignSelectedRoom} /></div>
             <button type="button" onClick={() => setSelectedIndices(new Set())} disabled={controlsDisabled} className="rounded-xl border border-white/40 px-3 py-2 text-xs font-semibold hover:bg-white/10 disabled:opacity-50">Clear selection</button>
+          </div>
+        </div>
+      )}
+
+      {isRoomPickerOpen && (
+        <div className="rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-zinc-900">Add a room or space</h2>
+              <p className="text-sm text-zinc-600">Search and assign your selected photos to the right area.</p>
+            </div>
+            <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:border-zinc-300">Close</button>
+          </div>
+          <input
+            value={roomSearch}
+            onChange={(event) => setRoomSearch(event.target.value)}
+            placeholder="Search rooms and spaces"
+            className="mb-4 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:bg-white"
+          />
+          <div className="max-h-80 space-y-4 overflow-y-auto pr-1">
+            {filteredRoomOptions.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">No matching room types found.</p>
+            ) : filteredRoomOptions.map((group) => (
+              <div key={group.label}>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500">{group.label}</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.options.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        assignSelectedRoom(option.value);
+                        setIsRoomPickerOpen(false);
+                        setRoomSearch("");
+                      }}
+                      className="rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-left text-sm font-medium text-zinc-800 transition hover:border-zinc-900 hover:bg-white"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

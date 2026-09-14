@@ -84,8 +84,13 @@ const listingPhotoUrl = z.string().trim().refine(
 
 const photoRoomAssignmentSchema = z.object({
   url: listingPhotoUrl,
-  roomType: z.enum(PHOTO_ROOM_TYPES).nullable(),
-}).strict();
+  roomType: z.enum(PHOTO_ROOM_TYPES).nullable().optional(),
+  roomCategory: z.string().trim().min(1).max(120).nullable().optional(),
+  categoryId: z.enum(PHOTO_ROOM_TYPES).nullable().optional(),
+  roomInstanceId: z.string().trim().min(1).max(120).nullable().optional(),
+  roomLabel: z.string().trim().min(1).max(120).nullable().optional(),
+  sortOrder: z.number().int().min(0).max(1000).nullable().optional(),
+}).passthrough();
 
 const customSlugSchema = z.preprocess(
   (value) => {

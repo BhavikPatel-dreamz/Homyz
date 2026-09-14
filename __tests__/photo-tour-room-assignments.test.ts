@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import fs from "node:fs";
 import path from "node:path";
-import { normalizePhotoRoomAssignments } from "../lib/listing/photo-room-assignments";
+import {
+  normalizePhotoRoomAssignments,
+  PHOTO_TOUR_CATEGORIES,
+  getPhotoTourCategoryById,
+} from "../lib/listing/photo-room-assignments";
 import { updateListingSchema } from "../lib/validation/listing";
 
 const photoOne = "/uploads/listing-photos/photo_one.jpg";
@@ -36,6 +40,24 @@ describe("Listing Photo Tour room assignments", () => {
       ], [photoOne]),
       [{ url: photoOne, roomType: "KITCHEN" }],
     );
+  });
+
+  it("supports the expanded room taxonomy and backward-compatible assignment metadata", () => {
+    assert.ok(PHOTO_TOUR_CATEGORIES.length > 20);
+    assert.ok(getPhotoTourCategoryById("primary_bedroom"));
+
+    const parsed = updateListingSchema.parse({
+      photos: [photoOne, photoTwo],
+      photoRoomAssignments: [
+        { url: photoOne, roomType: "PRIMARY_BEDROOM" },
+        { url: photoTwo, roomCategory: "BALCONY", roomInstanceId: "balcony_1", sortOrder: 2 },
+      ],
+    });
+
+    assert.deepEqual(parsed.photoRoomAssignments, [
+      { url: photoOne, roomType: "PRIMARY_BEDROOM" },
+      { url: photoTwo, roomCategory: "BALCONY", roomInstanceId: "balcony_1", sortOrder: 2 },
+    ]);
   });
 
   it("renders only the documented room categories and an unassigned section in the editor", () => {
