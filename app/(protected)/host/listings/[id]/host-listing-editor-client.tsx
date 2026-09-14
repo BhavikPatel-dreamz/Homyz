@@ -1281,23 +1281,7 @@ export function HostListingEditorClient({
                   </div>
                 )}
 
-                {listingDisplayState === "READY_TO_SUBMIT" && (
-                  <div className="flex items-center justify-between rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-2.5 text-xs text-indigo-900 animate-in fade-in">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-indigo-600" />
-                      <span className="font-semibold">Listing Status: Ready for review</span>
-                      <span className="text-indigo-700 font-normal hidden sm:inline">— All required details are complete</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveSection("listing-status")}
-                      className="font-semibold text-indigo-800 hover:underline cursor-pointer"
-                    >
-                      Submit for Approval →
-                    </button>
-                  </div>
-                )}
-
+     
                 {listingDisplayState === "DRAFT" && (
                   <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs text-zinc-700 animate-in fade-in">
                     <div className="flex items-center gap-2">
@@ -1610,6 +1594,18 @@ export function HostListingEditorClient({
               isPropertyInfoModalOpen={isPropertyInfoModalOpen}
               setIsPropertyInfoModalOpen={setIsPropertyInfoModalOpen}
             />
+
+            {(activeSection === "listing-status" || activeSection === "listingstatus") && (
+              <ListingStatusView
+                listing={listing}
+                setActiveSection={setActiveSection}
+                onUpdateListing={(updated) => setListing((previous) => ({ ...previous, ...updated }))}
+                status={listingStatusSetting}
+                setStatus={setListingStatusSetting}
+                isSaving={isSaving}
+                handleSaveSection={handleSaveSection}
+              />
+            )}
 
             {(activeSection === "remove-listing" || activeSection === "removelisting") && (
               <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">

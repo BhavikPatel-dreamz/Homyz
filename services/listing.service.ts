@@ -128,6 +128,7 @@ function getPublishReadiness(listing: {
   beds: number;
   bathrooms: number;
   price: number;
+  weekdayBasePrice?: number | null;
   weekendPrice: number | null;
   photos: string[];
   title: string;
@@ -143,26 +144,16 @@ function getPublishReadiness(listing: {
   if (listing.guests < 1 || listing.bedrooms < 0 || listing.beds < 1 || listing.bathrooms < 0) {
     missing.push("capacity");
   }
-  if (listing.price <= 0) missing.push("weekdayPrice");
+  const effectiveWeekday = (listing as any).weekdayBasePrice ?? listing.price;
+  if (!effectiveWeekday || effectiveWeekday <= 0) missing.push("weekdayPrice");
   if (!listing.weekendPrice || listing.weekendPrice <= 0) missing.push("weekendPrice");
   if (listing.photos.length < 5) missing.push("photos");
   if (listing.title.trim().length < 3 || listing.title.length > 50) missing.push("title");
   if (listing.description.trim().length < 10 || listing.description.length > 5000) missing.push("description");
   if (listing.highlights.length > 3) missing.push("highlights");
 
-  const safetyAnswers = new Map(
-    listing.safetyDisclosures.map((value) => {
-      const [key, answer] = value.split(":");
-      return [key, answer];
-    }),
-  );
-  if (
-    REQUIRED_SAFETY_RESPONSES.some(
-      (key) => safetyAnswers.get(key) !== "YES" && safetyAnswers.get(key) !== "NO",
-    )
-  ) {
-    missing.push("safetyDisclosures");
-  }
+  // Safety disclosures are optional - no validation required
+  // Hosts can choose to answer or skip them entirely
 
   return { publishable: missing.length === 0, missing };
 }
@@ -522,7 +513,8 @@ async function create(
       title: input.title || "Draft Listing",
       description: input.description || "",
       descriptionSections: input.descriptionSections ? JSON.parse(JSON.stringify(input.descriptionSections)) : null,
-      price: input.price ?? 10000,
+      price: (input as any).weekdayBasePrice ?? input.price ?? 10000,
+      weekdayBasePrice: (input as any).weekdayBasePrice ?? input.price ?? 10000,
       smartPricing: input.smartPricing ?? false,
       smartPricingMinPrice: input.smartPricingMinPrice ?? null,
       smartPricingMaxPrice: input.smartPricingMaxPrice ?? null,
@@ -625,6 +617,8 @@ async function create(
       securityDeposit: input.securityDeposit ?? 0,
       weekendPrice: input.weekendPrice ?? null,
       weekendPremium: input.weekendPremium ?? null,
+      customPrices: (input as any).customPrices ? JSON.parse(JSON.stringify((input as any).customPrices)) : null,
+      extraGuestFee: (input as any).extraGuestFee ?? 0,
       discounts: input.discounts ? JSON.parse(JSON.stringify(input.discounts)) : null,
       currentStep: input.currentStep ?? 1,
       customSlug: typeof input.customSlug === "string" ? normalizeSlug(input.customSlug) : null,
@@ -709,6 +703,19 @@ async function update(
   }
   if (dataToUpdate.discounts !== undefined) {
     dataToUpdate.discounts = dataToUpdate.discounts ? JSON.parse(JSON.stringify(dataToUpdate.discounts)) : null;
+  }
+  if ((dataToUpdate as any).weekdayBasePrice !== undefined && dataToUpdate.price === undefined) {
+    dataToUpdate.price = (dataToUpdate as any).weekdayBasePrice;
+  } else if (dataToUpdate.price !== undefined && (dataToUpdate as any).weekdayBasePrice === undefined) {
+    (dataToUpdate as any).weekdayBasePrice = dataToUpdate.price;
+  }
+  if ((dataToUpdate as any).customPrices !== undefined) {
+    (dataToUpdate as any).customPrices = (dataToUpdate as any).customPrices
+      ? JSON.parse(JSON.stringify((dataToUpdate as any).customPrices))
+      : null;
+  }
+  if ((dataToUpdate as any).extraGuestFee !== undefined) {
+    (dataToUpdate as any).extraGuestFee = Math.max(0, Math.round(Number((dataToUpdate as any).extraGuestFee)));
   }
   if (dataToUpdate.customSlug !== undefined) {
     dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;

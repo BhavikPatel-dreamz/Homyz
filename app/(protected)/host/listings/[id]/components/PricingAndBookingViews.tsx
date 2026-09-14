@@ -149,7 +149,7 @@ export function PricingAndBookingViews({
             {/* 1. Nightly Price Card */}
             <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Nightly price"}</span>
+                <span className="font-semibold text-xs text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Weekday base price"}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
                   <button

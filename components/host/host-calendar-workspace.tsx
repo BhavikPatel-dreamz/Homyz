@@ -96,11 +96,15 @@ function MonthGrid({
               b.endDate.slice(0, 10) > key,
           );
           const blocked = listing.blockedDates.includes(key);
-          const isWeekend = date.getDay() === 5 || date.getDay() === 6;
-          const rate =
-            isWeekend && listing.weekendPrice != null
-              ? listing.weekendPrice
-              : listing.price;
+          const isWeekend = date.getDay() === 4 || date.getDay() === 5;
+          const customPrices = ((listing as any).customPrices || {}) as Record<string, number>;
+          const customPrice = typeof customPrices[key] === "number" ? customPrices[key] : null;
+          const weekdayBase = (listing as any).weekdayBasePrice ?? listing.price;
+          const rate = customPrice !== null
+            ? customPrice
+            : (isWeekend && listing.weekendPrice != null && listing.weekendPrice > 0
+                ? listing.weekendPrice
+                : weekdayBase);
           const isToday = key === today;
 
           return (
@@ -144,11 +148,18 @@ function MonthGrid({
                     ? "text-zinc-300"
                     : blocked
                     ? "text-[#1F1F1F] line-through"
+                    : customPrice !== null
+                    ? "text-amber-600 font-bold"
                     : "text-[#1F1F1F]"
                 }`}
               >
                 {blocked ? "Blocked" : money(rate)}
               </span>
+              {customPrice !== null && !blocked && !reservation && (
+                <span className="text-[9px] font-semibold text-amber-700 bg-amber-100 px-1 rounded">
+                  custom
+                </span>
+              )}
 
               {/* Reservation Guest Pill Bar */}
               {reservation && (
@@ -535,84 +546,152 @@ export function HostCalendarWorkspace({
         )}
 
         {/* Date-Level Quick Edit Drawer / Popover (Frame 02:44) */}
-        {selectedDay && listing && (
-          <WorkspaceDialog
-            dark
-            title={new Date(`${selectedDay}T12:00:00`).toLocaleDateString(
-              "en",
-              {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              },
-            )}
-            onClose={() => setSelectedDay(null)}
-            maxWidth="max-w-sm"
-          >
-            <div className="space-y-5">
-              {/* Availability Status & Toggle */}
-              <div className="flex items-center justify-between rounded-xl bg-white/10 p-4">
-                <span className="text-sm font-medium flex items-center gap-2">
-                  <span
-                    className={`size-2.5 rounded-full ${
-                      listing.blockedDates.includes(selectedDay)
-                        ? "bg-zinc-400"
-                        : "bg-emerald-400"
-                    }`}
-                  />
-                  {listing.blockedDates.includes(selectedDay)
-                    ? "Blocked"
-                    : "Available"}
-                </span>
-
-                <button
-                  disabled={saving}
-                  role="switch"
-                  aria-checked={!listing.blockedDates.includes(selectedDay)}
-                  onClick={() =>
-                    save({
-                      blockedDates: listing.blockedDates.includes(selectedDay)
-                        ? listing.blockedDates.filter((d) => d !== selectedDay)
-                        : [...listing.blockedDates, selectedDay],
-                    })
-                  }
-                  className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-50"
-                >
-                  {saving
-                    ? "Saving…"
-                    : listing.blockedDates.includes(selectedDay)
-                      ? "Make available"
-                      : "Block date"}
-                </button>
-              </div>
-
-              {/* Price Row matching Frame 02:44 */}
-              <div className="rounded-xl bg-white/10 p-4 space-y-1">
-                <span className="text-xs text-zinc-300">Last minute price</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-white">
-                    {money(Math.round(listing.price * 0.7))}
+        {selectedDay && listing && (() => {
+          const customPrices = ((listing as any).customPrices || {}) as Record<string, number>;
+          const hasCustom = typeof customPrices[selectedDay] === "number";
+          const selectedDate = new Date(selectedDay + "T00:00:00Z");
+          const isWeekendDay = selectedDate.getUTCDay() === 4 || selectedDate.getUTCDay() === 5;
+          const weekdayBase = (listing as any).weekdayBasePrice ?? listing.price;
+          const currentRate = hasCustom
+            ? customPrices[selectedDay]
+            : (isWeekendDay && listing.weekendPrice && listing.weekendPrice > 0
+                ? listing.weekendPrice
+                : weekdayBase);
+          return (
+            <WorkspaceDialog
+              dark
+              title={new Date(`${selectedDay}T12:00:00`).toLocaleDateString(
+                "en",
+                {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                },
+              )}
+              onClose={() => setSelectedDay(null)}
+              maxWidth="max-w-sm"
+            >
+              <div className="space-y-5">
+                {/* Availability Status & Toggle */}
+                <div className="flex items-center justify-between rounded-xl bg-white/10 p-4">
+                  <span className="text-sm font-medium flex items-center gap-2 text-white">
+                    <span
+                      className={`size-2.5 rounded-full ${
+                        listing.blockedDates.includes(selectedDay)
+                          ? "bg-zinc-400"
+                          : "bg-emerald-400"
+                      }`}
+                    />
+                    {listing.blockedDates.includes(selectedDay)
+                      ? "Blocked"
+                      : "Available"}
                   </span>
-                  <span className="text-sm text-zinc-400 line-through">
-                    {money(listing.price)}
-                  </span>
+
+                  <button
+                    disabled={saving}
+                    role="switch"
+                    aria-checked={!listing.blockedDates.includes(selectedDay)}
+                    onClick={() =>
+                      save({
+                        blockedDates: listing.blockedDates.includes(selectedDay)
+                          ? listing.blockedDates.filter((d) => d !== selectedDay)
+                          : [...listing.blockedDates, selectedDay],
+                      })
+                    }
+                    className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-50 cursor-pointer"
+                  >
+                    {saving
+                      ? "Saving…"
+                      : listing.blockedDates.includes(selectedDay)
+                        ? "Make available"
+                        : "Block date"}
+                  </button>
+                </div>
+
+                {/* Nightly Price & Custom Override */}
+                <div className="rounded-xl bg-white/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-300">
+                      {hasCustom
+                        ? "Custom Calendar Price"
+                        : isWeekendDay && listing.weekendPrice
+                        ? "Weekend Rate"
+                        : "Weekday Base Rate"}
+                    </span>
+                    {hasCustom && (
+                      <span className="text-[10px] bg-amber-400 text-zinc-900 px-2 py-0.5 rounded-full font-bold">
+                        OVERRIDE
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-white">
+                      {money(currentRate)}
+                    </span>
+                    {hasCustom && (
+                      <span className="text-xs text-zinc-400 line-through">
+                        {money(isWeekendDay && listing.weekendPrice ? listing.weekendPrice : weekdayBase)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Custom Price Form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const customVal = Number(formData.get("customPrice"));
+                      const nextCustom = { ...customPrices };
+                      if (customVal > 0) {
+                        nextCustom[selectedDay] = Math.round(customVal * 100);
+                      } else {
+                        delete nextCustom[selectedDay];
+                      }
+                      save({ customPrices: nextCustom });
+                    }}
+                    className="pt-2 border-t border-white/10 space-y-2"
+                  >
+                    <label className="block text-[11px] text-zinc-300 font-medium">
+                      Set custom price for this night (SAR)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        name="customPrice"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder={String(currentRate / 100)}
+                        defaultValue={hasCustom ? currentRate / 100 : ""}
+                        className="flex-1 rounded-lg bg-white/15 px-3 py-1.5 text-xs text-white placeholder:text-zinc-400 outline-none focus:ring-1 focus:ring-amber-400"
+                      />
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-lg bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {saving ? "..." : "Set"}
+                      </button>
+                      {hasCustom && (
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => {
+                            const nextCustom = { ...customPrices };
+                            delete nextCustom[selectedDay];
+                            save({ customPrices: nextCustom });
+                          }}
+                          className="rounded-lg bg-zinc-700 hover:bg-zinc-600 px-2.5 py-1.5 text-xs font-medium text-zinc-200 transition-colors cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </form>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedDay(null);
-                  setTips(true);
-                }}
-                className="flex w-full items-center justify-between rounded-xl bg-white/10 p-4 text-xs font-medium text-white hover:bg-white/15 transition-colors"
-              >
-                <span>Custom setting</span>
-                <span className="text-lg">+</span>
-              </button>
-            </div>
-          </WorkspaceDialog>
-        )}
+            </WorkspaceDialog>
+          );
+        })()}
 
         {/* Reservation Details Drawer / Modal */}
         {selectedBooking && (

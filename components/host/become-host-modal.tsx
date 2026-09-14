@@ -13,12 +13,14 @@ export interface BecomeHostModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialType?: HostingTypeOption;
+  initialStep?: 1 | 2;
 }
 
 export function BecomeHostModal({
   isOpen,
   onClose,
   initialType = "HOME",
+  initialStep,
 }: BecomeHostModalProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -26,8 +28,19 @@ export function BecomeHostModal({
 
   // Step 1: "Welcome back, [Name] - Start a new listing"
   // Step 2: "What would you like to host?"
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedType, setSelectedType] = useState<HostingTypeOption>(initialType);
+  const [step, setStep] = useState<1 | 2>(initialStep ?? 1);
+  const [selectedType, setSelectedType] = useState<HostingTypeOption | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("host_type");
+      if (saved) {
+        const upper = saved.toUpperCase();
+        if (upper === "HOME" || upper === "EXPERIENCE" || upper === "SERVICE") {
+          return upper as HostingTypeOption;
+        }
+      }
+    }
+    return initialType || "HOME";
+  });
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
   // Close on Escape key press
@@ -42,13 +55,21 @@ export function BecomeHostModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Reset to Step 1 whenever modal opens
+  // Reset to initialStep whenever modal opens
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
-      setStep(1);
-      setSelectedType("HOME");
+      setStep(initialStep ?? 1);
+      if (typeof window !== "undefined") {
+        const saved = sessionStorage.getItem("host_type");
+        if (saved) {
+          const upper = saved.toUpperCase();
+          if (upper === "HOME" || upper === "EXPERIENCE" || upper === "SERVICE") {
+            setSelectedType(upper as HostingTypeOption);
+          }
+        }
+      }
       setIsNavigating(false);
     }
   }
@@ -63,9 +84,7 @@ export function BecomeHostModal({
 
   // Step 1 Actions
   const handleSelectCreateNew = () => {
-    setIsNavigating(true);
-    onClose();
-    router.push(`/host/listings/new?type=${selectedType || "HOME"}`);
+    setStep(2);
   };
 
   const handleCreateFromExisting = () => {
@@ -80,7 +99,10 @@ export function BecomeHostModal({
 
   // Step 2 Actions
   const handleStep2Next = () => {
-    if (selectedType !== "HOME") return;
+    if (!selectedType || selectedType !== "HOME") return;
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("host_type", selectedType.toLowerCase());
+    }
     setIsNavigating(true);
     onClose();
     router.push(`/host/listings/new?type=${selectedType}`);
@@ -206,11 +228,17 @@ export function BecomeHostModal({
             {/* Option 1: Home */}
             <button
               type="button"
-              onClick={() => setSelectedType("HOME")}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${selectedType === "HOME"
-                  ? "border-[#1F1F1F] bg-white"
-                  : "border-white bg-white"
-                }`}
+              onClick={() => {
+                setSelectedType("HOME");
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("host_type", "home");
+                }
+              }}
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
+                selectedType === "HOME"
+                  ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
+                  : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
+              }`}
             >
               {/* House Icon */}
               <div className="w-16 h-16 flex items-center justify-center mb-3">
@@ -222,12 +250,17 @@ export function BecomeHostModal({
             {/* Option 2: Experience */}
             <button
               type="button"
-              onClick={() => setSelectedType("EXPERIENCE")}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${
+              onClick={() => {
+                setSelectedType("EXPERIENCE");
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("host_type", "experience");
+                }
+              }}
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
                 selectedType === "EXPERIENCE"
-                  ? "border-[#1F1F1F] bg-white"
-                  : "border-white bg-white"
-                }`}
+                  ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
+                  : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
+              }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 Soon
@@ -247,12 +280,17 @@ export function BecomeHostModal({
             {/* Option 3: Service */}
             <button
               type="button"
-              onClick={() => setSelectedType("SERVICE")}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl border transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] ${
+              onClick={() => {
+                setSelectedType("SERVICE");
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("host_type", "service");
+                }
+              }}
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
                 selectedType === "SERVICE"
-                  ? "border-[#1F1F1F] bg-white"
-                  : "border-white bg-white"
-                }`}
+                  ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
+                  : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
+              }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 Soon
@@ -273,7 +311,7 @@ export function BecomeHostModal({
           </div>
 
           {/* Feedback banner if non-HOME is selected */}
-          {!isTypeSupported && (
+          {(!isTypeSupported && selectedType) && (
             <div className="mb-6 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm flex items-center gap-2.5">
               <svg className="w-4 h-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -296,11 +334,11 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={handleStep2Next}
-              disabled={!isTypeSupported || isNavigating}
+              disabled={!selectedType || !isTypeSupported || isNavigating}
               className={`px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] ${
-                isTypeSupported && !isNavigating
+                selectedType && isTypeSupported && !isNavigating
                 ? "bg-[#FCDF9C] cursor-pointer"
-                : "bg-[#F3F4F5] cursor-not-allowed"
+                : "bg-[#F3F4F5] text-zinc-400 cursor-not-allowed"
               }`}
             >
               {isNavigating ? "Loading..." : "Next"}

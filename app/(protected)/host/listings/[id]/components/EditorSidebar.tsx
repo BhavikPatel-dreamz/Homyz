@@ -298,12 +298,7 @@ export function EditorSidebar({
                 Approved
               </span>
             )}
-            {displayState === "READY_TO_SUBMIT" && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-900 border border-indigo-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
-                Ready for review
-              </span>
-            )}
+           
             {displayState === "DRAFT" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-200/80 text-zinc-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />

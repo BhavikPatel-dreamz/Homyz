@@ -466,7 +466,7 @@ function LocationView(props: Props) {
               <div className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-[15px] font-normal leading-5 text-[#1F1F1F]">{label}</div>
-                  <div className="mt-1 text-xs leading-4 text-zinc-400">Lorem ipsum integer habitant</div>
+                  <div className="mt-1 text-xs leading-4 text-zinc-400">Highlight this feature for prospective guests</div>
                 </div>
                 <Toggle
                   checked={locationFeatures.includes(id)}

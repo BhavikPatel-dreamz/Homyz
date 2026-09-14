@@ -10,6 +10,7 @@ interface StepPriceProps {
   price: number;
   onChangePrice: (price: number) => void;
   currencySymbol?: string;
+  hostServiceFeePercentage?: number;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -19,6 +20,7 @@ export function StepPrice({
   price,
   onChangePrice,
   currencySymbol = "SR",
+  hostServiceFeePercentage = 15,
   onBack,
   onNext,
   isLoading = false,
@@ -27,9 +29,9 @@ export function StepPrice({
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showMobileBreakdown, setShowMobileBreakdown] = useState(true);
 
-  const guestServiceFee = Math.round(price * 0.2);
-  const guestPriceBeforeTaxes = price + guestServiceFee;
-  const hostEarnings = Math.round(price * 0.97);
+  const feePercentage = hostServiceFeePercentage;
+  const hostServiceFee = Math.round(price * (feePercentage / 100));
+  const hostEarnings = Math.max(0, price - hostServiceFee);
 
   // Direct manual numeric input handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +101,7 @@ export function StepPrice({
                 className="hidden w-full items-center justify-center gap-4 text-base font-normal text-[#1F1F1F] transition-colors hover:text-zinc-800 cursor-pointer select-none sm:flex"
               >
                 <span>
-                  Guest price before taxes <span className="font-medium">{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
+                  View breakdown
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -119,7 +121,7 @@ export function StepPrice({
                   className="flex w-full items-center justify-center gap-4 sm:text-base text-sm font-normal text-[#1F1F1F] sm:hidden"
                 >
                   <span>
-                    Guest price before taxes <span className="font-medium">{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
+                    View breakdown
                   </span>
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -130,22 +132,17 @@ export function StepPrice({
               {/* Full mobile fee breakdown; desktop expands it on demand. */}
               <div className={`${showBreakdown ? "sm:block" : "sm:hidden"} ${showMobileBreakdown ? "block" : "hidden"} rounded-xl border border-[#727272] bg-white px-6 py-4 text-sm text-[#1F1F1F]`}>
                 <div className="flex items-center justify-between">
-                  <span>Base price</span>
+                  <span>Weekday base price</span>
                   <span>{currencySymbol}{price.toLocaleString()}</span>
                 </div>
                 <div className="mt-5 flex items-center justify-between">
-                  <span>Guest service fee</span>
-                  <span>{currencySymbol}{guestServiceFee.toLocaleString()}</span>
-                </div>
-                <div className="my-5 border-t border-[#727272]/60" />
-                <div className="flex items-center justify-between">
-                  <span>Guest price before taxes</span>
-                  <span>{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
+                  <span>Guest service fee ({feePercentage}%)</span>
+                  <span className="text-rose-600">−{currencySymbol}{hostServiceFee.toLocaleString()}</span>
                 </div>
                 <div className="my-5 border-t border-[#727272]/60" />
                 <div className="flex items-center justify-between">
                   <span>You earn</span>
-                  <span className="font-medium">{currencySymbol}{hostEarnings.toLocaleString()}</span>
+                  <span className="font-medium text-emerald-600">{currencySymbol}{hostEarnings.toLocaleString()}</span>
                 </div>
                 <button
                   type="button"

@@ -173,10 +173,13 @@ export function ReservationDetails({
   const nightlyRate = listing.price;
   const roomFee = nights * nightlyRate;
   const cleaningFee = listing.cleaningFee || Math.round(nightlyRate * 0.35);
-  const serviceFee = Math.round(roomFee * 0.12);
-  const guestTotal = roomFee + cleaningFee + serviceFee;
-  const hostServiceFee = Math.round(roomFee * 0.03);
-  const hostPayout = roomFee + cleaningFee - hostServiceFee;
+
+  const pb = (booking as any)?.priceBreakdown;
+  const hostServiceFeePercentage = pb?.hostServiceFeePercentage ?? 15;
+  const hostServiceFee = pb?.hostServiceFee ?? Math.round(roomFee * (hostServiceFeePercentage / 100));
+  const taxes = pb?.taxTotal ?? 0;
+  const guestTotal = pb?.guestTotal ?? (roomFee + cleaningFee + taxes + hostServiceFee);
+  const hostPayout = pb?.payoutBreakdown?.netHostPayout ?? (roomFee + cleaningFee - hostServiceFee);
 
   return (
     <WorkspaceDialog title="Reservation details" onClose={onClose} maxWidth="max-w-lg">
@@ -304,9 +307,15 @@ export function ReservationDetails({
               <dd className="text-zinc-800">{money(cleaningFee)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Homyz service fee</dt>
-              <dd className="text-zinc-800">{money(serviceFee)}</dd>
+              <dt className="text-zinc-500">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dd className="text-zinc-800">{money(hostServiceFee)}</dd>
             </div>
+            {taxes > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Taxes</dt>
+                <dd className="text-zinc-800">{money(taxes)}</dd>
+              </div>
+            )}
             <div className="flex justify-between border-t border-zinc-100 pt-2 font-semibold text-sm">
               <dt className="text-zinc-900">Total (SAR)</dt>
               <dd className="text-zinc-900">{money(guestTotal)}</dd>
@@ -322,8 +331,14 @@ export function ReservationDetails({
               <dt className="text-zinc-500">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
               <dd className="text-zinc-800">{money(roomFee)}</dd>
             </div>
+            {cleaningFee > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Cleaning fee</dt>
+                <dd className="text-zinc-800">{money(cleaningFee)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Host service fee (3.0% + VAT)</dt>
+              <dt className="text-zinc-500">Guest service fee ({hostServiceFeePercentage}%)</dt>
               <dd className="text-rose-600">- {money(hostServiceFee)}</dd>
             </div>
             <div className="flex justify-between border-t border-zinc-100 pt-2 font-semibold text-sm">

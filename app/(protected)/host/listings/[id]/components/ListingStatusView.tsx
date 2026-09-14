@@ -97,26 +97,8 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   }
 
   const rawDisclosures = Array.isArray(listing.safetyDisclosures) ? listing.safetyDisclosures : [];
-  const safetyMap = new Map<string, string>();
-  for (const item of rawDisclosures) {
-    if (typeof item === "string") {
-      const [k, v] = item.split(":");
-      if (k && v) safetyMap.set(k, v);
-    }
-  }
-  const requiredSafetyKeys = ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"];
-  const missingSafety = requiredSafetyKeys.filter(
-    (k) => safetyMap.get(k) !== "YES" && safetyMap.get(k) !== "NO",
-  );
-  if (missingSafety.length > 0) {
-    missing.push({
-      key: "safetyDisclosures",
-      label: "Safety disclosures",
-      description: "Answer required disclosures (cameras, noise monitors, weapons)",
-      section: "guest-safety",
-    });
-  }
-
+  // Safety disclosures are now optional - no validation required here
+  
   return missing;
 }
 

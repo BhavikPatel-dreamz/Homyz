@@ -38,8 +38,8 @@ test("Listing Status Page: computeMissingRequirements detects incomplete fields"
   assert.ok(keys.includes("description"), "Must flag description");
   assert.ok(keys.includes("price"), "Must flag price");
   assert.ok(keys.includes("weekendPrice"), "Must flag weekendPrice");
-  assert.ok(keys.includes("safetyDisclosures"), "Must flag safetyDisclosures");
-  assert.equal(missing.length, 8);
+  assert.ok(!keys.includes("safetyDisclosures"), "Must NOT flag safetyDisclosures (now optional)");
+  assert.equal(missing.length, 7);
 });
 
 test("Listing Status Page: computeMissingRequirements passes when all fields are complete", () => {

@@ -53,6 +53,8 @@ export interface DetailListingData {
   cleaningFee: number;
   securityDeposit: number;
   weekendPrice: number | null;
+  weekdayBasePrice?: number;
+  extraGuestFee?: number;
   isPaused: boolean;
   isFeatured: boolean;
   showExactLocation: boolean;
@@ -158,11 +160,11 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
   const [newBlockedDate, setNewBlockedDate] = useState("");
 
   // Form states for Pricing
-  const [editPrice, setEditPrice] = useState(listing.price / 100);
+  const [editPrice, setEditPrice] = useState((listing.weekdayBasePrice ?? listing.price) / 100);
   const [editWeekendPrice, setEditWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
   const [editCleaningFee, setEditCleaningFee] = useState((listing.cleaningFee || 0) / 100);
   const [editSecurityDeposit, setEditSecurityDeposit] = useState((listing.securityDeposit || 0) / 100);
-
+  const [editExtraGuestFee, setEditExtraGuestFee] = useState((listing.extraGuestFee || 0) / 100);
   // Moderation & Delete state
   const [modReason, setModReason] = useState(listing.rejectionReason || "");
   const [isSaving, setIsSaving] = useState(false);
@@ -339,17 +341,21 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
     const res = await adminUpdateListingPricingAction({
       listingId: listing.id,
       price: Math.round(editPrice * 100),
+      weekdayBasePrice: Math.round(editPrice * 100),
       weekendPrice: Math.round(editWeekendPrice * 100),
       cleaningFee: Math.round(editCleaningFee * 100),
       securityDeposit: Math.round(editSecurityDeposit * 100),
+      extraGuestFee: Math.round(editExtraGuestFee * 100),
     });
     setIsSaving(false);
     if (res.ok) {
       updateLocalListing({
         price: Math.round(editPrice * 100),
+        weekdayBasePrice: Math.round(editPrice * 100),
         weekendPrice: Math.round(editWeekendPrice * 100),
         cleaningFee: Math.round(editCleaningFee * 100),
         securityDeposit: Math.round(editSecurityDeposit * 100),
+        extraGuestFee: Math.round(editExtraGuestFee * 100),
       });
       setFeedbackMsg({ type: "success", text: "Pricing & fees updated successfully!" });
     } else {
@@ -1035,12 +1041,10 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-5">
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Nightly Rate (SAR) *</label>
               <input
                 type="number"
-                step="0.01"
                 min="0"
                 value={editPrice}
                 onChange={(e) => setEditPrice(Number(e.target.value))}
@@ -1073,7 +1077,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Security Deposit (SAR)</label>
+              <label className="block font-semibold text-muted-foreground mb-1">Extra Guest Fee (SAR/night)</label>
               <input
                 type="number"
                 step="0.01"
@@ -1083,6 +1087,11 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none"
               />
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200/60 bg-amber-500/10 p-4 text-xs space-y-1">
+            <span className="font-bold text-zinc-900">Platform Pricing Architecture:</span>
+            <p className="text-muted-foreground">Standard base price is applied for weekday nights. Weekend pricing applies on applicable weekend nights.</p>
           </div>
         </div>
       )}

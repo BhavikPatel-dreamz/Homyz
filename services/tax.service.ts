@@ -570,8 +570,12 @@ export class TaxService {
       )
     );
 
-    const nightlySubtotal = (booking.nightlyPrice || 0) * nights;
+    const pb = (booking as any).priceBreakdown;
+    const nightlySubtotal = pb?.nightlySubtotal ?? ((booking.nightlyPrice || 0) * nights);
+    const discountAmount = pb?.discountAmount ?? 0;
     const cleaningFee = booking.cleaningFee || 0;
+    const hostServiceFee = pb?.hostServiceFee ?? 0;
+    const hostServiceFeePercentage = pb?.hostServiceFeePercentage ?? 15;
 
     const lineItems = [
       {
@@ -582,6 +586,15 @@ export class TaxService {
       },
     ];
 
+    if (discountAmount > 0) {
+      lineItems.push({
+        description: `Length-of-stay Discount (${pb?.discountPercentage ?? 0}%)`,
+        quantity: 1,
+        unitPrice: -discountAmount,
+        total: -discountAmount,
+      });
+    }
+
     if (cleaningFee > 0) {
       lineItems.push({
         description: "Cleaning Fee",
@@ -591,7 +604,16 @@ export class TaxService {
       });
     }
 
-    const subtotal = nightlySubtotal + cleaningFee;
+    if (hostServiceFee > 0) {
+      lineItems.push({
+        description: `Guest Service Fee (${hostServiceFeePercentage}%)`,
+        quantity: 1,
+        unitPrice: hostServiceFee,
+        total: hostServiceFee,
+      });
+    }
+
+    const subtotal = nightlySubtotal - discountAmount + cleaningFee + hostServiceFee;
     let taxTotal = 0;
 
     const taxBreakdown = booking.taxes.map((t: any) => {

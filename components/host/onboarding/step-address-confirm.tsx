@@ -32,6 +32,7 @@ interface StepAddressConfirmProps {
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
+  showMapPreview?: boolean;
 }
 
 export function StepAddressConfirm({
@@ -56,6 +57,7 @@ export function StepAddressConfirm({
   onBack,
   onNext,
   isLoading = false,
+  showMapPreview = false,
 }: StepAddressConfirmProps) {
 
   const router = useRouter();
@@ -76,15 +78,15 @@ export function StepAddressConfirm({
           
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
-            <h1 data-aos="fade-up" className="mb-2">
+            <h1 className="mb-2">
               Confirm your address
             </h1>
-            <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-8.75 mb-8">
+            <p className="sm:mb-8.75 mb-8">
               Your address is only shared with guests after they’ve made a reservation.
             </p>
 
             {/* Address Form Inputs Stack */}
-            <div data-aos="fade-up" data-aos-delay="200" className="flex flex-col gap-3.5 w-full">
+            <div className="flex flex-col gap-3.5 w-full">
               {/* Country / Region Select */}
               <div className="relative w-full">
                 <select
@@ -163,42 +165,46 @@ export function StepAddressConfirm({
               />
             </div>
 
-            {/* Show Specific Location Toggle Bar */}
-            <div className="w-full my-6">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <h3 className="text-lg font-medium text-[#1F1F1F]">
-                  Show your specific location
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setShowSpecificLocation(!showSpecificLocation)}
-                  className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
-                    }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block sm:h-5 h-4 sm:w-5 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${showSpecificLocation ? "translate-x-5" : "translate-x-0"
-                      }`}
-                  />
-                </button>
-              </div>
-              <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
-                Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
-              </p>
-            </div>
+            {showMapPreview && (
+              <>
+                {/* Show Specific Location Toggle Bar */}
+                <div className="w-full my-6">
+                  <div className="flex items-center justify-between gap-4 mb-2">
+                    <h3 className="text-lg font-medium text-[#1F1F1F]">
+                      Show your specific location
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowSpecificLocation(!showSpecificLocation)}
+                      className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
+                        }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block sm:h-5 h-4 sm:w-5 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${showSpecificLocation ? "translate-x-5" : "translate-x-0"
+                          }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
+                    Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
+                  </p>
+                </div>
 
-            {/* Real Interactive Leaflet Map Preview */}
-            <div data-aos="fade-up" data-aos-delay="300" className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
-              <RealMap
-                address={streetAddress}
-                city={city}
-                country={country}
-                lat={coords.lat}
-                lng={coords.lng}
-                showExactLocation={showSpecificLocation}
-                onLocationChange={onLocationChange}
-                className="h-[256px] sm:h-[482px] w-full relative z-0"
-              />
-            </div>
+                {/* Real Interactive Leaflet Map Preview */}
+                <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
+                  <RealMap
+                    address={streetAddress}
+                    city={city}
+                    country={country}
+                    lat={coords.lat}
+                    lng={coords.lng}
+                    showExactLocation={showSpecificLocation}
+                    onLocationChange={onLocationChange}
+                    className="h-[256px] sm:h-[482px] w-full relative z-0"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <StepProgressFooter currentStep={4} onBack={onBack} onNext={onNext} isLoading={isLoading} />

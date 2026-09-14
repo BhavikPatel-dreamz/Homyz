@@ -25,4 +25,7 @@ export const CACHE_TTL = {
 
   /** Reference config & permissions data: 30 minutes (1800s) */
   REFERENCE_DATA: 1800,
+
+  /** Application settings: 1 hour (3600s) */
+  APP_SETTINGS: 3600,
 } as const;

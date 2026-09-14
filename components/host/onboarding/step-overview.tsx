@@ -9,6 +9,7 @@ import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 
 interface StepOverviewProps {
   onGetStarted: () => void;
+  onBack?: () => void;
   isLoading?: boolean;
 }
 
@@ -41,12 +42,16 @@ const STEPS: Step[] = [
 
 export function StepOverview({
   onGetStarted,
+  onBack,
   isLoading = false,
 }: StepOverviewProps) {
   const router = useRouter();
 
   const handleBack = () => {
-    if (!isLoading) {
+    if (isLoading) return;
+    if (onBack) {
+      onBack();
+    } else {
       router.back();
     }
   };
