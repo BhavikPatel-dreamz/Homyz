@@ -483,10 +483,11 @@ export function PricingAndBookingViews({
                       setAdvanceNotice?.("Same day");
                       setLocalAvailabilityError(null);
                     }}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${advanceNotice === "Same day"
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                      advanceNotice === "Same day"
                         ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
                         : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
+                    }`}
                   >
                     <input
                       type="radio"
@@ -512,10 +513,11 @@ export function PricingAndBookingViews({
                       setAdvanceNotice?.("At least 1 day");
                       setLocalAvailabilityError(null);
                     }}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${advanceNotice === "At least 1 day"
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                      advanceNotice === "At least 1 day"
                         ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
                         : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
+                    }`}
                   >
                     <input
                       type="radio"
@@ -543,10 +545,11 @@ export function PricingAndBookingViews({
                       }
                       setLocalAvailabilityError(null);
                     }}
-                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${advanceNotice !== "Same day" && advanceNotice !== "At least 1 day"
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                      advanceNotice !== "Same day" && advanceNotice !== "At least 1 day"
                         ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
                         : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
+                    }`}
                   >
                     <input
                       type="radio"
@@ -613,12 +616,14 @@ export function PricingAndBookingViews({
                         setAllowSameDayRequests?.(!allowSameDayRequests);
                         setLocalAvailabilityError(null);
                       }}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowSameDayRequests ? "bg-[#1F1F1F]" : "bg-zinc-300"
-                        }`}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        allowSameDayRequests ? "bg-[#1F1F1F]" : "bg-zinc-300"
+                      }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${allowSameDayRequests ? "translate-x-5" : "translate-x-0"
-                          }`}
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                          allowSameDayRequests ? "translate-x-5" : "translate-x-0"
+                        }`}
                       />
                     </button>
                   </div>

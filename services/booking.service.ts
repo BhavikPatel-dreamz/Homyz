@@ -58,6 +58,44 @@ export type BookingQuote = {
   }>;
 };
 
+export function parseCutoffHour(cutoff: string | null | undefined): number {
+  switch (cutoff?.trim().toUpperCase()) {
+    case "6:00 AM":
+      return 6;
+    case "12:00 PM":
+      return 12;
+    case "3:00 PM":
+      return 15;
+    case "6:00 PM":
+      return 18;
+    case "9:00 PM":
+      return 21;
+    case "12:00 AM":
+    default:
+      return 24;
+  }
+}
+
+export function parseRequiredAdvanceDays(notice: string | null | undefined): number {
+  switch (notice?.trim()) {
+    case "1 day":
+    case "At least 1 day":
+      return 1;
+    case "2 days":
+    case "At least 2 days":
+      return 2;
+    case "3 days":
+    case "At least 3 days":
+      return 3;
+    case "7 days":
+    case "At least 7 days":
+      return 7;
+    case "Same day":
+    default:
+      return 0;
+  }
+}
+
 export async function getBookingQuote(opts: {
   listingId: string;
   checkIn: Date | string;
@@ -100,6 +138,41 @@ export async function getBookingQuote(opts: {
   }
   if (nights > maxN) {
     throw AppError.badRequest(`Maximum stay is ${maxN} ${maxN === 1 ? "night" : "nights"}`);
+  }
+
+  // Validate availability constraints: advance notice & same-day settings
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const checkInDate = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate());
+  const daysDifference = Math.round((checkInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysDifference < 0) {
+    throw AppError.badRequest("Check-in date cannot be in the past");
+  }
+
+  const requiredAdvanceDays = parseRequiredAdvanceDays(listing.advanceNotice);
+
+  if (daysDifference === 0) {
+    // Same-day check-in requested
+    if (listing.allowSameDayRequests === false) {
+      throw AppError.badRequest("Same-day bookings are not allowed for this property");
+    }
+    if (requiredAdvanceDays > 0) {
+      throw AppError.badRequest(
+        `This property requires at least ${requiredAdvanceDays} ${requiredAdvanceDays === 1 ? "day" : "days"} advance notice before arrival`
+      );
+    }
+    const cutoffHour = parseCutoffHour(listing.sameDayCutoff);
+    const currentHour = now.getHours() + now.getMinutes() / 60;
+    if (currentHour >= cutoffHour) {
+      throw AppError.badRequest(
+        `Same-day bookings for today closed at ${listing.sameDayCutoff || "12:00 AM"}`
+      );
+    }
+  } else if (daysDifference < requiredAdvanceDays) {
+    throw AppError.badRequest(
+      `This property requires at least ${requiredAdvanceDays} ${requiredAdvanceDays === 1 ? "day" : "days"} advance notice before arrival`
+    );
   }
 
   const requestedGuests = opts.guests ?? 1;

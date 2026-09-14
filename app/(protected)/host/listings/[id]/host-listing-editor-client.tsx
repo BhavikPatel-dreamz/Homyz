@@ -831,9 +831,29 @@ export function HostListingEditorClient({
         } : {}),
       };
     } else if (sectionToSave === "availability") {
+      const min = Number(minNights);
+      const max = Number(maxNights);
+      if (!min || min < 1) {
+        setIsSaving(false);
+        setFeedbackMsg({ type: "error", text: "Minimum stay must be at least 1 night." });
+        return;
+      }
+      if (!max || max < 1) {
+        setIsSaving(false);
+        setFeedbackMsg({ type: "error", text: "Maximum stay must be at least 1 night." });
+        return;
+      }
+      if (max < min) {
+        setIsSaving(false);
+        setFeedbackMsg({
+          type: "error",
+          text: `Maximum stay (${max} nights) cannot be less than minimum stay (${min} nights).`,
+        });
+        return;
+      }
       payload = {
-        minNights: Number(minNights),
-        maxNights: Number(maxNights),
+        minNights: min,
+        maxNights: max,
         advanceNotice,
         sameDayCutoff,
         allowSameDayRequests,
@@ -1126,6 +1146,21 @@ export function HostListingEditorClient({
         }
         if (payload.apartment !== undefined) {
           setEditApartment(payload.apartment ?? "");
+        }
+        if (payload.minNights !== undefined) {
+          setMinNights(payload.minNights);
+        }
+        if (payload.maxNights !== undefined) {
+          setMaxNights(payload.maxNights);
+        }
+        if (payload.advanceNotice !== undefined) {
+          setAdvanceNotice(payload.advanceNotice);
+        }
+        if (payload.sameDayCutoff !== undefined) {
+          setSameDayCutoff(payload.sameDayCutoff);
+        }
+        if (payload.allowSameDayRequests !== undefined) {
+          setAllowSameDayRequests(payload.allowSameDayRequests);
         }
         setFeedbackMsg({ type: "success", text: "Changes saved successfully!" });
       } else {
