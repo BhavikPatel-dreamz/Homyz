@@ -23,7 +23,6 @@ import {
   type SectionKey,
 } from "../section-helpers";
 import { HouseRulesSkeleton } from "./YourSpaceSkeletons";
-import { ListingStatusView } from "./ListingStatusView";
 import type { HostListingData } from "../host-listing-editor-client";
 
 function AllowDenyButtons({
@@ -1031,21 +1030,6 @@ export function HouseRulesAndArrivalViews({
 
 
 
-      {/* --------------------------------------------------------- */}
-      {/* VIEW: LISTING STATUS (Matches Figma 100%) */}
-      {/* --------------------------------------------------------- */}
-      {(activeSection === "listing-status" ||
-        activeSection === "listingstatus") && (
-        <ListingStatusView
-          listing={listing}
-          setActiveSection={setActiveSection}
-          onUpdateListing={onUpdateListing}
-          status={listingStatusSetting || (listing?.published ? "listed" : "unlisted")}
-          setStatus={setListingStatusSetting}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-        />
-      )}
 
       {/* --------------------------------------------------------- */}
       {/* VIEW: LANGUAGES (Matches Figma 100%) */}

@@ -20,6 +20,7 @@ import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalView
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
 import { ListingStatusView, computeMissingRequirements, getListingDisplayState } from "./components/ListingStatusView";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
 import {
@@ -39,6 +40,7 @@ import {
 } from "@/lib/constants/listing-enums";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
+import { getCurrencyForCountry } from "@/lib/currency";
 import {
   normalizePhotoRoomAssignments,
   type PhotoRoomAssignment,
@@ -75,6 +77,7 @@ export interface HostListingData {
   title: string;
   description: string;
   price: number; // in cents
+  weekdayBasePrice?: number | null;
   smartPricing?: boolean;
   smartPricingMinPrice?: number | null;
   smartPricingMaxPrice?: number | null;
@@ -367,6 +370,7 @@ export function HostListingEditorClient({
   const [elevatorAvailable, setElevatorAvailable] = useState(listing.elevatorAvailable ?? false);
 
   const [editAddress, setEditAddress] = useState(listing.address || "");
+  const [editApartment, setEditApartment] = useState(listing.apartment || "");
   const [neighborhoodDescription, setNeighborhoodDescription] = useState<string>(() => {
     const value = (listing as any).neighborhoodDescription;
     return typeof value === "string" ? value : "";
@@ -450,7 +454,8 @@ export function HostListingEditorClient({
   const [parkingInstructions, setParkingInstructions] = useState<string>(listing.parkingInstructions || "");
 
   // Pricing & Discounts
-  const [editPrice, setEditPrice] = useState(listing.price / 100);
+  const listingCurrency = getCurrencyForCountry(editCountry || listing.country);
+  const [editPrice, setEditPrice] = useState(((listing.weekdayBasePrice ?? listing.price) || 0) / 100);
   const [smartPricing, setSmartPricing] = useState(Boolean(listing.smartPricing ?? false));
   const [smartPricingMinPrice, setSmartPricingMinPrice] = useState(() => {
     const value = listing.smartPricingMinPrice ?? Math.max(0, Math.round((listing.price || 0) * 0.9));
@@ -627,10 +632,12 @@ export function HostListingEditorClient({
   const [guestSafetyState, setGuestSafetyState] = useState<GuestSafetyState>(() => parseSafetyData(listing));
 
   const missingRequirements = computeMissingRequirements(listing);
+  const isSaudi = isSaudiArabia(listing.country);
   const listingDisplayState = getListingDisplayState(
     listing.status,
     listing.published,
-    missingRequirements.length
+    missingRequirements.length,
+    listing.country
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -769,6 +776,11 @@ export function HostListingEditorClient({
         rooms,
       };
     } else if (sectionToSave === "pricing") {
+      if (!editPrice || editPrice <= 0) {
+        setIsSaving(false);
+        setFeedbackMsg({ type: "error", text: "Nightly price must be greater than zero." });
+        return;
+      }
       const manualPricing = !smartPricing;
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
@@ -789,6 +801,7 @@ export function HostListingEditorClient({
       };
       payload = {
         price: Math.round(editPrice * 100),
+        weekdayBasePrice: Math.round(editPrice * 100),
         smartPricing,
         smartPricingMinPrice: smartPricing ? Math.round(Number(smartPricingMinPrice || 0) * 100) : listing.smartPricingMinPrice ?? null,
         smartPricingMaxPrice: smartPricing ? Math.round(Number(smartPricingMaxPrice || 0) * 100) : listing.smartPricingMaxPrice ?? null,
@@ -824,6 +837,9 @@ export function HostListingEditorClient({
         .map(([key]) => key.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""));
       payload = {
         address: editAddress,
+        apartment: editApartment || null,
+        shortAddress: [editAddress, editCity].filter(Boolean).join(", ") || null,
+        locationSearch: [editAddress, editDistrict, editCity, editCountry].filter(Boolean).join(", ") || null,
         neighborhoodDescription,
         gettingAround,
         city: editCity,
@@ -1001,11 +1017,27 @@ export function HostListingEditorClient({
           const res = await publishListingAction(listing.id);
           setIsSaving(false);
           if (res.ok && res.data) {
-            setListing((prev) => ({ ...prev, published: false, status: "PENDING_REVIEW", isPaused: false }));
-            setListingStatusSetting("unlisted");
-            setFeedbackMsg({ type: "success", text: "Listing submitted for Admin approval. It will go live after approval." });
+            if (res.data.published || isSaudiArabia(listing.country)) {
+              setListing((prev) => ({
+                ...prev,
+                published: true,
+                status: "ACTIVE",
+                isPaused: false,
+              }));
+              setListingStatusSetting("listed");
+              setFeedbackMsg({ type: "success", text: "Listing published successfully! Your property is now live." });
+            } else {
+              setListing((prev) => ({
+                ...prev,
+                published: false,
+                status: "PENDING_REVIEW",
+                isPaused: false,
+              }));
+              setListingStatusSetting("unlisted");
+              setFeedbackMsg({ type: "success", text: "Listing submitted for Admin approval. It will go live after approval." });
+            }
           } else {
-            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to submit listing. Please verify all required listing fields." });
+            setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to publish listing. Please verify all required listing fields." });
           }
         } else {
           const res = await unpublishListingAction(listing.id);
@@ -1072,6 +1104,9 @@ export function HostListingEditorClient({
         }
         if (payload.customSlug !== undefined) {
           setCustomSlug(payload.customSlug || "");
+        }
+        if (payload.apartment !== undefined) {
+          setEditApartment(payload.apartment ?? "");
         }
         setFeedbackMsg({ type: "success", text: "Changes saved successfully!" });
       } else {
@@ -1308,15 +1343,21 @@ export function HostListingEditorClient({
                   <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-900 animate-in fade-in">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="font-semibold">Listing Status: Approved</span>
-                      <span className="text-emerald-700 font-normal hidden sm:inline">— Your listing has passed admin review</span>
+                      <span className="font-semibold">
+                        {isSaudi ? "Listing Status: Ready to Publish" : "Listing Status: Approved"}
+                      </span>
+                      <span className="text-emerald-700 font-normal hidden sm:inline">
+                        {isSaudi
+                          ? "— All details complete, ready to go live"
+                          : "— Your listing has passed admin review"}
+                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
                       className="font-semibold text-emerald-800 hover:underline cursor-pointer"
                     >
-                      View Status →
+                      {isSaudi ? "Publish Listing →" : "View Status →"}
                     </button>
                   </div>
                 )}
@@ -1430,6 +1471,7 @@ export function HostListingEditorClient({
             isSaving={isSaving}
             isLoading={isLoading}
             handleSaveSection={handleSaveSection}
+            currency={listingCurrency}
             editPrice={editPrice}
             setEditPrice={setEditPrice}
             smartPricing={smartPricing}
@@ -1485,6 +1527,8 @@ export function HostListingEditorClient({
               handleSaveSection={handleSaveSection}
               editAddress={editAddress}
               setEditAddress={setEditAddress}
+              editApartment={editApartment}
+              setEditApartment={setEditApartment}
               editCity={editCity}
               setEditCity={setEditCity}
               editDistrict={editDistrict}
@@ -1699,6 +1743,7 @@ export function HostListingEditorClient({
           editTitle={editTitle}
           editListingType={editListingType}
           editPropertyType={editPropertyType}
+          currency={listingCurrency}
           editPrice={editPrice}
           smartPricing={smartPricing}
           smartPricingMinPrice={smartPricingMinPrice}
@@ -1719,6 +1764,8 @@ export function HostListingEditorClient({
           editAddress={editAddress}
           editCity={editCity}
           editCountry={editCountry}
+          latitude={latitude}
+          longitude={longitude}
           showExactLocation={showExactLocation}
           listing={listing}
           coHosts={coHosts}

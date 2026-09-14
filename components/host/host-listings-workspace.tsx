@@ -21,6 +21,7 @@ import {
 import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
@@ -682,7 +683,9 @@ export function HostListingsWorkspace({
                           {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Location not added yet"}
                         </p>
                         {item.status === "PENDING_REVIEW" && (
-                          <p className="mt-1 text-xs font-medium text-amber-700">Submitted for Admin approval</p>
+                          <p className="mt-1 text-xs font-medium text-amber-700">
+                            {isSaudiArabia(item.country) ? "Ready to publish" : "Submitted for Admin approval"}
+                          </p>
                         )}
                         {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
                           <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>

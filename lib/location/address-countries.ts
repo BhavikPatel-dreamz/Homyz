@@ -56,3 +56,12 @@ export function formatAddressCountry(
 
   return COUNTRY_VALUE_BY_NAME.get(normalizedCountry.toLocaleLowerCase()) ?? normalizedCountry;
 }
+
+/**
+ * Checks whether a given country name, ISO code, or formatted string represents Saudi Arabia.
+ */
+export function isSaudiArabia(country: string | null | undefined): boolean {
+  if (!country) return false;
+  const value = country.trim().toUpperCase();
+  return value === "SA" || value === "KSA" || value.includes("SAUDI");
+}

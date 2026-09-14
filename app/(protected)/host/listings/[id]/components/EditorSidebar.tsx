@@ -20,6 +20,7 @@ import {
 import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { computeMissingRequirements, getListingDisplayState } from "./ListingStatusView";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   if (type === "co") {
@@ -88,6 +89,7 @@ interface EditorSidebarProps {
   editTitle: string;
   editListingType: string;
   editPropertyType: string;
+  currency?: string;
   editPrice: number;
   smartPricing?: boolean;
   smartPricingMinPrice?: number;
@@ -108,6 +110,8 @@ interface EditorSidebarProps {
   editAddress: string;
   editCity: string;
   editCountry: string;
+  latitude?: number | null;
+  longitude?: number | null;
   showExactLocation: boolean;
   listing: any;
   coHosts: Array<{ id: string; email: string | null; status: string; user: { name: string | null; image: string | null } | null }>;
@@ -157,6 +161,7 @@ export function EditorSidebar({
   editTitle,
   editListingType,
   editPropertyType,
+  currency = "SAR",
   editPrice,
   smartPricing = false,
   smartPricingMinPrice = 0,
@@ -177,6 +182,8 @@ export function EditorSidebar({
   editAddress,
   editCity,
   editCountry,
+  latitude,
+  longitude,
   showExactLocation,
   listing,
   coHosts,
@@ -257,10 +264,12 @@ export function EditorSidebar({
   ].filter(Boolean);
 
   const missingReqs = computeMissingRequirements(listing || {});
+  const isSaudi = isSaudiArabia(listing?.country);
   const displayState = getListingDisplayState(
     listing?.status || "DRAFT",
     Boolean(listing?.published),
-    missingReqs.length
+    missingReqs.length,
+    listing?.country
   );
 
   return (
@@ -295,7 +304,7 @@ export function EditorSidebar({
             {displayState === "APPROVED" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                Approved
+                {isSaudi ? "Ready to Publish" : "Approved"}
               </span>
             )}
            
@@ -406,7 +415,7 @@ export function EditorSidebar({
                     : displayState === "REJECTED"
                     ? "Changes Required"
                     : displayState === "APPROVED"
-                    ? "Approved"
+                    ? (isSaudi ? "Ready to Publish" : "Approved")
                     : displayState === "READY_TO_SUBMIT"
                     ? "Ready for review"
                     : "Draft · Incomplete"}
@@ -742,12 +751,12 @@ export function EditorSidebar({
                     <>
                       <p className="font-semibold text-[#1F1F1F]">Smart pricing</p>
                       <p className="text-[11px] text-zinc-500">
-                        SAR {smartPricingMinPrice} – SAR {smartPricingMaxPrice}
+                        {currency} {smartPricingMinPrice} – {currency} {smartPricingMaxPrice}
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="font-semibold text-[#1F1F1F]">SAR {editPrice}</p>
+                      <p className="font-semibold text-[#1F1F1F]">{currency} {editPrice}</p>
                       <p className="text-[11px] text-zinc-500">{weeklyDiscount}% weekly discount</p>
                       <p className="text-[11px] text-zinc-500">{monthlyDiscount}% monthly discount</p>
                     </>
@@ -916,6 +925,9 @@ export function EditorSidebar({
                   address={editAddress}
                   city={editCity}
                   country={editCountry}
+                  lat={latitude ?? undefined}
+                  lng={longitude ?? undefined}
+                  preferInitialCoordinates={true}
                   showExactLocation={showExactLocation}
                   className="rounded-xl overflow-hidden border border-zinc-200/80 relative h-24 mb-2.5 pointer-events-none"
                 />

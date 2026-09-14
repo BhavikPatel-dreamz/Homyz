@@ -66,11 +66,13 @@ export async function publishListingAction(id: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    // Retained for older editor clients. Publishing is Admin-only; a host's
-    // publish intent always submits the completed listing for review.
-    const listing = await listingService.submitForReview(actor, id);
+    const listing = await listingService.publish(actor, id);
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
+    revalidatePath(`/listings/${id}`);
+    if (listing.customSlug) {
+      revalidatePath(`/stay/${listing.customSlug}`);
+    }
     return listing;
   });
 }

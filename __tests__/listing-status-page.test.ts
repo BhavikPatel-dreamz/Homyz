@@ -130,6 +130,23 @@ test("Listing Status Page: getListingDisplayState maps database state to UI life
     "REJECTED",
     "CHANGES_REQUESTED status must show REJECTED (Changes Required)",
   );
+
+  // 7. Saudi Arabia listings: No admin approval required, Ready to publish (APPROVED) when complete
+  assert.equal(
+    getListingDisplayState("DRAFT", false, 0, "Saudi Arabia"),
+    "APPROVED",
+    "Complete Saudi listing must show APPROVED (Ready to publish directly)",
+  );
+  assert.equal(
+    getListingDisplayState("PENDING_REVIEW", false, 0, "SA"),
+    "APPROVED",
+    "Saudi listing with 0 missing fields must show APPROVED (Ready to publish directly)",
+  );
+  assert.equal(
+    getListingDisplayState("DRAFT", false, 2, "Saudi Arabia"),
+    "DRAFT",
+    "Incomplete Saudi listing must show DRAFT",
+  );
 });
 
 test("Listing Status Actions: submitListingForReviewAction & resubmitListingForReviewAction are defined functions", () => {
@@ -154,10 +171,10 @@ test("Listing Status Component: renders house illustration, listed & unlisted ca
     propertyType: "APARTMENT",
     listingType: "ENTIRE_PLACE",
     address: "100 King Road",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.7136,
-    longitude: 46.6753,
+    city: "New York",
+    country: "United States",
+    latitude: 40.7128,
+    longitude: -74.006,
     safetyDisclosures: ["SECURITY_CAMERA:NO", "NOISE_MONITOR:NO", "WEAPONS:NO"],
     status: "PENDING_REVIEW",
     published: false,
@@ -200,7 +217,7 @@ test("Listing Status Component: renders house illustration, listed & unlisted ca
   assert.ok(html.includes("Save (Disabled: Admin approval required)"), "Save button must be disabled for unapproved listing");
 });
 
-test("Listing Status Component: enables Listed card and shows Approved banner when APPROVED", async () => {
+test("Listing Status Component: enables Listed card and shows Approved banner when APPROVED (International)", async () => {
   const React = await import("react");
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { ListingStatusView } = await import(
@@ -217,10 +234,10 @@ test("Listing Status Component: enables Listed card and shows Approved banner wh
     propertyType: "APARTMENT",
     listingType: "ENTIRE_PLACE",
     address: "100 King Road",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.7136,
-    longitude: 46.6753,
+    city: "London",
+    country: "United Kingdom",
+    latitude: 51.5074,
+    longitude: -0.1278,
     safetyDisclosures: ["SECURITY_CAMERA:NO", "NOISE_MONITOR:NO", "WEAPONS:NO"],
     status: "APPROVED",
     published: false,
@@ -240,6 +257,53 @@ test("Listing Status Component: enables Listed card and shows Approved banner wh
   assert.ok(html.includes("viewBox=\"0 0 200 160\""), "Must contain house illustration");
   // Listed card must be enabled (not Locked)
   assert.ok(!html.includes("Save (Disabled: Admin approval required)"), "Save button should be enabled");
+});
+
+test("Listing Status Component: Saudi Arabia listings do not require admin approval and show Ready to Publish", async () => {
+  const React = await import("react");
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const { ListingStatusView } = await import(
+    "../app/(protected)/host/listings/[id]/components/ListingStatusView"
+  );
+
+  const saudiListing = {
+    id: "cmtwgd9jz00085eastgi95o32",
+    title: "Saudi Luxury Penthouse",
+    description: "An exceptional stay with all amenities included in the center of Riyadh.",
+    price: 25000,
+    weekendPrice: 30000,
+    photos: ["/p1.jpg", "/p2.jpg", "/p3.jpg", "/p4.jpg", "/p5.jpg"],
+    propertyType: "APARTMENT",
+    listingType: "ENTIRE_PLACE",
+    address: "100 King Road",
+    city: "Riyadh",
+    country: "Saudi Arabia",
+    latitude: 24.7136,
+    longitude: 46.6753,
+    safetyDisclosures: ["SECURITY_CAMERA:NO", "NOISE_MONITOR:NO", "WEAPONS:NO"],
+    status: "DRAFT",
+    published: false,
+  };
+
+  const html = renderToStaticMarkup(
+    React.createElement(ListingStatusView, {
+      listing: saudiListing as any,
+      setActiveSection: () => {},
+      status: "unlisted",
+    })
+  );
+
+  // 1. Must NOT show Admin Approval Required
+  assert.ok(!html.includes("Admin approval required"), "Must NOT display Admin approval required for Saudi listing");
+  // 2. Must show Ready to Publish banner
+  assert.ok(html.includes("Ready to Publish"), "Must display Ready to Publish banner");
+  // 3. Must indicate no admin approval is required in copy
+  assert.ok(
+    html.includes("No admin approval is required for Saudi listings"),
+    "Must explain that no admin approval is required"
+  );
+  // 4. Listed card must be enabled and save button must NOT say disabled
+  assert.ok(!html.includes("Save (Disabled: Admin approval required)"), "Save button should not be disabled for admin approval");
 });
 
 

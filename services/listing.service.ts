@@ -740,6 +740,7 @@ async function update(
   // The listing is held for the same Admin review that governs initial launch.
   const reapprovalRequired = actor.role !== Role.ADMIN
     && existing.status === ListingStatus.ACTIVE
+    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
     && requiresReapproval(dataToUpdate);
   if (reapprovalRequired) {
     dataToUpdate.status = ListingStatus.PENDING_REVIEW;
@@ -897,8 +898,53 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
 }
 
 async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
-  // Legacy callers may still hit a "publish" endpoint. Never let that bypass
-  // moderation: it now performs the safe submit-for-review transition.
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  // Saudi Arabia listings do not require admin approval; host can publish directly.
+  if (isSaudiArabia(existing.country)) {
+    const readiness = getPublishReadiness(existing);
+    if (!readiness.publishable) {
+      throw AppError.badRequest(
+        `Cannot publish listing. Complete: ${readiness.missing.join(", ")}.`,
+        readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
+      );
+    }
+
+    const updated = await prisma.listing.update({
+      where: { id },
+      data: {
+        status: ListingStatus.ACTIVE,
+        published: true,
+        isPaused: false,
+        approvedAt: existing.approvedAt ?? new Date(),
+      },
+    });
+
+    await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "LISTING_PUBLISHED",
+      resourceType: "Listing",
+      resourceId: id,
+      description: `Host directly published Saudi listing "${updated.title}" without admin approval`,
+      metadata: {
+        country: existing.country,
+        bypassAdminApproval: true,
+      },
+    });
+
+    return toListingDTO(updated);
+  }
+
+  // International listings without direct publishing rights submit for admin review
   return submitForReview(actor, id);
 }
 
