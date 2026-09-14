@@ -910,7 +910,7 @@ export function GuidebooksManager({
             {/* Associate Listing Note */}
             <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4 text-xs text-zinc-600 space-y-1">
               <span className="font-semibold text-zinc-900 block">Listing Association</span>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-base text-[#727272] font-normal">
                 This guidebook will automatically be linked to this listing. You can link additional listings anytime.
               </p>
             </div>
@@ -1039,7 +1039,7 @@ export function GuidebooksManager({
               <div className="rounded-3xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Guidebook Overview</span>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="text-base text-[#727272] font-normal">
                     {(() => {
                       const count = Array.isArray(selectedGuidebook.listings) ? selectedGuidebook.listings.length : 0;
                       return <>Shown on {count} {count === 1 ? "listing" : "listings"}</>;

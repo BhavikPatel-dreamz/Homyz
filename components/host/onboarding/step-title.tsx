@@ -50,7 +50,7 @@ export function StepTitle({
             <label htmlFor="property-title" className="text-lg font-medium text-[#1F1F1F] mb-2">
               Your title
             </label>
-            <span className="text-xs font-medium text-[#727272] mb-1">
+            <span className="text-xs font-normal text-[#727272] mb-1">
               {title.length}/{maxChars}
             </span>
           </div>

@@ -262,7 +262,7 @@ function EnhancedLocationView(props: Props) {
     <div className="max-w-xl space-y-5 pb-10">
       <div>
         <h1>Location</h1>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-sm font-normal text-[#727272]">
           Saved map coordinates are retained until you change the address or
           move the pin.
         </p>
@@ -393,7 +393,7 @@ function LocationView(props: Props) {
     <div className="max-w-xl space-y-4 pb-10">
       <div>
         <h1>Location</h1>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-sm font-normal text-[#727272]">
           Share useful area context without making safety guarantees.
         </p>
       </div>
@@ -615,7 +615,7 @@ function SaveButton({
       type="button"
       disabled={saving}
       onClick={onSave}
-      className="rounded-full bg-[#FEE08B] px-5 py-2 text-xs font-semibold disabled:opacity-60"
+      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] hover:text-white text-[#1F1F1F] px-5 py-2 text-sm font-medium disabled:opacity-60 duration-300"
     >
       {saving ? "Saving…" : "Save"}
     </button>
@@ -1075,7 +1075,7 @@ function CoHostView(props: Props) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1>Co-hosts</h1>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-sm font-normal text-[#727272]">
             Accepted co-hosts are active; pending invitations are not.
           </p>
         </div>

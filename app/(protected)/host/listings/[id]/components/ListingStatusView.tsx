@@ -651,7 +651,7 @@ export function ListingStatusView({
               </span>
             ) : null}
           </div>
-          <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
+          <p className="text-base text-[#727272] font-normal leading-relaxed">
             Guests can find your listing in search results and book available dates.
           </p>
           {!isApproved && (
@@ -680,7 +680,7 @@ export function ListingStatusView({
               </span>
             )}
           </div>
-          <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
+          <p className="text-base text-[#727272] font-normal leading-relaxed">
             Your listing is hidden from search results and guests cannot book dates.
           </p>
         </div>

@@ -367,7 +367,7 @@ export function HouseRulesAndArrivalViews({
                     </label>
                   </div>
 
-                  <div className="space-y-1.5 pt-1">
+                  <div className="space-y-3 pt-1">
                     <label className="block text-xs font-semibold text-zinc-700">
                       Pet fee per stay (optional, SAR)
                     </label>
@@ -381,7 +381,7 @@ export function HouseRulesAndArrivalViews({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-3">
                     <label className="block text-xs font-semibold text-zinc-700">
                       Pet restrictions or guidelines
                     </label>
@@ -819,8 +819,8 @@ export function HouseRulesAndArrivalViews({
                 </div>
 
                 {/* Parking Instructions */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-zinc-800">Parking instructions for guests</label>
+                <div className="space-y-3">
+                  <label className="block text-base font-normal text-[#1F1F1F]">Parking instructions for guests</label>
                   <textarea
                     rows={4}
                     value={parkingInstructions}
@@ -839,7 +839,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -907,7 +907,7 @@ export function HouseRulesAndArrivalViews({
           </div>
 
           <div className="space-y-5 pt-2">
-            <div className="space-y-1.5">
+            <div className="space-y-3">
               <label className="block text-xs font-semibold text-[#1F1F1F]">Wifi network name</label>
               <input
                 type="text"
@@ -918,7 +918,7 @@ export function HouseRulesAndArrivalViews({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-3">
               <label className="block text-xs font-semibold text-[#1F1F1F]">Wifi password</label>
               <input
                 type="text"
@@ -935,7 +935,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -971,7 +971,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("arrival-guide")}
-              className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
+              className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
@@ -1222,7 +1222,7 @@ function CheckOutInstructionsView({
       {checkOutInstructions ? (
         <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-4 shadow-2xs">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1.5 min-w-0 flex-1">
+            <div className="space-y-3 min-w-0 flex-1">
               <span className="text-xs font-semibold text-zinc-500 block">Instructions for guests</span>
               <p className="text-xs text-zinc-800 font-medium whitespace-pre-line leading-relaxed">
                 {checkOutInstructions}
@@ -1352,7 +1352,7 @@ function CheckOutInstructionsView({
 
             {/* Textarea */}
             <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
-              <label className="block text-xs font-semibold text-zinc-800">
+              <label className="block text-base font-normal text-[#1F1F1F]">
                 Instructions for guests
               </label>
               <textarea
@@ -2088,7 +2088,7 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -2371,7 +2371,7 @@ function CheckInMethodView({
           <button
             type="button"
             onClick={() => setIsInstructionModalOpen(true)}
-            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left space-y-1.5 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+            className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left space-y-3 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium text-zinc-700 truncate">{checkInInstructions}</span>
@@ -2471,7 +2471,7 @@ function CheckInMethodView({
             </div>
             {selectedDetailMethod.hasCode && (
               <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
-                <label className="block text-xs font-semibold text-zinc-800">
+                <label className="block text-base font-normal text-[#1F1F1F]">
                   {selectedDetailMethod.codeLabel}{" "}
                   <span className="font-normal text-zinc-400">(Confidential)</span>
                 </label>
@@ -2532,7 +2532,7 @@ function CheckInMethodView({
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2 mb-6">
-              <label className="block text-xs font-semibold text-zinc-800">Instructions for guests</label>
+              <label className="block text-base font-normal text-[#1F1F1F]">Instructions for guests</label>
               <textarea
                 rows={5}
                 value={checkInInstructions || ""}
@@ -2778,7 +2778,7 @@ function RegulationsView({
       </p>
 
       {/* Registration Status Block */}
-      <div className="space-y-1.5 pt-2">
+      <div className="space-y-3 pt-2">
         <h3 className="text-xs font-semibold text-[#1F1F1F]">Your registration is complete</h3>
         <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
           You&apos;re all set! Your registration number is xxxxxxxx and is visible to guests on your listing.
