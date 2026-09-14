@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, forbidden } from "next/navigation";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { prisma } from "@/lib/db/prisma";
 import { BookingStatus, Role } from "@/generated/prisma/enums";
@@ -42,7 +42,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
 
   // Listing owners, accepted co-hosts, and admins can open the workspace.
   if (actor.role !== Role.ADMIN && listing.hostId !== actor.id && !isAcceptedCoHost) {
-    notFound();
+    forbidden();
   }
 
   const rawSection = resolvedParams.section?.[0] || resolvedSearchParams.section;
@@ -54,6 +54,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     description: listing.description,
     descriptionSections: listing.descriptionSections ? JSON.parse(JSON.stringify(listing.descriptionSections)) : null,
     price: listing.price,
+    weekdayBasePrice: listing.weekdayBasePrice ?? listing.price,
     smartPricing: listing.smartPricing ?? false,
     smartPricingMinPrice: listing.smartPricingMinPrice ?? null,
     smartPricingMaxPrice: listing.smartPricingMaxPrice ?? null,
@@ -81,6 +82,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     beds: listing.beds,
     bathrooms: listing.bathrooms,
     photos: listing.photos || [],
+    photoRoomAssignments: listing.photoRoomAssignments ? JSON.parse(JSON.stringify(listing.photoRoomAssignments)) : [],
     languages: listing.languages || [],
     amenities: listing.amenities || [],
     highlights: listing.highlights || [],
@@ -198,4 +200,3 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     />
   );
 }
-

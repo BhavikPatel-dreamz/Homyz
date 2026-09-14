@@ -14,6 +14,7 @@ const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "
 interface StepPhotosProps {
   photos: string[];
   onUpdatePhotos: (photos: string[]) => void;
+  onUploadComplete: (photos: string[]) => Promise<void>;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -22,6 +23,7 @@ interface StepPhotosProps {
 export function StepPhotos({
   photos,
   onUpdatePhotos,
+  onUploadComplete,
   onBack,
   onNext,
   isLoading = false,
@@ -92,7 +94,14 @@ export function StepPhotos({
           return String((result as { url: string }).url);
         }),
       );
-      onUpdatePhotos([...photos, ...uploadedUrls]);
+      const nextPhotos = [...photos, ...uploadedUrls];
+      onUpdatePhotos(nextPhotos);
+
+      // Keep the modal open and visibly loading while the draft is persisted
+      // and the wizard moves to Photo Review. This avoids flashing the photo
+      // upload page between a successful upload and the route transition.
+      await onUploadComplete(nextPhotos);
+
       filePreviews.forEach((preview) => URL.revokeObjectURL(preview));
       setSelectedFiles([]);
       setFilePreviews([]);
@@ -235,7 +244,7 @@ export function StepPhotos({
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-[202px] border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-[20px] px-6 py-3.25 sm:p-8 flex flex-col items-center justify-center bg-zinc-50/60 transition-colors cursor-pointer"
+                  className="w-full min-h-[202px] h-full border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-[20px] px-6 py-3.25 sm:p-8 flex flex-col items-center justify-center bg-zinc-50/60 transition-colors cursor-pointer"
                 >
                   {filePreviews.length === 0 ? (
                     /* Empty Dropzone State */
@@ -247,13 +256,13 @@ export function StepPhotos({
                     </div>
                   ) : (
                     /* Photo Grid Previews State inside Modal */
-                    <div className="grid w-[216px] grid-cols-6 gap-2">
+                    <div className="grid w-full max-w-[240px] grid-cols-3 gap-2">
                       {Array.from({ length: Math.max(5, filePreviews.length) }, (_, idx) => {
                         const url = filePreviews[idx];
                         return (
                           <div
                             key={idx}
-                            className={`relative col-span-2 aspect-square overflow-hidden rounded-xl bg-zinc-300 group ${idx === 3 ? "col-start-2" : ""}`}
+                            className="relative aspect-square overflow-hidden rounded-xl bg-zinc-300 group"
                           >
                             {url && (
                               <>

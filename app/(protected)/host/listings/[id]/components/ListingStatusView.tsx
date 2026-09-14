@@ -9,6 +9,7 @@ import {
   unpublishListingAction,
   publishListingAction,
 } from "@/actions/host/listings";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 import type { HostListingData } from "../host-listing-editor-client";
 
 export interface MissingRequirement {
@@ -97,26 +98,8 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   }
 
   const rawDisclosures = Array.isArray(listing.safetyDisclosures) ? listing.safetyDisclosures : [];
-  const safetyMap = new Map<string, string>();
-  for (const item of rawDisclosures) {
-    if (typeof item === "string") {
-      const [k, v] = item.split(":");
-      if (k && v) safetyMap.set(k, v);
-    }
-  }
-  const requiredSafetyKeys = ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"];
-  const missingSafety = requiredSafetyKeys.filter(
-    (k) => safetyMap.get(k) !== "YES" && safetyMap.get(k) !== "NO",
-  );
-  if (missingSafety.length > 0) {
-    missing.push({
-      key: "safetyDisclosures",
-      label: "Safety disclosures",
-      description: "Answer required disclosures (cameras, noise monitors, weapons)",
-      section: "guest-safety",
-    });
-  }
-
+  // Safety disclosures are now optional - no validation required here
+  
   return missing;
 }
 
@@ -132,18 +115,27 @@ export function getListingDisplayState(
   status?: string | null,
   published?: boolean | null,
   missingCount: number = 0,
+  country?: string | null,
 ): ListingDisplayState {
   if (status === "REJECTED" || status === "CHANGES_REQUESTED") {
     return "REJECTED";
-  }
-  if (status === "PENDING_REVIEW") {
-    return "PENDING_APPROVAL";
   }
   if (status === "ACTIVE" && published) {
     return "PUBLISHED";
   }
   if (status === "APPROVED" || (status === "ACTIVE" && !published)) {
     return "APPROVED";
+  }
+  const isSaudi = isSaudiArabia(country);
+  if (isSaudi) {
+    // Saudi Arabia listings do not require admin approval
+    if (missingCount === 0) {
+      return "APPROVED";
+    }
+    return "DRAFT";
+  }
+  if (status === "PENDING_REVIEW") {
+    return "PENDING_APPROVAL";
   }
   if (missingCount === 0) {
     return "READY_TO_SUBMIT";
@@ -174,14 +166,18 @@ export function ListingStatusView({
   const [justSubmitted, setJustSubmitted] = useState(false);
   const [formattedDate, setFormattedDate] = useState<string | null>(null);
 
+  const isSaudi = isSaudiArabia(listing?.country);
   const missing = computeMissingRequirements(listing || {});
   const displayState = getListingDisplayState(
     listing?.status,
     listing?.published,
     missing.length,
+    listing?.country,
   );
 
-  const isApproved = displayState === "APPROVED" || displayState === "PUBLISHED";
+  const isApproved = isSaudi
+    ? (missing.length === 0 || Boolean(listing?.published))
+    : (displayState === "APPROVED" || displayState === "PUBLISHED");
 
   const [localStatus, setLocalStatus] = useState<"listed" | "unlisted">(
     listing?.published ? "listed" : propStatus || "unlisted",
@@ -213,17 +209,42 @@ export function ListingStatusView({
     }
   }, [listing?.submittedAt]);
 
-  // Stepper definition
-  const steps = [
-    { id: "created", label: "Listing Created" },
-    { id: "completed", label: "Details Completed" },
-    { id: "submitted", label: "Submitted" },
-    { id: "review", label: "Admin Review" },
-    { id: "approved", label: "Approved" },
-    { id: "published", label: "Published" },
-  ];
+  // Stepper definition: Saudi listings skip Admin Review & Approval
+  const steps = isSaudi
+    ? [
+        { id: "created", label: "Listing Created" },
+        { id: "completed", label: "Details Completed" },
+        { id: "ready", label: "Ready to Publish" },
+        { id: "published", label: "Published" },
+      ]
+    : [
+        { id: "created", label: "Listing Created" },
+        { id: "completed", label: "Details Completed" },
+        { id: "submitted", label: "Submitted" },
+        { id: "review", label: "Admin Review" },
+        { id: "approved", label: "Approved" },
+        { id: "published", label: "Published" },
+      ];
 
   const getStepStatus = (stepId: string): "completed" | "current" | "upcoming" | "warning" => {
+    if (isSaudi) {
+      switch (displayState) {
+        case "DRAFT":
+          if (stepId === "created") return "completed";
+          if (stepId === "completed") return "current";
+          return "upcoming";
+        case "APPROVED":
+        case "READY_TO_SUBMIT":
+          if (stepId === "created" || stepId === "completed") return "completed";
+          if (stepId === "ready") return "current";
+          return "upcoming";
+        case "PUBLISHED":
+          return "completed";
+        case "REJECTED":
+          if (stepId === "created") return "completed";
+          return "warning";
+      }
+    }
     switch (displayState) {
       case "DRAFT":
         if (stepId === "created") return "completed";
@@ -250,11 +271,17 @@ export function ListingStatusView({
   };
 
   const handleSelectStatus = (target: "listed" | "unlisted") => {
-    if (!isApproved && target === "listed") {
-      toast.error(
-        "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly.",
-      );
-      return;
+    if (target === "listed") {
+      if (isSaudi && missing.length > 0) {
+        toast.error("Please complete all required sections before changing to Listed status.");
+        return;
+      }
+      if (!isSaudi && !isApproved) {
+        toast.error(
+          "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly.",
+        );
+        return;
+      }
     }
     if (propSetStatus) {
       propSetStatus(target);
@@ -313,7 +340,11 @@ export function ListingStatusView({
 
   const handleSave = async () => {
     if (!isApproved) {
-      toast.error("Admin approval required before changing to Listed status.");
+      toast.error(
+        isSaudi
+          ? "Please complete all required sections before changing to Listed status."
+          : "Admin approval required before changing to Listed status."
+      );
       return;
     }
     if (handleSaveSection) {
@@ -412,8 +443,8 @@ export function ListingStatusView({
       {/* ADMIN APPROVAL REQUIRED MESSAGE & LIFECYCLE STATE NOTICE          */}
       {/* ================================================================= */}
 
-      {/* 1. STATE: PENDING_APPROVAL (Under Admin Review) */}
-      {(displayState === "PENDING_APPROVAL" || justSubmitted) && (
+      {/* 1. STATE: PENDING_APPROVAL (Under Admin Review for non-Saudi) */}
+      {!isSaudi && (displayState === "PENDING_APPROVAL" || justSubmitted) && (
         <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -440,6 +471,26 @@ export function ListingStatusView({
               Submitted for review on: <span className="font-semibold">{formattedDate}</span>
             </p>
           )}
+        </div>
+      )}
+
+      {/* 1b. Saudi Ready-to-Publish state when just submitted */}
+      {isSaudi && justSubmitted && (
+        <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <h2 className="font-semibold text-emerald-950 text-base">
+                Ready to Publish
+              </h2>
+            </div>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
+              Ready
+            </span>
+          </div>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            Your listing details are complete. In Saudi Arabia, no admin approval is required. Select &quot;Listed&quot; below and save to publish live immediately.
+          </p>
         </div>
       )}
 
@@ -498,7 +549,9 @@ export function ListingStatusView({
             </span>
           </div>
           <p className="text-xs text-zinc-600 leading-relaxed">
-            Admin approval is required before your listing can be published. Please complete all required sections below to submit your property for review.
+            {isSaudi
+              ? "Complete all required sections below to publish your property live on Homyz. Admin approval is not required for Saudi listings."
+              : "Admin approval is required before your listing can be published. Please complete all required sections below to submit your property for review."}
           </p>
           <div className="space-y-2 pt-1">
             {missing.map((req) => (
@@ -524,7 +577,7 @@ export function ListingStatusView({
       )}
 
       {/* 4. STATE: READY_TO_SUBMIT (All Fields Complete, Awaiting Host Submission) */}
-      {displayState === "READY_TO_SUBMIT" && !justSubmitted && (
+      {/* {displayState === "READY_TO_SUBMIT" && !justSubmitted && (
         <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -551,24 +604,26 @@ export function ListingStatusView({
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
-      {/* 5. STATE: APPROVED (Approved by Admin, Ready to be made live) */}
+      {/* 5. STATE: APPROVED (Approved by Admin or Ready to Publish in Saudi) */}
       {displayState === "APPROVED" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
               <h2 className="font-semibold text-emerald-950 text-base">
-                Listing Approved
+                {isSaudi ? "Ready to Publish" : "Listing Approved"}
               </h2>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
-              Approved
+              {isSaudi ? "Ready" : "Approved"}
             </span>
           </div>
           <p className="text-xs text-emerald-900 leading-relaxed">
-            Your listing has passed admin review! You can now select &quot;Listed&quot; below and click Save to publish your property live on Homyz.
+            {isSaudi
+              ? "All required details are complete! No admin approval is required for Saudi listings. Select \"Listed\" below and click Save to publish your property live to guests."
+              : "Your listing has passed admin review! You can now select \"Listed\" below and click Save to publish your property live on Homyz."}
           </p>
         </div>
       )}
@@ -642,7 +697,7 @@ export function ListingStatusView({
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Locked
+                {isSaudi ? "Incomplete" : "Locked"}
               </span>
             ) : effectiveStatus === "listed" ? (
               <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
@@ -657,7 +712,11 @@ export function ListingStatusView({
           {!isApproved && (
             <div className="pt-1 text-[10px] font-medium text-amber-800 flex items-center gap-1">
               <span>●</span>
-              <span>Requires Admin Approval before publishing</span>
+              <span>
+                {isSaudi
+                  ? "Complete all required sections before publishing"
+                  : "Requires Admin Approval before publishing"}
+              </span>
             </div>
           )}
         </div>
@@ -676,7 +735,7 @@ export function ListingStatusView({
             {effectiveStatus === "unlisted" && (
               <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
-                {!isApproved ? "Unlisted (Awaiting Approval)" : "Hidden"}
+                {!isApproved ? (isSaudi ? "Draft (Incomplete)" : "Unlisted (Awaiting Approval)") : "Hidden"}
               </span>
             )}
           </div>
@@ -700,7 +759,13 @@ export function ListingStatusView({
               : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 cursor-pointer"
           }`}
         >
-          {isSaving ? "Saving..." : !isApproved ? "Save (Disabled: Admin approval required)" : "Save"}
+          {isSaving
+            ? "Saving..."
+            : !isApproved
+            ? isSaudi
+              ? "Save (Complete required sections)"
+              : "Save (Disabled: Admin approval required)"
+            : "Save"}
         </button>
 
         <button

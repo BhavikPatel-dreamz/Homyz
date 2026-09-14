@@ -171,12 +171,14 @@ export function CalendarSettingsPanel({
             setValidation("");
             await onSave({
               price: Math.round(price * 100),
+              weekdayBasePrice: Math.round(price * 100),
               weekendPrice:
                 data.get("weekendPrice") === ""
                   ? null
                   : Math.round(number("weekendPrice") * 100),
               discounts: { ...discounts, weekly, monthly },
               cleaningFee: Math.round(number("cleaningFee") * 100),
+              extraGuestFee: data.get("extraGuestFee") ? Math.round(number("extraGuestFee") * 100) : 0,
             });
           }}
         >
@@ -188,7 +190,7 @@ export function CalendarSettingsPanel({
               </p>
             </div>
             <div className="flex items-center justify-between pt-1">
-              <span className="text-sm font-normal">Base price</span>
+              <span className="text-sm font-normal">Weekday base price</span>
               <div className="relative inline-flex shrink-0 items-center">
                 <Image
                   src="/images/icons/SAR-icon.svg"
@@ -218,7 +220,7 @@ export function CalendarSettingsPanel({
                 </svg>
               </div>
             </div>
-            {input("price", "Per night", listing.price / 100, "SAR")}
+            {input("price", "Weekday base rate", ((listing as any).weekdayBasePrice ?? listing.price) / 100, "SAR")}
             <ExpandControl title="Custom weekend price">
               {input(
                 "weekendPrice",
@@ -285,6 +287,11 @@ export function CalendarSettingsPanel({
                 "cleaningFee",
                 "Cleaning fee · SAR",
                 (listing.cleaningFee || 0) / 100,
+              )}
+              {input(
+                "extraGuestFee",
+                "Extra guest fee (per guest per night) · SAR",
+                ((listing as any).extraGuestFee || 0) / 100,
               )}
               <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F]">
                 More fee settings

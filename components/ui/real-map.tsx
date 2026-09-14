@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { reverseGeocodeLocation } from "@/lib/location/geocoding";
 
 export interface LocationDetails {
   address?: string;
+  apartment?: string;
   city?: string;
   district?: string;
+  state?: string;
   postalCode?: string;
   country?: string;
   countryCode?: string;
@@ -52,8 +55,21 @@ export function RealMap({
   });
 
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
-  const reverseCacheRef = useRef<Map<string, LocationDetails>>(new Map());
   const reverseDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Synchronize internal coords when parent lat/lng props change from outside (e.g. autocomplete selection)
+  useEffect(() => {
+    if (
+      Number.isFinite(initialLat) &&
+      Number.isFinite(initialLng) &&
+      (initialLat !== coords.lat || initialLng !== coords.lng)
+    ) {
+      if (!isInternalUpdateRef.current) {
+        setCoords({ lat: initialLat!, lng: initialLng! });
+      }
+      isInternalUpdateRef.current = false;
+    }
+  }, [initialLat, initialLng, coords.lat, coords.lng]);
 
   // Reverse geocode when map pin changes position with debouncing & caching
   const handlePositionChange = useCallback(
@@ -64,64 +80,39 @@ export function RealMap({
         clearTimeout(reverseDebounceRef.current);
       }
 
-      const cacheKey = `${newLat.toFixed(4)},${newLng.toFixed(4)}`;
-      const cached = reverseCacheRef.current.get(cacheKey);
-      if (cached) {
-        isInternalUpdateRef.current = true;
-        if (onLocationChange) {
-          onLocationChange(newLat, newLng, cached);
-        }
-        return;
-      }
-
       setIsLoadingGeocode(true);
       reverseDebounceRef.current = setTimeout(async () => {
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newLat}&lon=${newLng}&zoom=18&addressdetails=1`,
-            { headers: { "User-Agent": "HomyzApp/1.0" } }
-          );
-          if (!response.ok) {
-            throw new Error(`Nominatim reverse error ${response.status}`);
-          }
-          const data = await response.json();
-
-          if (data && data.address) {
-            const a = data.address;
-            const streetAddress = a.road || a.pedestrian || a.suburb || a.neighbourhood || a.amenity || "";
-            const cityName = a.city || a.town || a.municipality || a.county || a.state || "";
-            const districtName = a.suburb || a.neighbourhood || a.city_district || "";
-            const postalCodeStr = a.postcode || "";
-            const countryName = a.country || "";
-            const countryCode = a.country_code || "";
-            const fullAddress = data.display_name || [streetAddress, districtName, cityName, countryName].filter(Boolean).join(", ");
-
+          const res = await reverseGeocodeLocation(newLat, newLng);
+          if (res) {
             const details: LocationDetails = {
-              address: streetAddress,
-              city: cityName,
-              district: districtName,
-              postalCode: postalCodeStr,
-              country: countryName,
-              countryCode,
-              formattedAddress: fullAddress,
+              address: res.streetAddress,
+              apartment: res.apartment,
+              district: res.district,
+              city: res.city,
+              state: res.state,
+              postalCode: res.postalCode,
+              country: res.country,
+              countryCode: res.countryCode,
+              formattedAddress: res.formattedAddress,
             };
-
-            reverseCacheRef.current.set(cacheKey, details);
             isInternalUpdateRef.current = true;
-
             if (onLocationChange) {
               onLocationChange(newLat, newLng, details);
             }
           } else if (onLocationChange) {
+            isInternalUpdateRef.current = true;
             onLocationChange(newLat, newLng);
           }
         } catch {
-          // Graceful fallback on network or rate limit failure: maintain coordinates safely
-          if (onLocationChange) onLocationChange(newLat, newLng);
+          if (onLocationChange) {
+            isInternalUpdateRef.current = true;
+            onLocationChange(newLat, newLng);
+          }
         } finally {
           setIsLoadingGeocode(false);
         }
-      }, 400);
+      }, 350);
     },
     [onLocationChange]
   );

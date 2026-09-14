@@ -102,6 +102,7 @@ export function StepSafety({
             onBack={onBack}
             onNext={onNext}
             isLoading={isLoading}
+            nextLabel="Save"
           />
     </OnboardingStepLayout>
   );

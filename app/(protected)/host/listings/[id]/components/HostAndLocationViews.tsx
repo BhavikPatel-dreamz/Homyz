@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap, type LocationDetails } from "@/components/ui/real-map";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import type { StructuredAddress } from "@/lib/location/geocoding";
 import {
   inviteListingCoHostAction,
   revokeListingCoHostAction,
@@ -45,6 +47,8 @@ interface Props {
   handleSaveSection: (sectionKey: "location") => void;
   editAddress: string;
   setEditAddress: (value: string) => void;
+  editApartment?: string;
+  setEditApartment?: (value: string) => void;
   neighborhoodDescription: string;
   setNeighborhoodDescription: (value: string) => void;
   gettingAround: string;
@@ -55,8 +59,20 @@ interface Props {
   setLocationFeatures: (value: string[]) => void;
   editCity: string;
   setEditCity: (value: string) => void;
+  editDistrict: string;
+  setEditDistrict: (value: string) => void;
+  editPostalCode: string;
+  setEditPostalCode: (value: string) => void;
   editCountry: string;
   setEditCountry: (value: string) => void;
+  latitude: number | null;
+  longitude: number | null;
+  setLatitude: (value: number | null) => void;
+  setLongitude: (value: number | null) => void;
+  locationResolutionError: string | null;
+  setLocationResolutionError: (value: string | null) => void;
+  locationIsResolving: boolean;
+  setLocationIsResolving: (value: boolean) => void;
   showExactLocation: boolean;
   setShowExactLocation: (value: boolean) => void;
   openLocationAccordion?: string | null;
@@ -120,20 +136,6 @@ function Toggle({
       />
     </button>
   );
-}
-interface Props {
-  editDistrict: string;
-  setEditDistrict: (value: string) => void;
-  editPostalCode: string;
-  setEditPostalCode: (value: string) => void;
-  latitude: number | null;
-  longitude: number | null;
-  setLatitude: (value: number | null) => void;
-  setLongitude: (value: number | null) => void;
-  locationResolutionError: string | null;
-  setLocationResolutionError: (value: string | null) => void;
-  locationIsResolving: boolean;
-  setLocationIsResolving: (value: boolean) => void;
 }
 function initials(name: string | null) {
   return (name || "Host")
@@ -237,132 +239,28 @@ function LocationContextEditor(props: Props) {
     </section>
   );
 }
-function EnhancedLocationView(props: Props) {
-  const updateFromMap = (
-    lat: number,
-    lng: number,
-    details?: LocationDetails,
-  ) => {
-    props.setLatitude(lat);
-    props.setLongitude(lng);
-    props.setLocationIsResolving(false);
-    props.setLocationResolutionError(null);
-    if (details?.address) props.setEditAddress(details.address);
-    if (details?.city) props.setEditCity(details.city);
-    if (details?.district) props.setEditDistrict(details.district);
-    if (details?.postalCode) props.setEditPostalCode(details.postalCode);
-    if (details?.country) props.setEditCountry(details.country);
-  };
-  const onAddressChange = (value: string) => {
-    props.setEditAddress(value);
-    props.setLocationResolutionError(null);
-    props.setLocationIsResolving(Boolean(value || props.editCity));
-  };
-  return (
-    <div className="max-w-xl space-y-5 pb-10">
-      <div>
-        <h1>Location</h1>
-        <p className="mt-1 text-sm font-normal text-[#727272]">
-          Saved map coordinates are retained until you change the address or
-          move the pin.
-        </p>
-      </div>
-      <div className="overflow-hidden rounded-2xl border border-zinc-200">
-        <RealMap
-          address={props.editAddress}
-          city={props.editCity}
-          country={props.editCountry}
-          lat={props.latitude ?? undefined}
-          lng={props.longitude ?? undefined}
-          preferInitialCoordinates
-          showExactLocation={props.showExactLocation}
-          onLocationChange={updateFromMap}
-          onLocationError={(message) => {
-            props.setLocationIsResolving(false);
-            props.setLocationResolutionError(message);
-          }}
-          className="h-64 w-full"
-        />
-      </div>
-      {props.locationIsResolving && (
-        <p className="text-xs text-amber-700">Finding this address…</p>
-      )}
-      {props.locationResolutionError && (
-        <p
-          role="alert"
-          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700"
-        >
-          {props.locationResolutionError}
-        </p>
-      )}
-      <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Address</h2>
-        <input
-          value={props.editAddress}
-          onChange={(event) => onAddressChange(event.target.value)}
-          placeholder="Street address"
-          className="input"
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            value={props.editCity}
-            onChange={(event) => {
-              props.setEditCity(event.target.value);
-              props.setLocationIsResolving(true);
-              props.setLocationResolutionError(null);
-            }}
-            placeholder="City"
-            className="input"
-          />
-          <input
-            value={props.editDistrict}
-            onChange={(event) => props.setEditDistrict(event.target.value)}
-            placeholder="District"
-            className="input"
-          />
-          <input
-            value={props.editPostalCode}
-            onChange={(event) => props.setEditPostalCode(event.target.value)}
-            placeholder="Postal code"
-            className="input"
-          />
-          <input
-            value={props.editCountry}
-            onChange={(event) => {
-              props.setEditCountry(event.target.value);
-              props.setLocationIsResolving(true);
-              props.setLocationResolutionError(null);
-            }}
-            placeholder="Country"
-            className="input"
-          />
-        </div>
-        <div className="flex items-center justify-between gap-4 pt-2">
-          <div>
-            <p className="text-sm font-medium">Show exact location</p>
-            <p className="text-xs text-zinc-500">
-              Guests otherwise see an approximate map area.
-            </p>
-          </div>
-          <Toggle
-            checked={props.showExactLocation}
-            onChange={() =>
-              props.setShowExactLocation(!props.showExactLocation)
-            }
-          />
-        </div>
-        <SaveButton
-          saving={props.isSaving || props.locationIsResolving}
-          onSave={() => props.handleSaveSection("location")}
-        />
-      </section>
-    </div>
-  );
-}
 function LocationView(props: Props) {
   const {
     editAddress,
     setEditAddress,
+    editApartment = "",
+    setEditApartment,
+    editDistrict,
+    setEditDistrict,
+    editCity,
+    setEditCity,
+    editPostalCode,
+    setEditPostalCode,
+    editCountry,
+    setEditCountry,
+    latitude,
+    longitude,
+    setLatitude,
+    setLongitude,
+    locationResolutionError,
+    setLocationResolutionError,
+    locationIsResolving,
+    setLocationIsResolving,
     neighborhoodDescription,
     setNeighborhoodDescription,
     gettingAround,
@@ -371,10 +269,6 @@ function LocationView(props: Props) {
     setScenicViews,
     locationFeatures,
     setLocationFeatures,
-    editCity,
-    setEditCity,
-    editCountry,
-    setEditCountry,
     showExactLocation,
     setShowExactLocation,
     isSaving,
@@ -383,177 +277,401 @@ function LocationView(props: Props) {
     openLocationAccordion,
     setOpenLocationAccordion,
   } = props;
+
   const [internalOpen, setInternalOpen] = useState<string | null>("address");
   const open = openLocationAccordion !== undefined ? openLocationAccordion : internalOpen;
   const setOpen = setOpenLocationAccordion ?? setInternalOpen;
-  const save = () => {
+
+  // Search query input initialized from available address fields
+  const [searchQuery, setSearchQuery] = useState(() =>
+    [editAddress, editDistrict, editCity, editCountry].filter(Boolean).join(", ")
+  );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Sync search input if address is externally updated
+  useEffect(() => {
+    if (!searchQuery && (editAddress || editCity)) {
+      setSearchQuery([editAddress, editDistrict, editCity, editCountry].filter(Boolean).join(", "));
+    }
+  }, [editAddress, editDistrict, editCity, editCountry]);
+
+  const handleAutocompleteSelect = (selected: StructuredAddress) => {
+    setSearchQuery(selected.formattedAddress);
+    setLatitude(selected.latitude);
+    setLongitude(selected.longitude);
+    setLocationResolutionError(null);
+    setLocationIsResolving(false);
+    setValidationError(null);
+
+    const street = selected.streetAddress || selected.formattedAddress.split(",")[0].trim();
+    setEditAddress(street);
+    if (selected.district) setEditDistrict(selected.district);
+    if (selected.city) setEditCity(selected.city);
+    if (selected.postalCode) setEditPostalCode(selected.postalCode);
+    if (selected.country) setEditCountry(selected.country);
+  };
+
+  const handleMapLocationChange = (lat: number, lng: number, details?: LocationDetails) => {
+    setLatitude(lat);
+    setLongitude(lng);
+    setLocationResolutionError(null);
+    setLocationIsResolving(false);
+    setValidationError(null);
+
+    if (details) {
+      if (details.address) setEditAddress(details.address);
+      if (details.apartment && setEditApartment) setEditApartment(details.apartment);
+      if (details.district) setEditDistrict(details.district);
+      if (details.city) setEditCity(details.city);
+      if (details.postalCode) setEditPostalCode(details.postalCode);
+      if (details.country) setEditCountry(details.country);
+
+      if (details.formattedAddress) {
+        setSearchQuery(details.formattedAddress);
+      } else {
+        const fullStr = [
+          details.address || editAddress,
+          details.district || editDistrict,
+          details.city || editCity,
+          details.country || editCountry,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        if (fullStr) setSearchQuery(fullStr);
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const handleSave = () => {
+    if (!editAddress.trim() && !editCity.trim()) {
+      setValidationError("Please enter an address or city for this listing.");
+      return;
+    }
+    if (latitude === null || longitude === null || isNaN(latitude) || isNaN(longitude)) {
+      setValidationError("Please choose a location on the map or search an address.");
+      return;
+    }
+    setValidationError(null);
     handleSaveSection("location");
   };
+
   return (
-    <div className="max-w-xl space-y-4 pb-10">
+    <div className="max-w-xl space-y-5 pb-10">
       <div>
-        <h1>Location</h1>
-        <p className="mt-1 text-sm font-normal text-[#727272]">
-          Share useful area context without making safety guarantees.
+        <h1 className="text-xl font-bold text-[#1F1F1F]">Location</h1>
+        <p className="mt-1 text-xs text-zinc-500">
+          Search for an address or move the pin on the map. Address details stay synchronized automatically.
         </p>
       </div>
-      {props.isLoading ? (
+
+      {isLoading ? (
         <LocationSkeleton />
       ) : (
         <>
-      <div className="h-60 overflow-hidden rounded-2xl border border-zinc-200">
-        <RealMap
-          address={editAddress}
-          city={editCity}
-          country={editCountry}
-          showExactLocation={showExactLocation}
-        />
-      </div>
-      <Card
-        title="Address"
-        open={open === "address"}
-        onToggle={() => setOpen(open === "address" ? "" : "address")}
-      >
-        <input
-          value={editAddress}
-          onChange={(e) => setEditAddress(e.target.value)}
-          placeholder="Street address"
-          className="input"
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            value={editCity}
-            onChange={(e) => setEditCity(e.target.value)}
-            placeholder="City"
-            className="input"
-          />
-          <input
-            value={editCountry}
-            onChange={(e) => setEditCountry(e.target.value)}
-            placeholder="Country"
-            className="input"
-          />
-        </div>
-        <SaveButton saving={isSaving} onSave={save} />
-      </Card>
-      <Card
-        title="Location sharing"
-        open={open === "sharing"}
-        onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium">Show exact location</p>
-            <p className="text-xs text-zinc-500">
-              Otherwise guests see only an approximate map area.
-            </p>
+          {/* 1. Address Search Autocomplete Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-700">
+              Search address or landmark
+            </label>
+            <AddressAutocomplete
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSelect={handleAutocompleteSelect}
+              onClear={handleClearSearch}
+              placeholder="Search by street, building, city, or postal code..."
+            />
           </div>
-          <Toggle
-            checked={showExactLocation}
-            onChange={() => setShowExactLocation(!showExactLocation)}
-          />
-        </div>
-        <SaveButton saving={isSaving} onSave={save} />
-      </Card>
-      <Card
-        title="Location features"
-        open={open === "features"}
-        onToggle={() => setOpen(open === "features" ? "" : "features")}
-      >
-        <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-8">
-          {LOCATION_FEATURES.map(([id, label]) => (
-            <div key={id} className="py-2.5 pr-2">
-              <div className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3">
-                <div className="min-w-0 flex-1">
-                  <div className="text-[15px] font-normal leading-5 text-[#1F1F1F]">{label}</div>
-                  <div className="mt-1 text-xs leading-4 text-zinc-400">Lorem ipsum integer habitant</div>
-                </div>
-                <Toggle
-                  checked={locationFeatures.includes(id)}
-                  onChange={() =>
-                    setLocationFeatures(
-                      locationFeatures.includes(id)
-                        ? locationFeatures.filter((value) => value !== id)
-                        : [...locationFeatures, id],
-                    )
-                  }
+
+          {/* 2. Interactive RealMap with Draggable Pin */}
+          <div className="space-y-2">
+            <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 shadow-xs">
+              <RealMap
+                address={editAddress}
+                city={editCity}
+                country={editCountry}
+                lat={latitude ?? undefined}
+                lng={longitude ?? undefined}
+                preferInitialCoordinates={true}
+                showExactLocation={showExactLocation}
+                onLocationChange={handleMapLocationChange}
+                onLocationError={(message) => {
+                  setLocationIsResolving(false);
+                  setLocationResolutionError(message);
+                }}
+                className="h-72 sm:h-80 w-full relative z-0"
+              />
+            </div>
+
+            {/* Coordinates indicator & helpful tip */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-zinc-500">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-600 bg-zinc-100 px-2.5 py-1 rounded-full border border-zinc-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>
+                  {latitude != null ? latitude.toFixed(5) : "—"},{" "}
+                  {longitude != null ? longitude.toFixed(5) : "—"}
+                </span>
+              </div>
+              <span className="text-[11px] text-zinc-500">
+                💡 Drag pin or click map to refine the exact spot
+              </span>
+            </div>
+
+            {locationIsResolving && (
+              <p className="text-xs text-amber-700 animate-pulse">Finding this address on the map…</p>
+            )}
+
+            {(locationResolutionError || validationError) && (
+              <p
+                role="alert"
+                className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 font-medium"
+              >
+                {validationError || locationResolutionError}
+              </p>
+            )}
+          </div>
+
+          {/* 3. Address Details Accordion */}
+          <Card
+            title="Address details"
+            open={open === "address"}
+            onToggle={() => setOpen(open === "address" ? "" : "address")}
+          >
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  Street address
+                </label>
+                <input
+                  value={editAddress}
+                  onChange={(e) => {
+                    setEditAddress(e.target.value);
+                    setValidationError(null);
+                  }}
+                  placeholder="Street and house or building number"
+                  className="input"
                 />
               </div>
+
+              <div>
+                <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  Apt, suite, unit (optional)
+                </label>
+                <input
+                  value={editApartment}
+                  onChange={(e) => setEditApartment?.(e.target.value)}
+                  placeholder="Apartment, unit, or suite number"
+                  className="input"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                    District / Neighborhood
+                  </label>
+                  <input
+                    value={editDistrict}
+                    onChange={(e) => setEditDistrict(e.target.value)}
+                    placeholder="District or neighborhood"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                    City
+                  </label>
+                  <input
+                    value={editCity}
+                    onChange={(e) => {
+                      setEditCity(e.target.value);
+                      setValidationError(null);
+                    }}
+                    placeholder="City"
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                    Postal code
+                  </label>
+                  <input
+                    value={editPostalCode}
+                    onChange={(e) => setEditPostalCode(e.target.value)}
+                    placeholder="Postal code"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                    Country
+                  </label>
+                  <input
+                    value={editCountry}
+                    onChange={(e) => setEditCountry(e.target.value)}
+                    placeholder="Country"
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <SaveButton saving={isSaving} onSave={handleSave} />
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-3 pt-3">
-          <button type="button" onClick={save} disabled={isSaving} className="rounded-full bg-[#F5D98C] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60">
-            {isSaving ? "Saving…" : "Save"}
-          </button>
-          <button type="button" onClick={() => setOpen("")} className="rounded-full border border-zinc-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100">
-            Cancel
-          </button>
-        </div>
-      </Card>
-      <Card
-        title="Neighborhood description"
-        open={open === "neighborhood"}
-        onToggle={() => setOpen(open === "neighborhood" ? "" : "neighborhood")}
-      >
-        <textarea
-          value={neighborhoodDescription}
-          maxLength={2000}
-          onChange={(e) => setNeighborhoodDescription(e.target.value)}
-          placeholder="Describe the area, attractions, and local conveniences."
-          className="input min-h-28"
-        />
-        <p className="text-right text-xs text-zinc-400">
-          {neighborhoodDescription.length}/2000
-        </p>
-        <SaveButton saving={isSaving} onSave={save} />
-      </Card>
-      <Card
-        title="Getting around"
-        open={open === "getting-around"}
-        onToggle={() =>
-          setOpen(open === "getting-around" ? "" : "getting-around")
-        }
-      >
-        <textarea
-          value={gettingAround}
-          maxLength={2000}
-          onChange={(e) => setGettingAround(e.target.value)}
-          placeholder="Share transit, parking, walking, or rideshare details."
-          className="input min-h-28"
-        />
-        <p className="text-right text-xs text-zinc-400">
-          {gettingAround.length}/2000
-        </p>
-        <SaveButton saving={isSaving} onSave={save} />
-      </Card>
-      <Card
-        title="Scenic views"
-        open={open === "views"}
-        onToggle={() => setOpen(open === "views" ? "" : "views")}
-      >
-        <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-6">
-          {SCENIC_VIEWS.map(([id, label]) => (
-            <FeatureToggle
-              key={id}
-              label={label}
-              checked={Boolean(scenicViews[id])}
-              onChange={() =>
-                setScenicViews({ ...scenicViews, [id]: !scenicViews[id] })
-              }
+          </Card>
+
+          {/* 4. Location Sharing */}
+          <Card
+            title="Location sharing"
+            open={open === "sharing"}
+            onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-[#1F1F1F]">Show exact location</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  When enabled, guests can see your exact pinpoint location before booking. When disabled, guests only see an approximate general area until a reservation is confirmed.
+                </p>
+              </div>
+              <Toggle
+                checked={showExactLocation}
+                onChange={() => setShowExactLocation(!showExactLocation)}
+              />
+            </div>
+            <div className="pt-2">
+              <SaveButton saving={isSaving} onSave={handleSave} />
+            </div>
+          </Card>
+
+          {/* 5. Location Features */}
+          <Card
+            title="Location features"
+            open={open === "features"}
+            onToggle={() => setOpen(open === "features" ? "" : "features")}
+          >
+            <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-8">
+              {LOCATION_FEATURES.map(([id, label]) => (
+                <div key={id} className="py-2.5 pr-2">
+                  <div className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[15px] font-normal leading-5 text-[#1F1F1F]">{label}</div>
+                      <div className="mt-1 text-xs leading-4 text-zinc-400">Highlight this feature for prospective guests</div>
+                    </div>
+                    <Toggle
+                      checked={locationFeatures.includes(id)}
+                      onChange={() =>
+                        setLocationFeatures(
+                          locationFeatures.includes(id)
+                            ? locationFeatures.filter((value) => value !== id)
+                            : [...locationFeatures, id],
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 pt-3">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="rounded-full bg-[#F5D98C] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60 cursor-pointer"
+              >
+                {isSaving ? "Saving…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen("")}
+                className="rounded-full border border-zinc-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </Card>
+
+          {/* 6. Neighborhood Description */}
+          <Card
+            title="Neighborhood description"
+            open={open === "neighborhood"}
+            onToggle={() => setOpen(open === "neighborhood" ? "" : "neighborhood")}
+          >
+            <textarea
+              value={neighborhoodDescription}
+              maxLength={2000}
+              onChange={(e) => setNeighborhoodDescription(e.target.value)}
+              placeholder="Describe the area, attractions, and local conveniences."
+              className="input min-h-28"
             />
-          ))}
-        </div>
-        <div className="flex items-center gap-3 pt-1">
-          <button type="button" onClick={save} disabled={isSaving} className="rounded-full bg-[#F5D98C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60">
-            {isSaving ? "Saving…" : "Save"}
-          </button>
-          <button type="button" onClick={() => setOpen("")} className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100">
-            Cancel
-          </button>
-        </div>
-      </Card>
-      </>
+            <p className="text-right text-xs text-zinc-400">
+              {neighborhoodDescription.length}/2000
+            </p>
+            <SaveButton saving={isSaving} onSave={handleSave} />
+          </Card>
+
+          {/* 7. Getting Around */}
+          <Card
+            title="Getting around"
+            open={open === "getting-around"}
+            onToggle={() => setOpen(open === "getting-around" ? "" : "getting-around")}
+          >
+            <textarea
+              value={gettingAround}
+              maxLength={2000}
+              onChange={(e) => setGettingAround(e.target.value)}
+              placeholder="Share transit, parking, walking, rideshare, or nearby stations."
+              className="input min-h-28"
+            />
+            <p className="text-right text-xs text-zinc-400">
+              {gettingAround.length}/2000
+            </p>
+            <SaveButton saving={isSaving} onSave={handleSave} />
+          </Card>
+
+          {/* 8. Scenic Views */}
+          <Card
+            title="Scenic views"
+            open={open === "views"}
+            onToggle={() => setOpen(open === "views" ? "" : "views")}
+          >
+            <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-6">
+              {SCENIC_VIEWS.map(([id, label]) => (
+                <FeatureToggle
+                  key={id}
+                  label={label}
+                  checked={Boolean(scenicViews[id])}
+                  onChange={() =>
+                    setScenicViews({ ...scenicViews, [id]: !scenicViews[id] })
+                  }
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="rounded-full bg-[#F5D98C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60 cursor-pointer"
+              >
+                {isSaving ? "Saving…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen("")}
+                className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );

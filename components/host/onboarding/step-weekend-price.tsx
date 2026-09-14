@@ -11,6 +11,7 @@ interface StepWeekendPriceProps {
   weekendPrice: number;
   onChangeWeekendPrice: (price: number) => void;
   currencySymbol?: string;
+  hostServiceFeePercentage?: number;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -21,6 +22,7 @@ export function StepWeekendPrice({
   weekendPrice,
   onChangeWeekendPrice,
   currencySymbol = "SR",
+  hostServiceFeePercentage = 15,
   onBack,
   onNext,
   isLoading = false,
@@ -33,9 +35,9 @@ export function StepWeekendPrice({
   // Authoritative weekend price (falls back to baseWeekday if not yet set)
   const activeWeekendPrice = weekendPrice > 0 ? weekendPrice : baseWeekday;
   const currentPercentage = Math.max(0, Math.round(((activeWeekendPrice - baseWeekday) / baseWeekday) * 100));
-  const guestServiceFee = Math.round(activeWeekendPrice * 0.2);
-  const guestPriceBeforeTaxes = activeWeekendPrice + guestServiceFee;
-  const hostEarnings = Math.round(activeWeekendPrice * 0.97);
+  const feePercentage = hostServiceFeePercentage;
+  const hostServiceFee = Math.round(activeWeekendPrice * (feePercentage / 100));
+  const hostEarnings = Math.max(0, activeWeekendPrice - hostServiceFee);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const pct = parseInt(e.target.value, 10);
@@ -64,7 +66,7 @@ export function StepWeekendPrice({
             <div className="mx-auto max-w-[530px]">
               <h1 data-aos="fade-up" className="sm:mb-5 mb-3">Set a weekend price</h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
-                TIP: Weekend rates typically reflect increased leisure demand for Friday and Saturday nights.
+                TIP: Weekend rates typically apply to Thursday and Friday nights in Saudi Arabia / Middle East.
               </p>
             </div>
 
@@ -107,7 +109,7 @@ export function StepWeekendPrice({
                 className="mb-5 flex w-full items-center justify-center gap-4 text-base font-normal text-[#1F1F1F] transition-colors hover:text-zinc-800 cursor-pointer select-none"
               >
                 <span>
-                  Guest price before taxes <span className="font-medium">{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
+                  View breakdown
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -127,18 +129,14 @@ export function StepWeekendPrice({
                     <span>{currencySymbol}{activeWeekendPrice.toLocaleString()}</span>
                   </div>
                   <div className="mt-5 flex items-center justify-between">
-                    <span>Guest service fee</span>
-                    <span>{currencySymbol}{guestServiceFee.toLocaleString()}</span>
+                    <span>Guest service fee ({feePercentage}%)</span>
+                    <span className="text-rose-600">−{currencySymbol}{hostServiceFee.toLocaleString()}</span>
                   </div>
                   <div className="my-5 border-t border-[#727272]/60" />
-                  <div className="flex items-center justify-between">
-                    <span>Guest price before taxes</span>
-                    <span>{currencySymbol}{guestPriceBeforeTaxes.toLocaleString()}</span>
-                  </div>
-                  <div className="my-5 border-t border-[#727272]/60" />
+
                   <div className="flex items-center justify-between">
                     <span>You earn</span>
-                    <span className="font-medium">{currencySymbol}{hostEarnings.toLocaleString()}</span>
+                    <span className="font-medium text-emerald-600">{currencySymbol}{hostEarnings.toLocaleString()}</span>
                   </div>
                 </div>
               )}

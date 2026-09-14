@@ -15,6 +15,8 @@ import type { Prisma } from "@/generated/prisma/client";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
+import { getHostServiceFeePercentage } from "@/services/app-settings.service";
+import { calculateBookingPrice, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
 
 export type BookingQuote = {
   listingId: string;
@@ -23,19 +25,25 @@ export type BookingQuote = {
   nights: number;
   weekdayNights: number;
   weekendNights: number;
+  customPricedNights?: number;
   baseNightlyPrice: number; // cents
+  weekdayBasePrice?: number; // cents
   weekendNightlyPrice: number | null; // cents
   nightlySubtotal: number; // cents
   discountAmount: number; // cents
   discountPercentage: number;
+  appliedDiscount?: AppliedDiscount | null;
   cleaningFee: number; // cents
+  extraGuestFee?: number; // cents
+  hostServiceFee: number; // cents
+  hostServiceFeePercentage: number; // percentage e.g. 15
   subtotal: number; // nightlySubtotal - discountAmount + cleaningFee (cents)
   totalPrice: number; // cents (totalPrice before tax for compatibility)
   taxes: CalculatedTaxItem[];
   taxTotal: number; // total tax in cents
   platformRemittedTaxTotal: number; // taxes platform collects & remits
   hostRemittedTaxTotal: number; // taxes host collects & remits
-  guestTotal: number; // subtotal + taxTotal (cents)
+  guestTotal: number; // stayAmount + cleaningFee + taxTotal + hostServiceFee (cents)
   payoutBreakdown?: HostPayoutBreakdown;
   currency: string;
   guests: number;
@@ -46,6 +54,7 @@ export type BookingQuote = {
     date: string;
     isWeekend: boolean;
     price: number;
+    rateSource?: "CUSTOM" | "WEEKEND" | "WEEKDAY";
   }>;
 };
 
@@ -94,8 +103,10 @@ export async function getBookingQuote(opts: {
   }
 
   const requestedGuests = opts.guests ?? 1;
-  if (requestedGuests > (listing.guests || 1)) {
-    throw AppError.badRequest(`Property accommodates a maximum of ${listing.guests} guests`);
+  const baseGuests = listing.guests || 1;
+  const extraGuestFeeRate = (listing as any).extraGuestFee ?? 0;
+  if (requestedGuests > baseGuests && extraGuestFeeRate <= 0) {
+    throw AppError.badRequest(`Property accommodates a maximum of ${baseGuests} guests`);
   }
 
   const requestedPets = opts.pets ?? 0;
@@ -108,52 +119,6 @@ export async function getBookingQuote(opts: {
     }
   }
 
-  const basePrice = listing.price; // cents
-  // Smart pricing owns the nightly rate. Manual weekend and long-stay
-  // adjustments remain stored for a future manual-pricing switch, but are not
-  // applied to a smart-priced quote.
-  const usesManualAdjustments = listing.smartPricing !== true;
-  const weekendPrice = usesManualAdjustments && listing.weekendPrice && listing.weekendPrice > 0
-    ? listing.weekendPrice
-    : null;
-  const cleaningFee = listing.cleaningFee || 0; // cents
-
-  let weekdayNights = 0;
-  let weekendNights = 0;
-  let nightlySubtotal = 0;
-  const breakdown: BookingQuote["breakdown"] = [];
-
-  for (let i = 0; i < nights; i++) {
-    const nightDate = new Date(cIn.getTime() + i * 24 * 60 * 60 * 1000);
-    const dayOfWeek = nightDate.getDay();
-    // Saudi / Middle East weekend nights: Thursday (4) and Friday (5)
-    const isWeekend = dayOfWeek === 4 || dayOfWeek === 5;
-
-    let priceForNight = basePrice;
-    if (isWeekend && weekendPrice !== null) {
-      priceForNight = weekendPrice;
-      weekendNights++;
-    } else {
-      weekdayNights++;
-    }
-
-    nightlySubtotal += priceForNight;
-    breakdown.push({
-      date: nightDate.toISOString().split("T")[0],
-      isWeekend,
-      price: priceForNight,
-    });
-  }
-
-  const discountConfig = usesManualAdjustments && listing.discounts && typeof listing.discounts === "object"
-    ? listing.discounts as Record<string, unknown> : {};
-  const discountKey = nights >= 28 ? "monthly" : nights >= 7 ? "weekly" : null;
-  const discountEntry = discountKey && discountConfig[discountKey] && typeof discountConfig[discountKey] === "object"
-    ? discountConfig[discountKey] as Record<string, unknown> : null;
-  const discountPercentage = discountEntry?.enabled !== false && typeof discountEntry?.percentage === "number"
-    ? Math.max(0, Math.min(100, discountEntry.percentage)) : 0;
-  const discountAmount = Math.round(nightlySubtotal * discountPercentage / 100);
-  const subtotal = nightlySubtotal - discountAmount + cleaningFee;
   const cancellationPolicyType = nights >= 28 ? "LONG_TERM" : "SHORT_TERM";
   const cancellationPolicy = cancellationPolicyType === "LONG_TERM"
     ? listing.longTermCancellationPolicy || "FIRM"
@@ -187,44 +152,65 @@ export async function getBookingQuote(opts: {
     updatedAt: t.updatedAt.toISOString(),
   }));
 
-  const taxResult = TaxCalculator.calculateTaxes({
-    nights,
-    nightlySubtotal,
-    discountAmount,
-    cleaningFee,
+  const usesManualAdjustments = listing.smartPricing !== true;
+  const pricing = await calculateBookingPrice({
+    checkIn: cIn,
+    checkOut: cOut,
+    weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
+    weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
+    customPrices: (listing as any).customPrices as Record<string, number> | null,
+    cleaningFee: listing.cleaningFee,
+    extraGuestFee: (listing as any).extraGuestFee,
+    baseGuests,
     guests: requestedGuests,
-    rules: resolved.systemRules,
+    pets: requestedPets,
+    petFee: listing.petFee,
+    discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
+    taxRules: resolved.systemRules,
     hostTaxes,
     currency: "SAR",
   });
+
+  const subtotal = pricing.accommodationSubtotal + pricing.cleaningFee + pricing.extraGuestFee + pricing.petFee;
 
   return {
     listingId: listing.id,
     checkIn: cIn.toISOString(),
     checkOut: cOut.toISOString(),
-    nights,
-    weekdayNights,
-    weekendNights,
-    baseNightlyPrice: basePrice,
-    weekendNightlyPrice: weekendPrice,
-    nightlySubtotal,
-    discountAmount,
-    discountPercentage,
-    cleaningFee,
+    nights: pricing.nights,
+    weekdayNights: pricing.weekdayNights,
+    weekendNights: pricing.weekendNights,
+    customPricedNights: pricing.customPricedNights,
+    baseNightlyPrice: pricing.effectiveBasePrice,
+    weekdayBasePrice: pricing.weekdayBasePrice,
+    weekendNightlyPrice: pricing.weekendPrice,
+    nightlySubtotal: pricing.staySubtotal,
+    discountAmount: pricing.discountAmount,
+    discountPercentage: pricing.discountPercentage,
+    appliedDiscount: pricing.appliedDiscount,
+    cleaningFee: pricing.cleaningFee,
+    extraGuestFee: pricing.extraGuestFee,
+    hostServiceFee: pricing.hostServiceFee,
+    hostServiceFeePercentage: pricing.hostServiceFeePercentage,
     subtotal,
     totalPrice: subtotal,
-    taxes: taxResult.taxes,
-    taxTotal: taxResult.taxTotal,
-    platformRemittedTaxTotal: taxResult.platformRemittedTaxTotal,
-    hostRemittedTaxTotal: taxResult.hostRemittedTaxTotal,
-    guestTotal: taxResult.guestTotal,
-    payoutBreakdown: taxResult.payoutBreakdown,
-    currency: "SAR",
+    taxes: pricing.taxes,
+    taxTotal: pricing.taxTotal,
+    platformRemittedTaxTotal: pricing.platformRemittedTaxTotal,
+    hostRemittedTaxTotal: pricing.hostRemittedTaxTotal,
+    guestTotal: pricing.guestTotal,
+    payoutBreakdown: pricing.payoutBreakdown,
+    currency: pricing.currency,
     guests: requestedGuests,
     pets: requestedPets,
     cancellationPolicy,
     cancellationPolicyType,
-    breakdown,
+    breakdown: pricing.breakdown.map((b) => ({
+      date: b.date,
+      isWeekend: b.isWeekend,
+      price: b.price,
+      rateSource: b.rateSource,
+    })),
   };
 }
 

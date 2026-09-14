@@ -1,7 +1,7 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
@@ -21,6 +21,7 @@ import {
 import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
@@ -117,6 +118,18 @@ export function HostListingsWorkspace({
   const [compactGrid, setCompactGrid] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
+  const [becomeHostModalStep, setBecomeHostModalStep] = useState<1 | 2>(1);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("create") === "open") {
+        setBecomeHostModalStep(2);
+        setBecomeHostModalOpen(true);
+        window.history.replaceState({}, "", "/host/listings");
+      }
+    }
+  }, []);
 
   // Editor Modal State
   const [showEditorModal, setShowEditorModal] = useState(false);
@@ -179,6 +192,7 @@ export function HostListingsWorkspace({
 
   // Open the same host onboarding flow used by the header's "Become a host" action.
   function handleOpenCreate() {
+    setBecomeHostModalStep(1);
     setBecomeHostModalOpen(true);
   }
 
@@ -669,7 +683,9 @@ export function HostListingsWorkspace({
                           {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Location not added yet"}
                         </p>
                         {item.status === "PENDING_REVIEW" && (
-                          <p className="mt-1 text-xs font-medium text-amber-700">Submitted for Admin approval</p>
+                          <p className="mt-1 text-xs font-medium text-amber-700">
+                            {isSaudiArabia(item.country) ? "Ready to publish" : "Submitted for Admin approval"}
+                          </p>
                         )}
                         {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
                           <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>
@@ -691,6 +707,7 @@ export function HostListingsWorkspace({
 
       <BecomeHostModal
         isOpen={becomeHostModalOpen}
+        initialStep={becomeHostModalStep}
         onClose={() => setBecomeHostModalOpen(false)}
       />
 

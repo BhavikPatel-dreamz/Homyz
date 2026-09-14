@@ -361,6 +361,7 @@ model Listing {
 
   // Step 2 — Photos & Content Details
   photos                String[] @default([]) // Min 5 photos required for submission
+  photoRoomAssignments  Json? // Optional room metadata for existing photo URLs; gallery remains photos[]
   highlights            String[] @default([]) // Max 3 highlights
   amenities             String[] @default([]) // Canonical amenities list
   safetyDisclosures     String[] @default([]) // Cameras, Noise monitor, Weapons disclosures
@@ -428,6 +429,9 @@ model Listing {
   blockedDates String[] @default([]) // Array of YYYY-MM-DD blocked dates
 
   // Pricing & Fees
+  weekdayBasePrice     Int? // Weekday base price in cents
+  customPrices         Json? // Map of specific date overrides YYYY-MM-DD -> price in cents
+  extraGuestFee        Int?    @default(0) // Fee in cents per extra guest per night
   cleaningFee          Int?    @default(0) // Fee in cents
   securityDeposit      Int?    @default(0) // Fee in cents
   smartPricing         Boolean @default(false)
@@ -1099,4 +1103,24 @@ model ListingRemovalFeedback {
 
   @@index([listingId])
   @@index([hostId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Global Application Settings & Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AppSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String? // Stored as string, parsed based on dataType
+  description String?
+  dataType    String   @default("STRING") // STRING, NUMBER, BOOLEAN, JSON
+  category    String   @default("GENERAL") // GENERAL, PRICING, BOOKING, TAX, etc.
+  isPublic    Boolean  @default(false) // Whether this setting is exposed to client
+  updatedBy   String? // User ID of last updater
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
 }

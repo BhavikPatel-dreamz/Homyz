@@ -615,6 +615,12 @@ export function PublicListingDetailClient({
                           <span>SAR {Math.round(quote.nightlySubtotal / 100)}</span>
                         </div>
 
+                        {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
+                          <div className="flex items-center justify-between text-amber-700 text-[11px] font-medium bg-amber-50 px-2 py-0.5 rounded">
+                            <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
+                          </div>
+                        )}
+
                         {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
                           <div className="flex items-center justify-between text-zinc-500 text-[11px]">
                             <span>Includes {quote.weekendNights} weekend nights</span>
@@ -629,13 +635,32 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote.discountAmount > 0 && <div className="flex items-center justify-between text-emerald-700"><span>{quote.discountPercentage}% length-of-stay discount</span><span>−SAR {Math.round(quote.discountAmount / 100)}</span></div>}
+                        {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
+                          <div className="flex items-center justify-between text-zinc-600">
+                            <span>Extra guest fee</span>
+                            <span>SAR {Math.round(quote.extraGuestFee / 100)}</span>
+                          </div>
+                        )}
+
+                        {quote.discountAmount > 0 && (
+                          <div className="flex items-center justify-between text-emerald-700 font-medium">
+                            <span>{quote.appliedDiscount ? quote.appliedDiscount.name : `${quote.discountPercentage}% discount`}</span>
+                            <span>−SAR {Math.round(quote.discountAmount / 100)}</span>
+                          </div>
+                        )}
+
+                        {quote.hostServiceFee > 0 && (
+                          <div className="flex items-center justify-between text-zinc-600">
+                            <span>Guest service fee ({quote.hostServiceFeePercentage}%)</span>
+                            <span>SAR {Math.round(quote.hostServiceFee / 100)}</span>
+                          </div>
+                        )}
 
                         {quote.taxes && quote.taxes.length > 0 ? (
                           <>
                             <div className="flex items-center justify-between text-zinc-600">
                               <span>Total before taxes</span>
-                              <span>SAR {Math.round((quote.subtotal ?? quote.totalPrice) / 100)}</span>
+                              <span>SAR {Math.round(((quote.nightlySubtotal - quote.discountAmount) + quote.cleaningFee + (quote.extraGuestFee || 0) + (quote.hostServiceFee || 0)) / 100)}</span>
                             </div>
 
                             <div className="pt-2 border-t border-zinc-100 space-y-1.5">
@@ -671,8 +696,8 @@ export function PublicListingDetailClient({
                           </>
                         ) : (
                           <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
-                            <span>Total before taxes</span>
-                            <span>SAR {Math.round(quote.totalPrice / 100)}</span>
+                            <span>Total</span>
+                            <span>SAR {Math.round((quote.guestTotal ?? quote.totalPrice) / 100)}</span>
                           </div>
                         )}
                       </div>

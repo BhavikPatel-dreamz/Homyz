@@ -125,9 +125,11 @@ export async function adminUpdateListingDetailsAction(input: {
 export async function adminUpdateListingPricingAction(input: {
   listingId: string;
   price: number; // in cents
+  weekdayBasePrice?: number;
   cleaningFee?: number;
   securityDeposit?: number;
   weekendPrice?: number;
+  extraGuestFee?: number;
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
@@ -136,13 +138,17 @@ export async function adminUpdateListingPricingAction(input: {
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
 
+    const effectiveWeekday = Math.max(0, Math.round(input.weekdayBasePrice ?? input.price));
+
     const updated = await prisma.listing.update({
       where: { id: input.listingId },
       data: {
-        price: Math.max(0, Math.round(input.price)),
+        price: effectiveWeekday,
+        weekdayBasePrice: effectiveWeekday,
         ...(input.cleaningFee !== undefined && { cleaningFee: Math.max(0, Math.round(input.cleaningFee)) }),
         ...(input.securityDeposit !== undefined && { securityDeposit: Math.max(0, Math.round(input.securityDeposit)) }),
         ...(input.weekendPrice !== undefined && { weekendPrice: input.weekendPrice ? Math.max(0, Math.round(input.weekendPrice)) : null }),
+        ...(input.extraGuestFee !== undefined && { extraGuestFee: Math.max(0, Math.round(input.extraGuestFee)) }),
       },
     });
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import type AOS from "aos";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
@@ -18,6 +18,7 @@ import { StepCategory } from "./onboarding/step-category";
 import { StepPlaceType } from "./onboarding/step-place-type";
 import { StepLocationSearch } from "./onboarding/step-location-search";
 import { StepAddressConfirm } from "./onboarding/step-address-confirm";
+import { StepPinConfirm } from "./onboarding/step-pin-confirm";
 import { StepBasicsCounters } from "./onboarding/step-basics-counters";
 import { StepStandoutIntro } from "./onboarding/step-standout-intro";
 import { StepAmenities } from "./onboarding/step-amenities";
@@ -49,6 +50,12 @@ type WizardError = {
   fixStep?: number;
 };
 
+function isDiscountEnabled(value: unknown): boolean {
+  if (value === true) return true;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return (value as { enabled?: unknown }).enabled !== false;
+}
+
 const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }> = {
   propertyType: { message: "Choose the type of place you are hosting.", step: 2 },
   listingType: { message: "Choose what guests will have.", step: 3 },
@@ -61,7 +68,6 @@ const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }>
   description: { message: "Write a description of at least 10 characters.", step: 13 },
   weekdayPrice: { message: "Set a weekday price greater than zero.", step: 15 },
   weekendPrice: { message: "Set a weekend price greater than zero.", step: 16 },
-  safetyDisclosures: { message: "Answer all three safety questions.", step: 18 },
 };
 
 const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -95,27 +101,36 @@ async function readSaveError(response: Response) {
   return "We couldn't save your listing. Please try again.";
 }
 
-export function NewListingGetStarted({ initialHostingType }: { initialHostingType: HostingType }) {
+interface NewListingGetStartedProps {
+  initialHostingType: HostingType;
+  initialDraftId?: string;
+  initialStepParam?: string;
+  initialAddressView?: boolean;
+}
+
+export function NewListingGetStarted({
+  initialHostingType,
+  initialDraftId,
+  initialStepParam,
+  initialAddressView = false,
+}: NewListingGetStartedProps) {
   const router = useRouter();
   const aosRef = useRef<typeof AOS | null>(null);
-  const searchParams = useSearchParams();
   const { data: session, update: updateSession } = useSession();
   const hostingType = initialHostingType;
-  const urlStepParam = searchParams.get("step");
-  const urlDraftId = searchParams.get("draftId");
 
   // Determine initial step based on URL query parameter (?step=category or ?step=2)
   const getInitialStep = (): number => {
-    if (!urlStepParam) return 0;
-    const slugIdx = STEP_SLUGS.indexOf(urlStepParam.toLowerCase());
+    if (!initialStepParam) return 0;
+    const slugIdx = STEP_SLUGS.indexOf(initialStepParam.toLowerCase());
     if (slugIdx !== -1) return slugIdx;
-    const num = parseInt(urlStepParam, 10);
+    const num = parseInt(initialStepParam, 10);
     if (!isNaN(num) && num >= 0 && num < STEP_SLUGS.length) return num;
     return 0;
   };
 
   const [step, setStep] = useState<number>(getInitialStep);
-  const [draftId, setDraftId] = useState<string | null>(urlDraftId || null);
+  const [draftId, setDraftId] = useState<string | null>(initialDraftId || null);
   const draftIdRef = useRef<string | null>(draftId);
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
@@ -148,6 +163,9 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   const [showSpecificLocation, setShowSpecificLocation] = useState<boolean>(false);
   const [coords, setCoords] = useState<LocationCoords>({ lat: 24.7136, lng: 46.6753 });
   const [hasConfirmedLocation, setHasConfirmedLocation] = useState(false);
+  const [addressView, setAddressView] = useState<"form" | "pin">(
+    initialAddressView ? "pin" : "form"
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isAosReady, setIsAosReady] = useState(false);
 
@@ -201,7 +219,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   const currencySymbol = "SAR";
 
   // Sync state step with URL search parameters
-  const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null) => {
+  const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null, view?: "form" | "pin") => {
     const currentDraft = activeDraftId !== undefined ? activeDraftId : draftId;
     const slug = STEP_SLUGS[stepIdx] || "overview";
     const params = new URLSearchParams();
@@ -210,9 +228,13 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     if (currentDraft) {
       params.set("draftId", currentDraft);
     }
+    const currentView = view !== undefined ? view : addressView;
+    if (stepIdx === 5 && currentView === "pin") {
+      params.set("view", "pin");
+    }
     const newUrl = `/host/listings/new?${params.toString()}`;
     window.history.pushState(null, "", newUrl);
-  }, [draftId, hostingType]);
+  }, [addressView, draftId, hostingType]);
 
   // Handle URL changes when browser back/forward buttons are clicked
   useEffect(() => {
@@ -223,18 +245,25 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         const idx = STEP_SLUGS.indexOf(st.toLowerCase());
         if (idx !== -1) setStep(idx);
       }
+      const vw = sp.get("view");
+      if (vw === "pin") {
+        setAddressView("pin");
+      } else {
+        setAddressView("form");
+      }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Direct step navigation without saving
-  const goToStep = (targetStep: number) => {
+  const goToStep = (targetStep: number, view: "form" | "pin" = "form") => {
     setStep(targetStep);
-    updateUrlForStep(targetStep);
+    setAddressView(view);
+    updateUrlForStep(targetStep, undefined, view);
   };
 
-  const buildDraftPayload = useCallback((currentStep: number) => ({
+  const buildDraftPayload = useCallback((currentStep: number, overrides?: { photos?: string[] }) => ({
     title: title.trim() || "Draft Listing",
     description: description.trim(),
     // The wizard displays whole currency units; the API persists minor units.
@@ -259,14 +288,18 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     beds,
     bathrooms,
     amenities: selectedAmenities,
-    photos,
+    photos: overrides?.photos ?? photos,
     highlights: selectedHighlights,
-    discounts: Object.fromEntries(
-      ["new_listing", "last_minute", "weekly", "monthly"].map((discount) => [
-        discount,
-        selectedDiscounts.includes(discount),
-      ]),
-    ),
+    discounts: {
+      new_listing: selectedDiscounts.includes("new_listing"),
+      // Keep the documented 15% alongside the enabled state so this value is
+      // restored exactly when a draft is resumed or edited.
+      last_minute: selectedDiscounts.includes("last_minute")
+        ? { enabled: true, percentage: 15 }
+        : false,
+      weekly: selectedDiscounts.includes("weekly"),
+      monthly: selectedDiscounts.includes("monthly"),
+    },
     safetyDisclosures: selectedSafety,
     published: false,
     currentStep: currentStep + 1,
@@ -301,7 +334,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     weekendPrice,
   ]);
 
-  const validateCurrentStep = (): string[] | null => {
+  const validateCurrentStep = (photosForValidation = photos): string[] | null => {
     switch (step) {
       case 2:
         return selectedCategory ? null : ["Choose the type of place you want to host."];
@@ -325,7 +358,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         return null;
       case 9:
       case 10:
-        return photos.length >= 5 ? null : ["Upload at least 5 successful property photos."];
+        return photosForValidation.length >= 5 ? null : ["Upload at least 5 successful property photos."];
       case 11:
         return title.trim().length >= 3 && title.trim().length <= 50
           ? null
@@ -344,14 +377,9 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         return weekendPrice > 0 ? null : ["Set a weekend price greater than zero."];
       case 17:
         return null;
-      case 18: {
-        const answers = new Set(selectedSafety);
-        return ["SECURITY_CAMERA", "NOISE_MONITOR", "WEAPONS"].every(
-          (item) => answers.has(`${item}:YES`) || answers.has(`${item}:NO`),
-        )
-          ? null
-          : ["Answer every safety question before continuing."];
-      }
+      case 18:
+        // Safety disclosures are optional - no validation required
+        return null;
       default:
         return null;
     }
@@ -372,8 +400,11 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   }, []);
 
   // Persists a draft before navigation; the wizard advances cleanly upon success.
-  const saveDraftAndGoToStep = async (nextStepIndex: number): Promise<string | null> => {
-    const validationErrors = validateCurrentStep();
+  const saveDraftAndGoToStep = async (
+    nextStepIndex: number,
+    overrides?: { photos?: string[] },
+  ): Promise<string | null> => {
+    const validationErrors = validateCurrentStep(overrides?.photos);
     if (validationErrors) {
       setWizardError({ title: "Complete this step", messages: validationErrors });
       return null;
@@ -381,7 +412,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
     setIsSavingStep(true);
     try {
-      const payload = buildDraftPayload(nextStepIndex);
+      const payload = buildDraftPayload(nextStepIndex, overrides);
       let activeDraftId = draftIdRef.current || draftId;
 
       if (activeDraftId) {
@@ -502,7 +533,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
   };
 
   useEffect(() => {
-    if (!urlDraftId) {
+    if (!initialDraftId) {
       hydratedDraftRef.current = true;
       return;
     }
@@ -510,7 +541,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     const controller = new AbortController();
     const loadDraft = async () => {
       try {
-        const response = await fetch(`/api/v1/listings/${urlDraftId}`, {
+        const response = await fetch(`/api/v1/listings/${initialDraftId}`, {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(await readSaveError(response));
@@ -533,7 +564,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         const restoredDiscounts =
           discountValues && typeof discountValues === "object" && !Array.isArray(discountValues)
             ? Object.entries(discountValues)
-                .filter(([, enabled]) => enabled === true)
+                .filter(([, value]) => isDiscountEnabled(value))
                 .map(([discount]) => discount)
             : ["new_listing"];
 
@@ -567,12 +598,16 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
         const resumeStep = Math.max(0, Math.min(STEP_SLUGS.length - 1, (listing.currentStep || 1) - 1));
         setStep(resumeStep);
+        if (initialAddressView) {
+          setAddressView("pin");
+        }
         draftIdRef.current = listing.id;
         setDraftId(listing.id);
+        const viewQuery = (resumeStep === 5 && initialAddressView) ? "&view=pin" : "";
         window.history.replaceState(
           null,
           "",
-          `/host/listings/new?type=${hostingType}&step=${STEP_SLUGS[resumeStep]}&draftId=${listing.id}`,
+          `/host/listings/new?type=${hostingType}&step=${STEP_SLUGS[resumeStep]}${viewQuery}&draftId=${listing.id}`,
         );
         hydratedDraftRef.current = true;
       } catch (error: unknown) {
@@ -586,7 +621,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
     void loadDraft();
     return () => controller.abort();
-  }, [hostingType, urlDraftId]);
+  }, [hostingType, initialAddressView, initialDraftId]);
 
   // Every editable draft value is write-through autosaved. The queue preserves
   // ordering and explicit navigation waits for the latest database write.
@@ -771,6 +806,12 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
     }
   };
 
+  // Pin drag handler for "Is the pin in the right spot?"
+  // Keep the address fields aligned with the reverse-geocoded pin position.
+  const handlePinChange = (lat: number, lng: number, details?: LocationDetails) => {
+    handleLocationChange(lat, lng, details);
+  };
+
   // Location Autocomplete Selection
   const handleSelectSuggestion = (item: NominatimSuggestion) => {
     const a = item.address || {};
@@ -842,7 +883,13 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
 
       {/* Step 0: Overview */}
       {step === 0 && (
-        <StepOverview onGetStarted={() => goToStep(1)} isLoading={isSavingStep} />
+        <StepOverview
+          onGetStarted={() => goToStep(1)}
+          onBack={() => {
+            router.push("/host/listings?create=open");
+          }}
+          isLoading={isSavingStep}
+        />
       )}
 
       {/* Step 1: Intro */}
@@ -895,7 +942,8 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
       )}
 
       {/* Step 5: Address Form & Interactive Map */}
-      {step === 5 && (
+      {/* Step 5: Address Form & Pin Confirmation ("Is the pin in the right spot?") */}
+      {step === 5 && addressView === "form" && (
         <StepAddressConfirm
           country={country}
           setCountry={setCountry}
@@ -916,7 +964,51 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
           coords={coords}
           onLocationChange={handleLocationChange}
           onBack={() => goToStep(4)}
-          onNext={() => saveDraftAndGoToStep(6)}
+          onNext={() => {
+            const missing: string[] = [];
+            if (!streetAddress.trim()) missing.push("Enter a street address.");
+            if (!city.trim()) missing.push("Enter a city or town.");
+            if (!country.trim()) missing.push("Choose a country or region.");
+            if (missing.length > 0) {
+              setWizardError({ title: "Complete your address", messages: missing });
+              return;
+            }
+            setWizardError(null);
+            setHasConfirmedLocation(true);
+            setAddressView("pin");
+            updateUrlForStep(5, undefined, "pin");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {step === 5 && addressView === "pin" && (
+        <StepPinConfirm
+          streetAddress={streetAddress}
+          aptFloorBldg={aptFloorBldg}
+          district={district}
+          city={city}
+          postalCode={postalCode}
+          country={country}
+          coords={coords}
+          onPinChange={handlePinChange}
+          showSpecificLocation={showSpecificLocation}
+          setShowSpecificLocation={setShowSpecificLocation}
+          onEditAddress={() => {
+            setAddressView("form");
+            updateUrlForStep(5, undefined, "form");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onBack={() => {
+            setAddressView("form");
+            updateUrlForStep(5, undefined, "form");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onConfirm={async () => {
+            setHasConfirmedLocation(true);
+            await saveDraftAndGoToStep(6);
+          }}
           isLoading={isSavingStep}
         />
       )}
@@ -932,7 +1024,7 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
           setBeds={setBeds}
           bathrooms={bathrooms}
           setBathrooms={setBathrooms}
-          onBack={() => goToStep(5)}
+          onBack={() => goToStep(5, "pin")}
           onNext={() => saveDraftAndGoToStep(7)}
           isLoading={isSavingStep}
         />
@@ -963,6 +1055,14 @@ export function NewListingGetStarted({ initialHostingType }: { initialHostingTyp
         <StepPhotos
           photos={photos}
           onUpdatePhotos={setPhotos}
+          onUploadComplete={async (uploadedPhotos) => {
+            // Photo Review is only available after the existing five-photo
+            // requirement is met. Pass the freshly uploaded list through so
+            // the save cannot use stale React state.
+            if (uploadedPhotos.length >= 5) {
+              await saveDraftAndGoToStep(10, { photos: uploadedPhotos });
+            }
+          }}
           onBack={() => goToStep(8)}
           onNext={() => saveDraftAndGoToStep(10)}
           isLoading={isSavingStep}

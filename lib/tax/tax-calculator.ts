@@ -88,16 +88,29 @@ export class TaxCalculator {
       }
     }
 
-    // 4. Host Payout Calculation
+    // 4. Host Service Fee & Host Payout Calculation
+    // Host Service Fee is computed strictly on accommodation stay amount (nightlySubtotal - discounts).
+    // Note: Taxable base components strictly NEVER include Host Service Fee (calculated only on stay + eligible fees).
+    const hasExplicitHostFee =
+      params.hostServiceFee !== undefined ||
+      params.hostServiceFeePercentage !== undefined;
+
+    const hostServiceFeePercentage =
+      params.hostServiceFeePercentage ?? (hasExplicitHostFee ? 15 : 3);
+
+    const hostServiceFee =
+      params.hostServiceFee !== undefined
+        ? params.hostServiceFee
+        : Math.round(accommodationSubtotal * (hostServiceFeePercentage / 100));
+
     // Host receives accommodation subtotal + cleaning + pet fee + any taxes collected for the host
-    // Less platform service fee (e.g., standard 3% host commission on accommodation)
-    const platformServiceFee = Math.round(accommodationSubtotal * 0.03);
+    // Less host service fee
     const netHostPayout =
       accommodationSubtotal +
       cleaningFee +
       petFee +
       hostRemittedTaxTotal -
-      platformServiceFee;
+      hostServiceFee;
 
     const payoutBreakdown: HostPayoutBreakdown = {
       accommodationSubtotal,
@@ -105,20 +118,29 @@ export class TaxCalculator {
       petFee,
       taxesCollectedForHost: hostRemittedTaxTotal,
       taxesRemittedByPlatform: platformRemittedTaxTotal,
-      platformServiceFee,
+      platformServiceFee: hostServiceFee,
+      hostServiceFee,
       netHostPayout: Math.max(0, netHostPayout),
       currency,
     };
 
-    // 5. Total Guest Charge = Accommodation + Cleaning + Pet + Extra Guest + Taxes
+    // 5. Total Guest Charge:
+    // Guest Total = Accommodation + Cleaning + Pet + Extra Guest + Taxes (+ Host Service Fee when configured)
     const guestTotal =
-      accommodationSubtotal + cleaningFee + petFee + extraGuestFee + taxTotal;
+      accommodationSubtotal +
+      cleaningFee +
+      petFee +
+      extraGuestFee +
+      taxTotal +
+      (hasExplicitHostFee ? hostServiceFee : 0);
 
     return {
       taxes: calculatedTaxes,
       taxTotal,
       platformRemittedTaxTotal,
       hostRemittedTaxTotal,
+      hostServiceFee,
+      hostServiceFeePercentage,
       guestTotal,
       payoutBreakdown,
       currency,

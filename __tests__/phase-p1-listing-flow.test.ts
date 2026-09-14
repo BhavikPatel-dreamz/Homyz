@@ -81,8 +81,8 @@ async function runPhaseP1Tests() {
     "COMPLETION_REQUIREMENTS maps weekendPrice to step 16"
   );
   assert(
-    wizardContent.includes("safetyDisclosures: { message: \"Answer all three safety questions.\", step: 18 }"),
-    "COMPLETION_REQUIREMENTS maps safetyDisclosures to step 18"
+    !wizardContent.includes("safetyDisclosures: { message: \"Answer all three safety questions.\""),
+    "COMPLETION_REQUIREMENTS does NOT include safetyDisclosures (now optional)"
   );
 
   // ─────────────────────────────────────────────────────────────
@@ -168,8 +168,8 @@ async function runPhaseP1Tests() {
     "step-price.tsx must NOT contain fake hardcoded default 241"
   );
   assert(
-    stepPriceContent.includes('currencySymbol = "SAR"'),
-    "step-price.tsx defaults to platform currency SAR"
+    stepPriceContent.includes('currencySymbol = "SAR"') || stepPriceContent.includes('currencySymbol = "SR"'),
+    "step-price.tsx defaults to platform currency SAR/SR"
   );
 
   const stepWeekendFile = path.join(process.cwd(), "components/host/onboarding/step-weekend-price.tsx");

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeSlug, isReservedSlug } from "@/lib/utils/slug";
+import { PHOTO_ROOM_TYPES } from "@/lib/listing/photo-room-assignments";
 
 export const HOSTING_TYPES = ["HOME", "EXPERIENCE", "SERVICE"] as const;
 export const LISTING_TYPES = ["ENTIRE_PLACE", "ROOM", "SHARED_ROOM"] as const;
@@ -56,8 +57,10 @@ const discountsSchema = z.preprocess(
   z.object({
     weekly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     monthly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
-    last_minute: z.boolean().optional(),
-    new_listing: z.boolean().optional(),
+    last_minute: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    new_listing: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    early_bird: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    custom_promotion: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     orgStays: orgStaysDiscountSchema.optional(),
   }).passthrough().optional().nullable(),
 );
@@ -78,6 +81,16 @@ const listingPhotoUrl = z.string().trim().refine(
   },
   { message: "Photo must be an uploaded listing-media URL." },
 );
+
+const photoRoomAssignmentSchema = z.object({
+  url: listingPhotoUrl,
+  roomType: z.enum(PHOTO_ROOM_TYPES).nullable().optional(),
+  roomCategory: z.string().trim().min(1).max(120).nullable().optional(),
+  categoryId: z.enum(PHOTO_ROOM_TYPES).nullable().optional(),
+  roomInstanceId: z.string().trim().min(1).max(120).nullable().optional(),
+  roomLabel: z.string().trim().min(1).max(120).nullable().optional(),
+  sortOrder: z.number().int().min(0).max(1000).nullable().optional(),
+}).passthrough();
 
 const customSlugSchema = z.preprocess(
   (value) => {
@@ -206,6 +219,7 @@ const listingFields = {
 
   // Photos & Highlights & Features
   photos: z.array(listingPhotoUrl).max(100).optional().default([]),
+  photoRoomAssignments: z.array(photoRoomAssignmentSchema).max(100).optional().nullable(),
   highlights: z.array(z.string().trim().min(1).max(80)).max(3).optional().default([]),
   amenities: z.array(z.string().trim().min(1).max(80)).max(200).optional().default([]),
   safetyDisclosures: z.array(z.string().trim().min(1).max(500)).max(50).optional().default([]),
@@ -266,8 +280,11 @@ const listingFields = {
   blockedDates: z.array(z.string().date()).max(730).optional().default([]),
   cleaningFee: z.number().int().min(0).optional().default(0),
   securityDeposit: z.number().int().min(0).optional().default(0),
+  weekdayBasePrice: z.number().int().min(0).optional().nullable(),
   weekendPrice: z.number().int().min(0).optional().nullable(),
   weekendPremium: z.number().int().min(0).max(100).optional().nullable(),
+  customPrices: z.record(z.string(), z.number().int().min(0)).optional().nullable(),
+  extraGuestFee: z.number().int().min(0).optional().default(0),
   discounts: discountsSchema,
   currentStep: z.number().int().min(1).max(MAX_ONBOARDING_STEP).optional().default(1),
   customSlug: customSlugSchema,

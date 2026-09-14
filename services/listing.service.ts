@@ -24,6 +24,7 @@ import {
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
+import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -50,7 +51,7 @@ const REAPPROVAL_FIELDS = new Set<keyof UpdateListingInput>([
   "listingFloor", "totalFloors", "yearBuilt", "yearRenovated", "privateEntrance",
   "elevatorAvailable", "stairsRequired", "rooms", "fullBathrooms", "halfBathrooms",
   "privateBathrooms", "sharedBathrooms", "parkingAvailable", "parkingType",
-  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "highlights",
+  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "photoRoomAssignments", "highlights",
   "amenities", "safetyDisclosures", "safetyEquipment", "safetyHazards",
   "accessibilityFeatures", "accessibilityDetails", "views", "locationFeatures",
   "houseRules", "petsAllowed", "maxPets", "petFee", "petRestrictions", "dogsAllowed",
@@ -128,6 +129,7 @@ function getPublishReadiness(listing: {
   beds: number;
   bathrooms: number;
   price: number;
+  weekdayBasePrice?: number | null;
   weekendPrice: number | null;
   photos: string[];
   title: string;
@@ -143,26 +145,16 @@ function getPublishReadiness(listing: {
   if (listing.guests < 1 || listing.bedrooms < 0 || listing.beds < 1 || listing.bathrooms < 0) {
     missing.push("capacity");
   }
-  if (listing.price <= 0) missing.push("weekdayPrice");
+  const effectiveWeekday = (listing as any).weekdayBasePrice ?? listing.price;
+  if (!effectiveWeekday || effectiveWeekday <= 0) missing.push("weekdayPrice");
   if (!listing.weekendPrice || listing.weekendPrice <= 0) missing.push("weekendPrice");
   if (listing.photos.length < 5) missing.push("photos");
   if (listing.title.trim().length < 3 || listing.title.length > 50) missing.push("title");
   if (listing.description.trim().length < 10 || listing.description.length > 5000) missing.push("description");
   if (listing.highlights.length > 3) missing.push("highlights");
 
-  const safetyAnswers = new Map(
-    listing.safetyDisclosures.map((value) => {
-      const [key, answer] = value.split(":");
-      return [key, answer];
-    }),
-  );
-  if (
-    REQUIRED_SAFETY_RESPONSES.some(
-      (key) => safetyAnswers.get(key) !== "YES" && safetyAnswers.get(key) !== "NO",
-    )
-  ) {
-    missing.push("safetyDisclosures");
-  }
+  // Safety disclosures are optional - no validation required
+  // Hosts can choose to answer or skip them entirely
 
   return { publishable: missing.length === 0, missing };
 }
@@ -522,7 +514,8 @@ async function create(
       title: input.title || "Draft Listing",
       description: input.description || "",
       descriptionSections: input.descriptionSections ? JSON.parse(JSON.stringify(input.descriptionSections)) : null,
-      price: input.price ?? 10000,
+      price: (input as any).weekdayBasePrice ?? input.price ?? 10000,
+      weekdayBasePrice: (input as any).weekdayBasePrice ?? input.price ?? 10000,
       smartPricing: input.smartPricing ?? false,
       smartPricingMinPrice: input.smartPricingMinPrice ?? null,
       smartPricingMaxPrice: input.smartPricingMaxPrice ?? null,
@@ -570,6 +563,9 @@ async function create(
       guestAccess: input.guestAccess || [],
       languages: input.languages || [],
       photos: input.photos || [],
+      photoRoomAssignments: input.photoRoomAssignments
+        ? JSON.parse(JSON.stringify(normalizePhotoRoomAssignments(input.photoRoomAssignments, input.photos || [])))
+        : null,
       highlights: input.highlights || [],
       amenities: input.amenities ? normalizeAmenities(input.amenities) : [],
       safetyDisclosures: input.safetyDisclosures || [],
@@ -625,6 +621,8 @@ async function create(
       securityDeposit: input.securityDeposit ?? 0,
       weekendPrice: input.weekendPrice ?? null,
       weekendPremium: input.weekendPremium ?? null,
+      customPrices: (input as any).customPrices ? JSON.parse(JSON.stringify((input as any).customPrices)) : null,
+      extraGuestFee: (input as any).extraGuestFee ?? 0,
       discounts: input.discounts ? JSON.parse(JSON.stringify(input.discounts)) : null,
       currentStep: input.currentStep ?? 1,
       customSlug: typeof input.customSlug === "string" ? normalizeSlug(input.customSlug) : null,
@@ -683,6 +681,17 @@ async function update(
   if (dataToUpdate.accessibilityDetails !== undefined) {
     dataToUpdate.accessibilityDetails = dataToUpdate.accessibilityDetails ? JSON.parse(JSON.stringify(dataToUpdate.accessibilityDetails)) : null;
   }
+  if (dataToUpdate.photoRoomAssignments !== undefined) {
+    const photosForAssignments = Array.isArray(dataToUpdate.photos) ? dataToUpdate.photos : existing.photos;
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(dataToUpdate.photoRoomAssignments, photosForAssignments),
+    ));
+  } else if (Array.isArray(dataToUpdate.photos)) {
+    // Removing or replacing a gallery photo also removes its stale room metadata.
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(existing.photoRoomAssignments, dataToUpdate.photos),
+    ));
+  }
   if (dataToUpdate.smartPricingMinPrice !== undefined) {
     dataToUpdate.smartPricingMinPrice = dataToUpdate.smartPricingMinPrice ?? null;
   }
@@ -710,6 +719,19 @@ async function update(
   if (dataToUpdate.discounts !== undefined) {
     dataToUpdate.discounts = dataToUpdate.discounts ? JSON.parse(JSON.stringify(dataToUpdate.discounts)) : null;
   }
+  if ((dataToUpdate as any).weekdayBasePrice !== undefined && dataToUpdate.price === undefined) {
+    dataToUpdate.price = (dataToUpdate as any).weekdayBasePrice;
+  } else if (dataToUpdate.price !== undefined && (dataToUpdate as any).weekdayBasePrice === undefined) {
+    (dataToUpdate as any).weekdayBasePrice = dataToUpdate.price;
+  }
+  if ((dataToUpdate as any).customPrices !== undefined) {
+    (dataToUpdate as any).customPrices = (dataToUpdate as any).customPrices
+      ? JSON.parse(JSON.stringify((dataToUpdate as any).customPrices))
+      : null;
+  }
+  if ((dataToUpdate as any).extraGuestFee !== undefined) {
+    (dataToUpdate as any).extraGuestFee = Math.max(0, Math.round(Number((dataToUpdate as any).extraGuestFee)));
+  }
   if (dataToUpdate.customSlug !== undefined) {
     dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
   }
@@ -718,6 +740,7 @@ async function update(
   // The listing is held for the same Admin review that governs initial launch.
   const reapprovalRequired = actor.role !== Role.ADMIN
     && existing.status === ListingStatus.ACTIVE
+    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
     && requiresReapproval(dataToUpdate);
   if (reapprovalRequired) {
     dataToUpdate.status = ListingStatus.PENDING_REVIEW;
@@ -875,8 +898,53 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
 }
 
 async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
-  // Legacy callers may still hit a "publish" endpoint. Never let that bypass
-  // moderation: it now performs the safe submit-for-review transition.
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  // Saudi Arabia listings do not require admin approval; host can publish directly.
+  if (isSaudiArabia(existing.country)) {
+    const readiness = getPublishReadiness(existing);
+    if (!readiness.publishable) {
+      throw AppError.badRequest(
+        `Cannot publish listing. Complete: ${readiness.missing.join(", ")}.`,
+        readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
+      );
+    }
+
+    const updated = await prisma.listing.update({
+      where: { id },
+      data: {
+        status: ListingStatus.ACTIVE,
+        published: true,
+        isPaused: false,
+        approvedAt: existing.approvedAt ?? new Date(),
+      },
+    });
+
+    await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "LISTING_PUBLISHED",
+      resourceType: "Listing",
+      resourceId: id,
+      description: `Host directly published Saudi listing "${updated.title}" without admin approval`,
+      metadata: {
+        country: existing.country,
+        bypassAdminApproval: true,
+      },
+    });
+
+    return toListingDTO(updated);
+  }
+
+  // International listings without direct publishing rights submit for admin review
   return submitForReview(actor, id);
 }
 

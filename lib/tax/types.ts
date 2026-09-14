@@ -127,7 +127,8 @@ export interface HostPayoutBreakdown {
   petFee: number;
   taxesCollectedForHost: number; // Host-remitted taxes collected from guest
   taxesRemittedByPlatform: number; // Platform-remitted taxes
-  platformServiceFee: number; // Platform commission
+  platformServiceFee: number; // Platform commission / host service fee
+  hostServiceFee?: number; // Explicit host service fee amount (cents)
   netHostPayout: number; // Final net payout to host
   currency: string;
 }
@@ -137,7 +138,9 @@ export interface TaxCalculationResult {
   taxTotal: number; // Total taxes (cents)
   platformRemittedTaxTotal: number; // Platform remittance (cents)
   hostRemittedTaxTotal: number; // Host remittance (cents)
-  guestTotal: number; // Total guest pays = Subtotal + Cleaning + Taxes (cents)
+  hostServiceFee?: number; // Host service fee (cents)
+  hostServiceFeePercentage?: number; // Host service fee percentage
+  guestTotal: number; // Total guest pays = Subtotal + Cleaning + Taxes (+ Host Service Fee if applicable) (cents)
   payoutBreakdown: HostPayoutBreakdown;
   currency: string;
 }
@@ -153,6 +156,8 @@ export interface TaxCalculationParams {
   currency?: string;
   rules?: TaxRuleDTO[];
   hostTaxes?: ListingTaxDTO[];
+  hostServiceFeePercentage?: number;
+  hostServiceFee?: number;
 }
 
 export interface ReservationTaxReportItem {

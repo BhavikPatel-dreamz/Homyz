@@ -43,6 +43,10 @@ export const CACHE_KEYS = {
   GUEST_ANALYTICS: () => `${NS}:admin:guest:analytics`,
   HOST_OPS_METRICS: (preset: string) => `${NS}:host:ops:${preset}`,
   HOST_COMPLIANCE_METRICS: () => `${NS}:host:compliance:metrics`,
+
+  /** App Settings */
+  APP_SETTINGS_HOST_SERVICE_FEE: () => `${NS}:app_settings:host_service_fee`,
+  APP_SETTINGS_BY_CATEGORY: (category: string) => `${NS}:app_settings:cat:${category}`,
 } as const;
 
 // Backward-compatible alias for existing service files using keys.
