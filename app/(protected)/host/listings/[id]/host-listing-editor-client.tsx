@@ -40,11 +40,30 @@ import {
 import { normalizeSlug } from "@/lib/utils/slug";
 import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
 
-function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: "weekly" | "monthly") {
+type ConfigurableDiscount = "weekly" | "monthly" | "last_minute";
+
+const DEFAULT_DISCOUNT_PERCENTAGES: Record<ConfigurableDiscount, number> = {
+  weekly: 10,
+  monthly: 25,
+  last_minute: 15,
+};
+
+function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
   const entry = discounts?.[period];
-  if (!entry || typeof entry !== "object") return 0;
+  if (entry === true) return DEFAULT_DISCOUNT_PERCENTAGES[period];
+  if (!entry || typeof entry !== "object" || (entry as Record<string, unknown>).enabled === false) return 0;
   const value = (entry as Record<string, unknown>).percentage;
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return typeof value === "number" && Number.isFinite(value) ? value : DEFAULT_DISCOUNT_PERCENTAGES[period];
+}
+
+function isDiscountEnabled(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
+  const entry = discounts?.[period];
+  return entry === true || (
+    typeof entry === "object" &&
+    entry !== null &&
+    !Array.isArray(entry) &&
+    (entry as Record<string, unknown>).enabled !== false
+  );
 }
 
 export interface HostListingData {
@@ -451,6 +470,8 @@ export function HostListingEditorClient({
   }, [editPrice, weekendPremium]);
   const [weeklyDiscount, setWeeklyDiscount] = useState(() => discountPercentage(listing.discounts, "weekly"));
   const [monthlyDiscount, setMonthlyDiscount] = useState(() => discountPercentage(listing.discounts, "monthly"));
+  const [lastMinuteDiscount, setLastMinuteDiscount] = useState(() => discountPercentage(listing.discounts, "last_minute"));
+  const [lastMinuteEnabled, setLastMinuteEnabled] = useState(() => isDiscountEnabled(listing.discounts, "last_minute"));
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
@@ -747,6 +768,10 @@ export function HostListingEditorClient({
           monthly: {
             enabled: Number(monthlyDiscount) > 0,
             percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
+          },
+          last_minute: {
+            enabled: lastMinuteEnabled,
+            percentage: Math.max(1, Math.min(100, Number(lastMinuteDiscount) || 15)),
           },
         } : {}),
       };
@@ -1397,6 +1422,10 @@ export function HostListingEditorClient({
             setWeeklyDiscount={setWeeklyDiscount}
             monthlyDiscount={monthlyDiscount}
             setMonthlyDiscount={setMonthlyDiscount}
+            lastMinuteDiscount={lastMinuteDiscount}
+            setLastMinuteDiscount={setLastMinuteDiscount}
+            lastMinuteEnabled={lastMinuteEnabled}
+            setLastMinuteEnabled={setLastMinuteEnabled}
             minNights={minNights}
             setMinNights={setMinNights}
             maxNights={maxNights}

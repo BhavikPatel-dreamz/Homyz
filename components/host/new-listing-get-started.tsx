@@ -50,6 +50,12 @@ type WizardError = {
   fixStep?: number;
 };
 
+function isDiscountEnabled(value: unknown): boolean {
+  if (value === true) return true;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return (value as { enabled?: unknown }).enabled !== false;
+}
+
 const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }> = {
   propertyType: { message: "Choose the type of place you are hosting.", step: 2 },
   listingType: { message: "Choose what guests will have.", step: 3 },
@@ -257,7 +263,7 @@ export function NewListingGetStarted({
     updateUrlForStep(targetStep, undefined, view);
   };
 
-  const buildDraftPayload = useCallback((currentStep: number) => ({
+  const buildDraftPayload = useCallback((currentStep: number, overrides?: { photos?: string[] }) => ({
     title: title.trim() || "Draft Listing",
     description: description.trim(),
     // The wizard displays whole currency units; the API persists minor units.
@@ -282,14 +288,18 @@ export function NewListingGetStarted({
     beds,
     bathrooms,
     amenities: selectedAmenities,
-    photos,
+    photos: overrides?.photos ?? photos,
     highlights: selectedHighlights,
-    discounts: Object.fromEntries(
-      ["new_listing", "last_minute", "weekly", "monthly"].map((discount) => [
-        discount,
-        selectedDiscounts.includes(discount),
-      ]),
-    ),
+    discounts: {
+      new_listing: selectedDiscounts.includes("new_listing"),
+      // Keep the documented 15% alongside the enabled state so this value is
+      // restored exactly when a draft is resumed or edited.
+      last_minute: selectedDiscounts.includes("last_minute")
+        ? { enabled: true, percentage: 15 }
+        : false,
+      weekly: selectedDiscounts.includes("weekly"),
+      monthly: selectedDiscounts.includes("monthly"),
+    },
     safetyDisclosures: selectedSafety,
     published: false,
     currentStep: currentStep + 1,
@@ -324,7 +334,7 @@ export function NewListingGetStarted({
     weekendPrice,
   ]);
 
-  const validateCurrentStep = (): string[] | null => {
+  const validateCurrentStep = (photosForValidation = photos): string[] | null => {
     switch (step) {
       case 2:
         return selectedCategory ? null : ["Choose the type of place you want to host."];
@@ -348,7 +358,7 @@ export function NewListingGetStarted({
         return null;
       case 9:
       case 10:
-        return photos.length >= 5 ? null : ["Upload at least 5 successful property photos."];
+        return photosForValidation.length >= 5 ? null : ["Upload at least 5 successful property photos."];
       case 11:
         return title.trim().length >= 3 && title.trim().length <= 50
           ? null
@@ -390,8 +400,11 @@ export function NewListingGetStarted({
   }, []);
 
   // Persists a draft before navigation; the wizard advances cleanly upon success.
-  const saveDraftAndGoToStep = async (nextStepIndex: number): Promise<string | null> => {
-    const validationErrors = validateCurrentStep();
+  const saveDraftAndGoToStep = async (
+    nextStepIndex: number,
+    overrides?: { photos?: string[] },
+  ): Promise<string | null> => {
+    const validationErrors = validateCurrentStep(overrides?.photos);
     if (validationErrors) {
       setWizardError({ title: "Complete this step", messages: validationErrors });
       return null;
@@ -399,7 +412,7 @@ export function NewListingGetStarted({
 
     setIsSavingStep(true);
     try {
-      const payload = buildDraftPayload(nextStepIndex);
+      const payload = buildDraftPayload(nextStepIndex, overrides);
       let activeDraftId = draftIdRef.current || draftId;
 
       if (activeDraftId) {
@@ -551,7 +564,7 @@ export function NewListingGetStarted({
         const restoredDiscounts =
           discountValues && typeof discountValues === "object" && !Array.isArray(discountValues)
             ? Object.entries(discountValues)
-                .filter(([, enabled]) => enabled === true)
+                .filter(([, value]) => isDiscountEnabled(value))
                 .map(([discount]) => discount)
             : ["new_listing"];
 
@@ -1042,6 +1055,14 @@ export function NewListingGetStarted({
         <StepPhotos
           photos={photos}
           onUpdatePhotos={setPhotos}
+          onUploadComplete={async (uploadedPhotos) => {
+            // Photo Review is only available after the existing five-photo
+            // requirement is met. Pass the freshly uploaded list through so
+            // the save cannot use stale React state.
+            if (uploadedPhotos.length >= 5) {
+              await saveDraftAndGoToStep(10, { photos: uploadedPhotos });
+            }
+          }}
           onBack={() => goToStep(8)}
           onNext={() => saveDraftAndGoToStep(10)}
           isLoading={isSavingStep}

@@ -14,6 +14,7 @@ const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "
 interface StepPhotosProps {
   photos: string[];
   onUpdatePhotos: (photos: string[]) => void;
+  onUploadComplete: (photos: string[]) => Promise<void>;
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
@@ -22,6 +23,7 @@ interface StepPhotosProps {
 export function StepPhotos({
   photos,
   onUpdatePhotos,
+  onUploadComplete,
   onBack,
   onNext,
   isLoading = false,
@@ -92,7 +94,14 @@ export function StepPhotos({
           return String((result as { url: string }).url);
         }),
       );
-      onUpdatePhotos([...photos, ...uploadedUrls]);
+      const nextPhotos = [...photos, ...uploadedUrls];
+      onUpdatePhotos(nextPhotos);
+
+      // Keep the modal open and visibly loading while the draft is persisted
+      // and the wizard moves to Photo Review. This avoids flashing the photo
+      // upload page between a successful upload and the route transition.
+      await onUploadComplete(nextPhotos);
+
       filePreviews.forEach((preview) => URL.revokeObjectURL(preview));
       setSelectedFiles([]);
       setFilePreviews([]);

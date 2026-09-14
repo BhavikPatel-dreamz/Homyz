@@ -231,7 +231,7 @@ export function resolveSingleDiscount(opts: {
       daysThreshold = (lastMinuteEntry as any).daysBefore;
     }
     if (daysUntilCheckIn <= daysThreshold) {
-      const pct = parseDiscountEntry(lastMinuteEntry, 10);
+      const pct = parseDiscountEntry(lastMinuteEntry, 15);
       if (pct !== null) {
         candidates.push({
           key: "last_minute",

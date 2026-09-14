@@ -37,6 +37,10 @@ interface PricingAndBookingViewsProps {
   setWeeklyDiscount: (val: number) => void;
   monthlyDiscount: number;
   setMonthlyDiscount: (val: number) => void;
+  lastMinuteDiscount: number;
+  setLastMinuteDiscount: (val: number) => void;
+  lastMinuteEnabled: boolean;
+  setLastMinuteEnabled: (val: boolean) => void;
   minNights: number;
   setMinNights: (val: number) => void;
   maxNights: number;
@@ -95,6 +99,10 @@ export function PricingAndBookingViews({
   setWeeklyDiscount,
   monthlyDiscount,
   setMonthlyDiscount,
+  lastMinuteDiscount,
+  setLastMinuteDiscount,
+  lastMinuteEnabled,
+  setLastMinuteEnabled,
   minNights,
   setMinNights,
   maxNights,
@@ -300,6 +308,42 @@ export function PricingAndBookingViews({
                 <span className="text-xs text-zinc-400 font-mono">
                   monthly average is SAR {monthlyDiscount ? Math.round((editPrice || 100) * 30 * (1 - monthlyDiscount / 100)) : 2700}
                 </span>
+              </div>
+
+              {/* Last-minute discount card */}
+              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between gap-4 shadow-2xs">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
+                    LAST-MINUTE - WITHIN 2 DAYS
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={lastMinuteDiscount || ""}
+                      disabled={!lastMinuteEnabled}
+                      onChange={(e) => setLastMinuteDiscount(Number(e.target.value))}
+                      placeholder="15"
+                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
+                    />
+                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={lastMinuteEnabled}
+                  aria-label="Toggle last-minute discount"
+                  onClick={() => {
+                    const nextEnabled = !lastMinuteEnabled;
+                    setLastMinuteEnabled(nextEnabled);
+                    if (nextEnabled && lastMinuteDiscount <= 0) setLastMinuteDiscount(15);
+                  }}
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                >
+                  <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                </button>
               </div>
             </div>
               </>
