@@ -85,6 +85,7 @@ const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
 
 interface EditorSidebarProps {
   editorTab: "space" | "arrival" | "preferences";
+  setEditorTab: (tab: "space" | "arrival" | "preferences") => void;
   activeSection: string;
   setActiveSection: (section: any) => void;
   editTitle: string;
@@ -159,6 +160,7 @@ interface EditorSidebarProps {
 
 export function EditorSidebar({
   editorTab,
+  setEditorTab,
   activeSection,
   setActiveSection,
   isLoading = false,
@@ -411,7 +413,10 @@ export function EditorSidebar({
           <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5">
             <button
               type="button"
-              onClick={() => setActiveSection("description")}
+              onClick={() => {
+                setEditorTab("space");
+                setActiveSection("description");
+              }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -422,7 +427,10 @@ export function EditorSidebar({
 
             <button
               type="button"
-              onClick={() => setActiveSection("check-in-out")}
+              onClick={() => {
+                setEditorTab("arrival");
+                setActiveSection("check-in-out");
+              }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -435,7 +443,10 @@ export function EditorSidebar({
           <button
             type="button"
             aria-label="Listing preferences"
-            onClick={() => setActiveSection("listing-status")}
+            onClick={() => {
+              setEditorTab("preferences");
+              setActiveSection("listing-status");
+            }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F]"
@@ -986,7 +997,7 @@ export function EditorSidebar({
                 {/* 9. Location */}
                 <div
                   onClick={() => setActiveSection("location")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "accessibility"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "location"
                     ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}

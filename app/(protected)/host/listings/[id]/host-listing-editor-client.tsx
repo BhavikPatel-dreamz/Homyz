@@ -533,7 +533,7 @@ export function HostListingEditorClient({
   const [isEditingAmenities, setIsEditingAmenities] = useState(false);
 
   // Location Accordion & Sub-sections state
-  const [openLocationAccordion, setOpenLocationAccordion] = useState<string | null>("address");
+  const [openLocationAccordion, setOpenLocationAccordion] = useState<string | null>("sharing");
   const [addressPrivacyForCancellation, setAddressPrivacyForCancellation] = useState(false);
   const [locationFeatures, setLocationFeatures] = useState<string[]>(listing.locationFeatures || []);
   const [coHosts, setCoHosts] = useState<NonNullable<HostListingData["coHosts"]>>(listing.coHosts || []);
@@ -1767,6 +1767,7 @@ export function HostListingEditorClient({
 
             <HostAndLocationViews
               activeSection={activeSection}
+              onBack={() => setActiveSection("accessibility")}
               isSaving={isSaving}
               isLoading={isLoading}
               handleSaveSection={handleSaveSection}
@@ -1792,6 +1793,8 @@ export function HostListingEditorClient({
               setLocationIsResolving={setLocationIsResolving}
               showExactLocation={showExactLocation}
               setShowExactLocation={setShowExactLocation}
+              addressPrivacyForCancellation={addressPrivacyForCancellation}
+              setAddressPrivacyForCancellation={setAddressPrivacyForCancellation}
               neighborhoodDescription={neighborhoodDescription}
               setNeighborhoodDescription={setNeighborhoodDescription}
               gettingAround={gettingAround}
@@ -1985,6 +1988,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         <EditorSidebar
           editorTab={editorTab}
+          setEditorTab={setEditorTab}
           activeSection={activeSection}
           setActiveSection={setMobileEditorSection}
           isLoading={isLoading}

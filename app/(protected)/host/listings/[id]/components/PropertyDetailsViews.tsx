@@ -372,7 +372,7 @@ export function PropertyDetailsViews({
           ) : (
             <div className="space-y-3 pt-1">
               {/* 1. Listing description */}
-                <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300">
+              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300">
                 <div
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
@@ -968,7 +968,7 @@ export function PropertyDetailsViews({
         <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full space-y-6 animate-in fade-in pb-10 font-sans"}>
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
-            <div className="flex items-start gap-2 max-w-[491px]">
+            <div className="flex items-start gap-6 max-w-[491px]">
               <BackButton onClick={() => setActiveSection("propertyType")} />
               <div className="space-y-1.5">
                 <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F]">{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
@@ -987,95 +987,97 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <div className="max-w-[491px] space-y-6 pt-10">
+            <div className="space-y-6 pt-10">
               {/* Section 1: Guest Capacity Counter */}
-              <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] bg-white p-4"}`}>
-                {activeSection === "guests" && (
-                  <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272]">
-                    How many guests can fit comfortably in your space?
-                  </p>
-                )}
-                <div className={`flex items-center ${activeSection === "guests" ? "gap-12" : "justify-between"}`}>
-                  {activeSection !== "guests" && (
-                    <div>
-                      <h3 className="text-base font-medium text-[#1F1F1F]">Maximum guests</h3>
-                      <p className="text-[14px] font-normal text-[#727272]">Total number of guests allowed to stay</p>
-                    </div>
+              <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
+                <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] bg-white p-4"}`}>
+                  {activeSection === "guests" && (
+                    <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272]">
+                      How many guests can fit comfortably in your space?
+                    </p>
                   )}
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-                      className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
-                    >
-                      <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain" />
-                    </button>
-                    <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] text-[42px]" : "w-8 text-center text-lg"} font-normal text-[#1F1F1F]`}>{editGuests}</span>
-                    <button
-                      type="button"
-                      onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
-                      className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
-                    >
-                      +
-                    </button>
+                  <div className={`flex items-center ${activeSection === "guests" ? "gap-12" : "justify-between"}`}>
+                    {activeSection !== "guests" && (
+                      <div>
+                        <h3 className="text-base font-medium text-[#1F1F1F]">Maximum guests</h3>
+                        <p className="text-[14px] font-normal text-[#727272]">Total number of guests allowed to stay</p>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
+                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
+                      >
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain" />
+                      </button>
+                      <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] text-[42px]" : "w-5 text-center text-base"} font-normal text-[#1F1F1F]`}>{editGuests}</span>
+                      <button
+                        type="button"
+                        onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
+                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Quick Counters: Bedrooms & Beds */}
+                  {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] pt-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-medium text-[#1F1F1F] block">Bedrooms</span>
+                        <span className="text-[14px] font-normal text-[#727272]">Total bedroom spaces</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain" />
+                        </button>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBedrooms}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-medium text-[#1F1F1F] block">Beds</span>
+                        <span className="text-[14px] font-normal text-[#727272]">Total beds available</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain" />
+                        </button>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBeds}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>}
                 </div>
-
-                {/* Quick Counters: Bedrooms & Beds */}
-                {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] pt-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-base font-medium text-[#1F1F1F] block">Bedrooms</span>
-                      <span className="text-[14px] font-normal text-[#727272]">Total bedroom spaces</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
-                        className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
-                      >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain" />
-                      </button>
-                      <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBedrooms}</span>
-                      <button
-                        type="button"
-                        onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
-                        className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-base font-medium text-[#1F1F1F] block">Beds</span>
-                      <span className="text-[14px] font-normal text-[#727272]">Total beds available</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
-                        className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
-                      >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain" />
-                      </button>
-                      <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBeds}</span>
-                      <button
-                        type="button"
-                        onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
-                        className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>}
               </div>
 
               {/* Section 2: Room-Level Sleeping Arrangements */}
-              {activeSection !== "guests" && <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
+                <div className="flex items-center justify-between gap-6">
                   <div>
                     <h3 className="text-base font-medium text-[#1F1F1F]">Room-by-room sleeping arrangements</h3>
                     <p className="text-[14px] font-normal text-[#727272]">Specify beds for each bedroom or common space</p>
@@ -1096,7 +1098,7 @@ export function PropertyDetailsViews({
                       const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                       setEditBeds(Math.max(1, totalBeds));
                     }}
-                    className="rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white cursor-pointer transition-colors">
+                    className="rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white cursor-pointer transition-colors whitespace-nowrap">
                     + Add room
                   </button>
                 </div>
@@ -1159,7 +1161,7 @@ export function PropertyDetailsViews({
                         </div>
 
                         {/* Beds in this room */}
-                        <div className="space-y-2 pl-6 pt-1">
+                        <div className="space-y-2 pt-1">
                           {room.beds.map((bed, bedIdx) => (
                             <div key={bedIdx} className="flex items-center justify-between text-base py-2 border-b border-[#DDDDDE] last:border-0">
                               <span className="text-[#1F1F1F] font-normal capitalize">
@@ -1243,7 +1245,7 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Section 3: Bathroom Breakdown */}
-              {activeSection !== "guests" && <div className="rounded-md border border-[#DDDDDE] bg-white p-4 space-y-4">
+              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] bg-white p-4 space-y-4">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Bathroom breakdown</h3>
                   <p className="text-[14px] font-normal text-[#727272]">Specify full and half bathrooms available to guests</p>
@@ -1326,9 +1328,9 @@ export function PropertyDetailsViews({
                           setPrivateBathrooms?.(fullBathrooms || 1);
                           setSharedBathrooms?.(0);
                         }}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) === 0
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) === 0
                           ? "bg-[#FCDF9C] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
-                            : "bg-[#F3F4F5] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
+                          : "bg-[#F3F4F5] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
                           }`}
                       >
                         Private
@@ -1489,13 +1491,13 @@ export function PropertyDetailsViews({
                   {activeSection === "add-amenities" || isEditingAmenityList ? (isSaving ? "Saving..." : "Done") : "Edit"}
                 </button>
                 {activeSection === "amenities" && !isEditingAmenityList && <button
-                    type="button"
-                    onClick={() => setActiveSection("add-amenities")}
-                    className="size-12 rounded-full bg-[#F3F4F5] flex items-center justify-center text-[#1F1F1F] hover:text-white hover:bg-[#1f1f1f] text-2xl font-normal cursor-pointer transition-all"
-                    aria-label="Add amenities"
-                  >
-                    +
-                  </button>}
+                  type="button"
+                  onClick={() => setActiveSection("add-amenities")}
+                  className="size-12 rounded-full bg-[#F3F4F5] flex items-center justify-center text-[#1F1F1F] hover:text-white hover:bg-[#1f1f1f] text-2xl font-normal cursor-pointer transition-all"
+                  aria-label="Add amenities"
+                >
+                  +
+                </button>}
               </div>
             </div>
 
@@ -1525,7 +1527,7 @@ export function PropertyDetailsViews({
                 </div>
 
                 {/* Category Filter Chips */}
-                  <div className="flex flex-wrap gap-x-1 gap-y-2 pt-2">
+                <div className="flex flex-wrap gap-x-1 gap-y-2 pt-2">
                   {AMENITY_FILTER_CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
@@ -1554,40 +1556,40 @@ export function PropertyDetailsViews({
                       </div>
                     ) : (
                       filteredCatalog.map((item) => {
-                      const isSelected = normalizedSelectedIds.has(item.id);
-                      const iconSource = AMENITY_ICON_SOURCES[item.id];
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => toggleAmenity(item.id)}
-                          className="flex items-center justify-between gap-3 py-3 cursor-pointer group select-none transition-all"
-                        >
-                          <div className="flex items-center sm:gap-6 gap-4 min-w-0 pr-4">
-                            <div className="size-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-base shrink-0 group-hover:border-[#727272]">
-                              {iconSource ? (
-                                <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain" />
-                              ) : (
-                                item.icon || "✨"
-                              )}
+                        const isSelected = normalizedSelectedIds.has(item.id);
+                        const iconSource = AMENITY_ICON_SOURCES[item.id];
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => toggleAmenity(item.id)}
+                            className="flex items-center justify-between gap-3 py-3 cursor-pointer group select-none transition-all"
+                          >
+                            <div className="flex items-center sm:gap-6 gap-4 min-w-0 pr-4">
+                              <div className="size-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-base shrink-0 group-hover:border-[#727272]">
+                                {iconSource ? (
+                                  <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain" />
+                                ) : (
+                                  item.icon || "✨"
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-medium text-base text-[#1F1F1F] block">
+                                  {item.label}
+                                </span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <span className="font-medium text-base text-[#1F1F1F] block">
-                                {item.label}
-                              </span>
-                            </div>
-                          </div>
 
-                          {isSelected ? (
-                            <div className="size-8 rounded-full bg-[#FCDF9C] flex items-center justify-center text-[#1F1F1F] font-normal text-base shrink-0">
-                              <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain" />
-                            </div>
-                          ) : (
+                            {isSelected ? (
+                              <div className="size-8 rounded-full bg-[#FCDF9C] flex items-center justify-center text-[#1F1F1F] font-normal text-base shrink-0">
+                                <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain" />
+                              </div>
+                            ) : (
                               <div className="size-8 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] flex items-center justify-center text-[#1f1f1f] group-hover:bg-zinc-100 text-base font-normal transition-all shrink-0">
-                              <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain" />
-                            </div>
-                          )}
-                        </div>
-                      );
+                                <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain" />
+                              </div>
+                            )}
+                          </div>
+                        );
                       })
                     )}
                   </div>
