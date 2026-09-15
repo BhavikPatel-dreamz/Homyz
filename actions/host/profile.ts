@@ -17,6 +17,8 @@ export async function updateHostPublicProfileAction(input: unknown) {
     );
     revalidatePath("/host/listings", "layout");
     revalidatePath("/listings", "layout");
+    revalidatePath("/profile");
+    revalidatePath("/profile-management");
     return profile;
   });
 }

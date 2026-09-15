@@ -119,12 +119,21 @@ async function updateHostPublicProfile(userId: string, input: UpdateHostPublicPr
 
   const current = (existing.publicProfile as Record<string, unknown> | null) ?? {};
   const currentPrompts = (current.prompts as Record<string, unknown> | undefined) ?? {};
+  const uniqueStrings = (values: string[]) => {
+    const seen = new Set<string>();
+    return values.filter((value) => {
+      const key = value.toLocaleLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
   const nextProfile = {
     ...current,
     ...(input.bio !== undefined ? { bio: input.bio } : {}),
     ...(input.prompts !== undefined ? { prompts: { ...currentPrompts, ...input.prompts } } : {}),
-    ...(input.languages !== undefined ? { languages: [...new Set(input.languages)] } : {}),
-    ...(input.interests !== undefined ? { interests: [...new Set(input.interests)] } : {}),
+    ...(input.languages !== undefined ? { languages: uniqueStrings(input.languages) } : {}),
+    ...(input.interests !== undefined ? { interests: uniqueStrings(input.interests) } : {}),
     ...(input.stampsVisible !== undefined ? { stampsVisible: input.stampsVisible } : {}),
     ...(input.selectedStamps !== undefined ? { selectedStamps: [...new Set(input.selectedStamps)].slice(0, 10) } : {}),
   };

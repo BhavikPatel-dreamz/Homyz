@@ -26,6 +26,7 @@ import { SavedListingsView } from "@/components/profile/saved-listings-view";
 import { SupportChatView } from "@/components/profile/support-chat-view";
 import { NotificationsView } from "@/components/profile/notifications-view";
 import { ProfileManagementClient } from "@/app/(protected)/profile-management/profile-management-client";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -37,7 +38,15 @@ export type PublicProfileData = {
   uselessSkill?: string;
   funFact?: string;
   favoriteSong?: string;
-  languages?: string;
+  languages?: string | string[];
+  interests?: string[];
+  prompts?: {
+    homeUnique?: string;
+    guestsShouldKnow?: string;
+    hobbies?: string | string[];
+    education?: string;
+    perfectGuest?: string;
+  };
   obsessedWith?: string;
   bioTitle?: string;
   whereILive?: string;
@@ -154,6 +163,19 @@ export function ProfileClient({
   };
 
   const pub = initial.publicProfile || {};
+  const hostPrompts = pub.prompts || {};
+  const hostHobbies = Array.isArray(hostPrompts.hobbies)
+    ? hostPrompts.hobbies.filter((hobby): hobby is string => typeof hobby === "string")
+    : typeof hostPrompts.hobbies === "string" && hostPrompts.hobbies.trim()
+      ? [hostPrompts.hobbies]
+      : [];
+  const hostInterests = Array.isArray(pub.interests)
+    ? pub.interests.filter((interest): interest is string => typeof interest === "string")
+    : [];
+  const hasHostProfileDetails = Boolean(
+    pub.bio || hostPrompts.homeUnique || hostPrompts.guestsShouldKnow ||
+    hostPrompts.education || hostPrompts.perfectGuest || hostHobbies.length || hostInterests.length,
+  );
   const years = initialStats.yearsOnHomyz || (initial.createdAt ? Math.max(1, new Date().getFullYear() - new Date(initial.createdAt).getFullYear()) : 4);
 
   return (
@@ -272,8 +294,23 @@ export function ProfileClient({
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
                     <IconTranslate />
                   </span>
-                  <span>Speaks {pub.languages || "English and Russian"}</span>
+                  <span>Speaks {Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages || "English and Russian"}</span>
                 </div>
+
+                {hasHostProfileDetails && (
+                  <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
+                    <h3 className="text-xl font-semibold text-[#1F1F1F]">About me</h3>
+                    {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
+                    <div className="space-y-3 text-sm text-zinc-700">
+                      {hostPrompts.homeUnique && <p><span className="font-semibold">What makes my home unique: </span>{hostPrompts.homeUnique}</p>}
+                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">What guests should know: </span>{hostPrompts.guestsShouldKnow}</p>}
+                      {hostPrompts.education && <p><span className="font-semibold">Education / background: </span>{hostPrompts.education}</p>}
+                      {hostPrompts.perfectGuest && <p><span className="font-semibold">Perfect guest: </span>{hostPrompts.perfectGuest}</p>}
+                    </div>
+                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">Hobbies</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">My interests</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                  </section>
+                )}
 
                 {/* Where I've been Section (Public Profile - Only Selected Stamps, Hidden if stampsVisible === false) */}
                 {pub.stampsVisible !== false && pub.selectedStamps && pub.selectedStamps.length > 0 && (

@@ -86,13 +86,19 @@ function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
   if (profile.profileVisible === false) return null;
   const promptSource = profile.prompts && typeof profile.prompts === "object" && !Array.isArray(profile.prompts)
     ? profile.prompts as Record<string, unknown> : {};
-  const prompts = Object.fromEntries(
-    ["homeUnique", "guestsShouldKnow", "hobbies", "education", "perfectGuest"]
-      .filter((key) => typeof promptSource[key] === "string" && promptSource[key])
-      .map((key) => [key, promptSource[key]]),
-  );
   const list = (input: unknown) => Array.isArray(input)
     ? input.filter((item): item is string => typeof item === "string").slice(0, 20) : [];
+  const promptEntries: Array<[string, string | string[]]> = [];
+  for (const key of ["homeUnique", "guestsShouldKnow", "hobbies", "education", "perfectGuest"]) {
+      const value = promptSource[key];
+      if (typeof value === "string" && value.trim()) {
+        promptEntries.push([key, value.trim()]);
+        continue;
+      }
+      const values = list(value);
+      if (values.length) promptEntries.push([key, values]);
+  }
+  const prompts = Object.fromEntries(promptEntries);
   const languages = list(profile.languages);
   if (!languages.length && typeof profile.languages === "string" && profile.languages.trim()) {
     languages.push(profile.languages.trim().slice(0, 300));

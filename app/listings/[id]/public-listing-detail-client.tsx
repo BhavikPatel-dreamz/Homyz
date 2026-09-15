@@ -365,12 +365,12 @@ export function PublicListingDetailClient({
                 </section>
               )}
 
-              {(hostBio || Object.values(hostPrompts).some((value) => typeof value === "string" && value) || hostInterests.length > 0 || hostStamps.length > 0) && (
+              {(hostBio || Object.values(hostPrompts).some((value) => (typeof value === "string" && value) || (Array.isArray(value) && value.length > 0)) || hostInterests.length > 0 || hostStamps.length > 0) && (
                 <section className="space-y-3 pb-6 border-b border-zinc-200/80">
                   <h3 className="text-base font-bold text-zinc-900">About your host</h3>
                   {hostBio && <p className="text-xs leading-relaxed text-zinc-700">{hostBio}</p>}
-                  {Object.entries(hostPrompts).filter(([, value]) => typeof value === "string" && value).map(([key, value]) => (
-                    <div key={key} className="text-xs text-zinc-700"><span className="font-semibold">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}: </span>{value as string}</div>
+                  {Object.entries(hostPrompts).filter(([, value]) => (typeof value === "string" && value) || (Array.isArray(value) && value.length > 0)).map(([key, value]) => (
+                    <div key={key} className="text-xs text-zinc-700"><span className="font-semibold">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}: </span>{Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").join(", ") : value as string}</div>
                   ))}
                   {hostInterests.length > 0 && <div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] capitalize text-zinc-700">{interest}</span>)}</div>}
                   {hostStamps.length > 0 && <p className="text-xs text-zinc-600"><span className="font-semibold">Where I&apos;ve been: </span>{hostStamps.join(", ")}</p>}

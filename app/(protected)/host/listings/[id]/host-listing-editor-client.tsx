@@ -1374,29 +1374,6 @@ export function HostListingEditorClient({
                   </div>
                 )}
 
-                {listingDisplayState === "APPROVED" && (
-                  <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-900 animate-in fade-in">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="font-semibold">
-                        {isSaudi ? "Listing Status: Ready to Publish" : "Listing Status: Approved"}
-                      </span>
-                      <span className="text-emerald-700 font-normal hidden sm:inline">
-                        {isSaudi
-                          ? "— All details complete, ready to go live"
-                          : "— Your listing has passed admin review"}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveSection("listing-status")}
-                      className="font-semibold text-emerald-800 hover:underline cursor-pointer"
-                    >
-                      {isSaudi ? "Publish Listing →" : "View Status →"}
-                    </button>
-                  </div>
-                )}
-
      
                 {listingDisplayState === "DRAFT" && (
                   <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs text-zinc-700 animate-in fade-in">

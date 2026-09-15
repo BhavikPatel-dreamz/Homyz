@@ -22,6 +22,7 @@ import {
   getMgmtSubTabSlug,
   ProfileMgmtSubTab,
 } from "@/lib/profile/tab-utils";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -33,7 +34,7 @@ export type PublicProfileData = {
   uselessSkill?: string;
   funFact?: string;
   favoriteSong?: string;
-  languages?: string;
+  languages?: string | string[];
   obsessedWith?: string;
   bioTitle?: string;
   whereILive?: string;
@@ -78,6 +79,11 @@ type ProfileManagementClientProps = {
   initialSubTab?: ProfileMgmtSubTab;
   onSubTabChange?: (subTab: ProfileMgmtSubTab) => void;
 };
+
+function languagesForInput(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return getLanguageDisplayNames(value).join(", ");
+  return value || "English and Russian";
+}
 
 // Hand-drawn Paris Eiffel Tower Stamp
 function StampParis() {
@@ -318,7 +324,7 @@ export function ProfileManagementClient({
     uselessSkill: pub.uselessSkill || "",
     funFact: pub.funFact || "",
     favoriteSong: pub.favoriteSong || "",
-    languages: pub.languages || "English and Russian",
+    languages: languagesForInput(pub.languages),
     obsessedWith: pub.obsessedWith || "",
     bioTitle: pub.bioTitle || "",
     whereILive: pub.whereILive || "Bucharest, Romania",
@@ -360,7 +366,7 @@ export function ProfileManagementClient({
       image: imageUrl || initial.image || null,
       name: name || initial.name || null,
       phone: initial.phone || null,
-      publicProfile: formDataState,
+      publicProfile: { ...pub, ...formDataState },
     };
 
     startTransition(async () => {
@@ -401,7 +407,7 @@ export function ProfileManagementClient({
         image: data.url,
         name: initial.name || null,
         phone: initial.phone || null,
-        publicProfile: formDataState,
+        publicProfile: { ...pub, ...formDataState },
       });
 
       if (!saveRes.ok) {

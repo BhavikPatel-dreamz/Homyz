@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { updateListingSchema } from "../lib/validation/listing";
 import { coHostInvitationSchema, updateHostPublicProfileSchema } from "../lib/validation/host-profile";
+import { updateProfileSchema } from "../lib/validation/user";
 
 const location = updateListingSchema.parse({
   locationFeatures: ["near_public_transport", "resort_access"],
@@ -9,7 +10,7 @@ const location = updateListingSchema.parse({
   views: ["city_view", "garden_view"],
 });
 assert.deepEqual(location.locationFeatures, ["near_public_transport", "resort_access"]);
-assert.throws(() => updateListingSchema.parse({ locationFeatures: ["beach_access"] }));
+assert.throws(() => updateListingSchema.parse({ locationFeatures: ["not_a_location_feature"] }));
 
 const profile = updateHostPublicProfileSchema.parse({
   bio: "I enjoy helping guests discover the city.",
@@ -20,6 +21,9 @@ const profile = updateHostPublicProfileSchema.parse({
 });
 assert.equal(profile.prompts?.homeUnique, "Sunset views from the terrace.");
 assert.throws(() => updateHostPublicProfileSchema.parse({ bio: "x".repeat(2001) }));
+assert.deepEqual(updateHostPublicProfileSchema.parse({ interests: ["Travel", "travel"], prompts: { hobbies: ["Cooking", "cooking"] } }).interests, ["Travel"]);
+assert.throws(() => updateHostPublicProfileSchema.parse({ rating: 5 }));
+assert.throws(() => updateProfileSchema.parse({ publicProfile: { rating: 5 } }));
 assert.equal(coHostInvitationSchema.parse({ email: "cohost@example.com" }).email, "cohost@example.com");
 assert.throws(() => coHostInvitationSchema.parse({ email: "not-an-email" }));
 

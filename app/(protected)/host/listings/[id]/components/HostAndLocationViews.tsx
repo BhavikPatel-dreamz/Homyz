@@ -13,11 +13,13 @@ import {
   inviteListingCoHostAction,
   revokeListingCoHostAction,
 } from "@/actions/host/cohosts";
+import { updateHostPublicProfileAction } from "@/actions/host/profile";
 import { updateProfileAction } from "@/actions/user/updateProfile";
 import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
+import { getLanguageNameById, LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import {
   LocationSkeleton,
   AboutHostSkeleton,
@@ -739,61 +741,54 @@ function SaveButton({
     </button>
   );
 }
-const PROFILE_FIELDS = [
-  ["whereIWantToGo", "Where I’ve always wanted to go"],
-  ["uselessSkill", "My most useless skill"],
-  ["myWork", "My work"],
-  ["funFact", "My fun fact"],
-  ["favoriteSong", "My favorite song in high school"],
-  ["obsessedWith", "I’m obsessed with"],
-  ["homeUnique", "What makes my home unique"],
-  ["spokenLanguages", "Languages I speak"],
-  ["pets", "Pets"],
-  ["bioTitle", "My biography title would be"],
-  ["decadeBorn", "Decade I was born"],
-  ["whereILive", "Where I live"],
-  ["school", "Where I went to school"],
-  ["guestsShouldKnow", "For guests I always"],
-  ["spendTooMuchTime", "I spend too much time"],
-  ["breakfast", "What’s for breakfast"],
-] as const;
-
 const REFERENCE_INTERESTS = [
-  ["architecture", "Architecture"],
-  ["cooking", "Cooking"],
-  ["food_scenes", "Food scenes"],
-  ["history", "History"],
-  ["live_sports", "Live sports"],
-  ["museums", "Museums"],
-  ["outdoors", "Outdoors"],
-  ["shopping", "Shopping"],
-  ["video_games", "Video games"],
+  "Architecture", "Cooking", "Food", "History", "Music", "Outdoors", "Photography", "Sports", "Travel",
 ] as const;
 
-type ProfileFieldKey = (typeof PROFILE_FIELDS)[number][0];
-type ProfileDetails = Record<ProfileFieldKey, string>;
-
-function profileDetailsFrom(raw: Record<string, unknown>): ProfileDetails {
-  const prompts = raw.prompts && typeof raw.prompts === "object" && !Array.isArray(raw.prompts)
-    ? raw.prompts as Record<string, unknown>
-    : {};
-  const languageValue = raw.languages;
-  const spokenLanguages = Array.isArray(languageValue)
-    ? languageValue.filter((value): value is string => typeof value === "string").join(", ")
-    : typeof languageValue === "string" ? languageValue : "";
-  return Object.fromEntries(PROFILE_FIELDS.map(([key]) => {
-    const value = key === "spokenLanguages"
-      ? spokenLanguages
-      : raw[key] ?? prompts[key];
-    return [key, typeof value === "string" ? value : ""];
-  })) as ProfileDetails;
+function getPrompt(raw: Record<string, unknown>, key: string): string {
+  const prompts = raw.prompts;
+  if (!prompts || typeof prompts !== "object" || Array.isArray(prompts)) return "";
+  const value = (prompts as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : "";
 }
 
-function ProfilePromptIcon() {
+function getStringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+}
+
+function getTagList(value: unknown): string[] {
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  return getStringList(value);
+}
+
+function getLanguageIds(value: unknown): string[] {
+  if (Array.isArray(value)) return getStringList(value);
+  if (typeof value !== "string") return [];
+  return value.split(/,|\sand\s/i).map((name) => LANGUAGE_OPTIONS.find((language) => language.name.toLowerCase() === name.trim().toLowerCase())?.id).filter((id): id is string => Boolean(id));
+}
+
+function hostingTenure(createdAt: Date | string): string {
+  const joined = new Date(createdAt);
+  if (Number.isNaN(joined.getTime())) return "New host";
+  const months = Math.max(0, (new Date().getFullYear() - joined.getFullYear()) * 12 + new Date().getMonth() - joined.getMonth());
+  if (months < 1) return "Hosting for less than a month";
+  if (months < 12) return `Hosting for ${months} ${months === 1 ? "month" : "months"}`;
+  const years = Math.floor(months / 12);
+  return `Hosting for ${years} ${years === 1 ? "year" : "years"}`;
+}
+
+function TagEditor({
+  label, values, draft, setDraft, onAdd, onRemove, placeholder,
+}: {
+  label: string; values: string[]; draft: string; setDraft: (value: string) => void;
+  onAdd: () => void; onRemove: (value: string) => void; placeholder: string;
+}) {
   return (
-    <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm text-zinc-600">
-      ✦
-    </span>
+    <div>
+      <p className="text-sm font-medium text-zinc-700">{label}</p>
+      {values.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{values.map((value) => <button key={value} type="button" onClick={() => onRemove(value)} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{value} ×</button>)}</div>}
+      <div className="mt-2 flex gap-2"><input value={draft} maxLength={60} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); onAdd(); } }} placeholder={placeholder} className="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" /><button type="button" onClick={onAdd} className="rounded-full bg-[#FCDF9C] px-4 text-xs font-semibold">Add</button></div>
+    </div>
   );
 }
 
@@ -808,17 +803,19 @@ function AboutHostView(props: Props) {
   const [isStampEditorOpen, setIsStampEditorOpen] = useState(false);
   const raw = publicProfile;
   const [bio, setBio] = useState(String(raw.bio ?? ""));
-  const [details, setDetails] = useState<ProfileDetails>(() => profileDetailsFrom(raw));
-  const [interests, setInterests] = useState<string[]>(
-    Array.isArray(raw.interests)
-      ? raw.interests.filter((v): v is string => typeof v === "string")
-      : [],
-  );
+  const [homeUnique, setHomeUnique] = useState(() => getPrompt(raw, "homeUnique"));
+  const [guestsShouldKnow, setGuestsShouldKnow] = useState(() => getPrompt(raw, "guestsShouldKnow"));
+  const [education, setEducation] = useState(() => getPrompt(raw, "education"));
+  const [perfectGuest, setPerfectGuest] = useState(() => getPrompt(raw, "perfectGuest"));
+  const [hobbies, setHobbies] = useState<string[]>(() => getTagList(raw.prompts && typeof raw.prompts === "object" ? (raw.prompts as Record<string, unknown>).hobbies : []));
+  const [languages, setLanguages] = useState<string[]>(() => getLanguageIds(raw.languages));
+  const [interests, setInterests] = useState<string[]>(() => getStringList(raw.interests));
   const [stampsVisible, setStampsVisible] = useState(raw.stampsVisible !== false);
   const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [editingInterests, setEditingInterests] = useState(false);
+  const [languageSearch, setLanguageSearch] = useState("");
+  const [hobbyDraft, setHobbyDraft] = useState("");
   const [interestDraft, setInterestDraft] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
@@ -826,8 +823,13 @@ function AboutHostView(props: Props) {
     const next = hostProfile.publicProfile ?? {};
     setPublicProfile(next);
     setBio(String(next.bio ?? ""));
-    setDetails(profileDetailsFrom(next));
-    setInterests(Array.isArray(next.interests) ? next.interests.filter((v): v is string => typeof v === "string") : []);
+    setHomeUnique(getPrompt(next, "homeUnique"));
+    setGuestsShouldKnow(getPrompt(next, "guestsShouldKnow"));
+    setEducation(getPrompt(next, "education"));
+    setPerfectGuest(getPrompt(next, "perfectGuest"));
+    setHobbies(getTagList(next.prompts && typeof next.prompts === "object" ? (next.prompts as Record<string, unknown>).hobbies : []));
+    setLanguages(getLanguageIds(next.languages));
+    setInterests(getStringList(next.interests));
     setStampsVisible(next.stampsVisible !== false);
     setAvatarUrl(hostProfile.image);
   }, [hostProfile.image, hostProfile.publicProfile]);
@@ -835,41 +837,38 @@ function AboutHostView(props: Props) {
   const selectedStamps = Array.isArray(raw.selectedStamps)
     ? raw.selectedStamps.filter((v): v is string => typeof v === "string")
     : [];
-  const selectedStamp = BUILTIN_TRAVEL_STAMPS.find((stamp) => selectedStamps.includes(stamp.id));
   const visibleSelectedStamps = selectedStamps.slice(0, 4);
 
   const save = async () => {
     setSaving(true);
     setMessage(null);
-    const currentPrompts = raw.prompts && typeof raw.prompts === "object" && !Array.isArray(raw.prompts)
-      ? raw.prompts as Record<string, unknown>
-      : {};
-    const result = await updateProfileAction({
-      publicProfile: {
-        ...raw,
-        ...details,
-        bio,
-        interests,
-        stampsVisible,
-        // Keep the original public prompt contract current for existing listing and public views.
-        prompts: {
-          ...currentPrompts,
-          homeUnique: details.homeUnique,
-          guestsShouldKnow: details.guestsShouldKnow,
-          hobbies: details.spendTooMuchTime,
-          education: details.school,
-        },
-        languages: details.spokenLanguages,
-      },
+    const result = await updateHostPublicProfileAction({
+      bio,
+      prompts: { homeUnique, guestsShouldKnow, hobbies, education, perfectGuest },
+      languages,
+      interests,
+      stampsVisible,
+      selectedStamps,
     });
     setSaving(false);
     if (result.ok) {
       onHostProfileSaved((result.data.publicProfile as Record<string, unknown>) ?? {});
       setMessage("Host profile saved and shared across your listings.");
+      router.refresh();
     } else {
       setMessage(result.error);
     }
   };
+
+  const addTag = (value: string, setValues: React.Dispatch<React.SetStateAction<string[]>>) => {
+    const next = value.trim();
+    if (!next) return false;
+    setValues((current) => current.some((item) => item.localeCompare(next, undefined, { sensitivity: "accent" }) === 0) ? current : [...current, next]);
+    return true;
+  };
+  const filteredLanguages = LANGUAGE_OPTIONS.filter((language) =>
+    !languages.includes(language.id) && language.name.toLowerCase().includes(languageSearch.trim().toLowerCase()),
+  ).slice(0, 12);
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -910,7 +909,8 @@ function AboutHostView(props: Props) {
         <AboutHostSkeleton />
       ) : (
         <>
-      <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
         <div className="relative h-48 w-full shrink-0 overflow-visible sm:h-44 sm:w-60">
           <div className="h-full w-full overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100 shadow-2xs">
             {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
@@ -920,25 +920,19 @@ function AboutHostView(props: Props) {
           </button>
           <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
         </div>
-        <p className="max-w-sm text-sm leading-6 text-[#727272]">Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></p>
-      </section>
-
-      <section className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
-        {PROFILE_FIELDS.map(([key, label]) => (
-          <label key={key} className="flex min-w-0 items-center gap-3 border-b border-zinc-200 py-3.5">
-            <ProfilePromptIcon />
-            <span className="flex min-w-0 flex-1 items-center gap-1.5">
-              <span className="shrink-0 text-sm text-zinc-500">{label}{details[key] ? ":" : ""}</span>
-              <input value={details[key]} maxLength={300} onChange={(event) => setDetails((current) => ({ ...current, [key]: event.target.value }))} aria-label={label} className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1F1F1F] outline-none" />
-            </span>
-          </label>
-        ))}
+        <div className="max-w-md space-y-2 text-sm leading-6 text-[#727272]"><p>Your public host profile is shared across all of your listings. Only guest-facing details appear here.</p><div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-zinc-700"><span>New host · no guest ratings yet</span><span>{hostingTenure(hostProfile.createdAt)}</span>{languages.length > 0 && <span>Speaks {languages.map(getLanguageNameById).join(", ")}</span>}</div><Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></div>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 shadow-2xs">
         <label htmlFor="host-bio" className="block text-sm font-semibold text-[#1F1F1F]">About me</label>
         <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Tell guests a little about yourself." className="mt-3 min-h-28 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-zinc-500" />
+        <p className="mt-1 text-right text-xs text-zinc-400">{bio.length}/2000</p>
       </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">About my home</h2><div className="mt-4 grid gap-4"><label className="text-sm font-medium text-zinc-700">What makes your home unique<textarea value={homeUnique} maxLength={500} onChange={(event) => setHomeUnique(event.target.value)} placeholder="Tell guests what makes your place unique." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">What guests should know<textarea value={guestsShouldKnow} maxLength={500} onChange={(event) => setGuestsShouldKnow(event.target.value)} placeholder="Share anything important guests should know about your place or hosting style." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">More about me</h2><div className="mt-4 grid gap-4"><div><label htmlFor="host-language-search" className="text-sm font-medium text-zinc-700">Languages spoken</label>{languages.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{languages.map((language) => <button key={language} type="button" onClick={() => setLanguages((current) => current.filter((value) => value !== language))} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{getLanguageNameById(language)} ×</button>)}</div>}<input id="host-language-search" value={languageSearch} onChange={(event) => setLanguageSearch(event.target.value)} placeholder="Search and add a language" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" />{languageSearch.trim() && <div className="mt-1 max-h-36 overflow-y-auto rounded-xl border border-zinc-200 bg-white">{filteredLanguages.map((language) => <button key={language.id} type="button" onClick={() => { setLanguages((current) => [...current, language.id]); setLanguageSearch(""); }} className="block w-full px-3 py-2 text-left text-sm hover:bg-zinc-50">{language.name}</button>)}{filteredLanguages.length === 0 && <p className="px-3 py-2 text-xs text-zinc-500">No matching languages available.</p>}</div>}</div><TagEditor label="Hobbies" values={hobbies} draft={hobbyDraft} setDraft={setHobbyDraft} onAdd={() => { if (addTag(hobbyDraft, setHobbies)) setHobbyDraft(""); }} onRemove={(value) => setHobbies((current) => current.filter((item) => item !== value))} placeholder="Add a hobby" /><label className="text-sm font-medium text-zinc-700">Education / background<input value={education} maxLength={300} onChange={(event) => setEducation(event.target.value)} placeholder="Share your education or background (optional)" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">Perfect guest<textarea value={perfectGuest} maxLength={300} onChange={(event) => setPerfectGuest(event.target.value)} placeholder="Describe the kind of stay you enjoy hosting." className="mt-2 min-h-20 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 pb-3">
@@ -1012,96 +1006,7 @@ function AboutHostView(props: Props) {
         </ModalOverlay>
       )}
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-        <div className="border-b border-zinc-200 pb-3">
-          <h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2>
-          <p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p>
-        </div>
-
-        <div className="mt-4 space-y-4">
-          {interests.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => (
-                <button
-                  key={interest}
-                  type="button"
-                  onClick={() => setInterests((current) => current.filter((value) => value !== interest))}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:border-zinc-300 hover:bg-zinc-100"
-                >
-                  <span>{interest}</span>
-                  <span aria-hidden="true">×</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500">Suggested interests</p>
-            <div className="flex flex-wrap gap-2">
-              {REFERENCE_INTERESTS.map(([interest, label]) => {
-                const selected = interests.includes(interest) || interests.includes(label);
-                return (
-                  <button
-                    key={interest}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => setInterests((current) =>
-                      current.includes(interest)
-                        ? current.filter((value) => value !== interest)
-                        : [...current, interest],
-                    )}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                      selected
-                        ? "border-[#1F1F1F] bg-[#1F1F1F] text-white"
-                        : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              value={interestDraft}
-              onChange={(event) => setInterestDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  const value = interestDraft.trim();
-                  if (!value) return;
-                  setInterests((current) =>
-                    current.some((item) => item.toLowerCase() === value.toLowerCase())
-                      ? current
-                      : [...current, value],
-                  );
-                  setInterestDraft("");
-                }
-              }}
-              placeholder="Add a custom interest"
-              className="min-w-0 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-400 focus:bg-white"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                const value = interestDraft.trim();
-                if (!value) return;
-                setInterests((current) =>
-                  current.some((item) => item.toLowerCase() === value.toLowerCase())
-                    ? current
-                    : [...current, value],
-                );
-                setInterestDraft("");
-              }}
-              className="rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      </section>
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2><p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p><div className="mt-4 flex flex-wrap gap-2">{REFERENCE_INTERESTS.map((interest) => { const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0); return <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${selected ? "border-[#1F1F1F] bg-[#1F1F1F] text-white" : "border-zinc-200 bg-white text-zinc-700"}`}>{interest}</button>; })}</div><div className="mt-4"><TagEditor label="Selected interests" values={interests} draft={interestDraft} setDraft={setInterestDraft} onAdd={() => { if (addTag(interestDraft, setInterests)) setInterestDraft(""); }} onRemove={(value) => setInterests((current) => current.filter((item) => item !== value))} placeholder="Add a custom interest" /></div></section>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
