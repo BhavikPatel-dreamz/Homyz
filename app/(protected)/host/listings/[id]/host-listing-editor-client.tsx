@@ -8,6 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
+import { Footer } from "@/components/dashboard/footer";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { toast } from "@/components/ui/toast";
@@ -1309,7 +1310,7 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className="min-h-screen bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0"
+      className="flex min-h-screen flex-col bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0"
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       <div className="hidden lg:block">
@@ -1856,6 +1857,8 @@ export function HostListingEditorClient({
         />
           </div>
       </Container>
+
+      <Footer />
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}
