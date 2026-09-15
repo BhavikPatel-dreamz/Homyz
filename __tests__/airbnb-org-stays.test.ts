@@ -176,6 +176,43 @@ assert(
   "host-listing-editor-client must pass discounts to HouseRulesAndArrivalViews"
 );
 
+// -----------------------------------------------------------------------------
+// [6] Homyz.com Stays Informational Copy, ON/OFF Indicator & Learn More Action
+// -----------------------------------------------------------------------------
+console.log("\n--- [6] Homyz.com Stays Informational Copy, ON/OFF & Learn More ---");
+
+assert(
+  viewCode.includes("Homyz.com Stays"),
+  "AirbnbOrgStaysView must display 'Homyz.com Stays' title and brand heading"
+);
+
+assert(
+  viewCode.includes("This setting controls your listing's participation in Homyz.com emergency and humanitarian stays") ||
+  viewCode.includes("This setting controls your listing&apos;s participation in Homyz.com emergency and humanitarian stays"),
+  "Must include informational copy explaining what the setting controls"
+);
+
+assert(
+  viewCode.includes("pauses your listing's enrollment in the program and may affect") ||
+  viewCode.includes("pauses your listing&apos;s enrollment in the program and may affect"),
+  "Must explain that turning setting OFF pauses enrollment and may affect booking flow/services"
+);
+
+assert(
+  viewCode.includes("[ {isEnabled ? \"ON\" : \"OFF\"} ]"),
+  "Must provide visible [ ON / OFF ] badge next to Homyz.com Stays"
+);
+
+assert(
+  viewCode.includes("<span>Learn More</span>"),
+  "Must provide clear 'Learn More' action button/link"
+);
+
+assert(
+  viewCode.includes("handleCancel"),
+  "Must provide handleCancel to support standard Preferences Cancel action"
+);
+
 console.log("\n==================================================================");
-console.log("   🎉 ALL homyz.ORG STAYS VERIFICATION TESTS PASSED (100%)!      ");
+console.log("   🎉 ALL homyz.ORG / HOMYZ.COM STAYS VERIFICATION TESTS PASSED (100%)!      ");
 console.log("==================================================================\n");

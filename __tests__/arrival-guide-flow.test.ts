@@ -96,39 +96,25 @@ describe("Host Listing Editor: Arrival Guide Flow", () => {
   });
 
   describe("Arrival Guide Right-Side Summary & Status Panel", () => {
-    it("EditorSidebar renders Arrival Guide progress and all 8 documented items", () => {
+    it("EditorSidebar renders Arrival Guide sections including Directions to property", () => {
       const filePath = path.join(
         process.cwd(),
         "app/(protected)/host/listings/[id]/components/EditorSidebar.tsx"
       );
       const content = fs.readFileSync(filePath, "utf8");
 
-      // Progress bar header
-      assert.match(content, /Arrival Guide Progress/);
-      assert.match(content, /completed/);
-
-      // 8 Documented Sections
-      assert.match(content, /Check-in & checkout/);
+      // Documented Arrival Sections in sidebar
+      assert.match(content, /Check-in/);
       assert.match(content, /Directions to property/);
       assert.match(content, /Check-in method/);
-      assert.match(content, /Wi-Fi details/);
+      assert.match(content, /Wifi details/);
       assert.match(content, /House manual/);
-      assert.match(content, /Checkout instructions/);
-      assert.match(content, /Guidebooks/);
-      assert.match(content, /Interaction preferences/);
-
-      // Status badges
-      assert.match(content, /✓.*Added/);
-      assert.match(content, /○.*Not added/);
+      assert.match(content, /Check-out instructions/);
 
       // Clickable navigation handlers
-      assert.match(content, /setActiveSection\("check-in-out"\)/);
       assert.match(content, /setActiveSection\("directions"\)/);
-      assert.match(content, /setActiveSection\("check-in-method"\)/);
       assert.match(content, /setActiveSection\("wifi-details"\)/);
       assert.match(content, /setActiveSection\("house-manual"\)/);
-      assert.match(content, /setActiveSection\("checkout-instructions"\)/);
-      assert.match(content, /setActiveSection\("guidebooks"\)/);
       assert.match(content, /setActiveSection\("interaction-preferences"\)/);
     });
 

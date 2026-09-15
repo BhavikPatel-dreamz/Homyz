@@ -74,6 +74,14 @@ export function AirbnbOrgStaysView({
     setSaveError(null);
   };
 
+  const handleCancel = () => {
+    setIsEnabled(initialConfig.enabled);
+    setDiscountType(initialConfig.discountType);
+    setDiscountPercentage(initialConfig.discountPercentage);
+    setSaveError(null);
+    setIsSavedSuccess(false);
+  };
+
   const handleSave = async () => {
     if (!isDirty && !isSavedSuccess) return;
     try {
@@ -96,39 +104,70 @@ export function AirbnbOrgStaysView({
   return (
     <div className="max-w-2xl font-sans animate-in fade-in duration-200 pb-10 text-[#222222]">
       {/* 1. Page Title */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl sm:text-[32px] font-bold tracking-tight text-[#222222] leading-tight">
-          Homyz.org stays
+          Homyz.com Stays
         </h1>
+        <p className="text-xs text-zinc-500 font-normal mt-1">
+          Homyz.org stays
+        </p>
       </div>
 
-      {/* 2. Main Brand Row & iOS Toggle Switch */}
-      <div className="pt-2 pb-6 flex items-start justify-between gap-6">
+      {/* 1b. Informational Guidance Notice */}
+      <div className="mb-6 p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+        <p>
+          This setting controls your listing&apos;s participation in Homyz.com emergency and humanitarian stays.
+          When enabled, verified guests and vetted relief organizations can request temporary housing at your property for free or at a discount.
+        </p>
+        <p className="text-xs text-zinc-500">
+          Turning this setting <strong className="text-zinc-700">OFF</strong> pauses your listing&apos;s enrollment in the program and may affect the listing&apos;s booking flow or available platform services for emergency relief stays. Regular guest bookings remain unaffected.
+        </p>
+      </div>
+
+      {/* 2. Main Brand Row & Toggle Switch with [ ON / OFF ] */}
+      <div className="pt-2 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100">
         <div className="space-y-1">
-          <h2 className="text-xl sm:text-[22px] font-bold text-[#E01563] tracking-tight leading-none">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-[#1F1F1F] tracking-tight leading-none">
+              Homyz.com Stays
+            </h2>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide transition-colors ${isEnabled
+                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                  : "bg-zinc-200 text-zinc-700 border border-zinc-300"
+                }`}
+            >
+              [ {isEnabled ? "ON" : "OFF"} ]
+            </span>
+          </div>
+          <p className="text-xs text-[#E01563] font-semibold tracking-tight pt-0.5">
             Homyz.org
-          </h2>
-          <p className="text-sm text-[#717171] font-normal leading-normal pt-1">
+          </p>
+          <p className="text-sm text-[#717171] font-normal leading-normal">
             Available for Homyz.org guests for free or at a discount
           </p>
         </div>
 
         {/* Pill Toggle Switch */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isEnabled}
-          onClick={handleToggle}
-          className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
-            isEnabled ? "bg-[#222222]" : "bg-[#B0B0B0]"
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-              isEnabled ? "translate-x-6" : "translate-x-0"
-            }`}
-          />
-        </button>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-xs font-semibold text-zinc-700 select-none">
+            {isEnabled ? "ON" : "OFF"}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isEnabled}
+            aria-label="Homyz.com Stays ON / OFF"
+            onClick={handleToggle}
+            className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${isEnabled ? "bg-[#222222]" : "bg-[#B0B0B0]"
+              }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${isEnabled ? "translate-x-6" : "translate-x-0"
+                }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* 2b. Expandable Configuration Options (Visible when enabled) */}
@@ -141,11 +180,10 @@ export function AirbnbOrgStaysView({
           <div className="space-y-3">
             {/* Option A: Host for free */}
             <label
-              className={`flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                discountType === "FREE"
+              className={`flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer transition-all ${discountType === "FREE"
                   ? "border-zinc-900 bg-white shadow-2xs"
                   : "border-zinc-200 bg-white/60 hover:border-zinc-300"
-              }`}
+                }`}
             >
               <input
                 type="radio"
@@ -166,11 +204,10 @@ export function AirbnbOrgStaysView({
 
             {/* Option B: Host at a discount */}
             <label
-              className={`flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                discountType === "DISCOUNT"
+              className={`flex items-start gap-3.5 p-3.5 rounded-xl border cursor-pointer transition-all ${discountType === "DISCOUNT"
                   ? "border-zinc-900 bg-white shadow-2xs"
                   : "border-zinc-200 bg-white/60 hover:border-zinc-300"
-              }`}
+                }`}
             >
               <input
                 type="radio"
@@ -200,11 +237,10 @@ export function AirbnbOrgStaysView({
                           e.preventDefault();
                           setDiscountPercentage(pct);
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                          discountPercentage === pct
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${discountPercentage === pct
                             ? "bg-zinc-900 text-white"
                             : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                        }`}
+                          }`}
                       >
                         {pct}% off
                       </button>
@@ -261,31 +297,39 @@ export function AirbnbOrgStaysView({
           </li>
         </ul>
 
-        {/* 4. "Learn more about homyz.org >" Link */}
-        <div className="pt-2">
+        {/* 4. Documented "Learn More" Actions */}
+        <div className="pt-2 flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={() => setIsLearnMoreOpen(true)}
-            className="text-sm font-semibold text-[#222222] hover:underline cursor-pointer inline-flex items-center gap-1 group"
+            className="text-xs sm:text-sm font-normal text-zinc-500 hover:text-zinc-800 hover:underline cursor-pointer inline-flex items-center gap-1"
           >
             <span>Learn more about homyz.org</span>
-            <span className="transition-transform group-hover:translate-x-0.5 select-none font-normal">
-              &gt;
-            </span>
+            <span className="font-normal">&gt;</span>
           </button>
         </div>
       </div>
 
-      {/* Save action matches the host editor's standard inline save controls. */}
-      <div className="flex flex-wrap items-center gap-3 pt-10">
+      {/* 5. Save & Cancel actions matching standard host editor Preferences pattern */}
+      <div className="flex flex-wrap items-center gap-3 pt-8 border-t border-zinc-100">
         <button
           type="button"
           disabled={!isDirty || isSaving}
           onClick={handleSave}
           className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          {isSaving ? "Saving..." : isSavedSuccess ? "Saved" : "Save changes"}
+          {isSaving ? "Saving..." : isSavedSuccess ? "Saved" : "Save"}
         </button>
+
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={handleCancel}
+          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
+
         {isSavedSuccess && (
           <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1 animate-in fade-in">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,18 +341,28 @@ export function AirbnbOrgStaysView({
         {saveError && <p role="alert" className="text-xs font-medium text-rose-600">{saveError}</p>}
       </div>
 
-      {/* 6. Slide-Over Drawer for "Learn more about homyz.org" (AGENTS.md ModalOverlay Compliant) */}
+      {/* 6. Centered Modal Dialog for "Learn more about homyz.org" (AGENTS.md ModalOverlay Compliant) */}
       {isLearnMoreOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end"
-          onClick={() => setIsLearnMoreOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
         >
+          {/* Backdrop Click Dismiss */}
           <div
-            className="w-full max-w-xl h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+            className="absolute inset-0"
+            onClick={() => setIsLearnMoreOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Centered Modal Container */}
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="learn-more-org-title"
+            className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drawer Header */}
-            <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-white sticky top-0 z-10">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 border-b border-zinc-100 px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-50 text-[#E01563] border border-rose-200">
                   Resource Centre
@@ -319,17 +373,27 @@ export function AirbnbOrgStaysView({
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
                 aria-label="Close"
               >
-                ✕
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
-            {/* Drawer Scrollable Content */}
+            {/* Modal Scrollable Content */}
             <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1 text-zinc-800 text-sm leading-relaxed">
               <div>
-                <h2 className="text-2xl font-bold text-zinc-950 tracking-tight">
+                <h2 id="learn-more-org-title" className="text-xl sm:text-2xl font-bold text-zinc-950 tracking-tight">
                   About homyz.org and emergency stays
                 </h2>
                 <p className="text-zinc-500 text-xs mt-1.5">
@@ -338,8 +402,8 @@ export function AirbnbOrgStaysView({
               </div>
 
               {/* Card 1: What is homyz.org */}
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 font-semibold">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center gap-2 text-zinc-950 font-semibold text-sm">
                   <span className="text-[#E01563] text-base">❤️</span>
                   <h4>What is homyz.org?</h4>
                 </div>
@@ -349,8 +413,8 @@ export function AirbnbOrgStaysView({
               </div>
 
               {/* Card 2: Guest Eligibility */}
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 font-semibold">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center gap-2 text-zinc-950 font-semibold text-sm">
                   <span className="text-indigo-600 text-base">👥</span>
                   <h4>Who stays with homyz.org?</h4>
                 </div>
@@ -360,8 +424,8 @@ export function AirbnbOrgStaysView({
               </div>
 
               {/* Card 3: Partner Vetting */}
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 font-semibold">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center gap-2 text-zinc-950 font-semibold text-sm">
                   <span className="text-emerald-600 text-base">🏛️</span>
                   <h4>Vetted humanitarian partners</h4>
                 </div>
@@ -371,8 +435,8 @@ export function AirbnbOrgStaysView({
               </div>
 
               {/* Card 4: Host Protection */}
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 font-semibold">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center gap-2 text-zinc-950 font-semibold text-sm">
                   <span className="text-amber-600 text-base">🛡️</span>
                   <h4>Host Protection for emergency stays</h4>
                 </div>
@@ -382,8 +446,8 @@ export function AirbnbOrgStaysView({
               </div>
 
               {/* Card 5: Your Host Control */}
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2">
-                <div className="flex items-center gap-2 text-zinc-950 font-semibold">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center gap-2 text-zinc-950 font-semibold text-sm">
                   <span className="text-blue-600 text-base">ℹ️</span>
                   <h4>Full control over every request</h4>
                 </div>
@@ -408,17 +472,17 @@ export function AirbnbOrgStaysView({
               </div>
             </div>
 
-            {/* Drawer Footer */}
-            <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-end">
+            {/* Modal Footer */}
+            <div className="p-4 sm:px-6 border-t border-zinc-100 bg-zinc-50 flex items-center justify-end shrink-0">
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(false)}
-                className="px-5 py-2 rounded-lg bg-zinc-900 hover:bg-black text-white text-xs font-semibold cursor-pointer"
+                className="px-6 py-2.5 rounded-full bg-zinc-900 hover:bg-black text-white text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
               >
-                Close
+                Done
               </button>
             </div>
-          </div>
+          </section>
         </ModalOverlay>
       )}
     </div>
