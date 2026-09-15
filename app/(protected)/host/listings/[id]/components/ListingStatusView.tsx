@@ -384,60 +384,54 @@ export function ListingStatusView({
       {/* Header & Back Navigation */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="tracking-tight text-2xl font-semibold text-[#1F1F1F]">Listing status</h1>
+        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F]">Listing status</h1>
       </div>
 
-      {/* Visual Approval Progress Stepper */}
-      <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 sm:p-5 shadow-2xs">
-        <div className="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">
-          Approval &amp; Publishing Progress
+      {/* Visual Approval Progress Timeline */}
+      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xs">
+        <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4 sm:px-6">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">Listing journey</p>
+            <p className="mt-0.5 text-sm font-semibold text-zinc-900">Approval &amp; publishing progress</p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
+            displayState === "PUBLISHED" ? "bg-emerald-100 text-emerald-800" :
+            displayState === "REJECTED" ? "bg-rose-100 text-rose-800" :
+            "bg-amber-100 text-amber-800"
+          }`}>
+            {displayState === "PUBLISHED" ? "Live" : displayState === "REJECTED" ? "Action needed" : "In progress"}
+          </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          {steps.map((step, idx) => {
-            const stepStatus = getStepStatus(step.id);
-            return (
-              <div
-                key={step.id}
-                className={`relative flex flex-col p-2.5 rounded-xl border text-center transition-all ${
-                  stepStatus === "completed"
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                    : stepStatus === "current"
-                    ? "bg-amber-50 border-amber-300 text-amber-950 ring-2 ring-amber-300/40 shadow-xs"
-                    : stepStatus === "warning"
-                    ? "bg-rose-50 border-rose-300 text-rose-950 ring-2 ring-rose-300/40"
-                    : "bg-white border-zinc-200/80 text-zinc-400"
-                }`}
-              >
-                <div className="text-[10px] font-semibold text-zinc-400 mb-1">
-                  Step {idx + 1}
+        <div className="overflow-x-auto px-5 py-6 sm:px-6">
+          <div className={`relative flex min-w-[560px] ${isSaudi ? "sm:min-w-0" : "lg:min-w-0"}`}>
+            <div className="absolute left-[8%] right-[8%] top-4 h-px bg-zinc-200" aria-hidden="true" />
+            {steps.map((step, idx) => {
+              const stepStatus = getStepStatus(step.id);
+              const isComplete = stepStatus === "completed";
+              const isCurrent = stepStatus === "current";
+              const isWarning = stepStatus === "warning";
+              return (
+                <div key={step.id} className="relative z-10 flex min-w-[112px] flex-1 flex-col items-center text-center">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
+                    isComplete ? "border-emerald-500 bg-emerald-500 text-white" :
+                    isCurrent ? "border-amber-400 bg-amber-50 text-amber-800 ring-4 ring-amber-100" :
+                    isWarning ? "border-rose-500 bg-rose-500 text-white" :
+                    "border-zinc-200 bg-white text-zinc-400"
+                  }`}>
+                    {isComplete ? "✓" : isWarning ? "!" : idx + 1}
+                  </span>
+                  <span className={`mt-3 max-w-[108px] text-[11px] font-semibold leading-snug ${
+                    isComplete ? "text-emerald-800" : isCurrent ? "text-zinc-950" : isWarning ? "text-rose-800" : "text-zinc-400"
+                  }`}>
+                    {step.label}
+                  </span>
+                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700">Current step</span>}
                 </div>
-                <div className="flex items-center justify-center mb-1">
-                  {stepStatus === "completed" ? (
-                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-bold">
-                      ✓
-                    </span>
-                  ) : stepStatus === "current" ? (
-                    <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[11px] font-bold animate-pulse">
-                      ●
-                    </span>
-                  ) : stepStatus === "warning" ? (
-                    <span className="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[11px] font-bold">
-                      !
-                    </span>
-                  ) : (
-                    <span className="w-5 h-5 rounded-full bg-zinc-200 text-zinc-500 flex items-center justify-center text-[11px]">
-                      {idx + 1}
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] font-medium leading-tight line-clamp-2">
-                  {step.label}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* ================================================================= */}
       {/* ADMIN APPROVAL REQUIRED MESSAGE & LIFECYCLE STATE NOTICE          */}
@@ -588,29 +582,7 @@ export function ListingStatusView({
         </div>
       )} */}
 
-      {/* 5. STATE: APPROVED (Approved by Admin or Ready to Publish in Saudi) */}
-      {displayState === "APPROVED" && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 text-base">
-                {isSaudi ? "Ready to Publish" : "Listing Approved"}
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
-              {isSaudi ? "Ready" : "Approved"}
-            </span>
-          </div>
-          <p className="text-xs text-emerald-900 leading-relaxed">
-            {isSaudi
-              ? "All required details are complete! No admin approval is required for Saudi listings. Select \"Listed\" below and click Save to publish your property live to guests."
-              : "Your listing has passed admin review! You can now select \"Listed\" below and click Save to publish your property live on Homyz."}
-          </p>
-        </div>
-      )}
-
-      {/* 6. STATE: PUBLISHED (Live on Marketplace) */}
+      {/* 5. STATE: PUBLISHED (Live on Marketplace) */}
       {displayState === "PUBLISHED" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
