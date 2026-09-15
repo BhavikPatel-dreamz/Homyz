@@ -5,6 +5,26 @@ import React, { useState, useMemo } from "react";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { formatSarFromHalalas } from "@/lib/currency";
 
+const bookingDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+const bookingDateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
+
+function formatBookingDate(value: string) {
+  return bookingDateFormatter.format(new Date(value));
+}
+
+function formatBookingDateTime(value: string) {
+  return bookingDateTimeFormatter.format(new Date(value));
+}
+
 export interface BookingItem {
   id: string;
   status: string;
@@ -84,8 +104,8 @@ export function AdminBookingsClient({
         `"${b.listing.host.email || ""}"`,
         `"${b.user.name || ""}"`,
         `"${b.user.email || ""}"`,
-        `"${new Date(b.startDate).toLocaleDateString()}"`,
-        `"${new Date(b.endDate).toLocaleDateString()}"`,
+        `"${formatBookingDate(b.startDate)}"`,
+        `"${formatBookingDate(b.endDate)}"`,
         `"${nights}"`,
         `"${formatSarFromHalalas(total)}"`,
         `"${b.status}"`,
@@ -256,7 +276,7 @@ export function AdminBookingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap text-[var(--muted-foreground)] font-mono text-[11px]">
-                        {new Date(booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} — {new Date(booking.endDate).toLocaleDateString([], { month: "short", day: "numeric" })} ({nights} nights)
+                        {formatBookingDate(booking.startDate)} — {formatBookingDate(booking.endDate)} ({nights} nights)
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono">
@@ -345,7 +365,7 @@ export function AdminBookingsClient({
                   <div className="col-span-2">
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
                     <span className="font-mono text-[var(--muted-foreground)]">
-                      {new Date(booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} — {new Date(booking.endDate).toLocaleDateString([], { month: "short", day: "numeric" })} ({nights} nights)
+                      {formatBookingDate(booking.startDate)} — {formatBookingDate(booking.endDate)} ({nights} nights)
                     </span>
                   </div>
                 </div>
@@ -392,7 +412,7 @@ export function AdminBookingsClient({
                 <h3 className="text-base font-semibold text-muted-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
-                <p className="text-xs text-[var(--muted-foreground)]">Created {new Date(selectedBooking.createdAt).toLocaleString()}</p>
+                <p className="text-xs text-[var(--muted-foreground)]">Created {formatBookingDateTime(selectedBooking.createdAt)}</p>
               </div>
               <button
                 type="button"
@@ -428,7 +448,7 @@ export function AdminBookingsClient({
               <div className="rounded-xl bg-[var(--surface-secondary)] p-3.5 border border-[var(--border-subtle)] flex justify-between items-center font-mono">
                 <div>
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Check-in / Check-out</span>
-                  <span className="font-semibold">{new Date(selectedBooking.startDate).toLocaleDateString()} → {new Date(selectedBooking.endDate).toLocaleDateString()}</span>
+                  <span className="font-semibold">{formatBookingDate(selectedBooking.startDate)} → {formatBookingDate(selectedBooking.endDate)}</span>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Total Amount</span>

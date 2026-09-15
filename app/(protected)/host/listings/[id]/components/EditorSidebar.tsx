@@ -112,7 +112,6 @@ const AMENITY_ICON_SOURCES: Record<string, string> = {
 
 interface EditorSidebarProps {
   editorTab: "space" | "arrival" | "preferences";
-  setEditorTab: (tab: "space" | "arrival" | "preferences") => void;
   activeSection: string;
   setActiveSection: (section: any) => void;
   editTitle: string;
@@ -187,7 +186,6 @@ interface EditorSidebarProps {
 
 export function EditorSidebar({
   editorTab,
-  setEditorTab,
   activeSection,
   setActiveSection,
   isLoading = false,
@@ -440,10 +438,7 @@ export function EditorSidebar({
           <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5">
             <button
               type="button"
-              onClick={() => {
-                setEditorTab("space");
-                setActiveSection("description");
-              }}
+              onClick={() => setActiveSection("description")}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -454,10 +449,7 @@ export function EditorSidebar({
 
             <button
               type="button"
-              onClick={() => {
-                setEditorTab("arrival");
-                setActiveSection("check-in-out");
-              }}
+              onClick={() => setActiveSection("check-in-out")}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -470,10 +462,7 @@ export function EditorSidebar({
           <button
             type="button"
             aria-label="Listing preferences"
-            onClick={() => {
-              setEditorTab("preferences");
-              setActiveSection("listing-status");
-            }}
+            onClick={() => setActiveSection("listing-status")}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F]"

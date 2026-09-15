@@ -15,6 +15,7 @@ interface AirbnbOrgStaysViewProps {
   setActiveSection: (section: any) => void;
   onSave?: (config: OrgStaysConfig) => Promise<void>;
   isSaving?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export function AirbnbOrgStaysView({
@@ -23,6 +24,7 @@ export function AirbnbOrgStaysView({
   setActiveSection: _setActiveSection,
   onSave,
   isSaving = false,
+  onDirtyChange,
 }: AirbnbOrgStaysViewProps) {
   // Extract initial values from listing discounts if present
   const initialConfig: OrgStaysConfig = React.useMemo(() => {
@@ -67,6 +69,12 @@ export function AirbnbOrgStaysView({
     isEnabled !== initialConfig.enabled ||
     (isEnabled && discountType !== initialConfig.discountType) ||
     (isEnabled && discountType === "DISCOUNT" && discountPercentage !== initialConfig.discountPercentage);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   const handleToggle = () => {
     setIsEnabled((prev) => !prev);

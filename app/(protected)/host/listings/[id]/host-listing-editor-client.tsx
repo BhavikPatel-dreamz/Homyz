@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect -- legacy editor integration surface; narrowed incrementally outside E4. */
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
@@ -265,6 +265,21 @@ const PREFERENCE_SECTIONS: SectionKey[] = [
   "removelisting",
 ];
 
+type PreferenceDraft = {
+  languageIds: string[];
+  requireProfilePhoto: boolean;
+  listingStatus: "listed" | "unlisted";
+};
+
+function preferenceDraftMatches(left: PreferenceDraft, right: PreferenceDraft) {
+  return (
+    left.requireProfilePhoto === right.requireProfilePhoto &&
+    left.listingStatus === right.listingStatus &&
+    left.languageIds.length === right.languageIds.length &&
+    left.languageIds.every((languageId, index) => languageId === right.languageIds[index])
+  );
+}
+
 export function HostListingEditorClient({
   listing: initialListing,
   initialSection,
@@ -277,7 +292,6 @@ export function HostListingEditorClient({
   initialGuidebooks?: any[];
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [listing, setListing] = useState<HostListingData>(initialListing);
   const [activeSection, setActiveSectionState] = useState<SectionKey>(initialSection || "propertyType");
   const [editorTab, setEditorTab] = useState<"space" | "arrival" | "preferences">(
@@ -290,9 +304,12 @@ export function HostListingEditorClient({
   // Start with the mobile navigation surface so a listing never flashes its
   // form before the host chooses a section from the Editor Sidebar.
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
+  const activeSectionRef = useRef(activeSection);
+  const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
+  const requestBrowserLeaveRef = useRef<(destination: string) => void>(() => {});
 
-  const setActiveSection = useCallback(
-    (newSection: SectionKey) => {
+  const applySectionNavigation = useCallback(
+    (newSection: SectionKey, updateHistory = true) => {
       setActiveSectionState(newSection);
       if (PREFERENCE_SECTIONS.includes(newSection)) {
         setEditorTab("preferences");
@@ -304,17 +321,12 @@ export function HostListingEditorClient({
 
       const slug = sectionToSlug(newSection);
       const targetPath = `/host/listings/${listing.id}/${slug}`;
-      if (typeof window !== "undefined" && window.location.pathname !== targetPath) {
+      if (updateHistory && typeof window !== "undefined" && window.location.pathname !== targetPath) {
         window.history.pushState(null, "", targetPath);
       }
     },
     [listing.id]
   );
-
-  const setMobileEditorSection = useCallback((newSection: SectionKey) => {
-    setActiveSection(newSection);
-    setIsMobileSidebarOpen(false);
-  }, [setActiveSection]);
 
   useEffect(() => {
     const mobileQuery = window.matchMedia("(max-width: 1023px)");
@@ -330,41 +342,17 @@ export function HostListingEditorClient({
   useEffect(() => {
     const handlePopState = () => {
       const parts = window.location.pathname.split("/").filter(Boolean);
-      if (parts.length >= 3 && parts[0] === "host" && parts[1] === "listings") {
+      if (parts.length >= 3 && parts[0] === "host" && parts[1] === "listings" && parts[2] === listing.id) {
         const slug = parts[3];
         const targetSec = slugToSection(slug);
-        setActiveSectionState(targetSec);
-        if (PREFERENCE_SECTIONS.includes(targetSec)) {
-          setEditorTab("preferences");
-        } else if (ARRIVAL_SECTIONS.includes(targetSec)) {
-          setEditorTab("arrival");
-        } else {
-          setEditorTab("space");
-        }
+        requestSectionNavigationRef.current(targetSec, true);
+      } else {
+        requestBrowserLeaveRef.current(window.location.href);
       }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  useEffect(() => {
-    if (!pathname) return;
-    const parts = pathname.split("/").filter(Boolean);
-    if (parts.length >= 3 && parts[0] === "host" && parts[1] === "listings") {
-      const slug = parts[3];
-      const targetSec = slugToSection(slug);
-      if (targetSec !== activeSection) {
-        setActiveSectionState(targetSec);
-        if (PREFERENCE_SECTIONS.includes(targetSec)) {
-          setEditorTab("preferences");
-        } else if (ARRIVAL_SECTIONS.includes(targetSec)) {
-          setEditorTab("arrival");
-        } else {
-          setEditorTab("space");
-        }
-      }
-    }
-  }, [pathname, activeSection]);
+  }, [listing.id]);
 
   // Editable Form States
   const [editTitle, setEditTitle] = useState(listing.title);
@@ -568,6 +556,36 @@ export function HostListingEditorClient({
   const [listingStatusSetting, setListingStatusSetting] = useState<"listed" | "unlisted">(
     listing.published && listing.status === "ACTIVE" && !listing.isPaused ? "listed" : "unlisted"
   );
+  const [savedPreferenceDraft, setSavedPreferenceDraft] = useState<PreferenceDraft>(() => ({
+    languageIds: [...selectedLanguageIds],
+    requireProfilePhoto,
+    listingStatus: listingStatusSetting,
+  }));
+  const [hasExternalPreferenceDraft, setHasExternalPreferenceDraft] = useState(false);
+
+  const currentPreferenceDraft: PreferenceDraft = {
+    languageIds: [...selectedLanguageIds],
+    requireProfilePhoto,
+    listingStatus: listingStatusSetting,
+  };
+  const hasUnsavedPreferenceChanges =
+    !preferenceDraftMatches(currentPreferenceDraft, savedPreferenceDraft) || hasExternalPreferenceDraft;
+
+  const restoreSavedPreferenceDraft = useCallback(() => {
+    setSelectedLanguageIds(savedPreferenceDraft.languageIds);
+    setRequireProfilePhoto(savedPreferenceDraft.requireProfilePhoto);
+    setListingStatusSetting(savedPreferenceDraft.listingStatus);
+    setHasExternalPreferenceDraft(false);
+  }, [savedPreferenceDraft, setHasExternalPreferenceDraft, setListingStatusSetting, setRequireProfilePhoto, setSelectedLanguageIds]);
+
+  const markPreferenceDraftSaved = useCallback((next?: Partial<PreferenceDraft>) => {
+    setSavedPreferenceDraft({
+      languageIds: next?.languageIds ?? [...selectedLanguageIds],
+      requireProfilePhoto: next?.requireProfilePhoto ?? requireProfilePhoto,
+      listingStatus: next?.listingStatus ?? listingStatusSetting,
+    });
+    setHasExternalPreferenceDraft(false);
+  }, [listingStatusSetting, requireProfilePhoto, selectedLanguageIds, setHasExternalPreferenceDraft, setSavedPreferenceDraft]);
 
   // House Rules State (Structured & Real Database Backed)
   const [petsAllowed, setPetsAllowed] = useState<boolean | null>(() => {
@@ -674,6 +692,133 @@ export function HostListingEditorClient({
   ].filter(Boolean).length;
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState(false);
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
+
+  const completeSectionNavigation = useCallback((newSection: SectionKey, updateHistory = true) => {
+    applySectionNavigation(newSection, updateHistory);
+  }, [applySectionNavigation]);
+
+  const requestSectionNavigation = useCallback((newSection: SectionKey, fromHistory = false) => {
+    if (newSection === activeSectionRef.current) return;
+
+    const leave = () => {
+      restoreSavedPreferenceDraft();
+      completeSectionNavigation(newSection, !fromHistory);
+    };
+
+    if (!hasUnsavedPreferenceChanges) {
+      completeSectionNavigation(newSection, !fromHistory);
+      return;
+    }
+
+    if (fromHistory && typeof window !== "undefined") {
+      const currentPath = `/host/listings/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
+      if (window.location.pathname !== currentPath) window.history.pushState(null, "", currentPath);
+    }
+
+    pendingNavigationRef.current = leave;
+    setIsUnsavedChangesDialogOpen(true);
+  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, listing.id, restoreSavedPreferenceDraft]);
+
+  const requestBrowserLeave = useCallback((destination: string) => {
+    if (!hasUnsavedPreferenceChanges || typeof window === "undefined") return;
+
+    const currentPath = `/host/listings/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
+    if (window.location.pathname !== currentPath) window.history.pushState(null, "", currentPath);
+    pendingNavigationRef.current = () => {
+      restoreSavedPreferenceDraft();
+      window.location.assign(destination);
+    };
+    setIsUnsavedChangesDialogOpen(true);
+  }, [hasUnsavedPreferenceChanges, listing.id, restoreSavedPreferenceDraft]);
+
+  useEffect(() => {
+    requestSectionNavigationRef.current = requestSectionNavigation;
+  }, [requestSectionNavigation]);
+
+  useEffect(() => {
+    requestBrowserLeaveRef.current = requestBrowserLeave;
+  }, [requestBrowserLeave]);
+
+  const setActiveSection = useCallback((newSection: SectionKey) => {
+    requestSectionNavigation(newSection);
+  }, [requestSectionNavigation]);
+
+  const setMobileEditorSection = useCallback((newSection: SectionKey) => {
+    if (newSection === activeSectionRef.current) {
+      setIsMobileSidebarOpen(false);
+      return;
+    }
+
+    if (hasUnsavedPreferenceChanges) {
+      pendingNavigationRef.current = () => {
+        restoreSavedPreferenceDraft();
+        completeSectionNavigation(newSection);
+        setIsMobileSidebarOpen(false);
+      };
+      setIsUnsavedChangesDialogOpen(true);
+      return;
+    }
+
+    completeSectionNavigation(newSection);
+    setIsMobileSidebarOpen(false);
+  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, restoreSavedPreferenceDraft]);
+
+  const cancelPreferenceChanges = useCallback((targetSection: SectionKey) => {
+    restoreSavedPreferenceDraft();
+    completeSectionNavigation(targetSection);
+  }, [completeSectionNavigation, restoreSavedPreferenceDraft]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedPreferenceChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedPreferenceChanges]);
+
+  useEffect(() => {
+    const handleDocumentNavigation = (event: MouseEvent) => {
+      if (
+        !hasUnsavedPreferenceChanges ||
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+
+      const destination = new URL(anchor.href, window.location.href);
+      if (destination.origin !== window.location.origin || destination.href === window.location.href) return;
+
+      event.preventDefault();
+      pendingNavigationRef.current = () => {
+        restoreSavedPreferenceDraft();
+        router.push(`${destination.pathname}${destination.search}${destination.hash}`);
+      };
+      setIsUnsavedChangesDialogOpen(true);
+    };
+
+    document.addEventListener("click", handleDocumentNavigation, true);
+    return () => document.removeEventListener("click", handleDocumentNavigation, true);
+  }, [hasUnsavedPreferenceChanges, restoreSavedPreferenceDraft, router]);
+
   const setFeedbackMsg = useCallback((msg: { type: "success" | "error"; text: string } | null) => {
     if (!msg) return;
     if (msg.type === "success") {
@@ -1078,6 +1223,7 @@ export function HostListingEditorClient({
                 isPaused: false,
               }));
               setListingStatusSetting("listed");
+              markPreferenceDraftSaved({ listingStatus: "listed" });
               setFeedbackMsg({ type: "success", text: "Listing published successfully! Your property is now live." });
             } else {
               setListing((prev) => ({
@@ -1087,6 +1233,7 @@ export function HostListingEditorClient({
                 isPaused: false,
               }));
               setListingStatusSetting("unlisted");
+              markPreferenceDraftSaved({ listingStatus: "unlisted" });
               setFeedbackMsg({ type: "success", text: "Listing submitted for Admin approval. It will go live after approval." });
             }
           } else {
@@ -1098,6 +1245,7 @@ export function HostListingEditorClient({
           if (res.ok && res.data) {
             setListing((prev) => ({ ...prev, published: false, status: "DRAFT" }));
             setListingStatusSetting("unlisted");
+            markPreferenceDraftSaved({ listingStatus: "unlisted" });
             setFeedbackMsg({ type: "success", text: "Listing unpublished successfully." });
           } else {
             setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to unpublish listing." });
@@ -1124,6 +1272,9 @@ export function HostListingEditorClient({
       setIsSaving(false);
       if (res.ok && res.data) {
         setListing((prev) => ({ ...prev, ...payload }));
+        if (PREFERENCE_SECTIONS.includes(sectionToSave)) {
+          markPreferenceDraftSaved();
+        }
         if (payload.guests !== undefined) {
           setEditGuests(payload.guests);
           setMaxGuestsCount(payload.guests);
@@ -1751,6 +1902,10 @@ export function HostListingEditorClient({
             setGuestInteractionPreference={setEditGuestInteraction}
             requireProfilePhoto={requireProfilePhoto}
             setRequireProfilePhoto={setRequireProfilePhoto}
+            onCancelPreferenceChanges={cancelPreferenceChanges}
+            onOrgStaysDirtyChange={setHasExternalPreferenceDraft}
+            onTaxesDirtyChange={setHasExternalPreferenceDraft}
+            onRegulationsDirtyChange={setHasExternalPreferenceDraft}
             listingStatusSetting={listingStatusSetting}
             setListingStatusSetting={setListingStatusSetting}
           />
@@ -1830,7 +1985,6 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         <EditorSidebar
           editorTab={editorTab}
-          setEditorTab={setEditorTab}
           activeSection={activeSection}
           setActiveSection={setMobileEditorSection}
           isLoading={isLoading}
@@ -1900,12 +2054,64 @@ export function HostListingEditorClient({
           parkingType={parkingType}
           setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
           mobileOpen={isMobileSidebarOpen}
-          onMobileClose={() => router.push("/host/listings")}
+          onMobileClose={() => {
+            if (hasUnsavedPreferenceChanges) {
+              pendingNavigationRef.current = () => {
+                restoreSavedPreferenceDraft();
+                router.push("/host/listings");
+              };
+              setIsUnsavedChangesDialogOpen(true);
+              return;
+            }
+            router.push("/host/listings");
+          }}
         />
           </div>
       </Container>
 
       <Footer />
+
+      {isUnsavedChangesDialogOpen && (
+        <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unsaved-preferences-title"
+            className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl sm:p-7"
+          >
+            <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950">
+              You have unsaved changes
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+              Your changes haven&apos;t been saved. Are you sure you want to leave?
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  pendingNavigationRef.current = null;
+                  setIsUnsavedChangesDialogOpen(false);
+                }}
+                className="rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50"
+              >
+                Stay and continue editing
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const pendingNavigation = pendingNavigationRef.current;
+                  pendingNavigationRef.current = null;
+                  setIsUnsavedChangesDialogOpen(false);
+                  pendingNavigation?.();
+                }}
+                className="rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800"
+              >
+                Discard changes and leave
+              </button>
+            </div>
+          </section>
+        </ModalOverlay>
+      )}
 
       {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}

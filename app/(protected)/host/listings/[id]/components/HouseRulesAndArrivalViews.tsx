@@ -124,6 +124,10 @@ interface HouseRulesAndArrivalViewsProps {
   setSelectedLanguageIds?: (val: string[]) => void;
   requireProfilePhoto?: boolean;
   setRequireProfilePhoto?: (val: boolean) => void;
+  onCancelPreferenceChanges?: (targetSection: SectionKey) => void;
+  onOrgStaysDirtyChange?: (isDirty: boolean) => void;
+  onTaxesDirtyChange?: (isDirty: boolean) => void;
+  onRegulationsDirtyChange?: (isDirty: boolean) => void;
   guestInteractionPreference?: string;
   setGuestInteractionPreference?: (val: string) => void;
 
@@ -257,6 +261,10 @@ export function HouseRulesAndArrivalViews({
   setSelectedLanguageIds,
   requireProfilePhoto = false,
   setRequireProfilePhoto,
+  onCancelPreferenceChanges,
+  onOrgStaysDirtyChange,
+  onTaxesDirtyChange,
+  onRegulationsDirtyChange,
   guestInteractionPreference = "",
   setGuestInteractionPreference,
   isLoading,
@@ -1055,6 +1063,7 @@ export function HouseRulesAndArrivalViews({
           handleSaveSection={handleSaveSection}
           requireProfilePhoto={requireProfilePhoto}
           setRequireProfilePhoto={setRequireProfilePhoto}
+          onCancel={onCancelPreferenceChanges}
         />
       )}
 
@@ -1073,6 +1082,7 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           isSaving={isSaving}
           handleSaveSection={handleSaveSection}
+          onDirtyChange={onRegulationsDirtyChange}
         />
       )}
 
@@ -1082,6 +1092,7 @@ export function HouseRulesAndArrivalViews({
           listingCity={listingCity}
           listingCountry={listingCountry}
           setActiveSection={setActiveSection}
+          onDirtyChange={onTaxesDirtyChange}
         />
       )}
 
@@ -1096,6 +1107,7 @@ export function HouseRulesAndArrivalViews({
           setActiveSection={setActiveSection}
           onSave={onSaveOrgStays}
           isSaving={isSaving}
+          onDirtyChange={onOrgStaysDirtyChange}
         />
       )}
     </>
@@ -1782,12 +1794,14 @@ function GuestRequirementsView({
   handleSaveSection,
   requireProfilePhoto,
   setRequireProfilePhoto,
+  onCancel,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
   requireProfilePhoto: boolean;
   setRequireProfilePhoto?: (value: boolean) => void;
+  onCancel?: (targetSection: SectionKey) => void;
 }) {
   return (
     <div className="space-y-7 animate-in fade-in max-w-xl pb-10 font-sans">
@@ -1859,7 +1873,13 @@ function GuestRequirementsView({
 
         <button
           type="button"
-          onClick={() => setActiveSection("arrival-guide")}
+          onClick={() => {
+            if (onCancel) {
+              onCancel("arrival-guide");
+              return;
+            }
+            setActiveSection("arrival-guide");
+          }}
           className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
@@ -2621,15 +2641,24 @@ function RegulationsView({
   setActiveSection,
   isSaving: _isSaving,
   handleSaveSection,
+  onDirtyChange,
 }: {
   setActiveSection: (s: any) => void;
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }) {
   const [showDetails, setShowDetails] = React.useState(false);
   const [isEditingReg, setIsEditingReg] = React.useState(false);
   const [regNumber, setRegNumber] = React.useState("XXXXXXXX");
   const [regAddress, setRegAddress] = React.useState("Address, Country");
+  const isDirty = isEditingReg && (regNumber !== "XXXXXXXX" || regAddress !== "Address, Country");
+
+  React.useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  React.useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   if (showDetails) {
     return (
