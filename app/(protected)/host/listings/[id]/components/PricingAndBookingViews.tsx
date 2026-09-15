@@ -156,219 +156,217 @@ export function PricingAndBookingViews({
             <PricingSkeleton />
           ) : (
             <div className="space-y-5 pt-1">
-            {/* 1. Nightly Price Card */}
-            <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Weekday base price"}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
-                  <button
-                    type="button"
-                    aria-label="Toggle smart pricing"
-                    onClick={() => setSmartPricing?.(!smartPricing)}
-                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      smartPricing ? "bg-amber-400" : "bg-zinc-300"
-                    }`}
-                  >
-                    <span
-                      className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${
-                        smartPricing ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
+              {/* 1. Nightly Price Card */}
+              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Weekday base price"}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-zinc-700">Smart pricing</span>
+                    <button
+                      type="button"
+                      aria-label="Toggle smart pricing"
+                      onClick={() => setSmartPricing?.(!smartPricing)}
+                      className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${smartPricing ? "bg-amber-400" : "bg-zinc-300"
+                        }`}
+                    >
+                      <span
+                        className={`block w-5 h-5 rounded-full bg-white transition-transform shadow-xs ${smartPricing ? "translate-x-5" : "translate-x-0.5"
+                          }`}
+                      />
+                    </button>
+                  </div>
                 </div>
+
+                {smartPricing ? (
+                  <div className="space-y-3 pt-1">
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                      <label className="mb-2 block text-xs font-semibold text-zinc-700">Minimum price*</label>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={smartPricingMinPrice || ""}
+                          onChange={(e) => setSmartPricingMinPrice?.(Number(e.target.value || 0))}
+                          className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
+                      <label className="mb-2 block text-xs font-semibold text-zinc-700">Maximum price</label>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={smartPricingMaxPrice || ""}
+                          onChange={(e) => setSmartPricingMaxPrice?.(Number(e.target.value || 0))}
+                          className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-2 pt-1">
+                    <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
+                    <input
+                      type="number"
+                      value={editPrice || ""}
+                      onChange={(e) => setEditPrice(Number(e.target.value))}
+                      placeholder="100"
+                      className="w-full text-2xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
+                    />
+                  </div>
+                )}
               </div>
 
-              {smartPricing ? (
-                <div className="space-y-3 pt-1">
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-                    <label className="mb-2 block text-xs font-semibold text-zinc-700">Minimum price*</label>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
-                      <input
-                        type="number"
-                        min={0}
-                        value={smartPricingMinPrice || ""}
-                        onChange={(e) => setSmartPricingMinPrice?.(Number(e.target.value || 0))}
-                        className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
-                      />
+              {!smartPricing && (
+                <>
+                  {/* 2. Weekend adjustment */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-[#1F1F1F]">Weekend adjustment</label>
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">% premium</span>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-2xs">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            aria-label="Decrease weekend premium"
+                            onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
+                            className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                          >
+                            −
+                          </button>
+                          <div className="min-w-[72px] text-center">
+                            <span className="text-lg font-semibold text-[#1F1F1F]">{weekendPremium || 0}%</span>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label="Increase weekend premium"
+                            onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
+                            className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Weekend rate</div>
+                          <div className="text-sm font-semibold text-[#1F1F1F]">{currency} {weekendPrice || 0}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-                    <label className="mb-2 block text-xs font-semibold text-zinc-700">Maximum price</label>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
-                      <input
-                        type="number"
-                        min={0}
-                        value={smartPricingMaxPrice || ""}
-                        onChange={(e) => setSmartPricingMaxPrice?.(Number(e.target.value || 0))}
-                        className="w-full text-xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
-                      />
+                  {/* 3. Discounts section */}
+                  <div className="space-y-3 pt-1">
+                    <label className="block text-xs font-semibold text-[#1F1F1F]">Discounts</label>
+
+                    {/* Weekly discount card */}
+                    <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
+                          WEEKLY - FOR 7+ NIGHTS
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <input
+                            type="number"
+                            value={weeklyDiscount || ""}
+                            onChange={(e) => setWeeklyDiscount(Number(e.target.value))}
+                            placeholder="5"
+                            className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
+                          />
+                          <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-zinc-400 font-mono">
+                        weekly average is {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
+                      </span>
+                    </div>
+
+                    {/* Monthly discount card */}
+                    <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
+                          MONTHLY - FOR 28+ NIGHTS
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <input
+                            type="number"
+                            value={monthlyDiscount || ""}
+                            onChange={(e) => setMonthlyDiscount(Number(e.target.value))}
+                            placeholder="10"
+                            className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
+                          />
+                          <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-zinc-400 font-mono">
+                        monthly average is {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
+                      </span>
+                    </div>
+
+                    {/* Last-minute discount card */}
+                    <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between gap-4 shadow-2xs">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
+                          LAST-MINUTE - WITHIN 2 DAYS
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={lastMinuteDiscount || ""}
+                            disabled={!lastMinuteEnabled}
+                            onChange={(e) => setLastMinuteDiscount(Number(e.target.value))}
+                            placeholder="15"
+                            className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
+                          />
+                          <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={lastMinuteEnabled}
+                        aria-label="Toggle last-minute discount"
+                        onClick={() => {
+                          const nextEnabled = !lastMinuteEnabled;
+                          setLastMinuteEnabled(nextEnabled);
+                          if (nextEnabled && lastMinuteDiscount <= 0) setLastMinuteDiscount(15);
+                        }}
+                        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                      >
+                        <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                      </button>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-2xl font-semibold text-[#1F1F1F] tracking-tight">{currency}</span>
-                  <input
-                    type="number"
-                    value={editPrice || ""}
-                    onChange={(e) => setEditPrice(Number(e.target.value))}
-                    placeholder="100"
-                    className="w-full text-2xl font-semibold text-[#1F1F1F] tracking-tight outline-none bg-transparent placeholder:text-zinc-300"
-                  />
-                </div>
+                </>
               )}
-            </div>
 
-            {!smartPricing && (
-              <>
-            {/* 2. Weekend adjustment */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-[#1F1F1F]">Weekend adjustment</label>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">% premium</span>
+              {/* 4. Calendar notice card */}
+              <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 hover:bg-zinc-100/80 p-4 flex items-center gap-3 shadow-2xs transition-all cursor-pointer">
+                <span className="text-lg">🏪</span>
+                <span className="font-medium text-base text-[#1F1F1F]">Find more discounts and fees in the calendar</span>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-4 shadow-2xs">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      aria-label="Decrease weekend premium"
-                      onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
-                      className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-                    >
-                      −
-                    </button>
-                    <div className="min-w-[72px] text-center">
-                      <span className="text-lg font-semibold text-[#1F1F1F]">{weekendPremium || 0}%</span>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label="Increase weekend premium"
-                      onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
-                      className="w-8 h-8 rounded-full border border-zinc-200 bg-zinc-50 text-lg font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Weekend rate</div>
-                    <div className="text-sm font-semibold text-[#1F1F1F]">{currency} {weekendPrice || 0}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Discounts section */}
-            <div className="space-y-3 pt-1">
-              <label className="block text-xs font-semibold text-[#1F1F1F]">Discounts</label>
-
-              {/* Weekly discount card */}
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
-                    WEEKLY - FOR 7+ NIGHTS
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <input
-                      type="number"
-                      value={weeklyDiscount || ""}
-                      onChange={(e) => setWeeklyDiscount(Number(e.target.value))}
-                      placeholder="5"
-                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
-                    />
-                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
-                  </div>
-                </div>
-                <span className="text-xs text-zinc-400 font-mono">
-                  weekly average is {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
-                </span>
-              </div>
-
-              {/* Monthly discount card */}
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between shadow-2xs">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
-                    MONTHLY - FOR 28+ NIGHTS
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <input
-                      type="number"
-                      value={monthlyDiscount || ""}
-                      onChange={(e) => setMonthlyDiscount(Number(e.target.value))}
-                      placeholder="10"
-                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300"
-                    />
-                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
-                  </div>
-                </div>
-                <span className="text-xs text-zinc-400 font-mono">
-                  monthly average is {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
-                </span>
-              </div>
-
-              {/* Last-minute discount card */}
-              <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 flex items-center justify-between gap-4 shadow-2xs">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
-                    LAST-MINUTE - WITHIN 2 DAYS
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={lastMinuteDiscount || ""}
-                      disabled={!lastMinuteEnabled}
-                      onChange={(e) => setLastMinuteDiscount(Number(e.target.value))}
-                      placeholder="15"
-                      className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
-                    />
-                    <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
-                  </div>
-                </div>
+              {/* Save Button */}
+              <div className="pt-2">
                 <button
                   type="button"
-                  role="switch"
-                  aria-checked={lastMinuteEnabled}
-                  aria-label="Toggle last-minute discount"
-                  onClick={() => {
-                    const nextEnabled = !lastMinuteEnabled;
-                    setLastMinuteEnabled(nextEnabled);
-                    if (nextEnabled && lastMinuteDiscount <= 0) setLastMinuteDiscount(15);
-                  }}
-                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                  disabled={isSaving}
+                  onClick={() => handleSaveSection("pricing")}
+                  className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
                 >
-                  <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                  {isSaving ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>
-              </>
-            )}
-
-            {/* 4. Calendar notice card */}
-            <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 hover:bg-zinc-100/80 p-4 flex items-center gap-3 shadow-2xs transition-all cursor-pointer">
-              <span className="text-lg">🏪</span>
-              <span className="font-medium text-base text-[#1F1F1F]">Find more discounts and fees in the calendar</span>
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                disabled={isSaving}
-                onClick={() => handleSaveSection("pricing")}
-                className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-zinc-950 font-medium text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F]"
-              >
-                {isSaving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
           )}
         </div>
       )}
@@ -708,55 +706,55 @@ export function PricingAndBookingViews({
             <BookingSettingsSkeleton />
           ) : (
             <>
-          <section className={`rounded-2xl border-2 bg-white px-6 py-5 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
-            <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "first-three" && saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">Approve your first 3 bookings</h2>
-                <p className="mt-0.5 text-sm font-medium text-emerald-600">{Math.min(approvedBookingCount, 3)} of 3 approved</p>
-                <p className="mt-1 text-sm leading-5 text-zinc-600">Review your first three requests. After three confirmed bookings, new guests can book automatically.</p>
-              </div>
-              <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5"/></svg>
-            </button>
-          </section>
-
-          <section className={`rounded-2xl border-2 bg-white px-6 py-5 transition-colors ${_bookingMethod === "instant" ? "border-zinc-900" : "border-zinc-200"}`}>
-            <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">Use Instant Book</h2>
-                <p className="mt-0.5 text-sm leading-5 text-zinc-600">Let guests book automatically, which can help you get more bookings.</p>
-              </div>
-              <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z"/></svg>
-            </button>
-
-            <div className="my-5 border-t border-zinc-200" />
-            <div className="space-y-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-900">Require a good track record</h3>
-                  <p className="mt-0.5 text-sm leading-5 text-zinc-600">Only allow guests with a previous completed, confirmed stay on Homyz.</p>
-                </div>
-                <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label="Require a good track record" disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#E9C979]" : "bg-zinc-300"}`}>
-                  <span className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5" : "translate-x-0.5"}`} />
+              <section className={`rounded-2xl border-2 bg-white px-6 py-5 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
+                <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "first-three" && saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
+                  <div>
+                    <h2 className="text-base font-semibold text-zinc-900">Approve your first 3 bookings</h2>
+                    <p className="mt-0.5 text-sm font-medium text-emerald-600">{Math.min(approvedBookingCount, 3)} of 3 approved</p>
+                    <p className="mt-1 text-sm leading-5 text-zinc-600">Review your first three requests. After three confirmed bookings, new guests can book automatically.</p>
+                  </div>
+                  <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5" /></svg>
                 </button>
-              </div>
-              <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
-                <div><h3 className="text-sm font-semibold text-zinc-900">Add a custom message</h3><p className="mt-0.5 text-sm leading-5 text-zinc-600">{hasCustomBookingMessage ? "Custom message added for guests." : "Guests must read this before booking."}</p></div>
-                <span aria-hidden="true" className="text-3xl font-light leading-none text-zinc-800">›</span>
-              </button>
-            </div>
-          </section>
+              </section>
 
-          <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "approve" && saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })} className={`flex w-full items-center justify-between gap-5 rounded-2xl border-2 bg-white px-6 py-5 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
-            <div><h2 className="text-base font-semibold text-zinc-900">Approve all bookings</h2><p className="mt-0.5 text-sm leading-5 text-zinc-600">Always review reservation requests.</p></div>
-            <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z"/><path strokeLinecap="round" d="M8 9h8M8 13h5"/></svg>
-          </button>
-          {isSaving && (
-            <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-zinc-600">
-              <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-              Saving booking preference…
-            </div>
-          )}
-          </>
+              <section className={`rounded-2xl border-2 bg-white px-6 py-5 transition-colors ${_bookingMethod === "instant" ? "border-zinc-900" : "border-zinc-200"}`}>
+                <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
+                  <div>
+                    <h2 className="text-base font-semibold text-zinc-900">Use Instant Book</h2>
+                    <p className="mt-0.5 text-sm leading-5 text-zinc-600">Let guests book automatically, which can help you get more bookings.</p>
+                  </div>
+                  <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
+                </button>
+
+                <div className="my-5 border-t border-zinc-200" />
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-zinc-900">Require a good track record</h3>
+                      <p className="mt-0.5 text-sm leading-5 text-zinc-600">Only allow guests with a previous completed, confirmed stay on Homyz.</p>
+                    </div>
+                    <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label="Require a good track record" disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#E9C979]" : "bg-zinc-300"}`}>
+                      <span className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                  <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
+                    <div><h3 className="text-sm font-semibold text-zinc-900">Add a custom message</h3><p className="mt-0.5 text-sm leading-5 text-zinc-600">{hasCustomBookingMessage ? "Custom message added for guests." : "Guests must read this before booking."}</p></div>
+                    <span aria-hidden="true" className="text-3xl font-light leading-none text-zinc-800">›</span>
+                  </button>
+                </div>
+              </section>
+
+              <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "approve" && saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })} className={`flex w-full items-center justify-between gap-5 rounded-2xl border-2 bg-white px-6 py-5 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
+                <div><h2 className="text-base font-semibold text-zinc-900">Approve all bookings</h2><p className="mt-0.5 text-sm leading-5 text-zinc-600">Always review reservation requests.</p></div>
+                <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
+              </button>
+              {isSaving && (
+                <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-zinc-600">
+                  <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+                  Saving booking preference…
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

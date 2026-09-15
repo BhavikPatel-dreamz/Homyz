@@ -154,7 +154,7 @@ export function PropertyTypeSkeleton() {
   return (
     <div className="space-y-5 pt-1 animate-in fade-in font-sans">
       {/* 1. Which is most like your place? */}
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         <SkeletonText className="h-3.5 w-44" />
         <div className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 flex items-center justify-between shadow-2xs">
           <SkeletonText className="h-3.5 w-28" />
@@ -163,7 +163,7 @@ export function PropertyTypeSkeleton() {
       </div>
 
       {/* 2. Property type */}
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         <SkeletonText className="h-3.5 w-28" />
         <div className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 flex items-center justify-between shadow-2xs">
           <SkeletonText className="h-3.5 w-32" />
@@ -173,7 +173,7 @@ export function PropertyTypeSkeleton() {
       </div>
 
       {/* 3. Listing type */}
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         <SkeletonText className="h-3.5 w-24" />
         <div className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 flex items-center justify-between shadow-2xs">
           <SkeletonText className="h-3.5 w-24" />
@@ -184,7 +184,7 @@ export function PropertyTypeSkeleton() {
 
       {/* Stories / levels */}
       <div className="flex items-center justify-between py-1">
-        <div className="space-y-1">
+        <div className="space-y-3">
           <SkeletonText className="h-3.5 w-28" />
           <SkeletonText className="h-3 w-56" />
         </div>
@@ -197,7 +197,7 @@ export function PropertyTypeSkeleton() {
 
       {/* Private entrance */}
       <div className="flex items-center justify-between py-2 border-t border-zinc-100">
-        <div className="space-y-1">
+        <div className="space-y-3">
           <SkeletonText className="h-3.5 w-28" />
           <SkeletonText className="h-3 w-64" />
         </div>
@@ -208,7 +208,7 @@ export function PropertyTypeSkeleton() {
       </div>
 
       {/* Year built */}
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         <SkeletonText className="h-3.5 w-20" />
         <div className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3.5 flex items-center justify-between shadow-2xs">
           <SkeletonText className="h-3.5 w-36" />
@@ -264,7 +264,7 @@ export function PricingSkeleton() {
   return (
     <div className="space-y-5 pt-1 animate-in fade-in font-sans">
       {/* Card 1: Nightly price card */}
-      <SkeletonCard className="space-y-4">
+      <SkeletonCard className="space-y-3">
         <div className="flex items-center justify-between">
           <SkeletonText className="h-3.5 w-24" />
           <div className="flex items-center gap-2">

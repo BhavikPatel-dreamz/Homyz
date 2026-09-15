@@ -285,6 +285,9 @@ export function HostListingEditorClient({
         ? "arrival"
         : "space"
   );
+  // Start with the mobile navigation surface so a listing never flashes its
+  // form before the host chooses a section from the Editor Sidebar.
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
 
   const setActiveSection = useCallback(
     (newSection: SectionKey) => {
@@ -305,6 +308,22 @@ export function HostListingEditorClient({
     },
     [listing.id]
   );
+
+  const setMobileEditorSection = useCallback((newSection: SectionKey) => {
+    setActiveSection(newSection);
+    setIsMobileSidebarOpen(false);
+  }, [setActiveSection]);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 1023px)");
+    if (!mobileQuery.matches) setIsMobileSidebarOpen(false);
+
+    const closeOnDesktop = () => {
+      if (!mobileQuery.matches) setIsMobileSidebarOpen(false);
+    };
+    mobileQuery.addEventListener("change", closeOnDesktop);
+    return () => mobileQuery.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -1290,24 +1309,41 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className="min-h-screen pb-[calc(110px+env(safe-area-inset-bottom))] sm:pb-0 bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]"
+      className="min-h-screen bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0"
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
-      <HostHeader user={listing.host} />
+      <div className="hidden lg:block">
+        <HostHeader user={listing.host} />
+      </div>
 
       {/* 2. TOP NAV TABS (Matches Figma Tab Row: Today, Calendar, Listing, Messages 100%) */}
-      <HostSubNav activeTab="listing" listingId={listing.id} />
+      <div className="hidden lg:block">
+        <HostSubNav activeTab="listing" listingId={listing.id} showRightActions={false} />
+      </div>
+
+      <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">
+        <button
+          type="button"
+          aria-label="Open listing editor"
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="flex h-8 w-8 items-center justify-center text-[#1F1F1F]"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="sm:h-7 sm:w-7 h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
+            <path d="m5 5 14 14M19 5 5 19" />
+          </svg>
+        </button>
+      </div>
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
       <Container>
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 py-16">
+        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-0 lg:py-0">
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
-          <main className="lg:col-span-8 xl:col-span-8 flex min-w-0 flex-col space-y-6 pb-12">
+          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
             {/* Persistent Status Indicator Banner across all edit sections */}
             {activeSection !== "listing-status" && activeSection !== "listingstatus" && (
-              <div className="space-y-3">
+              <div className="hidden space-y-3">
                 {listingDisplayState === "PENDING_APPROVAL" && (
                   <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs animate-in fade-in">
                     <div className="flex items-start gap-3">
@@ -1358,10 +1394,10 @@ export function HostListingEditorClient({
                 )}
 
                 {listingDisplayState === "PUBLISHED" && (
-                  <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-900 animate-in fade-in">
+                  <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs text-emerald-700 animate-in fade-in">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="font-semibold">Listing Status: Published (Live)</span>
+                      <span className="font-medium">Listing Status: Published (Live)</span>
                       <span className="text-emerald-700 font-normal hidden sm:inline">— Guests can find and book your property</span>
                     </div>
                     <button
@@ -1750,7 +1786,7 @@ export function HostListingEditorClient({
           editorTab={editorTab}
           setEditorTab={setEditorTab}
           activeSection={activeSection}
-          setActiveSection={setActiveSection}
+          setActiveSection={setMobileEditorSection}
           isLoading={isLoading}
           editTitle={editTitle}
           editListingType={editListingType}
@@ -1815,6 +1851,8 @@ export function HostListingEditorClient({
           parkingAvailable={parkingAvailable}
           parkingType={parkingType}
           setIsRemoveListingModalOpen={setIsRemoveListingModalOpen}
+          mobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => router.push("/host/listings")}
         />
           </div>
       </Container>

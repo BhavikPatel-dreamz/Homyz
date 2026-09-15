@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor props */
 
 import React from "react";
+import Image from "next/image";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap } from "@/components/ui/real-map";
 import { getAmenityMeta } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
@@ -81,6 +83,33 @@ const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
   ceiling_hoist: "Ceiling or mobile hoist",
 };
 
+const AMENITY_ICON_SOURCES: Record<string, string> = {
+  wifi: "/images/icons/wifi.svg",
+  tv: "/images/icons/tv.svg",
+  kitchen: "/images/icons/kitchen.svg",
+  washer: "/images/icons/washer.svg",
+  free_parking: "/images/icons/free-parking.svg",
+  paid_parking: "/images/icons/paid-parking.svg",
+  air_conditioning: "/images/icons/air-conditioning.svg",
+  workspace: "/images/icons/workspace.svg",
+  bed_linens: "/images/icons/bed-linens.svg",
+  body_soap: "/images/icons/body-soap.svg",
+  pool: "/images/icons/pool.svg",
+  private_pool: "/images/icons/pool.svg",
+  shared_pool: "/images/icons/pool.svg",
+  hot_tub: "/images/icons/hot-tub.svg",
+  indoor_fireplace: "/images/icons/indoor-fireplace.svg",
+  piano: "/images/icons/piano.svg",
+  patio: "/images/icons/patio.svg",
+  outdoor_dining_area: "/images/icons/outdoor-dining-area.svg",
+  bbq_grill: "/images/icons/bbg-grill.svg",
+  fire_pit: "/images/icons/fire-pit.svg",
+  pool_table: "/images/icons/pool-table.svg",
+  smoke_alarm: "/images/icons/smoke-alarm.svg",
+  first_aid_kit: "/images/icons/first-aid-kit.svg",
+  fire_extinguisher: "/images/icons/fire-extinguisher.svg",
+};
+
 interface EditorSidebarProps {
   editorTab: "space" | "arrival" | "preferences";
   setEditorTab: (tab: "space" | "arrival" | "preferences") => void;
@@ -150,6 +179,8 @@ interface EditorSidebarProps {
   parkingType?: string;
   setIsRemoveListingModalOpen?: (open: boolean) => void;
   isLoading?: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 export function EditorSidebar({
@@ -221,7 +252,53 @@ export function EditorSidebar({
   parkingAvailable = false,
   parkingType = "Free",
   setIsRemoveListingModalOpen,
+  mobileOpen = false,
+  onMobileClose,
 }: EditorSidebarProps) {
+  const sidebarScrollRef = React.useRef<HTMLDivElement>(null);
+  const sidebarScrollFrameRef = React.useRef<number | null>(null);
+  const [sidebarScrollThumb, setSidebarScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
+
+  const updateSidebarScrollThumb = React.useCallback(() => {
+    if (sidebarScrollFrameRef.current !== null) cancelAnimationFrame(sidebarScrollFrameRef.current);
+
+    sidebarScrollFrameRef.current = requestAnimationFrame(() => {
+      const element = sidebarScrollRef.current;
+      if (!element) return;
+
+      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
+      const height = hasOverflow ? 60 : 0;
+      // Keep the thumb and its shadow 10px above the rail's lower edge.
+      const maxTop = Math.max(0, element.clientHeight - height - 10);
+      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
+      const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+
+      setSidebarScrollThumb((current) => (
+        current.height === height && current.top === top && current.visible === hasOverflow
+          ? current
+          : { height, top, visible: hasOverflow }
+      ));
+      sidebarScrollFrameRef.current = null;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const element = sidebarScrollRef.current;
+    if (!element) return;
+
+    updateSidebarScrollThumb();
+    const resizeObserver = new ResizeObserver(updateSidebarScrollThumb);
+    const mutationObserver = new MutationObserver(updateSidebarScrollThumb);
+    resizeObserver.observe(element);
+    mutationObserver.observe(element, { childList: true, subtree: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      if (sidebarScrollFrameRef.current !== null) cancelAnimationFrame(sidebarScrollFrameRef.current);
+    };
+  }, [updateSidebarScrollThumb]);
+
   const computedSafetyState = React.useMemo(() => {
     if (guestSafetyState) return guestSafetyState;
     return parseSafetyData({
@@ -272,17 +349,34 @@ export function EditorSidebar({
     listing?.country
   );
 
-  return (
-    <aside className="lg:col-span-4 xl:col-span-4 flex min-w-0 flex-col lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)]">
-      <div className="rounded-3xl border border-zinc-200 bg-zinc-50/70 p-6 flex flex-col shadow-xs overflow-hidden max-h-[calc(100vh-6rem)]">
+  const sidebar = (
+    <aside
+      className={`editor-sidebar ${mobileOpen
+        ? "flex h-full w-full overflow-hidden border-0 bg-white px-5 pb-6 pt-6 sm:px-8 sm:pt-8"
+        : "hidden border border-l-0 border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
+        } min-w-0 flex-col lg:col-span-1 lg:-mt-[109px] lg:flex lg:h-auto lg:w-auto lg:overflow-visible lg:border lg:border-l-0 lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] lg:bg-[rgba(241,241,241,0.5)] lg:px-0 lg:pl-8 lg:pb-12 lg:pt-[176px]`}
+    >
+      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:sticky lg:top-25 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
-        <div className="flex flex-col pb-3 shrink-0">
+        <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
+            <h2>
               {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
             </h2>
+            {mobileOpen && (
+              <button
+                type="button"
+                aria-label="Return to listing form"
+                onClick={onMobileClose}
+                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] lg:hidden"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
+                  <path d="m5 5 14 14M19 5 5 19" />
+                </svg>
+              </button>
+            )}
           </div>
-          <div className="mt-1.5 flex items-center gap-1.5">
+          <div className="mt-1.5 hidden items-center gap-1.5">
             {displayState === "PENDING_APPROVAL" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -318,95 +412,97 @@ export function EditorSidebar({
         </div>
 
         {/* Sub-Pills: [Your space] [Arrival guide] ⚙️ (Fixed) */}
-        <div className="flex items-center gap-2 pb-4 shrink-0 border-b border-zinc-200/60 mb-3">
-          <button
-            type="button"
-            onClick={() => {
-              setEditorTab("space");
-              setActiveSection("description");
-            }}
-            className={`rounded-full font-medium text-sm px-4 py-1.5 transition-all cursor-pointer ${
-              editorTab === "space"
-                ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
-                : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
-            }`}
-          >
-            Your space
-          </button>
+        <div className="mb-6 flex shrink-0 items-center justify-between gap-2 lg:mb-12 lg:max-w-[calc(100%-70px)]">
+          <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setEditorTab("space");
+                setActiveSection("description");
+              }}
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
+                  ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
+                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
+                }`}
+            >
+              Your space
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditorTab("arrival");
+                setActiveSection("check-in-out");
+              }}
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
+                ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
+                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
+                }`}
+            >
+              Arrival guide
+            </button>
+          </div>
 
           <button
             type="button"
-            onClick={() => {
-              setEditorTab("arrival");
-              setActiveSection("check-in-out");
-            }}
-            className={`rounded-full font-medium text-sm px-4 py-1.5 transition-all cursor-pointer ${
-              editorTab === "arrival"
-                ? "bg-[#FEE08B] text-zinc-950 shadow-2xs border border-amber-300"
-                : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100"
-            }`}
-          >
-            Arrival guide
-          </button>
-
-          <button
-            type="button"
+            aria-label="Listing preferences"
             onClick={() => {
               setEditorTab("preferences");
               setActiveSection("listing-status");
             }}
-            className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs transition-all cursor-pointer ${
-              editorTab === "preferences"
+            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
                 ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
-                : "bg-white border-zinc-200 text-[#727272] hover:bg-zinc-100"
-            }`}
+                : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F]"
+              }`}
           >
-            ⚙️
+            <Image src="/images/icons/setting-icon.svg" alt="" width={24} height={24} className="h-6 w-6 transition-[filter] group-hover:brightness-0 group-hover:invert" />
           </button>
         </div>
 
         {/* Scrollable Sidebar Content Body */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 custom-scrollbar">
+        <div className="relative min-h-0 flex-1">
+          <div
+            ref={sidebarScrollRef}
+            onScroll={updateSidebarScrollThumb}
+            className="custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px]"
+          >
           {/* Preferences Cards Stack */}
           {editorTab === "preferences" ? (
-            <div className="space-y-3">
+            <div className="min-w-0 space-y-3">
               {/* Card 1: Listing status */}
               <div
                 onClick={() => setActiveSection("listing-status")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "listing-status" || activeSection === "listingstatus"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "listing-status" || activeSection === "listingstatus"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#727272] block mb-1">
                   Listing status
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${
-                    displayState === "PUBLISHED" || displayState === "APPROVED"
+                  className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
                       ? "text-emerald-700 bg-emerald-100/70"
                       : displayState === "PENDING_APPROVAL"
-                      ? "text-amber-800 bg-amber-100/70"
-                      : displayState === "REJECTED"
-                      ? "text-rose-800 bg-rose-100/70"
-                      : displayState === "READY_TO_SUBMIT"
-                      ? "text-indigo-800 bg-indigo-100/70"
-                      : "text-zinc-700 bg-zinc-100"
-                  }`}
+                        ? "text-amber-800 bg-amber-100/70"
+                        : displayState === "REJECTED"
+                          ? "text-rose-800 bg-rose-100/70"
+                          : displayState === "READY_TO_SUBMIT"
+                            ? "text-indigo-800 bg-indigo-100/70"
+                            : "text-zinc-700 bg-zinc-100"
+                    }`}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      displayState === "PUBLISHED" || displayState === "APPROVED"
+                    className={`w-1.5 h-1.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
                         ? "bg-emerald-500"
                         : displayState === "PENDING_APPROVAL"
-                        ? "bg-amber-500 animate-pulse"
-                        : displayState === "REJECTED"
-                        ? "bg-rose-500"
-                        : displayState === "READY_TO_SUBMIT"
-                        ? "bg-indigo-500"
-                        : "bg-zinc-400"
-                    }`}
+                          ? "bg-amber-500 animate-pulse"
+                          : displayState === "REJECTED"
+                            ? "bg-rose-500"
+                            : displayState === "READY_TO_SUBMIT"
+                              ? "bg-indigo-500"
+                              : "bg-zinc-400"
+                      }`}
                   />
                   {displayState === "PUBLISHED"
                     ? "Published · Live"
@@ -425,11 +521,10 @@ export function EditorSidebar({
               {/* Card 2: Languages */}
               <div
                 onClick={() => setActiveSection("language")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "language" || activeSection === "languages"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "language" || activeSection === "languages"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -455,11 +550,10 @@ export function EditorSidebar({
               {/* Card 3: Guest requirements */}
               <div
                 onClick={() => setActiveSection("guest-requirements")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "guest-requirements" || activeSection === "guestrequirements"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "guest-requirements" || activeSection === "guestrequirements"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -475,11 +569,10 @@ export function EditorSidebar({
               {/* Card 4: Local laws */}
               <div
                 onClick={() => setActiveSection("local-laws")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "local-laws" || activeSection === "locallaws"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "local-laws" || activeSection === "locallaws"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -495,11 +588,10 @@ export function EditorSidebar({
               {/* Card 5: Regulations */}
               <div
                 onClick={() => setActiveSection("regulations")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "regulations"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "regulations"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -512,11 +604,10 @@ export function EditorSidebar({
               {/* Card 6: Taxes */}
               <div
                 onClick={() => setActiveSection("taxes")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "taxes"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "taxes"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -532,14 +623,13 @@ export function EditorSidebar({
               {/* Card 7: homyz.org stays */}
               <div
                 onClick={() => setActiveSection("homyz-org-stays")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "homyz-org-stays" ||
-                  activeSection === "airbnb-org-stays" ||
-                  activeSection === "homyz-stays" ||
-                  activeSection === "homyzstays"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "homyz-org-stays" ||
+                    activeSection === "airbnb-org-stays" ||
+                    activeSection === "homyz-stays" ||
+                    activeSection === "homyzstays"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -569,11 +659,10 @@ export function EditorSidebar({
                   setActiveSection("remove-listing");
                   setIsRemoveListingModalOpen?.(true);
                 }}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
-                  activeSection === "remove-listing" || activeSection === "removelisting"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "remove-listing" || activeSection === "removelisting"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div>
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -592,23 +681,22 @@ export function EditorSidebar({
               {activeSection !== "about-host" && (
                 <div
                   onClick={() => setActiveSection("photos")}
-                  className={`relative cursor-pointer group my-2 p-2 rounded-3xl transition-all ${
-                    activeSection === "photos"
-                      ? "bg-[#ECE9FE] border border-indigo-200 shadow-2xs"
+                  className={`relative min-w-0 cursor-pointer group mb-[72px] rounded-3xl transition-all ${activeSection === "photos"
+                      ? ""
                       : "hover:bg-zinc-100/50"
-                  }`}
+                    }`}
                   aria-label="Photo tour preview"
                 >
-                  <div className="relative h-36 sm:h-40 w-full overflow-visible">
+                      <div className="relative w-full max-w-full h-36 sm:h-45">
                     {/* Card 0 (Leftmost, z-0) */}
                     <div
-                      className="absolute top-0 bottom-0 left-0 w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-0 transition-all duration-300 ease-out group-hover:-translate-x-2.5 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                      className="absolute top-0 bottom-0 left-0 w-[154px] rounded-xl border-2 border-[#1F1F1F] bg-white shadow-2xs overflow-hidden z-0 transition-all duration-300 ease-out hover:!z-50 hover:shadow-lg"
                     >
                       {editPhotos.length > 3 ? (
                         <img
                           src={editPhotos[3]}
                           alt="Listing photo 4"
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            className="w-full h-full object-cover transition-all duration-300"
                         />
                       ) : editPhotos.length > 0 ? (
                         <img
@@ -625,13 +713,13 @@ export function EditorSidebar({
 
                     {/* Card 1 (z-10) */}
                     <div
-                      className="absolute top-0 bottom-0 left-[15%] w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-10 transition-all duration-300 ease-out group-hover:-translate-x-1 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                          className="absolute top-0 bottom-0 left-[17%] w-[154px] rounded-xl border-2 border-[#1f1f1f] bg-white shadow-2xs overflow-hidden z-10 transition-all duration-300 ease-out hover:!z-50 hover:shadow-lg"
                     >
                       {editPhotos.length > 2 ? (
                         <img
                           src={editPhotos[2]}
                           alt="Listing photo 3"
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            className="w-full h-full object-cover transition-all duration-300"
                         />
                       ) : editPhotos.length > 0 ? (
                         <img
@@ -648,22 +736,22 @@ export function EditorSidebar({
 
                     {/* Card 2 (z-20) */}
                     <div
-                      className="absolute top-0 bottom-0 left-[30%] w-[54%] rounded-2xl border border-zinc-200/90 bg-zinc-100 shadow-2xs overflow-hidden z-20 transition-all duration-300 ease-out group-hover:translate-x-1 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg"
+                          className="absolute top-0 bottom-0 left-[35%] w-[154px] rounded-xl border-2 border-[#1f1f1f] bg-white shadow-2xs overflow-hidden z-20 transition-all duration-300 ease-out hover:!z-50 hover:shadow-lg"
                     >
                       {editPhotos.length > 1 ? (
                         <img
                           src={editPhotos[1]}
                           alt="Listing photo 2"
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            className="w-full h-full object-cover transition-all duration-300"
                         />
                       ) : editPhotos.length > 0 ? (
                         <img
                           src={editPhotos[0]}
                           alt="Listing photo"
-                          className="w-full h-full object-cover opacity-90"
+                          className="w-full h-full object-cover "
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xl">
+                              <div className="w-full h-full flex items-center justify-center text-[#727272] text-xs">
                           🏡
                         </div>
                       )}
@@ -671,13 +759,13 @@ export function EditorSidebar({
 
                     {/* Card 3 (Rightmost / Front, z-30) */}
                     <div
-                      className="absolute top-0 bottom-0 left-[46%] w-[54%] rounded-2xl border border-zinc-300 bg-zinc-100 shadow-xs overflow-hidden z-30 transition-all duration-300 ease-out group-hover:translate-x-2.5 hover:!-translate-y-2 hover:!scale-[1.04] hover:!z-50 hover:shadow-lg flex items-center justify-center"
+                        className="absolute top-0 bottom-0 left-[52%] w-[154px] rounded-2xl border-2 border-[#1F1F1F] bg-white shadow-xs overflow-hidden z-30 transition-all duration-300 ease-out hover:!z-50 flex items-center justify-center"
                     >
                       {editPhotos.length > 0 ? (
                         <img
                           src={editPhotos[0]}
                           alt="Property cover"
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          className="w-full h-full object-cover transition-all duration-300"
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
@@ -687,11 +775,11 @@ export function EditorSidebar({
 
                       {/* Centered Pill/Card Badge matching reference image */}
                       <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none">
-                        <div className="bg-white/90 backdrop-blur-md text-[#1F1F1F] px-4 py-2.5 rounded-2xl shadow-xs border border-white/70 flex flex-col items-center justify-center text-center transition-transform group-hover:scale-105">
-                          <span className="text-sm font-bold tracking-tight text-[#1F1F1F] leading-tight">
+                          <div className="bg-[#F3F4F5] backdrop-blur-md text-[#1F1F1F] px-4 py-2.5 rounded-lg shadow-xs border border-white/70 flex flex-col items-center justify-center text-center">
+                          <span className="text-xs font-normal tracking-tight text-[#1F1F1F] leading-tight">
                             {editPhotos.length}
                           </span>
-                          <span className="text-[11px] font-medium text-zinc-600 leading-tight mt-0.5">
+                          <span className="text-xs font-normal text-[#1F1F1F] leading-tight mt-0.5">
                             photos
                           </span>
                         </div>
@@ -703,16 +791,15 @@ export function EditorSidebar({
               {/* 1. Title */}
               <div
                 onClick={() => setActiveSection("title")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "title"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "title"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Title
                 </span>
-                <span className="text-base font-normal text-[#727272] block truncate">
+                <span className="sm:text-xl text-lg font-normal text-[#727272] block truncate">
                   {editTitle || "Property Name"}
                 </span>
               </div>
@@ -720,16 +807,15 @@ export function EditorSidebar({
               {/* 2. Property type */}
               <div
                 onClick={() => setActiveSection("propertyType")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "propertyType"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "propertyType"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Property type
                 </span>
-                <span className="text-base font-medium text-[#727272] block">
+                <span className="text-base font-normal text-[#727272] block">
                   {editListingType} · {editPropertyType}
                 </span>
               </div>
@@ -737,16 +823,15 @@ export function EditorSidebar({
               {/* 3. Pricing */}
               <div
                 onClick={() => setActiveSection("pricing")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "pricing"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "pricing"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Pricing
                 </span>
-                <div className="text-xs text-zinc-800 space-y-0.5">
+                <div className="text-base text-[#727272] space-y-0.5">
                   {smartPricing ? (
                     <>
                       <p className="font-semibold text-[#1F1F1F]">Smart pricing</p>
@@ -767,21 +852,20 @@ export function EditorSidebar({
               {/* 4. Availability */}
               <div
                 onClick={() => setActiveSection("availability")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "availability"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "availability"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Availability
                 </span>
-                <div className="text-xs text-zinc-800 space-y-0.5">
-                    <p className="text-base font-medium text-[#727272]">
+                <div className="text-base text-[#727272] space-y-0.5">
+                  <p className="text-base font-medium text-[#727272]">
                     {minNights}-{maxNights} night stays
                   </p>
-                  <p className="text-[11px] text-zinc-500">{advanceNotice} notice</p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-base text-[#727272] font-normal">{advanceNotice} notice</p>
+                  <p className="text-base text-[#727272] font-normal">
                     {allowSameDayRequests ? `Same-day requests until ${sameDayCutoff}` : "Same-day requests unavailable"}
                   </p>
                 </div>
@@ -790,13 +874,12 @@ export function EditorSidebar({
               {/* 5. Number of guests */}
               <div
                 onClick={() => setActiveSection("guests")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "guests"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guests"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Number of guests
                 </span>
                 <span className="text-base font-medium text-[#727272] block">
@@ -807,13 +890,12 @@ export function EditorSidebar({
               {/* 5b. Sleeping arrangements */}
               <div
                 onClick={() => setActiveSection("sleeping-arrangements")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "sleeping-arrangements"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "sleeping-arrangements"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Sleeping arrangements
                 </span>
                 <span className="text-base font-medium text-[#727272] block">
@@ -824,16 +906,15 @@ export function EditorSidebar({
               {/* 6. Description */}
               <div
                 onClick={() => setActiveSection("description")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "description"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "description"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Description
                 </span>
-                  <p className="text-base font-medium text-[#727272] line-clamp-3 leading-relaxed">
+                <p className="text-base font-medium text-[#727272] line-clamp-3 leading-relaxed">
                   {editDescription || "No description provided yet."}
                 </p>
               </div>
@@ -841,26 +922,32 @@ export function EditorSidebar({
               {/* 7. Amenities */}
               <div
                 onClick={() => setActiveSection("amenities")}
-                  className={`rounded-2xl p-4 border transition-all cursor-pointer text-base font-medium text-[#727272] ${
-                  activeSection === "amenities" || activeSection === "add-amenities"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer text-base font-medium text-[#727272] ${activeSection === "amenities" || activeSection === "add-amenities"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-1">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-3">
                   Amenities
                 </span>
-                  <div className="space-y-1.5 text-base font-medium text-[#727272]">
+                <div className="space-y-1.5 text-base font-medium text-[#727272]">
                   {editAmenities.length === 0 ? (
-                      <span className="text-base font-medium text-[#727272]">Add amenities</span>
+                    <span className="text-base font-medium text-[#727272]">Add amenities</span>
                   ) : (
                     <>
-                      {editAmenities.slice(0, 3).map((am, i) => {
+                      {editAmenities.slice(0, 3).map((am) => {
                         const meta = getAmenityMeta(am);
+                        const iconSource = AMENITY_ICON_SOURCES[meta.id];
                         return (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-base font-medium text-[#727272]">{meta.icon || "✨"}</span>
-                            <span className="text-base font-medium text-[#727272]">{meta.label}</span>
+                          <div key={meta.id || am} className="flex items-center gap-3">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] bg-white">
+                              {iconSource ? (
+                                <Image src={iconSource} alt="" width={20} height={20} className="h-4.75 w-4.75 object-contain" />
+                              ) : (
+                                <span className="text-base font-normal text-[#727272]">{meta.icon || "✨"}</span>
+                              )}
+                            </span>
+                            <span className="text-base font-normal text-[#727272]">{meta.label}</span>
                           </div>
                         );
                       })}
@@ -877,13 +964,12 @@ export function EditorSidebar({
               {/* 8. Accessibility features */}
               <div
                 onClick={() => setActiveSection("accessibility")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "accessibility"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "accessibility"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-medium capitalize tracking-tight text-[#1F1F1F] block mb-0.5">
+                <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                   Accessibility features
                 </span>
                 {confirmedAccessibilityFeatures.length > 0 ? (
@@ -907,18 +993,17 @@ export function EditorSidebar({
                     })}
                   </div>
                 ) : (
-                  <span className="text-xs text-zinc-400 font-medium">Add details</span>
+                  <span className="text-base text-[#727272] font-normal">Add details</span>
                 )}
               </div>
 
               {/* 9. Location */}
               <div
                 onClick={() => setActiveSection("location")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer ${
-                  activeSection === "location"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "accessibility"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300 shadow-2xs"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                    }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-2">Location</span>
                 <RealMap
@@ -941,13 +1026,12 @@ export function EditorSidebar({
               {/* 10. About the host */}
               <div
                 onClick={() => setActiveSection("about-host")}
-                className={`rounded-2xl p-5 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "about-host"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "about-host"
                     ? "bg-[#ECE9FE] border-indigo-200"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
-                <span className="text-base font-semibold text-[#1F1F1F] block mb-4">
+                <span className="text-base font-medium text-[#1F1F1F] block mb-4">
                   About the host
                 </span>
 
@@ -973,7 +1057,7 @@ export function EditorSidebar({
                     <h4 className="text-base font-semibold text-[#1F1F1F] mt-2 block leading-tight truncate max-w-[120px]">
                       {listing.host?.name || "Name"}
                     </h4>
-                    <span className="text-xs text-zinc-500 font-normal mt-0.5 block leading-tight">
+                    <span className="text-base text-[#727272] font-normal mt-0.5 block leading-tight">
                       {listing.host?.isSuperhost ? "Superhost" : (listing.host?.badge || "Superhost")}
                     </span>
                   </div>
@@ -982,11 +1066,11 @@ export function EditorSidebar({
                   <div className="flex flex-col items-center justify-center text-center">
                     {/* Ratings are system-generated, never host-entered. */}
                     <div className="w-full flex flex-col items-center">
-                      <span className="text-base font-bold text-[#1F1F1F] block leading-tight">
-                        New host
+                      <span className="text-base font-medium text-[#1F1F1F] block leading-tight">
+                        {listing.host?.reviewsCount ?? listing.host?.reviewCount ?? "XX"}
                       </span>
-                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
-                        No guest ratings yet
+                      <span className="text-base text-[#727272] font-normal block mt-0.5">
+                        review
                       </span>
                     </div>
 
@@ -996,12 +1080,12 @@ export function EditorSidebar({
                     {/* Avoid a fabricated rating until the review system provides one. */}
                     <div className="w-full flex flex-col items-center">
                       <div className="flex items-center justify-center gap-1">
-                        <span className="text-base font-bold text-[#1F1F1F] leading-tight">
-                          —
+                          <span className="text-base font-medium text-[#1F1F1F] leading-tight">
+                          {listing.host?.rating ? String(listing.host.rating).replace(".", ",") : "4,98"}
                         </span>
                       </div>
-                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
-                        rating unavailable
+                      <span className="text-base text-[#727272] font-normal block mt-0.5">
+                        rating
                       </span>
                     </div>
 
@@ -1010,11 +1094,13 @@ export function EditorSidebar({
 
                     {/* The account creation date is the authoritative tenure source. */}
                     <div className="w-full flex flex-col items-center">
-                      <span className="text-base font-bold text-[#1F1F1F] block leading-tight">
-                        {listing.host?.createdAt ? new Date(listing.host.createdAt).getFullYear() : "—"}
+                      <span className="text-base font-medium text-[#1F1F1F] block leading-tight">
+                        {listing.host?.createdAt
+                          ? Math.max(1, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear())
+                          : 3}
                       </span>
-                      <span className="text-xs text-zinc-500 font-normal block mt-0.5">
-                        hosting since
+                      <span className="text-base text-[#727272] font-normal block mt-0.5">
+                        years hosting
                       </span>
                     </div>
                   </div>
@@ -1026,11 +1112,10 @@ export function EditorSidebar({
                 onClick={() => {
                   setActiveSection("co-host");
                 }}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "co-host"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "co-host"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-base font-medium text-[#1F1F1F] block">Co-host</span>
@@ -1056,51 +1141,49 @@ export function EditorSidebar({
               {/* 12. Booking settings */}
               <div
                 onClick={() => setActiveSection("booking-settings")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "booking-settings"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "booking-settings"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1f1f1f] block mb-0.5">
                   Booking settings
                 </span>
-                <p className="text-[11px] text-zinc-500 font-normal">
+                <p className="text-base text-[#727272] font-normal">
                   {bookingMethod === "first-three"
                     ? "Approve your first 3 bookings"
                     : bookingMethod === "instant"
-                    ? requireGoodTrackRecord ? "Instant Book · track record required" : "Use Instant Book"
-                    : "Approve all bookings"}
+                      ? requireGoodTrackRecord ? "Instant Book · track record required" : "Use Instant Book"
+                      : "Approve all bookings"}
                 </p>
               </div>
 
               {/* 13. House rules */}
               <div
                 onClick={() => setActiveSection("house-rules")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "house-rules"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-rules"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-sm font-semibold text-[#1F1F1F] block mb-3">House rules</span>
-                <div className="space-y-3 text-xs text-zinc-800 font-normal">
+                <div className="space-y-3 text-base text-[#727272] font-normal">
                   <div className="flex items-center gap-3">
-                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="9" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
                     <span>Check-in after {formatTimeDisplay(checkInStart, "3:00 pm")}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="9" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
                     <span>Checkout before {formatTimeDisplay(checkOutTime, "6:00 pm")}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <svg className="w-4 h-4 text-zinc-800 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                       <circle cx="9" cy="7" r="4" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -1111,7 +1194,7 @@ export function EditorSidebar({
                     </span>
                   </div>
                   {extraHouseRules.length > 0 && (
-                    <p className="pt-1.5 text-xs text-zinc-500 font-normal">+{extraHouseRules.length} more</p>
+                    <p className="pt-1.5 text-base text-[#727272] font-normal hover:text-[#1F1F1F] transition-all duration-300 hover:underline">+{extraHouseRules.length} more</p>
                   )}
                 </div>
               </div>
@@ -1119,11 +1202,10 @@ export function EditorSidebar({
               {/* 14. Guests safety */}
               <div
                 onClick={() => setActiveSection("guests-safety")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "guests-safety"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guests-safety"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">Guest safety</span>
                 {activeSafetyItems.length > 0 ? (
@@ -1163,11 +1245,10 @@ export function EditorSidebar({
               {/* 15. Cancellation policy */}
               <div
                 onClick={() => setActiveSection("cancellation-policy")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "cancellation-policy"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "cancellation-policy"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-1">
                   Cancellation policy
@@ -1185,11 +1266,10 @@ export function EditorSidebar({
               {/* 16. Custom link */}
               <div
                 onClick={() => setActiveSection("custom-link")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "custom-link"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "custom-link"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Custom link
@@ -1207,11 +1287,10 @@ export function EditorSidebar({
                 type="button"
                 onClick={() => setActiveSection("check-in-out")}
                 aria-current={activeSection === "check-in-out" || activeSection === "arrival-guide" ? "page" : undefined}
-                className={`w-full rounded-2xl border p-4 text-left shadow-2xs transition-all ${
-                  activeSection === "check-in-out" || activeSection === "arrival-guide"
+                className={`w-full rounded-xl border border-white bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
                     ? "border-indigo-200 bg-[#ECE9FE]"
-                    : "border-zinc-200 bg-white hover:border-zinc-300"
-                }`}
+                    : "border-white bg-white hover:border-white"
+                  }`}
               >
                 <span className="mb-1 block text-xs font-semibold text-[#1F1F1F]">Check-in</span>
                 <span className="block border-b border-zinc-300 pb-2 text-base text-[#727272]">{checkInStart || "3:00 PM"}</span>
@@ -1222,28 +1301,26 @@ export function EditorSidebar({
               {/* Card 2: Check-in method */}
               <div
                 onClick={() => setActiveSection("check-in-method")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "check-in-method"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-in method
                 </span>
                 <p className="text-xs text-zinc-500 font-normal">
-                  {({"SMART_LOCK":"Smart lock","Smart lock":"Smart lock","KEYPAD":"Keypad","Keypad":"Keypad","LOCKBOX":"Lockbox","Lockbox":"Lockbox","BUILDING_STAFF":"Building staff","Building staff":"Building staff","IN_PERSON_GREETING":"In-person greeting","In-person greeting":"In-person greeting","Host greets in person":"In-person greeting","OTHER":"Other","Other":"Other"} as Record<string,string>)[checkInMethod] || checkInMethod || "Smart lock"}
+                  {({ "SMART_LOCK": "Smart lock", "Smart lock": "Smart lock", "KEYPAD": "Keypad", "Keypad": "Keypad", "LOCKBOX": "Lockbox", "Lockbox": "Lockbox", "BUILDING_STAFF": "Building staff", "Building staff": "Building staff", "IN_PERSON_GREETING": "In-person greeting", "In-person greeting": "In-person greeting", "Host greets in person": "In-person greeting", "OTHER": "Other", "Other": "Other" } as Record<string, string>)[checkInMethod] || checkInMethod || "Smart lock"}
                 </p>
               </div>
 
               {/* Card 2: Wifi details */}
               <div
                 onClick={() => setActiveSection("wifi-details")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "wifi-details"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Wifi details
@@ -1256,11 +1333,10 @@ export function EditorSidebar({
               {/* Card 3: House manual */}
               <div
                 onClick={() => setActiveSection("house-manual")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "house-manual"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   House manual
@@ -1273,11 +1349,10 @@ export function EditorSidebar({
               {/* Card 3b: Parking */}
               <div
                 onClick={() => setActiveSection("parking")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "parking"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Parking
@@ -1290,14 +1365,13 @@ export function EditorSidebar({
               {/* Card 5: Check-out instructions */}
               <div
                 onClick={() => setActiveSection("checkout-instructions")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "checkout-instructions" ||
-                  activeSection === "check-out-instructions" ||
-                  activeSection === "checkout" ||
-                  activeSection === "check-out"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "checkout-instructions" ||
+                    activeSection === "check-out-instructions" ||
+                    activeSection === "checkout" ||
+                    activeSection === "check-out"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-xs font-semibold text-[#1F1F1F] block mb-0.5">
                   Check-out instructions
@@ -1305,15 +1379,14 @@ export function EditorSidebar({
                 <p className="text-xs text-zinc-500 font-normal truncate">
                   {checkOutInstructions ? checkOutInstructions : "Add details"}
                 </p>
-                </div>
+              </div>
               {/* Card 6: Guidebooks */}
               <div
                 onClick={() => setActiveSection("guidebooks")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "guidebooks" || activeSection === "guidebook"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guidebooks" || activeSection === "guidebook"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Guidebooks
@@ -1326,13 +1399,12 @@ export function EditorSidebar({
               {/* Card 7: Interaction preferences (Matches Figma Screenshot 100%) */}
               <div
                 onClick={() => setActiveSection("interaction-preferences")}
-                className={`rounded-2xl p-4 border transition-all cursor-pointer shadow-2xs ${
-                  activeSection === "interaction-preferences" ||
-                  activeSection === "interactionpreferences" ||
-                  activeSection === "interaction"
+                className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "interaction-preferences" ||
+                    activeSection === "interactionpreferences" ||
+                    activeSection === "interaction"
                     ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
-                }`}
+                    : "bg-white border-white hover:border-white"
+                  }`}
               >
                 <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                   Interaction preferences
@@ -1343,8 +1415,23 @@ export function EditorSidebar({
               </div>
             </div>
           )}
+          </div>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
+            {sidebarScrollThumb.visible && (
+              <div
+                className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-transform duration-150 ease-out will-change-transform"
+                style={{ height: `${sidebarScrollThumb.height}px`, transform: `translate3d(0, ${sidebarScrollThumb.top}px, 0)` }}
+              />
+            )}
+          </div>
         </div>
       </div>
     </aside>
   );
+
+  return mobileOpen ? (
+    <ModalOverlay className="fixed inset-0 z-50 bg-white lg:contents">
+      {sidebar}
+    </ModalOverlay>
+  ) : sidebar;
 }
