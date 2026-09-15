@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -697,7 +698,9 @@ function Card({
         className="flex w-full items-center justify-between px-4 py-3.5 text-left"
       >
         <span className="text-sm font-semibold text-[#1F1F1F]">{title}</span>
-        <span className="text-base text-zinc-500">{open ? "−" : "+"}</span>
+        <span className="flex size-4 items-center justify-center text-zinc-500">
+          {open ? <Image src="/images/icons/minus-icon.svg" alt="Collapse" width={14} height={14} className="size-3.5 object-contain" /> : "+"}
+        </span>
       </button>
       {open && (
         <div className="space-y-4 border-t border-zinc-100 p-4">{children}</div>

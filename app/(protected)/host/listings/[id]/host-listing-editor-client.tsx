@@ -1347,7 +1347,7 @@ export function HostListingEditorClient({
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
-          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
+          <main className="flex min-w-0 flex-col space-y-6 lg:col-span-1 lg:pt-[58px]">
             {/* Persistent Status Indicator Banner across all edit sections */}
             {activeSection !== "listing-status" && activeSection !== "listingstatus" && (
               <div className="hidden space-y-3">

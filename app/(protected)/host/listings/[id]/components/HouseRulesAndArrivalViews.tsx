@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import Image from "next/image";
 import {
   DEFAULT_LANGUAGE_IDS,
   getLanguageDisplayNames,
@@ -328,7 +329,7 @@ export function HouseRulesAndArrivalViews({
                         onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
                         className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
-                        −
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum pets" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
                       <span className="text-sm font-semibold text-[#1F1F1F] min-w-[20px] text-center">
                         {maxPetsCount || 1}
@@ -508,7 +509,7 @@ export function HouseRulesAndArrivalViews({
                   onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  −
+                  <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain" />
                 </button>
                 <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
                 <button
@@ -607,7 +608,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="space-y-4">
                   {/* Check-in window */}
                   <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-3">
-                    <label className="text-xs font-semibold text-zinc-800 block">Check-in window</label>
+                    <label className="text-sm font-medium text-[#1f1f1f] block">Check-in window</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <span className="text-[11px] font-medium text-zinc-500 block mb-1">Start time</span>
@@ -639,7 +640,7 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Checkout time */}
                   <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2">
-                    <label className="text-xs font-semibold text-zinc-800 block">Checkout time</label>
+                    <label className="text-sm font-medium text-[#1f1f1f] block">Checkout time</label>
                     <div>
                       <span className="text-[11px] font-medium text-zinc-500 block mb-1">Guests must leave before</span>
                       <select
@@ -775,9 +776,9 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
                       className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                     >
-                      -
+                      <Image src="/images/icons/minus-icon.svg" alt="Decrease parking spaces" width={12} height={12} className="size-3 object-contain" />
                     </button>
-                    <span className="w-4 text-center text-xs font-semibold text-zinc-900">{parkingSpaces ?? 1}</span>
+                    <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{parkingSpaces ?? 1}</span>
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}

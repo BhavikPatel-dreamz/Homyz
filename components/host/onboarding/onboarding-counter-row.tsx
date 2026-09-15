@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface OnboardingCounterRowProps {
   label: string;
   value: number;
@@ -26,7 +28,7 @@ export function OnboardingCounterRow({
           disabled={value <= minimum}
           className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
         >
-          -
+          <Image src="/images/icons/minus-icon.svg" alt={`Decrease ${label}`} width={14} height={14} className="size-3.5 object-contain" />
         </button>
         <span className={`w-5 text-center text-lg ${valueClassName} text-[#1F1F1F] select-none`}>
           {value}
