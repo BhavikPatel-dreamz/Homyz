@@ -806,31 +806,6 @@ function getLanguageIds(value: unknown): string[] {
   return value.split(/,|\sand\s/i).map((name) => LANGUAGE_OPTIONS.find((language) => language.name.toLowerCase() === name.trim().toLowerCase())?.id).filter((id): id is string => Boolean(id));
 }
 
-function hostingTenure(createdAt: Date | string): string {
-  const joined = new Date(createdAt);
-  if (Number.isNaN(joined.getTime())) return "New host";
-  const months = Math.max(0, (new Date().getFullYear() - joined.getFullYear()) * 12 + new Date().getMonth() - joined.getMonth());
-  if (months < 1) return "Hosting for less than a month";
-  if (months < 12) return `Hosting for ${months} ${months === 1 ? "month" : "months"}`;
-  const years = Math.floor(months / 12);
-  return `Hosting for ${years} ${years === 1 ? "year" : "years"}`;
-}
-
-function TagEditor({
-  label, values, draft, setDraft, onAdd, onRemove, placeholder,
-}: {
-  label: string; values: string[]; draft: string; setDraft: (value: string) => void;
-  onAdd: () => void; onRemove: (value: string) => void; placeholder: string;
-}) {
-  return (
-    <div>
-      <p className="text-sm font-medium text-zinc-700">{label}</p>
-      {values.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{values.map((value) => <button key={value} type="button" onClick={() => onRemove(value)} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{value} ×</button>)}</div>}
-      <div className="mt-2 flex gap-2"><input value={draft} maxLength={60} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); onAdd(); } }} placeholder={placeholder} className="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" /><button type="button" onClick={onAdd} className="rounded-full bg-[#FCDF9C] px-4 text-xs font-semibold">Add</button></div>
-    </div>
-  );
-}
-
 function AboutHostView(props: Props) {
   const { hostProfile, onHostProfileSaved } = props;
   const router = useRouter();
@@ -853,10 +828,8 @@ function AboutHostView(props: Props) {
   const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [languageSearch, setLanguageSearch] = useState("");
-  const [hobbyDraft, setHobbyDraft] = useState("");
-  const [interestDraft, setInterestDraft] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [showAllPrompts, setShowAllPrompts] = useState(false);
 
   useEffect(() => {
     const next = hostProfile.publicProfile ?? {};
@@ -899,16 +872,6 @@ function AboutHostView(props: Props) {
     }
   };
 
-  const addTag = (value: string, setValues: React.Dispatch<React.SetStateAction<string[]>>) => {
-    const next = value.trim();
-    if (!next) return false;
-    setValues((current) => current.some((item) => item.localeCompare(next, undefined, { sensitivity: "accent" }) === 0) ? current : [...current, next]);
-    return true;
-  };
-  const filteredLanguages = LANGUAGE_OPTIONS.filter((language) =>
-    !languages.includes(language.id) && language.name.toLowerCase().includes(languageSearch.trim().toLowerCase()),
-  ).slice(0, 12);
-
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -937,76 +900,106 @@ function AboutHostView(props: Props) {
     }
   };
 
+  const profilePrompts = [
+    ["Where I’ve always wanted to go", hobbies[0] || ""],
+    ["My work", education],
+    ["My favorite song in high school", ""],
+    ["What makes my home unique", homeUnique],
+    ["Pets", ""],
+    ["Decade I was born", ""],
+    ["Where I went to school", education],
+    ["I spend too much time", hobbies[1] || ""],
+    ["My most useless skill", ""],
+    ["My fun fact", ""],
+    ["I’m obsessed with", hobbies[2] || ""],
+    ["Language I speak", languages[0] ? getLanguageNameById(languages[0]) : ""],
+    ["My biography title would be", ""],
+    ["Where I live", ""],
+    ["For guests I always", guestsShouldKnow],
+    ["What’s for breakfast", perfectGuest],
+  ];
+  const displayedInterests = interests.length > 0
+    ? interests
+    : ["Architecture", "Cooking", "Food scenes", "History", "Live sports", "Museums", "Outdoors", "Shopping", "Video games"];
+
   return (
-    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full space-y-5 pb-12">
+    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full max-w-[760px] space-y-6 pb-12 sm:space-y-7">
       <header className="flex items-center gap-3">
-        <Link href="/host/listings" aria-label="Back to listings" className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-300 text-sm text-zinc-500 transition-colors hover:bg-zinc-100">‹</Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">About the host</h1>
+        <Link href="/host/listings" aria-label="Back to listings" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-lg leading-none text-[#1F1F1F] transition-colors hover:bg-[#F3F4F5]">‹</Link>
+        <h1 className="hidden text-2xl font-semibold tracking-tight text-[#1F1F1F] sm:block sm:text-[25px]">About the host</h1>
       </header>
 
       {props.isLoading ? (
         <AboutHostSkeleton />
       ) : (
         <>
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-              <div className="relative h-48 w-full shrink-0 overflow-visible sm:h-44 sm:w-60">
-                <div className="h-full w-full overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100 shadow-2xs">
+          <section className="pt-1 sm:pt-0">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-5">
+              <div className="relative mx-auto h-44 w-44 shrink-0 overflow-visible sm:mx-0 sm:h-[172px] sm:w-[235px]">
+                <div className="h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-xl">
                   {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
                 </div>
-                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
-                  <span aria-hidden="true">▧</span>{uploadingImage ? "Uploading…" : "Edit"}
+                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
+                  <Image src="/images/icons/writing-pen.svg" alt="" width={15} height={15} className="size-3.5" />{uploadingImage ? "Uploading…" : "Edit"}
                 </button>
                 <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
               </div>
-              <div className="max-w-md space-y-2 text-sm leading-6 text-[#727272]"><p>Your public host profile is shared across all of your listings. Only guest-facing details appear here.</p><div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-zinc-700"><span>New host · no guest ratings yet</span><span>{hostingTenure(hostProfile.createdAt)}</span>{languages.length > 0 && <span>Speaks {languages.map(getLanguageNameById).join(", ")}</span>}</div><Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></div>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 shadow-2xs">
-            <label htmlFor="host-bio" className="block text-sm font-semibold text-[#1F1F1F]">About me</label>
-            <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Tell guests a little about yourself." className="mt-3 min-h-28 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-zinc-500" />
-            <p className="mt-1 text-right text-xs text-zinc-400">{bio.length}/2000</p>
-          </section>
-
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">About my home</h2><div className="mt-4 grid gap-4"><label className="text-sm font-medium text-zinc-700">What makes your home unique<textarea value={homeUnique} maxLength={500} onChange={(event) => setHomeUnique(event.target.value)} placeholder="Tell guests what makes your place unique." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">What guests should know<textarea value={guestsShouldKnow} maxLength={500} onChange={(event) => setGuestsShouldKnow(event.target.value)} placeholder="Share anything important guests should know about your place or hosting style." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
-
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">More about me</h2><div className="mt-4 grid gap-4"><div><label htmlFor="host-language-search" className="text-sm font-medium text-zinc-700">Languages spoken</label>{languages.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{languages.map((language) => <button key={language} type="button" onClick={() => setLanguages((current) => current.filter((value) => value !== language))} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{getLanguageNameById(language)} ×</button>)}</div>}<input id="host-language-search" value={languageSearch} onChange={(event) => setLanguageSearch(event.target.value)} placeholder="Search and add a language" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" />{languageSearch.trim() && <div className="mt-1 max-h-36 overflow-y-auto rounded-xl border border-zinc-200 bg-white">{filteredLanguages.map((language) => <button key={language.id} type="button" onClick={() => { setLanguages((current) => [...current, language.id]); setLanguageSearch(""); }} className="block w-full px-3 py-2 text-left text-sm hover:bg-zinc-50">{language.name}</button>)}{filteredLanguages.length === 0 && <p className="px-3 py-2 text-xs text-zinc-500">No matching languages available.</p>}</div>}</div><TagEditor label="Hobbies" values={hobbies} draft={hobbyDraft} setDraft={setHobbyDraft} onAdd={() => { if (addTag(hobbyDraft, setHobbies)) setHobbyDraft(""); }} onRemove={(value) => setHobbies((current) => current.filter((item) => item !== value))} placeholder="Add a hobby" /><label className="text-sm font-medium text-zinc-700">Education / background<input value={education} maxLength={300} onChange={(event) => setEducation(event.target.value)} placeholder="Share your education or background (optional)" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">Perfect guest<textarea value={perfectGuest} maxLength={300} onChange={(event) => setPerfectGuest(event.target.value)} placeholder="Describe the kind of stay you enjoy hosting." className="mt-2 min-h-20 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
-
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 pb-3">
-              <div>
-                <h2 className="text-sm font-semibold text-[#1F1F1F]">Where I’ve been</h2>
-                <p className="mt-0.5 text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
+              <div className="max-w-sm space-y-2 text-sm leading-5 text-[#727272] sm:pt-0.5">
+                <h2 className="text-xl font-semibold text-[#1F1F1F] sm:hidden">About the host</h2>
+                <p>Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium text-[#1F1F1F] underline underline-offset-2">Learn more</Link></p>
               </div>
-              <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} />
             </div>
-            <div className="flex min-h-32 flex-col gap-4 py-4">
-              <div className="flex items-center gap-3">
+          </section>
+
+          <section className="grid gap-x-16 sm:grid-cols-2">
+            {profilePrompts.map(([label, value], index) => (
+              <div key={`${label}-${index}`} className={`flex min-h-14 items-center gap-3 border-b border-[#DDDDDE] py-2.5 ${index > 7 && !showAllPrompts ? "hidden sm:flex" : ""}`}>
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]">
+                  <Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" />
+                </span>
+                <p className="min-w-0 truncate text-sm font-normal text-[#727272]">{label}{value ? <><span className="text-[#1F1F1F]">: </span><span className="font-medium text-[#1F1F1F]">{value}</span></> : ""}</p>
+              </div>
+            ))}
+            {!showAllPrompts && <button type="button" onClick={() => setShowAllPrompts(true)} className="mt-3 w-fit text-sm font-medium underline underline-offset-2 sm:hidden">See more</button>}
+          </section>
+
+          <section className="rounded-xl bg-[#F3F4F5] p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+            <label htmlFor="host-bio" className="block text-sm font-medium text-[#1F1F1F]">About me</label>
+            <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Type something about you" className="mt-3 min-h-28 w-full resize-y rounded-lg border border-[#DDDDDE] bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-[#727272]" />
+          </section>
+
+          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#DDDDDE] pb-3">
+              <div>
+                <h2 className="text-base font-medium text-[#1F1F1F]">Where I’ve been</h2>
+                <p className="mt-1 text-sm text-[#727272]">Pick the stamps you want other people to see on your profile.</p>
+              </div>
+              <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} tone="rose" />
+            </div>
+            <div className="flex min-h-52 flex-col gap-4 py-5">
+              <div className="flex min-h-36 items-center gap-3">
                 {selectedStamps.length > 0 ? (
-                  <>
-                    <div className="flex -space-x-2">
+                    <div className="flex items-center gap-2 sm:gap-4">
                       {visibleSelectedStamps.map((stampId) => {
                         const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
                         if (!stamp) return null;
                         return (
-                          <div key={stamp.id} className="rounded-full border border-white bg-white shadow-sm">
-                            <TravelStampGraphic stamp={stamp} size="sm" />
+                          <div key={stamp.id} className="overflow-hidden rounded-xl bg-white">
+                            <TravelStampGraphic stamp={stamp} size="md" />
                           </div>
                         );
                       })}
                     </div>
-                  </>
                 ) : (
-                  <p className="text-sm text-zinc-500">No travel stamps selected yet.</p>
+                  <p className="text-sm text-[#727272]">Choose stamps to show the places and experiences you love.</p>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => setIsStampEditorOpen(true)}
-                className="inline-flex w-fit rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
+                className="inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:w-fit"
               >
-                Edit travel stamps
+                Edit travel stamp
               </button>
             </div>
           </section>
@@ -1045,7 +1038,21 @@ function AboutHostView(props: Props) {
             </ModalOverlay>
           )}
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2><p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p><div className="mt-4 flex flex-wrap gap-2">{REFERENCE_INTERESTS.map((interest) => { const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0); return <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${selected ? "border-[#1F1F1F] bg-[#1F1F1F] text-white" : "border-zinc-200 bg-white text-zinc-700"}`}>{interest}</button>; })}</div><div className="mt-4"><TagEditor label="Selected interests" values={interests} draft={interestDraft} setDraft={setInterestDraft} onAdd={() => { if (addTag(interestDraft, setInterests)) setInterestDraft(""); }} onRemove={(value) => setInterests((current) => current.filter((item) => item !== value))} placeholder="Add a custom interest" /></div></section>
+          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
+            <h2 className="border-b border-[#DDDDDE] pb-3 text-base font-medium text-[#1F1F1F]">My interests</h2>
+            <div className="grid pt-3 sm:grid-cols-2 sm:gap-x-12">
+              {displayedInterests.map((interest) => {
+                const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0);
+                return (
+                  <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className="flex min-h-12 items-center gap-3 border-b border-[#DDDDDE] py-2 text-left text-sm font-normal text-[#1F1F1F]">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]"><Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" /></span>
+                    {interest}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" onClick={() => setInterests(REFERENCE_INTERESTS.slice(0, 9))} className="mt-5 inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#F7D37D] sm:w-fit">Edit interests</button>
+          </section>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
