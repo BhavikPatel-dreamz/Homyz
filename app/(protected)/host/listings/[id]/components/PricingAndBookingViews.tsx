@@ -63,6 +63,7 @@ interface PricingAndBookingViewsProps {
     requireGoodTrackRecord: boolean;
     bookingMessage?: string;
   }) => Promise<boolean>;
+  requestInstantBookOff: (bookingMethod: "first-three" | "approve") => void;
   openCustomMessage: () => void;
 
   // Cancellation Policy & Custom Link
@@ -120,6 +121,7 @@ export function PricingAndBookingViews({
   approvedBookingCount,
   hasCustomBookingMessage,
   saveBookingSettings,
+  requestInstantBookOff,
   openCustomMessage,
   cancellationPolicy,
   setCancellationPolicy,
@@ -707,7 +709,11 @@ export function PricingAndBookingViews({
           ) : (
             <>
               <section className={`rounded-2xl border-2 bg-white px-6 py-5 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
-                <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "first-three" && saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
+                <button type="button" disabled={isSaving} onClick={() => {
+                  if (_bookingMethod === "first-three") return;
+                  if (_bookingMethod === "instant") requestInstantBookOff("first-three");
+                  else void saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord });
+                }} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
                   <div>
                     <h2 className="text-base font-semibold text-zinc-900">Approve your first 3 bookings</h2>
                     <p className="mt-0.5 text-sm font-medium text-emerald-600">{Math.min(approvedBookingCount, 3)} of 3 approved</p>
@@ -744,7 +750,11 @@ export function PricingAndBookingViews({
                 </div>
               </section>
 
-              <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "approve" && saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })} className={`flex w-full items-center justify-between gap-5 rounded-2xl border-2 bg-white px-6 py-5 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
+              <button type="button" disabled={isSaving} onClick={() => {
+                if (_bookingMethod === "approve") return;
+                if (_bookingMethod === "instant") requestInstantBookOff("approve");
+                else void saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord });
+              }} className={`flex w-full items-center justify-between gap-5 rounded-2xl border-2 bg-white px-6 py-5 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-zinc-200 hover:border-zinc-400"}`}>
                 <div><h2 className="text-base font-semibold text-zinc-900">Approve all bookings</h2><p className="mt-0.5 text-sm leading-5 text-zinc-600">Always review reservation requests.</p></div>
                 <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
               </button>

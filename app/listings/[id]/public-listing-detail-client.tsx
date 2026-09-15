@@ -80,8 +80,27 @@ export function PublicListingDetailClient({
     return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${suffix}`;
   };
   const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const formatSafetyDisclosure = (entry: string): string | null => {
+    const [key, status, ...detailParts] = entry.split(":");
+    if (status === "NO") return null;
+    const labels: Record<string, string> = {
+      MUST_CLIMB_STAIRS: "Guests must climb stairs",
+      POTENTIAL_FOR_NOISE: "Construction or other potential noise during stays",
+      NEARBY_WATER: "Nearby water bodies",
+      DANGEROUS_ANIMALS: "Potentially dangerous animals",
+      SPECIAL_CONSIDERATIONS: "Other safety or regulatory notes",
+    };
+    const label = labels[key] ?? humanize(key);
+    const details = detailParts.join(":").trim();
+    return status === "YES" ? `${label}${details ? `: ${details}` : ""}` : humanize(entry);
+  };
   const publicSafetyEquipment = Array.isArray(listing.safetyEquipment) ? listing.safetyEquipment : [];
-  const publicSafetyHazards = Array.isArray(listing.safetyHazards) ? listing.safetyHazards : [];
+  const publicSafetyHazards = Array.isArray(listing.safetyHazards)
+    ? listing.safetyHazards.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
+    : [];
+  const publicSafetyDisclosures = Array.isArray(listing.safetyDisclosures)
+    ? listing.safetyDisclosures.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
+    : [];
   const cancellationLabel = listing.cancellationPolicy.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
   const longTermCancellationLabel = listing.longTermCancellationPolicy.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
@@ -431,19 +450,8 @@ export function PublicListingDetailClient({
                 <div className="space-y-2 text-xs text-zinc-600">
                   {publicSafetyEquipment.map((item) => <div key={item} className="flex items-center gap-2"><span>🛡️</span><span>{humanize(item)}</span></div>)}
                   {publicSafetyHazards.map((item) => <div key={item} className="flex items-center gap-2"><span>⚠️</span><span>{item}</span></div>)}
-                  {Array.isArray(listing.safetyDisclosures) &&
-                    listing.safetyDisclosures.map((d: string, i: number) => {
-                      const [k, v] = d.split(":");
-                      return (
-                        <div key={i} className="flex items-center gap-2">
-                          <span>ℹ️</span>
-                          <span>
-                            {k.replace(/_/g, " ").toLowerCase()}: {v}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  {publicSafetyEquipment.length === 0 && publicSafetyHazards.length === 0 && (!listing.safetyDisclosures || listing.safetyDisclosures.length === 0) && <p>No safety equipment or property hazards have been reported.</p>}
+                  {publicSafetyDisclosures.map((disclosure) => <div key={disclosure} className="flex items-center gap-2"><span>ℹ️</span><span>{disclosure}</span></div>)}
+                  {publicSafetyEquipment.length === 0 && publicSafetyHazards.length === 0 && publicSafetyDisclosures.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
                 </div>
               </div>
 

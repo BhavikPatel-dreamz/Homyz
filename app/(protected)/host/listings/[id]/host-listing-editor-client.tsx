@@ -562,6 +562,7 @@ export function HostListingEditorClient({
   const [requireProfilePhoto, setRequireProfilePhoto] = useState(listing.requireProfilePhoto ?? false);
   const [requireGoodTrackRecord, setRequireGoodTrackRecord] = useState(listing.requireGoodTrackRecord ?? false);
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
+  const [pendingInstantBookMethod, setPendingInstantBookMethod] = useState<"first-three" | "approve">("approve");
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
   const [listingStatusSetting, setListingStatusSetting] = useState<"listed" | "unlisted">(
     listing.published && listing.status === "ACTIVE" && !listing.isPaused ? "listed" : "unlisted"
@@ -1222,6 +1223,11 @@ export function HostListingEditorClient({
     }
   }
 
+  function requestInstantBookOff(bookingMethod: "first-three" | "approve") {
+    setPendingInstantBookMethod(bookingMethod);
+    setIsTurnOffInstantBookModalOpen(true);
+  }
+
   const handleSaveOrgStays = async (orgConfig: OrgStaysConfig) => {
     setIsSaving(true);
     try {
@@ -1555,6 +1561,7 @@ export function HostListingEditorClient({
             approvedBookingCount={listing.approvedBookingCount ?? 0}
             hasCustomBookingMessage={Boolean(customBookingMessage.trim())}
             saveBookingSettings={saveBookingSettings}
+            requestInstantBookOff={requestInstantBookOff}
             openCustomMessage={() => {
               setCustomBookingMessageDraft(customBookingMessage);
               setIsCustomMessageModalOpen(true);
@@ -1869,8 +1876,9 @@ export function HostListingEditorClient({
             {/* Top Close Button */}
             <button
               type="button"
+              disabled={isSaving}
               onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 cursor-pointer p-1 text-sm font-semibold text-zinc-600 hover:text-zinc-950 disabled:cursor-wait disabled:opacity-50"
             >
               ✕
             </button>
@@ -1878,10 +1886,10 @@ export function HostListingEditorClient({
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
-                Are you sure you want to turn off Instant book ?
+                Turn off Instant Book?
               </h3>
               <p className="text-xs text-zinc-500 font-normal">
-                If so, you'll need to keep these things in mind.
+                Your setting will not change until you confirm.
               </p>
             </div>
 
@@ -1897,9 +1905,9 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">You may get fewer bookings</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">Guests may experience slower confirmation</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    Guests often prefer places they can book immediately without waiting for host approval.
+                    Guests will wait for your approval instead of receiving an immediate booking confirmation.
                   </p>
                 </div>
               </div>
@@ -1912,9 +1920,9 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">You'll need to review every booking request</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">Review every booking request</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
-                    You manually accept or decline reservation inquiries based on your availability.
+                    All booking requests will need your review before they are confirmed.
                   </p>
                 </div>
               </div>
@@ -1927,7 +1935,7 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">You'll need to respond to each request in 24 hours</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">Respond within 24 hours</h4>
                   <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
                     Unanswered requests expire automatically after 24 hours and affect your host response rate.
                   </p>
@@ -1941,20 +1949,22 @@ export function HostListingEditorClient({
             <div className="flex items-center justify-between gap-3 pt-1">
               <button
                 type="button"
+                disabled={isSaving}
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
 
               <button
                 type="button"
+                disabled={isSaving}
                 onClick={async () => {
-                  if (await saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord })) {
+                  if (await saveBookingSettings({ bookingMethod: pendingInstantBookMethod, requireGoodTrackRecord })) {
                     setIsTurnOffInstantBookModalOpen(false);
                   }
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Turn Instant Book off
               </button>

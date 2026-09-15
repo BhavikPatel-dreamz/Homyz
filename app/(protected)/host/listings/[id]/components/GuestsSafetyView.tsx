@@ -676,15 +676,15 @@ export function GuestsSafetyView({
                 )}
               </div>
 
-              {/* 8. Special considerations */}
+              {/* 8. Other safety or regulatory notes */}
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-sm font-semibold text-[#1F1F1F] block">
-                      Special considerations
+                      Other safety or regulatory notes
                     </span>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                      Let guests know if any property features could be unsafe and explain why.
+                      Add any other safety concern or regulatory information guests should know before booking.
                     </p>
                     <button
                       type="button"
@@ -695,7 +695,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="special considerations"
+                    label="other safety or regulatory notes"
                     value={draftState.considerations.specialConsiderations}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "specialConsiderations", "specialConsiderationsDetails", val)
@@ -706,7 +706,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800">
-                        Explain why any property features could be unsafe *
+                        Add other safety or regulatory notes *
                       </label>
                       <span className="text-[11px] text-zinc-400">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
                     </div>
@@ -723,7 +723,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Unpaved gravel slope leading to entrance; may be slippery when wet."
+                      placeholder="e.g., Construction work is scheduled nearby weekdays from 8 AM–5 PM; an unpaved entrance may be slippery when wet."
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
                         validationErrors.specialConsiderationsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
@@ -1104,19 +1104,19 @@ export function GuestsSafetyView({
                 )}
               </div>
 
-              {/* 2. Potential noise */}
+              {/* 2. Construction or other potential noise */}
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-sm font-semibold text-[#1F1F1F] block">
-                      Potential noise during stays
+                      Construction or other potential noise during stays
                     </span>
                     <p className="text-xs text-zinc-500 leading-relaxed">
                       Guests should expect to hear some noise during their stay. For example, traffic, construction or nearby businesses.
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="potential noise"
+                    label="construction or other potential noise"
                     value={draftState.propertyInfo.potentialNoise}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "potentialNoise", "potentialNoiseDetails", val)

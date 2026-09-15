@@ -332,7 +332,7 @@ export function getActiveSafetyItems(state?: GuestSafetyState | null): ActiveSaf
     items.push({ id: "stairs", label: "Guests must climb stairs", iconType: "stairs" });
   }
   if (sanitized.propertyInfo.potentialNoise === true) {
-    items.push({ id: "potNoise", label: "Potential noise during stays", iconType: "noise" });
+    items.push({ id: "potNoise", label: "Construction or other potential noise during stays", iconType: "noise" });
   }
   if (sanitized.propertyInfo.petsLiveOnProperty === true) {
     items.push({ id: "pets", label: "Pet(s) live at the property", iconType: "shield" });
@@ -371,7 +371,7 @@ export function getActiveSafetyItems(state?: GuestSafetyState | null): ActiveSaf
     items.push({ id: "animals", label: "Potentially dangerous animal(s)", iconType: "shield" });
   }
   if (sanitized.considerations.specialConsiderations === true) {
-    items.push({ id: "special", label: "Special safety considerations", iconType: "shield" });
+    items.push({ id: "special", label: "Other safety or regulatory notes", iconType: "shield" });
   }
 
   return items;
