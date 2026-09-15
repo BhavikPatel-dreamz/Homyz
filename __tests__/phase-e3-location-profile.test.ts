@@ -11,6 +11,10 @@ const location = updateListingSchema.parse({
 });
 assert.deepEqual(location.locationFeatures, ["near_public_transport", "resort_access"]);
 assert.throws(() => updateListingSchema.parse({ locationFeatures: ["not_a_location_feature"] }));
+assert.deepEqual(
+  updateListingSchema.parse({ instantBook: false, bookingApprovalMode: "MANUAL" }),
+  { instantBook: false, bookingApprovalMode: "MANUAL" },
+);
 
 const profile = updateHostPublicProfileSchema.parse({
   bio: "I enjoy helping guests discover the city.",
