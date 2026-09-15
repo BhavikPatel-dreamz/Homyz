@@ -46,6 +46,7 @@ export const CACHE_KEYS = {
 
   /** App Settings */
   APP_SETTINGS_HOST_SERVICE_FEE: () => `${NS}:app_settings:host_service_fee`,
+  APP_SETTINGS_NON_REFUNDABLE_DISCOUNT: () => `${NS}:app_settings:non_refundable_discount`,
   APP_SETTINGS_BY_CATEGORY: (category: string) => `${NS}:app_settings:cat:${category}`,
 } as const;
 

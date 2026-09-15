@@ -4,6 +4,7 @@ import { CACHE_KEYS } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 
 const CACHE_KEY = CACHE_KEYS.APP_SETTINGS_HOST_SERVICE_FEE();
+const NON_REFUNDABLE_DISCOUNT_CACHE_KEY = CACHE_KEYS.APP_SETTINGS_NON_REFUNDABLE_DISCOUNT();
 const CACHE_TTL_VAL = CACHE_TTL.APP_SETTINGS;
 
 /**
@@ -75,6 +76,51 @@ export async function updateHostServiceFeePercentage(
 }
 
 /**
+ * Returns the administrator-configured non-refundable discount, or null when
+ * the platform has not configured one. Intentionally no fallback percentage:
+ * non-refundable pricing must never invent a discount.
+ */
+export async function getNonRefundableDiscountPercentage(): Promise<number | null> {
+  try {
+    const cached = await getOrSetCache(NON_REFUNDABLE_DISCOUNT_CACHE_KEY, async () => {
+      const setting = await prisma.appSettings.findUnique({
+        where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" },
+      });
+      const percentage = setting?.value ? Number(setting.value) : NaN;
+      return Number.isFinite(percentage) && percentage > 0 && percentage <= 100 ? percentage : null;
+    }, { ttl: CACHE_TTL_VAL });
+    return typeof cached === "number" ? cached : null;
+  } catch (error) {
+    console.error("[AppSettings] Error fetching non-refundable discount:", error);
+    return null;
+  }
+}
+
+export async function updateNonRefundableDiscountPercentage(
+  percentage: number,
+  updatedBy?: string,
+): Promise<number> {
+  const validPercentage = Math.max(0.01, Math.min(100, Number(percentage)));
+  if (!Number.isFinite(validPercentage)) throw new Error("Non-refundable discount must be a number.");
+
+  await prisma.appSettings.upsert({
+    where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" },
+    update: { value: validPercentage.toString(), updatedBy: updatedBy || null, updatedAt: new Date() },
+    create: {
+      key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE",
+      value: validPercentage.toString(),
+      description: "Discount applied to a guest-selected non-refundable reservation",
+      dataType: "NUMBER",
+      category: "PRICING",
+      isPublic: false,
+      updatedBy: updatedBy || null,
+    },
+  });
+  await deleteCache(NON_REFUNDABLE_DISCOUNT_CACHE_KEY);
+  return validPercentage;
+}
+
+/**
  * Get all app settings by category.
  */
 export async function getSettingsByCategory(
@@ -138,9 +184,9 @@ export async function updateSetting(
     });
 
     // Clear cache if applicable
-    if (key === "HOST_SERVICE_FEE_PERCENTAGE") {
-      await deleteCache(CACHE_KEY);
-    }
+  if (key === "HOST_SERVICE_FEE_PERCENTAGE") {
+    await deleteCache(CACHE_KEY);
+  }
   } catch (error) {
     console.error(`[AppSettings] Error updating setting ${key}:`, error);
     throw error;
@@ -150,6 +196,8 @@ export async function updateSetting(
 export const appSettingsService = {
   getHostServiceFeePercentage,
   updateHostServiceFeePercentage,
+  getNonRefundableDiscountPercentage,
+  updateNonRefundableDiscountPercentage,
   getSettingsByCategory,
   getSetting,
   updateSetting,

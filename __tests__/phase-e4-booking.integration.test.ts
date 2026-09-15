@@ -14,7 +14,17 @@ async function run() {
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const createdListingIds: string[] = [];
   const createdUserIds: string[] = [];
+  let priorNonRefundableDiscount: { value: string | null; description: string | null; dataType: string; category: string; isPublic: boolean; updatedBy: string | null } | null = null;
   try {
+    priorNonRefundableDiscount = await prisma.appSettings.findUnique({
+      where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" },
+      select: { value: true, description: true, dataType: true, category: true, isPublic: true, updatedBy: true },
+    });
+    await prisma.appSettings.upsert({
+      where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" },
+      update: { value: "12.5" },
+      create: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE", value: "12.5", description: "Test non-refundable discount", dataType: "NUMBER", category: "PRICING", isPublic: false },
+    });
     const host = await prisma.user.create({ data: { email: `e4-host-${suffix}@example.test`, name: "E4 host", role: Role.USER } });
     const guestA = await prisma.user.create({ data: { email: `e4-guest-a-${suffix}@example.test`, name: "E4 guest A", role: Role.USER } });
     const guestB = await prisma.user.create({ data: { email: `e4-guest-b-${suffix}@example.test`, name: "E4 guest B", role: Role.USER } });
@@ -26,7 +36,7 @@ async function run() {
       const listing = await prisma.listing.create({ data: {
         hostId: host.id, title, description: "E4 database test listing", price: 10000, published: true, status: ListingStatus.ACTIVE,
         guests: 2, minNights: 1, maxNights: 365, instantBook: true, cleaningFee: 2500, weekendPrice: 15000,
-        discounts: { weekly: { enabled: true, percentage: 10 }, monthly: { enabled: true, percentage: 20 } },
+        discounts: { weekly: { enabled: true, percentage: 10 }, monthly: { enabled: true, percentage: 20 }, non_refundable: true },
         cancellationPolicy: "FLEXIBLE", longTermCancellationPolicy: "STRICT", bookingMessage: "Please review the rules before reserving.",
         petsAllowed: false, smokingAllowed: false, eventsAllowed: false, photographyAllowed: false, quietHours: true, quietHoursStart: "22:00", quietHoursEnd: "07:00", safetyEquipment: ["SMOKE_ALARM"], safetyHazards: ["Nearby water"], checkInStart: "15:00", checkInEnd: "22:00", checkOutTime: "11:00", additionalRules: "No shoes indoors.",
       } });
@@ -36,7 +46,7 @@ async function run() {
     const listing = await createListing("E4 booking primary");
 
     await listingService.update(hostActor, listing.id, { instantBook: true, bookingMessage: "Please review the rules before reserving.", longTermCancellationPolicy: "STRICT", cancellationPolicy: "FLEXIBLE", petsAllowed: false, maxPets: null, petFee: null, smokingAllowed: false, eventsAllowed: false, photographyAllowed: false, quietHours: true, quietHoursStart: "22:00", quietHoursEnd: "07:00", checkInStart: "15:00", checkInEnd: "22:00", checkOutTime: "11:00", additionalRules: "No shoes indoors.", safetyEquipment: ["SMOKE_ALARM"], safetyHazards: ["Nearby water"] });
-    await prisma.listing.update({ where: { id: listing.id }, data: { price: 10000, cleaningFee: 2500, weekendPrice: 15000, discounts: { weekly: { enabled: true, percentage: 10 }, monthly: { enabled: true, percentage: 20 } } } });
+    await prisma.listing.update({ where: { id: listing.id }, data: { price: 10000, cleaningFee: 2500, weekendPrice: 15000, discounts: { weekly: { enabled: true, percentage: 10 }, monthly: { enabled: true, percentage: 20 }, non_refundable: true } } });
     const saved = await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } });
     const publicListing = toPublicListingDTO(saved);
     assert.equal(saved.bookingMessage, "Please review the rules before reserving.");
@@ -54,6 +64,23 @@ async function run() {
     assert.equal(one.discountPercentage, 0); assert.equal(six.discountPercentage, 0); assert.equal(seven.discountPercentage, 10); assert.equal(twentySeven.discountPercentage, 10); assert.equal(twentyEight.discountPercentage, 20); assert.equal(thirty.discountPercentage, 20);
     assert.equal(twentySeven.cancellationPolicyType, "SHORT_TERM"); assert.equal(twentySeven.cancellationPolicy, "FLEXIBLE"); assert.equal(twentyEight.cancellationPolicyType, "LONG_TERM"); assert.equal(twentyEight.cancellationPolicy, "STRICT");
     assert(seven.weekendNights > 0, "quote includes configured Thursday/Friday weekend pricing");
+    const nonRefundableQuote = await bookingService.getQuote({ listingId: listing.id, checkIn: date(32), checkOut: date(34), guests: 1, nonRefundable: true });
+    assert.equal(nonRefundableQuote.nonRefundableAvailable, true);
+    assert.equal(nonRefundableQuote.isNonRefundable, true);
+    assert.equal(nonRefundableQuote.nonRefundableDiscount?.percentage, 12.5);
+    assert(nonRefundableQuote.nonRefundableDiscount?.amount, "non-refundable quote applies configured discount");
+
+    const nonRefundableBooking = await bookingService.create(guestActorA, { listingId: listing.id, startDate: date(32), endDate: date(34), guests: 1, nonRefundable: true });
+    const nonRefundableSnapshot = await prisma.booking.findUniqueOrThrow({ where: { id: nonRefundableBooking.id } });
+    assert.equal(nonRefundableSnapshot.isNonRefundable, true);
+    const nonRefundableBreakdown = nonRefundableSnapshot.priceBreakdown as { nonRefundableDiscount?: { percentage: number }; payoutBreakdown?: { netHostPayout: number } };
+    assert.equal(nonRefundableBreakdown.nonRefundableDiscount?.percentage, 12.5);
+    await prisma.listing.update({ where: { id: listing.id }, data: { discounts: { weekly: { enabled: true, percentage: 10 } } } });
+    const cancelledNonRefundable = await bookingService.cancelNonRefundableByGuest(guestActorA, nonRefundableBooking.id);
+    assert.equal(cancelledNonRefundable.status, BookingStatus.CANCELLED);
+    const cancelledSnapshot = (await prisma.booking.findUniqueOrThrow({ where: { id: nonRefundableBooking.id } })).priceBreakdown as { cancellation?: { guestRefundAmount: number; hostPayoutRetained: number } };
+    assert.equal(cancelledSnapshot.cancellation?.guestRefundAmount, 0);
+    assert.equal(cancelledSnapshot.cancellation?.hostPayoutRetained, nonRefundableBreakdown.payoutBreakdown?.netHostPayout);
 
     const instant = await bookingService.create(guestActorA, { listingId: listing.id, startDate: date(40), endDate: date(47), guests: 1 });
     assert.equal(instant.status, BookingStatus.CONFIRMED);
@@ -229,6 +256,11 @@ async function run() {
     if (createdListingIds.length) await prisma.booking.deleteMany({ where: { listingId: { in: createdListingIds } } });
     for (const id of createdListingIds) await prisma.listing.delete({ where: { id } }).catch(() => undefined);
     for (const id of createdUserIds) await prisma.user.delete({ where: { id } }).catch(() => undefined);
+    if (priorNonRefundableDiscount) {
+      await prisma.appSettings.upsert({ where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" }, update: priorNonRefundableDiscount, create: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE", ...priorNonRefundableDiscount } });
+    } else {
+      await prisma.appSettings.delete({ where: { key: "NON_REFUNDABLE_DISCOUNT_PERCENTAGE" } }).catch(() => undefined);
+    }
     await prisma.$disconnect();
   }
 }

@@ -1,11 +1,12 @@
 import { AdminSettingsForm } from "@/components/admin/admin-settings-form";
 import { requirePagePermission } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
-import { getHostServiceFeePercentage } from "@/services/app-settings.service";
+import { getHostServiceFeePercentage, getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 
 export default async function AdminSettingsPage() {
   await requirePagePermission(PERMISSIONS.SETTINGS_VIEW);
   const initialHostServiceFee = await getHostServiceFeePercentage();
+  const initialNonRefundableDiscount = await getNonRefundableDiscountPercentage();
 
   return (
     <div className="flex flex-col gap-6 font-sans text-muted-foreground">
@@ -18,7 +19,7 @@ export default async function AdminSettingsPage() {
         </p>
       </div>
 
-      <AdminSettingsForm initialHostServiceFee={initialHostServiceFee} />
+      <AdminSettingsForm initialHostServiceFee={initialHostServiceFee} initialNonRefundableDiscount={initialNonRefundableDiscount} />
     </div>
   );
 }

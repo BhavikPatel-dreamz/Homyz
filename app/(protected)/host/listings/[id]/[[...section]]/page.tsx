@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { BookingStatus, Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
 import { guidebookService } from "@/services/guidebook.service";
+import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 import { slugToSection } from "../section-helpers";
 
 interface PageProps {
@@ -35,6 +36,14 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
   if (!listing || listing.deletedAt) {
     notFound();
   }
+  const nonRefundableEntry = listing.discounts && typeof listing.discounts === "object"
+    ? (listing.discounts as Record<string, unknown>).non_refundable
+    : null;
+  const listingNonRefundablePercentage = typeof nonRefundableEntry === "object" && nonRefundableEntry !== null
+    && typeof (nonRefundableEntry as Record<string, unknown>).percentage === "number"
+      ? (nonRefundableEntry as Record<string, number>).percentage
+      : null;
+  const nonRefundableDiscountPercentage = listingNonRefundablePercentage ?? await getNonRefundableDiscountPercentage();
 
   const isAcceptedCoHost = listing.coHosts.some(
     (coHost: typeof listing.coHosts[number]) => coHost.status === "ACCEPTED" && coHost.userId === actor.id,
@@ -94,6 +103,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     checkOutTime: listing.checkOutTime || "11:00",
     cancellationPolicy: listing.cancellationPolicy || "FLEXIBLE",
     longTermCancellationPolicy: listing.longTermCancellationPolicy || "FIRM",
+    nonRefundableDiscountPercentage,
     bookingMessage: listing.bookingMessage ?? null,
     requireProfilePhoto: listing.requireProfilePhoto ?? false,
     requireGoodTrackRecord: listing.requireGoodTrackRecord ?? false,

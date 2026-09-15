@@ -517,6 +517,7 @@ model Booking {
   currency           String        @default("SAR")
   priceBreakdown     Json? // Structured snapshot of nights, rates, discounts
   cancellationPolicy String? // Applicable listing policy snapshot at booking time
+  isNonRefundable    Boolean       @default(false) // Immutable guest-selected booking term
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 

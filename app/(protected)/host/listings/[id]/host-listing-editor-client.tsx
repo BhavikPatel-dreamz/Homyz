@@ -172,6 +172,7 @@ export interface HostListingData {
   checkOutTime: string;
   cancellationPolicy: string;
   longTermCancellationPolicy?: string | null;
+  nonRefundableDiscountPercentage?: number | null;
   bookingMessage?: string | null;
   requireProfilePhoto?: boolean;
   requireGoodTrackRecord?: boolean;
@@ -1573,6 +1574,7 @@ export function HostListingEditorClient({
             setCustomSlug={setCustomSlug}
             onSaveCancellationPolicy={handleSaveCancellationPolicy}
             discounts={listing.discounts as Record<string, unknown> | null}
+            nonRefundableDiscountPercentage={listing.nonRefundableDiscountPercentage}
           />
 
             <HostAndLocationViews

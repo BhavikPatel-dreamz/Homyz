@@ -17,6 +17,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     endDate: searchParams.get("checkOut") || searchParams.get("endDate"),
     guests: searchParams.get("guests") || 1,
     pets: searchParams.get("pets") || 0,
+    nonRefundable: searchParams.get("nonRefundable") || false,
   });
 
   const quote = await bookingService.getBookingQuote({
@@ -25,6 +26,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     checkOut: parsed.endDate,
     guests: parsed.guests,
     pets: parsed.pets,
+    nonRefundable: parsed.nonRefundable,
   });
 
   return ok(quote);

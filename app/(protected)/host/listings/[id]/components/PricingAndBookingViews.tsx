@@ -79,6 +79,7 @@ interface PricingAndBookingViewsProps {
     nonRefundable?: boolean;
   }) => Promise<boolean | void>;
   discounts?: Record<string, unknown> | null;
+  nonRefundableDiscountPercentage?: number | null;
 }
 
 export function PricingAndBookingViews({
@@ -131,6 +132,7 @@ export function PricingAndBookingViews({
   setCustomSlug,
   onSaveCancellationPolicy,
   discounts,
+  nonRefundableDiscountPercentage,
   isLoading,
 }: PricingAndBookingViewsProps) {
   const [localAvailabilityError, setLocalAvailabilityError] = useState<string | null>(null);
@@ -784,6 +786,7 @@ export function PricingAndBookingViews({
           handleSaveSection={handleSaveSection}
           onSaveCancellationPolicy={onSaveCancellationPolicy}
           discounts={discounts}
+          nonRefundableDiscountPercentage={nonRefundableDiscountPercentage}
         />
       )}
 

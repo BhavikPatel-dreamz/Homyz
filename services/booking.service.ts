@@ -16,6 +16,7 @@ import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
+import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 import { calculateBookingPrice, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
 
 export type BookingQuote = {
@@ -50,6 +51,9 @@ export type BookingQuote = {
   pets: number;
   cancellationPolicy: string;
   cancellationPolicyType: "SHORT_TERM" | "LONG_TERM";
+  nonRefundableAvailable: boolean;
+  isNonRefundable: boolean;
+  nonRefundableDiscount: AppliedDiscount | null;
   breakdown: Array<{
     date: string;
     isWeekend: boolean;
@@ -102,6 +106,7 @@ export async function getBookingQuote(opts: {
   checkOut: Date | string;
   guests?: number;
   pets?: number;
+  nonRefundable?: boolean;
 }): Promise<BookingQuote> {
   const listing = await prisma.listing.findUnique({
     where: { id: opts.listingId },
@@ -196,6 +201,26 @@ export async function getBookingQuote(opts: {
   const cancellationPolicy = cancellationPolicyType === "LONG_TERM"
     ? listing.longTermCancellationPolicy || "FIRM"
     : listing.cancellationPolicy || "FLEXIBLE";
+  const rawNonRefundable = listing.discounts && typeof listing.discounts === "object"
+    ? (listing.discounts as Record<string, unknown>).non_refundable
+    : null;
+  const listingOffersNonRefundable = rawNonRefundable === true || (
+    typeof rawNonRefundable === "object" && rawNonRefundable !== null &&
+    (rawNonRefundable as Record<string, unknown>).enabled === true
+  );
+  const legacyPercentage = typeof rawNonRefundable === "object" && rawNonRefundable !== null
+    ? (rawNonRefundable as Record<string, unknown>).percentage
+    : null;
+  const listingConfiguredPercentage = typeof legacyPercentage === "number" && legacyPercentage > 0 && legacyPercentage <= 100
+    ? legacyPercentage
+    : null;
+  const configuredNonRefundablePercentage = listingConfiguredPercentage ?? await getNonRefundableDiscountPercentage();
+  const nonRefundableAvailable = cancellationPolicyType === "SHORT_TERM"
+    && listingOffersNonRefundable
+    && configuredNonRefundablePercentage !== null;
+  if (opts.nonRefundable && !nonRefundableAvailable) {
+    throw AppError.badRequest("A non-refundable reservation is not available for this stay.");
+  }
 
   // Resolve jurisdiction and compute deterministic taxes
   const resolved = resolveTaxJurisdiction({
@@ -241,6 +266,7 @@ export async function getBookingQuote(opts: {
     discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
     taxRules: resolved.systemRules,
     hostTaxes,
+    nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
     currency: "SAR",
   });
 
@@ -278,6 +304,9 @@ export async function getBookingQuote(opts: {
     pets: requestedPets,
     cancellationPolicy,
     cancellationPolicyType,
+    nonRefundableAvailable,
+    isNonRefundable: Boolean(opts.nonRefundable),
+    nonRefundableDiscount: pricing.nonRefundableDiscount,
     breakdown: pricing.breakdown.map((b) => ({
       date: b.date,
       isWeekend: b.isWeekend,
@@ -287,9 +316,11 @@ export async function getBookingQuote(opts: {
   };
 }
 
+type CreateBookingRequest = Omit<CreateBookingInput, "nonRefundable"> & { nonRefundable?: boolean };
+
 async function create(
   actor: AuthUser,
-  input: CreateBookingInput,
+  input: CreateBookingRequest,
 ): Promise<BookingDTO> {
   const listing = await prisma.listing.findUnique({
     where: { id: input.listingId },
@@ -332,6 +363,7 @@ async function create(
     checkOut: input.endDate,
     guests: input.guests,
     pets: input.pets,
+    nonRefundable: input.nonRefundable ?? false,
   });
 
   // Check against listing.blockedDates
@@ -368,6 +400,7 @@ async function create(
       currency: quote.currency,
       priceBreakdown: quote as unknown as Prisma.InputJsonValue,
       cancellationPolicy: quote.cancellationPolicy,
+      isNonRefundable: quote.isNonRefundable,
       status: automaticallyApprove ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
     } });
 
@@ -450,10 +483,64 @@ async function getById(actor: AuthUser, id: string): Promise<BookingDTO> {
   return booking;
 }
 
+/**
+ * Cancels only a guest's own non-refundable reservation. The immutable booking
+ * flag, not the listing's current offer, controls the outcome. There is no
+ * payment-provider service in this project; the authoritative financial result
+ * is recorded in the immutable booking pricing snapshot for downstream payout
+ * processing: the guest refund is zero and the booked host payout is retained.
+ */
+async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<BookingDTO> {
+  const cancelled = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const booking = await tx.booking.findUnique({
+      where: { id },
+      include: { listing: true },
+    });
+    if (!booking) throw AppError.notFound("Booking not found");
+    assertOwnership(actor, booking.userId);
+    if (!booking.isNonRefundable) {
+      throw AppError.badRequest("This endpoint only cancels non-refundable reservations.");
+    }
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw AppError.conflict("This reservation has already been cancelled.");
+    }
+
+    const originalSnapshot = booking.priceBreakdown && typeof booking.priceBreakdown === "object" && !Array.isArray(booking.priceBreakdown)
+      ? booking.priceBreakdown as Record<string, unknown>
+      : {};
+    const payoutBreakdown = originalSnapshot.payoutBreakdown && typeof originalSnapshot.payoutBreakdown === "object"
+      ? originalSnapshot.payoutBreakdown as Record<string, unknown>
+      : {};
+    const hostPayoutRetained = typeof payoutBreakdown.netHostPayout === "number"
+      ? payoutBreakdown.netHostPayout
+      : 0;
+    const priceBreakdown = {
+      ...originalSnapshot,
+      cancellation: {
+        cancelledAt: new Date().toISOString(),
+        cancelledBy: "GUEST",
+        isNonRefundable: true,
+        guestRefundAmount: 0,
+        hostPayoutRetained,
+      },
+    } as Prisma.InputJsonValue;
+
+    const updated = await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CANCELLED, priceBreakdown },
+    });
+    return { ...updated, listing: booking.listing };
+  });
+
+  await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+  return toBookingDTO(cancelled);
+}
+
 export const bookingService = {
   create,
   listForUser,
   getById,
   getQuote: getBookingQuote,
   getBookingQuote,
+  cancelNonRefundableByGuest,
 };

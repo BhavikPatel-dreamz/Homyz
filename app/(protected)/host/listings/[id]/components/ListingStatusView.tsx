@@ -474,25 +474,7 @@ export function ListingStatusView({
         </div>
       )}
 
-      {/* 1b. Saudi Ready-to-Publish state when just submitted */}
-      {isSaudi && justSubmitted && (
-        <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 text-base">
-                Ready to Publish
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
-              Ready
-            </span>
-          </div>
-          <p className="text-xs text-emerald-900 leading-relaxed">
-            Your listing details are complete. In Saudi Arabia, no admin approval is required. Select &quot;Listed&quot; below and save to publish live immediately.
-          </p>
-        </div>
-      )}
+
 
       {/* 2. STATE: REJECTED (Changes Required) */}
       {displayState === "REJECTED" && !justSubmitted && (

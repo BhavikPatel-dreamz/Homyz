@@ -11,7 +11,7 @@ export interface NightRateBreakdown {
 }
 
 export interface AppliedDiscount {
-  key: "monthly" | "weekly" | "last_minute" | "new_listing" | "early_bird" | "custom_promotion";
+  key: "monthly" | "weekly" | "last_minute" | "new_listing" | "early_bird" | "custom_promotion" | "non_refundable";
   name: string;
   percentage: number; // 0 - 100
   amount: number; // cents
@@ -35,6 +35,7 @@ export interface BookingPricingParams {
   hostServiceFeePercentage?: number; // optional override; defaults to DB setting
   taxRules?: TaxRuleDTO[];
   hostTaxes?: ListingTaxDTO[];
+  nonRefundableDiscountPercentage?: number | null;
   currency?: string;
 }
 
@@ -48,6 +49,7 @@ export interface BookingPricingResult {
   effectiveBasePrice: number; // cents (weighted or standard base nightly)
   staySubtotal: number; // sum of nightly resolved rates (cents)
   appliedDiscount: AppliedDiscount | null;
+  nonRefundableDiscount: AppliedDiscount | null;
   discountAmount: number; // cents (0 if no discount)
   discountPercentage: number; // percentage applied (0 if none)
   accommodationSubtotal: number; // staySubtotal - discountAmount (cents)
@@ -397,8 +399,21 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     bookingCreatedAt: params.bookingCreatedAt ? new Date(params.bookingCreatedAt) : undefined,
   });
 
-  const discountAmount = appliedDiscount ? appliedDiscount.amount : 0;
-  const discountPercentage = appliedDiscount ? appliedDiscount.percentage : 0;
+  const standardDiscountAmount = appliedDiscount ? appliedDiscount.amount : 0;
+  const afterStandardDiscount = Math.max(0, staySubtotal - standardDiscountAmount);
+  const nonRefundablePercentage = typeof params.nonRefundableDiscountPercentage === "number"
+    ? Math.max(0, Math.min(100, params.nonRefundableDiscountPercentage))
+    : 0;
+  const nonRefundableDiscount = nonRefundablePercentage > 0
+    ? {
+        key: "non_refundable" as const,
+        name: "Non-refundable booking discount",
+        percentage: nonRefundablePercentage,
+        amount: Math.round((afterStandardDiscount * nonRefundablePercentage) / 100),
+      }
+    : null;
+  const discountAmount = standardDiscountAmount + (nonRefundableDiscount?.amount ?? 0);
+  const discountPercentage = staySubtotal > 0 ? (discountAmount / staySubtotal) * 100 : 0;
   const accommodationSubtotal = Math.max(0, staySubtotal - discountAmount);
 
   // 3. Host-Defined Additional Charges
@@ -444,6 +459,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     effectiveBasePrice,
     staySubtotal,
     appliedDiscount,
+    nonRefundableDiscount,
     discountAmount,
     discountPercentage,
     accommodationSubtotal,
@@ -509,6 +525,7 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     effectiveBasePrice: Math.round(specialOfferAmount / nights),
     staySubtotal: specialOfferAmount,
     appliedDiscount: null,
+    nonRefundableDiscount: null,
     discountAmount: 0,
     discountPercentage: 0,
     accommodationSubtotal: specialOfferAmount,

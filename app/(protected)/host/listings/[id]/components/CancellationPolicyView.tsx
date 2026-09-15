@@ -23,6 +23,7 @@ interface CancellationPolicyViewProps {
     nonRefundable?: boolean;
   }) => Promise<boolean | void>;
   discounts?: Record<string, unknown> | null;
+  nonRefundableDiscountPercentage?: number | null;
 }
 
 const SHORT_TERM_OPTIONS = [
@@ -95,6 +96,7 @@ export function CancellationPolicyView({
   handleSaveSection,
   onSaveCancellationPolicy,
   discounts,
+  nonRefundableDiscountPercentage,
   isLoading,
 }: CancellationPolicyViewProps) {
   // Modal visibility states
@@ -172,14 +174,15 @@ export function CancellationPolicyView({
   // Toggle non-refundable option immediately saves
   const handleToggleNonRefundable = async () => {
     const nextVal = !nonRefundable;
-    setNonRefundable(nextVal);
     if (onSaveCancellationPolicy) {
-      await onSaveCancellationPolicy({
+      const result = await onSaveCancellationPolicy({
         cancellationPolicy,
         longTermCancellationPolicy,
         nonRefundable: nextVal,
       });
+      if (result !== false) setNonRefundable(nextVal);
     } else {
+      setNonRefundable(nextVal);
       handleSaveSection?.("cancellation-policy");
     }
   };
@@ -256,7 +259,9 @@ export function CancellationPolicyView({
               Non-refundable option
             </span>
             <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-              For short-term stays, guests pay 10% less for you to keep your full payout if they cancel.{" "}
+              {nonRefundableDiscountPercentage
+                ? `Offer guests a ${nonRefundableDiscountPercentage}% discount when they choose a non-refundable reservation. If they cancel, you retain the booked payout.`
+                : "Offer guests a discounted price when they choose a non-refundable reservation. An administrator must configure the discount before guests can select it."}{" "}
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(true)}
@@ -544,13 +549,13 @@ export function CancellationPolicyView({
             </div>
             <div className="space-y-3 text-xs text-zinc-600 leading-relaxed">
               <p>
-                When you offer a non-refundable rate, guests can choose to pay 10% less at checkout in exchange for giving up their refund if they cancel.
+                When you offer a non-refundable rate, guests can choose a platform-configured discount at checkout in exchange for giving up their normal cancellation refund if they cancel.
               </p>
               <div className="rounded-2xl bg-zinc-50 border border-zinc-200 p-4 space-y-2">
                 <span className="font-semibold text-zinc-900 block">How it works:</span>
                 <ul className="space-y-1.5 list-disc list-inside text-zinc-600">
                   <li>You keep your full payout if a guest cancels.</li>
-                  <li>Guests receive a 10% discount off the base nightly price.</li>
+                  <li>Guests receive the configured non-refundable discount at checkout.</li>
                   <li>Applies to short-term stays (fewer than 28 nights).</li>
                   <li>Helpful for attracting price-sensitive travelers and locking in bookings.</li>
                 </ul>

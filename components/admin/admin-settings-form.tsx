@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
 import { changePasswordAction } from "@/actions/user/changePassword";
-import { updateHostServiceFeeAction } from "@/actions/admin/settingsActions";
+import { updateHostServiceFeeAction, updateNonRefundableDiscountAction } from "@/actions/admin/settingsActions";
 
 interface AdminSettingsFormProps {
   initialHostServiceFee?: number;
+  initialNonRefundableDiscount?: number | null;
 }
 
-export function AdminSettingsForm({ initialHostServiceFee = 15 }: AdminSettingsFormProps) {
+export function AdminSettingsForm({ initialHostServiceFee = 15, initialNonRefundableDiscount = null }: AdminSettingsFormProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,6 +23,9 @@ export function AdminSettingsForm({ initialHostServiceFee = 15 }: AdminSettingsF
   const [hostServiceFee, setHostServiceFee] = useState<number>(initialHostServiceFee);
   const [savedFee, setSavedFee] = useState<number>(initialHostServiceFee);
   const [isFeeSaving, startFeeTransition] = useTransition();
+  const [nonRefundableDiscount, setNonRefundableDiscount] = useState<string>(initialNonRefundableDiscount?.toString() ?? "");
+  const [savedNonRefundableDiscount, setSavedNonRefundableDiscount] = useState<number | null>(initialNonRefundableDiscount);
+  const [isNonRefundableSaving, startNonRefundableTransition] = useTransition();
 
   const [pending, startTransition] = useTransition();
 
@@ -40,6 +44,24 @@ export function AdminSettingsForm({ initialHostServiceFee = 15 }: AdminSettingsF
       }
       setSavedFee(hostServiceFee);
       toast.success(`Guest service fee updated to ${hostServiceFee}% successfully!`);
+    });
+  }
+
+  function handleSaveNonRefundableDiscount(e: React.FormEvent) {
+    e.preventDefault();
+    const percentage = Number(nonRefundableDiscount);
+    if (!Number.isFinite(percentage) || percentage <= 0 || percentage > 100) {
+      toast.error("Non-refundable discount must be greater than 0% and no more than 100%.");
+      return;
+    }
+    startNonRefundableTransition(async () => {
+      const res = await updateNonRefundableDiscountAction({ percentage });
+      if (!res.ok) {
+        toast.error(res.error || "Failed to update the non-refundable discount.");
+        return;
+      }
+      setSavedNonRefundableDiscount(percentage);
+      toast.success("Non-refundable booking discount updated.");
     });
   }
 
@@ -228,6 +250,42 @@ export function AdminSettingsForm({ initialHostServiceFee = 15 }: AdminSettingsF
               Formula: Host Payout = Stay Amount + Cleaning Fee - Guest Service Fee
             </div>
           </div>
+        </form>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
+        <div className="mb-5 space-y-1">
+          <h2 className="text-base font-bold text-muted-foreground">Non-refundable booking discount</h2>
+          <p className="text-xs text-[var(--muted-foreground)] max-w-2xl">
+            This percentage is applied by the server after all applicable listing discounts when a guest knowingly selects a non-refundable reservation. No rate is assumed until you configure one.
+          </p>
+        </div>
+        <form onSubmit={handleSaveNonRefundableDiscount} className="flex flex-wrap items-end gap-3">
+          <label htmlFor="non-refundable-discount" className="flex flex-col gap-1.5 text-xs font-semibold text-muted-foreground">
+            Discount percentage (%)
+            <input
+              id="non-refundable-discount"
+              type="number"
+              min={0.01}
+              max={100}
+              step={0.01}
+              value={nonRefundableDiscount}
+              onChange={(e) => setNonRefundableDiscount(e.target.value)}
+              placeholder="Set a percentage"
+              required
+              className="w-48 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-sm font-bold text-muted-foreground outline-none focus:border-[var(--accent)]"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={isNonRefundableSaving || (savedNonRefundableDiscount !== null && Number(nonRefundableDiscount) === savedNonRefundableDiscount)}
+            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
+          >
+            {isNonRefundableSaving ? "Saving..." : "Save non-refundable discount"}
+          </button>
+          <span className="pb-2.5 text-xs text-[var(--muted-foreground)]">
+            {savedNonRefundableDiscount === null ? "Not configured" : `Current: ${savedNonRefundableDiscount}%`}
+          </span>
         </form>
       </div>
 
