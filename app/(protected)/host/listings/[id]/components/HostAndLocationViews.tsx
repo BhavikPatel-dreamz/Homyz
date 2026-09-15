@@ -690,14 +690,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full bg-[#F5D98C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60 cursor-pointer"
+                  className="rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 cursor-pointer"
+                className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-zinc-700 hover:text-white transition-colors hover:bg-[#1f1f1f] cursor-pointer"
               >
                 Cancel
               </button>
