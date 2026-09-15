@@ -85,7 +85,6 @@ const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
 
 interface EditorSidebarProps {
   editorTab: "space" | "arrival" | "preferences";
-  setEditorTab: (tab: "space" | "arrival" | "preferences") => void;
   activeSection: string;
   setActiveSection: (section: any) => void;
   editTitle: string;
@@ -146,6 +145,8 @@ interface EditorSidebarProps {
   wifiNetwork: string;
   houseManual: string;
   directions?: string;
+  guestInteractionPreference?: string | null;
+  guidebooksCount?: number;
   editBedrooms?: number;
   editBeds?: number;
   parkingAvailable?: boolean;
@@ -158,7 +159,6 @@ interface EditorSidebarProps {
 
 export function EditorSidebar({
   editorTab,
-  setEditorTab,
   activeSection,
   setActiveSection,
   isLoading = false,
@@ -219,6 +219,8 @@ export function EditorSidebar({
   wifiNetwork,
   houseManual,
   directions = "",
+  guestInteractionPreference = "",
+  guidebooksCount = 0,
   checkOutInstructions = "",
   editBedrooms = 1,
   editBeds = 1,
@@ -322,6 +324,26 @@ export function EditorSidebar({
     listing?.country
   );
 
+  const hasCheckInCheckOut = Boolean(checkInStart && checkOutTime);
+  const hasDirections = Boolean(directions && directions.trim().length > 0);
+  const hasCheckInMethod = Boolean(checkInMethod && checkInMethod.trim().length > 0);
+  const hasWifi = Boolean(wifiNetwork && wifiNetwork.trim().length > 0);
+  const hasHouseManual = Boolean(houseManual && houseManual.trim().length > 0);
+  const hasCheckoutInstructions = Boolean(checkOutInstructions && checkOutInstructions.trim().length > 0);
+  const hasGuidebooks = Boolean(guidebooksCount && guidebooksCount > 0);
+  const hasInteractionPref = Boolean(guestInteractionPreference && guestInteractionPreference.trim().length > 0);
+
+  const arrivalGuideCompletedCount = [
+    hasCheckInCheckOut,
+    hasDirections,
+    hasCheckInMethod,
+    hasWifi,
+    hasHouseManual,
+    hasCheckoutInstructions,
+    hasGuidebooks,
+    hasInteractionPref,
+  ].filter(Boolean).length;
+
   const sidebar = (
     <aside
       className={`editor-sidebar ${mobileOpen
@@ -389,10 +411,7 @@ export function EditorSidebar({
           <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5">
             <button
               type="button"
-              onClick={() => {
-                setEditorTab("space");
-                setActiveSection("description");
-              }}
+              onClick={() => setActiveSection("description")}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -403,10 +422,7 @@ export function EditorSidebar({
 
             <button
               type="button"
-              onClick={() => {
-                setEditorTab("arrival");
-                setActiveSection("check-in-out");
-              }}
+              onClick={() => setActiveSection("check-in-out")}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
@@ -419,10 +435,7 @@ export function EditorSidebar({
           <button
             type="button"
             aria-label="Listing preferences"
-            onClick={() => {
-              setEditorTab("preferences");
-              setActiveSection("listing-status");
-            }}
+            onClick={() => setActiveSection("listing-status")}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F]"
@@ -1300,6 +1313,24 @@ export function EditorSidebar({
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
                     {wifiNetwork ? wifiNetwork : "Add details"}
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveSection("directions")}
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-white hover:border-white"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F]">
+                      Directions to property
+                    </span>
+                    
+                  </div>
+                  <p className="text-base text-zinc-500 font-normal truncate">
+                    {directions && directions.trim() ? directions : "Add details"}
                   </p>
                 </div>
 

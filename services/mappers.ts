@@ -326,6 +326,7 @@ export function toBookingDTO(
     currency: b.currency,
     priceBreakdown: b.priceBreakdown,
     cancellationPolicy: b.cancellationPolicy,
+    isNonRefundable: b.isNonRefundable,
     createdAt: b.createdAt,
     listing: b.listing
       ? {

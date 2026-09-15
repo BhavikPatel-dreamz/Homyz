@@ -6,10 +6,11 @@ import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
 import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 import { Role } from "@/generated/prisma/enums";
-import { updateHostServiceFeeSchema } from "@/lib/validation/settings";
+import { updateHostServiceFeeSchema, updateNonRefundableDiscountSchema } from "@/lib/validation/settings";
 import {
   getHostServiceFeePercentage,
   updateHostServiceFeePercentage,
+  updateNonRefundableDiscountPercentage,
 } from "@/services/app-settings.service";
 
 /**
@@ -23,6 +24,18 @@ export async function getHostServiceFeeAction() {
 
     const percentage = await getHostServiceFeePercentage();
     return { percentage };
+  });
+}
+
+export async function updateNonRefundableDiscountAction(input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.SETTINGS_EDIT);
+    const { percentage } = updateNonRefundableDiscountSchema.parse(input);
+    const updated = await updateNonRefundableDiscountPercentage(percentage, actor.id);
+    revalidatePath("/admin/settings");
+    return { percentage: updated };
   });
 }
 
@@ -42,4 +55,3 @@ export async function updateHostServiceFeeAction(input: unknown) {
     return { percentage: updated };
   });
 }
-

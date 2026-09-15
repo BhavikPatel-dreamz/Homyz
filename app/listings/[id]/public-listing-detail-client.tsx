@@ -47,6 +47,7 @@ export function PublicListingDetailClient({
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guestsCount, setGuestsCount] = useState(1);
+  const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
@@ -126,7 +127,7 @@ export function PublicListingDetailClient({
       setQuoteError(null);
 
       fetch(
-        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}`
+        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&nonRefundable=${isNonRefundable}`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -153,7 +154,7 @@ export function PublicListingDetailClient({
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, guestsCount, listing.id]);
+  }, [checkIn, checkOut, guestsCount, isNonRefundable, listing.id]);
 
   // Handle Booking
   const handleReserve = async () => {
@@ -172,6 +173,7 @@ export function PublicListingDetailClient({
           startDate: checkIn,
           endDate: checkOut,
           guests: guestsCount,
+          nonRefundable: isNonRefundable,
         }),
       });
 
@@ -600,6 +602,20 @@ export function PublicListingDetailClient({
 
                     {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-zinc-600 whitespace-pre-wrap">{listing.bookingMessage}</p>}
 
+                    {quote?.nonRefundableAvailable && !isQuoteLoading && (
+                      <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
+                        <legend className="px-1 font-semibold text-zinc-900">Choose your reservation</legend>
+                        <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${!isNonRefundable ? "border-zinc-900 bg-white" : "border-transparent"}`}>
+                          <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5" />
+                          <span><span className="block font-semibold text-zinc-900">Standard booking</span><span className="text-zinc-600">Uses this listing&apos;s normal cancellation policy.</span></span>
+                        </label>
+                        <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${isNonRefundable ? "border-amber-500 bg-amber-50" : "border-transparent"}`}>
+                          <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5" />
+                          <span><span className="block font-semibold text-zinc-900">Non-refundable booking</span><span className="text-zinc-600">Discounted price. If you cancel, you cannot receive the normal cancellation refund and the host retains the booked payout.</span></span>
+                        </label>
+                      </fieldset>
+                    )}
+
                     {/* Live Quote Breakdown */}
                     {isQuoteLoading && (
                       <div className="py-4 text-center text-xs text-zinc-400 animate-pulse font-medium">
@@ -650,10 +666,17 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote.discountAmount > 0 && (
+                        {quote.appliedDiscount && (
                           <div className="flex items-center justify-between text-emerald-700 font-medium">
-                            <span>{quote.appliedDiscount ? quote.appliedDiscount.name : `${quote.discountPercentage}% discount`}</span>
-                            <span>−SAR {Math.round(quote.discountAmount / 100)}</span>
+                            <span>{quote.appliedDiscount.name}</span>
+                            <span>−SAR {Math.round(quote.appliedDiscount.amount / 100)}</span>
+                          </div>
+                        )}
+
+                        {quote.nonRefundableDiscount && (
+                          <div className="flex items-center justify-between text-emerald-700 font-medium">
+                            <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
+                            <span>−SAR {Math.round(quote.nonRefundableDiscount.amount / 100)}</span>
                           </div>
                         )}
 

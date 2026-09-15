@@ -9,3 +9,6 @@ export const updateHostServiceFeeSchema = z.object({
 
 export type UpdateHostServiceFeeInput = z.infer<typeof updateHostServiceFeeSchema>;
 
+export const updateNonRefundableDiscountSchema = z.object({
+  percentage: z.number().gt(0, "Discount percentage must be greater than 0%").max(100, "Discount percentage cannot exceed 100%"),
+});

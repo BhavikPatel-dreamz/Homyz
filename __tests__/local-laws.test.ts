@@ -46,6 +46,10 @@ assert(
   "LocalLawsView must include host responsibility paragraph"
 );
 assert(
+  localLawsCode.includes("What hosting regulations apply to you?"),
+  "LocalLawsView must include 'What hosting regulations apply to you?' documented action link"
+);
+assert(
   localLawsCode.includes("Learn more about responsible hosting"),
   "LocalLawsView must include 'Learn more about responsible hosting' link"
 );

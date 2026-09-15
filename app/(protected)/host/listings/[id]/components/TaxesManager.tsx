@@ -28,6 +28,36 @@ interface TaxesManagerProps {
   listingCity?: string | null;
   listingCountry?: string | null;
   setActiveSection: (s: any) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+}
+
+type TaxFormSnapshot = {
+  taxName: string;
+  taxType: string;
+  rateMode: "Fixed" | "Percentage";
+  taxRate: string;
+  taxableComponents: TaxableComponent[];
+  maximumAmountPerPersonPerNight: string;
+  partialStayExemption: string;
+  fullStayExemption: string;
+  registrationNumber: string;
+  termsAgreed: boolean;
+};
+
+function sameTaxForm(left: TaxFormSnapshot, right: TaxFormSnapshot) {
+  return (
+    left.taxName === right.taxName &&
+    left.taxType === right.taxType &&
+    left.rateMode === right.rateMode &&
+    left.taxRate === right.taxRate &&
+    left.maximumAmountPerPersonPerNight === right.maximumAmountPerPersonPerNight &&
+    left.partialStayExemption === right.partialStayExemption &&
+    left.fullStayExemption === right.fullStayExemption &&
+    left.registrationNumber === right.registrationNumber &&
+    left.termsAgreed === right.termsAgreed &&
+    left.taxableComponents.length === right.taxableComponents.length &&
+    left.taxableComponents.every((component, index) => component === right.taxableComponents[index])
+  );
 }
 
 export function TaxesManager({
@@ -35,6 +65,7 @@ export function TaxesManager({
   listingCity,
   listingCountry,
   setActiveSection,
+  onDirtyChange,
 }: TaxesManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,6 +90,7 @@ export function TaxesManager({
   const [fullStayExemption, setFullStayExemption] = useState<string>("");
   const [registrationNumber, setRegistrationNumber] = useState<string>("");
   const [termsAgreed, setTermsAgreed] = useState<boolean>(false);
+  const [savedForm, setSavedForm] = useState<TaxFormSnapshot | null>(null);
 
   // Form validation & submission state
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
@@ -72,6 +104,26 @@ export function TaxesManager({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [viewingRegistration, setViewingRegistration] = useState<TaxRegistrationDTO | null>(null);
   const [viewingInvoiceModal, setViewingInvoiceModal] = useState<boolean>(false);
+
+  const currentForm: TaxFormSnapshot = {
+    taxName,
+    taxType,
+    rateMode,
+    taxRate,
+    taxableComponents,
+    maximumAmountPerPersonPerNight,
+    partialStayExemption,
+    fullStayExemption,
+    registrationNumber,
+    termsAgreed,
+  };
+  const isFormDirty = isAddTaxModalOpen && savedForm !== null && !sameTaxForm(currentForm, savedForm);
+
+  useEffect(() => {
+    onDirtyChange?.(isFormDirty);
+  }, [isFormDirty, onDirtyChange]);
+
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   // Helper toasts
   const showSuccess = (msg: string) => {
@@ -131,6 +183,18 @@ export function TaxesManager({
     setFullStayExemption("");
     setTermsAgreed(false);
     setFormSubmitted(false);
+    setSavedForm({
+      taxName: "",
+      taxType: "",
+      rateMode: "Fixed",
+      taxRate: "",
+      taxableComponents: ["BASE_PRICE"],
+      maximumAmountPerPersonPerNight: "",
+      partialStayExemption: "",
+      fullStayExemption: "",
+      registrationNumber: "",
+      termsAgreed: false,
+    });
     setIsAddTaxModalOpen(true);
   };
 
@@ -155,6 +219,20 @@ export function TaxesManager({
     setPartialStayExemption(tax.partialStayExemptionNights ? String(tax.partialStayExemptionNights) : "");
     setTermsAgreed(true);
     setFormSubmitted(false);
+    setSavedForm({
+      taxName: tax.customName || formatTaxTypeName(tax.taxType),
+      taxType: methodStr,
+      rateMode: isPct ? "Percentage" : "Fixed",
+      taxRate: isPct ? String(tax.rate ?? "") : String((tax.amount ?? 0) / 100),
+      taxableComponents: tax.taxableComponents,
+      maximumAmountPerPersonPerNight: tax.maximumAmountPerPersonPerNight ? String(tax.maximumAmountPerPersonPerNight / 100) : "",
+      partialStayExemption: tax.partialStayExemptionNights ? String(tax.partialStayExemptionNights) : "",
+      fullStayExemption: tax.fullStayExemptionNights || tax.longStayExemptionNights
+        ? String(tax.fullStayExemptionNights || tax.longStayExemptionNights)
+        : "",
+      registrationNumber,
+      termsAgreed: true,
+    });
     setIsAddTaxModalOpen(true);
   };
 
@@ -162,6 +240,7 @@ export function TaxesManager({
     setIsAddTaxModalOpen(false);
     setEditingTax(null);
     setFormSubmitted(false);
+    setSavedForm(null);
   };
 
   // Synchronize rateMode based on TaxType selection
@@ -283,6 +362,7 @@ export function TaxesManager({
       showSuccess(editingTax ? "Tax updated successfully" : "Tax added successfully");
       setIsAddTaxModalOpen(false);
       setEditingTax(null);
+      setSavedForm(null);
       await loadOverview();
     } catch (err: any) {
       console.error("Save tax error:", err);

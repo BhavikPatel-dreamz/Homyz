@@ -214,18 +214,21 @@ export function LocalLawsView({
         resources under &ldquo;Your City Laws&rdquo;.
       </p>
 
-      {/* 6. Text Link Trigger */}
-      <div>
-        <button
-          type="button"
-          onClick={() => {
-            setActiveArticleId("hosting-regulations");
-            setShowResourceDrawer(true);
-          }}
-          className="text-xs sm:text-sm font-semibold text-[#1F1F1F] underline underline-offset-3 hover:text-zinc-700 transition-colors cursor-pointer text-left"
-        >
-          Learn more about responsible hosting
-        </button>
+      {/* 6. Documented Action & Text Link Triggers */}
+      <div className="space-y-2.5 pt-1">
+       
+        <div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveArticleId("hosting-regulations");
+              setShowResourceDrawer(true);
+            }}
+            className="text-xs sm:text-sm font-normal text-zinc-600 underline underline-offset-3 hover:text-zinc-900 transition-colors cursor-pointer text-left"
+          >
+            Learn more about responsible hosting
+          </button>
+        </div>
       </div>
 
       {/* 7. Legal Terms Disclaimer */}
