@@ -173,6 +173,8 @@ interface EditorSidebarProps {
   wifiNetwork: string;
   houseManual: string;
   directions?: string;
+  guestInteractionPreference?: string | null;
+  guidebooksCount?: number;
   editBedrooms?: number;
   editBeds?: number;
   parkingAvailable?: boolean;
@@ -246,6 +248,8 @@ export function EditorSidebar({
   wifiNetwork,
   houseManual,
   directions = "",
+  guestInteractionPreference = "",
+  guidebooksCount = 0,
   checkOutInstructions = "",
   editBedrooms = 1,
   editBeds = 1,
@@ -348,6 +352,26 @@ export function EditorSidebar({
     missingReqs.length,
     listing?.country
   );
+
+  const hasCheckInCheckOut = Boolean(checkInStart && checkOutTime);
+  const hasDirections = Boolean(directions && directions.trim().length > 0);
+  const hasCheckInMethod = Boolean(checkInMethod && checkInMethod.trim().length > 0);
+  const hasWifi = Boolean(wifiNetwork && wifiNetwork.trim().length > 0);
+  const hasHouseManual = Boolean(houseManual && houseManual.trim().length > 0);
+  const hasCheckoutInstructions = Boolean(checkOutInstructions && checkOutInstructions.trim().length > 0);
+  const hasGuidebooks = Boolean(guidebooksCount && guidebooksCount > 0);
+  const hasInteractionPref = Boolean(guestInteractionPreference && guestInteractionPreference.trim().length > 0);
+
+  const arrivalGuideCompletedCount = [
+    hasCheckInCheckOut,
+    hasDirections,
+    hasCheckInMethod,
+    hasWifi,
+    hasHouseManual,
+    hasCheckoutInstructions,
+    hasGuidebooks,
+    hasInteractionPref,
+  ].filter(Boolean).length;
 
   const sidebar = (
     <aside
@@ -1327,6 +1351,24 @@ export function EditorSidebar({
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
                     {wifiNetwork ? wifiNetwork : "Add details"}
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveSection("directions")}
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
+                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    : "bg-white border-white hover:border-white"
+                    }`}
+                >
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F]">
+                      Directions to property
+                    </span>
+                    
+                  </div>
+                  <p className="text-base text-zinc-500 font-normal truncate">
+                    {directions && directions.trim() ? directions : "Add details"}
                   </p>
                 </div>
 

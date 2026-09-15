@@ -2045,24 +2045,78 @@ function DirectionsView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("check-in-out")} />
-        <h1>Directions</h1>
+      <div className="space-y-1">
+        <div className="flex items-center gap-3">
+          <BackButton onClick={() => setActiveSection("check-in-out")} />
+          <h1 className="text-xl font-bold text-[#1F1F1F]">Directions to property</h1>
+        </div>
+        <p className="text-xs text-zinc-500 font-normal leading-relaxed pl-11">
+          Provide clear directions on how to reach your property. Include details that navigation apps might miss.
+        </p>
       </div>
 
-      {/* Subtitle description matching screenshot 100% */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2">
-        Let guests know how to get to your place. Include any tips for parking or public transportation
-      </p>
+      {/* Privacy Notice Banner */}
+      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 font-medium">
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 text-amber-700">
+          <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+        </svg>
+        <span>Private · Only confirmed guests receive these directions after booking.</span>
+      </div>
 
-      {/* Textarea field */}
-      <div className="pt-2">
+      {/* Structured Suggestion Tips */}
+      <div className="space-y-2">
+        <span className="text-xs font-semibold text-zinc-700 block">Recommended arrival details to include:</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/60 space-y-1">
+            <span className="text-xs font-semibold text-zinc-800 flex items-center gap-1.5">
+              <span>🚗</span> Driving directions
+            </span>
+            <p className="text-[11px] text-zinc-500 leading-snug">
+              Key highway exits, turns, or community gate codes.
+            </p>
+          </div>
+          <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/60 space-y-1">
+            <span className="text-xs font-semibold text-zinc-800 flex items-center gap-1.5">
+              <span>🅿️</span> Parking instructions
+            </span>
+            <p className="text-[11px] text-zinc-500 leading-snug">
+              Designated stall number, garage ramp, or street spots.
+            </p>
+          </div>
+          <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/60 space-y-1">
+            <span className="text-xs font-semibold text-zinc-800 flex items-center gap-1.5">
+              <span>🚇</span> Public transportation
+            </span>
+            <p className="text-[11px] text-zinc-500 leading-snug">
+              Nearby metro or bus stations and walking path.
+            </p>
+          </div>
+          <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/60 space-y-1">
+            <span className="text-xs font-semibold text-zinc-800 flex items-center gap-1.5">
+              <span>📍</span> Landmarks & entrance
+            </span>
+            <p className="text-[11px] text-zinc-500 leading-snug">
+              Notable buildings, shops, or signs to find the door.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Free-text Editor & Character Count */}
+      <div className="space-y-1.5 pt-1">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-zinc-700">Directions & arrival notes</label>
+          <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 font-semibold" : "text-zinc-400"}`}>
+            {(directions || "").length} / 5000 characters
+          </span>
+        </div>
         <textarea
-          rows={5}
+          rows={6}
+          maxLength={5000}
           value={directions}
           onChange={(e) => setDirections?.(e.target.value)}
-          placeholder="Add directions, parking instructions, or landmark references..."
-          className="w-full rounded-2xl border border-zinc-200/90 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+          placeholder="e.g. From King Khalid Airport or the Northern Ring Road, take Exit 4 towards the Diplomatic Quarter. Turn right after the grand mosque. The building is beige stone with dark bronze balconies next to Al-Nakheel Pharmacy. Park in slot #14 on level B1."
+          className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs leading-relaxed transition-colors"
         />
       </div>
 
@@ -2072,9 +2126,9 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+          className="rounded-full bg-[#F5D98C] hover:bg-[#EFCF76] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? "Saving…" : "Save"}
         </button>
       </div>
     </div>

@@ -662,6 +662,17 @@ export function HostListingEditorClient({
     listing.country
   );
 
+  const arrivalGuideCompletedCount = [
+    Boolean(checkInStart && checkOutTime),
+    Boolean(directions && directions.trim().length > 0),
+    Boolean(checkInMethod && checkInMethod.trim().length > 0),
+    Boolean(wifiNetwork && wifiNetwork.trim().length > 0),
+    Boolean(houseManual && houseManual.trim().length > 0),
+    Boolean(checkOutInstructions && checkOutInstructions.trim().length > 0),
+    Boolean((initialGuidebooks?.length ?? 0) > 0),
+    Boolean(editGuestInteraction && editGuestInteraction.trim().length > 0),
+  ].filter(Boolean).length;
+
   const [isSaving, setIsSaving] = useState(false);
   const setFeedbackMsg = useCallback((msg: { type: "success" | "error"; text: string } | null) => {
     if (!msg) return;
@@ -1165,6 +1176,9 @@ export function HostListingEditorClient({
         if (payload.allowSameDayRequests !== undefined) {
           setAllowSameDayRequests(payload.allowSameDayRequests);
         }
+        if (payload.directions !== undefined) {
+          setDirections(payload.directions || "");
+        }
         setFeedbackMsg({ type: "success", text: "Changes saved successfully!" });
       } else {
         setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to update section." });
@@ -1349,6 +1363,28 @@ export function HostListingEditorClient({
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
           <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
+            {/* Mobile/Tablet Arrival Guide Progress Banner */}
+            {editorTab === "arrival" && (
+              <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1F1F1F]">Arrival Guide Progress</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileSidebarOpen(true)}
+                    className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 cursor-pointer"
+                  >
+                    {arrivalGuideCompletedCount} of 8 completed · View all →
+                  </button>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                    style={{ width: `${(arrivalGuideCompletedCount / 8) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Persistent Status Indicator Banner across all edit sections */}
             {activeSection !== "listing-status" && activeSection !== "listingstatus" && (
               <div className="hidden space-y-3">
@@ -1856,6 +1892,8 @@ export function HostListingEditorClient({
           houseManual={houseManual}
           checkOutInstructions={checkOutInstructions}
           directions={directions}
+          guestInteractionPreference={editGuestInteraction}
+          guidebooksCount={initialGuidebooks?.length ?? 0}
           editBedrooms={editBedrooms}
           editBeds={editBeds}
           parkingAvailable={parkingAvailable}
