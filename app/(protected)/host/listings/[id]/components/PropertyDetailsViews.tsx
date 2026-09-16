@@ -196,6 +196,7 @@ export function PropertyDetailsViews({
   const accessibilityCollapseTimerRef = React.useRef<number | null>(null);
   const accessibilityOpenFrameRef = React.useRef<number | null>(null);
   const amenitiesScrollRef = React.useRef<HTMLDivElement>(null);
+  const amenitiesScrollTrackRef = React.useRef<HTMLDivElement>(null);
   const amenitiesScrollFrameRef = React.useRef<number | null>(null);
   const [amenitiesScrollThumb, setAmenitiesScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
   const accessibilityPhotoInput = React.useRef<HTMLInputElement>(null);
@@ -248,8 +249,11 @@ export function PropertyDetailsViews({
       if (!element) return;
 
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
-      const height = hasOverflow ? 60 : 0;
-      const maxTop = Math.max(0, element.clientHeight - height - 10);
+      const trackHeight = amenitiesScrollTrackRef.current?.clientHeight || element.clientHeight;
+      // Preserve the compact Figma thumb while mapping its travel exactly to
+      // the content scroll range.
+      const height = hasOverflow ? Math.min(60, trackHeight) : 0;
+      const maxTop = Math.max(0, trackHeight - height);
       const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
       const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
 
@@ -270,6 +274,7 @@ export function PropertyDetailsViews({
     const resizeObserver = new ResizeObserver(updateAmenitiesScrollThumb);
     const mutationObserver = new MutationObserver(updateAmenitiesScrollThumb);
     resizeObserver.observe(element);
+    if (amenitiesScrollTrackRef.current) resizeObserver.observe(amenitiesScrollTrackRef.current);
     mutationObserver.observe(element, { childList: true, subtree: true });
 
     return () => {
@@ -277,7 +282,7 @@ export function PropertyDetailsViews({
       mutationObserver.disconnect();
       if (amenitiesScrollFrameRef.current !== null) cancelAnimationFrame(amenitiesScrollFrameRef.current);
     };
-  }, [activeSection, updateAmenitiesScrollThumb]);
+  }, [activeSection, amenitiesScrollThumb.visible, updateAmenitiesScrollThumb]);
 
   const updateAccessibilityDetail = (featureId: string, updater: (detail: AccessibilityFeatureDetail) => AccessibilityFeatureDetail) => {
     const current = accessibilityDetails.find((detail) => detail.featureId === featureId) ?? { featureId, photos: [] };
@@ -1548,7 +1553,7 @@ export function PropertyDetailsViews({
                   <div
                     ref={amenitiesScrollRef}
                     onScroll={updateAmenitiesScrollThumb}
-                    className="custom-scrollbar max-h-[calc(100vh-21rem)] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
+                      className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
                   >
                     {filteredCatalog.length === 0 ? (
                       <div className="py-12 text-center text-zinc-400 text-xs">
@@ -1593,14 +1598,14 @@ export function PropertyDetailsViews({
                       })
                     )}
                   </div>
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
-                    {amenitiesScrollThumb.visible && (
+                  {amenitiesScrollThumb.visible && (
+                    <div ref={amenitiesScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
                       <div
-                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-transform duration-150 ease-out will-change-transform"
+                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
                         style={{ height: `${amenitiesScrollThumb.height}px`, transform: `translate3d(0, ${amenitiesScrollThumb.top}px, 0)` }}
                       />
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
               </div>
