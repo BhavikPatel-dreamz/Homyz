@@ -1287,7 +1287,7 @@ export function EditorSidebar({
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-1">
+                  <span className="text-base font-normal text-[#1f1f1f] block mb-1">
                     Cancellation policy
                   </span>
                   <div className="space-y-0.5">

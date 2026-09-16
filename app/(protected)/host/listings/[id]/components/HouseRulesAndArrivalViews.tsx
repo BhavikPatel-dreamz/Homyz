@@ -617,7 +617,7 @@ export function HouseRulesAndArrivalViews({
                     <label className="text-sm font-medium text-[#1f1f1f] block">Check-in window</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <span className="text-[11px] font-medium text-zinc-500 block mb-1">Start time</span>
+                        <span className="text-base font-normal text-[#1f1f1f] block mb-1">Start time</span>
                         <select
                           value={formatTimeDisplay(checkInStart, "3:00 pm")}
                           onChange={(e) => setCheckInStart(e.target.value)}
@@ -629,7 +629,7 @@ export function HouseRulesAndArrivalViews({
                         </select>
                       </div>
                       <div>
-                        <span className="text-[11px] font-medium text-zinc-500 block mb-1">End time</span>
+                        <span className="text-base font-normal text-[#1f1f1f] block mb-1">End time</span>
                         <select
                           value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
                           onChange={(e) => setCheckInEnd(e.target.value)}
@@ -648,7 +648,7 @@ export function HouseRulesAndArrivalViews({
                   <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2">
                     <label className="text-sm font-medium text-[#1f1f1f] block">Checkout time</label>
                     <div>
-                      <span className="text-[11px] font-medium text-zinc-500 block mb-1">Guests must leave before</span>
+                      <span className="text-base font-normal text-[#1f1f1f] block mb-1">Guests must leave before</span>
                       <select
                         value={formatTimeDisplay(checkOutTime, "11:00 am")}
                         onChange={(e) => setCheckOutTime(e.target.value)}

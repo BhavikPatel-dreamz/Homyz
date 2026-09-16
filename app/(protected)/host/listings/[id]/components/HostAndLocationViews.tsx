@@ -138,10 +138,10 @@ function Toggle({
       type="button"
       aria-pressed={checked}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? tone === "rose" ? "bg-[#EF4662]" : "bg-[#E9C979]" : "bg-zinc-300"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? tone === "rose" ? "bg-[#EF4662]" : "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
     >
       <span
-        className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
+        className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${checked ? "translate-x-5.5" : "translate-x-0.5"}`}
       />
     </button>
   );
@@ -372,7 +372,7 @@ function LocationView(props: Props) {
   };
 
   return (
-    <div className="w-full max-w-[640px] space-y-3 pb-10 sm:space-y-5">
+    <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
         <BackButton onClick={onBack} />
         <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] sm:text-2xl">Location</h1>
@@ -394,7 +394,7 @@ function LocationView(props: Props) {
         <>
           {/* Interactive map with draggable pin */}
           <div className="space-y-2 pt-3 sm:pt-8">
-            <div className="overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 shadow-[0_2px_4px_rgba(0,0,0,0.15)]">
+            <div className="overflow-hidden rounded-[20px] border border-[#1F1F1F] bg-zinc-100 shadow-[0_2px_4px_rgba(0,0,0,0.15)]">
               <RealMap
                 address={editAddress}
                 city={editCity}
@@ -408,7 +408,7 @@ function LocationView(props: Props) {
                   setLocationIsResolving(false);
                   setLocationResolutionError(message);
                 }}
-                className="relative z-0 h-[376px] w-full sm:h-[340px]"
+                className="relative z-0 h-[256px] w-full sm:h-[482px]"
               />
             </div>
 
@@ -442,7 +442,7 @@ function LocationView(props: Props) {
                 placeholder="Search by street, building, city, or postal code..."
               />
               <div>
-                <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                   Street address
                 </label>
                 <input
@@ -457,7 +457,7 @@ function LocationView(props: Props) {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                   Apt, suite, unit (optional)
                 </label>
                 <input
@@ -470,7 +470,7 @@ function LocationView(props: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                     District / Neighborhood
                   </label>
                   <input
@@ -481,7 +481,7 @@ function LocationView(props: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                     City
                   </label>
                   <input
@@ -498,7 +498,7 @@ function LocationView(props: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                     Postal code
                   </label>
                   <input
@@ -509,7 +509,7 @@ function LocationView(props: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-500 block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
                     Country
                   </label>
                   <input
@@ -530,6 +530,7 @@ function LocationView(props: Props) {
           {/* 4. Location Sharing */}
           <Card
             title="Location sharing"
+            summary="Show listing’s specific location"
             open={open === "sharing"}
             onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
             mutedWhenOpen
@@ -584,14 +585,15 @@ function LocationView(props: Props) {
             summary="Add details"
             open={open === "features"}
             onToggle={() => setOpen(open === "features" ? "" : "features")}
+            mutedWhenOpen
           >
-            <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-x-8">
+            <div className="grid grid-cols-1 gap-x-12 sm:grid-cols-2 sm:gap-x-16">
               {LOCATION_FEATURES.map(([id, label]) => (
-                <div key={id} className="py-2.5 pr-2">
-                  <div className="flex items-start justify-between gap-3 border-b border-zinc-200 pb-3">
+                <div key={id} className="py-2.5 sm:py-3">
+                  <div className="flex items-start justify-between gap-4 border-b border-[#D7D7D7] pb-3.5">
                     <div className="min-w-0 flex-1">
-                      <div className="text-[15px] font-normal leading-5 text-[#1F1F1F]">{label}</div>
-                      <div className="mt-1 text-xs leading-4 text-zinc-400">Highlight this feature for prospective guests</div>
+                      <div className="text-base font-normal leading-6 text-[#1F1F1F]">{label}</div>
+                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272]">Highlight this feature for prospective guests</div>
                     </div>
                     <Toggle
                       checked={locationFeatures.includes(id)}
@@ -607,7 +609,7 @@ function LocationView(props: Props) {
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-3 pt-3">
+            <div className="flex items-center gap-3 pt-4">
               <button
                 type="button"
                 onClick={handleSave}
@@ -728,13 +730,13 @@ function Card({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left sm:px-4"
+        className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left"
       >
         <span className="min-w-0">
           <span className="block text-base font-medium text-[#1F1F1F]">{title}</span>
           {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272]">{summary}</span>}
         </span>
-        <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
           <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain" />
         </span>
       </button>
