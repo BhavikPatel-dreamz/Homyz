@@ -111,6 +111,7 @@ const AMENITY_ICON_SOURCES: Record<string, string> = {
 };
 
 interface EditorSidebarProps {
+  presentation?: "host" | "admin";
   editorTab: "space" | "arrival" | "preferences";
   activeSection: string;
   setActiveSection: (section: any) => void;
@@ -184,7 +185,38 @@ interface EditorSidebarProps {
   onMobileClose?: () => void;
 }
 
+const ADMIN_EDITOR_SECTIONS = [
+  { group: "Admin review", items: [["admin-review", "Review & controls"], ["audit-history", "Audit history"]] },
+  { group: "Your space", items: [["title", "Listing title"], ["description", "Description"], ["propertyType", "Property type"], ["location", "Location"], ["guests", "Guest capacity"], ["sleeping-arrangements", "Rooms & beds"], ["photos", "Photos & photo tour"], ["amenities", "Amenities"], ["accessibility", "Accessibility"], ["about-host", "About host"], ["pricing", "Pricing"], ["availability", "Availability"], ["house-rules", "House rules"], ["guests-safety", "Guest safety"], ["cancellation-policy", "Cancellation"]] },
+  { group: "Arrival guide", items: [["check-in-out", "Check-in & checkout"], ["directions", "Directions"], ["check-in-method", "Check-in method"], ["wifi-details", "Wi-Fi"], ["house-manual", "House manual"], ["parking", "Parking"], ["checkout-instructions", "Checkout instructions"], ["guidebooks", "Guidebooks"], ["interaction-preferences", "Interaction preferences"]] },
+  { group: "Preferences", items: [["listing-status", "Listing status"], ["language", "Languages"], ["guest-requirements", "Guest requirements"], ["local-laws", "Local laws"], ["regulations", "Regulations"], ["taxes", "Taxes"], ["homyz-org-stays", "Homyz.org stays"], ["custom-link", "Custom listing link"], ["remove-listing", "Remove listing"]] },
+] as const;
+
+function AdminEditorSidebar({ activeSection, setActiveSection, listing }: Pick<EditorSidebarProps, "activeSection" | "setActiveSection" | "listing">) {
+  return (
+    <aside className="admin-editor-sidebar rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xs lg:sticky lg:top-6">
+      <div className="border-b border-[var(--border-subtle)] px-3 pb-3 pt-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Listing navigation</p>
+        <p className="mt-1 truncate text-sm font-bold text-muted-foreground">{listing.title || "Untitled listing"}</p>
+      </div>
+      <nav className="mt-2 max-h-[calc(100vh-12rem)] space-y-4 overflow-y-auto px-1 pb-2" aria-label="Admin listing sections">
+        {ADMIN_EDITOR_SECTIONS.map((section) => (
+          <div key={section.group}>
+            <p className="px-2 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted-foreground)]">{section.group}</p>
+            {section.items.map(([id, label]) => {
+              const active = activeSection === id || (id === "photos" && activeSection === "photo-tour") || (id === "custom-link" && activeSection === "customlink");
+              const destructive = id === "remove-listing";
+              return <button key={id} type="button" onClick={() => setActiveSection(id)} className={`mb-0.5 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors ${active ? "bg-amber-500 text-zinc-950" : destructive ? "text-rose-600 hover:bg-rose-50" : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"}`}><span>{label}</span><span className="text-sm opacity-60">›</span></button>;
+            })}
+          </div>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
 export function EditorSidebar({
+  presentation = "host",
   editorTab,
   activeSection,
   setActiveSection,
@@ -370,6 +402,10 @@ export function EditorSidebar({
     hasGuidebooks,
     hasInteractionPref,
   ].filter(Boolean).length;
+
+  if (presentation === "admin") {
+    return <AdminEditorSidebar activeSection={activeSection} setActiveSection={setActiveSection} listing={listing} />;
+  }
 
   const sidebar = (
     <aside

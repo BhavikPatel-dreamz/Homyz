@@ -21,6 +21,7 @@ import { HouseRulesAndArrivalViews } from "./components/HouseRulesAndArrivalView
 import { PhotoTourManager } from "./components/PhotoTourManager";
 import { RemoveListingModal } from "./components/RemoveListingModal";
 import { ListingStatusView, computeMissingRequirements, getListingDisplayState } from "./components/ListingStatusView";
+import { AdminListingReviewView, type ListingAuditItem } from "@/app/(protected)/admin/listings/[id]/admin-listing-review-view";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
 import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
@@ -285,11 +286,23 @@ export function HostListingEditorClient({
   initialSection,
   isLoading = false,
   initialGuidebooks,
+  routeBase = "/host/listings",
+  presentation = "host",
+  adminCapabilities,
+  initialAuditLogs = [],
+  initialAuditLogTotal = 0,
 }: {
   listing: HostListingData;
   initialSection?: SectionKey;
   isLoading?: boolean;
   initialGuidebooks?: any[];
+  /** Allows the Admin route to reuse the full editor flow without host navigation. */
+  routeBase?: string;
+  /** Keeps editor structure while allowing an Admin workspace visual shell. */
+  presentation?: "host" | "admin";
+  adminCapabilities?: { canApprove: boolean; canSuspend: boolean; canEdit: boolean };
+  initialAuditLogs?: ListingAuditItem[];
+  initialAuditLogTotal?: number;
 }) {
   const router = useRouter();
   const [listing, setListing] = useState<HostListingData>(initialListing);
@@ -320,12 +333,14 @@ export function HostListingEditorClient({
       }
 
       const slug = sectionToSlug(newSection);
-      const targetPath = `/host/listings/${listing.id}/${slug}`;
-      if (updateHistory && typeof window !== "undefined" && window.location.pathname !== targetPath) {
+      const targetPath = presentation === "admin"
+        ? `${routeBase}/${listing.id}?section=${slug}`
+        : `${routeBase}/${listing.id}/${slug}`;
+      if (updateHistory && typeof window !== "undefined" && `${window.location.pathname}${window.location.search}` !== targetPath) {
         window.history.pushState(null, "", targetPath);
       }
     },
-    [listing.id]
+    [listing.id, presentation, routeBase]
   );
 
   useEffect(() => {
@@ -717,25 +732,29 @@ export function HostListingEditorClient({
     }
 
     if (fromHistory && typeof window !== "undefined") {
-      const currentPath = `/host/listings/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
-      if (window.location.pathname !== currentPath) window.history.pushState(null, "", currentPath);
+      const currentPath = presentation === "admin"
+        ? `${routeBase}/${listing.id}?section=${sectionToSlug(activeSectionRef.current)}`
+        : `${routeBase}/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
+      if (`${window.location.pathname}${window.location.search}` !== currentPath) window.history.pushState(null, "", currentPath);
     }
 
     pendingNavigationRef.current = leave;
     setIsUnsavedChangesDialogOpen(true);
-  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, listing.id, restoreSavedPreferenceDraft]);
+  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, listing.id, presentation, restoreSavedPreferenceDraft, routeBase]);
 
   const requestBrowserLeave = useCallback((destination: string) => {
     if (!hasUnsavedPreferenceChanges || typeof window === "undefined") return;
 
-    const currentPath = `/host/listings/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
-    if (window.location.pathname !== currentPath) window.history.pushState(null, "", currentPath);
+    const currentPath = presentation === "admin"
+      ? `${routeBase}/${listing.id}?section=${sectionToSlug(activeSectionRef.current)}`
+      : `${routeBase}/${listing.id}/${sectionToSlug(activeSectionRef.current)}`;
+    if (`${window.location.pathname}${window.location.search}` !== currentPath) window.history.pushState(null, "", currentPath);
     pendingNavigationRef.current = () => {
       restoreSavedPreferenceDraft();
       window.location.assign(destination);
     };
     setIsUnsavedChangesDialogOpen(true);
-  }, [hasUnsavedPreferenceChanges, listing.id, restoreSavedPreferenceDraft]);
+  }, [hasUnsavedPreferenceChanges, listing.id, presentation, restoreSavedPreferenceDraft, routeBase]);
 
   useEffect(() => {
     requestSectionNavigationRef.current = requestSectionNavigation;
@@ -1472,7 +1491,7 @@ export function HostListingEditorClient({
     const res = await deleteListingAction(listing.id);
     setIsDeleting(false);
     if (res.ok) {
-      router.push("/host/listings");
+      router.push(routeBase);
     } else {
       setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to delete listing." });
       setShowDeleteModal(false);
@@ -1482,17 +1501,19 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className="flex min-h-screen flex-col bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0"
+      className={`flex min-h-screen flex-col bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
+      {presentation === "host" && (
       <div className="hidden lg:block">
         <HostHeader user={listing.host} />
-      </div>
+      </div>)}
 
       {/* 2. TOP NAV TABS (Matches Figma Tab Row: Today, Calendar, Listing, Messages 100%) */}
+      {presentation === "host" && (
       <div className="hidden lg:block">
         <HostSubNav activeTab="listing" listingId={listing.id} showRightActions={false} />
-      </div>
+      </div>)}
 
       <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">
         <button
@@ -1509,11 +1530,11 @@ export function HostListingEditorClient({
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
       <Container>
-        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-0 lg:py-0">
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:gap-0 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[280px_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,1fr)_440px]"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
-          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
+          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px] ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pl-8" : ""}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
@@ -1636,6 +1657,35 @@ export function HostListingEditorClient({
                 onSave={() => handleSaveSection("photos")}
                 isSaving={isSaving}
                 isLoading={isLoading}
+              />
+            )}
+
+            {presentation === "admin" && activeSection === "admin-review" && (
+              <AdminListingReviewView
+                listing={listing}
+                missingRequirements={missingRequirements}
+                auditLogs={initialAuditLogs}
+                auditTotal={initialAuditLogTotal}
+                canApprove={adminCapabilities?.canApprove ?? false}
+                canSuspend={adminCapabilities?.canSuspend ?? false}
+                canEdit={adminCapabilities?.canEdit ?? false}
+                onNavigate={(section) => setActiveSection(section as SectionKey)}
+                onListingChange={(change) => setListing((current) => ({ ...current, ...change }))}
+              />
+            )}
+
+            {presentation === "admin" && activeSection === "audit-history" && (
+              <AdminListingReviewView
+                listing={listing}
+                missingRequirements={missingRequirements}
+                auditLogs={initialAuditLogs}
+                auditTotal={initialAuditLogTotal}
+                auditOnly
+                canApprove={false}
+                canSuspend={false}
+                canEdit={false}
+                onNavigate={(section) => setActiveSection(section as SectionKey)}
+                onListingChange={() => undefined}
               />
             )}
 
@@ -1983,7 +2033,8 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
         {/* ============================================================ */}
-        <EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1" : ""}><EditorSidebar
+          presentation={presentation}
           editorTab={editorTab}
           activeSection={activeSection}
           setActiveSection={setMobileEditorSection}
@@ -2058,18 +2109,18 @@ export function HostListingEditorClient({
             if (hasUnsavedPreferenceChanges) {
               pendingNavigationRef.current = () => {
                 restoreSavedPreferenceDraft();
-                router.push("/host/listings");
+                router.push(routeBase);
               };
               setIsUnsavedChangesDialogOpen(true);
               return;
             }
-            router.push("/host/listings");
+            router.push(routeBase);
           }}
-        />
+        /></div>
           </div>
       </Container>
 
-      <Footer />
+      {presentation === "host" && <Footer />}
 
       {isUnsavedChangesDialogOpen && (
         <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">

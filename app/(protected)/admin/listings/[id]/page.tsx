@@ -1,17 +1,23 @@
 import { notFound } from "next/navigation";
-import { requirePageRole } from "@/lib/permissions/page-guards";
+import { requirePagePermission, requirePageRole } from "@/lib/permissions/page-guards";
+import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { hasPermission } from "@/lib/permissions/permissions";
 import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
-import { AdminListingDetailClient } from "./admin-listing-detail-client";
+import { HostListingEditorClient, type HostListingData } from "@/app/(protected)/host/listings/[id]/host-listing-editor-client";
+import { slugToSection } from "@/app/(protected)/host/listings/[id]/section-helpers";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ section?: string }>;
 }
 
-export default async function AdminListingDetailPage({ params }: PageProps) {
-  await requirePageRole([Role.ADMIN]);
+export default async function AdminListingDetailPage({ params, searchParams }: PageProps) {
+  const admin = await requirePageRole([Role.ADMIN]);
+  await requirePagePermission(PERMISSIONS.LISTINGS_VIEW);
   const resolvedParams = await params;
   const listingId = resolvedParams.id;
+  const initialSection = slugToSection((searchParams ? await searchParams : {}).section);
 
   const listing = await prisma.listing.findUnique({
     where: { id: listingId },
@@ -23,6 +29,8 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
           email: true,
           image: true,
           phone: true,
+          createdAt: true,
+          publicProfile: true,
           hostRegistrations: {
             orderBy: { updatedAt: "desc" },
             take: 1,
@@ -38,12 +46,29 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
         },
       },
       _count: { select: { bookings: true } },
+      guidebookListings: {
+        include: {
+          guidebook: {
+            include: {
+              items: { orderBy: { sortOrder: "asc" } },
+              listings: { include: { listing: { select: { id: true, title: true, city: true, photos: true } } } },
+            },
+          },
+        },
+      },
     },
   });
 
   if (!listing) {
     notFound();
   }
+
+  const [auditLogs, auditLogTotal] = await Promise.all([prisma.auditLog.findMany({
+    where: { resourceType: "Listing", resourceId: listing.id },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    select: { id: true, action: true, description: true, actorEmail: true, createdAt: true },
+  }), prisma.auditLog.count({ where: { resourceType: "Listing", resourceId: listing.id } })]);
 
   let reviewer = null;
   if (listing.reviewerId) {
@@ -103,10 +128,18 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
     isFeatured: listing.isFeatured ?? false,
     showExactLocation: listing.showExactLocation ?? true,
     rejectionReason: listing.rejectionReason || null,
+    requestedChanges: listing.requestedChanges,
     createdAt: listing.createdAt.toISOString(),
     updatedAt: listing.updatedAt.toISOString(),
     approvedAt: listing.approvedAt ? listing.approvedAt.toISOString() : null,
-    host: listing.host,
+    host: {
+      id: listing.host.id,
+      name: listing.host.name,
+      email: listing.host.email,
+      image: listing.host.image,
+      createdAt: listing.host.createdAt.toISOString(),
+      publicProfile: (listing.host.publicProfile as Record<string, unknown> | null) ?? null,
+    },
     hostVerification: listing.host.hostRegistrations[0]
       ? {
           status: listing.host.hostRegistrations[0].status,
@@ -120,5 +153,30 @@ export default async function AdminListingDetailPage({ params }: PageProps) {
     reviewCount: 0,
   };
 
-  return <AdminListingDetailClient listing={serializedListing} />;
+  return (
+    <HostListingEditorClient
+      listing={serializedListing as HostListingData}
+      initialSection={initialSection}
+      initialGuidebooks={listing.guidebookListings.map((link: typeof listing.guidebookListings[number]) => ({
+        ...link.guidebook,
+        createdAt: link.guidebook.createdAt.toISOString(),
+        updatedAt: link.guidebook.updatedAt.toISOString(),
+        listings: link.guidebook.listings.map((association: typeof link.guidebook.listings[number]) => ({
+          id: association.listing.id,
+          title: association.listing.title,
+          city: association.listing.city,
+          coverPhoto: association.listing.photos[0] ?? null,
+        })),
+      }))}
+      routeBase="/admin/listings"
+      presentation="admin"
+      adminCapabilities={{
+        canApprove: hasPermission(admin, PERMISSIONS.LISTINGS_APPROVE),
+        canSuspend: hasPermission(admin, PERMISSIONS.LISTINGS_SUSPEND),
+        canEdit: hasPermission(admin, PERMISSIONS.LISTINGS_EDIT),
+      }}
+      initialAuditLogs={auditLogs.map((item: typeof auditLogs[number]) => ({ ...item, createdAt: item.createdAt.toISOString() }))}
+      initialAuditLogTotal={auditLogTotal}
+    />
+  );
 }

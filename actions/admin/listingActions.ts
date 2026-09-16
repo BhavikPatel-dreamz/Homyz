@@ -5,6 +5,7 @@ import { runAction } from "@/lib/actions/result";
 import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
+import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 import { prisma } from "@/lib/db/prisma";
 import { HostingType, Role, ListingStatus } from "@/generated/prisma/enums";
 import { auditService } from "@/services/audit.service";
@@ -12,6 +13,7 @@ import { listingService } from "@/services/listing.service";
 import { deleteCache, incrCounter } from "@/lib/redis/cache";
 import { keys } from "@/lib/redis/keys";
 import { formatSarFromHalalas } from "@/lib/currency";
+import type { AuthUser } from "@/lib/auth/types";
 
 function revalidateListingLifecycle(id: string, customSlug?: string | null) {
   revalidatePath("/admin/listings");
@@ -20,6 +22,14 @@ function revalidateListingLifecycle(id: string, customSlug?: string | null) {
   revalidatePath(`/host/listings/${id}`);
   revalidatePath(`/listings/${id}`);
   if (customSlug) revalidatePath(`/stay/${customSlug}`);
+}
+
+function assertAdminListingPermission(
+  actor: AuthUser | null,
+  permission: string,
+): asserts actor is AuthUser {
+  assertRole(actor, [Role.ADMIN]);
+  assertPermission(actor, permission);
 }
 
 async function invalidateListingPublicCache(id: string) {
@@ -62,7 +72,7 @@ export async function adminUpdateListingDetailsAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
@@ -133,7 +143,7 @@ export async function adminUpdateListingPricingAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
@@ -176,7 +186,7 @@ export async function adminToggleDisableListingAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_SUSPEND);
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
@@ -213,7 +223,7 @@ export async function adminToggleFeatureListingAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
@@ -250,7 +260,7 @@ export async function adminToggleVisibilityAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
 
     const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
     if (!listing) throw AppError.notFound("Listing not found.");
@@ -292,7 +302,7 @@ export async function adminModerateListingQualityAction(input: {
 }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
 
     let updated;
     if (input.action === "APPROVE") {
@@ -320,7 +330,7 @@ export async function adminModerateListingQualityAction(input: {
 export async function adminDeleteListingAction(input: { listingId: string }) {
   return runAction(async () => {
     const actor = await getSessionUser();
-    assertRole(actor, [Role.ADMIN]);
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_DELETE);
 
     const result = await listingService.remove(actor, input.listingId);
 
@@ -328,5 +338,33 @@ export async function adminDeleteListingAction(input: { listingId: string }) {
     revalidatePath("/host/listings");
     revalidatePath("/admin/hosts");
     return result;
+  });
+}
+
+/** Listing-scoped audit feed. Keeps long histories paginated and never returns metadata. */
+export async function getAdminListingAuditHistoryAction(input: { listingId: string; page?: number; pageSize?: number }) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_VIEW);
+    const pageSize = Math.min(25, Math.max(5, Math.floor(input.pageSize ?? 10)));
+    const page = Math.max(1, Math.floor(input.page ?? 1));
+    const where = { resourceType: "Listing", resourceId: input.listingId };
+    const [items, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: { id: true, action: true, description: true, actorEmail: true, createdAt: true },
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+    return {
+      items: items.map((item) => ({ ...item, createdAt: item.createdAt.toISOString() })),
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    };
   });
 }

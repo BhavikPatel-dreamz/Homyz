@@ -32,6 +32,229 @@
   --radius: 1.25rem;
 }
 
+/* Admin presentation of the shared listing editor. The editor retains Host
+   section structure and behavior, while these tokens align its workspace with
+   the Admin dashboard's neutral surfaces and amber action color. */
+.admin-listing-editor {
+  background: var(--background, #fafafa);
+  color: var(--foreground, #1f2937);
+}
+
+.admin-listing-editor .container {
+  max-width: 1440px;
+}
+
+.admin-listing-editor main > div {
+  border-color: var(--border, #e4e4e7);
+}
+
+.admin-listing-editor button:focus-visible,
+.admin-listing-editor input:focus-visible,
+.admin-listing-editor select:focus-visible,
+.admin-listing-editor textarea:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Section UI overrides for the Admin presentation. These selectors are scoped
+   so the Host workspace keeps its existing product styling and behavior. */
+.admin-listing-editor {
+  --admin-editor-surface: var(--surface, #fff);
+  --admin-editor-muted: var(--surface-secondary, #f4f4f6);
+  --admin-editor-border: var(--border, #e4e4e7);
+  --admin-editor-ink: var(--foreground, #111827);
+}
+
+.admin-listing-editor main {
+  color: var(--admin-editor-ink);
+}
+
+.admin-listing-editor .admin-editor-content {
+  min-width: 0;
+}
+
+.admin-listing-editor .admin-editor-sidebar {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%), 0 10px 24px rgb(15 23 42 / 4%) !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.admin-listing-editor .admin-editor-sidebar button {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar button:hover {
+  transform: none !important;
+}
+
+.admin-listing-editor main > * {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor main [class*="animate-in"] {
+  width: 100%;
+}
+
+.admin-listing-editor main .rounded-3xl,
+.admin-listing-editor main .rounded-2xl {
+  border-color: var(--admin-editor-border) !important;
+}
+
+/* The shared editor still contains a few Host-specific neutral tokens. Map
+   those to the Admin palette only inside this presentation. */
+.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class*="text-zinc-900"], [class*="text-zinc-950"]) {
+  color: var(--admin-editor-ink) !important;
+}
+
+.admin-listing-editor :is([class*="border-[#727272]"], [class*="border-[#DDDDDD]"], [class*="border-[#B0B0B0]"], [class*="border-[#b0b0b0]"], [class*="border-[#E5E5E5]"], [class*="border-[#dedede]"]) {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor :is([class*="bg-[#FEE08B]"], [class*="bg-[#FCDF9C]"], [class*="bg-[#F5D98C]"], [class*="bg-[#E9C979]"]) {
+  background-color: var(--accent) !important;
+}
+
+.admin-listing-editor :is([class*="hover:bg-[#FDE047]"], [class*="hover:bg-[#FDD017]"], [class*="hover:bg-[#F7D37D]"], [class*="hover:bg-[#EFCF76]"]):hover {
+  background-color: var(--accent-hover) !important;
+}
+
+.admin-listing-editor main p {
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.admin-listing-editor main :is(label, legend) {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+.admin-listing-editor main h1 {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+}
+
+.admin-listing-editor main h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.admin-listing-editor main h3,
+.admin-listing-editor main h4 {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+}
+
+.admin-listing-editor main :is(.text-xl, .text-2xl, .text-3xl) {
+  letter-spacing: -0.02em;
+}
+
+.admin-listing-editor main .bg-white,
+.admin-listing-editor main .bg-zinc-50,
+.admin-listing-editor main .bg-zinc-100 {
+  background-color: var(--admin-editor-surface) !important;
+}
+
+.admin-listing-editor main :is(section, article, [role="group"]) {
+  border-color: var(--admin-editor-border);
+}
+
+.admin-listing-editor main .border-zinc-200,
+.admin-listing-editor main .border-zinc-300,
+.admin-listing-editor main .border-\[\#727272\] {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor main :is(input, select, textarea) {
+  border-color: var(--admin-editor-border) !important;
+  background-color: var(--admin-editor-muted) !important;
+  color: var(--admin-editor-ink) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: none !important;
+  font-size: 0.8125rem !important;
+  min-height: 2.75rem !important;
+}
+
+.admin-listing-editor main textarea {
+  min-height: 6.75rem;
+  line-height: 1.5;
+}
+
+.admin-listing-editor main :is(input, select, textarea)::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 1;
+}
+
+.admin-listing-editor main :is(input, select, textarea):focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 15%) !important;
+}
+
+.admin-listing-editor main button:not([class*="bg-rose"], [class*="bg-red"], [class*="bg-emerald"], [class*="bg-green"]) {
+  border-color: var(--admin-editor-border);
+}
+
+.admin-listing-editor main button {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+}
+
+.admin-listing-editor main button:not([class*="rounded-full"]) {
+  border-radius: 0.75rem;
+}
+
+.admin-listing-editor main button[class*="bg-[#FCDF9C]"],
+.admin-listing-editor main button[class*="bg-[#FEE08B]"],
+.admin-listing-editor main button[class*="bg-[#F5D98C]"],
+.admin-listing-editor main button[class*="bg-amber"] {
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #18181b !important;
+  box-shadow: none !important;
+}
+
+.admin-listing-editor main button[class*="bg-[#1F1F1F]"]:not([class*="hover:bg"]) {
+  background-color: #18181b !important;
+}
+
+.admin-listing-editor main h1,
+.admin-listing-editor main h2,
+.admin-listing-editor main h3,
+.admin-listing-editor main h4,
+.admin-listing-editor main label {
+  color: var(--admin-editor-ink) !important;
+}
+
+.admin-listing-editor [class*="shadow-2xs"],
+.admin-listing-editor [class*="shadow-xs"] {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%) !important;
+}
+
+.admin-listing-editor :is(.rounded-\[28px\], .rounded-\[24px\]) {
+  border-radius: 1rem !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar > div > p:last-child {
+  color: var(--admin-editor-ink) !important;
+}
+
+@media (min-width: 1024px) {
+  .admin-listing-editor .fixed.right-0,
+  .admin-listing-editor [class*="lg:fixed"] {
+    background: var(--admin-editor-surface) !important;
+    border-color: var(--admin-editor-border) !important;
+  }
+}
+
 .dark {
   --background: #0d0d10;
   --foreground: #f4f4f5;

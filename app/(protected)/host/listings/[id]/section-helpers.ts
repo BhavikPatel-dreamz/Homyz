@@ -53,7 +53,9 @@ export type SectionKey =
   | "airbnb-org-stays"
   | "airbnb-stays"
   | "remove-listing"
-  | "removelisting";
+  | "removelisting"
+  | "admin-review"
+  | "audit-history";
 
 export const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "property-type": "propertyType",
@@ -131,6 +133,10 @@ export const SECTION_SLUG_MAP: Record<string, SectionKey> = {
   "airbnbstays": "airbnb-org-stays",
   "remove-listing": "remove-listing",
   "removelisting": "remove-listing",
+  "admin-review": "admin-review",
+  "adminreview": "admin-review",
+  "audit-history": "audit-history",
+  "audithistory": "audit-history",
 };
 
 export function sectionToSlug(section: SectionKey): string {

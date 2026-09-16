@@ -6,6 +6,7 @@ import { runAction } from "@/lib/actions/result";
 import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
+import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 import {
   createListingSchema,
   updateListingSchema,
@@ -28,6 +29,9 @@ export async function updateListingAction(id: string, input: unknown) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    // The shared editor is also used by Admin. Preserve the Host ownership
+    // path while applying the listing-specific Admin permission boundary.
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
     const data = updateListingSchema.parse(input);
     // Ownership (host must own; ADMIN bypasses) is enforced in the service.
     const listing = await listingService.update(actor, id, data);
@@ -54,6 +58,7 @@ export async function deleteListingAction(
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_DELETE);
     const result = await listingService.remove(actor, id, feedback);
     revalidatePath("/host/listings");
     revalidatePath("/admin/listings");
@@ -66,6 +71,7 @@ export async function publishListingAction(id: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.publish(actor, id);
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
@@ -81,6 +87,7 @@ export async function unpublishListingAction(id: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.unpublish(actor, id);
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
@@ -118,6 +125,7 @@ export async function approveListingByAdminAction(id: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.approveListingByAdmin(actor, id);
     revalidatePath("/admin/hosts");
     revalidatePath("/host/listings");
@@ -129,6 +137,7 @@ export async function requestListingChangesByAdminAction(id: string, requestedCh
   return runAction(async () => {
     const actor = await getSessionUser();
     assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.requestChangesByAdmin(actor, id, requestedChanges);
     revalidatePath("/admin/hosts");
     revalidatePath("/host/listings");
@@ -140,6 +149,7 @@ export async function rejectListingByAdminAction(id: string, reason: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.rejectListingByAdmin(actor, id, reason);
     revalidatePath("/admin/hosts");
     revalidatePath("/host/listings");
@@ -161,6 +171,7 @@ export async function togglePauseListingAction(id: string, isPaused: boolean) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_SUSPEND);
     const listing = await listingService.togglePause(actor, id, isPaused);
     revalidatePath("/host/listings");
     revalidatePath("/admin/hosts");
@@ -172,6 +183,7 @@ export async function updateListingAvailabilityAction(id: string, blockedDates: 
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
     const listing = await listingService.updateAvailability(actor, id, blockedDates);
     revalidatePath("/host/listings");
     return listing;
