@@ -149,6 +149,7 @@ model User {
   sessions                        Session[]
   listings                        Listing[]
   bookings                        Booking[]
+  favoriteListings                ListingFavorite[]
   refreshTokens                   RefreshToken[]
   passwordResetTokens             PasswordResetToken[]
   adminRole                       AdminRole?                 @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
@@ -462,6 +463,7 @@ model Listing {
 
   host              User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings          Booking[]
+  favorites         ListingFavorite[]
   coHosts           ListingCoHost[]
   guidebookListings GuidebookListing[]
   taxes             ListingTax[]
@@ -472,6 +474,19 @@ model Listing {
   @@index([status])
   @@index([status, published])
   @@index([city])
+}
+
+model ListingFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([listingId])
 }
 
 model ListingCoHost {

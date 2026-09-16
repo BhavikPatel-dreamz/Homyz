@@ -23,7 +23,7 @@ import {
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { normalizeSlug } from "@/lib/utils/slug";
-import { deleteManagedMediaUrl } from "@/lib/storage/media";
+import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
@@ -470,6 +470,7 @@ async function updateForAdmin(id: string, data: Prisma.ListingUpdateInput) {
 async function listForAdminDashboard() {
   const [listings, totalCount, publishedCount, featuredCount, pausedCount] = await Promise.all([
     prisma.listing.findMany({
+      where: { deletedAt: null },
       take: 100,
       orderBy: { createdAt: "desc" },
       include: {
@@ -477,10 +478,10 @@ async function listForAdminDashboard() {
         _count: { select: { bookings: true } },
       },
     }),
-    prisma.listing.count(),
-    prisma.listing.count({ where: { published: true } }),
-    prisma.listing.count({ where: { isFeatured: true } }),
-    prisma.listing.count({ where: { isPaused: true } }),
+    prisma.listing.count({ where: { deletedAt: null } }),
+    prisma.listing.count({ where: { deletedAt: null, published: true } }),
+    prisma.listing.count({ where: { deletedAt: null, isFeatured: true } }),
+    prisma.listing.count({ where: { deletedAt: null, isPaused: true } }),
   ]);
 
   return { listings, totalCount, publishedCount, featuredCount, pausedCount };
@@ -512,6 +513,14 @@ async function getAdminListingDetail(id: string) {
             },
           },
         },
+      },
+      coHosts: {
+        orderBy: { invitedAt: "desc" },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      },
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED },
+        select: { id: true },
       },
       _count: { select: { bookings: true } },
       guidebookListings: {
@@ -1024,8 +1033,14 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
     await assertHostPermission(actor.id, "listing.edit");
   }
 
-  // Saudi Arabia listings do not require admin approval; host can publish directly.
-  if (isSaudiArabia(existing.country)) {
+  // Admin, Saudi Arabia listings, or approved/active listings can publish directly when complete.
+  if (
+    actor.role === Role.ADMIN ||
+    isSaudiArabia(existing.country) ||
+    existing.status === ListingStatus.APPROVED ||
+    existing.status === ListingStatus.ACTIVE ||
+    Boolean(existing.approvedAt)
+  ) {
     const readiness = getPublishReadiness(existing);
     if (!readiness.publishable) {
       throw AppError.badRequest(
@@ -1041,6 +1056,7 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
         published: true,
         isPaused: false,
         approvedAt: existing.approvedAt ?? new Date(),
+        ...(actor.role === Role.ADMIN ? { approvedById: actor.id, reviewerId: actor.id } : {}),
       },
     });
 
@@ -1052,10 +1068,10 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
       action: "LISTING_PUBLISHED",
       resourceType: "Listing",
       resourceId: id,
-      description: `Host directly published Saudi listing "${updated.title}" without admin approval`,
+      description: `${actor.role === Role.ADMIN ? "Admin" : "Host"} published listing "${updated.title}"`,
       metadata: {
         country: existing.country,
-        bypassAdminApproval: true,
+        bypassAdminApproval: isSaudiArabia(existing.country) || actor.role === Role.ADMIN,
       },
     });
 
@@ -1105,8 +1121,8 @@ async function approveListingByAdmin(actor: AuthUser, id: string): Promise<Listi
     include: { host: true },
   });
   if (!existing) throw AppError.notFound("Listing not found");
-  if (existing.status !== ListingStatus.PENDING_REVIEW) {
-    throw AppError.badRequest("Only listings submitted for Admin review can be approved.");
+  if (existing.status !== ListingStatus.PENDING_REVIEW && existing.status !== ListingStatus.DRAFT) {
+    throw AppError.badRequest("Only listings submitted for Admin review or complete draft listings can be approved.");
   }
 
   const readiness = getPublishReadiness(existing);
@@ -1311,6 +1327,89 @@ async function remove(
   return { success: true };
 }
 
+/**
+ * Permanent hard delete for Administrators: completely purges the listing and
+ * all associated records (bookings, taxes, removal feedback, co-hosts, etc.)
+ * from the database, rather than soft-deleting or pausing it.
+ */
+async function permanentDeleteForAdmin(
+  actor: AuthUser,
+  id: string,
+): Promise<{ success: true }> {
+  authorize(actor, [Role.ADMIN]);
+
+  const existing = await prisma.listing.findUnique({
+    where: { id },
+    select: { id: true, title: true, photos: true },
+  });
+  if (!existing) throw AppError.notFound("Listing not found");
+
+  // Perform cascading hard delete in a transaction to satisfy all database relations
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    // 1. Delete taxes for all bookings under this listing, then the bookings themselves
+    const bookings = await tx.booking.findMany({
+      where: { listingId: id },
+      select: { id: true },
+    });
+    const bookingIds = bookings.map((b: { id: string }) => b.id);
+    if (bookingIds.length > 0) {
+      await tx.reservationTax.deleteMany({
+        where: { bookingId: { in: bookingIds } },
+      });
+      await tx.booking.deleteMany({
+        where: { listingId: id },
+      });
+    }
+
+    // 2. Delete any listing removal feedback referencing this listing
+    await tx.listingRemovalFeedback.deleteMany({
+      where: { listingId: id },
+    });
+
+    // 3. Delete co-hosts, guidebook links, listing taxes, and tax audit logs
+    await tx.listingCoHost.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.guidebookListing.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.listingTax.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.taxAuditLog.deleteMany({
+      where: { listingId: id },
+    });
+
+    // 4. Hard delete the listing record completely from the database
+    await tx.listing.delete({
+      where: { id },
+    });
+  });
+
+  // Invalidate Redis caches
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
+
+  // Clean up managed media photos (best-effort)
+  if (existing.photos && existing.photos.length > 0) {
+    await deleteManagedMediaUrls(existing.photos);
+  }
+
+  // Record audit log
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email || "",
+    action: "ADMIN_LISTING_PERMANENTLY_DELETED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Admin permanently deleted listing "${existing.title}" (${id}) and all associated records`,
+  });
+
+  return { success: true };
+}
+
 async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
@@ -1421,7 +1520,10 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
     data: { blockedDates },
   });
 
-  await deleteCache(keys.listing(id));
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
 
   await auditService.record({
     actorId: actor.id,
@@ -1464,5 +1566,6 @@ export const listingService = {
   requestChangesByAdmin,
   rejectListingByAdmin,
   remove,
+  permanentDeleteForAdmin,
   toPublic: toPublicListingDTO,
 };

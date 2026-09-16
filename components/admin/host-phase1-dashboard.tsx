@@ -58,12 +58,6 @@ export function HostPhase1Dashboard({ analytics, initialHosts }: HostPhase1Dashb
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const newHosts = useMemo(() => {
-    const threshold = new Date();
-    threshold.setDate(threshold.getDate() - 30);
-    return initialHosts.filter((host) => new Date(host.createdAt) >= threshold).length;
-  }, [initialHosts]);
-
   const totalListings = useMemo(
     () => initialHosts.reduce((sum, host) => sum + host.listingsCount, 0),
     [initialHosts]
@@ -133,9 +127,9 @@ export function HostPhase1Dashboard({ analytics, initialHosts }: HostPhase1Dashb
         <MetricCard label="Total Hosts" value={analytics.totalHosts} subtitle="Registered hosts" highlight />
         <MetricCard label="Active Hosts" value={analytics.activeHosts} subtitle="Normal standing" />
         <MetricCard label="Suspended Hosts" value={analytics.suspendedHosts} subtitle="Disabled accounts" />
-        <MetricCard label="New Hosts (30d)" value={newHosts} subtitle="Recent signups" />
-        <MetricCard label="Total Listings" value={totalListings} subtitle="Properties managed" />
-        <MetricCard label="Total Bookings" value={totalBookings} subtitle="Reservations received" />
+        <MetricCard label="New Hosts (30d)" value={analytics.newHosts} subtitle="Recent signups" />
+        <MetricCard label="Total Listings" value={analytics.totalListings ?? totalListings} subtitle="Properties managed" />
+        <MetricCard label="Total Bookings" value={analytics.totalBookings ?? totalBookings} subtitle="Reservations received" />
       </div>
 
       {/* Controls Bar: Search, Filters & Sorting */}

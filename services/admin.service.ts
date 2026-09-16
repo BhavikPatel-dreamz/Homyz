@@ -3,9 +3,8 @@ import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
-import { CACHE_KEYS, hashFilters, keys } from "@/lib/redis/keys";
-import { CACHE_TTL } from "@/lib/redis/ttl";
-import { Role, UserStatus } from "@/generated/prisma/enums";
+import { keys } from "@/lib/redis/keys";
+import { ListingCoHostStatus, ListingStatus, Role, UserStatus } from "@/generated/prisma/enums";
 import { hashPassword } from "@/lib/auth/password";
 import { sendAdminInvitationEmail } from "@/lib/services/email";
 import { auditService } from "./audit.service";
@@ -588,7 +587,6 @@ export interface UnifiedHostItem {
   complianceStatus: "COMPLIANT" | "PENDING" | "ACTION_REQUIRED" | "NON_COMPLIANT" | "UNDER_REVIEW";
   listingsCount: number;
   bookingsCount: number;
-  rating: number;
   assignedReviewer: { id: string; name: string | null; email: string | null } | null;
   createdAt: Date;
   lastActive: Date;
@@ -609,6 +607,9 @@ export interface UnifiedHostAnalytics {
   hostsWithActiveListings: number;
   pendingUnverifiedHosts: number;
   suspendedHosts: number;
+  newHosts: number;
+  totalListings?: number;
+  totalBookings?: number;
   registrationGrowth: Array<{ month: string; count: number }>;
   statusDistribution: Array<{ status: string; count: number; percentage: number }>;
 }
@@ -752,8 +753,6 @@ export interface HostDetailsData {
     totalListings: number;
     totalBookings: number;
     totalEarnings: number;
-    averageRating: number;
-    reviewsCount: number;
   };
   listings: Array<{
     id: string;
@@ -858,12 +857,49 @@ function mapStageLabel(stage: string): string {
   }
 }
 
+/**
+ * Returns the amount that was charged for a reservation. New bookings persist
+ * this immutable value in totalPrice; the fallback only supports legacy rows
+ * that predate that snapshot.
+ */
+function getBookingChargedAmount(booking: {
+  totalPrice?: number | null;
+  nightlyPrice?: number | null;
+  cleaningFee?: number | null;
+  startDate: Date | string;
+  endDate: Date | string;
+  listing?: { price?: number | null } | null;
+}): number {
+  if (typeof booking.totalPrice === "number") return booking.totalPrice;
+
+  const nightlyPrice = booking.nightlyPrice ?? booking.listing?.price ?? 0;
+  const start = new Date(booking.startDate).getTime();
+  const end = new Date(booking.endDate).getTime();
+  const nights = Number.isFinite(start) && Number.isFinite(end) && end > start
+    ? Math.max(1, Math.ceil((end - start) / (24 * 60 * 60 * 1000)))
+    : 1;
+
+  return nightlyPrice * nights + (booking.cleaningFee ?? 0);
+}
+
+/** Uses the stored payout snapshot when it exists, with a legacy fallback. */
+function getHostBookingEarnings(booking: Parameters<typeof getBookingChargedAmount>[0] & {
+  priceBreakdown?: unknown;
+}): number {
+  const breakdown = booking.priceBreakdown;
+  if (breakdown && typeof breakdown === "object" && !Array.isArray(breakdown)) {
+    const payout = (breakdown as Record<string, unknown>).payoutBreakdown;
+    if (payout && typeof payout === "object" && !Array.isArray(payout)) {
+      const netHostPayout = (payout as Record<string, unknown>).netHostPayout;
+      if (typeof netHostPayout === "number") return netHostPayout;
+    }
+  }
+
+  return getBookingChargedAmount(booking);
+}
+
 async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<UnifiedHostListResult> {
-  const filterHash = hashFilters(input as Record<string, unknown>);
-  return getOrSetCache<UnifiedHostListResult>(
-    CACHE_KEYS.ADMIN_UNIFIED_HOSTS(filterHash),
-    async () => {
-      const {
+  const {
     search,
     accountStatus = "ALL",
     applicationStatus = "ALL",
@@ -881,12 +917,13 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
 
   const activeAccountFilter = accountStatus !== "ALL" ? accountStatus : (status && status !== "ALL" ? status : "ALL");
 
-  const [users, unlinkedRequests] = await Promise.all([
+  const [users, unlinkedRequests, totalListingsCount, totalBookingsCount] = await Promise.all([
     prisma.user.findMany({
       where: {
         OR: [
           { role: Role.HOST },
-          { listings: { some: {} } },
+          { listings: { some: { deletedAt: null } } },
+          { coHostAssignments: { some: { status: ListingCoHostStatus.ACCEPTED, listing: { deletedAt: null } } } },
           { hostRegistrations: { some: {} } },
         ],
       },
@@ -901,8 +938,23 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
           orderBy: { createdAt: "desc" },
         },
         listings: {
+          where: { deletedAt: null },
           include: {
             bookings: { select: { id: true, status: true } },
+          },
+        },
+        coHostAssignments: {
+          where: {
+            status: ListingCoHostStatus.ACCEPTED,
+            listing: { deletedAt: null },
+          },
+          include: {
+            listing: {
+              select: {
+                id: true,
+                bookings: { select: { id: true, status: true } },
+              },
+            },
           },
         },
       },
@@ -920,6 +972,8 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
       },
       orderBy: { createdAt: "desc" },
     }),
+    prisma.listing.count({ where: { deletedAt: null } }),
+    prisma.booking.count(),
   ]);
 
   const rawList: UnifiedHostItem[] = [];
@@ -958,8 +1012,13 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
     let compStatus: "COMPLIANT" | "PENDING" | "ACTION_REQUIRED" | "NON_COMPLIANT" | "UNDER_REVIEW" =
       (primaryReq?.complianceStatus as any) || (accStatus === "ACTIVE" ? "COMPLIANT" : "PENDING");
 
-    const listingsCount = user.listings.length;
-    const bookingsCount = user.listings.reduce((acc: any, l: any) => acc + l.bookings.length, 0);
+    const ownedListingIds = new Set(user.listings.map((l: any) => l.id));
+    const coHostedListings = (user.coHostAssignments || [])
+      .map((ca: any) => ca.listing)
+      .filter((l: any) => l && !ownedListingIds.has(l.id));
+    const allUserListings = [...user.listings, ...coHostedListings];
+    const listingsCount = allUserListings.length;
+    const bookingsCount = allUserListings.reduce((acc: any, l: any) => acc + (l.bookings?.length || 0), 0);
 
     rawList.push({
       id: user.id,
@@ -975,7 +1034,6 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
       complianceStatus: compStatus,
       listingsCount,
       bookingsCount,
-      rating: 4.8,
       assignedReviewer: primaryReq?.assignedReviewer || null,
       createdAt: user.createdAt,
       lastActive: user.lastLoginAt || user.createdAt,
@@ -1025,7 +1083,6 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
       complianceStatus: compStatus,
       listingsCount: 0,
       bookingsCount: 0,
-      rating: 0,
       assignedReviewer: req.assignedReviewer || null,
       createdAt: req.createdAt,
       lastActive: req.updatedAt,
@@ -1038,6 +1095,9 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
   const totalHosts = rawList.length;
   const activeHosts = rawList.filter((h) => h.accountStatus === "ACTIVE").length;
   const suspendedHosts = rawList.filter((h) => h.accountStatus === "SUSPENDED").length;
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const newHosts = rawList.filter((h) => new Date(h.createdAt) >= thirtyDaysAgo).length;
   const pendingOnboarding = rawList.filter((h) => h.onboardingStage !== "ONBOARDING_COMPLETE" && h.accountStatus !== "REJECTED").length;
   const underReview = rawList.filter((h) => h.applicationStatus === "IN_REVIEW" || h.applicationStatus === "PENDING").length;
   const documentsPending = rawList.filter((h) => h.verificationStatus === "PENDING" || h.applicationStatus === "WAITING_FOR_DOCUMENTS").length;
@@ -1047,7 +1107,6 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
   const hostsWithActiveListings = rawList.filter((h) => h.listingsCount > 0).length;
   const pendingUnverifiedHosts = rawList.filter((h) => h.verificationStatus !== "VERIFIED").length;
 
-  const now = new Date();
   const registrationGrowth: Array<{ month: string; count: number }> = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -1082,6 +1141,9 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
     hostsWithActiveListings,
     pendingUnverifiedHosts,
     suspendedHosts,
+    newHosts,
+    totalListings: totalListingsCount,
+    totalBookings: totalBookingsCount,
     registrationGrowth,
     statusDistribution,
   };
@@ -1164,9 +1226,6 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
     totalPages: Math.ceil(total / take) || 1,
     analytics,
   };
-    },
-    { ttl: CACHE_TTL.DASHBOARD_STATS, revive: reviveUnifiedHostList }
-  );
 }
 
 async function getHostAnalyticsPhase1(): Promise<HostPhase1Analytics> {
@@ -1185,8 +1244,8 @@ async function listHostsPhase1(input: ListHostsPhase1Input = {}) {
 }
 
 async function getHostDetails(hostId: string): Promise<HostDetailsData> {
-  // Find User by ID or email
-  const user = (await prisma.user.findFirst({
+  // 1. First try finding user by ID or email
+  let user = (await prisma.user.findFirst({
     where: { OR: [{ id: hostId }, { email: hostId }] },
     include: {
       hostRegistrations: {
@@ -1214,24 +1273,16 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
         },
         orderBy: { createdAt: "desc" },
       },
-      listings: {
-        orderBy: { createdAt: "desc" },
-        include: {
-          bookings: {
-            include: { user: { select: { id: true, name: true, email: true } } },
-          },
-        },
-      },
     },
   })) as any;
 
-  // Find or provision Registration Request by ID, applicationId, or hostId
+  // 2. Find or provision Registration Request by ID, applicationId, or hostId
   let req = await prisma.hostRegistrationRequest.findFirst({
     where: {
       OR: [
         { id: hostId },
         { applicationId: hostId },
-        { hostId: user?.id || hostId },
+        ...(user ? [{ hostId: user.id }] : [{ hostId }]),
       ],
     },
     include: {
@@ -1262,6 +1313,53 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       reviewNotes: { orderBy: { createdAt: "desc" } },
     },
   });
+
+  // 3. If user wasn't found directly, but req exists, try finding user by req.hostId or req.applicantEmail
+  if (!user && req) {
+    user = (await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(req.hostId ? [{ id: req.hostId }] : []),
+          ...(req.applicantEmail ? [{ email: req.applicantEmail }] : []),
+        ],
+      },
+      include: {
+        hostRegistrations: {
+          include: {
+            assignedReviewer: { select: { id: true, name: true, email: true } },
+            reviewedBy: { select: { id: true, name: true, email: true } },
+            approvedBy: { select: { id: true, name: true, email: true } },
+            documents: {
+              include: {
+                verifiedBy: { select: { id: true, name: true, email: true } },
+                rejectedBy: { select: { id: true, name: true, email: true } },
+              },
+              orderBy: { createdAt: "desc" },
+            },
+            complianceChecks: {
+              include: {
+                reviewer: { select: { id: true, name: true, email: true } },
+              },
+              orderBy: { createdAt: "desc" },
+            },
+            complianceIssues: {
+              orderBy: { createdAt: "desc" },
+            },
+            reviewNotes: { orderBy: { createdAt: "desc" } },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    })) as any;
+
+    if (user && !req.hostId) {
+      await prisma.hostRegistrationRequest.update({
+        where: { id: req.id },
+        data: { hostId: user.id },
+      });
+      req.hostId = user.id;
+    }
+  }
 
   if (!user && !req) {
     throw AppError.notFound("Host account or application record not found");
@@ -1315,8 +1413,10 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
   // Ensure 6 standard compliance checks are auto-initialized for this host
   await hostRegistrationService.getComplianceDetails(primaryReq.id);
   
-  // Re-fetch compliance checks and issues after initialization
-  const [refetchedChecks, refetchedIssues, eligibilityResult] = await Promise.all([
+  const targetUserId = user?.id || primaryReq.hostId;
+
+  // Re-fetch compliance checks, issues, eligibility, and host listings
+  const [refetchedChecks, refetchedIssues, eligibilityResult, hostListings] = await Promise.all([
     prisma.hostComplianceCheck.findMany({
       where: { requestId: primaryReq.id },
       include: { reviewer: { select: { id: true, name: true, email: true } } },
@@ -1331,22 +1431,57 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       orderBy: { createdAt: "desc" },
     }),
     hostRegistrationService.validateApprovalEligibility(primaryReq.id),
+    targetUserId
+      ? prisma.listing.findMany({
+          where: {
+            deletedAt: null,
+            OR: [
+              { hostId: targetUserId },
+              {
+                coHosts: {
+                  some: {
+                    userId: targetUserId,
+                    status: ListingCoHostStatus.ACCEPTED,
+                  },
+                },
+              },
+            ],
+          },
+          orderBy: { createdAt: "desc" },
+          include: {
+            bookings: {
+              include: { user: { select: { id: true, name: true, email: true } } },
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        })
+      : [],
   ]);
 
-  const listings = user?.listings || [];
+  const listings = hostListings;
   const totalListings = listings.length;
   const allBookings = listings.flatMap((l: any) =>
-    l.bookings.map((b: any) => ({
-      ...b,
-      listingTitle: l.title,
-      price: l.price,
-    }))
+    l.bookings.map((b: any) => {
+      const recordedAmount = b.totalPrice ?? b.nightlyPrice ?? l.price ?? 0;
+      const amount = b.totalPrice == null
+        ? getBookingChargedAmount({ ...b, listing: l })
+        : recordedAmount;
+      return {
+        ...b,
+        listingTitle: l.title,
+        listingId: l.id,
+        amount,
+      };
+    })
   );
   const listingIds = listings.map((l: any) => l.id);
   const bookingIds = allBookings.map((b: any) => b.id);
   const totalBookings = allBookings.length;
   const confirmedBookings = allBookings.filter((b: any) => b.status === "CONFIRMED");
-  const totalEarnings = confirmedBookings.reduce((sum: number, b: any) => sum + b.price, 0);
+  const totalEarnings = confirmedBookings.reduce(
+    (sum: number, booking: any) => sum + getHostBookingEarnings(booking),
+    0
+  );
 
   // Comprehensive Activity Logs Query for this host
   const rawAuditLogs = await prisma.auditLog.findMany({
@@ -1565,62 +1700,77 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       totalListings,
       totalBookings,
       totalEarnings,
-      averageRating: 4.8,
-      reviewsCount: Math.max(1, Math.round(totalBookings * 0.7)),
     },
-    listings: listings.map((l: any) => ({
-      id: l.id,
-      title: l.title,
-      description: l.description,
-      price: l.price,
-      published: l.published,
-      status: l.status || (l.published ? "ACTIVE" : "DRAFT"),
-      hostingType: l.hostingType || "HOME",
-      propertyType: l.propertyType || null,
-      listingType: l.listingType || null,
-      address: l.address || null,
-      city: l.city || null,
-      district: l.district || null,
-      postalCode: l.postalCode || null,
-      country: l.country || null,
-      latitude: l.latitude || null,
-      longitude: l.longitude || null,
-      showExactLocation: l.showExactLocation ?? true,
-      guests: l.guests ?? 1,
-      bedrooms: l.bedrooms ?? 1,
-      beds: l.beds ?? 1,
-      bathrooms: l.bathrooms ?? 1,
-      photos: l.photos || [],
-      highlights: l.highlights || [],
-      amenities: l.amenities || [],
-      safetyDisclosures: l.safetyDisclosures || [],
-      houseRules: l.houseRules || [],
-      checkInMethod: l.checkInMethod || "SMART_LOCK",
-      checkInStart: l.checkInStart || "15:00",
-      checkInEnd: l.checkInEnd || "22:00",
-      checkOutTime: l.checkOutTime || "11:00",
-      cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
-      minNights: l.minNights ?? 1,
-      maxNights: l.maxNights ?? 365,
-      instantBook: l.instantBook ?? true,
-      isPaused: l.isPaused ?? false,
-      blockedDates: l.blockedDates || [],
-      cleaningFee: l.cleaningFee ?? 0,
-      securityDeposit: l.securityDeposit ?? 0,
-      weekendPrice: l.weekendPrice || null,
-      weekendPremium: l.weekendPremium || null,
-      discounts: l.discounts || null,
-      currentStep: l.currentStep || 1,
-      submittedAt: l.submittedAt || null,
-      resubmittedAt: l.resubmittedAt || null,
-      reviewStartedAt: l.reviewStartedAt || null,
-      rejectionReason: l.rejectionReason || null,
-      requestedChanges: l.requestedChanges || null,
-      approvedAt: l.approvedAt || null,
-      createdAt: l.createdAt,
-      updatedAt: l.updatedAt,
-      bookingsCount: l.bookings.length,
-    })),
+    listings: listings.map((l: any) => {
+      let displayStatus = l.status;
+      if (l.isPaused) {
+        displayStatus = "PAUSED";
+      } else if (l.published) {
+        displayStatus = "PUBLISHED";
+      } else if (l.status === ListingStatus.PENDING_REVIEW) {
+        displayStatus = "PENDING_REVIEW";
+      } else if (l.status === ListingStatus.CHANGES_REQUESTED) {
+        displayStatus = "CHANGES_REQUESTED";
+      } else if (l.status === ListingStatus.REJECTED) {
+        displayStatus = "REJECTED";
+      } else {
+        displayStatus = "DRAFT";
+      }
+
+      return {
+        id: l.id,
+        title: l.title || "Untitled Property",
+        description: l.description || "",
+        price: l.price,
+        published: Boolean(l.published),
+        status: displayStatus,
+        hostingType: l.hostingType || "HOME",
+        propertyType: l.propertyType || null,
+        listingType: l.listingType || null,
+        address: l.address || null,
+        city: l.city || null,
+        district: l.district || null,
+        postalCode: l.postalCode || null,
+        country: l.country || null,
+        latitude: l.latitude || null,
+        longitude: l.longitude || null,
+        showExactLocation: l.showExactLocation ?? true,
+        guests: l.guests ?? 1,
+        bedrooms: l.bedrooms ?? 1,
+        beds: l.beds ?? 1,
+        bathrooms: l.bathrooms ?? 1,
+        photos: l.photos || [],
+        highlights: l.highlights || [],
+        amenities: l.amenities || [],
+        safetyDisclosures: l.safetyDisclosures || [],
+        houseRules: l.houseRules || [],
+        checkInMethod: l.checkInMethod || "SMART_LOCK",
+        checkInStart: l.checkInStart || "15:00",
+        checkInEnd: l.checkInEnd || "22:00",
+        checkOutTime: l.checkOutTime || "11:00",
+        cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
+        minNights: l.minNights ?? 1,
+        maxNights: l.maxNights ?? 365,
+        instantBook: l.instantBook ?? true,
+        isPaused: Boolean(l.isPaused),
+        blockedDates: l.blockedDates || [],
+        cleaningFee: l.cleaningFee ?? 0,
+        securityDeposit: l.securityDeposit ?? 0,
+        weekendPrice: l.weekendPrice || null,
+        weekendPremium: l.weekendPremium || null,
+        discounts: l.discounts || null,
+        currentStep: l.currentStep || 1,
+        submittedAt: l.submittedAt || null,
+        resubmittedAt: l.resubmittedAt || null,
+        reviewStartedAt: l.reviewStartedAt || null,
+        rejectionReason: l.rejectionReason || null,
+        requestedChanges: l.requestedChanges || null,
+        approvedAt: l.approvedAt || null,
+        createdAt: l.createdAt,
+        updatedAt: l.updatedAt,
+        bookingsCount: l.bookings?.length || 0,
+      };
+    }),
     bookings: allBookings.map((b: any) => ({
       id: b.id,
       status: b.status,
@@ -1630,7 +1780,7 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       listingTitle: b.listingTitle,
       guestName: b.user?.name || null,
       guestEmail: b.user?.email || null,
-      amount: b.price,
+      amount: b.amount,
     })),
     activity: formattedActivityLogs,
   };
@@ -2073,46 +2223,43 @@ export interface GuestDetailsData {
 }
 
 async function getGuestAnalytics(): Promise<GuestAnalyticsData> {
-  return getOrSetCache(
-    CACHE_KEYS.GUEST_ANALYTICS(),
-    async () => {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [totalGuests, activeGuests, suspendedGuests, newGuests, guestBookings] = await Promise.all([
+    prisma.user.count({ where: { role: Role.USER } }),
+    prisma.user.count({ where: { role: Role.USER, status: UserStatus.ACTIVE } }),
+    prisma.user.count({ where: { role: Role.USER, status: UserStatus.SUSPENDED } }),
+    prisma.user.count({ where: { role: Role.USER, createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.booking.findMany({
+      where: { user: { role: Role.USER } },
+      select: {
+        status: true,
+        totalPrice: true,
+        nightlyPrice: true,
+        cleaningFee: true,
+        startDate: true,
+        endDate: true,
+        listing: { select: { price: true } },
+      },
+    }),
+  ]);
 
-      const [
-        totalGuests,
-        activeGuests,
-        suspendedGuests,
-        newGuests,
-        guestBookings,
-      ] = await Promise.all([
-        prisma.user.count({ where: { role: Role.USER } }),
-        prisma.user.count({ where: { role: Role.USER, status: UserStatus.ACTIVE } }),
-        prisma.user.count({ where: { role: Role.USER, status: UserStatus.SUSPENDED } }),
-        prisma.user.count({ where: { role: Role.USER, createdAt: { gte: thirtyDaysAgo } } }),
-        prisma.booking.findMany({
-          where: { user: { role: Role.USER } },
-          select: {
-            status: true,
-            listing: { select: { price: true } },
-          },
-        }),
-      ]);
+  const totalBookings = guestBookings.length;
+  const totalSpending = guestBookings
+    .filter((booking: { status: string }) => booking.status === "CONFIRMED")
+    .reduce(
+      (sum: number, booking: Parameters<typeof getBookingChargedAmount>[0]) =>
+        sum + getBookingChargedAmount(booking),
+      0
+    );
 
-      const totalBookings = guestBookings.length;
-      const confirmedBookings = guestBookings.filter((b: any) => b.status === "CONFIRMED");
-      const totalSpending = confirmedBookings.reduce((sum: number, b: any) => sum + b.listing.price, 0);
-
-      return {
-        totalGuests,
-        activeGuests,
-        suspendedGuests,
-        newGuests,
-        totalBookings,
-        totalSpending,
-      };
-    },
-    { ttl: CACHE_TTL.DASHBOARD_STATS }
-  );
+  return {
+    totalGuests,
+    activeGuests,
+    suspendedGuests,
+    newGuests,
+    totalBookings,
+    totalSpending,
+  };
 }
 
 async function listGuests(input: ListGuestsInput = {}) {
@@ -2156,7 +2303,10 @@ async function listGuests(input: ListGuestsInput = {}) {
     const userBookings = allBookings.filter((b: any) => b.userId === g.id);
     const bookingsCount = userBookings.length;
     const confirmed = userBookings.filter((b: any) => b.status === "CONFIRMED");
-    const totalSpending = confirmed.reduce((sum: number, b: any) => sum + b.listing.price, 0);
+    const totalSpending = confirmed.reduce(
+      (sum: number, booking: any) => sum + getBookingChargedAmount(booking),
+      0
+    );
 
     return {
       id: g.id,
@@ -2221,7 +2371,10 @@ async function getGuestDetails(guestId: string): Promise<GuestDetailsData> {
 
   const totalBookings = bookings.length;
   const confirmedBookings = bookings.filter((b: any) => b.status === "CONFIRMED");
-  const totalSpending = confirmedBookings.reduce((sum: number, b: any) => sum + b.listing.price, 0);
+  const totalSpending = confirmedBookings.reduce(
+    (sum: number, booking: any) => sum + getBookingChargedAmount(booking),
+    0
+  );
 
   return {
     guest: {
@@ -2248,7 +2401,7 @@ async function getGuestDetails(guestId: string): Promise<GuestDetailsData> {
       listingTitle: b.listing.title,
       hostName: b.listing.host.name,
       hostEmail: b.listing.host.email,
-      amount: b.listing.price,
+      amount: getBookingChargedAmount(b),
     })),
     activity: activityLogs,
   };

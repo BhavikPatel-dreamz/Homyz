@@ -24,7 +24,7 @@ import { ListingStatusView, computeMissingRequirements, getListingDisplayState }
 import { AdminListingReviewView, type ListingAuditItem } from "@/app/(protected)/admin/listings/[id]/admin-listing-review-view";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
-import { SectionKey, sectionToSlug, slugToSection } from "./section-helpers";
+import { SectionKey, sectionToSlug, slugToSection, type HostListingData } from "./section-helpers";
 import {
   type GuestSafetyState,
   parseSafetyData,
@@ -74,147 +74,7 @@ function isDiscountEnabled(discounts: Record<string, unknown> | null | undefined
   );
 }
 
-export interface HostListingData {
-  id: string;
-  title: string;
-  description: string;
-  price: number; // in cents
-  weekdayBasePrice?: number | null;
-  smartPricing?: boolean;
-  smartPricingMinPrice?: number | null;
-  smartPricingMaxPrice?: number | null;
-  published: boolean;
-  status: string;
-  hostingType: string;
-  placeCategory?: string | null;
-  propertyType: string;
-  listingType: string;
-  latitude?: number | null;
-  longitude?: number | null;
-  showExactLocation?: boolean;
-  locationSearch?: string | null;
-  shortAddress?: string | null;
-  apartment?: string | null;
-  highlights?: string[];
-  discounts?: Record<string, unknown> | null;
-  safetyDisclosures?: string[];
-  address: string;
-  city: string;
-  district: string;
-  postalCode: string;
-  country: string;
-  guests: number;
-  bedrooms: number;
-  beds: number;
-  bathrooms: number;
-  // Professional Property Details
-  propertySize?: number | null;
-  propertySizeUnit?: string | null;
-  listingFloor?: number | null;
-  totalFloors?: number | null;
-  yearBuilt?: number | null;
-  yearRenovated?: number | null;
-  privateEntrance?: boolean | null;
-  elevatorAvailable?: boolean | null;
-  stairsRequired?: boolean | null;
-  rooms?: Array<{
-    id: string;
-    name: string;
-    type: "BEDROOM" | "LIVING_ROOM" | "OTHER";
-    beds: Array<{ type: string; count: number }>;
-  }> | null;
-  fullBathrooms?: number | null;
-  halfBathrooms?: number | null;
-  privateBathrooms?: number | null;
-  sharedBathrooms?: number | null;
-  parkingAvailable?: boolean | null;
-  parkingType?: string | null;
-  parkingSpaces?: number | null;
-  parkingReservation?: boolean | null;
-  guestAccess?: string[];
-  languages?: string[];
-  safetyEquipment?: string[];
-  safetyHazards?: string[];
-  accessibilityFeatures?: string[];
-  accessibilityDetails?: AccessibilityFeatureDetail[];
-  views?: string[];
-  locationFeatures?: string[];
-  petsAllowed?: boolean | null;
-  maxPets?: number | null;
-  petFee?: number | null;
-  petRestrictions?: string | null;
-  dogsAllowed?: boolean | null;
-  catsAllowed?: boolean | null;
-  smokingAllowed?: boolean | null;
-  smokingLocation?: string | null;
-  eventsAllowed?: boolean | null;
-  childrenAllowed?: boolean | null;
-  infantsAllowed?: boolean | null;
-  photographyAllowed?: boolean | null;
-  quietHours?: boolean | null;
-  quietHoursStart?: string | null;
-  quietHoursEnd?: string | null;
-  additionalRules?: string | null;
-  directions?: string | null;
-  parkingInstructions?: string | null;
-  checkInInstructions?: string | null;
-  checkOutInstructions?: string | null;
-  houseManual?: string | null;
-  wifiNetwork?: string | null;
-  wifiPassword?: string | null;
-  doorCode?: string | null;
-  lockboxCode?: string | null;
-  photos: string[];
-  photoRoomAssignments?: PhotoRoomAssignment[];
-  amenities: string[];
-  houseRules: string[];
-  checkInMethod: string;
-  checkInStart: string;
-  checkInEnd: string;
-  checkOutTime: string;
-  cancellationPolicy: string;
-  longTermCancellationPolicy?: string | null;
-  nonRefundableDiscountPercentage?: number | null;
-  bookingMessage?: string | null;
-  requireProfilePhoto?: boolean;
-  requireGoodTrackRecord?: boolean;
-  bookingApprovalMode?: "FIRST_THREE" | "INSTANT" | "MANUAL";
-  approvedBookingCount?: number;
-  instantBook: boolean;
-  minNights: number;
-  maxNights: number;
-  advanceNotice?: string | null;
-  sameDayCutoff?: string | null;
-  allowSameDayRequests?: boolean | null;
-  blockedDates: string[];
-  cleaningFee: number;
-  securityDeposit: number;
-  weekendPrice: number | null;
-  weekendPremium?: number | null;
-  isPaused: boolean;
-  isFeatured: boolean;
-  customSlug?: string | null;
-  requestedChanges: any;
-  rejectionReason: string | null;
-  submittedAt?: Date | string | null;
-  resubmittedAt?: Date | string | null;
-  approvedAt?: Date | string | null;
-  reapprovalRequired?: boolean;
-  reapprovalReason?: string | null;
-  host: {
-    id: string;
-    name: string | null;
-    email: string | null;
-    image: string | null;
-    createdAt: Date | string;
-    publicProfile: Record<string, unknown> | null;
-  };
-  coHosts?: Array<{
-    id: string; email: string | null; phone: string | null; status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
-    invitedAt: Date | string; expiresAt: Date | string | null; acceptedAt: Date | string | null;
-    user: { id: string; name: string | null; image: string | null } | null;
-  }>;
-}
+export type { HostListingData };
 
 
 interface AccessibilityFeature {

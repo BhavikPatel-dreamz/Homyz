@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { AdminPagination } from "./admin-pagination";
 import type { GuestAnalyticsData, GuestTableItem } from "@/services/admin.service";
+import { formatSarFromHalalas } from "@/lib/currency";
 
 interface GuestDashboardProps {
   analytics: GuestAnalyticsData;
@@ -110,7 +111,7 @@ export function GuestManagementDashboard({
         <MetricCard label="Suspended Guests" value={analytics.suspendedGuests} subtitle="Disabled accounts" />
         <MetricCard label="New Guests (30d)" value={analytics.newGuests} subtitle="Recent signups" />
         <MetricCard label="Total Bookings" value={analytics.totalBookings} subtitle="Reservations made" />
-        <MetricCard label="Total Spending" value={`$${(analytics.totalSpending / 100).toFixed(0)}`} subtitle="Gross revenue" />
+        <MetricCard label="Total Spending" value={formatSarFromHalalas(analytics.totalSpending, 0)} subtitle="Confirmed booking charges" />
       </div>
 
       {/* Controls Bar: Search, Filters & Sorting */}
@@ -264,7 +265,7 @@ export function GuestManagementDashboard({
 
                   {/* Total Spending */}
                   <td className="py-3.5 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                    ${(guest.totalSpending / 100).toFixed(2)}
+                    {formatSarFromHalalas(guest.totalSpending)}
                   </td>
 
                   {/* Joined Date */}
@@ -317,7 +318,7 @@ export function GuestManagementDashboard({
                 <span className="text-[var(--muted-foreground)]">Bookings:</span> <span className="font-semibold text-muted-foreground">{guest.bookingsCount}</span>
               </div>
               <div>
-                <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-semibold text-emerald-600 dark:text-emerald-400">${(guest.totalSpending / 100).toFixed(2)}</span>
+                <span className="text-[var(--muted-foreground)]">Spending:</span> <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatSarFromHalalas(guest.totalSpending)}</span>
               </div>
               <div>
                 <span className="text-[var(--muted-foreground)]">Joined:</span> <span className="font-semibold text-muted-foreground" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</span>

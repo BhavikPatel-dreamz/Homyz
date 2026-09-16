@@ -20,6 +20,57 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold ${classes}`}>{status.charAt(0) + status.slice(1).toLowerCase()}</span>;
 }
 
+function ListingStatusBadge({
+  status,
+  published,
+  isPaused,
+}: {
+  status: string;
+  published?: boolean;
+  isPaused?: boolean;
+}) {
+  if (isPaused) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
+        Disabled / Paused
+      </span>
+    );
+  }
+  if (published) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+        Published (Live)
+      </span>
+    );
+  }
+  if (status === "PENDING_REVIEW") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs">
+        Pending Review
+      </span>
+    );
+  }
+  if (status === "CHANGES_REQUESTED") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs">
+        Changes Requested
+      </span>
+    );
+  }
+  if (status === "REJECTED") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60 shadow-2xs">
+        Rejected
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shadow-2xs">
+      Draft
+    </span>
+  );
+}
+
 function MetricCard({ label, value, subtitle }: { label: string; value: string | number; subtitle: string }) {
   return <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs"><p className="text-xs font-semibold text-[var(--muted-foreground)]">{label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-muted-foreground">{value}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{subtitle}</p></div>;
 }
@@ -66,13 +117,176 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
   return <div className="flex flex-col gap-6 font-sans text-muted-foreground">
     <div className="flex flex-col justify-between gap-4 border-b border-[var(--border-subtle)] pb-5 md:flex-row md:items-center"><div className="flex items-center gap-4"><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent)] text-xl font-semibold text-[var(--accent-foreground)]">{(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}</div><div><div className="flex flex-wrap items-center gap-3"><h1>{host.name || "Unnamed Host"}</h1><StatusBadge status={status} /></div><p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">{host.email || "No email"} · ID: {host.id}</p></div></div><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setModal("suspend")} className={`rounded-full border px-4 py-2 text-xs font-semibold shadow-2xs ${status === "SUSPENDED" ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"}`}>{status === "SUSPENDED" ? "Restore Account" : "Suspend Account"}</button><button type="button" onClick={() => setModal("delete")} className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-rose-700">Delete Host</button></div></div>
 
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"><MetricCard label="Total Listings" value={metrics.totalListings} subtitle="Properties managed" /><MetricCard label="Total Bookings" value={metrics.totalBookings} subtitle="Reservations received" /><MetricCard label="Total Earnings" value={formatSarFromHalalas(metrics.totalEarnings)} subtitle="Confirmed bookings" /><MetricCard label="Average Rating" value={metrics.averageRating.toFixed(1)} subtitle={`${metrics.reviewsCount} reviews`} /></div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"><MetricCard label="Total Listings" value={metrics.totalListings} subtitle="Properties managed" /><MetricCard label="Total Bookings" value={metrics.totalBookings} subtitle="Reservations received" /><MetricCard label="Total Earnings" value={formatSarFromHalalas(metrics.totalEarnings)} subtitle="Confirmed bookings" /></div>
 
     <div className="overflow-x-auto border-b border-[var(--border-subtle)]"><div className="flex min-w-max gap-1">{tabs.map((tab) => <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`border-b-2 px-4 py-3 text-xs font-semibold transition-colors ${activeTab === tab.id ? "border-[var(--accent)] text-muted-foreground" : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"}`}>{tab.label}</button>)}</div></div>
 
-    {activeTab === "overview" && <div className="grid grid-cols-1 gap-4 lg:grid-cols-2"><section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs"><h2 className="text-sm font-semibold text-muted-foreground">Host Profile</h2><dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2"><div><dt className="text-xs text-[var(--muted-foreground)]">Full name</dt><dd className="mt-1 font-semibold">{host.name || "Not provided"}</dd></div><div><dt className="text-xs text-[var(--muted-foreground)]">Email address</dt><dd className="mt-1 break-all font-semibold">{host.email || "Not provided"}</dd></div><div><dt className="text-xs text-[var(--muted-foreground)]">Phone number</dt><dd className="mt-1 font-semibold">{host.phone || "Not provided"}</dd></div><div><dt className="text-xs text-[var(--muted-foreground)]">Joined</dt><dd className="mt-1 font-semibold" suppressHydrationWarning>{new Date(host.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</dd></div><div><dt className="text-xs text-[var(--muted-foreground)]">Last active</dt><dd className="mt-1 font-semibold" suppressHydrationWarning>{new Date(host.lastActive).toLocaleDateString("en-US", { dateStyle: "medium" })}</dd></div><div><dt className="text-xs text-[var(--muted-foreground)]">Account status</dt><dd className="mt-1"><StatusBadge status={status} /></dd></div></dl></section><section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs"><h2 className="text-sm font-semibold text-muted-foreground">Recent Activity</h2>{data.activity.length === 0 ? <p className="py-8 text-center text-xs text-[var(--muted-foreground)]">No recent activity.</p> : <div className="mt-4 space-y-4">{data.activity.slice(0, 5).map((item) => <div key={item.id} className="border-b border-[var(--border-subtle)] pb-3 last:border-0"><p className="text-sm font-medium">{item.description || item.action}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleString("en-US")} · {item.actorEmail || "System"}</p></div>)}</div>}</section></div>}
+    {activeTab === "overview" && (
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <h2 className="text-sm font-semibold text-muted-foreground">Host Profile</h2>
+          <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Full name</dt><dd className="mt-1 font-semibold">{host.name || "Not provided"}</dd></div>
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Email address</dt><dd className="mt-1 break-all font-semibold">{host.email || "Not provided"}</dd></div>
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Phone number</dt><dd className="mt-1 font-semibold">{host.phone || "Not provided"}</dd></div>
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Joined</dt><dd className="mt-1 font-semibold" suppressHydrationWarning>{new Date(host.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</dd></div>
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Last active</dt><dd className="mt-1 font-semibold" suppressHydrationWarning>{new Date(host.lastActive).toLocaleDateString("en-US", { dateStyle: "medium" })}</dd></div>
+            <div><dt className="text-xs text-[var(--muted-foreground)]">Account status</dt><dd className="mt-1"><StatusBadge status={status} /></dd></div>
+          </dl>
+        </section>
 
-    {activeTab === "listings" && <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs"><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] uppercase tracking-wider text-[var(--muted-foreground)]"><tr><th className="px-4 py-3.5">Listing</th><th className="px-4 py-3.5">Location</th><th className="px-4 py-3.5">Status</th><th className="px-4 py-3.5 text-right">Price / night</th><th className="px-4 py-3.5 text-center">Bookings</th><th className="px-4 py-3.5 text-right">Action</th></tr></thead><tbody className="divide-y divide-[var(--border-subtle)]">{data.listings.length === 0 ? <tr><td colSpan={6} className="px-4 py-10 text-center text-[var(--muted-foreground)]">This host has no listings yet.</td></tr> : data.listings.map((listing) => <tr key={listing.id}><td className="px-4 py-3.5 font-semibold">{listing.title}</td><td className="px-4 py-3.5 text-[var(--muted-foreground)]">{[listing.city, listing.country].filter(Boolean).join(", ") || "—"}</td><td className="px-4 py-3.5"><span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold">{listing.status}</span></td><td className="px-4 py-3.5 text-right font-semibold">{formatSarFromHalalas(listing.price)}</td><td className="px-4 py-3.5 text-center font-semibold">{listing.bookingsCount}</td><td className="px-4 py-3.5 text-right"><Link href={`/admin/listings/${listing.id}`} className="font-semibold text-[var(--accent)] hover:underline">View listing</Link></td></tr>)}</tbody></table></div></section>}
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
+          <h2 className="text-sm font-semibold text-muted-foreground">Recent Activity</h2>
+          {data.activity.length === 0 ? (
+            <p className="py-8 text-center text-xs text-[var(--muted-foreground)]">No recent activity.</p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {data.activity.slice(0, 5).map((item) => (
+                <div key={item.id} className="border-b border-[var(--border-subtle)] pb-3 last:border-0">
+                  <p className="text-sm font-medium">{item.description || item.action}</p>
+                  <p className="mt-1 text-xs text-[var(--muted-foreground)]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleString("en-US")} · {item.actorEmail || "System"}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    )}
+
+    {activeTab === "listings" && (
+      <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
+        <div className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)]/40 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-muted-foreground">Properties & Listings</h2>
+            <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Authoritative listing records for this host account ({data.listings.length} propert{data.listings.length === 1 ? "y" : "ies"}).
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 font-semibold">
+              {data.listings.filter((l) => l.published && !l.isPaused).length} Live
+            </span>
+            <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 font-semibold">
+              {data.listings.filter((l) => l.isPaused).length} Paused
+            </span>
+            <span className="px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 font-semibold">
+              {data.listings.filter((l) => !l.published && !l.isPaused).length} Draft/Review
+            </span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] uppercase tracking-wider text-[var(--muted-foreground)] font-semibold">
+              <tr>
+                <th className="px-5 py-3.5">Property Listing</th>
+                <th className="px-4 py-3.5">Type & Location</th>
+                <th className="px-4 py-3.5">Status</th>
+                <th className="px-4 py-3.5 text-right">Price / Night</th>
+                <th className="px-4 py-3.5 text-center">Bookings</th>
+                <th className="px-4 py-3.5">Created</th>
+                <th className="px-5 py-3.5 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
+              {data.listings.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-12 text-center">
+                    <div className="mx-auto flex max-w-sm flex-col items-center justify-center text-center">
+                      <div className="h-12 w-12 rounded-2xl bg-[var(--surface-secondary)] flex items-center justify-center text-xl text-[var(--muted-foreground)] mb-3">
+                        🏡
+                      </div>
+                      <p className="font-semibold text-sm text-muted-foreground">No listings found</p>
+                      <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
+                        This host currently has no active property listings in the database.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                data.listings.map((listing) => (
+                  <tr key={listing.id} className="hover:bg-[var(--surface-secondary)]/50 transition-colors">
+                    {/* Property Listing Photo & Title */}
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-xl bg-[var(--surface-secondary)] overflow-hidden shrink-0 border border-[var(--border)] flex items-center justify-center">
+                          {listing.photos && listing.photos.length > 0 ? (
+                            <img
+                              src={listing.photos[0]}
+                              alt={listing.title}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg text-[var(--muted-foreground)]">🏡</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 max-w-xs sm:max-w-sm">
+                          <Link
+                            href={`/admin/listings/${listing.id}`}
+                            className="font-semibold text-muted-foreground hover:text-[var(--accent)] hover:underline truncate block"
+                          >
+                            {listing.title || "Untitled Property"}
+                          </Link>
+                          <p className="text-[11px] font-mono text-[var(--muted-foreground)] mt-0.5">
+                            ID: {listing.id}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Type & Location */}
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-muted-foreground">
+                        {listing.propertyType || "Home"} · {listing.listingType || "Entire place"}
+                      </p>
+                      <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
+                        {[listing.city, listing.country].filter(Boolean).join(", ") || "Location unlisted"}
+                      </p>
+                    </td>
+
+                    {/* Status Badge */}
+                    <td className="px-4 py-3.5">
+                      <ListingStatusBadge
+                        status={listing.status}
+                        published={listing.published}
+                        isPaused={listing.isPaused}
+                      />
+                    </td>
+
+                    {/* Price / Night */}
+                    <td className="px-4 py-3.5 text-right font-semibold text-muted-foreground">
+                      {formatSarFromHalalas(listing.price)}
+                    </td>
+
+                    {/* Bookings Count */}
+                    <td className="px-4 py-3.5 text-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--surface-secondary)] border border-[var(--border)] text-muted-foreground">
+                        {listing.bookingsCount}
+                      </span>
+                    </td>
+
+                    {/* Created Date */}
+                    <td className="px-4 py-3.5 text-[var(--muted-foreground)] font-mono text-[11px]" suppressHydrationWarning>
+                      {new Date(listing.createdAt).toLocaleDateString("en-US")}
+                    </td>
+
+                    {/* Action */}
+                    <td className="px-5 py-3.5 text-right">
+                      <Link
+                        href={`/admin/listings/${listing.id}`}
+                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs"
+                      >
+                        Review / Edit
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
 
     {activeTab === "bookings" && <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs"><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] uppercase tracking-wider text-[var(--muted-foreground)]"><tr><th className="px-4 py-3.5">Guest</th><th className="px-4 py-3.5">Listing</th><th className="px-4 py-3.5">Dates</th><th className="px-4 py-3.5">Status</th><th className="px-4 py-3.5 text-right">Amount</th></tr></thead><tbody className="divide-y divide-[var(--border-subtle)]">{data.bookings.length === 0 ? <tr><td colSpan={5} className="px-4 py-10 text-center text-[var(--muted-foreground)]">This host has no bookings yet.</td></tr> : data.bookings.map((booking) => <tr key={booking.id}><td className="px-4 py-3.5"><p className="font-semibold">{booking.guestName || "Guest"}</p><p className="font-mono text-[11px] text-[var(--muted-foreground)]">{booking.guestEmail || "—"}</p></td><td className="px-4 py-3.5">{booking.listingTitle}</td><td className="px-4 py-3.5" suppressHydrationWarning>{new Date(booking.startDate).toLocaleDateString("en-US")} – {new Date(booking.endDate).toLocaleDateString("en-US")}</td><td className="px-4 py-3.5"><span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold">{booking.status}</span></td><td className="px-4 py-3.5 text-right font-semibold">{formatSarFromHalalas(booking.amount)}</td></tr>)}</tbody></table></div></section>}
 

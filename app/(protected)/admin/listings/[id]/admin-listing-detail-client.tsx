@@ -1173,8 +1173,13 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               <h3 className="text-base font-semibold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Are you sure you want to delete <strong className="text-muted-foreground">{listing.title}</strong>? This action will permanently remove the property listing, associated settings, and cannot be undone.
+              Are you sure you want to delete <strong className="text-muted-foreground">{listing.title}</strong>? This action will completely and permanently remove the property listing, associated bookings, and database records. This cannot be undone.
             </p>
+            {listing.bookingCount > 0 && (
+              <div className="rounded-xl border border-rose-300/50 bg-rose-50 dark:bg-rose-950/30 p-2.5 text-xs text-rose-900 dark:text-rose-300">
+                <strong>⚠️ Notice:</strong> This property has {listing.bookingCount} associated booking(s). Deleting will permanently erase all associated booking records.
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
               <button
                 type="button"

@@ -38,6 +38,8 @@ export async function updateListingAction(id: string, input: unknown) {
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath("/host/listings/[id]");
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
     if (data.propertyType !== undefined || data.listingType !== undefined) {
       revalidatePath(`/host/listings/${id}/property-type`);
     }
@@ -76,6 +78,8 @@ export async function publishListingAction(id: string) {
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath(`/listings/${id}`);
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
     if (listing.customSlug) {
       revalidatePath(`/stay/${listing.customSlug}`);
     }
@@ -92,6 +96,8 @@ export async function unpublishListingAction(id: string) {
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath(`/listings/${id}`);
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
     if (listing.customSlug) {
       revalidatePath(`/stay/${listing.customSlug}`);
     }
