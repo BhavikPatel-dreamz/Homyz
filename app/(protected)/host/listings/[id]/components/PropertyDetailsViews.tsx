@@ -389,15 +389,13 @@ export function PropertyDetailsViews({
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <svg
-                      className={`w-4 h-4 text-zinc-600 transition-transform ${openDescAccordion === "description" ? "rotate-180" : ""
-                        }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <Image
+                      src="/images/icons/chevron-down-dark.svg"
+                      alt={openDescAccordion === "description" ? "Collapse" : "Expand"}
+                      width={16}
+                      height={16}
+                      className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "description" ? "rotate-180" : "rotate-[270deg]"}`}
+                    />
                   </div>
                 </div>
 
@@ -436,15 +434,13 @@ export function PropertyDetailsViews({
                       {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-zinc-600 transition-transform ${openDescAccordion === "property" ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt={openDescAccordion === "property" ? "Collapse" : "Expand"}
+                    width={16}
+                    height={16}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "property" ? "rotate-180" : "rotate-[270deg]"}`}
+                  />
                 </div>
 
                 {openDescAccordion === "property" && (
@@ -480,15 +476,13 @@ export function PropertyDetailsViews({
                       {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-zinc-600 transition-transform ${openDescAccordion === "access" ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt={openDescAccordion === "access" ? "Collapse" : "Expand"}
+                    width={16}
+                    height={16}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "access" ? "rotate-180" : "rotate-[270deg]"}`}
+                  />
                 </div>
 
                 {openDescAccordion === "access" && (
@@ -524,15 +518,13 @@ export function PropertyDetailsViews({
                       {interactionDetails ? interactionDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-zinc-600 transition-transform ${openDescAccordion === "interaction" ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt={openDescAccordion === "interaction" ? "Collapse" : "Expand"}
+                    width={16}
+                    height={16}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "interaction" ? "rotate-180" : "rotate-[270deg]"}`}
+                  />
                 </div>
 
                 {openDescAccordion === "interaction" && (
@@ -568,15 +560,13 @@ export function PropertyDetailsViews({
                       {otherDetails ? otherDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-zinc-600 transition-transform ${openDescAccordion === "other" ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt={openDescAccordion === "other" ? "Collapse" : "Expand"}
+                    width={16}
+                    height={16}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "other" ? "rotate-180" : "rotate-[270deg]"}`}
+                  />
                 </div>
 
                 {openDescAccordion === "other" && (
@@ -970,7 +960,7 @@ export function PropertyDetailsViews({
       {/* VIEW: GUESTS & SLEEPING ARRANGEMENTS */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "guests" || activeSection === "sleeping-arrangements") && (
-        <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full space-y-6 animate-in fade-in pb-10 font-sans"}>
+        <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full animate-in fade-in pb-10 font-sans"}>
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
             <div className="flex items-start gap-6 max-w-[491px]">
@@ -992,7 +982,7 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <div className="space-y-6 pt-10">
+            <div className="space-y-6 pt-12">
               {/* Section 1: Guest Capacity Counter */}
               <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] bg-white p-4"}`}>
@@ -1082,7 +1072,7 @@ export function PropertyDetailsViews({
 
               {/* Section 2: Room-Level Sleeping Arrangements */}
               {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
-                <div className="flex items-center justify-between gap-6">
+                <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-6">
                   <div>
                     <h3 className="text-base font-medium text-[#1F1F1F]">Room-by-room sleeping arrangements</h3>
                     <p className="text-[14px] font-normal text-[#727272]">Specify beds for each bedroom or common space</p>
@@ -1260,7 +1250,7 @@ export function PropertyDetailsViews({
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm font-medium text-[#1f1f1f] block">Full bathrooms</span>
-                      <span className="text-[11px] text-zinc-400">Includes shower/bathtub, sink, and toilet</span>
+                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Includes shower/bathtub, sink, and toilet</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1270,7 +1260,7 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                       >
                         <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
@@ -1282,7 +1272,7 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                       >
                         +
                       </button>
@@ -1292,7 +1282,7 @@ export function PropertyDetailsViews({
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
                     <div>
                       <span className="text-sm font-medium text-[#1f1f1f] block">Half bathrooms</span>
-                      <span className="text-[11px] text-zinc-400">Includes sink and toilet only (no bath or shower)</span>
+                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Includes sink and toilet only (no bath or shower)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1302,7 +1292,7 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                       >
                         <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
@@ -1314,7 +1304,7 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                       >
                         +
                       </button>
@@ -1324,7 +1314,7 @@ export function PropertyDetailsViews({
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
                     <div>
                       <span className="text-sm font-medium text-[#1f1f1f] block">Bathroom privacy</span>
-                      <span className="text-[11px] text-zinc-400">Are the bathrooms private or shared with host/others?</span>
+                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Are the bathrooms private or shared with host/others?</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -1553,7 +1543,7 @@ export function PropertyDetailsViews({
                   <div
                     ref={amenitiesScrollRef}
                     onScroll={updateAmenitiesScrollThumb}
-                      className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
+                    className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
                   >
                     {filteredCatalog.length === 0 ? (
                       <div className="py-12 text-center text-zinc-400 text-xs">
