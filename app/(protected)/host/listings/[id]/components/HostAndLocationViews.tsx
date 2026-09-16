@@ -564,14 +564,14 @@ function LocationView(props: Props) {
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="rounded-full bg-[#FCDF9C] px-7 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F3D98C] disabled:opacity-60"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full border border-[#727272] bg-transparent px-7 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-white"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
               >
                 Cancel
               </button>
@@ -612,14 +612,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full bg-[#F5D98C] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60 cursor-pointer"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full border border-zinc-400 bg-transparent px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 cursor-pointer"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
               >
                 Cancel
               </button>
@@ -690,14 +690,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                  className="rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
+                  className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-zinc-700 hover:text-white transition-colors hover:bg-[#1f1f1f] cursor-pointer"
+                  className="rounded-full bg-white border border-[#1f1f1f] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 Cancel
               </button>
@@ -774,7 +774,7 @@ function SaveButton({
       type="button"
       disabled={saving}
       onClick={onSave}
-      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] hover:text-white text-[#1F1F1F] px-5 py-2 text-sm font-medium disabled:opacity-60 duration-300"
+      className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
     >
       {saving ? "Saving…" : "Save"}
     </button>
