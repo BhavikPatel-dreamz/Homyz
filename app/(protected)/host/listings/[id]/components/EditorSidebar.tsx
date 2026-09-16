@@ -389,7 +389,7 @@ export function EditorSidebar({
         : "hidden border-r border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
         } min-w-0 flex-col lg:col-span-1 lg:-mt-[109px] lg:flex lg:h-auto lg:w-auto lg:overflow-visible lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] lg:bg-[rgba(241,241,241,0.5)] lg:px-0 lg:pl-8 lg:pt-[176px]`}
     >
-      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:sticky lg:top-25 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
+      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:sticky lg:top-25 lg:h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-7rem)] lg:self-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between">
@@ -1467,7 +1467,7 @@ export function EditorSidebar({
               </div>
             )}
           </div>
-          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
             {sidebarScrollThumb.visible && (
               <div
                 className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-transform duration-150 ease-out will-change-transform"
