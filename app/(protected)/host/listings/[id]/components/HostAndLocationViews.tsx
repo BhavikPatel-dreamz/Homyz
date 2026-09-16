@@ -709,14 +709,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                  className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                  className="rounded-full bg-white border border-[#1f1f1f] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full bg-white border border-[#1f1f1f] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 Cancel
               </button>
@@ -753,7 +753,7 @@ function Card({
           <span className="block text-base font-medium text-[#1F1F1F]">{title}</span>
           {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272]">{summary}</span>}
         </span>
-          <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
+        <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
           <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain" />
         </span>
       </button>
@@ -836,7 +836,7 @@ function AboutHostView(props: Props) {
   );
 }
 function CoHostView(props: Props) {
-  const { listingId, coHosts, setCoHosts } = props;
+  const { listingId, coHosts, setCoHosts, onBack } = props;
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+39");
@@ -912,22 +912,28 @@ function CoHostView(props: Props) {
     (item) => item.status === "PENDING" || item.status === "ACCEPTED",
   );
   return (
-    <div className="max-w-xl space-y-5 pb-10">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1>Co-hosts</h1>
-          <p className="mt-1 text-sm font-normal text-[#727272]">
-            Accepted co-hosts are active; pending invitations are not.
-          </p>
+    <div className="max-w-[calc(100%-75px)] space-y-5 pb-10">
+      <div className="flex items-start gap-4">
+        <BackButton onClick={onBack} />
+        <div className="flex w-full justify-between">
+          <div className="flex flex-col items-start">
+            <h1>Co-hosts</h1>
+            <p className="mt-1 text-sm font-normal text-[#727272]">
+              Accepted co-hosts are active, pending invitations are not.
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={openModal}
+              className="rounded-full bg-[#FEE08B] px-5 py-2.5 text-sm font-medium transition-colors text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 duration-300"
+            >
+              Invite co-host
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={openModal}
-          className="rounded-full bg-[#FEE08B] px-4 py-2 text-xs font-semibold transition-colors hover:bg-[#f8d36c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-        >
-          Invite co-host
-        </button>
       </div>
+
       {props.isLoading ? (
         <CoHostSkeleton />
       ) : (
@@ -978,7 +984,7 @@ function CoHostView(props: Props) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id={titleId} className="text-[24px] font-semibold leading-8 tracking-[-0.035em] sm:text-[26px]">Add your co-host&apos;s info</h2>
+                <h2 id={titleId} className="text-[24px] font-medium">Add your co-host&apos;s info</h2>
                 <p id={descriptionId} className="mt-1.5 text-[14px] leading-5 text-[#717171]">
                   We&apos;ll text or email them the invite
                 </p>
@@ -1002,7 +1008,7 @@ function CoHostView(props: Props) {
               }}
             >
               <div className="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)] gap-2.5">
-                <label className="block min-w-0 text-[13px] font-medium leading-5">
+                <label className="block min-w-0 text-sm font-medium leading-5">
                   Country code <span aria-hidden="true">*</span>
                   <span className="relative mt-1.5 block">
                     <select
@@ -1020,7 +1026,7 @@ function CoHostView(props: Props) {
                     <svg aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                   </span>
                 </label>
-                <label className="block min-w-0 text-[13px] font-medium leading-5">
+                <label className="block min-w-0 text-sm font-medium leading-5">
                   Phone number <span aria-hidden="true">*</span>
                   <input
                     autoFocus
@@ -1044,7 +1050,7 @@ function CoHostView(props: Props) {
                 <span className="h-px flex-1 bg-[#dedede]" />
               </div>
 
-              <label className="block text-[13px] font-medium leading-5">
+              <label className="block text-sm font-medium leading-5">
                 Email
                 <input
                   type="email"
@@ -1066,14 +1072,14 @@ function CoHostView(props: Props) {
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-full border border-[#777] px-4 py-2 text-[13px] font-medium transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-40"
+                  className="rounded-full border border-[#1f1f1f] px-4 py-2 text-[13px] font-medium transition hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 hover:text-white focus-visible:outline-zinc-900 disabled:opacity-40"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving || (!hasEmail && !hasPhone) || (hasEmail && hasPhone)}
-                  className="rounded-full bg-[#FEE08B] px-5 py-2 text-[13px] font-semibold transition hover:bg-[#f8d36c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-full bg-[#FEE08B] px-5 py-2 text-[13px] font-semibold transition hover:bg-[#1f1f1f] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 duration-300"
                 >
                   {saving ? "Sending…" : "Next"}
                 </button>

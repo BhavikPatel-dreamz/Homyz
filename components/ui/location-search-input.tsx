@@ -76,7 +76,7 @@ export function LocationSearchInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <label htmlFor={inputId} className="block text-xs font-semibold text-[#1F1F1F] mb-1.5">
+      <label htmlFor={inputId} className="block text-sm font-medium text-[#1F1F1F] mb-1.5">
         Location
       </label>
 
@@ -97,7 +97,7 @@ export function LocationSearchInput({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search a place... (e.g. Paris, France)"
-          className={`w-full pl-9 pr-9 py-2.5 rounded-2xl border bg-white text-xs text-[#1F1F1F] placeholder-zinc-400 transition-all shadow-2xs min-h-[46px] ${
+          className={`w-full pl-9 pr-9 py-2.5 rounded-lg border bg-white text-sm text-[#1F1F1F] placeholder-zinc-400 transition-all shadow-2xs sm:min-h-[60px] min-h-[56px] ${
             isOpen ? "border-amber-400 ring-2 ring-amber-400/20" : "border-zinc-200 hover:border-zinc-300"
           } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
@@ -141,7 +141,7 @@ export function LocationSearchInput({
                 <div
                   key={`${dest.formattedAddress}-${index}`}
                   onClick={() => handleSelect(dest)}
-                  className={`px-3.5 py-2 flex items-center gap-2.5 text-xs transition-colors cursor-pointer ${
+                  className={`px-3.5 py-2 flex items-center gap-2.5 text-xs transition-colors cursor-pointer  ${
                     isSelected
                       ? "bg-amber-100 text-amber-900 font-semibold"
                       : isActive
@@ -151,8 +151,8 @@ export function LocationSearchInput({
                 >
                   <span className="text-zinc-400 text-xs shrink-0">📍</span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[#1F1F1F] truncate">{dest.locationName}</p>
-                    <p className="text-[11px] text-zinc-400 truncate">{dest.formattedAddress}</p>
+                    <p className="text-sm font-mediun text-[#1F1F1F] truncate">{dest.locationName}</p>
+                    <p className="text-xs text-[#727272] truncate">{dest.formattedAddress}</p>
                   </div>
                   {dest.countryCode && (
                     <span className="text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
