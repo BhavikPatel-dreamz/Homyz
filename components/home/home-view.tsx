@@ -32,17 +32,44 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
     checkOut: string;
     guests: string;
     guestDetails?: { adults: number; children: number; infants: number; pets: number };
+    lat?: number;
+    lng?: number;
+    radiusKm?: number;
+    placeId?: string;
+    locationType?: string;
+    placeName?: string;
+    fullAddress?: string;
+    city?: string;
+    country?: string;
   }) => {
     const sp = new URLSearchParams();
-    if (params.destination && params.destination !== "Recent searches") {
-      sp.set("city", params.destination);
+
+    // Ignore placeholder values from the old static suggestions
+    const staticValues = new Set(["Recent searches", "Nearby", "Suggested destinations"]);
+    if (params.destination && !staticValues.has(params.destination)) {
+      sp.set("destination", params.destination.trim());
+      sp.set("city", (params.city || params.destination).trim());
     }
+    if (params.placeName) sp.set("placeName", params.placeName);
+    if (params.fullAddress) sp.set("fullAddress", params.fullAddress);
+    if (typeof params.lat === "number" && !isNaN(params.lat)) sp.set("lat", String(params.lat));
+    if (typeof params.lng === "number" && !isNaN(params.lng)) sp.set("lng", String(params.lng));
+    if (typeof params.radiusKm === "number" && !isNaN(params.radiusKm)) sp.set("radius", String(params.radiusKm));
+    if (params.placeId) sp.set("placeId", params.placeId);
+    if (params.locationType) sp.set("locationType", params.locationType);
+
     if (params.checkIn) sp.set("checkIn", params.checkIn);
     if (params.checkOut) sp.set("checkOut", params.checkOut);
+
     if (params.guestDetails) {
       const totalGuests = (params.guestDetails.adults || 0) + (params.guestDetails.children || 0);
       if (totalGuests > 0) sp.set("guests", String(totalGuests));
+    } else if (params.guests) {
+      // Parse "2 guests" → "2"
+      const n = parseInt(params.guests, 10);
+      if (n > 0) sp.set("guests", String(n));
     }
+
     router.push(`/listings?${sp.toString()}`);
   };
 

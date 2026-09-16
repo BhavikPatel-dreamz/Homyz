@@ -3,8 +3,8 @@ import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
-import { deleteCache, getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
+import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
   CreateListingInput,
   UpdateListingInput,
@@ -25,6 +25,7 @@ import { normalizeAmenities } from "@/lib/constants/amenities";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
+import { calculateDistance } from "@/lib/location/places-search";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -227,9 +228,21 @@ async function list(opts: {
   );
 }
 
+export type SortBy =
+  | "recommended"
+  | "price_low"
+  | "price_high"
+  | "top_rated"
+  | "most_reviewed";
+
 export type PublicSearchFilters = {
   city?: string;
   country?: string;
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
+  placeId?: string;
+  locationType?: string;
   checkIn?: Date | string;
   checkOut?: Date | string;
   guests?: number;
@@ -238,16 +251,29 @@ export type PublicSearchFilters = {
   minPrice?: number;
   maxPrice?: number;
   amenities?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  beds?: number;
+  instantBook?: boolean;
+  sortBy?: SortBy;
+  /** Geo bounds for map-based search */
+  mapBounds?: {
+    neLat: number;
+    neLng: number;
+    swLat: number;
+    swLng: number;
+  };
+  /** Page number (1-based). Convenience alias — computes skip = (page-1)*take. */
+  page?: number;
+  /** Alias for take */
+  limit?: number;
   skip?: number;
   take?: number;
 };
 
 async function searchPublicListings(
   filters: PublicSearchFilters,
-): Promise<{ items: PublicListingDTO[]; total: number }> {
-  const skip = filters.skip ?? 0;
-  const take = filters.take ?? 20;
-
+): Promise<{ items: PublicListingDTO[]; total: number; page?: number; totalPages?: number; priceRange?: { min: number; max: number } }> {
   const andClauses: Prisma.ListingWhereInput[] = [
     { published: true },
     { status: ListingStatus.ACTIVE },
@@ -255,16 +281,85 @@ async function searchPublicListings(
     { deletedAt: null },
   ];
 
-  if (filters.city && filters.city.trim()) {
-    const term = filters.city.trim();
-    andClauses.push({
-      OR: [
-        { city: { contains: term, mode: "insensitive" } },
-        { district: { contains: term, mode: "insensitive" } },
-        { address: { contains: term, mode: "insensitive" } },
-        { country: { contains: term, mode: "insensitive" } },
-      ],
-    });
+  // 1. Primary Geo-Spatial Radius Search (when latitude & longitude are selected)
+  if (
+    typeof filters.lat === "number" &&
+    typeof filters.lng === "number" &&
+    !isNaN(filters.lat) &&
+    !isNaN(filters.lng)
+  ) {
+    const r = filters.radiusKm && filters.radiusKm > 0 ? filters.radiusKm : 25; // default 25km radius
+    const deltaLat = r / 111;
+    const deltaLng = r / (111 * Math.cos((filters.lat * Math.PI) / 180));
+
+    const geoBoundsClause: Prisma.ListingWhereInput = {
+      latitude: { gte: filters.lat - deltaLat, lte: filters.lat + deltaLat },
+      longitude: { gte: filters.lng - deltaLng, lte: filters.lng + deltaLng },
+    };
+
+    // Include fallback for any listings without coordinates in the database
+    if (filters.city && filters.city.trim()) {
+      const raw = filters.city.trim();
+      const parts = raw.split(/,\s*/).map((p) => p.trim()).filter(Boolean);
+      andClauses.push({
+        OR: [
+          geoBoundsClause,
+          {
+            AND: [
+              { latitude: null },
+              {
+                OR: [
+                  { city: { contains: raw, mode: "insensitive" } },
+                  { district: { contains: raw, mode: "insensitive" } },
+                  { address: { contains: raw, mode: "insensitive" } },
+                  ...(parts.length > 0 ? [{ city: { contains: parts[0], mode: "insensitive" as const } }] : []),
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    } else {
+      andClauses.push(geoBoundsClause);
+    }
+  } else if (filters.city && filters.city.trim()) {
+    // 2. Text-based fallback when coordinates are not provided
+    const raw = filters.city.trim();
+    const parts = raw.split(/,\s*/).map((p) => p.trim()).filter(Boolean);
+
+    if (parts.length > 1) {
+      andClauses.push({
+        OR: [
+          { city: { contains: raw, mode: "insensitive" } },
+          { district: { contains: raw, mode: "insensitive" } },
+          { address: { contains: raw, mode: "insensitive" } },
+          {
+            AND: parts.map((part) => ({
+              OR: [
+                { city: { contains: part, mode: "insensitive" } },
+                { district: { contains: part, mode: "insensitive" } },
+                { address: { contains: part, mode: "insensitive" } },
+                { country: { contains: part, mode: "insensitive" } },
+                { title: { contains: part, mode: "insensitive" } },
+              ],
+            })),
+          },
+          { city: { contains: parts[0], mode: "insensitive" } },
+          { district: { contains: parts[0], mode: "insensitive" } },
+          { address: { contains: parts[0], mode: "insensitive" } },
+        ],
+      });
+    } else {
+      andClauses.push({
+        OR: [
+          { city: { contains: raw, mode: "insensitive" } },
+          { district: { contains: raw, mode: "insensitive" } },
+          { address: { contains: raw, mode: "insensitive" } },
+          { country: { contains: raw, mode: "insensitive" } },
+          { title: { contains: raw, mode: "insensitive" } },
+        ],
+      });
+    }
   }
 
   if (filters.country && filters.country.trim()) {
@@ -274,9 +369,7 @@ async function searchPublicListings(
   }
 
   if (filters.guests && filters.guests > 0) {
-    andClauses.push({
-      guests: { gte: filters.guests },
-    });
+    andClauses.push({ guests: { gte: filters.guests } });
   }
 
   if (filters.propertyType && filters.propertyType.trim()) {
@@ -292,27 +385,44 @@ async function searchPublicListings(
   }
 
   if (typeof filters.minPrice === "number") {
-    andClauses.push({
-      price: { gte: filters.minPrice },
-    });
+    andClauses.push({ price: { gte: filters.minPrice } });
   }
 
   if (typeof filters.maxPrice === "number") {
-    andClauses.push({
-      price: { lte: filters.maxPrice },
-    });
+    andClauses.push({ price: { lte: filters.maxPrice } });
   }
 
   if (filters.amenities && filters.amenities.length > 0) {
     const canonicalAmenityIds = normalizeAmenities(filters.amenities);
     if (canonicalAmenityIds.length > 0) {
-      andClauses.push({
-        amenities: { hasEvery: canonicalAmenityIds },
-      });
+      andClauses.push({ amenities: { hasEvery: canonicalAmenityIds } });
     }
   }
 
-  // If checkIn and checkOut provided, exclude booked listings and blocked calendar dates
+  // Extended filters
+  if (typeof filters.bedrooms === "number" && filters.bedrooms > 0) {
+    andClauses.push({ bedrooms: { gte: filters.bedrooms } });
+  }
+  if (typeof filters.bathrooms === "number" && filters.bathrooms > 0) {
+    andClauses.push({ bathrooms: { gte: filters.bathrooms } });
+  }
+  if (typeof filters.beds === "number" && filters.beds > 0) {
+    andClauses.push({ beds: { gte: filters.beds } });
+  }
+  if (filters.instantBook === true) {
+    andClauses.push({ instantBook: true });
+  }
+
+  // Geo bounds (map-based search)
+  if (filters.mapBounds) {
+    const { neLat, neLng, swLat, swLng } = filters.mapBounds;
+    andClauses.push({
+      latitude: { gte: swLat, lte: neLat },
+      longitude: { gte: swLng, lte: neLng },
+    });
+  }
+
+  // Availability: exclude listings with overlapping confirmed/pending bookings
   if (filters.checkIn && filters.checkOut) {
     const cIn = new Date(filters.checkIn);
     const cOut = new Date(filters.checkOut);
@@ -326,31 +436,133 @@ async function searchPublicListings(
         select: { listingId: true },
         distinct: ["listingId"],
       });
-
       if (conflicts.length > 0) {
-        const bookedListingIds = conflicts.map((c: { listingId: string }) => c.listingId);
-        andClauses.push({
-          id: { notIn: bookedListingIds },
-        });
+        const bookedIds = conflicts.map((c: { listingId: string }) => c.listingId);
+        andClauses.push({ id: { notIn: bookedIds } });
       }
     }
   }
 
   const where: Prisma.ListingWhereInput = { AND: andClauses };
 
-  const [items, total] = await Promise.all([
-    prisma.listing.findMany({
-      where,
+  // Sort order
+  let orderBy: Prisma.ListingOrderByWithRelationInput[] = [
+    { isFeatured: "desc" },
+    { createdAt: "desc" },
+  ];
+  switch (filters.sortBy) {
+    case "price_low":
+      orderBy = [{ price: "asc" }];
+      break;
+    case "price_high":
+      orderBy = [{ price: "desc" }];
+      break;
+    case "top_rated":
+    case "most_reviewed":
+    case "recommended":
+    default:
+      orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }];
+  }
+
+  // Pagination
+  const take = filters.take ?? filters.limit ?? 20;
+  const page = filters.page ?? 1;
+  const skip = filters.skip ?? (page - 1) * take;
+
+  // Redis cache (skip when date filter is active — availability IDs are ephemeral)
+  const hasDateFilter = Boolean(filters.checkIn && filters.checkOut);
+
+  if (!hasDateFilter) {
+    const cacheVersion = await getCounter(keys.listingsPublicVersion());
+    const filterHash = hashFilters({
+      lat: filters.lat ?? "",
+      lng: filters.lng ?? "",
+      radiusKm: filters.radiusKm ?? "",
+      city: filters.city ?? "",
+      country: filters.country ?? "",
+      guests: filters.guests ?? 0,
+      propertyType: filters.propertyType ?? "",
+      listingType: filters.listingType ?? "",
+      minPrice: filters.minPrice ?? 0,
+      maxPrice: filters.maxPrice ?? 0,
+      amenities: (filters.amenities ?? []).slice().sort().join(","),
+      bedrooms: filters.bedrooms ?? 0,
+      bathrooms: filters.bathrooms ?? 0,
+      beds: filters.beds ?? 0,
+      instantBook: filters.instantBook ?? false,
+      sortBy: filters.sortBy ?? "recommended",
+      mapBounds: filters.mapBounds
+        ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
+        : "",
       skip,
       take,
-      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-    }),
-    prisma.listing.count({ where }),
-  ]);
+    });
+    const cacheKey = `homyz:listings:search:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+    type CachePayload = { items: PublicListingDTO[]; total: number; priceRange: { min: number; max: number } };
+    const cached = await getCache<CachePayload>(cacheKey);
+    if (cached) {
+      return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
+    }
 
+    const [items, total, priceAgg] = await Promise.all([
+      prisma.listing.findMany({ where, skip, take, orderBy }),
+      prisma.listing.count({ where }),
+      prisma.listing.aggregate({ where, _min: { price: true }, _max: { price: true } }),
+    ]);
+    const priceRange = { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 };
+    let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
+    if (typeof filters.lat === "number" && typeof filters.lng === "number") {
+      mappedItems = mappedItems.map((dto: PublicListingDTO): PublicListingDTO => {
+        if (dto.latitude != null && dto.longitude != null) {
+          const dist = calculateDistance(filters.lat!, filters.lng!, dto.latitude, dto.longitude);
+          return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
+        }
+        return dto;
+      });
+      if (!filters.sortBy || filters.sortBy === "recommended") {
+        mappedItems.sort((a: PublicListingDTO, b: PublicListingDTO) => {
+          if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
+          if (a.distanceKm != null) return -1;
+          if (b.distanceKm != null) return 1;
+          return 0;
+        });
+      }
+    }
+    const payload: CachePayload = { items: mappedItems, total, priceRange };
+    await setCache(cacheKey, payload, 120);
+    return { ...payload, page, totalPages: Math.ceil(total / take) };
+  }
+
+  // Date-filter path: always live DB, no caching
+  const [items, total, priceAgg] = await Promise.all([
+    prisma.listing.findMany({ where, skip, take, orderBy }),
+    prisma.listing.count({ where }),
+    prisma.listing.aggregate({ where, _min: { price: true }, _max: { price: true } }),
+  ]);
+  let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
+  if (typeof filters.lat === "number" && typeof filters.lng === "number") {
+    mappedItems = mappedItems.map((dto: PublicListingDTO): PublicListingDTO => {
+      if (dto.latitude != null && dto.longitude != null) {
+        const dist = calculateDistance(filters.lat!, filters.lng!, dto.latitude, dto.longitude);
+        return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
+      }
+      return dto;
+    });
+    if (!filters.sortBy || filters.sortBy === "recommended") {
+      mappedItems.sort((a: PublicListingDTO, b: PublicListingDTO) => {
+        if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
+        if (a.distanceKm != null) return -1;
+        if (b.distanceKm != null) return 1;
+        return 0;
+      });
+    }
+  }
   return {
-    items: items.map(toPublicListingDTO),
+    items: mappedItems,
     total,
+    priceRange: { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 },
+    page,
+    totalPages: Math.ceil(total / take),
   };
 }
 

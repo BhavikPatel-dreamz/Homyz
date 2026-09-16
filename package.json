@@ -30,6 +30,7 @@
     "@types/leaflet": "^1.9.22",
     "aos": "^2.3.4",
     "bcryptjs": "^3.0.3",
+    "country-state-city": "^3.2.1",
     "jose": "^6.2.10",
     "leaflet": "^1.9.4",
     "libphonenumber-js": "^1.13.12",

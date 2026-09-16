@@ -21,12 +21,28 @@ export const GET = apiHandler(async (req) => {
   const checkOut = sp.get("checkOut") || sp.get("endDate") || undefined;
   const amenitiesParam = sp.get("amenities");
   const amenities = amenitiesParam ? amenitiesParam.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+  // Extended filters
+  const bedrooms = sp.get("bedrooms") ? parseInt(sp.get("bedrooms")!, 10) : undefined;
+  const bathrooms = sp.get("bathrooms") ? parseInt(sp.get("bathrooms")!, 10) : undefined;
+  const beds = sp.get("beds") ? parseInt(sp.get("beds")!, 10) : undefined;
+  const instantBook = sp.get("instantBook") === "true" ? true : undefined;
+  const sortBy = (sp.get("sortBy") as import("@/services/listing.service").SortBy) || undefined;
+  // Map bounds
+  const neLat = sp.get("neLat") ? parseFloat(sp.get("neLat")!) : undefined;
+  const neLng = sp.get("neLng") ? parseFloat(sp.get("neLng")!) : undefined;
+  const swLat = sp.get("swLat") ? parseFloat(sp.get("swLat")!) : undefined;
+  const swLng = sp.get("swLng") ? parseFloat(sp.get("swLng")!) : undefined;
+  const mapBounds = neLat !== undefined && neLng !== undefined && swLat !== undefined && swLng !== undefined
+    ? { neLat, neLng, swLat, swLng }
+    : undefined;
 
   const hasFilters = Boolean(
-    city || guests || propertyType || listingType || minPrice || maxPrice || checkIn || checkOut || amenities,
+    city || guests || propertyType || listingType || minPrice || maxPrice ||
+    checkIn || checkOut || amenities || bedrooms || bathrooms || beds ||
+    instantBook || sortBy || mapBounds,
   );
 
-  const { items, total } = hasFilters
+  const result = hasFilters
     ? await listingService.searchPublicListings({
         city,
         guests,
@@ -37,11 +53,19 @@ export const GET = apiHandler(async (req) => {
         checkIn,
         checkOut,
         amenities,
+        bedrooms,
+        bathrooms,
+        beds,
+        instantBook,
+        sortBy,
+        mapBounds,
         skip,
         take,
       })
     : await listingService.list({ skip, take });
 
+  const total = result.total;
+  const items = result.items;
   return paginated(items, buildPagination(page, limit, total));
 });
 

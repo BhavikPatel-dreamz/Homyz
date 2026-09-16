@@ -9,6 +9,13 @@ export const dynamic = "force-dynamic";
 
 interface ListingDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    checkIn?: string;
+    startDate?: string;
+    checkOut?: string;
+    endDate?: string;
+    guests?: string;
+  }>;
 }
 
 export async function generateMetadata({ params }: ListingDetailPageProps): Promise<Metadata> {
@@ -38,8 +45,15 @@ export async function generateMetadata({ params }: ListingDetailPageProps): Prom
   }
 }
 
-export default async function PublicListingPage({ params }: ListingDetailPageProps) {
+export default async function PublicListingPage({ params, searchParams }: ListingDetailPageProps) {
   const { id } = await params;
+  const sp = await searchParams;
+
+  // Pre-fill booking widget from search URL
+  const searchCheckIn = sp.checkIn || sp.startDate || undefined;
+  const searchCheckOut = sp.checkOut || sp.endDate || undefined;
+  const searchGuests = sp.guests ? parseInt(sp.guests, 10) : undefined;
+
   let listing: Awaited<ReturnType<typeof listingService.getPublicListingById>> | null = null;
   let guidebooks: any[] = [];
 
@@ -59,5 +73,13 @@ export default async function PublicListingPage({ params }: ListingDetailPagePro
     notFound();
   }
 
-  return <PublicListingDetailClient listing={listing} guidebooks={guidebooks} />;
+  return (
+    <PublicListingDetailClient
+      listing={listing}
+      guidebooks={guidebooks}
+      searchCheckIn={searchCheckIn}
+      searchCheckOut={searchCheckOut}
+      searchGuests={searchGuests}
+    />
+  );
 }
