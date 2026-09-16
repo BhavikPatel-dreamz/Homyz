@@ -416,7 +416,12 @@ export function PricingAndBookingViews({
               <div className="space-y-2">
                 <div>
                   <div>
-                    <h3 className="text-base font-normal text-[#1F1F1F]">Trip length</h3>
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-base font-normal text-[#1F1F1F]">Trip length</h3>
+                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
+                        {minNights}–{maxNights} nights
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -591,10 +596,14 @@ export function PricingAndBookingViews({
 
               {allowSameDayRequests && (
                 <div className="space-y-1">
+                  <label htmlFor="same-day-cutoff" className="block text-sm font-medium text-[#1F1F1F]">
+                    Same-day cutoff time
+                  </label>
                   <p className="mt-1 text-xs text-[#1F1F1F] opacity-50">
                     Guests can book on the same day as check-in until this time.
                   </p>
                   <select
+                    id="same-day-cutoff"
                     value={sameDayCutoff}
                     onChange={(e) => {
                       setSameDayCutoff?.(e.target.value);

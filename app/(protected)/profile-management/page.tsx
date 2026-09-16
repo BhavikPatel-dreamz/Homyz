@@ -10,7 +10,7 @@ export default async function ProfileManagementPage({
   const sub = extractSubTabFromQuery(resolvedSearchParams);
   if (sub && sub !== "info") {
     const slug = getMgmtSubTabSlug(sub);
-    redirect(`/profile?tab/profile_management/${slug}`);
+    redirect(`/profile/tab/profile_management/${slug}`);
   }
-  redirect("/profile?tab/profile_management");
+  redirect("/profile/tab/profile_management");
 }

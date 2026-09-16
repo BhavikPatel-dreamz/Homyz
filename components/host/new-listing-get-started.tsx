@@ -135,6 +135,9 @@ export function NewListingGetStarted({
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
   const hydratedDraftRef = useRef(false);
+  // A double-click or a slow network response must never create two listing
+  // rows for the same wizard session.
+  const draftCreationRef = useRef<Promise<string> | null>(null);
   // PATCH operations are serialized so an older debounced save can never
   // overwrite a newer explicit Next/Finish save.
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -423,23 +426,37 @@ export function NewListingGetStarted({
         });
         if (!res.ok) throw new Error(await readSaveError(res));
       } else {
-        const res = await fetch("/api/v1/listings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await readSaveError(res));
-        const data: unknown = await res.json().catch(() => null);
-        const createdId =
-          data && typeof data === "object" && "data" in data
-            ? ((data as { data?: { id?: string } }).data?.id ?? null)
-            : null;
-        if (!createdId) {
-          throw new Error("The draft was saved, but no listing ID was returned.");
+        let creation = draftCreationRef.current;
+        if (!creation) {
+          creation = (async () => {
+            const res = await fetch("/api/v1/listings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error(await readSaveError(res));
+            const data: unknown = await res.json().catch(() => null);
+            const createdId =
+              data && typeof data === "object" && "data" in data
+                ? ((data as { data?: { id?: string } }).data?.id ?? null)
+                : null;
+            if (!createdId) {
+              throw new Error("The draft was saved, but no listing ID was returned.");
+            }
+            return createdId;
+          })();
+          draftCreationRef.current = creation;
         }
-        activeDraftId = createdId;
-        draftIdRef.current = createdId;
-        setDraftId(createdId);
+
+        try {
+          activeDraftId = await creation;
+        } finally {
+          if (draftCreationRef.current === creation) {
+            draftCreationRef.current = null;
+          }
+        }
+        draftIdRef.current = activeDraftId;
+        setDraftId(activeDraftId);
         hydratedDraftRef.current = true;
       }
 
@@ -461,40 +478,11 @@ export function NewListingGetStarted({
     }
   };
 
-  // Create draft record in DB when user selects a category (e.g., House, Apartment)
-  const handleSelectCategory = async (catId: string) => {
+  // Keep category selection local. The explicit Next action creates the one
+  // persisted draft only after this required step is confirmed.
+  const handleSelectCategory = (catId: string) => {
     setSelectedCategory(catId);
-
-    const activeId = draftIdRef.current || draftId;
-    if (!activeId) {
-      try {
-        const payload = {
-          ...buildDraftPayload(2),
-          propertyType: catId,
-        };
-        const res = await fetch(`/api/v1/listings`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await readSaveError(res));
-        const data: unknown = await res.json().catch(() => null);
-        const createdId =
-          data && typeof data === "object" && "data" in data
-            ? ((data as { data?: { id?: string } }).data?.id ?? null)
-            : null;
-        if (!createdId) throw new Error("The draft was saved, but no listing ID was returned.");
-        draftIdRef.current = createdId;
-        setDraftId(createdId);
-        hydratedDraftRef.current = true;
-        updateUrlForStep(2, createdId);
-      } catch (err) {
-        setWizardError({
-          title: "Your changes weren't saved",
-          messages: [err instanceof Error ? err.message : "Please check your connection and try again."],
-        });
-      }
-    }
+    setWizardError(null);
   };
 
   // Final Draft Completion & Redirect to Host Listings
@@ -623,13 +611,9 @@ export function NewListingGetStarted({
     return () => controller.abort();
   }, [hostingType, initialAddressView, initialDraftId]);
 
-  // Every editable draft value is write-through autosaved. The queue preserves
-  // ordering and explicit navigation waits for the latest database write.
-  // Behavior:
-  // - If a `draftId` exists, debounce and PATCH the draft.
-  // - If no `draftId` exists but the form has been hydrated and the user has
-  //   interacted, create an initial draft (POST) so subsequent autosaves can
-  //   PATCH it. This ensures first/second-step interactions persist.
+  // Every editable value on an existing draft is write-through autosaved. The
+  // first POST is deliberately reserved for the explicit Next action above so
+  // abandoned category selections never create empty listings.
   useEffect(() => {
     if (!hydratedDraftRef.current || isSavingStep) return;
 
@@ -638,40 +622,14 @@ export function NewListingGetStarted({
 
     const timer = window.setTimeout(async () => {
       try {
-        const payload = buildDraftPayload(step);
         const activeId = draftIdRef.current || draftId;
         if (activeId) {
-          await queueDraftPatch(activeId, payload);
+          await queueDraftPatch(activeId, buildDraftPayload(step));
           return;
         }
 
-        // No draft yet: create one on first interaction with property category.
-        const createRequest = async () => {
-          if (draftIdRef.current) {
-            await queueDraftPatch(draftIdRef.current, payload);
-            return;
-          }
-          const res = await fetch(`/api/v1/listings`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error(await readSaveError(res));
-          const data: unknown = await res.json().catch(() => null);
-          const createdId = data && typeof data === "object" && "data" in data
-            ? ((data as { data?: { id?: string } }).data?.id ?? null)
-            : null;
-          if (!createdId) throw new Error("The draft was saved, but no listing ID was returned.");
-          draftIdRef.current = createdId;
-          setDraftId(createdId);
-          hydratedDraftRef.current = true;
-          updateUrlForStep(step, createdId);
-        };
-
-        // Serialize the create request through the save queue.
-        const queued = saveQueueRef.current.catch(() => undefined).then(createRequest);
-        saveQueueRef.current = queued;
-        await queued;
+        // No listing exists until the host confirms the category step.
+        return;
       } catch (err) {
         setWizardError({
           title: "Your changes weren't saved",
@@ -681,7 +639,7 @@ export function NewListingGetStarted({
     }, 800);
 
     return () => window.clearTimeout(timer);
-  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, selectedCategory, step, updateUrlForStep]);
+  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, selectedCategory, step]);
 
   const categories: PropertyCategory[] = [
     {

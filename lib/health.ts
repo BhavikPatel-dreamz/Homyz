@@ -1,13 +1,11 @@
-import { prisma } from "@/lib/db/prisma";
 import { pingRedis } from "@/lib/redis/client";
+import { checkDatabaseReadiness } from "@/services/health.service";
 
 export type ProbeStatus = "healthy" | "unavailable" | "disabled";
 
 export async function getReadiness() {
   const [database, redis] = await Promise.all([
-    prisma
-      .$queryRaw`SELECT 1`.then(() => "healthy" as const)
-      .catch(() => "unavailable" as const),
+    checkDatabaseReadiness(),
     pingRedis(),
   ]);
 

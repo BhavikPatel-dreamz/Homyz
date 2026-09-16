@@ -383,3 +383,12 @@ export function revivePublicListingDTO(l: PublicListingDTO): PublicListingDTO {
     updatedAt: new Date(l.updatedAt),
   };
 }
+
+export function reviveBookingDTO(b: BookingDTO): BookingDTO {
+  return {
+    ...b,
+    startDate: new Date(b.startDate),
+    endDate: new Date(b.endDate),
+    createdAt: new Date(b.createdAt),
+  };
+}

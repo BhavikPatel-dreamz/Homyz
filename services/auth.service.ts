@@ -148,6 +148,171 @@ export type UserWithAdminDetails = User & {
   } | null;
 };
 
+const authUserWithAdminRole = {
+  adminRole: {
+    select: {
+      name: true,
+      slug: true,
+      permissions: {
+        select: { permission: { select: { slug: true } } },
+      },
+    },
+  },
+} as const;
+
+async function findUserByPhoneForAuthentication(
+  possiblePhones: string[],
+  cleanDigits: string,
+): Promise<UserWithAdminDetails | null> {
+  return prisma.user.findFirst({
+    where: {
+      OR: [
+        { phone: { in: possiblePhones } },
+        ...(cleanDigits.length >= 7 ? [{ phone: { endsWith: cleanDigits.slice(-10) } }] : []),
+      ],
+    },
+    include: authUserWithAdminRole,
+  });
+}
+
+async function findOrCreatePhoneOtpUser(input: {
+  normalizedPhone: string;
+  possiblePhones: string[];
+  cleanDigits: string;
+}): Promise<UserWithAdminDetails | null> {
+  const existing = await findUserByPhoneForAuthentication(input.possiblePhones, input.cleanDigits);
+  if (existing) return existing;
+
+  try {
+    return await prisma.user.create({
+      data: {
+        phone: input.normalizedPhone,
+        phoneVerified: new Date(),
+        role: "USER",
+        name: `Guest (${input.cleanDigits.slice(-4) || "User"})`,
+        email: `user_${input.cleanDigits}@homyz.app`,
+      },
+      include: authUserWithAdminRole,
+    });
+  } catch {
+    // A concurrent OTP sign-in may have created the account first.
+    return prisma.user.findFirst({
+      where: { phone: input.normalizedPhone },
+      include: authUserWithAdminRole,
+    });
+  }
+}
+
+async function findOrCreateDemoSocialUser(providerName: string): Promise<UserWithAdminDetails | null> {
+  const email = normalizeEmail(`${providerName}.user@homyz.app`);
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    include: authUserWithAdminRole,
+  });
+  if (existing) return existing;
+
+  try {
+    return await prisma.user.create({
+      data: {
+        email,
+        name: `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`,
+        role: "USER",
+        emailVerified: new Date(),
+      },
+      include: authUserWithAdminRole,
+    });
+  } catch {
+    return prisma.user.findUnique({ where: { email }, include: authUserWithAdminRole });
+  }
+}
+
+async function linkOAuthAccount(input: {
+  email: string;
+  account: {
+    type: string;
+    provider: string;
+    providerAccountId: string;
+    access_token?: string | null;
+    refresh_token?: string | null;
+    expires_at?: number | null;
+    token_type?: string | null;
+    scope?: string | null;
+    id_token?: string | null;
+  };
+  image?: string | null;
+}): Promise<void> {
+  const existingUser = await prisma.user.findUnique({ where: { email: input.email } });
+  if (!existingUser) return;
+
+  const existingAccount = await prisma.account.findFirst({
+    where: {
+      provider: input.account.provider,
+      providerAccountId: input.account.providerAccountId,
+    },
+  });
+  if (!existingAccount) {
+    await prisma.account.create({
+      data: {
+        userId: existingUser.id,
+        type: input.account.type,
+        provider: input.account.provider,
+        providerAccountId: input.account.providerAccountId,
+        access_token: input.account.access_token,
+        refresh_token: input.account.refresh_token,
+        expires_at: input.account.expires_at,
+        token_type: input.account.token_type,
+        scope: input.account.scope,
+        id_token: input.account.id_token,
+      },
+    });
+  }
+
+  if (!existingUser.image && input.image) {
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { image: input.image, emailVerified: existingUser.emailVerified ?? new Date() },
+    });
+  }
+}
+
+async function getSessionClaims(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      status: true,
+      role: true,
+      image: true,
+      tokenVersion: true,
+      adminRole: { select: { slug: true } },
+    },
+  });
+}
+
+async function getLiveSessionUser(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      status: true,
+      role: true,
+      tokenVersion: true,
+      adminRole: { select: { slug: true } },
+    },
+  });
+}
+
+async function getDevelopmentAdmin() {
+  return prisma.user.findFirst({
+    where: { role: "ADMIN" },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      adminRole: { select: { slug: true } },
+    },
+  });
+}
+
 /**
  * Validate email + password. Returns the full user record or null.
  * Rejects suspended accounts with 401. Rate limiting applied by caller.
@@ -384,7 +549,7 @@ async function verifyOtp(
       where: { id: otp.id },
       data: { attempts: { increment: 1 } },
     });
-    throw AppError.badRequest("The verification code is incorrect. Please try again.");
+    throw AppError.badRequest("Invalid code: the verification code is incorrect. Please try again.");
   }
 
   await prisma.otpCode.update({
@@ -483,4 +648,10 @@ export const authService = {
   mobileLogin,
   refresh,
   logout,
+  findOrCreatePhoneOtpUser,
+  findOrCreateDemoSocialUser,
+  linkOAuthAccount,
+  getSessionClaims,
+  getLiveSessionUser,
+  getDevelopmentAdmin,
 };

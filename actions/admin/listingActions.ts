@@ -6,14 +6,15 @@ import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
 import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
-import { prisma } from "@/lib/db/prisma";
 import { HostingType, Role, ListingStatus } from "@/generated/prisma/enums";
 import { auditService } from "@/services/audit.service";
 import { listingService } from "@/services/listing.service";
-import { deleteCache, incrCounter } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { formatSarFromHalalas } from "@/lib/currency";
 import type { AuthUser } from "@/lib/auth/types";
+import { prisma } from "@/lib/db/prisma";
+import { userService } from "@/services/user.service";
+import { updateHostPublicProfileSchema } from "@/lib/validation/host-profile";
 
 function revalidateListingLifecycle(id: string, customSlug?: string | null) {
   revalidatePath("/admin/listings");
@@ -33,7 +34,7 @@ function assertAdminListingPermission(
 }
 
 async function invalidateListingPublicCache(id: string) {
-  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+  await invalidateListingCache(id);
 }
 
 /**
@@ -74,15 +75,13 @@ export async function adminUpdateListingDetailsAction(input: {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+    const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
     if (input.hostingType !== undefined && !Object.values(HostingType).includes(input.hostingType as HostingType)) {
       throw AppError.badRequest("Invalid hosting type.");
     }
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
+    const updated = await listingService.updateForAdmin(input.listingId, {
         ...(input.title !== undefined && { title: input.title.trim() }),
         ...(input.description !== undefined && { description: input.description.trim() }),
         ...(input.hostingType !== undefined && { hostingType: input.hostingType as HostingType }),
@@ -111,7 +110,6 @@ export async function adminUpdateListingDetailsAction(input: {
         ...(input.minNights !== undefined && { minNights: Number(input.minNights) }),
         ...(input.maxNights !== undefined && { maxNights: Number(input.maxNights) }),
         ...(input.blockedDates !== undefined && { blockedDates: input.blockedDates }),
-      },
     });
 
     await auditService.record({
@@ -145,21 +143,18 @@ export async function adminUpdateListingPricingAction(input: {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+    const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
 
     const effectiveWeekday = Math.max(0, Math.round(input.weekdayBasePrice ?? input.price));
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
+    const updated = await listingService.updateForAdmin(input.listingId, {
         price: effectiveWeekday,
         weekdayBasePrice: effectiveWeekday,
         ...(input.cleaningFee !== undefined && { cleaningFee: Math.max(0, Math.round(input.cleaningFee)) }),
         ...(input.securityDeposit !== undefined && { securityDeposit: Math.max(0, Math.round(input.securityDeposit)) }),
         ...(input.weekendPrice !== undefined && { weekendPrice: input.weekendPrice ? Math.max(0, Math.round(input.weekendPrice)) : null }),
         ...(input.extraGuestFee !== undefined && { extraGuestFee: Math.max(0, Math.round(input.extraGuestFee)) }),
-      },
     });
 
     await auditService.record({
@@ -188,15 +183,12 @@ export async function adminToggleDisableListingAction(input: {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_SUSPEND);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+    const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
+    const updated = await listingService.updateForAdmin(input.listingId, {
         isPaused: input.isPaused,
         published: input.isPaused ? false : listing.published,
-      },
     });
 
     await auditService.record({
@@ -225,14 +217,11 @@ export async function adminToggleFeatureListingAction(input: {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+    const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
+    const updated = await listingService.updateForAdmin(input.listingId, {
         isFeatured: input.isFeatured,
-      },
     });
 
     await auditService.record({
@@ -262,19 +251,16 @@ export async function adminToggleVisibilityAction(input: {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
 
-    const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+    const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
     if (input.published === true && listing.status !== ListingStatus.ACTIVE) {
       throw AppError.badRequest("Approve a submitted listing before making it public.");
     }
 
-    const updated = await prisma.listing.update({
-      where: { id: input.listingId },
-      data: {
+    const updated = await listingService.updateForAdmin(input.listingId, {
         ...(input.published !== undefined && { published: input.published }),
         ...(input.showExactLocation !== undefined && { showExactLocation: input.showExactLocation }),
         ...(input.published === true && { status: ListingStatus.ACTIVE, isPaused: false }),
-      },
     });
 
     await auditService.record({
@@ -348,17 +334,10 @@ export async function getAdminListingAuditHistoryAction(input: { listingId: stri
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_VIEW);
     const pageSize = Math.min(25, Math.max(5, Math.floor(input.pageSize ?? 10)));
     const page = Math.max(1, Math.floor(input.page ?? 1));
-    const where = { resourceType: "Listing", resourceId: input.listingId };
-    const [items, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        select: { id: true, action: true, description: true, actorEmail: true, createdAt: true },
-      }),
-      prisma.auditLog.count({ where }),
-    ]);
+    const { items, total } = await auditService.listForResource("Listing", input.listingId, {
+      page,
+      limit: pageSize,
+    });
     return {
       items: items.map((item) => ({ ...item, createdAt: item.createdAt.toISOString() })),
       page,
@@ -368,3 +347,43 @@ export async function getAdminListingAuditHistoryAction(input: { listingId: stri
     };
   });
 }
+
+/**
+ * 8. Admin Update Listing Host Public Profile
+ */
+export async function adminUpdateListingHostProfileAction(input: {
+  listingId: string;
+  profile: unknown;
+}) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_EDIT);
+
+    const listing = await prisma.listing.findUnique({
+      where: { id: input.listingId },
+      select: { id: true, title: true, hostId: true, customSlug: true },
+    });
+    if (!listing) throw AppError.notFound("Listing not found");
+
+    const validatedInput = updateHostPublicProfileSchema.parse(input.profile);
+    const updatedUser = await userService.updateHostPublicProfile(listing.hostId, validatedInput);
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email || "",
+      action: "ADMIN_UPDATE_HOST_PROFILE",
+      resourceType: "Listing",
+      resourceId: listing.id,
+      description: `Admin updated host profile for listing ${listing.title} (${listing.id})`,
+    });
+
+    revalidateListingLifecycle(listing.id, listing.customSlug);
+    revalidatePath(`/host/listings/${listing.id}`);
+    revalidatePath(`/admin/listings/${listing.id}`);
+    revalidatePath("/profile");
+    revalidatePath("/profile-management");
+
+    return updatedUser.publicProfile as Record<string, unknown>;
+  });
+}
+

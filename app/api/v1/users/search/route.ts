@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
-import { prisma } from "@/lib/db/prisma";
+import { userService } from "@/services/user.service";
 
 export async function GET(request: Request) {
   try {
@@ -12,28 +12,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim() || "";
 
-    // Search users by name or email
-    const users = await prisma.user.findMany({
-      where: {
-        AND: [
-          query
-            ? {
-                OR: [
-                  { name: { contains: query, mode: "insensitive" } },
-                  { email: { contains: query, mode: "insensitive" } },
-                ],
-              }
-            : {},
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-      },
-      take: 10,
-    });
+    const users = await userService.searchUsers(query);
 
     return NextResponse.json({ users });
   } catch (error: any) {

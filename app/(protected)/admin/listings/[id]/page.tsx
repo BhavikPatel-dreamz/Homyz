@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { requirePagePermission, requirePageRole } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { hasPermission } from "@/lib/permissions/permissions";
-import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient, type HostListingData } from "@/app/(protected)/host/listings/[id]/host-listing-editor-client";
 import { slugToSection } from "@/app/(protected)/host/listings/[id]/section-helpers";
+import { listingService } from "@/services/listing.service";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,72 +19,11 @@ export default async function AdminListingDetailPage({ params, searchParams }: P
   const listingId = resolvedParams.id;
   const initialSection = slugToSection((searchParams ? await searchParams : {}).section);
 
-  const listing = await prisma.listing.findUnique({
-    where: { id: listingId },
-    include: {
-      host: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
-          phone: true,
-          createdAt: true,
-          publicProfile: true,
-          hostRegistrations: {
-            orderBy: { updatedAt: "desc" },
-            take: 1,
-            select: {
-              status: true,
-              complianceStatus: true,
-              documents: {
-                select: { id: true, documentType: true, fileUrl: true, status: true, rejectionReason: true },
-                orderBy: { uploadedAt: "desc" },
-              },
-            },
-          },
-        },
-      },
-      _count: { select: { bookings: true } },
-      guidebookListings: {
-        include: {
-          guidebook: {
-            include: {
-              items: { orderBy: { sortOrder: "asc" } },
-              listings: { include: { listing: { select: { id: true, title: true, city: true, photos: true } } } },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!listing) {
+  const detail = await listingService.getAdminListingDetail(listingId);
+  if (!detail) {
     notFound();
   }
-
-  const [auditLogs, auditLogTotal] = await Promise.all([prisma.auditLog.findMany({
-    where: { resourceType: "Listing", resourceId: listing.id },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    select: { id: true, action: true, description: true, actorEmail: true, createdAt: true },
-  }), prisma.auditLog.count({ where: { resourceType: "Listing", resourceId: listing.id } })]);
-
-  let reviewer = null;
-  if (listing.reviewerId) {
-    reviewer = await prisma.user.findUnique({
-      where: { id: listing.reviewerId },
-      select: { id: true, name: true, email: true },
-    });
-  }
-
-  let approvedBy = null;
-  if (listing.approvedById) {
-    approvedBy = await prisma.user.findUnique({
-      where: { id: listing.approvedById },
-      select: { id: true, name: true, email: true },
-    });
-  }
+  const { listing, auditLogs, auditLogTotal, reviewer, approvedBy } = detail;
 
   const serializedListing = {
     id: listing.id,

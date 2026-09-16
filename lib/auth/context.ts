@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 
 import type { AuthUser } from "./types";
 import { verifyAccessToken } from "./tokens";
+import { authService } from "@/services/auth.service";
 
 // Resolves the caller identity for ROUTE HANDLERS (the unified web + mobile
 // entry point). Mobile sends `Authorization: Bearer <access token>` (our own
@@ -70,17 +71,7 @@ export async function getAuthContext(
   // Development mode fallback: auto-resolve active Admin user if session token is missing/expired in dev
   if (process.env.NODE_ENV !== "production") {
     try {
-      const { prisma } = await import("@/lib/db/prisma");
-      const devAdmin = await prisma.user.findFirst({
-        where: { role: "ADMIN" },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          status: true,
-          adminRole: { select: { slug: true } },
-        },
-      });
+      const devAdmin = await authService.getDevelopmentAdmin();
 
       if (devAdmin) {
         return {

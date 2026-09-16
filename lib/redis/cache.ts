@@ -15,6 +15,8 @@ function logOpFailure(op: string, err: unknown): void {
   console.warn(`[redis] ${op} failed (${reason}) — using database`);
 }
 
+const CACHE_MISS = Symbol("CACHE_MISS");
+
 /**
  * Ceiling on any single Redis command so a hung/slow server can never stall a
  * request. The losing command settles in the background and is ignored. This
@@ -30,18 +32,23 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
-/** Get + JSON.parse a value. Returns null on miss, disabled, or any error. */
-export async function getCache<T>(key: string): Promise<T | null> {
+async function readCache<T>(key: string): Promise<T | typeof CACHE_MISS> {
   try {
     const client = await getRedisClient();
-    if (!client || !isRedisAvailable()) return null;
+    if (!client || !isRedisAvailable()) return CACHE_MISS;
     const raw = await withTimeout(client.get(key), redisConfig.connectTimeout);
-    if (raw == null) return null;
+    if (raw == null) return CACHE_MISS;
     return JSON.parse(raw) as T;
   } catch (err) {
     logOpFailure("get", err);
-    return null;
+    return CACHE_MISS;
   }
+}
+
+/** Get + JSON.parse a value. Returns null on miss, disabled, or any error. */
+export async function getCache<T>(key: string): Promise<T | null> {
+  const value = await readCache<T>(key);
+  return value === CACHE_MISS ? null : value;
 }
 
 /** JSON.stringify + set with a TTL (seconds). No-op on disabled/any error. */
@@ -154,8 +161,8 @@ export async function getOrSetCache<T>(
   fetchFn: () => Promise<T>,
   opts?: { ttl?: number; revive?: (raw: T) => T },
 ): Promise<T> {
-  const cached = await getCache<T>(key);
-  if (cached !== null) {
+  const cached = await readCache<T>(key);
+  if (cached !== CACHE_MISS) {
     return opts?.revive ? opts.revive(cached) : cached;
   }
 

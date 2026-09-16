@@ -27,6 +27,8 @@ import {
   AboutHostSkeleton,
   CoHostSkeleton,
 } from "./YourSpaceSkeletons";
+import { AdminAboutHostView } from "@/app/(protected)/admin/listings/[id]/components/AdminAboutHostView";
+import { HostAboutHostView } from "./HostAboutHostView";
 
 type CoHost = {
   id: string;
@@ -43,6 +45,8 @@ export type HostProfile = {
   image: string | null;
   createdAt: Date | string;
   publicProfile: Record<string, unknown> | null;
+  email?: string | null;
+  rating?: number | null;
 };
 interface Props {
   activeSection: string;
@@ -92,6 +96,8 @@ interface Props {
     profile: Record<string, unknown>,
     hostUpdate?: Pick<HostProfile, "image">,
   ) => void;
+  presentation?: "host" | "admin";
+  canEdit?: boolean;
 }
 const LOCATION_FEATURES = [
   ["near_public_transport", "Near public transport"],
@@ -155,9 +161,20 @@ function initials(name: string | null) {
     .toUpperCase();
 }
 export function HostAndLocationViews(props: Props) {
-
   if (props.activeSection === "location") return <LocationView {...props} />;
-  if (props.activeSection === "about-host") return <AboutHostView {...props} />;
+  if (props.activeSection === "about-host") {
+    if (props.presentation === "admin") {
+      return (
+        <AdminAboutHostView
+          listingId={props.listingId}
+          hostProfile={props.hostProfile}
+          onHostProfileSaved={props.onHostProfileSaved}
+          canEdit={props.canEdit ?? true}
+        />
+      );
+    }
+    return <AboutHostView {...props} />;
+  }
   if (props.activeSection === "co-host") return <CoHostView {...props} />;
   return null;
 }
@@ -581,7 +598,7 @@ function LocationView(props: Props) {
           {/* 5. Location Features */}
           <Card
             title="Location features"
-            summary="Add details"
+            summary={locationFeatures.length > 0 ? `${locationFeatures.length} selected` : "Add details"}
             open={open === "features"}
             onToggle={() => setOpen(open === "features" ? "" : "features")}
           >
@@ -807,260 +824,13 @@ function getLanguageIds(value: unknown): string[] {
 }
 
 function AboutHostView(props: Props) {
-  const { hostProfile, onHostProfileSaved } = props;
-  const router = useRouter();
-  const { data: session, update: updateSession } = useSession();
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const [publicProfile, setPublicProfile] = useState<Record<string, unknown>>(
-    hostProfile.publicProfile ?? {},
-  );
-  const [isStampEditorOpen, setIsStampEditorOpen] = useState(false);
-  const raw = publicProfile;
-  const [bio, setBio] = useState(String(raw.bio ?? ""));
-  const [homeUnique, setHomeUnique] = useState(() => getPrompt(raw, "homeUnique"));
-  const [guestsShouldKnow, setGuestsShouldKnow] = useState(() => getPrompt(raw, "guestsShouldKnow"));
-  const [education, setEducation] = useState(() => getPrompt(raw, "education"));
-  const [perfectGuest, setPerfectGuest] = useState(() => getPrompt(raw, "perfectGuest"));
-  const [hobbies, setHobbies] = useState<string[]>(() => getTagList(raw.prompts && typeof raw.prompts === "object" ? (raw.prompts as Record<string, unknown>).hobbies : []));
-  const [languages, setLanguages] = useState<string[]>(() => getLanguageIds(raw.languages));
-  const [interests, setInterests] = useState<string[]>(() => getStringList(raw.interests));
-  const [stampsVisible, setStampsVisible] = useState(raw.stampsVisible !== false);
-  const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
-  const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [showAllPrompts, setShowAllPrompts] = useState(false);
-
-  useEffect(() => {
-    const next = hostProfile.publicProfile ?? {};
-    setPublicProfile(next);
-    setBio(String(next.bio ?? ""));
-    setHomeUnique(getPrompt(next, "homeUnique"));
-    setGuestsShouldKnow(getPrompt(next, "guestsShouldKnow"));
-    setEducation(getPrompt(next, "education"));
-    setPerfectGuest(getPrompt(next, "perfectGuest"));
-    setHobbies(getTagList(next.prompts && typeof next.prompts === "object" ? (next.prompts as Record<string, unknown>).hobbies : []));
-    setLanguages(getLanguageIds(next.languages));
-    setInterests(getStringList(next.interests));
-    setStampsVisible(next.stampsVisible !== false);
-    setAvatarUrl(hostProfile.image);
-  }, [hostProfile.image, hostProfile.publicProfile]);
-
-  const selectedStamps = Array.isArray(raw.selectedStamps)
-    ? raw.selectedStamps.filter((v): v is string => typeof v === "string")
-    : [];
-  const visibleSelectedStamps = selectedStamps.slice(0, 4);
-
-  const save = async () => {
-    setSaving(true);
-    setMessage(null);
-    const result = await updateHostPublicProfileAction({
-      bio,
-      prompts: { homeUnique, guestsShouldKnow, hobbies, education, perfectGuest },
-      languages,
-      interests,
-      stampsVisible,
-      selectedStamps,
-    });
-    setSaving(false);
-    if (result.ok) {
-      onHostProfileSaved((result.data.publicProfile as Record<string, unknown>) ?? {});
-      setMessage("Host profile saved and shared across your listings.");
-      router.refresh();
-    } else {
-      setMessage(result.error);
-    }
-  };
-
-  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploadingImage(true);
-    setMessage(null);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/v1/upload/listing-photo", { method: "POST", body: formData });
-      const data = await response.json();
-      if (!response.ok || typeof data.url !== "string") throw new Error(data.error || "Could not upload the profile photo.");
-      const result = await updateProfileAction({ image: data.url });
-      if (!result.ok) throw new Error(result.error || "Could not save the profile photo.");
-      setAvatarUrl(data.url);
-      onHostProfileSaved(raw, { image: data.url });
-      if (session?.user) {
-        await updateSession({ user: { ...session.user, image: data.url } });
-      }
-      setMessage("Profile photo updated.");
-      router.refresh();
-    } catch (error: unknown) {
-      setMessage(error instanceof Error ? error.message : "Could not update the profile photo.");
-    } finally {
-      setUploadingImage(false);
-      event.target.value = "";
-    }
-  };
-
-  const profilePrompts = [
-    ["Where I’ve always wanted to go", hobbies[0] || ""],
-    ["My work", education],
-    ["My favorite song in high school", ""],
-    ["What makes my home unique", homeUnique],
-    ["Pets", ""],
-    ["Decade I was born", ""],
-    ["Where I went to school", education],
-    ["I spend too much time", hobbies[1] || ""],
-    ["My most useless skill", ""],
-    ["My fun fact", ""],
-    ["I’m obsessed with", hobbies[2] || ""],
-    ["Language I speak", languages[0] ? getLanguageNameById(languages[0]) : ""],
-    ["My biography title would be", ""],
-    ["Where I live", ""],
-    ["For guests I always", guestsShouldKnow],
-    ["What’s for breakfast", perfectGuest],
-  ];
-  const displayedInterests = interests.length > 0
-    ? interests
-    : ["Architecture", "Cooking", "Food scenes", "History", "Live sports", "Museums", "Outdoors", "Shopping", "Video games"];
-
   return (
-    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full max-w-[760px] space-y-6 pb-12 sm:space-y-7">
-      <header className="flex items-center gap-3">
-        <Link href="/host/listings" aria-label="Back to listings" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-lg leading-none text-[#1F1F1F] transition-colors hover:bg-[#F3F4F5]">‹</Link>
-        <h1 className="hidden text-2xl font-semibold tracking-tight text-[#1F1F1F] sm:block sm:text-[25px]">About the host</h1>
-      </header>
-
-      {props.isLoading ? (
-        <AboutHostSkeleton />
-      ) : (
-        <>
-          <section className="pt-1 sm:pt-0">
-            <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-5">
-              <div className="relative mx-auto h-44 w-44 shrink-0 overflow-visible sm:mx-0 sm:h-[172px] sm:w-[235px]">
-                <div className="h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-xl">
-                  {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
-                </div>
-                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
-                  <Image src="/images/icons/writing-pen.svg" alt="" width={15} height={15} className="size-3.5" />{uploadingImage ? "Uploading…" : "Edit"}
-                </button>
-                <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
-              </div>
-              <div className="max-w-sm space-y-2 text-sm leading-5 text-[#727272] sm:pt-0.5">
-                <h2 className="text-xl font-semibold text-[#1F1F1F] sm:hidden">About the host</h2>
-                <p>Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium text-[#1F1F1F] underline underline-offset-2">Learn more</Link></p>
-              </div>
-            </div>
-          </section>
-
-          <section className="grid gap-x-16 sm:grid-cols-2">
-            {profilePrompts.map(([label, value], index) => (
-              <div key={`${label}-${index}`} className={`flex min-h-14 items-center gap-3 border-b border-[#DDDDDE] py-2.5 ${index > 7 && !showAllPrompts ? "hidden sm:flex" : ""}`}>
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]">
-                  <Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" />
-                </span>
-                <p className="min-w-0 truncate text-sm font-normal text-[#727272]">{label}{value ? <><span className="text-[#1F1F1F]">: </span><span className="font-medium text-[#1F1F1F]">{value}</span></> : ""}</p>
-              </div>
-            ))}
-            {!showAllPrompts && <button type="button" onClick={() => setShowAllPrompts(true)} className="mt-3 w-fit text-sm font-medium underline underline-offset-2 sm:hidden">See more</button>}
-          </section>
-
-          <section className="rounded-xl bg-[#F3F4F5] p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
-            <label htmlFor="host-bio" className="block text-sm font-medium text-[#1F1F1F]">About me</label>
-            <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Type something about you" className="mt-3 min-h-28 w-full resize-y rounded-lg border border-[#DDDDDE] bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-[#727272]" />
-          </section>
-
-          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#DDDDDE] pb-3">
-              <div>
-                <h2 className="text-base font-medium text-[#1F1F1F]">Where I’ve been</h2>
-                <p className="mt-1 text-sm text-[#727272]">Pick the stamps you want other people to see on your profile.</p>
-              </div>
-              <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} tone="rose" />
-            </div>
-            <div className="flex min-h-52 flex-col gap-4 py-5">
-              <div className="flex min-h-36 items-center gap-3">
-                {selectedStamps.length > 0 ? (
-                    <div className="flex items-center gap-2 sm:gap-4">
-                      {visibleSelectedStamps.map((stampId) => {
-                        const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
-                        if (!stamp) return null;
-                        return (
-                          <div key={stamp.id} className="overflow-hidden rounded-xl bg-white">
-                            <TravelStampGraphic stamp={stamp} size="md" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                ) : (
-                  <p className="text-sm text-[#727272]">Choose stamps to show the places and experiences you love.</p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsStampEditorOpen(true)}
-                className="inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:w-fit"
-              >
-                Edit travel stamp
-              </button>
-            </div>
-          </section>
-
-          {isStampEditorOpen && (
-            <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-              <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
-                <div className="mb-4 flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
-                    <p className="text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsStampEditorOpen(false)}
-                    className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
-                  >
-                    Close
-                  </button>
-                </div>
-                <WhereIveBeenSelector
-                  initialSelectedStamps={selectedStamps}
-                  initialStampsVisible={stampsVisible}
-                  currentPublicProfile={publicProfile}
-                  maxStamps={10}
-                  isOwner={true}
-                  onSaved={(updatedProfile) => {
-                    const nextProfile = { ...publicProfile, ...updatedProfile };
-                    setPublicProfile(nextProfile);
-                    setStampsVisible(updatedProfile.stampsVisible ?? nextProfile.stampsVisible ?? true);
-                    onHostProfileSaved(nextProfile as Record<string, unknown>);
-                    setIsStampEditorOpen(false);
-                  }}
-                />
-              </div>
-            </ModalOverlay>
-          )}
-
-          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
-            <h2 className="border-b border-[#DDDDDE] pb-3 text-base font-medium text-[#1F1F1F]">My interests</h2>
-            <div className="grid pt-3 sm:grid-cols-2 sm:gap-x-12">
-              {displayedInterests.map((interest) => {
-                const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0);
-                return (
-                  <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className="flex min-h-12 items-center gap-3 border-b border-[#DDDDDE] py-2 text-left text-sm font-normal text-[#1F1F1F]">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]"><Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" /></span>
-                    {interest}
-                  </button>
-                );
-              })}
-            </div>
-            <button type="button" onClick={() => setInterests(REFERENCE_INTERESTS.slice(0, 9))} className="mt-5 inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#F7D37D] sm:w-fit">Edit interests</button>
-          </section>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
-            <button type="submit" disabled={saving} className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button>
-          </div>
-        </>
-      )}
-    </form>
+    <HostAboutHostView
+      listingId={props.listingId}
+      hostProfile={props.hostProfile}
+      onHostProfileSaved={props.onHostProfileSaved}
+      isLoading={props.isLoading}
+    />
   );
 }
 function CoHostView(props: Props) {

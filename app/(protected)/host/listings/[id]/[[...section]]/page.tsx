@@ -1,10 +1,10 @@
 import { notFound, forbidden } from "next/navigation";
 import { requirePageRole } from "@/lib/permissions/page-guards";
-import { prisma } from "@/lib/db/prisma";
-import { BookingStatus, Role } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
 import { guidebookService } from "@/services/guidebook.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
+import { listingService } from "@/services/listing.service";
 import { slugToSection } from "../section-helpers";
 
 interface PageProps {
@@ -18,20 +18,7 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const listingId = resolvedParams.id;
 
-  const listing = await prisma.listing.findUnique({
-    where: { id: listingId },
-    include: {
-      host: { select: { id: true, name: true, email: true, image: true, createdAt: true, publicProfile: true } },
-      coHosts: {
-        orderBy: { invitedAt: "desc" },
-        include: { user: { select: { id: true, name: true, image: true } } },
-      },
-      bookings: {
-        where: { status: BookingStatus.CONFIRMED },
-        select: { id: true },
-      },
-    },
-  });
+  const listing = await listingService.getEditorWorkspaceListing(listingId);
 
   if (!listing || listing.deletedAt) {
     notFound();

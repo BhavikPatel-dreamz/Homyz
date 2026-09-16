@@ -552,7 +552,29 @@ export function ListingStatusView({
         </div>
       )}
 
-      {/* 4. STATE: READY_TO_SUBMIT (All Fields Complete, Awaiting Host Submission) */}
+      {/* 4. STATE: APPROVED (ready for the host to publish) */}
+      {displayState === "APPROVED" && !justSubmitted && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <h2 className="font-semibold text-emerald-950 text-base">
+                {isSaudi ? "Ready to Publish" : "Listing Approved"}
+              </h2>
+            </div>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
+              {isSaudi ? "Ready" : "Approved"}
+            </span>
+          </div>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            {isSaudi
+              ? "No admin approval is required for Saudi listings. Your listing is complete and ready to publish."
+              : "Your listing has been approved. Select Listed below and save to publish it to guests."}
+          </p>
+        </div>
+      )}
+
+      {/* 5. STATE: READY_TO_SUBMIT (All Fields Complete, Awaiting Host Submission) */}
       {/* {displayState === "READY_TO_SUBMIT" && !justSubmitted && (
         <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
@@ -582,7 +604,7 @@ export function ListingStatusView({
         </div>
       )} */}
 
-      {/* 5. STATE: PUBLISHED (Live on Marketplace) */}
+      {/* 6. STATE: PUBLISHED (Live on Marketplace) */}
       {displayState === "PUBLISHED" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">

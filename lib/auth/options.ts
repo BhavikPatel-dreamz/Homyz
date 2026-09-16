@@ -63,60 +63,11 @@ function buildProviders(): NextAuthOptions["providers"] {
             return null;
           }
 
-          let user = await prisma.user.findFirst({
-            where: {
-              OR: [
-                { phone: { in: possiblePhones } },
-                ...(cleanDigits.length >= 7 ? [{ phone: { endsWith: cleanDigits.slice(-10) } }] : []),
-              ],
-            },
-            include: {
-              adminRole: {
-                select: {
-                  name: true,
-                  slug: true,
-                  permissions: { select: { permission: { select: { slug: true } } } },
-                },
-              },
-            },
+          const user = await authService.findOrCreatePhoneOtpUser({
+            normalizedPhone,
+            possiblePhones,
+            cleanDigits,
           });
-
-          if (!user) {
-            const canonicalEmail = `user_${cleanDigits}@homyz.app`;
-            try {
-              user = await prisma.user.create({
-                data: {
-                  phone: normalizedPhone,
-                  phoneVerified: new Date(),
-                  role: "USER",
-                  name: `Guest (${cleanDigits.slice(-4) || "User"})`,
-                  email: canonicalEmail,
-                },
-                include: {
-                  adminRole: {
-                    select: {
-                      name: true,
-                      slug: true,
-                      permissions: { select: { permission: { select: { slug: true } } } },
-                    },
-                  },
-                },
-              });
-            } catch (err: any) {
-              user = await prisma.user.findFirst({
-                where: { phone: normalizedPhone },
-                include: {
-                  adminRole: {
-                    select: {
-                      name: true,
-                      slug: true,
-                      permissions: { select: { permission: { select: { slug: true } } } },
-                    },
-                  },
-                },
-              });
-            }
-          }
 
           if (!user) return null;
 
@@ -142,54 +93,7 @@ function buildProviders(): NextAuthOptions["providers"] {
         // 2. Social Provider Fallback Sign-In (Demo/Development Mode Only)
         if (credentials?.provider && (process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SOCIAL === "true")) {
           const providerName = credentials.provider.toLowerCase();
-          const demoEmail = normalizeEmail(`${providerName}.user@homyz.app`);
-          let user = await prisma.user.findUnique({
-            where: { email: demoEmail },
-            include: {
-              adminRole: {
-                select: {
-                  name: true,
-                  slug: true,
-                  permissions: { select: { permission: { select: { slug: true } } } },
-                },
-              },
-            },
-          });
-
-          if (!user) {
-            try {
-              user = await prisma.user.create({
-                data: {
-                  email: demoEmail,
-                  name: `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`,
-                  role: "USER",
-                  emailVerified: new Date(),
-                },
-                include: {
-                  adminRole: {
-                    select: {
-                      name: true,
-                      slug: true,
-                      permissions: { select: { permission: { select: { slug: true } } } },
-                    },
-                  },
-                },
-              });
-            } catch {
-              user = await prisma.user.findUnique({
-                where: { email: demoEmail },
-                include: {
-                  adminRole: {
-                    select: {
-                      name: true,
-                      slug: true,
-                      permissions: { select: { permission: { select: { slug: true } } } },
-                    },
-                  },
-                },
-              });
-            }
-          }
+          const user = await authService.findOrCreateDemoSocialUser(providerName);
 
           if (!user) return null;
 
@@ -335,47 +239,11 @@ export const authOptions: NextAuthOptions = {
       if (account && account.provider !== "credentials" && profile?.email) {
         const normalizedEmail = normalizeEmail(profile.email);
         try {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: normalizedEmail },
+          await authService.linkOAuthAccount({
+            email: normalizedEmail,
+            account,
+            image: (user as { image?: string | null })?.image ?? null,
           });
-
-          if (existingUser) {
-            // Link the OAuth account to the existing user if not already linked
-            const existingAccount = await prisma.account.findFirst({
-              where: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            });
-
-            if (!existingAccount) {
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  refresh_token: account.refresh_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                },
-              });
-            }
-
-            // Update user profile with Google avatar/name if not set
-            if (!existingUser.image && (user as { image?: string })?.image) {
-              await prisma.user.update({
-                where: { id: existingUser.id },
-                data: {
-                  image: (user as { image?: string }).image,
-                  emailVerified: existingUser.emailVerified ?? new Date(),
-                },
-              });
-            }
-          }
         } catch (err) {
           console.error("OAuth signIn linking error:", err);
           // Don't block sign-in on linking errors
@@ -402,16 +270,7 @@ export const authOptions: NextAuthOptions = {
       // Sync status, tokenVersion, and effective permissions from DB so changes take effect immediately
       if (token.id) {
         try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: {
-              status: true,
-              role: true,
-              image: true,
-              tokenVersion: true,
-              adminRole: { select: { slug: true } },
-            },
-          });
+          const dbUser = await authService.getSessionClaims(token.id as string);
           if (dbUser) {
             if (dbUser.image) {
               (token as { picture?: string | null }).picture = dbUser.image;

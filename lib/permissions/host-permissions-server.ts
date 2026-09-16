@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import { UserStatus } from "@/generated/prisma/enums";
+import { hostPermissionService } from "@/services/host-permission.service";
 import {
   ALL_HOST_PERMISSIONS,
   type EffectiveState,
@@ -16,27 +16,11 @@ import {
 export async function getEffectiveHostPermissions(
   hostId: string,
 ): Promise<HostPermissionsResolution> {
-  const host = await prisma.user.findUnique({
-    where: { id: hostId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-    },
-  });
-
-  if (!host) {
+  const context = await hostPermissionService.getPermissionContext(hostId);
+  if (!context) {
     throw AppError.notFound(`Host account not found: ${hostId}`);
   }
-
-  // Fetch overrides from database
-  const overrides = prisma.hostPermissionOverride
-    ? await prisma.hostPermissionOverride.findMany({
-        where: { hostId },
-      })
-    : [];
+  const { host, overrides } = context;
 
   const overrideMap = new Map<string, "ALLOW" | "DENY">();
   for (const o of overrides) {

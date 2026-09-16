@@ -76,6 +76,8 @@ export function RealMap({
 
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
   const reverseDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const reverseCacheRef = useRef<Map<string, LocationDetails | null>>(new Map());
+  const reverseRequestIdRef = useRef(0);
 
   // Synchronize internal coords when parent lat/lng props change from outside (e.g. autocomplete selection)
   useEffect(() => {
@@ -95,6 +97,7 @@ export function RealMap({
   const handlePositionChange = useCallback(
     (newLat: number, newLng: number) => {
       setCoords({ lat: newLat, lng: newLng });
+      const requestId = ++reverseRequestIdRef.current;
 
       if (reverseDebounceRef.current) {
         clearTimeout(reverseDebounceRef.current);
@@ -102,6 +105,20 @@ export function RealMap({
 
       setIsLoadingGeocode(true);
       reverseDebounceRef.current = setTimeout(async () => {
+        const cacheKey = `${newLat.toFixed(5)},${newLng.toFixed(5)}`;
+        const applyLocationChange = (details?: LocationDetails) => {
+          if (requestId !== reverseRequestIdRef.current) return;
+
+          isInternalUpdateRef.current = true;
+          onLocationChange?.(newLat, newLng, details);
+        };
+
+        if (reverseCacheRef.current.has(cacheKey)) {
+          applyLocationChange(reverseCacheRef.current.get(cacheKey) ?? undefined);
+          if (requestId === reverseRequestIdRef.current) setIsLoadingGeocode(false);
+          return;
+        }
+
         try {
           const res = await reverseGeocodeLocation(newLat, newLng);
           if (res) {
@@ -116,21 +133,16 @@ export function RealMap({
               countryCode: res.countryCode,
               formattedAddress: res.formattedAddress,
             };
-            isInternalUpdateRef.current = true;
-            if (onLocationChange) {
-              onLocationChange(newLat, newLng, details);
-            }
-          } else if (onLocationChange) {
-            isInternalUpdateRef.current = true;
-            onLocationChange(newLat, newLng);
+            reverseCacheRef.current.set(cacheKey, details);
+            applyLocationChange(details);
+          } else {
+            reverseCacheRef.current.set(cacheKey, null);
+            applyLocationChange();
           }
         } catch {
-          if (onLocationChange) {
-            isInternalUpdateRef.current = true;
-            onLocationChange(newLat, newLng);
-          }
+          applyLocationChange();
         } finally {
-          setIsLoadingGeocode(false);
+          if (requestId === reverseRequestIdRef.current) setIsLoadingGeocode(false);
         }
       }, 350);
     },

@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 
 import { updateProfileAction } from "@/actions/user/updateProfile";
+import { toast } from "../ui/toast";
 
-import { Alert, buttonClass, inputClass, labelClass } from "../ui";
+import { buttonClass, inputClass, labelClass } from "../ui";
 
 export function ProfileForm({
   initial,
@@ -13,15 +14,10 @@ export function ProfileForm({
   initial: { name: string | null; phone: string | null; image: string | null };
 }) {
   const router = useRouter();
-  const [msg, setMsg] = useState<{
-    tone: "success" | "error";
-    text: string;
-  } | null>(null);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setMsg(null);
     const fd = new FormData(e.currentTarget);
     // Only send fields the user actually filled in.
     const input: Record<string, string> = {};
@@ -33,17 +29,16 @@ export function ProfileForm({
     startTransition(async () => {
       const res = await updateProfileAction(input);
       if (!res.ok) {
-        setMsg({ tone: "error", text: res.error });
+        toast.error(res.error || "Failed to update profile.");
         return;
       }
-      setMsg({ tone: "success", text: "Profile updated." });
+      toast.success("Profile updated.");
       router.refresh();
     });
   }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      {msg ? <Alert tone={msg.tone}>{msg.text}</Alert> : null}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className={labelClass}>
           Name
