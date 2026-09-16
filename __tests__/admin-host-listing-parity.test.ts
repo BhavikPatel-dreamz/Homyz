@@ -255,6 +255,8 @@ assert(
 assert(
   adminReviewCode.includes('disabled={saving !== null || listing.published || missingRequirements.length > 0}'),
   "Publish button must be enabled when !listing.published and missingRequirements is 0"
+);
+assert(
   adminReviewCode.includes('disabled={saving !== null || missingRequirements.length > 0 || (listing.status !== "PENDING_REVIEW" && listing.status !== "DRAFT") || listing.published}'),
   "Approve button must be enabled for complete listings in PENDING_REVIEW or DRAFT when unpublished"
 );
