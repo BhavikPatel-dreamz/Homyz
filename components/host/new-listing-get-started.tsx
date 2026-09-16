@@ -921,6 +921,7 @@ export function NewListingGetStarted({
           setShowSpecificLocation={setShowSpecificLocation}
           coords={coords}
           onLocationChange={handleLocationChange}
+          showMapPreview={true}
           onBack={() => goToStep(4)}
           onNext={() => {
             const missing: string[] = [];

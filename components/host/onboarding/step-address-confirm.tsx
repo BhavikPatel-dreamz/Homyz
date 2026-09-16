@@ -57,7 +57,7 @@ export function StepAddressConfirm({
   onBack,
   onNext,
   isLoading = false,
-  showMapPreview = false,
+  showMapPreview = true,
 }: StepAddressConfirmProps) {
 
   const router = useRouter();
@@ -188,6 +188,9 @@ export function StepAddressConfirm({
                   <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
                     Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
                   </p>
+                  <button type="button" className="underline text-[#1F1F1F] text-sm font-medium mt-1 inline-block hover:opacity-80">
+                    Learn more
+                  </button>
                 </div>
 
                 {/* Real Interactive Leaflet Map Preview */}

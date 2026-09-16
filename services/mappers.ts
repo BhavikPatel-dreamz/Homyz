@@ -295,6 +295,7 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     discounts: l.discounts,
     createdAt: l.createdAt,
     updatedAt: l.updatedAt,
+    distanceKm: (l as any).distanceKm ?? null,
   };
 }
 export type PublicListingDTO = ReturnType<typeof toPublicListingDTO>;

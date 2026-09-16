@@ -29,11 +29,18 @@ interface PublicListingDetailClientProps {
     itemsCount: number;
     host?: { id: string; name: string | null; image: string | null };
   }>;
+  /** Pre-fill the booking widget with dates from the search page URL */
+  searchCheckIn?: string;
+  searchCheckOut?: string;
+  searchGuests?: number;
 }
 
 export function PublicListingDetailClient({
   listing,
   guidebooks = [],
+  searchCheckIn,
+  searchCheckOut,
+  searchGuests,
 }: PublicListingDetailClientProps) {
   const router = useRouter();
 
@@ -43,10 +50,10 @@ export function PublicListingDetailClient({
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
 
-  // Booking Widget State
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guestsCount, setGuestsCount] = useState(1);
+  // Booking Widget State — pre-filled from search URL params
+  const [checkIn, setCheckIn] = useState(searchCheckIn ?? "");
+  const [checkOut, setCheckOut] = useState(searchCheckOut ?? "");
+  const [guestsCount, setGuestsCount] = useState(searchGuests ?? 1);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);

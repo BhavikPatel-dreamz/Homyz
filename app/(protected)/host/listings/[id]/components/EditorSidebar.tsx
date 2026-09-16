@@ -3,6 +3,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap } from "@/components/ui/real-map";
 import { AMENITY_ICON_SOURCES, getAmenityMeta } from "@/lib/constants/amenities";
@@ -157,6 +158,7 @@ interface EditorSidebarProps {
   isLoading?: boolean;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
+  routeBase?: string;
 }
 
 const ADMIN_EDITOR_SECTIONS = [
@@ -166,21 +168,111 @@ const ADMIN_EDITOR_SECTIONS = [
   { group: "Preferences", items: [["listing-status", "Listing status"], ["language", "Languages"], ["guest-requirements", "Guest requirements"], ["local-laws", "Local laws"], ["regulations", "Regulations"], ["taxes", "Taxes"], ["homyz-org-stays", "Homyz.org stays"], ["custom-link", "Custom listing link"], ["remove-listing", "Remove listing"]] },
 ] as const;
 
-function AdminEditorSidebar({ activeSection, setActiveSection, listing }: Pick<EditorSidebarProps, "activeSection" | "setActiveSection" | "listing">) {
+function AdminEditorSidebar({
+  activeSection,
+  setActiveSection,
+  listing,
+  routeBase = "/admin/listings",
+}: Pick<EditorSidebarProps, "activeSection" | "setActiveSection" | "listing" | "routeBase">) {
+  const statusLabel = listing.published
+    ? "Published"
+    : listing.status === "PENDING_APPROVAL"
+    ? "Pending Approval"
+    : listing.status === "REJECTED"
+    ? "Action Needed"
+    : "Draft";
+
+  const statusBg = listing.published
+    ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
+    : listing.status === "PENDING_APPROVAL"
+    ? "bg-amber-500/10 text-amber-700 border-amber-200"
+    : listing.status === "REJECTED"
+    ? "bg-rose-500/10 text-rose-700 border-rose-200"
+    : "bg-zinc-500/10 text-zinc-600 border-zinc-200";
+
   return (
-    <aside className="admin-editor-sidebar rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xs lg:sticky lg:top-6">
-      <div className="border-b border-[var(--border-subtle)] px-3 pb-3 pt-2">
-        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Listing navigation</p>
-        <p className="mt-1 truncate text-sm font-bold text-muted-foreground">{listing.title || "Untitled listing"}</p>
+    <aside className="admin-editor-sidebar rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] flex flex-col">
+      {/* Header section */}
+      <div className="border-b border-[var(--border-subtle)] pb-3 pt-1 px-1 space-y-2.5 shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            href={routeBase || "/admin/listings"}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs"
+          >
+            <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back</span>
+          </Link>
+
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${statusBg}`}>
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="pt-0.5">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="flex h-4 w-4 items-center justify-center rounded-md bg-amber-500/15 text-amber-700">
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </span>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+              Listing navigation
+            </p>
+          </div>
+          <p className="truncate text-sm font-bold text-[var(--foreground)]" title={listing.title || "Untitled listing"}>
+            {listing.title || "Untitled listing"}
+          </p>
+        </div>
       </div>
-      <nav className="mt-2 max-h-[calc(100vh-12rem)] space-y-4 overflow-y-auto px-1 pb-2" aria-label="Admin listing sections">
+
+      {/* Navigation list */}
+      <nav className="mt-2.5 flex-1 min-h-0 overflow-y-auto px-0.5 pb-2 custom-scrollbar space-y-3.5" aria-label="Admin listing sections">
         {ADMIN_EDITOR_SECTIONS.map((section) => (
-          <div key={section.group}>
-            <p className="px-2 pb-1 pt-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted-foreground)]">{section.group}</p>
+          <div key={section.group} className="space-y-0.5">
+            <div className="flex items-center justify-between px-2.5 pt-1.5 pb-1">
+              <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--muted-foreground)] opacity-80">
+                {section.group}
+              </span>
+              <span className="text-[10px] font-medium text-[var(--muted-foreground)] opacity-50">
+                {section.items.length}
+              </span>
+            </div>
+
             {section.items.map(([id, label]) => {
-              const active = activeSection === id || (id === "photos" && activeSection === "photo-tour") || (id === "custom-link" && activeSection === "customlink");
+              const active =
+                activeSection === id ||
+                (id === "photos" && activeSection === "photo-tour") ||
+                (id === "custom-link" && activeSection === "customlink");
               const destructive = id === "remove-listing";
-              return <button key={id} type="button" onClick={() => setActiveSection(id)} className={`mb-0.5 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors ${active ? "bg-amber-500 text-zinc-950" : destructive ? "text-rose-600 hover:bg-rose-50" : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground"}`}><span>{label}</span><span className="text-sm opacity-60">›</span></button>;
+
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveSection(id)}
+                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${
+                    active
+                      ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
+                      : destructive
+                      ? "text-rose-600 hover:bg-rose-50/80 hover:text-rose-700"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] hover:translate-x-0.5"
+                  }`}
+                >
+                  <span className="truncate">{label}</span>
+                  <svg
+                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${
+                      active ? "opacity-90 text-zinc-950 translate-x-0.5" : "opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              );
             })}
           </div>
         ))}
@@ -191,6 +283,7 @@ function AdminEditorSidebar({ activeSection, setActiveSection, listing }: Pick<E
 
 export function EditorSidebar({
   presentation = "host",
+  routeBase = "/admin/listings",
   editorTab,
   setEditorTab,
   activeSection,
@@ -383,7 +476,7 @@ export function EditorSidebar({
   ].filter(Boolean).length;
 
   if (presentation === "admin") {
-    return <AdminEditorSidebar activeSection={activeSection} setActiveSection={setActiveSection} listing={listing} />;
+    return <AdminEditorSidebar activeSection={activeSection} setActiveSection={setActiveSection} listing={listing} routeBase={routeBase} />;
   }
 
   const sidebar = (

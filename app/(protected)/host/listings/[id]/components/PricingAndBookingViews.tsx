@@ -138,10 +138,12 @@ export function PricingAndBookingViews({
 }: PricingAndBookingViewsProps) {
   const [localAvailabilityError, setLocalAvailabilityError] = useState<string | null>(null);
 
+  const handleBack = (fallback = "pricing") => {
+    setActiveSection(fallback as any);
+  };
+
   return (
     <>
-      {/* --------------------------------------------------------- */}
-      {/* VIEW: PRICING & AVAILABILITY */}
       {/* --------------------------------------------------------- */}
       {/* --------------------------------------------------------- */}
       {/* VIEW: PRICING */}
@@ -196,7 +198,7 @@ export function PricingAndBookingViews({
                           min={0}
                           value={smartPricingMinPrice || ""}
                           onChange={(e) => setSmartPricingMinPrice?.(Number(e.target.value || 0))}
-                          className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272]"
+                          className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                         />
                       </div>
                     </div>
@@ -210,7 +212,7 @@ export function PricingAndBookingViews({
                           min={0}
                           value={smartPricingMaxPrice || ""}
                           onChange={(e) => setSmartPricingMaxPrice?.(Number(e.target.value || 0))}
-                          className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272]"
+                          className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                         />
                       </div>
                     </div>
@@ -223,7 +225,7 @@ export function PricingAndBookingViews({
                       value={editPrice || ""}
                       onChange={(e) => setEditPrice(Number(e.target.value))}
                       placeholder="100"
-                      className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272]"
+                      className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                     />
                   </div>
                 )}
@@ -273,49 +275,67 @@ export function PricingAndBookingViews({
                     <label className="block text-base font-normal text-[#1F1F1F]">Discounts</label>
 
                     {/* Weekly discount card */}
-                    <div className="rounded-md border border-[#727272] bg-white px-4 py-4 ">
-                      <span className="text-xs text-[#1f1f1f] font-normal block w-full">
-                        Weekly <span className="text-xs font-normal text-[#727272]">- For 7+ nights</span>
+                    <div className="rounded-xl border border-[#727272] bg-white p-4 space-y-2">
+                      <span className="text-sm font-medium text-[#1F1F1F] block">
+                        Weekly <span className="text-xs font-normal text-[#727272]">— For 7+ nights</span>
                       </span>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-0">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] bg-white px-3 py-1.5 focus-within:border-[#1F1F1F] focus-within:ring-1 focus-within:ring-[#1F1F1F] transition-all">
                           <input
                             type="number"
+                            min={0}
+                            max={100}
                             value={weeklyDiscount || ""}
-                            onChange={(e) => setWeeklyDiscount(Number(e.target.value))}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setWeeklyDiscount(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setWeeklyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
                             placeholder="5"
-                            className="w-[2ch] appearance-none text-[24px] font-medium text-[#1f1f1f] outline-none bg-transparent placeholder:text-[#727272]"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <span className="-ml-px text-[24px] font-medium text-[#1f1f1f]">%</span>
+                          <span className="text-xl font-semibold text-[#1F1F1F]">%</span>
                         </div>
-                        <span className="text-xs text-[#1f1f1f] font-normal">
-                          weekly average is  {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
+                        <span className="text-xs text-[#727272] font-normal">
+                          weekly average is {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
                         </span>
                       </div>
-
                     </div>
 
                     {/* Monthly discount card */}
-                    <div className="rounded-md border border-[#727272] bg-white px-4 py-4">
-                      <span className="text-xs text-[#1f1f1f] font-normal block">
-                        Monthly <span className="text-xs font-normal text-[#727272]">- For 28+ nights</span>
+                    <div className="rounded-xl border border-[#727272] bg-white p-4 space-y-2">
+                      <span className="text-sm font-medium text-[#1F1F1F] block">
+                        Monthly <span className="text-xs font-normal text-[#727272]">— For 28+ nights</span>
                       </span>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-0">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] bg-white px-3 py-1.5 focus-within:border-[#1F1F1F] focus-within:ring-1 focus-within:ring-[#1F1F1F] transition-all">
                           <input
                             type="number"
+                            min={0}
+                            max={100}
                             value={monthlyDiscount || ""}
-                            onChange={(e) => setMonthlyDiscount(Number(e.target.value))}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setMonthlyDiscount(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setMonthlyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
                             placeholder="10"
-                            className="w-[2ch] appearance-none text-[24px] font-medium text-[#1f1f1f] outline-none bg-transparent placeholder:text-[#727272]"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <span className="-ml-px text-[24px] font-medium text-[#1f1f1f]">%</span>
+                          <span className="text-xl font-semibold text-[#1F1F1F]">%</span>
                         </div>
-                        <span className="text-xs text-[#1f1f1f] font-normal">
+                        <span className="text-xs text-[#727272] font-normal">
                           monthly average is {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
                         </span>
                       </div>
-
                     </div>
 
                     {/* Last-minute discount card */}
@@ -387,7 +407,7 @@ export function PricingAndBookingViews({
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
-              <BackButton onClick={() => setActiveSection("pricing")} />
+              <BackButton onClick={() => handleBack("pricing")} />
               <div>
                 <h1>Availability</h1>
                 <p className="text-sm leading-5 text-[#727272] font-normal">
@@ -440,7 +460,7 @@ export function PricingAndBookingViews({
                           setLocalAvailabilityError(null);
                         }}
                         aria-label="Minimum nights"
-                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent"
+                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <span className="text-sm text-right text-[#727272]">
                         <span className="text-center block">Minimum<br />nights</span></span>
@@ -461,7 +481,7 @@ export function PricingAndBookingViews({
                           setLocalAvailabilityError(null);
                         }}
                         aria-label="Maximum nights"
-                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent"
+                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <span className="text-sm text-right text-[#727272]"><span className="text-center block">Maximum<br />nights</span></span>
                     </div>
@@ -698,7 +718,7 @@ export function PricingAndBookingViews({
       {activeSection === "booking-settings" && (
         <div className="max-w-[608px] space-y-4 pb-10 font-sans animate-in fade-in">
           <div className="flex items-center gap-3">
-            <BackButton onClick={() => setActiveSection("description")} />
+            <BackButton onClick={() => handleBack("pricing")} />
             <h1>Booking settings</h1>
           </div>
 
@@ -815,7 +835,7 @@ export function PricingAndBookingViews({
                     setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                   }
                   placeholder="your-space"
-                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[60px] max-w-[280px]"
+                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[60px] max-w-[280px] pl-2.5 sm:pl-3"
                   autoFocus
                 />
               </div>

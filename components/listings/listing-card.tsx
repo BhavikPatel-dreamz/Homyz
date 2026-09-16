@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { PublicListingDTO } from "@/services/mappers";
 
@@ -21,28 +21,67 @@ export interface ListingCardProps {
     isFeatured?: boolean;
     rating?: number | null;
     reviewsCount?: number;
+    distanceKm?: number | null;
   };
   className?: string;
+  /** Whether this listing is already saved as a favorite (server-provided initial state). */
+  initialFavorite?: boolean;
+  /** Pass false to hide the heart button entirely (e.g., on admin pages). */
+  showFavorite?: boolean;
 }
 
-export function ListingCard({ listing, className = "" }: ListingCardProps) {
+export function ListingCard({
+  listing,
+  className = "",
+  initialFavorite = false,
+  showFavorite = true,
+}: ListingCardProps) {
   const [imageError, setImageError] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(initialFavorite);
+  const [isFavoriting, setIsFavoriting] = useState(false);
 
-  const coverPhoto = Array.isArray(listing.photos) && listing.photos.length > 0 && !imageError
-    ? listing.photos[0]
-    : null;
+  const coverPhoto =
+    Array.isArray(listing.photos) && listing.photos.length > 0 && !imageError
+      ? listing.photos[0]
+      : null;
 
   const formattedPrice = Math.round(listing.price / 100);
   const locationString = listing.city
     ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
     : listing.country || "Saudi Arabia";
 
-  const toggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-  };
+  const toggleFavorite = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isFavoriting) return;
+
+      const next = !isFavorite;
+      setIsFavorite(next); // Optimistic update
+      setIsFavoriting(true);
+
+      try {
+        const res = await fetch(`/api/v1/favorites/${listing.id}`, {
+          method: next ? "POST" : "DELETE",
+          credentials: "same-origin",
+        });
+        if (res.status === 401) {
+          // Not logged in — revert and redirect
+          setIsFavorite(!next);
+          window.location.href = `/login?next=/listings/${listing.id}`;
+          return;
+        }
+        if (!res.ok) {
+          setIsFavorite(!next); // Revert on error
+        }
+      } catch {
+        setIsFavorite(!next); // Revert on network error
+      } finally {
+        setIsFavoriting(false);
+      }
+    },
+    [listing.id, isFavorite, isFavoriting],
+  );
 
   return (
     <Link
@@ -66,7 +105,7 @@ export function ListingCard({ listing, className = "" }: ListingCardProps) {
           </div>
         )}
 
-        {/* Real Featured Badge (Only if real) */}
+        {/* Featured Badge */}
         {listing.isFeatured && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-zinc-900 shadow-xs border border-white/60">
             Featured
@@ -74,38 +113,42 @@ export function ListingCard({ listing, className = "" }: ListingCardProps) {
         )}
 
         {/* Favorite Heart Button */}
-        <button
-          type="button"
-          aria-label="Save to favorites"
-          onClick={toggleFavorite}
-          className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-xs text-zinc-800 transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
-        >
-          {isFavorite ? (
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="#f43f5e"
-              stroke="#f43f5e"
-              strokeWidth="1.5"
-              className="h-4 w-4 drop-shadow-xs"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-zinc-700"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          )}
-        </button>
+        {showFavorite && (
+          <button
+            type="button"
+            aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+            aria-pressed={isFavorite}
+            onClick={toggleFavorite}
+            disabled={isFavoriting}
+            className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-xs text-zinc-800 transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs disabled:opacity-60"
+          >
+            {isFavorite ? (
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="#f43f5e"
+                stroke="#f43f5e"
+                strokeWidth="1.5"
+                className="h-4 w-4 drop-shadow-xs"
+              >
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            ) : (
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 text-zinc-700"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Card Body */}
@@ -127,16 +170,16 @@ export function ListingCard({ listing, className = "" }: ListingCardProps) {
 
         <p className="text-xs text-zinc-500 font-normal truncate">
           {locationString}
+          {typeof listing.distanceKm === "number" ? ` · ${listing.distanceKm} km away` : ""}
         </p>
 
         <p className="text-base text-[#727272] font-normal truncate">
-          {listing.propertyType || "Home"} · {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"}
+          {listing.propertyType || "Home"} · {listing.guests || 1}{" "}
+          {listing.guests === 1 ? "guest" : "guests"}
         </p>
 
         <div className="pt-1 flex items-baseline gap-1 text-xs">
-          <span className="font-semibold text-zinc-950 text-sm">
-            SAR {formattedPrice}
-          </span>
+          <span className="font-semibold text-zinc-950 text-sm">SAR {formattedPrice}</span>
           <span className="text-zinc-500 font-normal">/ night</span>
         </div>
       </div>

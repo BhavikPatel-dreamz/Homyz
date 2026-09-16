@@ -305,7 +305,7 @@ export function GuestsSafetyView({
             <BackButton
               onClick={() => {
                 setEditorTab?.("space");
-                setActiveSection("description");
+                setActiveSection("house-rules");
               }}
             />
             <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F]">Guest safety</h1>
