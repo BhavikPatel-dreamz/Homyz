@@ -2,30 +2,13 @@ import { SecurityDashboard } from "@/components/admin/security-dashboard";
 import { requirePagePermission } from "@/lib/permissions/page-guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { auditService } from "@/services/audit.service";
-import { prisma } from "@/lib/db/prisma";
 
 export default async function AdminSecurityPage() {
   await requirePagePermission(PERMISSIONS.SECURITY_LOGS_VIEW);
 
   const [stats, failedEvents] = await Promise.all([
     auditService.getSecurityStats(),
-    prisma.auditLog.findMany({
-      where: {
-        OR: [
-          { status: "FAILURE" },
-          { action: "LOGIN_FAILED" },
-        ],
-      },
-      take: 20,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        action: true,
-        actorEmail: true,
-        ip: true,
-        createdAt: true,
-      },
-    }),
+    auditService.listFailedSecurityEvents(),
   ]);
 
   return (

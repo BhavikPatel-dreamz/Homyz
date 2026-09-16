@@ -1067,7 +1067,7 @@ export function HostListingEditorClient({
         longitude,
         showExactLocation,
         views: selectedViews,
-        locationFeatures,
+        locationFeatures: [...new Set(locationFeatures)],
       };
     } else if (sectionToSave === "language" || sectionToSave === "languages") {
       payload = {
@@ -1351,7 +1351,11 @@ export function HostListingEditorClient({
         }
         setFeedbackMsg({ type: "success", text: "Changes saved successfully!" });
       } else {
-        setFeedbackMsg({ type: "error", text: (res as any).error || "Failed to update section." });
+        const fieldErrors = (res as any).fieldErrors;
+        const detailedError = fieldErrors
+          ? Object.entries(fieldErrors).map(([field, msg]) => `${field}: ${msg}`).join(", ")
+          : (res as any).error || "Failed to update section.";
+        setFeedbackMsg({ type: "error", text: detailedError });
       }
     } catch (err: any) {
       setIsSaving(false);
@@ -1859,6 +1863,8 @@ export function HostListingEditorClient({
               coHosts={coHosts}
               setCoHosts={setCoHosts}
               hostProfile={listing.host}
+              presentation={presentation}
+              canEdit={presentation === "admin" ? (adminCapabilities?.canEdit ?? false) : true}
               onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
                 ...prev,
                 host: { ...prev.host, publicProfile, ...hostUpdate },

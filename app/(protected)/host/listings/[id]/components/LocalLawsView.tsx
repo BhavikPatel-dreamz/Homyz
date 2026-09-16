@@ -216,7 +216,18 @@ export function LocalLawsView({
 
       {/* 6. Documented Action & Text Link Triggers */}
       <div className="space-y-2.5 pt-1">
-       
+        <div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveArticleId("hosting-regulations");
+              setShowResourceDrawer(true);
+            }}
+            className="text-xs sm:text-sm font-normal text-zinc-600 underline underline-offset-3 hover:text-zinc-900 transition-colors cursor-pointer text-left"
+          >
+            What hosting regulations apply to you?
+          </button>
+        </div>
         <div>
           <button
             type="button"

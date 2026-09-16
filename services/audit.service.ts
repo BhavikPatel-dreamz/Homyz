@@ -41,6 +41,14 @@ export interface SecurityStats {
   }>;
 }
 
+export interface ResourceAuditLog {
+  id: string;
+  action: string;
+  description: string;
+  actorEmail: string | null;
+  createdAt: Date;
+}
+
 /**
  * Audit Service — captures security, auth, and administrative operations.
  * Designed to never crash caller logic if database recording hits a transient glitch.
@@ -117,6 +125,48 @@ async function list(options: ListAuditLogsOptions = {}) {
       totalPages: Math.ceil(total / limit),
     },
   };
+}
+
+/** A compact, metadata-free audit feed for a single resource. */
+async function listForResource(
+  resourceType: string,
+  resourceId: string,
+  options: { page?: number; limit?: number } = {},
+): Promise<{ items: ResourceAuditLog[]; total: number }> {
+  const page = Math.max(1, options.page ?? 1);
+  const limit = Math.min(100, Math.max(1, options.limit ?? 20));
+  const where = { resourceType, resourceId };
+  const [items, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: { id: true, action: true, description: true, actorEmail: true, createdAt: true },
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
+  return { items, total };
+}
+
+async function listFailedSecurityEvents(limit = 20) {
+  return prisma.auditLog.findMany({
+    where: {
+      OR: [
+        { status: "FAILURE" },
+        { action: "LOGIN_FAILED" },
+      ],
+    },
+    take: Math.min(100, Math.max(1, limit)),
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      action: true,
+      actorEmail: true,
+      ip: true,
+      createdAt: true,
+    },
+  });
 }
 
 async function getSecurityStats(): Promise<SecurityStats> {
@@ -210,5 +260,7 @@ async function getSecurityStats(): Promise<SecurityStats> {
 export const auditService = {
   record,
   list,
+  listForResource,
+  listFailedSecurityEvents,
   getSecurityStats,
 };

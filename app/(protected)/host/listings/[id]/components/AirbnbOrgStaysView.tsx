@@ -310,9 +310,10 @@ export function AirbnbOrgStaysView({
           <button
             type="button"
             onClick={() => setIsLearnMoreOpen(true)}
+            aria-label="Learn more about homyz.org"
             className="text-xs sm:text-sm font-normal text-zinc-500 hover:text-zinc-800 hover:underline cursor-pointer inline-flex items-center gap-1"
           >
-            <span>Learn more about homyz.org</span>
+            <span>Learn More</span>
             <span className="font-normal">&gt;</span>
           </button>
         </div>

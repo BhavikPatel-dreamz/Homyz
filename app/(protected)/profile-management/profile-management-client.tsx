@@ -12,7 +12,7 @@ import {
   updateTripPhotoAction,
   deleteTripPhotoAction,
 } from "@/actions/user/tripPhotos";
-import { Alert } from "@/components/ui";
+import { toast } from "@/components/ui/toast";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
@@ -282,7 +282,7 @@ export function ProfileManagementClient({
       onSubTabChange(tab);
     } else {
       const slug = getMgmtSubTabSlug(tab);
-      window.history.pushState(null, "", `/profile?tab/profile_management/${slug}`);
+      window.history.pushState(null, "", `/profile/tab/profile_management/${slug}`);
     }
   };
 
@@ -292,10 +292,6 @@ export function ProfileManagementClient({
   const [pending, startTransition] = useTransition();
   const { data: session, update: updateSession } = useSession();
 
-  const [msg, setMsg] = useState<{
-    tone: "success" | "error";
-    text: string;
-  } | null>(null);
   const [imageUrl, setImageUrl] = useState(initial.image || "");
   const [name, setName] = useState(profileData.name || initial.name || "");
   const [uploading, setUploading] = useState(false);
@@ -350,17 +346,21 @@ export function ProfileManagementClient({
       const res = await updateProfileAction({
         publicProfile: nextPublicProfile,
       });
-      if (res.ok && res.data) {
-        setProfileData(res.data as ProfileData);
-        router.refresh();
+      if (!res.ok) {
+        toast.error(res.error || "Failed to update settings.");
+        return;
       }
+      if (res.data) {
+        setProfileData(res.data as ProfileData);
+      }
+      toast.success("Settings updated successfully.");
+      router.refresh();
     });
   };
 
   const onSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     if (!isOwner) return;
-    setMsg(null);
 
     const payload = {
       image: imageUrl || initial.image || null,
@@ -372,13 +372,10 @@ export function ProfileManagementClient({
     startTransition(async () => {
       const res = await updateProfileAction(payload);
       if (!res.ok) {
-        setMsg({
-          tone: "error",
-          text: res.error || "Failed to update profile.",
-        });
+        toast.error(res.error || "Failed to update profile.");
         return;
       }
-      setMsg({ tone: "success", text: "Profile changes saved successfully!" });
+      toast.success("Profile changes saved successfully!");
       setProfileData(res.data as ProfileData);
       router.refresh();
     });
@@ -389,7 +386,6 @@ export function ProfileManagementClient({
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    setMsg(null);
 
     try {
       const fd = new FormData();
@@ -418,10 +414,10 @@ export function ProfileManagementClient({
         await updateSession({ user: { ...session.user, image: data.url } });
       }
 
-      setMsg({ tone: "success", text: "Profile image updated and saved." });
+      toast.success("Profile image updated and saved.");
       router.refresh();
     } catch (err: unknown) {
-      setMsg({ tone: "error", text: err instanceof Error ? err.message : "Upload error" });
+      toast.error(err instanceof Error ? err.message : "Upload error");
     } finally {
       setUploading(false);
     }
@@ -450,11 +446,6 @@ export function ProfileManagementClient({
               <path d="m14 5-7 7 7 7" />
             </svg>
           </button>
-        </div>
-      )}
-      {msg && (
-        <div className="mb-6">
-          <Alert tone={msg.tone}>{msg.text}</Alert>
         </div>
       )}
 
@@ -530,7 +521,7 @@ export function ProfileManagementClient({
       {/* 2. DEDICATED PROFILE MANAGEMENT TABS */}
       <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
         <Link
-          href="/profile?tab/profile_management/profile_information"
+          href="/profile/tab/profile_management/profile_information"
           onClick={(e) => {
             e.preventDefault();
             handleSubTabClick("info");
@@ -545,7 +536,7 @@ export function ProfileManagementClient({
         </Link>
 
         <Link
-          href="/profile?tab/profile_management/trip_photos"
+          href="/profile/tab/profile_management/trip_photos"
           onClick={(e) => {
             e.preventDefault();
             handleSubTabClick("photos");
@@ -560,7 +551,7 @@ export function ProfileManagementClient({
         </Link>
 
         <Link
-          href="/profile?tab/profile_management/where_ive_been"
+          href="/profile/tab/profile_management/where_ive_been"
           onClick={(e) => {
             e.preventDefault();
             handleSubTabClick("stamps");
@@ -575,7 +566,7 @@ export function ProfileManagementClient({
         </Link>
 
         <Link
-          href="/profile?tab/profile_management/privacy_visibility"
+          href="/profile/tab/profile_management/privacy_visibility"
           onClick={(e) => {
             e.preventDefault();
             handleSubTabClick("privacy");
@@ -1282,25 +1273,23 @@ function MultiImageUploadModal({
   const [caption, setCaption] = useState("");
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    setError(null);
 
     const validFiles: File[] = [];
     const newPreviews: string[] = [];
 
     for (const file of files) {
       if (file.size > 10 * 1024 * 1024) {
-        setError(`File ${file.name} exceeds 10MB limit.`);
+        toast.error(`File ${file.name} exceeds 10MB limit.`);
         continue;
       }
       if (!file.type.startsWith("image/")) {
-        setError(`File ${file.name} is not an image.`);
+        toast.error(`File ${file.name} is not an image.`);
         continue;
       }
       validFiles.push(file);
@@ -1320,7 +1309,6 @@ function MultiImageUploadModal({
     e.preventDefault();
     if (!selectedFiles.length) return;
     setUploading(true);
-    setError(null);
 
     try {
       const uploadedUrls: string[] = [];
@@ -1350,8 +1338,10 @@ function MultiImageUploadModal({
       if (!res.ok) throw new Error(res.error || "Save trip photos failed");
 
       onUploaded(res.data as TripPhotoItem[]);
+      toast.success("Trip photos uploaded successfully!");
+      onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Upload error");
+      toast.error(err instanceof Error ? err.message : "Upload error");
       setUploading(false);
     }
   };
@@ -1376,12 +1366,6 @@ function MultiImageUploadModal({
             ✕
           </button>
         </div>
-
-        {error && (
-          <div className="mb-4">
-            <Alert tone="error">{error}</Alert>
-          </div>
-        )}
 
         <form onSubmit={handleUploadSubmit} className="space-y-5">
           {/* File Select Dropzone */}
@@ -1518,12 +1502,10 @@ function EditTripPhotoModal({
     })),
   );
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
 
     try {
       const tags = taggedUsers.map((u) => u.name || u.email || u.id);
@@ -1536,8 +1518,10 @@ function EditTripPhotoModal({
 
       if (!res.ok) throw new Error(res.error || "Update photo failed");
       onSaved(res.data as TripPhotoItem);
+      toast.success("Photo details updated successfully!");
+      onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Save error");
+      toast.error(err instanceof Error ? err.message : "Save error");
       setSaving(false);
     }
   };
@@ -1557,12 +1541,6 @@ function EditTripPhotoModal({
             ✕
           </button>
         </div>
-
-        {error && (
-          <div className="mb-4">
-            <Alert tone="error">{error}</Alert>
-          </div>
-        )}
 
         <form onSubmit={handleSave} className="space-y-4">
           <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
@@ -1643,18 +1621,18 @@ function DeleteTripPhotoModal({
   onDeleted: (id: string) => void;
 }) {
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     setDeleting(true);
-    setError(null);
 
     try {
       const res = await deleteTripPhotoAction(photo.id);
       if (!res.ok) throw new Error(res.error || "Delete failed");
       onDeleted(photo.id);
+      toast.success("Trip photo deleted successfully.");
+      onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Deletion error");
+      toast.error(err instanceof Error ? err.message : "Deletion error");
       setDeleting(false);
     }
   };
@@ -1668,12 +1646,6 @@ function DeleteTripPhotoModal({
         <p className="text-xs text-zinc-500 mb-4">
           Are you sure you want to delete this trip photo?
         </p>
-
-        {error && (
-          <div className="mb-4">
-            <Alert tone="error">{error}</Alert>
-          </div>
-        )}
 
         <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-zinc-200 mb-4">
           <Image src={photo.url} alt="Photo" fill className="object-cover" />

@@ -1,33 +1,12 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
-import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
+import { bookingService } from "@/services/booking.service";
 import { AdminBookingsClient } from "./admin-bookings-client";
 
 export default async function AdminBookingsPage() {
   await requirePageRole([Role.ADMIN]);
 
-  const [bookings, totalCount, stats] = await Promise.all([
-    prisma.booking.findMany({
-      take: 50,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { id: true, name: true, email: true, image: true } },
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            host: { select: { id: true, name: true, email: true } },
-          },
-        },
-      },
-    }),
-    prisma.booking.count(),
-    prisma.booking.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-  ]);
+  const { bookings, totalCount, stats } = await bookingService.listForAdminDashboard();
 
   const serializedBookings = bookings.map((b: any) => ({
     id: b.id,

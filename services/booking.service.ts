@@ -8,7 +8,7 @@ import { CACHE_TTL } from "@/lib/redis/ttl";
 import { invalidateBookingCache } from "@/lib/redis/invalidation";
 import type { CreateBookingInput } from "@/lib/validation/booking";
 
-import { toBookingDTO, type BookingDTO } from "./mappers";
+import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
 import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
@@ -461,6 +461,10 @@ async function listForUser(
     },
     {
       ttl: CACHE_TTL.BOOKING_LIST,
+      revive: (cached) => ({
+        ...cached,
+        items: cached.items.map(reviveBookingDTO),
+      }),
     },
   );
 }
@@ -475,6 +479,7 @@ async function getById(actor: AuthUser, id: string): Promise<BookingDTO> {
     },
     {
       ttl: CACHE_TTL.BOOKING_DETAIL,
+      revive: reviveBookingDTO,
     },
   );
 
@@ -536,6 +541,33 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
   return toBookingDTO(cancelled);
 }
 
+async function listForAdminDashboard() {
+  const [bookings, totalCount, stats] = await Promise.all([
+    prisma.booking.findMany({
+      take: 50,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { id: true, name: true, email: true, image: true } },
+        listing: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            host: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+    }),
+    prisma.booking.count(),
+    prisma.booking.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    }),
+  ]);
+
+  return { bookings, totalCount, stats };
+}
+
 export const bookingService = {
   create,
   listForUser,
@@ -543,4 +575,5 @@ export const bookingService = {
   getQuote: getBookingQuote,
   getBookingQuote,
   cancelNonRefundableByGuest,
+  listForAdminDashboard,
 };

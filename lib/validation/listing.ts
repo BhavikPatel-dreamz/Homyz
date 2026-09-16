@@ -228,7 +228,7 @@ const listingFields = {
   accessibilityFeatures: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
   accessibilityDetails: z.array(accessibilityDetailSchema).max(50).optional().default([]),
   views: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
-  locationFeatures: z.array(z.enum(LOCATION_FEATURE_IDS)).max(3).optional().default([]),
+  locationFeatures: z.array(z.enum(LOCATION_FEATURE_IDS)).max(LOCATION_FEATURE_IDS.length).optional().default([]),
 
   // Structured House Rules
   houseRules: z.array(z.string().trim().min(1).max(200)).max(50).optional().default([]),

@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./options";
-import { prisma } from "@/lib/db/prisma";
+import { authService } from "@/services/auth.service";
 import type { AuthUser } from "./types";
 
 /**
@@ -69,15 +69,7 @@ export async function getSessionUser(): Promise<AuthUser | null> {
   if (!session?.user?.id) return null;
 
   try {
-    const liveUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        status: true,
-        role: true,
-        tokenVersion: true,
-        adminRole: { select: { slug: true } },
-      },
-    });
+    const liveUser = await authService.getLiveSessionUser(session.user.id);
 
     if (!liveUser) return null;
 

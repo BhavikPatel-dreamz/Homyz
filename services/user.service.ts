@@ -241,6 +241,27 @@ async function getUserStats(userId: string) {
   };
 }
 
+async function searchUsers(query: string, limit = 10) {
+  const term = query.trim();
+  return prisma.user.findMany({
+    where: term
+      ? {
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { email: { contains: term, mode: "insensitive" } },
+          ],
+        }
+      : {},
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+    },
+    take: Math.min(100, Math.max(1, limit)),
+  });
+}
+
 export const userService = {
   getById,
   updateProfile,
@@ -251,4 +272,5 @@ export const userService = {
   updateTripPhoto,
   deleteTripPhoto,
   getUserStats,
+  searchUsers,
 };

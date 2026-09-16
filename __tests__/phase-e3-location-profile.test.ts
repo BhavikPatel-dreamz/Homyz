@@ -11,6 +11,24 @@ const location = updateListingSchema.parse({
   views: ["city_view", "garden_view"],
 });
 assert.deepEqual(location.locationFeatures, ["near_public_transport", "resort_access"]);
+const allFeatures = updateListingSchema.parse({
+  locationFeatures: [
+    "near_public_transport",
+    "resort_access",
+    "lake_access",
+    "quiet_neighborhood",
+    "beach_access",
+    "near_landmarks",
+  ],
+});
+assert.deepEqual(allFeatures.locationFeatures, [
+  "near_public_transport",
+  "resort_access",
+  "lake_access",
+  "quiet_neighborhood",
+  "beach_access",
+  "near_landmarks",
+]);
 assert.throws(() => updateListingSchema.parse({ locationFeatures: ["not_a_location_feature"] }));
 assert.deepEqual(
   updateListingSchema.parse({ instantBook: false, bookingApprovalMode: "MANUAL" }),

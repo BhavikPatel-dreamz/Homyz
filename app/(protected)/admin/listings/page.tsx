@@ -1,25 +1,13 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
-import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
+import { listingService } from "@/services/listing.service";
 import { AdminListingsClient } from "./admin-listings-client";
 
 export default async function AdminListingsPage() {
   await requirePageRole([Role.ADMIN]);
 
-  const [listings, totalCount, publishedCount, featuredCount, pausedCount] = await Promise.all([
-    prisma.listing.findMany({
-      take: 100,
-      orderBy: { createdAt: "desc" },
-      include: {
-        host: { select: { id: true, name: true, email: true, image: true } },
-        _count: { select: { bookings: true } },
-      },
-    }),
-    prisma.listing.count(),
-    prisma.listing.count({ where: { published: true } }),
-    prisma.listing.count({ where: { isFeatured: true } }),
-    prisma.listing.count({ where: { isPaused: true } }),
-  ]);
+  const { listings, totalCount, publishedCount, featuredCount, pausedCount } =
+    await listingService.listForAdminDashboard();
 
   const serializedListings = listings.map((l: any) => ({
     id: l.id,

@@ -65,7 +65,7 @@ export function AdminListingReviewView({
     setAuditLoading(true);
     const result = await getAdminListingAuditHistoryAction({ listingId: listing.id, page: nextPage, pageSize: auditPageSize });
     setAuditLoading(false);
-    if (!result.ok || !result.data) {
+    if (!result.ok) {
       setError(result.error || "Unable to load audit history.");
       return;
     }

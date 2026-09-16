@@ -1,9 +1,8 @@
-import { prisma } from "@/lib/db/prisma";
 import { ALL_PERMISSIONS, isSuperAdmin } from "@/lib/permissions/permissions";
 import type { AuthUser } from "@/lib/auth/types";
 import { AppError } from "@/lib/api/errors";
 import { auditService } from "@/services/audit.service";
-import { randomUUID } from "crypto";
+import { adminPermissionService } from "@/services/admin-permission.service";
 
 export type ThreeStateOverride = "INHERIT" | "ALLOW" | "DENY";
 
@@ -41,36 +40,10 @@ export interface AdminPermissionResolution {
 
 /** Get resolved permission matrix for a specific Admin user. */
 export async function getAdminPermissionResolution(adminId: string): Promise<AdminPermissionResolution> {
-  const adminUser = await prisma.user.findUnique({
-    where: { id: adminId },
-    include: {
-      adminRole: {
-        include: {
-          permissions: {
-            include: {
-              permission: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  // Load individual admin overrides separately to avoid relying on a specific
-  // prisma client relation shape that may be out-of-sync in some dev builds.
-  // Try to use the generated client model API; fall back to a raw query
-  // if the property is not available on the `prisma` instance (can happen
-  // in some dev or build states where the generated client shape isn't present).
-  let adminOverrides: any[] = [];
-  if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.findMany === "function") {
-    adminOverrides = await (prisma as any).adminPermissionOverride.findMany({ where: { adminId } });
-  } else {
-    adminOverrides = await prisma.$queryRaw`
-      SELECT id, "adminId", permission, effect, reason, "createdById", "createdAt", "updatedAt"
-      FROM "AdminPermissionOverride"
-      WHERE "adminId" = ${adminId}
-    ` as any[];
-  }
+  const [adminUser, adminOverrides] = await Promise.all([
+    adminPermissionService.getAdminWithPermissionGraph(adminId),
+    adminPermissionService.listOverrides(adminId),
+  ]);
 
   if (!adminUser) {
     throw AppError.notFound("Admin user not found");
@@ -203,10 +176,7 @@ export async function updateAdminPermissionOverrides(
   updates: { permission: string; effect: ThreeStateOverride }[],
   reason?: string
 ): Promise<AdminPermissionResolution> {
-  const targetAdmin = await prisma.user.findUnique({
-    where: { id: adminId },
-    include: { adminRole: true },
-  });
+  const targetAdmin = await adminPermissionService.getAdminWithRole(adminId);
 
   if (!targetAdmin) {
     throw AppError.notFound("Target admin user not found");
@@ -222,51 +192,7 @@ export async function updateAdminPermissionOverrides(
     throw AppError.forbidden("Administrators cannot modify their own permission configuration.");
   }
 
-  // Process updates
-  for (const update of updates) {
-    if (update.effect === "INHERIT") {
-      if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.deleteMany === "function") {
-        await (prisma as any).adminPermissionOverride.deleteMany({
-          where: { adminId, permission: update.permission },
-        });
-      } else {
-        await prisma.$executeRaw`
-          DELETE FROM "AdminPermissionOverride"
-          WHERE "adminId" = ${adminId} AND permission = ${update.permission}
-        `;
-      }
-    } else {
-      if ((prisma as any).adminPermissionOverride && typeof (prisma as any).adminPermissionOverride.upsert === "function") {
-        await (prisma as any).adminPermissionOverride.upsert({
-          where: { adminId_permission: { adminId, permission: update.permission } },
-          create: {
-            adminId,
-            permission: update.permission,
-            effect: update.effect,
-            reason,
-            createdById: actor.id,
-          },
-          update: { effect: update.effect, reason, createdById: actor.id },
-        });
-      } else {
-        // Fallback: attempt an UPDATE, then INSERT if no rows updated.
-        const updated = await prisma.$executeRaw`
-          UPDATE "AdminPermissionOverride"
-          SET effect = ${update.effect}, reason = ${reason}, "createdById" = ${actor.id}, "updatedAt" = CURRENT_TIMESTAMP
-          WHERE "adminId" = ${adminId} AND permission = ${update.permission}
-        `;
-        if (!updated || Number(updated) === 0) {
-          const newId = randomUUID();
-          await prisma.$executeRaw`
-            INSERT INTO "AdminPermissionOverride" (id, "adminId", permission, effect, reason, "createdById", "createdAt", "updatedAt")
-            VALUES (${newId}, ${adminId}, ${update.permission}, ${update.effect}, ${reason}, ${actor.id}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT ("adminId", permission) DO UPDATE
-            SET effect = EXCLUDED.effect, reason = EXCLUDED.reason, "createdById" = EXCLUDED."createdById", "updatedAt" = CURRENT_TIMESTAMP
-          `;
-        }
-      }
-    }
-  }
+  await adminPermissionService.applyOverrides({ adminId, actorId: actor.id, reason, updates });
 
   // Audit Log
   await auditService.record({
@@ -292,10 +218,7 @@ export async function resetAdminPermissionOverrides(
   adminId: string,
   reason?: string
 ): Promise<AdminPermissionResolution> {
-  const targetAdmin = await prisma.user.findUnique({
-    where: { id: adminId },
-    include: { adminRole: true },
-  });
+  const targetAdmin = await adminPermissionService.getAdminWithRole(adminId);
 
   if (!targetAdmin) {
     throw AppError.notFound("Target admin user not found");
@@ -310,9 +233,7 @@ export async function resetAdminPermissionOverrides(
     throw AppError.forbidden("Administrators cannot reset their own permission configuration.");
   }
 
-  await prisma.adminPermissionOverride.deleteMany({
-    where: { adminId },
-  });
+  await adminPermissionService.resetOverrides(adminId);
 
   await auditService.record({
     actorId: actor.id,
@@ -391,10 +312,7 @@ export async function clearAllAdminPermissions(
 
 /** Activate a Pending Admin user after verifying permissions are configured. */
 export async function activatePendingAdmin(actor: AuthUser, adminId: string) {
-  const targetAdmin = await prisma.user.findUnique({
-    where: { id: adminId },
-    include: { adminRole: true },
-  });
+  const targetAdmin = await adminPermissionService.getAdminWithRole(adminId);
 
   if (!targetAdmin) {
     throw AppError.notFound("Target admin user not found");
@@ -410,10 +328,7 @@ export async function activatePendingAdmin(actor: AuthUser, adminId: string) {
     throw AppError.badRequest("Cannot activate admin account before configuring permissions. Please grant at least one permission.");
   }
 
-  const updatedAdmin = await prisma.user.update({
-    where: { id: adminId },
-    data: { status: "ACTIVE" },
-  });
+  const updatedAdmin = await adminPermissionService.activateAdmin(adminId);
 
   await auditService.record({
     actorId: actor.id,

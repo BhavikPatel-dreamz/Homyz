@@ -9,7 +9,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
 
 import { auditService } from "./audit.service";
@@ -457,6 +457,114 @@ async function getForOwner(actor: AuthUser, id: string): Promise<ListingDTO> {
   return listing;
 }
 
+/** Raw listing reads/writes used by the internal admin workspace. These stay
+ * uncached because admins need the current moderation state. */
+async function getAdminListingForUpdate(id: string) {
+  return prisma.listing.findUnique({ where: { id } });
+}
+
+async function updateForAdmin(id: string, data: Prisma.ListingUpdateInput) {
+  return prisma.listing.update({ where: { id }, data });
+}
+
+async function listForAdminDashboard() {
+  const [listings, totalCount, publishedCount, featuredCount, pausedCount] = await Promise.all([
+    prisma.listing.findMany({
+      take: 100,
+      orderBy: { createdAt: "desc" },
+      include: {
+        host: { select: { id: true, name: true, email: true, image: true } },
+        _count: { select: { bookings: true } },
+      },
+    }),
+    prisma.listing.count(),
+    prisma.listing.count({ where: { published: true } }),
+    prisma.listing.count({ where: { isFeatured: true } }),
+    prisma.listing.count({ where: { isPaused: true } }),
+  ]);
+
+  return { listings, totalCount, publishedCount, featuredCount, pausedCount };
+}
+
+async function getAdminListingDetail(id: string) {
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          createdAt: true,
+          publicProfile: true,
+          hostRegistrations: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+              status: true,
+              complianceStatus: true,
+              documents: {
+                select: { id: true, documentType: true, fileUrl: true, status: true, rejectionReason: true },
+                orderBy: { uploadedAt: "desc" },
+              },
+            },
+          },
+        },
+      },
+      _count: { select: { bookings: true } },
+      guidebookListings: {
+        include: {
+          guidebook: {
+            include: {
+              items: { orderBy: { sortOrder: "asc" } },
+              listings: { include: { listing: { select: { id: true, title: true, city: true, photos: true } } } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!listing) return null;
+
+  const [auditHistory, reviewer, approvedBy] = await Promise.all([
+    auditService.listForResource("Listing", listing.id, { limit: 10 }),
+    listing.reviewerId
+      ? prisma.user.findUnique({ where: { id: listing.reviewerId }, select: { id: true, name: true, email: true } })
+      : null,
+    listing.approvedById
+      ? prisma.user.findUnique({ where: { id: listing.approvedById }, select: { id: true, name: true, email: true } })
+      : null,
+  ]);
+
+  return {
+    listing,
+    auditLogs: auditHistory.items,
+    auditLogTotal: auditHistory.total,
+    reviewer,
+    approvedBy,
+  };
+}
+
+async function getEditorWorkspaceListing(id: string) {
+  return prisma.listing.findUnique({
+    where: { id },
+    include: {
+      host: { select: { id: true, name: true, email: true, image: true, createdAt: true, publicProfile: true } },
+      coHosts: {
+        orderBy: { invitedAt: "desc" },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      },
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED },
+        select: { id: true },
+      },
+    },
+  });
+}
+
 // Listings a host owns or has accepted a co-host role for.
 async function listForHost(
   actor: AuthUser,
@@ -642,6 +750,10 @@ async function create(
     }
     throw error;
   });
+
+  // A new draft can promote a user to a host and changes the global listing
+  // count, both of which are represented in the cached admin summary.
+  await deleteCache(keys.statsGlobal());
 
   await auditService.record({
     actorId: actor.id,
@@ -1144,6 +1256,11 @@ async function remove(
     await assertHostPermission(actor.id, "listing.delete");
   }
 
+  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
+  if (bookingCount > 0) {
+    throw AppError.conflict("Cannot delete a listing that has associated bookings");
+  }
+
   // 1. Store exit survey and reasons in the database if provided
   if (feedback && feedback.reasons && feedback.reasons.length > 0) {
     await prisma.listingRemovalFeedback.create({
@@ -1250,6 +1367,8 @@ async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
     },
   });
 
+  await deleteCache(keys.statsGlobal());
+
   await auditService.record({
     actorId: actor.id,
     actorEmail: actor.email,
@@ -1323,6 +1442,11 @@ export const listingService = {
   getPublicListingBySlug,
   getById,
   getForOwner,
+  getAdminListingForUpdate,
+  updateForAdmin,
+  listForAdminDashboard,
+  getAdminListingDetail,
+  getEditorWorkspaceListing,
   getPublishReadiness,
   listForHost,
   create,

@@ -613,6 +613,25 @@ export interface UnifiedHostAnalytics {
   statusDistribution: Array<{ status: string; count: number; percentage: number }>;
 }
 
+interface UnifiedHostListResult {
+  items: UnifiedHostItem[];
+  total: number;
+  page: number;
+  totalPages: number;
+  analytics: UnifiedHostAnalytics;
+}
+
+function reviveUnifiedHostList(result: UnifiedHostListResult): UnifiedHostListResult {
+  return {
+    ...result,
+    items: result.items.map((item) => ({
+      ...item,
+      createdAt: new Date(item.createdAt),
+      lastActive: new Date(item.lastActive),
+    })),
+  };
+}
+
 export interface ListUnifiedHostsInput {
   search?: string;
   accountStatus?: string;
@@ -839,9 +858,9 @@ function mapStageLabel(stage: string): string {
   }
 }
 
-async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
+async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<UnifiedHostListResult> {
   const filterHash = hashFilters(input as Record<string, unknown>);
-  return getOrSetCache(
+  return getOrSetCache<UnifiedHostListResult>(
     CACHE_KEYS.ADMIN_UNIFIED_HOSTS(filterHash),
     async () => {
       const {
@@ -1146,7 +1165,7 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}) {
     analytics,
   };
     },
-    { ttl: CACHE_TTL.DASHBOARD_STATS }
+    { ttl: CACHE_TTL.DASHBOARD_STATS, revive: reviveUnifiedHostList }
   );
 }
 

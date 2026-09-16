@@ -10,7 +10,7 @@ import {
 } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { updateProfileAction } from "@/actions/user/updateProfile";
-import { Alert } from "@/components/ui";
+import { toast } from "@/components/ui/toast";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
 import { deleteUploadedMedia } from "@/lib/media/delete-uploaded";
 
@@ -60,14 +60,11 @@ export function WhereIveBeenSelector({
     useState<TravelStampLocation | null>(null);
   const [uploadedIconUrl, setUploadedIconUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Combined dataset of builtin + custom stamps
   const allStamps = [...BUILTIN_TRAVEL_STAMPS, ...customStamps];
@@ -75,15 +72,12 @@ export function WhereIveBeenSelector({
   const handleToggleStamp = (stampId: string) => {
     if (!isOwner || pending) return;
 
-    setError(null);
-    setSaveSuccess(false);
-
     let nextSelected: string[];
     if (selectedStamps.includes(stampId)) {
       nextSelected = selectedStamps.filter((id) => id !== stampId);
     } else {
       if (selectedStamps.length >= maxStamps) {
-        setError(
+        toast.error(
           `Maximum ${maxStamps} stamps reached. Unselect a stamp to pick another.`,
         );
         return;
@@ -110,7 +104,6 @@ export function WhereIveBeenSelector({
     setStampLocationValue("");
     setSelectedLocationObj(null);
     setUploadedIconUrl(null);
-    setUploadError(null);
   };
 
   // Open modal to edit an existing stamp
@@ -125,7 +118,6 @@ export function WhereIveBeenSelector({
       stamp.location || { name: stamp.title, country: stamp.countryCode },
     );
     setUploadedIconUrl(stamp.iconUrl || null);
-    setUploadError(null);
   };
 
   // Handle File Upload to /api/v1/upload/stamp-icon
@@ -134,7 +126,6 @@ export function WhereIveBeenSelector({
     if (!file) return;
 
     setUploadingImage(true);
-    setUploadError(null);
 
     try {
       const formData = new FormData();
@@ -156,7 +147,8 @@ export function WhereIveBeenSelector({
       }
       setUploadedIconUrl(data.url);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : "Error uploading image.");
+      const msg = err instanceof Error ? err.message : "Error uploading image.";
+      toast.error(msg);
     } finally {
       setUploadingImage(false);
     }
@@ -165,12 +157,11 @@ export function WhereIveBeenSelector({
   // Save Custom Stamp (Add or Edit)
   const handleSaveStamp = () => {
     if (!stampLocationValue || !stampLocationValue.trim()) {
-      setUploadError("Please select or enter a valid location.");
+      toast.error("Please select or enter a valid location.");
       return;
     }
 
     const cleanTitle = stampLocationValue.split(",")[0].trim();
-    setError(null);
 
     let nextCustom: TravelStampItem[];
     let nextSelected = selectedStamps;
@@ -191,7 +182,7 @@ export function WhereIveBeenSelector({
             s.title.toLowerCase() === cleanTitle.toLowerCase(),
         )
       ) {
-        setUploadError(
+        toast.error(
           `A stamp for "${cleanTitle}" already exists in your collection.`,
         );
         return;
@@ -260,13 +251,13 @@ export function WhereIveBeenSelector({
           throw new Error(res.error || "Failed to save stamp choices.");
         }
 
-        setSaveSuccess(true);
+        toast.success("Travel stamps saved successfully!");
         if (onSaved && res.data?.publicProfile && typeof res.data.publicProfile === "object") {
           onSaved(res.data.publicProfile);
         }
-        setTimeout(() => setSaveSuccess(false), 2500);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred while saving.");
+        const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred while saving.";
+        toast.error(errorMsg);
       }
     });
   };
@@ -350,14 +341,7 @@ export function WhereIveBeenSelector({
         </div>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="animate-in fade-in">
-          <Alert tone="error">{error}</Alert>
-        </div>
-      )}
-
-      {/* Saving / Success Notifications */}
+      {/* Saving Notification */}
       {pending && (
         <div className="text-xs text-amber-600 font-semibold flex items-center gap-2 animate-in fade-in">
           <svg
@@ -383,14 +367,8 @@ export function WhereIveBeenSelector({
         </div>
       )}
 
-      {saveSuccess && (
-        <div className="text-xs text-emerald-600 font-semibold flex items-center gap-1.5 animate-in fade-in">
-          ✓ Travel stamps saved successfully!
-        </div>
-      )}
-
       {/* Stamps Display Grid — Reference Design Layout */}
-      <div className="rounded-3xl border border-zinc-200/80 bg-white p-4 shadow-2xs sm:p-6">
+      <div className="rounded-3xl border border-zinc-200/80 bg-white p-6 shadow-2xs sm:p-6">
         {allStamps.length === 0 ? (
           <div className="py-12 text-center text-xs text-zinc-400">
             No travel stamps available. Click &quot;+ Add Stamp&quot; to search for your
@@ -407,7 +385,7 @@ export function WhereIveBeenSelector({
                   <div
                     key={stamp.id}
                     onClick={() => !isDisabled && handleToggleStamp(stamp.id)}
-                    className={`group relative flex flex-col items-center justify-center p-2 transition-all select-none ${
+                    className={`group relative flex m-2 flex-col items-center justify-center p-2 transition-all select-none ${
                       isDisabled
                         ? "cursor-not-allowed opacity-40"
                         : "cursor-pointer hover:scale-105"
@@ -500,12 +478,6 @@ export function WhereIveBeenSelector({
                 ✕
               </button>
             </div>
-
-            {uploadError && (
-              <div className="mb-4">
-                <Alert tone="error">{uploadError}</Alert>
-              </div>
-            )}
 
             {/* Live Interactive Stamp Preview */}
             <div className="flex flex-col items-center justify-center py-4 bg-zinc-50/80 rounded-2xl border border-zinc-200/60 mb-6">

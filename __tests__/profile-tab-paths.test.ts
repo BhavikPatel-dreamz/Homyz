@@ -29,8 +29,8 @@ async function runProfileTabPathTests() {
   // 1. Check GUEST_NAV_ITEMS URLs
   const profileMgmtItem = GUEST_NAV_ITEMS.find((item) => item.id === "profile_management");
   assert(
-    profileMgmtItem?.href === "/profile?tab/profile_management",
-    "profile_management href must be '/profile?tab/profile_management'",
+    profileMgmtItem?.href === "/profile/tab/profile_management",
+    "profile_management href must be '/profile/tab/profile_management'",
   );
 
   assert(
@@ -40,44 +40,44 @@ async function runProfileTabPathTests() {
 
   const upcomingItem = GUEST_NAV_ITEMS.find((item) => item.id === "upcoming_trips");
   assert(
-    upcomingItem?.href === "/profile?tab/upcoming",
-    "upcoming_trips href must be '/profile?tab/upcoming'",
+    upcomingItem?.href === "/profile/tab/upcoming",
+    "upcoming_trips href must be '/profile/tab/upcoming'",
   );
 
   const pastItem = GUEST_NAV_ITEMS.find((item) => item.id === "past_bookings");
   assert(
-    pastItem?.href === "/profile?tab/past",
-    "past_bookings href must be '/profile?tab/past'",
+    pastItem?.href === "/profile/tab/past",
+    "past_bookings href must be '/profile/tab/past'",
   );
 
   const loyaltyItem = GUEST_NAV_ITEMS.find((item) => item.id === "loyalty");
   assert(
-    loyaltyItem?.href === "/profile?tab/loyalty",
-    "loyalty href must be '/profile?tab/loyalty'",
+    loyaltyItem?.href === "/profile/tab/loyalty",
+    "loyalty href must be '/profile/tab/loyalty'",
   );
 
   const inviteItem = GUEST_NAV_ITEMS.find((item) => item.id === "invite");
   assert(
-    inviteItem?.href === "/profile?tab/invite",
-    "invite href must be '/profile?tab/invite'",
+    inviteItem?.href === "/profile/tab/invite",
+    "invite href must be '/profile/tab/invite'",
   );
 
   const savedItem = GUEST_NAV_ITEMS.find((item) => item.id === "saved");
   assert(
-    savedItem?.href === "/profile?tab/saved",
-    "saved href must be '/profile?tab/saved'",
+    savedItem?.href === "/profile/tab/saved",
+    "saved href must be '/profile/tab/saved'",
   );
 
   const supportItem = GUEST_NAV_ITEMS.find((item) => item.id === "support");
   assert(
-    supportItem?.href === "/profile?tab/support",
-    "support href must be '/profile?tab/support'",
+    supportItem?.href === "/profile/tab/support",
+    "support href must be '/profile/tab/support'",
   );
 
   const notifItem = GUEST_NAV_ITEMS.find((item) => item.id === "notifications");
   assert(
-    notifItem?.href === "/profile?tab/notifications",
-    "notifications href must be '/profile?tab/notifications'",
+    notifItem?.href === "/profile/tab/notifications",
+    "notifications href must be '/profile/tab/notifications'",
   );
 
   // 2. Check extractTabFromQuery parser
@@ -142,8 +142,8 @@ async function runProfileTabPathTests() {
   // 5. Verify Profile Management Sub-Tabs (/profile?tab/profile_management/...)
   const subTripPhotos = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "photos");
   assert(
-    subTripPhotos?.href === "/profile?tab/profile_management/trip_photos",
-    "photos href must be '/profile?tab/profile_management/trip_photos'",
+    subTripPhotos?.href === "/profile/tab/profile_management/trip_photos",
+    "photos href must be '/profile/tab/profile_management/trip_photos'",
   );
   assert(
     subTripPhotos?.slug === "trip_photos",
@@ -152,20 +152,20 @@ async function runProfileTabPathTests() {
 
   const subProfileInfo = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "info");
   assert(
-    subProfileInfo?.href === "/profile?tab/profile_management/profile_information",
-    "info href must be '/profile?tab/profile_management/profile_information'",
+    subProfileInfo?.href === "/profile/tab/profile_management/profile_information",
+    "info href must be '/profile/tab/profile_management/profile_information'",
   );
 
   const subStamps = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "stamps");
   assert(
-    subStamps?.href === "/profile?tab/profile_management/where_ive_been",
-    "stamps href must be '/profile?tab/profile_management/where_ive_been'",
+    subStamps?.href === "/profile/tab/profile_management/where_ive_been",
+    "stamps href must be '/profile/tab/profile_management/where_ive_been'",
   );
 
   const subPrivacy = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "privacy");
   assert(
-    subPrivacy?.href === "/profile?tab/profile_management/privacy_visibility",
-    "privacy href must be '/profile?tab/profile_management/privacy_visibility'",
+    subPrivacy?.href === "/profile/tab/profile_management/privacy_visibility",
+    "privacy href must be '/profile/tab/profile_management/privacy_visibility'",
   );
 
   // 6. Verify subtab query extraction
@@ -242,23 +242,77 @@ async function runProfileTabPathTests() {
     );
   }
 
-  // 8. Verify profile-management-client.tsx has links to all 4 subtabs
+  // 8. Verify profile-management-client.tsx has canonical links to all 4 subtabs
   const clientContent = fs.readFileSync(path.join(process.cwd(), "app/(protected)/profile-management/profile-management-client.tsx"), "utf-8");
   assert(
-    clientContent.includes("/profile?tab/profile_management/trip_photos"),
-    "profile-management-client.tsx links to '/profile?tab/profile_management/trip_photos'",
+    clientContent.includes("/profile/tab/profile_management/trip_photos"),
+    "profile-management-client.tsx links to '/profile/tab/profile_management/trip_photos'",
   );
   assert(
-    clientContent.includes("/profile?tab/profile_management/profile_information"),
-    "profile-management-client.tsx links to '/profile?tab/profile_management/profile_information'",
+    clientContent.includes("/profile/tab/profile_management/profile_information"),
+    "profile-management-client.tsx links to '/profile/tab/profile_management/profile_information'",
   );
   assert(
-    clientContent.includes("/profile?tab/profile_management/where_ive_been"),
-    "profile-management-client.tsx links to '/profile?tab/profile_management/where_ive_been'",
+    clientContent.includes("/profile/tab/profile_management/where_ive_been"),
+    "profile-management-client.tsx links to '/profile/tab/profile_management/where_ive_been'",
   );
   assert(
-    clientContent.includes("/profile?tab/profile_management/privacy_visibility"),
-    "profile-management-client.tsx links to '/profile?tab/profile_management/privacy_visibility'",
+    clientContent.includes("/profile/tab/profile_management/privacy_visibility"),
+    "profile-management-client.tsx links to '/profile/tab/profile_management/privacy_visibility'",
+  );
+
+  // 9. Verify toast notifications across all profile management tabs and no on-screen Alert banners
+  assert(
+    clientContent.includes('toast.success("Profile changes saved successfully!")'),
+    "Profile Information tab uses toast.success for saving changes",
+  );
+  assert(
+    clientContent.includes('toast.success("Profile image updated and saved.")'),
+    "Profile Information tab uses toast.success for avatar uploads",
+  );
+  assert(
+    clientContent.includes('toast.success("Settings updated successfully.")'),
+    "Privacy & Visibility tab uses toast.success for direct settings updates",
+  );
+  assert(
+    clientContent.includes('toast.success("Trip photos uploaded successfully!")'),
+    "Trip Photos tab uses toast.success for uploading photos",
+  );
+  assert(
+    clientContent.includes('toast.success("Photo details updated successfully!")'),
+    "Trip Photos tab uses toast.success for editing photo details",
+  );
+  assert(
+    clientContent.includes('toast.success("Trip photo deleted successfully.")'),
+    "Trip Photos tab uses toast.success for deleting photo",
+  );
+  assert(
+    !clientContent.includes("<Alert") && !clientContent.includes("from \"@/components/ui\""),
+    "profile-management-client.tsx does not render on-screen Alert components",
+  );
+
+  const stampsContent = fs.readFileSync(path.join(process.cwd(), "components/profile/where-ive-been-selector.tsx"), "utf-8");
+  assert(
+    stampsContent.includes('toast.success("Travel stamps saved successfully!")'),
+    "Where I've Been tab uses toast.success for saving stamps",
+  );
+  assert(
+    stampsContent.includes('toast.error('),
+    "Where I've Been tab uses toast.error for validation and upload errors",
+  );
+  assert(
+    !stampsContent.includes("<Alert"),
+    "where-ive-been-selector.tsx does not render on-screen Alert components",
+  );
+
+  const formContent = fs.readFileSync(path.join(process.cwd(), "components/forms/profile-form.tsx"), "utf-8");
+  assert(
+    formContent.includes('toast.success("Profile updated.")'),
+    "profile-form.tsx uses toast.success for profile updates",
+  );
+  assert(
+    !formContent.includes("<Alert"),
+    "profile-form.tsx does not render on-screen Alert components",
   );
 
   console.log("\n-------------------------------------------------------");
@@ -274,4 +328,3 @@ runProfileTabPathTests().catch((err) => {
   console.error("Test execution failed:", err);
   process.exit(1);
 });
-

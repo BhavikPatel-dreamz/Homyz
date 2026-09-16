@@ -28,6 +28,7 @@ const promptSchema = z.object({
   hobbies: profileTagList(20).optional(),
   education: optionalProfileText(300).optional(),
   perfectGuest: optionalProfileText(300).optional(),
+  biography: optionalProfileText(500).optional(),
 }).strict();
 
 export const updateHostPublicProfileSchema = z.object({
