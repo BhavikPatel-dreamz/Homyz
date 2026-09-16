@@ -188,6 +188,9 @@ export function PropertyDetailsViews({
   expandedAccessibility = "disabled_parking",
   setExpandedAccessibility,
 }: PropertyDetailsViewsProps) {
+  const handleBack = (fallback = "propertyType") => {
+    setActiveSection(fallback as any);
+  };
   const [amenityCategory, setAmenityCategory] = React.useState<string>("all");
   const [amenitySearch, setAmenitySearch] = React.useState<string>("");
   const [isEditingAmenityList, setIsEditingAmenityList] = React.useState(false);
@@ -401,13 +404,13 @@ export function PropertyDetailsViews({
 
                 {openDescAccordion === "description" && (
                   <div className="space-y-3 pt-1">
-                    <div className="rounded-xl bg-white border border-zinc-200 p-3 shadow-2xs">
+                    <div className="rounded-xl bg-white border border-zinc-200 p-1 shadow-2xs">
                       <textarea
                         rows={5}
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         placeholder="Describe your space, ambiance, surroundings, and amenities..."
-                        className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none"
+                        className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none p-4 sm:p-5 font-normal"
                       />
                     </div>
                     <button
@@ -640,7 +643,7 @@ export function PropertyDetailsViews({
         <div className="space-y-6 animate-in fade-in pb-10 pr-0 font-sans lg:pr-6">
           {/* Back button & Section Header */}
           <div className="flex items-center gap-6">
-            <span className="hidden lg:block"><BackButton onClick={() => setActiveSection("description")} /></span>
+            <BackButton onClick={() => setActiveSection("description")} />
             <h1>Property type</h1>
           </div>
 
@@ -1002,17 +1005,40 @@ export function PropertyDetailsViews({
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
+                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer transition-all shrink-0`}
+                        aria-label="Decrease guests"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain" />
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={activeSection === "guests" ? "size-7 sm:size-8" : "size-4"}
+                        >
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
                       </button>
                       <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] text-[42px]" : "w-5 text-center text-base"} font-normal text-[#1F1F1F]`}>{editGuests}</span>
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
-                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
+                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer transition-all shrink-0`}
+                        aria-label="Increase guests"
                       >
-                        +
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={activeSection === "guests" ? "size-7 sm:size-8" : "size-4"}
+                        >
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
                       </button>
                     </div>
                   </div>

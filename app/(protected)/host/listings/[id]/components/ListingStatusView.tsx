@@ -383,7 +383,7 @@ export function ListingStatusView({
     <div className="space-y-6 animate-in fade-in max-w-2xl pb-12 font-sans">
       {/* Header & Back Navigation */}
       <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("arrival-guide")} />
+        <BackButton onClick={() => setActiveSection("propertyType")} />
         <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F]">Listing status</h1>
       </div>
 

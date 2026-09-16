@@ -24,7 +24,7 @@ type ListingReviewData = {
 export type ListingAuditItem = {
   id: string;
   action: string;
-  description: string;
+  description: string | null;
   actorEmail: string | null;
   createdAt: string;
 };
@@ -54,7 +54,7 @@ export function AdminListingReviewView({
   onListingChange,
 }: {
   listing: ListingReviewData;
-  missingRequirements: Array<{ section: string; label: string }>;
+  missingRequirements: Array<{ section: string; label: string; key?: string }>;
   auditLogs: ListingAuditItem[];
   auditTotal: number;
   auditOnly?: boolean;
@@ -131,7 +131,7 @@ export function AdminListingReviewView({
     {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2>Review summary</h2><p className="mt-1">{missingRequirements.length ? `${missingRequirements.length} required item${missingRequirements.length === 1 ? "" : "s"} need attention.` : "All shared listing requirements are complete."}</p></div><span className={`rounded-full px-3 py-1 text-[11px] font-bold ${missingRequirements.length ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700"}`}>{missingRequirements.length ? "ACTION NEEDED" : "READY TO REVIEW"}</span></div>
-      {missingRequirements.length > 0 && <div className="mt-4 divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border)]">{missingRequirements.map((item) => <button type="button" key={item.section} onClick={() => onNavigate(item.section)} className="flex w-full items-center justify-between px-3 py-3 text-left text-xs hover:bg-[var(--surface-secondary)]"><span>{item.label}</span><span className="text-[var(--muted-foreground)]">Open →</span></button>)}</div>}
+      {missingRequirements.length > 0 && <div className="mt-4 divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border)]">{missingRequirements.map((item, index) => <button type="button" key={item.key || `${item.section}-${index}`} onClick={() => onNavigate(item.section)} className="flex w-full items-center justify-between px-3 py-3 text-left text-xs hover:bg-[var(--surface-secondary)]"><span>{item.label}</span><span className="text-[var(--muted-foreground)]">Open →</span></button>)}</div>}
     </div>
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
       <h2>Approval & publication</h2>
@@ -215,7 +215,7 @@ export function AdminListingReviewView({
         <textarea
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          className="mt-3 w-full"
+          className="mt-3 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-[var(--foreground)] focus:border-amber-500 focus:outline-none placeholder:text-[var(--muted-foreground)]"
           rows={4}
           placeholder="Describe the required listing changes…"
         />

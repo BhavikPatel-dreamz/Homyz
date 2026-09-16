@@ -386,102 +386,119 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
   return (
     <div className="flex flex-col gap-6 font-sans text-muted-foreground pb-12">
-      {/* Top Breadcrumb & Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-            <Link href="/admin/listings" className="hover:text-muted-foreground font-semibold transition-colors">
-              ← Property Listings
-            </Link>
-            <span>/</span>
-            <span className="font-mono">#{listing.id.slice(-10)}</span>
-          </div>
-
-          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-            <h1>{listing.title}</h1>
-
-            <div className="flex items-center gap-2">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold border shadow-2xs ${
-                  listing.published
-                    ? "bg-emerald-500/20 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
-                    : listing.isPaused
-                    ? "bg-rose-500/20 text-rose-700 border-rose-500/30 dark:text-rose-300"
-                    : "bg-amber-500/20 text-amber-700 border-amber-500/30 dark:text-amber-300"
-                }`}
-              >
-                {listing.published ? "PUBLISHED (LIVE)" : listing.isPaused ? "PAUSED / DISABLED" : listing.status}
-              </span>
-
-              {listing.isFeatured && (
-                <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-500 text-zinc-950 shadow-2xs">
-                  ★ FEATURED
-                </span>
-              )}
+      {/* Top Header & Quick Override Controls Bar */}
+      <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+          <div className="space-y-1.5 min-w-0">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+              <Link href="/admin/listings" className="hover:text-muted-foreground font-semibold transition-colors flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span>Property Listings</span>
+              </Link>
+              <span>/</span>
+              <span className="font-mono text-[11px] font-semibold text-[var(--muted-foreground)]">#{listing.id.slice(-10)}</span>
             </div>
+
+            {/* Title & Status Badges */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-muted-foreground tracking-tight">{listing.title}</h1>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border shadow-2xs ${
+                    listing.published
+                      ? "bg-emerald-500/20 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
+                      : listing.isPaused
+                      ? "bg-rose-500/20 text-rose-700 border-rose-500/30 dark:text-rose-300"
+                      : "bg-amber-500/20 text-amber-700 border-amber-500/30 dark:text-amber-300"
+                  }`}
+                >
+                  {listing.published ? "✓ PUBLISHED (LIVE)" : listing.isPaused ? "⏸ PAUSED / DISABLED" : listing.status}
+                </span>
+
+                {listing.isFeatured && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black bg-amber-500 text-zinc-950 border border-amber-400 shadow-2xs">
+                    ★ FEATURED
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Subtitle location & host info */}
+            <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1 flex-wrap">
+              <span>📍 {listing.address ? `${listing.address}, ` : ""}{listing.city}, {listing.country}</span>
+              <span>•</span>
+              <span>Host: <strong className="text-muted-foreground">{listing.host.name || "Host"}</strong> ({listing.host.email})</span>
+            </p>
           </div>
 
-          <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            📍 {listing.address ? `${listing.address}, ` : ""}{listing.city}, {listing.country} • Host: <strong>{listing.host.name || "Host"}</strong> ({listing.host.email})
-          </p>
-        </div>
+          {/* Quick Override Controls */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={handleToggleFeature}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs border cursor-pointer ${
+                listing.isFeatured
+                  ? "bg-amber-500 text-zinc-950 border-amber-500 hover:bg-amber-400"
+                  : "bg-[var(--surface-secondary)] text-muted-foreground border-[var(--border)] hover:bg-[var(--muted)]"
+              }`}
+            >
+              {listing.isFeatured ? "★ Featured Property" : "☆ Feature Property"}
+            </button>
 
-        {/* Quick Override Controls */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleToggleFeature}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs border ${
-              listing.isFeatured ? "bg-amber-500 text-zinc-950 border-amber-500" : "bg-[var(--surface-secondary)] text-muted-foreground border-[var(--border)]"
-            }`}
-          >
-            {listing.isFeatured ? "★ Featured Property" : "☆ Feature Property"}
-          </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={handleToggleDisable}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs cursor-pointer ${
+                listing.isPaused ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"
+              }`}
+            >
+              {listing.isPaused ? "▶ Enable Listing" : "⏸ Pause Listing"}
+            </button>
 
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleToggleDisable}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs ${
-              listing.isPaused ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
-            }`}
-          >
-            {listing.isPaused ? "▶ Enable Listing" : "⏸ Pause Listing"}
-          </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={handleToggleVisibility}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs cursor-pointer ${
+                listing.published ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-zinc-800 hover:bg-zinc-900 text-white dark:bg-zinc-700 dark:hover:bg-zinc-600"
+              }`}
+            >
+              {listing.published ? "✓ Published" : "Publish Listing"}
+            </button>
 
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleToggleVisibility}
-            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs ${
-              listing.published ? "bg-emerald-600 text-white" : "bg-zinc-800 text-white"
-            }`}
-          >
-            {listing.published ? "✓ Published" : "Publish Listing"}
-          </button>
-
-          <button
-            type="button"
-            disabled={isSaving || isDeleting}
-            onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs bg-rose-600 hover:bg-rose-700 text-white"
-          >
-            🗑 Delete Listing
-          </button>
+            <button
+              type="button"
+              disabled={isSaving || isDeleting}
+              onClick={() => setShowDeleteModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all shadow-xs bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
+            >
+              🗑 Delete Listing
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Alert Banner */}
       {feedbackMsg && (
-        <div className={`rounded-2xl p-4 text-xs font-semibold border animate-in fade-in ${feedbackMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-rose-500/10 text-rose-600 border-rose-500/30"}`}>
-          {feedbackMsg.text}
+        <div className={`rounded-2xl p-4 text-xs font-semibold border animate-in fade-in flex items-center justify-between ${
+          feedbackMsg.type === "success"
+            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+            : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+        }`}>
+          <span>{feedbackMsg.text}</span>
+          <button type="button" onClick={() => setFeedbackMsg(null)} className="text-xs opacity-70 hover:opacity-100">✕</button>
         </div>
       )}
 
       {/* Sticky Tab Navigation Bar */}
-      <div className="sticky top-0 z-30 bg-[var(--surface)]/90 backdrop-blur-md py-2 border-b border-[var(--border)]">
-        <div className="flex items-center gap-2 overflow-x-auto text-xs font-semibold scrollbar-none">
+      <div className="sticky top-0 z-30 bg-[var(--surface)]/95 backdrop-blur-md py-2 border-b border-[var(--border)] -mx-1 px-1">
+        <div className="flex items-center gap-2 overflow-x-auto text-xs font-semibold scrollbar-none py-1">
           {[
             { id: "overview", icon: "📌", label: "Overview & Controls" },
             { id: "details", icon: "🏡", label: "Listing Details" },
@@ -495,10 +512,10 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-amber-500 text-zinc-950 font-black shadow-sm"
-                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground"
+                  ? "bg-amber-500 text-zinc-950 font-bold shadow-sm scale-102"
+                  : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-muted-foreground hover:bg-[var(--muted)]"
               }`}
             >
               <span>{tab.icon}</span>
@@ -510,52 +527,60 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
       {/* TAB 1: OVERVIEW & CONTROLS */}
       {activeTab === "overview" && (
-        <div className="grid gap-6 md:grid-cols-3 animate-in fade-in">
+        <div className="grid gap-6 lg:grid-cols-3 animate-in fade-in">
           {/* Main Cover & Summary Card */}
-          <div className="md:col-span-2 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-6 shadow-2xs">
+          <div className="lg:col-span-2 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-6 shadow-2xs">
             {/* Gallery Cover Grid */}
             <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden aspect-16/9 bg-zinc-100 dark:bg-zinc-900 border border-[var(--border-subtle)]">
               {listing.photos && listing.photos.length > 0 ? (
                 <>
                   <div className="col-span-2 relative h-full">
                     <img src={listing.photos[0]} alt="Cover photo" className="w-full h-full object-cover" />
-                    <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded font-mono font-semibold">
+                    <span className="absolute bottom-3 left-3 bg-black/75 text-white text-[10px] px-2.5 py-1 rounded-full font-mono font-semibold backdrop-blur-xs">
                       ★ Cover Photo
                     </span>
                   </div>
                   <div className="flex flex-col gap-2 h-full">
-                    {listing.photos[1] && <img src={listing.photos[1]} alt="Photo 2" className="w-full h-1/2 object-cover" />}
-                    {listing.photos[2] && <img src={listing.photos[2]} alt="Photo 3" className="w-full h-1/2 object-cover" />}
+                    {listing.photos[1] ? (
+                      <img src={listing.photos[1]} alt="Photo 2" className="w-full h-1/2 object-cover" />
+                    ) : (
+                      <div className="w-full h-1/2 bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">📷</div>
+                    )}
+                    {listing.photos[2] ? (
+                      <img src={listing.photos[2]} alt="Photo 3" className="w-full h-1/2 object-cover" />
+                    ) : (
+                      <div className="w-full h-1/2 bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">📷</div>
+                    )}
                   </div>
                 </>
               ) : (
                 <div className="col-span-full h-full flex flex-col items-center justify-center text-[var(--muted-foreground)] p-6 text-center">
-                  <span className="text-3xl mb-1">🏡</span>
+                  <span className="text-4xl mb-2">🏡</span>
                   <span className="text-xs font-semibold">No Property Photos Uploaded</span>
                 </div>
               )}
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-4 text-xs font-medium">
-              <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-semibold">Nightly Rate</span>
-                <span className="text-xl font-black text-emerald-600 font-mono">{formatSarFromHalalas(listing.price)}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-5 text-xs font-medium">
+              <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
+                <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider">Nightly Rate</span>
+                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{formatSarFromHalalas(listing.price)}</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-semibold">Total Bookings</span>
+              <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
+                <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider">Total Bookings</span>
                 <span className="text-xl font-black text-muted-foreground font-mono">{listing.bookingCount}</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-semibold">Capacity</span>
-                <span className="text-sm font-semibold text-muted-foreground">{listing.guests} Guests ({listing.bedrooms} Beds)</span>
+              <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
+                <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider">Capacity</span>
+                <span className="text-sm font-bold text-muted-foreground">{listing.guests} Guests ({listing.bedrooms} Beds)</span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-semibold">Photos Quality</span>
-                <span className={`text-sm font-semibold ${listing.photos.length >= 5 ? "text-emerald-600" : "text-amber-600"}`}>
+              <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
+                <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider">Photos Quality</span>
+                <span className={`text-sm font-bold ${listing.photos.length >= 5 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
                   {listing.photos.length} / 5 Min
                 </span>
               </div>
@@ -566,45 +591,45 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-6 shadow-2xs text-xs">
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-3">Host Account Overview</h3>
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
+              <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
                 {listing.host.image ? (
-                  <img src={listing.host.image} alt={listing.host.name || ""} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={listing.host.image} alt={listing.host.name || ""} className="w-10 h-10 rounded-full object-cover shrink-0" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-amber-500 text-zinc-950 font-black flex items-center justify-center text-sm">
+                  <div className="w-10 h-10 rounded-full bg-amber-500 text-zinc-950 font-black flex items-center justify-center text-sm shrink-0">
                     {listing.host.name?.slice(0, 1) || "H"}
                   </div>
                 )}
-                <div className="flex flex-col">
-                  <span className="font-semibold text-xs text-muted-foreground">{listing.host.name || "Host"}</span>
-                  <span className="text-[10px] text-[var(--muted-foreground)]">{listing.host.email}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-semibold text-xs text-muted-foreground truncate">{listing.host.name || "Host"}</span>
+                  <span className="text-[10px] text-[var(--muted-foreground)] truncate">{listing.host.email}</span>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Host verification & documents</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Host Verification & Documents</h3>
               {listing.hostVerification ? (
-                <>
-                  <p><strong className="text-muted-foreground">Application:</strong> {listing.hostVerification.status}</p>
-                  <p><strong className="text-muted-foreground">Compliance:</strong> {listing.hostVerification.complianceStatus}</p>
+                <div className="space-y-2">
+                  <p><strong className="text-muted-foreground">Application:</strong> <span className="font-semibold">{listing.hostVerification.status}</span></p>
+                  <p><strong className="text-muted-foreground">Compliance:</strong> <span className="font-semibold">{listing.hostVerification.complianceStatus}</span></p>
                   {listing.hostVerification.documents.length ? (
-                    <ul className="space-y-1">
+                    <ul className="space-y-1.5 pt-1">
                       {listing.hostVerification.documents.map((document) => (
-                        <li key={document.id} className="flex items-center justify-between gap-2">
-                          <a href={document.fileUrl} target="_blank" rel="noreferrer" className="truncate text-amber-700 underline dark:text-amber-300">
-                            {document.documentType.replace(/_/g, " ")}
+                        <li key={document.id} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)]">
+                          <a href={document.fileUrl} target="_blank" rel="noreferrer" className="truncate text-amber-600 underline font-semibold dark:text-amber-300">
+                            📄 {document.documentType.replace(/_/g, " ")}
                           </a>
-                          <span className="shrink-0 text-[10px] font-semibold">{document.status}</span>
+                          <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">{document.status}</span>
                         </li>
                       ))}
                     </ul>
                   ) : <p className="text-[var(--muted-foreground)]">No verification documents uploaded.</p>}
-                </>
+                </div>
               ) : <p className="text-[var(--muted-foreground)]">No host verification application found.</p>}
             </div>
 
             <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Audit History</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Audit & History Logs</h3>
               <p><strong className="text-muted-foreground">Created:</strong> {new Date(listing.createdAt).toLocaleString()}</p>
               <p><strong className="text-muted-foreground">Last Updated:</strong> {new Date(listing.updatedAt).toLocaleString()}</p>
               {listing.approvedAt && <p><strong className="text-muted-foreground">Approved At:</strong> {new Date(listing.approvedAt).toLocaleString()}</p>}
@@ -617,7 +642,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {/* TAB 2: LISTING DETAILS */}
       {activeTab === "details" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
               <h2 className="text-lg font-black text-muted-foreground">Property Basic Information & Capacity</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Edit title, property type, category, address, and guest capacity.</p>
@@ -626,7 +651,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={handleSaveDetails}
-              className="rounded-full bg-amber-500 px-6 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-amber-400 shadow-md transition-all self-start sm:self-auto cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Details"}
             </button>
@@ -634,31 +659,31 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className="block font-semibold text-muted-foreground mb-1">Property Title *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Property Title *</label>
               <input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block font-semibold text-muted-foreground mb-1">Detailed Property Description *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Detailed Property Description *</label>
               <textarea
                 rows={4}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 text-xs text-muted-foreground outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all leading-relaxed"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Hosting Category</label>
+              <label className="block font-bold text-muted-foreground mb-1">Hosting Category</label>
               <select
                 value={editHostingType}
                 onChange={(e) => setEditHostingType(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500 transition-all"
               >
                 <option value="HOME">Residential Home</option>
                 <option value="EXPERIENCE">Experience</option>
@@ -667,89 +692,89 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Property Type</label>
+              <label className="block font-bold text-muted-foreground mb-1">Property Type</label>
               <input
                 type="text"
                 value={editPropertyType}
                 onChange={(e) => setEditPropertyType(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>
 
             <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Street Address</label>
+                <label className="block font-bold text-muted-foreground mb-1">Street Address</label>
                 <input
                   type="text"
                   value={editAddress}
                   onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none focus:border-amber-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">City / Region</label>
+                <label className="block font-bold text-muted-foreground mb-1">City / Region</label>
                 <input
                   type="text"
                   value={editCity}
                   onChange={(e) => setEditCity(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none focus:border-amber-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Country</label>
+                <label className="block font-bold text-muted-foreground mb-1">Country</label>
                 <input
                   type="text"
                   value={editCountry}
                   onChange={(e) => setEditCountry(e.target.value)}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground outline-none focus:border-amber-500 transition-all"
                 />
               </div>
             </div>
 
             <div className="sm:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-4">
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Guests Capacity</label>
+                <label className="block font-bold text-muted-foreground mb-1">Guests Capacity</label>
                 <input
                   type="number"
                   min={1}
                   value={editGuests}
                   onChange={(e) => setEditGuests(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-bold text-center outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Bedrooms</label>
+                <label className="block font-bold text-muted-foreground mb-1">Bedrooms</label>
                 <input
                   type="number"
                   min={0}
                   value={editBedrooms}
                   onChange={(e) => setEditBedrooms(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-bold text-center outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Beds</label>
+                <label className="block font-bold text-muted-foreground mb-1">Beds</label>
                 <input
                   type="number"
                   min={1}
                   value={editBeds}
                   onChange={(e) => setEditBeds(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-bold text-center outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-muted-foreground mb-1">Bathrooms</label>
+                <label className="block font-bold text-muted-foreground mb-1">Bathrooms</label>
                 <input
                   type="number"
                   min={1}
                   value={editBathrooms}
                   onChange={(e) => setEditBathrooms(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-bold text-center outline-none focus:border-amber-500"
                 />
               </div>
             </div>
@@ -760,7 +785,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {/* TAB 3: PHOTOS GALLERY */}
       {activeTab === "photos" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
               <h2 className="text-lg font-black text-muted-foreground">Property Photos & Media Gallery</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Upload image files directly or paste image URLs. Minimum 5 photos required for approval.</p>
@@ -769,7 +794,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={handleSavePhotos}
-              className="rounded-full bg-amber-500 px-6 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-amber-400 shadow-md transition-all self-start sm:self-auto cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Gallery"}
             </button>
@@ -777,7 +802,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           {/* Photo File Upload & Add URL */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-5 py-3 hover:opacity-90 transition-all shrink-0">
+            <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-bold px-5 py-3 hover:opacity-90 transition-all shrink-0">
               <span>📁 Upload Photo File</span>
               <input
                 type="file"
@@ -815,7 +840,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 value={newPhotoUrl}
                 onChange={(e) => setNewPhotoUrl(e.target.value)}
                 placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
-                className="flex-1 rounded-2xl border border-[var(--border)] p-3 bg-[var(--surface-secondary)] text-muted-foreground outline-none focus:border-amber-500"
+                className="flex-1 rounded-2xl border border-[var(--border)] p-3 bg-[var(--surface-secondary)] text-muted-foreground outline-none focus:border-amber-500 transition-all"
               />
               <button
                 type="button"
@@ -824,7 +849,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                   setEditPhotos([...editPhotos, newPhotoUrl.trim()]);
                   setNewPhotoUrl("");
                 }}
-                className="rounded-2xl bg-amber-500 text-zinc-950 font-semibold px-5 py-3 hover:bg-amber-400 shrink-0"
+                className="rounded-2xl bg-amber-500 text-zinc-950 font-bold px-5 py-3 hover:bg-amber-400 shrink-0 cursor-pointer"
               >
                 + Add URL
               </button>
@@ -840,13 +865,13 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                   <button
                     type="button"
                     onClick={() => setEditPhotos(editPhotos.filter((_, i) => i !== idx))}
-                    className="bg-rose-600 text-white rounded-full px-3 py-1 text-xs font-semibold"
+                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-full px-3.5 py-1 text-xs font-bold transition-all shadow-xs cursor-pointer"
                   >
                     🗑 Remove
                   </button>
                 </div>
-                <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded font-mono font-semibold">
-                  #{idx + 1} {idx === 0 ? "Cover Photo" : ""}
+                <span className="absolute bottom-2 left-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-mono font-semibold">
+                  #{idx + 1} {idx === 0 ? "★ Cover" : ""}
                 </span>
               </div>
             ))}
@@ -857,7 +882,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {/* TAB 4: AMENITIES & RULES */}
       {activeTab === "amenities" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
               <h2 className="text-lg font-black text-muted-foreground">Property Amenities & House Rules</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Manage feature amenities chips and rules for guest stays.</p>
@@ -866,15 +891,15 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={handleSaveAmenitiesAndRules}
-              className="rounded-full bg-amber-500 px-6 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-amber-400 shadow-md transition-all self-start sm:self-auto cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Amenities & Rules"}
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <h3 className="font-semibold text-sm text-muted-foreground mb-2">Amenities Selector</h3>
+              <h3 className="font-bold text-sm text-muted-foreground mb-3">Amenities Selector</h3>
               <div className="flex flex-wrap gap-2">
                 {COMMON_AMENITIES.map((am) => {
                   const active = editAmenities.includes(am);
@@ -885,8 +910,10 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                       onClick={() => {
                         setEditAmenities(active ? editAmenities.filter((a) => a !== am) : [...editAmenities, am]);
                       }}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all ${
-                        active ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-2xs" : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border)]"
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all cursor-pointer ${
+                        active
+                          ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-2xs font-bold"
+                          : "bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--muted)]"
                       }`}
                     >
                       {active ? "✓ " : "+ "}{am.replace(/_/g, " ")}
@@ -896,9 +923,9 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               </div>
             </div>
 
-            <div className="border-t border-[var(--border-subtle)] pt-4">
-              <h3 className="font-semibold text-sm text-muted-foreground mb-2">House Rules</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="border-t border-[var(--border-subtle)] pt-5">
+              <h3 className="font-bold text-sm text-muted-foreground mb-3">House Rules</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {HOUSE_RULE_OPTIONS.map((rule) => {
                   const active = editHouseRules.includes(rule);
                   return (
@@ -908,11 +935,15 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                       onClick={() => {
                         setEditHouseRules(active ? editHouseRules.filter((r) => r !== rule) : [...editHouseRules, rule]);
                       }}
-                      className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left text-xs transition-all ${
-                        active ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold" : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground"
+                      className={`flex items-center gap-3 p-3.5 rounded-2xl border text-left text-xs transition-all cursor-pointer ${
+                        active
+                          ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
+                          : "border-[var(--border)] bg-[var(--surface-secondary)] text-muted-foreground hover:bg-[var(--muted)]"
                       }`}
                     >
-                      <span>{active ? "✓" : "○"}</span>
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${active ? "bg-amber-500 text-zinc-950 font-bold" : "border border-[var(--border)]"}`}>
+                        {active ? "✓" : ""}
+                      </span>
                       <span>{rule}</span>
                     </button>
                   );
@@ -926,7 +957,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {/* TAB 5: POLICIES & AVAILABILITY */}
       {activeTab === "policies" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
               <h2 className="text-lg font-black text-muted-foreground">Check-in, Policies & Calendar Availability</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Manage check-in details, cancellation policies, and blocked calendar dates.</p>
@@ -935,7 +966,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={handleSavePolicies}
-              className="rounded-full bg-amber-500 px-6 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-amber-400 shadow-md transition-all self-start sm:self-auto cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Policies & Calendar"}
             </button>
@@ -943,54 +974,54 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Check-in Method</label>
+              <label className="block font-bold text-muted-foreground mb-1">Check-in Method</label>
               <input
                 type="text"
                 value={editCheckInMethod}
                 onChange={(e) => setEditCheckInMethod(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Check-in Window</label>
+              <label className="block font-bold text-muted-foreground mb-1">Check-in Window</label>
               <div className="flex items-center gap-2">
                 <input
                   type="time"
                   value={editCheckInStart}
                   onChange={(e) => setEditCheckInStart(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-semibold text-center outline-none focus:border-amber-500"
                 />
-                <span>to</span>
+                <span className="font-semibold text-[var(--muted-foreground)]">to</span>
                 <input
                   type="time"
                   value={editCheckInEnd}
                   onChange={(e) => setEditCheckInEnd(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2 text-xs text-muted-foreground font-semibold text-center"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-semibold text-center outline-none focus:border-amber-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Checkout Time</label>
+              <label className="block font-bold text-muted-foreground mb-1">Checkout Time</label>
               <input
                 type="time"
                 value={editCheckOutTime}
                 onChange={(e) => setEditCheckOutTime(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold text-center"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-semibold text-center outline-none focus:border-amber-500 transition-all"
               />
             </div>
           </div>
 
           {/* Blocked Dates Manager */}
-          <div className="border-t border-[var(--border-subtle)] pt-4 space-y-3">
-            <h3 className="font-semibold text-sm text-muted-foreground">Blocked Dates Calendar Manager ({editBlockedDates.length})</h3>
-            <div className="flex gap-2">
+          <div className="border-t border-[var(--border-subtle)] pt-5 space-y-3">
+            <h3 className="font-bold text-sm text-muted-foreground">Blocked Dates Calendar Manager ({editBlockedDates.length})</h3>
+            <div className="flex gap-2 max-w-md">
               <input
                 type="date"
                 value={newBlockedDate}
                 onChange={(e) => setNewBlockedDate(e.target.value)}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-semibold"
+                className="flex-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground font-semibold outline-none focus:border-amber-500"
               />
               <button
                 type="button"
@@ -999,25 +1030,30 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                   setEditBlockedDates([...editBlockedDates, newBlockedDate].sort());
                   setNewBlockedDate("");
                 }}
-                className="rounded-2xl bg-amber-500 text-zinc-950 font-semibold px-5 py-2 text-xs"
+                className="rounded-2xl bg-amber-500 text-zinc-950 font-bold px-5 py-2.5 text-xs hover:bg-amber-400 shrink-0 cursor-pointer"
               >
                 + Block Date
               </button>
             </div>
 
             <div className="flex flex-wrap gap-2 pt-2">
-              {editBlockedDates.map((dateStr) => (
-                <span key={dateStr} className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-secondary)] border border-[var(--border-subtle)] px-3 py-1 text-xs font-mono font-semibold">
-                  📅 {dateStr}
-                  <button
-                    type="button"
-                    onClick={() => setEditBlockedDates(editBlockedDates.filter((d) => d !== dateStr))}
-                    className="text-rose-600 font-black hover:text-rose-700"
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
+              {editBlockedDates.length === 0 ? (
+                <p className="text-[var(--muted-foreground)] text-xs italic">No blocked dates set on this property calendar.</p>
+              ) : (
+                editBlockedDates.map((dateStr) => (
+                  <span key={dateStr} className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-secondary)] border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-mono font-semibold">
+                    📅 {dateStr}
+                    <button
+                      type="button"
+                      onClick={() => setEditBlockedDates(editBlockedDates.filter((d) => d !== dateStr))}
+                      className="text-rose-600 font-bold hover:text-rose-700 ml-1 cursor-pointer"
+                      title="Remove blocked date"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1026,7 +1062,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       {/* TAB 6: PRICING & FEES */}
       {activeTab === "pricing" && (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
               <h2 className="text-lg font-black text-muted-foreground">Nightly Rates & Mandatory Fees</h2>
               <p className="text-xs text-[var(--muted-foreground)]">Configure standard price, weekend rates, cleaning fees, and security deposit.</p>
@@ -1035,62 +1071,63 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={handleSavePricing}
-              className="rounded-full bg-amber-500 px-6 py-2 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-md"
+              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 hover:bg-amber-400 shadow-md transition-all self-start sm:self-auto cursor-pointer"
             >
               {isSaving ? "Saving..." : "Save Pricing"}
             </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-4">
             <div>
+              <label className="block font-bold text-muted-foreground mb-1">Standard Base Rate (SAR/night) *</label>
               <input
                 type="number"
                 min="0"
                 value={editPrice}
                 onChange={(e) => setEditPrice(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold text-emerald-600 outline-none focus:border-amber-500"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-bold text-emerald-600 dark:text-emerald-400 outline-none focus:border-amber-500 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Weekend Rate (SAR)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Weekend Rate (SAR/night)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editWeekendPrice}
                 onChange={(e) => setEditWeekendPrice(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Cleaning Fee (SAR)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Cleaning Fee (SAR)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editCleaningFee}
                 onChange={(e) => setEditCleaningFee(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-muted-foreground mb-1">Extra Guest Fee (SAR/night)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Security Deposit / Extra Fee (SAR)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={editSecurityDeposit}
                 onChange={(e) => setEditSecurityDeposit(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>
           </div>
 
-          <div className="rounded-2xl border border-amber-200/60 bg-amber-500/10 p-4 text-xs space-y-1">
-            <span className="font-bold text-zinc-900">Platform Pricing Architecture:</span>
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs space-y-1">
+            <span className="font-bold text-amber-700 dark:text-amber-300">Platform Pricing Architecture:</span>
             <p className="text-muted-foreground">Standard base price is applied for weekday nights. Weekend pricing applies on applicable weekend nights.</p>
           </div>
         </div>
@@ -1105,29 +1142,29 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-5 space-y-3">
-            <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Listing Audit Checklist</h3>
+            <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Listing Audit Checklist</h3>
             
             <div className="flex items-center justify-between">
-              <span>Minimum 5 High Quality Photos:</span>
-              <span className={`font-semibold ${editPhotos.length >= 5 ? "text-emerald-600" : "text-amber-600"}`}>
+              <span className="font-semibold text-muted-foreground">Minimum 5 High Quality Photos:</span>
+              <span className={`font-bold ${editPhotos.length >= 5 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
                 {editPhotos.length >= 5 ? "✓ PASSED" : `⚠️ FAILED (${editPhotos.length} / 5 photos)`}
               </span>
             </div>
 
-            <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
-              <span>Standard Nightly Price Set:</span>
-              <span className="font-semibold text-emerald-600">✓ PASSED (SAR {editPrice}/night)</span>
+            <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-2.5">
+              <span className="font-semibold text-muted-foreground">Standard Nightly Price Set:</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">✓ PASSED (SAR {editPrice}/night)</span>
             </div>
           </div>
 
           <div>
-            <label className="block font-semibold text-muted-foreground mb-1">Feedback Note / Rejection Reason</label>
+            <label className="block font-bold text-muted-foreground mb-2">Feedback Note / Rejection Reason</label>
             <textarea
-              rows={3}
+              rows={4}
               value={modReason}
               onChange={(e) => setModReason(e.target.value)}
-              placeholder="Enter quality feedback instructions for the host..."
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground outline-none focus:border-amber-500"
+              placeholder="Enter quality feedback instructions or reason for requesting changes/rejection..."
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 text-xs text-muted-foreground outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all leading-relaxed"
             />
           </div>
 
@@ -1136,7 +1173,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={() => handleModerate("REJECT")}
-              className="rounded-full bg-rose-600 px-6 py-2.5 text-xs font-semibold text-white hover:bg-rose-700 shadow-sm"
+              className="rounded-full bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               Reject Listing
             </button>
@@ -1145,7 +1182,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={() => handleModerate("REQUEST_CHANGES")}
-              className="rounded-full bg-amber-500 px-6 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-amber-400 shadow-sm"
+              className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               Request Changes
             </button>
@@ -1154,7 +1191,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
               type="button"
               disabled={isSaving}
               onClick={() => handleModerate("APPROVE")}
-              className="rounded-full bg-emerald-600 px-7 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 shadow-md"
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-2.5 text-xs font-bold transition-all shadow-md cursor-pointer"
             >
               Approve Listing
             </button>
@@ -1164,13 +1201,13 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
       {/* Delete Listing Confirmation Modal */}
       {showDeleteModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
+              <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-600 flex items-center justify-center font-bold text-lg border border-rose-500/30 shrink-0">
                 ⚠️
               </div>
-              <h3 className="text-base font-semibold text-muted-foreground">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-bold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
               Are you sure you want to delete <strong className="text-muted-foreground">{listing.title}</strong>? This action will completely and permanently remove the property listing, associated bookings, and database records. This cannot be undone.
@@ -1185,7 +1222,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-5 py-2 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
+                className="rounded-full px-5 py-2.5 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -1193,7 +1230,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDeleteListing}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
                 {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
               </button>
