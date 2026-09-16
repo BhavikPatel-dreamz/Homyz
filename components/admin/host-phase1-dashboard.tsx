@@ -134,8 +134,8 @@ export function HostPhase1Dashboard({ analytics, initialHosts }: HostPhase1Dashb
         <MetricCard label="Active Hosts" value={analytics.activeHosts} subtitle="Normal standing" />
         <MetricCard label="Suspended Hosts" value={analytics.suspendedHosts} subtitle="Disabled accounts" />
         <MetricCard label="New Hosts (30d)" value={newHosts} subtitle="Recent signups" />
-        <MetricCard label="Total Listings" value={totalListings} subtitle="Properties managed" />
-        <MetricCard label="Total Bookings" value={totalBookings} subtitle="Reservations received" />
+        <MetricCard label="Total Listings" value={analytics.totalListings ?? totalListings} subtitle="Properties managed" />
+        <MetricCard label="Total Bookings" value={analytics.totalBookings ?? totalBookings} subtitle="Reservations received" />
       </div>
 
       {/* Controls Bar: Search, Filters & Sorting */}

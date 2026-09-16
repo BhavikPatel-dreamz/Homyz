@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatSarFromHalalas } from "@/lib/currency";
 import { AdminPagination } from "@/components/admin/admin-pagination";
+import { toast } from "@/components/ui/toast";
 import {
   adminUpdateListingDetailsAction,
   adminUpdateListingPricingAction,
@@ -14,6 +15,7 @@ import {
   adminToggleVisibilityAction,
   adminModerateListingQualityAction,
   adminDeleteListingAction,
+  adminBulkDeleteListingsAction,
 } from "@/actions/admin/listingActions";
 
 export interface FullListingItem {
@@ -27,6 +29,9 @@ export interface FullListingItem {
   propertyType: string;
   listingType: string;
   address: string;
+  apartment?: string;
+  shortAddress?: string;
+  locationSearch?: string;
   city: string;
   district: string;
   postalCode: string;
@@ -117,6 +122,7 @@ export function AdminListingsClient({
   const [editPropertyType, setEditPropertyType] = useState("");
   const [editListingType, setEditListingType] = useState("");
   const [editAddress, setEditAddress] = useState("");
+  const [editApartment, setEditApartment] = useState("");
   const [editCity, setEditCity] = useState("");
   const [editDistrict, setEditDistrict] = useState("");
   const [editPostalCode, setEditPostalCode] = useState("");
@@ -196,6 +202,7 @@ export function AdminListingsClient({
     setEditPropertyType(item.propertyType);
     setEditListingType(item.listingType);
     setEditAddress(item.address);
+    setEditApartment(item.apartment || "");
     setEditCity(item.city);
     setEditDistrict(item.district || "");
     setEditPostalCode(item.postalCode || "");
@@ -239,6 +246,84 @@ export function AdminListingsClient({
   const [listingToDelete, setListingToDelete] = useState<FullListingItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Bulk selection states
+  const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const selectedListings = useMemo(() => {
+    return listings.filter((l) => selectedListingIds.includes(l.id));
+  }, [listings, selectedListingIds]);
+
+  const allOnPageSelected = useMemo(() => {
+    if (paginatedListings.length === 0) return false;
+    return paginatedListings.every((l) => selectedListingIds.includes(l.id));
+  }, [paginatedListings, selectedListingIds]);
+
+  const someOnPageSelected = useMemo(() => {
+    return paginatedListings.some((l) => selectedListingIds.includes(l.id)) && !allOnPageSelected;
+  }, [paginatedListings, selectedListingIds, allOnPageSelected]);
+
+  function toggleSelectAllOnPage() {
+    if (allOnPageSelected) {
+      const pageIds = new Set(paginatedListings.map((l) => l.id));
+      setSelectedListingIds((prev) => prev.filter((id) => !pageIds.has(id)));
+    } else {
+      const newIds = new Set(selectedListingIds);
+      paginatedListings.forEach((l) => newIds.add(l.id));
+      setSelectedListingIds(Array.from(newIds));
+    }
+  }
+
+  function toggleSelectListing(id: string) {
+    setSelectedListingIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  }
+
+  function clearSelection() {
+    setSelectedListingIds([]);
+  }
+
+  async function handleBulkDelete() {
+    if (selectedListingIds.length === 0) return;
+    setIsBulkDeleting(true);
+    const res = await adminBulkDeleteListingsAction({ listingIds: selectedListingIds });
+    setIsBulkDeleting(false);
+
+    if (res.ok) {
+      const { deletedIds, failedIds } = res.data;
+
+      if (deletedIds.length > 0) {
+        setListings((prev) => prev.filter((l) => !deletedIds.includes(l.id)));
+        if (selectedListing && deletedIds.includes(selectedListing.id)) {
+          setSelectedListing(null);
+        }
+      }
+
+      setSelectedListingIds((prev) => prev.filter((id) => !deletedIds.includes(id)));
+      setShowBulkDeleteModal(false);
+
+      if (failedIds.length === 0) {
+        const msg = `Successfully permanently deleted ${deletedIds.length} propert${deletedIds.length === 1 ? "y" : "ies"}.`;
+        setFeedbackMsg({ type: "success", text: msg });
+        toast.success(msg);
+      } else if (deletedIds.length > 0) {
+        const msg = `Deleted ${deletedIds.length} propert${deletedIds.length === 1 ? "y" : "ies"}. ${failedIds.length} could not be deleted.`;
+        setFeedbackMsg({ type: "error", text: msg });
+        toast.error(msg);
+      } else {
+        const msg = `Could not delete selected properties: ${failedIds.map((f) => f.reason).join(", ")}`;
+        setFeedbackMsg({ type: "error", text: msg });
+        toast.error(msg);
+      }
+    } else {
+      const msg = res.error || "Failed to delete selected properties.";
+      setFeedbackMsg({ type: "error", text: msg });
+      toast.error(msg);
+    }
+  }
+
   async function handleDeleteListing() {
     if (!listingToDelete) return;
     setIsDeleting(true);
@@ -246,14 +331,17 @@ export function AdminListingsClient({
     setIsDeleting(false);
     if (res.ok) {
       setListings((prev) => prev.filter((l) => l.id !== listingToDelete.id));
+      setSelectedListingIds((prev) => prev.filter((id) => id !== listingToDelete.id));
       if (selectedListing?.id === listingToDelete.id) {
         setSelectedListing(null);
       }
-      setFeedbackMsg({ type: "success", text: "Property listing deleted successfully." });
+      setFeedbackMsg({ type: "success", text: "Property listing permanently deleted." });
+      toast.success("Property listing permanently deleted.");
       setShowDeleteModal(false);
       setListingToDelete(null);
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to delete listing." });
+      toast.error(res.error || "Failed to delete listing.");
     }
   }
 
@@ -311,6 +399,7 @@ export function AdminListingsClient({
       propertyType: editPropertyType,
       listingType: editListingType,
       address: editAddress,
+      apartment: editApartment,
       city: editCity,
       district: editDistrict,
       postalCode: editPostalCode,
@@ -331,6 +420,7 @@ export function AdminListingsClient({
         propertyType: editPropertyType,
         listingType: editListingType,
         address: editAddress,
+        apartment: editApartment,
         city: editCity,
         district: editDistrict,
         postalCode: editPostalCode,
@@ -577,12 +667,54 @@ export function AdminListingsClient({
         </div>
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedListingIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-xs text-amber-900 dark:text-amber-200 animate-in fade-in slide-in-from-top-2 shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-amber-500 text-zinc-950 font-bold text-[11px]">
+              {selectedListingIds.length}
+            </span>
+            <span className="font-semibold text-sm text-[var(--foreground)]">
+              {selectedListingIds.length} propert{selectedListingIds.length === 1 ? "y" : "ies"} selected
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-1.5 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-secondary)] transition-colors"
+            >
+              Clear selection
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBulkDeleteModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 text-xs font-semibold shadow-xs transition-all"
+            >
+              🗑 Delete Selected ({selectedListingIds.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Listings Table */}
       <div className="hidden md:block rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
               <tr>
+                <th className="py-3.5 px-4 w-10">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all properties on this page"
+                    checked={allOnPageSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = someOnPageSelected;
+                    }}
+                    onChange={toggleSelectAllOnPage}
+                    className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
+                  />
+                </th>
                 <th className="py-3.5 px-4 whitespace-nowrap">ID</th>
                 <th className="py-3.5 px-4">Property & City</th>
                 <th className="py-3.5 px-4">Host</th>
@@ -595,7 +727,7 @@ export function AdminListingsClient({
             <tbody className="divide-y divide-[var(--border-subtle)]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-[var(--muted-foreground)]">
+                  <td colSpan={8} className="py-12 text-center text-[var(--muted-foreground)]">
                     No property listings match the selected criteria.
                   </td>
                 </tr>
@@ -603,9 +735,23 @@ export function AdminListingsClient({
                 paginatedListings.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer"
+                      className={`hover:bg-[var(--surface-secondary)] transition-colors cursor-pointer ${
+                        selectedListingIds.includes(item.id) ? "bg-amber-500/10 dark:bg-amber-500/15" : ""
+                      }`}
                       onClick={() => router.push(`/admin/listings/${item.id}`)}
                     >
+                      <td
+                        className="py-3.5 px-4 w-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          aria-label={`Select property ${item.title}`}
+                          checked={selectedListingIds.includes(item.id)}
+                          onChange={() => toggleSelectListing(item.id)}
+                          className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
+                        />
+                      </td>
                       <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-[var(--muted-foreground)] font-semibold">
                         #{item.id.slice(-8)}
                       </td>
@@ -701,12 +847,24 @@ export function AdminListingsClient({
           <div
             key={item.id}
             onClick={() => openListingModal(item)}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)]"
+            className={`rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)] ${
+              selectedListingIds.includes(item.id) ? "border-amber-500 ring-1 ring-amber-500/30" : ""
+            }`}
           >
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
-                <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{item.title}</h3>
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  aria-label={`Select property ${item.title}`}
+                  checked={selectedListingIds.includes(item.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={() => toggleSelectListing(item.id)}
+                  className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
+                />
+                <div>
+                  <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
+                  <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{item.title}</h3>
+                </div>
               </div>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${item.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
                 {item.published ? "ACTIVE" : item.status}
@@ -872,7 +1030,7 @@ export function AdminListingsClient({
                   {/* Summary Overview Card */}
                   <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-5 space-y-2 text-xs">
                     <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Property Summary Overview</h3>
-                    <p><strong className="text-muted-foreground">Location:</strong> {selectedListing.address || "Address pending"}, {selectedListing.city}, {selectedListing.country}</p>
+                    <p><strong className="text-muted-foreground">Location:</strong> {selectedListing.address ? `${selectedListing.address}${selectedListing.apartment ? `, ${selectedListing.apartment}` : ""}` : "Address pending"}, {selectedListing.city}, {selectedListing.country}</p>
                     <p><strong className="text-muted-foreground">Property Type:</strong> {selectedListing.propertyType} ({selectedListing.listingType})</p>
                     <p><strong className="text-muted-foreground">Capacity:</strong> {selectedListing.guests} Guests • {selectedListing.bedrooms} Bed • {selectedListing.bathrooms} Bath</p>
                     <p><strong className="text-muted-foreground">Photos Uploaded:</strong> {selectedListing.photos.length} photos ({selectedListing.photos.length >= 5 ? "✓ Meets minimum" : "⚠️ Needs 5 photos"})</p>
@@ -932,6 +1090,16 @@ export function AdminListingsClient({
                       type="text"
                       value={editAddress}
                       onChange={(e) => setEditAddress(e.target.value)}
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-muted-foreground">Apt, Suite, Bldg (optional)</label>
+                    <input
+                      type="text"
+                      value={editApartment}
+                      onChange={(e) => setEditApartment(e.target.value)}
                       className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                     />
                   </div>
@@ -1447,8 +1615,13 @@ export function AdminListingsClient({
               <h3 className="text-base font-semibold text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Are you sure you want to delete <strong className="text-muted-foreground">{listingToDelete.title}</strong> (ID: <span className="font-mono">{listingToDelete.id}</span>)? This action will permanently remove the listing, host listing data, and cache across the platform.
+              Are you sure you want to delete <strong className="text-muted-foreground">{listingToDelete.title}</strong> (ID: <span className="font-mono">{listingToDelete.id}</span>)? This action will completely and permanently remove the listing, booking history, and all associated database records. This cannot be undone.
             </p>
+            {listingToDelete.bookingCount > 0 && (
+              <div className="rounded-xl border border-rose-300/50 bg-rose-50 dark:bg-rose-950/30 p-2.5 text-xs text-rose-900 dark:text-rose-300">
+                <strong>⚠️ Notice:</strong> This property has {listingToDelete.bookingCount} associated booking(s). Deleting will permanently erase all associated booking records.
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
               <button
                 type="button"
@@ -1468,6 +1641,78 @@ export function AdminListingsClient({
                 className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
               >
                 {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteModal && selectedListingIds.length > 0 && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95 max-h-[90vh] flex flex-col">
+            <div className="flex items-center gap-3 text-rose-600 shrink-0">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-[var(--foreground)]">
+                  Permanently Delete {selectedListingIds.length} Selected Properties?
+                </h3>
+                <p className="text-[11px] text-[var(--muted-foreground)]">
+                  This action will completely and permanently remove the selected properties and records from the platform.
+                </p>
+              </div>
+            </div>
+
+            {/* Warning if any selected have bookings */}
+            {selectedListings.some((l) => l.bookingCount > 0) && (
+              <div className="rounded-xl border border-amber-300/50 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-300 shrink-0">
+                <strong>⚠️ Notice:</strong> {selectedListings.filter((l) => l.bookingCount > 0).length} of the selected properties have existing bookings. Deleting will permanently remove all booking records and history associated with these properties.
+              </div>
+            )}
+
+            {/* List of properties to delete */}
+            <div className="flex-1 overflow-y-auto min-h-[120px] max-h-[260px] divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/40 p-2 text-xs">
+              {selectedListings.map((item) => (
+                <div key={item.id} className="flex items-center justify-between py-2 px-2 gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold truncate text-[var(--foreground)]">{item.title}</p>
+                    <p className="text-[10px] text-[var(--muted-foreground)]">
+                      ID: <span className="font-mono">{item.id.slice(-8)}</span> · {item.city || "No city"} · {item.bookingCount} bookings
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                      item.bookingCount > 0
+                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                        : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
+                    }`}
+                  >
+                    {item.bookingCount > 0 ? "Has Bookings" : "Ready to Delete"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)] shrink-0">
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={() => setShowBulkDeleteModal(false)}
+                className="rounded-full px-5 py-2 text-xs font-semibold border border-[var(--border)] hover:bg-[var(--surface-secondary)] text-muted-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={handleBulkDelete}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2 text-xs font-semibold transition-all shadow-sm"
+              >
+                {isBulkDeleting
+                  ? `Deleting ${selectedListingIds.length} properties...`
+                  : `Yes, Delete ${selectedListingIds.length} Properties`}
               </button>
             </div>
           </div>

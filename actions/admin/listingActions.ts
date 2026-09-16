@@ -48,6 +48,7 @@ export async function adminUpdateListingDetailsAction(input: {
   listingType?: string;
   hostingType?: string;
   address?: string;
+  apartment?: string;
   city?: string;
   district?: string;
   postalCode?: string;
@@ -88,6 +89,7 @@ export async function adminUpdateListingDetailsAction(input: {
         ...(input.propertyType !== undefined && { propertyType: input.propertyType.trim() }),
         ...(input.listingType !== undefined && { listingType: input.listingType.trim() }),
         ...(input.address !== undefined && { address: input.address.trim() }),
+        ...(input.apartment !== undefined && { apartment: input.apartment.trim() }),
         ...(input.city !== undefined && { city: input.city.trim() }),
         ...(input.district !== undefined && { district: input.district.trim() }),
         ...(input.postalCode !== undefined && { postalCode: input.postalCode.trim() }),
@@ -253,14 +255,28 @@ export async function adminToggleVisibilityAction(input: {
 
     const listing = await listingService.getAdminListingForUpdate(input.listingId);
     if (!listing) throw AppError.notFound("Listing not found.");
-    if (input.published === true && listing.status !== ListingStatus.ACTIVE) {
-      throw AppError.badRequest("Approve a submitted listing before making it public.");
+
+    if (input.published === true) {
+      const readiness = listingService.getPublishReadiness(listing);
+      if (!readiness.publishable) {
+        throw AppError.badRequest(`Cannot publish listing. Complete: ${readiness.missing.join(", ")}`);
+      }
     }
 
     const updated = await listingService.updateForAdmin(input.listingId, {
-        ...(input.published !== undefined && { published: input.published }),
-        ...(input.showExactLocation !== undefined && { showExactLocation: input.showExactLocation }),
-        ...(input.published === true && { status: ListingStatus.ACTIVE, isPaused: false }),
+      ...(input.published !== undefined && { published: input.published }),
+      ...(input.showExactLocation !== undefined && { showExactLocation: input.showExactLocation }),
+      ...(input.published === true && {
+        status: ListingStatus.ACTIVE,
+        isPaused: false,
+        approvedAt: listing.approvedAt ?? new Date(),
+        approvedById: actor.id,
+        reviewerId: listing.reviewerId ?? actor.id,
+      }),
+      ...(input.published === false && {
+        published: false,
+        status: ListingStatus.DRAFT,
+      }),
     });
 
     await auditService.record({
@@ -318,12 +334,49 @@ export async function adminDeleteListingAction(input: { listingId: string }) {
     const actor = await getSessionUser();
     assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_DELETE);
 
-    const result = await listingService.remove(actor, input.listingId);
+    const result = await listingService.permanentDeleteForAdmin(actor, input.listingId);
 
     revalidatePath("/admin/listings");
     revalidatePath("/host/listings");
     revalidatePath("/admin/hosts");
     return result;
+  });
+}
+
+/**
+ * 8. Admin Bulk Delete Listings
+ */
+export async function adminBulkDeleteListingsAction(input: { listingIds: string[] }) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertAdminListingPermission(actor, PERMISSIONS.LISTINGS_DELETE);
+
+    if (!Array.isArray(input.listingIds) || input.listingIds.length === 0) {
+      throw AppError.badRequest("Please select at least one property to delete.");
+    }
+
+    const uniqueIds = Array.from(new Set(input.listingIds));
+    const results: { deletedIds: string[]; failedIds: Array<{ id: string; reason: string }> } = {
+      deletedIds: [],
+      failedIds: [],
+    };
+
+    for (const id of uniqueIds) {
+      try {
+        await listingService.permanentDeleteForAdmin(actor, id);
+        results.deletedIds.push(id);
+      } catch (err: any) {
+        results.failedIds.push({
+          id,
+          reason: err?.message || "Failed to delete listing",
+        });
+      }
+    }
+
+    revalidatePath("/admin/listings");
+    revalidatePath("/host/listings");
+    revalidatePath("/admin/hosts");
+    return results;
   });
 }
 

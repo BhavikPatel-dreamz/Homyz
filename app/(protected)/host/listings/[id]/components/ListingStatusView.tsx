@@ -177,7 +177,7 @@ export function ListingStatusView({
 
   const isApproved = isSaudi
     ? (missing.length === 0 || Boolean(listing?.published))
-    : (displayState === "APPROVED" || displayState === "PUBLISHED");
+    : (displayState === "APPROVED" || displayState === "PUBLISHED" || Boolean(listing?.approvedAt));
 
   const [localStatus, setLocalStatus] = useState<"listed" | "unlisted">(
     listing?.published ? "listed" : propStatus || "unlisted",
