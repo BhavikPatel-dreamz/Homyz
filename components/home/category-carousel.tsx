@@ -3,20 +3,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PropertyCard, PropertyCardData } from "./property-card";
 
-interface CategoryCarouselProps {
+interface HomePropertySectionProps {
   title: string;
   cards: PropertyCardData[];
 }
 
-export function CategoryCarousel({ title, cards }: CategoryCarouselProps) {
+export function HomePropertySection({ title, cards }: HomePropertySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [pageCount, setPageCount] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Ensure there are always enough cards to slide smoothly across all screen sizes (e.g. at least 12 items)
-  const displayCards = cards.length <= 6
-    ? [...cards, ...cards.map((c, i) => ({ ...c, id: `${c.id}-dup-${i}` }))]
-    : cards;
+  // Each listing is shown once. Repeating cards makes a short discovery
+  // section look like it contains duplicate properties.
+  const displayCards = cards;
 
   const getSlideStep = useCallback(() => {
     const track = containerRef.current;
@@ -187,3 +186,7 @@ export function CategoryCarousel({ title, cards }: CategoryCarouselProps) {
     </section>
   );
 }
+
+// Kept as an alias for existing imports while homepage sections use the
+// domain-oriented name above.
+export const CategoryCarousel = HomePropertySection;

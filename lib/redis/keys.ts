@@ -32,6 +32,10 @@ export const CACHE_KEYS = {
   LISTINGS_SEARCH: (ver: number, filterHash: string, skip: number, take: number) =>
     `${NS}:listings:search:v${ver}:${filterHash}:s${skip}:t${take}`,
 
+  /** Version-tagged public homepage discovery data. */
+  HOMEPAGE_DISCOVERY: (ver: number, city: string) =>
+    `${NS}:home:discovery:v${ver}:city:${city}`,
+
   /** Bookings */
   BOOKING: (bookingId: string) => `${NS}:booking:${bookingId}`,
   BOOKINGS_USER: (userId: string, page: number = 1) => `${NS}:bookings:user:${userId}:p${page}`,

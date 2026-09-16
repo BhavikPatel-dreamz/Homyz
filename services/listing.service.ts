@@ -1520,7 +1520,10 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
     data: { blockedDates },
   });
 
-  await deleteCache(keys.listing(id));
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
 
   await auditService.record({
     actorId: actor.id,

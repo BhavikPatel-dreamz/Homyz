@@ -11,6 +11,9 @@ export const CACHE_TTL = {
   /** Published listing search & catalogue queries: 3 minutes */
   LISTING_SEARCH: 180,
 
+  /** Public homepage discovery rows; booking validation remains database-backed. */
+  HOMEPAGE_DISCOVERY: 120,
+
   /** User & Host booking lists: 2 minutes */
   BOOKING_LIST: 120,
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HomeView } from "@/components/home/home-view";
-import { listingService } from "@/services/listing.service";
+import { homepageService, type HomepageSection } from "@/services/homepage.service";
+import { getSessionUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HomePage() {
-  let listings: any[] = [];
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ city?: string; destination?: string }>;
+}) {
+  let sections: HomepageSection[] = [];
+  const user = await getSessionUser();
   try {
-    const res = await listingService.searchPublicListings({ take: 24 });
-    listings = res.items;
+    const params = await searchParams;
+    const homepage = await homepageService.getHomepageData({
+      city: params.city || params.destination,
+      userId: user?.id,
+    });
+    sections = homepage.sections;
   } catch (error) {
-    console.error("Failed to load public listings for home page:", error);
+    console.error("Failed to load homepage discovery data:", error);
   }
 
-  return <HomeView initialListings={listings} />;
+  return <HomeView sections={sections} canFavorite={Boolean(user)} />;
 }
-

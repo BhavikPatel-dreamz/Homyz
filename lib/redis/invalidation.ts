@@ -40,6 +40,7 @@ export async function invalidateBookingCache(
     deleteCache(CACHE_KEYS.BOOKING(bookingId)),
     deleteCache(CACHE_KEYS.GUEST_ANALYTICS()),
     deleteCache(CACHE_KEYS.ADMIN_STATS()),
+    incrCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER()),
   ];
 
   if (userId) {

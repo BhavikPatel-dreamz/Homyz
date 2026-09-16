@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export interface PropertyCardData {
   id: string;
@@ -15,6 +16,8 @@ export interface PropertyCardData {
   country?: string | null;
   guests?: number;
   propertyType?: string | null;
+  initialFavorite?: boolean;
+  canFavorite?: boolean;
 }
 
 export function PropertyCard({
@@ -29,14 +32,31 @@ export function PropertyCard({
   country,
   guests,
   propertyType,
+  initialFavorite = false,
+  canFavorite = false,
 }: PropertyCardData) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
+  const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [imageError, setImageError] = useState(false);
 
-  const toggleFavorite = (e: React.MouseEvent) => {
+  const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    if (!canFavorite) {
+      router.push("/login");
+      return;
+    }
+
+    const nextFavorite = !isFavorite;
+    setIsFavorite(nextFavorite);
+    try {
+      const response = await fetch(`/api/v1/favorites/${id}`, {
+        method: nextFavorite ? "POST" : "DELETE",
+      });
+      if (!response.ok) throw new Error("Unable to update saved listing");
+    } catch {
+      setIsFavorite(!nextFavorite);
+    }
   };
 
   const formattedPrice =
@@ -44,7 +64,7 @@ export function PropertyCard({
 
   const displaySubtitle =
     subtitle ||
-    (city ? `${city}${country ? `, ${country}` : ""}` : country || "Saudi Arabia");
+    (city ? `${city}${country ? `, ${country}` : ""}` : country || "Location unavailable");
 
   const displayImage = imageUrl && !imageError ? imageUrl : null;
 
@@ -158,7 +178,7 @@ export function PropertyCard({
             </span>
           ) : (
             <span className="text-[10px] text-zinc-400 font-normal">
-              {propertyType || "Stay"}
+              {guests ? `Up to ${guests} guests` : propertyType || "Stay"}
             </span>
           )}
         </div>
@@ -166,4 +186,3 @@ export function PropertyCard({
     </Link>
   );
 }
-
