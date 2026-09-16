@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import Image from "next/image";
 import {
   DEFAULT_LANGUAGE_IDS,
   getLanguageDisplayNames,
@@ -41,11 +42,10 @@ function AllowDenyButtons({
         aria-label={`Do not allow ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
-          value === false
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === false
             ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
             : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
-        }`}
+          }`}
       >
         <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -56,11 +56,10 @@ function AllowDenyButtons({
         aria-label={`Allow ${label}`}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
-          value === true
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === true
             ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
             : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
-        }`}
+          }`}
       >
         <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -298,296 +297,296 @@ export function HouseRulesAndArrivalViews({
             <HouseRulesSkeleton />
           ) : (
             <>
-          {/* List of Rules Rows */}
-          <div className="divide-y divide-zinc-200/80 pt-2">
-            {/* Row 1: Pets allowed */}
-            <div className="py-5 space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="font-semibold text-sm text-[#1F1F1F] block">Pets allowed</span>
-                  <p className="text-xs text-zinc-500 leading-relaxed max-w-md">
-                    You can refuse pets, but must reasonably accommodate service animals.{" "}
-                    <a
-                      href="#service-animals"
-                      onClick={(e) => e.preventDefault()}
-                      className="underline font-semibold text-zinc-900 hover:text-zinc-700 inline-block"
-                    >
-                      Learn more
-                    </a>
-                  </p>
-                </div>
-                <AllowDenyButtons
-                  label="pets"
-                  value={petsAllowed}
-                  onChange={(val) => setPetsAllowed(val)}
-                />
-              </div>
+              {/* List of Rules Rows */}
+              <div className="divide-y divide-zinc-200/80 pt-2">
+                {/* Row 1: Pets allowed */}
+                <div className="py-5 space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="font-semibold text-sm text-[#1F1F1F] block">Pets allowed</span>
+                      <p className="text-xs text-zinc-500 leading-relaxed max-w-md">
+                        You can refuse pets, but must reasonably accommodate service animals.{" "}
+                        <a
+                          href="#service-animals"
+                          onClick={(e) => e.preventDefault()}
+                          className="underline font-semibold text-zinc-900 hover:text-zinc-700 inline-block"
+                        >
+                          Learn more
+                        </a>
+                      </p>
+                    </div>
+                    <AllowDenyButtons
+                      label="pets"
+                      value={petsAllowed}
+                      onChange={(val) => setPetsAllowed(val)}
+                    />
+                  </div>
 
-              {/* Conditional Pet Details */}
-              {petsAllowed === true && (
-                <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-4">
+                  {/* Conditional Pet Details */}
+                  {petsAllowed === true && (
+                    <div className="rounded-2xl bg-zinc-50/80 border border-zinc-200/80 p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-zinc-800">Maximum number of pets allowed</span>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <button
+                            type="button"
+                            aria-label="Decrease maximum pets"
+                            disabled={(maxPetsCount || 1) <= 1}
+                            onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
+                            className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          >
+                            <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum pets" width={14} height={14} className="size-3.5 object-contain" />
+                          </button>
+                          <span className="text-sm font-semibold text-[#1F1F1F] min-w-[20px] text-center">
+                            {maxPetsCount || 1}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="Increase maximum pets"
+                            disabled={(maxPetsCount || 1) >= 10}
+                            onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
+                            className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200/60">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={dogsAllowed ?? true}
+                            onChange={(e) => setDogsAllowed?.(e.target.checked)}
+                            className="rounded text-amber-500 accent-zinc-900"
+                          />
+                          <span className="text-xs font-medium text-zinc-700">Dogs allowed</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={catsAllowed ?? true}
+                            onChange={(e) => setCatsAllowed?.(e.target.checked)}
+                            className="rounded text-amber-500 accent-zinc-900"
+                          />
+                          <span className="text-xs font-medium text-zinc-700">Cats allowed</span>
+                        </label>
+                      </div>
+
+                      <div className="space-y-3 pt-1">
+                        <label className="block text-xs font-semibold text-zinc-700">
+                          Pet fee per stay (optional, SAR)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={petFee ?? ""}
+                          onChange={(e) => setPetFee?.(e.target.value)}
+                          placeholder="e.g. 50"
+                          className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="block text-xs font-semibold text-zinc-700">
+                          Pet restrictions or guidelines
+                        </label>
+                        <input
+                          type="text"
+                          value={petRestrictions || ""}
+                          onChange={(e) => setPetRestrictions?.(e.target.value)}
+                          placeholder="e.g. Under 20kg only, house-trained, please bring own bed"
+                          className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Row 2: Events allowed */}
+                <div className="py-5 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-sm text-[#1F1F1F] block">Events allowed</span>
+                  </div>
+                  <AllowDenyButtons
+                    label="events"
+                    value={eventsAllowed}
+                    onChange={(val) => setEventsAllowed(val)}
+                  />
+                </div>
+
+                {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
+                <div className="py-5 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-sm text-[#1F1F1F] block">Smoking, vaping, e-cigarettes allowed</span>
+                  </div>
+                  <AllowDenyButtons
+                    label="smoking"
+                    value={smokingAllowed}
+                    onChange={(val) => setSmokingAllowed(val)}
+                  />
+                </div>
+
+                {/* Row 4: Quiet hours */}
+                <div className="py-5 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-zinc-800">Maximum number of pets allowed</span>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <button
-                        type="button"
-                        aria-label="Decrease maximum pets"
-                        disabled={(maxPetsCount || 1) <= 1}
-                        onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
-                        className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      >
-                        −
-                      </button>
-                      <span className="text-sm font-semibold text-[#1F1F1F] min-w-[20px] text-center">
-                        {maxPetsCount || 1}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label="Increase maximum pets"
-                        disabled={(maxPetsCount || 1) >= 10}
-                        onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
-                        className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      >
-                        +
-                      </button>
+                    <div>
+                      <span className="font-semibold text-sm text-[#1F1F1F] block">Quiet hours</span>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200/60">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dogsAllowed ?? true}
-                        onChange={(e) => setDogsAllowed?.(e.target.checked)}
-                        className="rounded text-amber-500 accent-zinc-900"
-                      />
-                      <span className="text-xs font-medium text-zinc-700">Dogs allowed</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={catsAllowed ?? true}
-                        onChange={(e) => setCatsAllowed?.(e.target.checked)}
-                        className="rounded text-amber-500 accent-zinc-900"
-                      />
-                      <span className="text-xs font-medium text-zinc-700">Cats allowed</span>
-                    </label>
-                  </div>
-
-                  <div className="space-y-3 pt-1">
-                    <label className="block text-xs font-semibold text-zinc-700">
-                      Pet fee per stay (optional, SAR)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={petFee ?? ""}
-                      onChange={(e) => setPetFee?.(e.target.value)}
-                      placeholder="e.g. 50"
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
+                    <AllowDenyButtons
+                      label="quiet hours"
+                      value={quietHours}
+                      onChange={(val) => setQuietHours(val)}
                     />
                   </div>
 
-                  <div className="space-y-3">
-                    <label className="block text-xs font-semibold text-zinc-700">
-                      Pet restrictions or guidelines
-                    </label>
-                    <input
-                      type="text"
-                      value={petRestrictions || ""}
-                      onChange={(e) => setPetRestrictions?.(e.target.value)}
-                      placeholder="e.g. Under 20kg only, house-trained, please bring own bed"
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-800 outline-none focus:border-zinc-900 shadow-2xs placeholder:text-zinc-400 font-medium"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+                  {/* Conditional Quiet Hours Schedule: Side-by-side dropdown container */}
+                  {quietHours === true && (
+                    <div className="rounded-2xl border border-zinc-400 bg-white grid grid-cols-2 overflow-hidden shadow-2xs">
+                      <div className="p-3 relative group hover:bg-zinc-50 transition-colors">
+                        <span className="block text-[11px] font-medium text-zinc-500">Start time</span>
+                        <div className="flex items-center justify-between mt-0.5 pointer-events-none">
+                          <span className="text-sm font-normal text-zinc-900">
+                            {formatTimeDisplay(quietHoursStart, "11:00 pm")}
+                          </span>
+                          <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                        <select
+                          aria-label="Quiet hours start time"
+                          value={formatTimeDisplay(quietHoursStart, "11:00 pm")}
+                          onChange={(e) => setQuietHoursStart?.(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        >
+                          {QUIET_HOURS_START_OPTIONS.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
 
-            {/* Row 2: Events allowed */}
-            <div className="py-5 flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-sm text-[#1F1F1F] block">Events allowed</span>
-              </div>
-              <AllowDenyButtons
-                label="events"
-                value={eventsAllowed}
-                onChange={(val) => setEventsAllowed(val)}
-              />
-            </div>
-
-            {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
-            <div className="py-5 flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-sm text-[#1F1F1F] block">Smoking, vaping, e-cigarettes allowed</span>
-              </div>
-              <AllowDenyButtons
-                label="smoking"
-                value={smokingAllowed}
-                onChange={(val) => setSmokingAllowed(val)}
-              />
-            </div>
-
-            {/* Row 4: Quiet hours */}
-            <div className="py-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-sm text-[#1F1F1F] block">Quiet hours</span>
-                </div>
-                <AllowDenyButtons
-                  label="quiet hours"
-                  value={quietHours}
-                  onChange={(val) => setQuietHours(val)}
-                />
-              </div>
-
-              {/* Conditional Quiet Hours Schedule: Side-by-side dropdown container */}
-              {quietHours === true && (
-                <div className="rounded-2xl border border-zinc-400 bg-white grid grid-cols-2 overflow-hidden shadow-2xs">
-                  <div className="p-3 relative group hover:bg-zinc-50 transition-colors">
-                    <span className="block text-[11px] font-medium text-zinc-500">Start time</span>
-                    <div className="flex items-center justify-between mt-0.5 pointer-events-none">
-                      <span className="text-sm font-normal text-zinc-900">
-                        {formatTimeDisplay(quietHoursStart, "11:00 pm")}
-                      </span>
-                      <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                      </svg>
+                      <div className="p-3 border-l border-zinc-400 relative group hover:bg-zinc-50 transition-colors">
+                        <span className="block text-[11px] font-medium text-zinc-500">End time</span>
+                        <div className="flex items-center justify-between mt-0.5 pointer-events-none">
+                          <span className="text-sm font-normal text-zinc-900">
+                            {formatTimeDisplay(quietHoursEnd, "7:00 am")}
+                          </span>
+                          <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                        <select
+                          aria-label="Quiet hours end time"
+                          value={formatTimeDisplay(quietHoursEnd, "7:00 am")}
+                          onChange={(e) => setQuietHoursEnd?.(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        >
+                          {QUIET_HOURS_END_OPTIONS.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
-                    <select
-                      aria-label="Quiet hours start time"
-                      value={formatTimeDisplay(quietHoursStart, "11:00 pm")}
-                      onChange={(e) => setQuietHoursStart?.(e.target.value)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    >
-                      {QUIET_HOURS_START_OPTIONS.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
+                  )}
+                </div>
 
-                  <div className="p-3 border-l border-zinc-400 relative group hover:bg-zinc-50 transition-colors">
-                    <span className="block text-[11px] font-medium text-zinc-500">End time</span>
-                    <div className="flex items-center justify-between mt-0.5 pointer-events-none">
-                      <span className="text-sm font-normal text-zinc-900">
-                        {formatTimeDisplay(quietHoursEnd, "7:00 am")}
-                      </span>
-                      <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                      </svg>
-                    </div>
-                    <select
-                      aria-label="Quiet hours end time"
-                      value={formatTimeDisplay(quietHoursEnd, "7:00 am")}
-                      onChange={(e) => setQuietHoursEnd?.(e.target.value)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                {/* Row 5: Commercial photography and filming allowed */}
+                <div className="py-5 flex items-center justify-between gap-5">
+                  <div>
+                    <span className="block text-sm font-semibold text-[#1F1F1F]">Commercial photography and filming allowed</span>
+                  </div>
+                  <AllowDenyButtons
+                    label="commercial photography and filming"
+                    value={commercialFilmingAllowed}
+                    onChange={setCommercialFilmingAllowed}
+                  />
+                </div>
+
+                {/* Row 6: Number of guests */}
+                <div className="py-5 flex items-center justify-between gap-5">
+                  <div>
+                    <span className="block text-sm font-semibold text-[#1F1F1F]">Number of guests</span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <button
+                      type="button"
+                      aria-label="Decrease maximum guests"
+                      disabled={maxGuestsCount <= 1}
+                      onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      {QUIET_HOURS_END_OPTIONS.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
+                      <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain" />
+                    </button>
+                    <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
+                    <button
+                      type="button"
+                      aria-label="Increase maximum guests"
+                      disabled={maxGuestsCount >= 50}
+                      onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Row 5: Commercial photography and filming allowed */}
-            <div className="py-5 flex items-center justify-between gap-5">
-              <div>
-                <span className="block text-sm font-semibold text-[#1F1F1F]">Commercial photography and filming allowed</span>
-              </div>
-              <AllowDenyButtons
-                label="commercial photography and filming"
-                value={commercialFilmingAllowed}
-                onChange={setCommercialFilmingAllowed}
-              />
-            </div>
-
-            {/* Row 6: Number of guests */}
-            <div className="py-5 flex items-center justify-between gap-5">
-              <div>
-                <span className="block text-sm font-semibold text-[#1F1F1F]">Number of guests</span>
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
+                {/* Row 7: Check-in and checkout times */}
                 <button
                   type="button"
-                  aria-label="Decrease maximum guests"
-                  disabled={maxGuestsCount <= 1}
-                  onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={() => setIsCheckInOutModalOpen(true)}
+                  className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
                 >
-                  −
+                  <div className="space-y-0.5">
+                    <span className="block text-sm font-semibold text-[#1F1F1F]">Check-in and checkout times</span>
+                    <p className="text-xs text-zinc-500 font-normal">
+                      Arrive between {formatTimeDisplay(checkInStart, "3:00 pm")} and {checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}
+                    </p>
+                    <p className="text-xs text-zinc-500 font-normal">
+                      Leave before {formatTimeDisplay(checkOutTime, "6:00 pm")}
+                    </p>
+                  </div>
+                  <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
                 </button>
-                <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F]">{maxGuestsCount}</span>
+
+                {/* Row 8: Additional rules */}
                 <button
                   type="button"
-                  aria-label="Increase maximum guests"
-                  disabled={maxGuestsCount >= 50}
-                  onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={() => setIsEditingAdditionalRulesModalOpen(true)}
+                  className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
                 >
-                  +
+                  <div className="space-y-0.5 max-w-md">
+                    <span className="block text-sm font-semibold text-[#1F1F1F]">Additional rules</span>
+                    <p className="text-xs text-zinc-500 font-normal line-clamp-2">
+                      {additionalHouseRules?.trim() || "Add rules"}
+                    </p>
+                  </div>
+                  <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
                 </button>
               </div>
-            </div>
 
-            {/* Row 7: Check-in and checkout times */}
-            <button
-              type="button"
-              onClick={() => setIsCheckInOutModalOpen(true)}
-              className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
-            >
-              <div className="space-y-0.5">
-                <span className="block text-sm font-semibold text-[#1F1F1F]">Check-in and checkout times</span>
-                <p className="text-xs text-zinc-500 font-normal">
-                  Arrive between {formatTimeDisplay(checkInStart, "3:00 pm")} and {checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}
-                </p>
-                <p className="text-xs text-zinc-500 font-normal">
-                  Leave before {formatTimeDisplay(checkOutTime, "6:00 pm")}
-                </p>
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-6">
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => handleSaveSection("house-rules")}
+                  className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSection("description")}
+                  className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
               </div>
-              <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-
-            {/* Row 8: Additional rules */}
-            <button
-              type="button"
-              onClick={() => setIsEditingAdditionalRulesModalOpen(true)}
-              className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 cursor-pointer group"
-            >
-              <div className="space-y-0.5 max-w-md">
-                <span className="block text-sm font-semibold text-[#1F1F1F]">Additional rules</span>
-                <p className="text-xs text-zinc-500 font-normal line-clamp-2">
-                  {additionalHouseRules?.trim() || "Add rules"}
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-zinc-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 pt-6">
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => handleSaveSection("house-rules")}
-              className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveSection("description")}
-              className="rounded-full bg-white border border-zinc-300 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-          </>
+            </>
           )}
 
           {/* Check-in and checkout times Modal */}
@@ -615,7 +614,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="space-y-4">
                   {/* Check-in window */}
                   <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-3">
-                    <label className="text-xs font-semibold text-zinc-800 block">Check-in window</label>
+                    <label className="text-sm font-medium text-[#1f1f1f] block">Check-in window</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <span className="text-[11px] font-medium text-zinc-500 block mb-1">Start time</span>
@@ -647,7 +646,7 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Checkout time */}
                   <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4 space-y-2">
-                    <label className="text-xs font-semibold text-zinc-800 block">Checkout time</label>
+                    <label className="text-sm font-medium text-[#1f1f1f] block">Checkout time</label>
                     <div>
                       <span className="text-[11px] font-medium text-zinc-500 block mb-1">Guests must leave before</span>
                       <select
@@ -720,22 +719,20 @@ export function HouseRulesAndArrivalViews({
                 <button
                   type="button"
                   onClick={() => setParkingAvailable?.(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
-                    parkingAvailable === false
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === false
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
+                    }`}
                 >
                   ✕
                 </button>
                 <button
                   type="button"
                   onClick={() => setParkingAvailable?.(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
-                    parkingAvailable === true
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === true
                       ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                       : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                  }`}
+                    }`}
                 >
                   ✓
                 </button>
@@ -752,22 +749,20 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingType?.("FREE")}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        parkingType === "FREE"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "FREE"
                           ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
                           : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       Free
                     </button>
                     <button
                       type="button"
                       onClick={() => setParkingType?.("PAID")}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        parkingType === "PAID"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "PAID"
                           ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
                           : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       Paid
                     </button>
@@ -783,9 +778,9 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
                       className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
                     >
-                      -
+                      <Image src="/images/icons/minus-icon.svg" alt="Decrease parking spaces" width={12} height={12} className="size-3 object-contain" />
                     </button>
-                    <span className="w-4 text-center text-xs font-semibold text-zinc-900">{parkingSpaces ?? 1}</span>
+                    <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{parkingSpaces ?? 1}</span>
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
@@ -803,22 +798,20 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingReservation?.(false)}
-                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
-                        parkingReservation === false
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === false
                           ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                           : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       ✕
                     </button>
                     <button
                       type="button"
                       onClick={() => setParkingReservation?.(true)}
-                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${
-                        parkingReservation === true
+                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === true
                           ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
                           : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       ✓
                     </button>
@@ -995,16 +988,16 @@ export function HouseRulesAndArrivalViews({
         activeSection === "check-out" ||
         activeSection === "checkout-page" ||
         activeSection === "check-out-page") && (
-        <CheckOutInstructionsView
-          checkOutTime={checkOutTime}
-          setCheckOutTime={setCheckOutTime}
-          checkOutInstructions={checkOutInstructions}
-          setCheckOutInstructions={setCheckOutInstructions}
-          setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-        />
-      )}
+          <CheckOutInstructionsView
+            checkOutTime={checkOutTime}
+            setCheckOutTime={setCheckOutTime}
+            checkOutInstructions={checkOutInstructions}
+            setCheckOutInstructions={setCheckOutInstructions}
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
+          />
+        )}
 
       {/* --------------------------------------------------------- */}
       {/* VIEW: GUIDEBOOKS (Matches Figma Screenshot 100%) */}
@@ -1027,14 +1020,14 @@ export function HouseRulesAndArrivalViews({
       {(activeSection === "interaction-preferences" ||
         activeSection === "interactionpreferences" ||
         activeSection === "interaction") && (
-        <InteractionPreferencesView
-          setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-          value={guestInteractionPreference}
-          onChange={setGuestInteractionPreference}
-        />
-      )}
+          <InteractionPreferencesView
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
+            value={guestInteractionPreference}
+            onChange={setGuestInteractionPreference}
+          />
+        )}
 
 
 
@@ -1057,15 +1050,15 @@ export function HouseRulesAndArrivalViews({
       {/* --------------------------------------------------------- */}
       {(activeSection === "guest-requirements" ||
         activeSection === "guestrequirements") && (
-        <GuestRequirementsView
-          setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-          requireProfilePhoto={requireProfilePhoto}
-          setRequireProfilePhoto={setRequireProfilePhoto}
-          onCancel={onCancelPreferenceChanges}
-        />
-      )}
+          <GuestRequirementsView
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
+            requireProfilePhoto={requireProfilePhoto}
+            setRequireProfilePhoto={setRequireProfilePhoto}
+            onCancel={onCancelPreferenceChanges}
+          />
+        )}
 
       {(activeSection === "local-laws" || activeSection === "locallaws") && (
         <LocalLawsView
@@ -1101,15 +1094,15 @@ export function HouseRulesAndArrivalViews({
         activeSection === "airbnb-stays" ||
         activeSection === "homyz-stays" ||
         activeSection === "homyzstays") && (
-        <AirbnbOrgStaysView
-          listingId={listingId || ""}
-          discounts={listingDiscounts}
-          setActiveSection={setActiveSection}
-          onSave={onSaveOrgStays}
-          isSaving={isSaving}
-          onDirtyChange={onOrgStaysDirtyChange}
-        />
-      )}
+          <AirbnbOrgStaysView
+            listingId={listingId || ""}
+            discounts={listingDiscounts}
+            setActiveSection={setActiveSection}
+            onSave={onSaveOrgStays}
+            isSaving={isSaving}
+            onDirtyChange={onOrgStaysDirtyChange}
+          />
+        )}
     </>
   );
 }
@@ -1489,9 +1482,8 @@ function GuidebooksView({
         {guidebooksList.map((gb, idx) => (
           <div
             key={gb.id}
-            className={`rounded-[22px] border border-zinc-300/80 bg-zinc-200/70 p-5 aspect-[4/3] flex flex-col justify-between transition-all cursor-pointer hover:border-zinc-400 shadow-2xs ${
-              idx === 0 ? "border-zinc-400 bg-zinc-200/90" : ""
-            }`}
+            className={`rounded-[22px] border border-zinc-300/80 bg-zinc-200/70 p-5 aspect-[4/3] flex flex-col justify-between transition-all cursor-pointer hover:border-zinc-400 shadow-2xs ${idx === 0 ? "border-zinc-400 bg-zinc-200/90" : ""
+              }`}
           >
             <div className="w-8 h-8 rounded-full bg-white/80 border border-zinc-200 flex items-center justify-center text-xs shadow-2xs">
               📖
@@ -1562,11 +1554,10 @@ function InteractionPreferencesView({
               key={option}
               type="button"
               onClick={() => onChange?.(option)}
-              className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer ${
-                isActive
+              className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
                   ? "border-zinc-900 bg-zinc-50 text-zinc-900"
                   : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400"
-              }`}
+                }`}
               role="radio"
               aria-checked={isActive}
               aria-label={option}
@@ -1577,14 +1568,12 @@ function InteractionPreferencesView({
 
               <span
                 aria-hidden="true"
-                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${
-                  isActive ? "bg-zinc-900" : "bg-zinc-200"
-                }`}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${isActive ? "bg-zinc-900" : "bg-zinc-200"
+                  }`}
               >
                 <span
-                  className={`h-5 w-5 rounded-full bg-white shadow-xs transition-transform duration-200 ${
-                  isActive ? "translate-x-5" : "translate-x-0.5"
-                  }`}
+                  className={`h-5 w-5 rounded-full bg-white shadow-xs transition-transform duration-200 ${isActive ? "translate-x-5" : "translate-x-0.5"
+                    }`}
                 />
               </span>
             </button>
@@ -1728,9 +1717,8 @@ function LanguagesView({
                       setSelectedLanguageIds([...selectedLanguageIds, lang.id]);
                     }
                   }}
-                  className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-xs font-semibold transition-colors ${
-                    isSelected ? "border-amber-300 bg-[#FEF9EC] text-zinc-950" : "border-transparent text-zinc-700 hover:border-zinc-200 hover:bg-zinc-50"
-                  }`}
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-xs font-semibold transition-colors ${isSelected ? "border-amber-300 bg-[#FEF9EC] text-zinc-950" : "border-transparent text-zinc-700 hover:border-zinc-200 hover:bg-zinc-50"
+                    }`}
                 >
                   <span>
                     <span className="block">{lang.name}</span>
@@ -1827,14 +1815,12 @@ function GuestRequirementsView({
           role="switch"
           aria-checked={requireProfilePhoto}
           aria-label="Require a profile photo"
-          className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${
-            requireProfilePhoto ? "bg-zinc-900" : "bg-zinc-200"
-          }`}
+          className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${requireProfilePhoto ? "bg-zinc-900" : "bg-zinc-200"
+            }`}
         >
           <div
-            className={`w-5.5 h-5.5 rounded-full bg-white shadow-xs transition-transform duration-200 ${
-              requireProfilePhoto ? "translate-x-5.5" : "translate-x-0"
-            }`}
+            className={`w-5.5 h-5.5 rounded-full bg-white shadow-xs transition-transform duration-200 ${requireProfilePhoto ? "translate-x-5.5" : "translate-x-0"
+              }`}
           />
         </button>
       </div>
@@ -2066,13 +2052,15 @@ function DirectionsView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="space-y-1">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-6">
           <BackButton onClick={() => setActiveSection("check-in-out")} />
-          <h1 className="text-xl font-bold text-[#1F1F1F]">Directions to property</h1>
+          <div>
+            <h1>Directions to property</h1>
+            <p className="text-xs text-zinc-500 font-normal leading-relaxed pl-11">
+              Provide clear directions on how to reach your property. Include details that navigation apps might miss.
+            </p></div>
         </div>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed pl-11">
-          Provide clear directions on how to reach your property. Include details that navigation apps might miss.
-        </p>
+
       </div>
 
       {/* Privacy Notice Banner */}
@@ -2483,9 +2471,8 @@ function CheckInMethodView({
                     key={method.id}
                     type="button"
                     onClick={() => handlePickMethod(method.id)}
-                    className={`w-full rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-2xs flex items-start gap-4 ${
-                      isSelected ? "border-zinc-900 bg-white" : "border-zinc-200 bg-white hover:border-zinc-300"
-                    }`}
+                    className={`w-full rounded-2xl border p-4 text-left transition-all cursor-pointer shadow-2xs flex items-start gap-4 ${isSelected ? "border-zinc-900 bg-white" : "border-zinc-200 bg-white hover:border-zinc-300"
+                      }`}
                   >
                     <div className="text-zinc-600 shrink-0 mt-0.5">
                       <CheckInMethodIcon id={method.id} />
@@ -2666,9 +2653,9 @@ function RegulationsView({
         {/* Top Back Button */}
         <div className="flex items-center justify-between pb-4">
           <BackButton onClick={() => {
-              setShowDetails(false);
-              setIsEditingReg(false);
-            }} />
+            setShowDetails(false);
+            setIsEditingReg(false);
+          }} />
         </div>
 
         {/* 2-Column Grid Layout: Left Content + Right Thumbs-Up Illustration */}

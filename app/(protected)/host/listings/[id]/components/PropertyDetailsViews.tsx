@@ -2,9 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor integration */
 
 import { BackButton } from "@/components/ui/back-button";
+import Image from "next/image";
 
 import React from "react";
-import { CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
+import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
 import {
   normalizeAccessibilityFeature,
   normalizeMostLikeSelection,
@@ -189,10 +190,94 @@ export function PropertyDetailsViews({
 }: PropertyDetailsViewsProps) {
   const [amenityCategory, setAmenityCategory] = React.useState<string>("all");
   const [amenitySearch, setAmenitySearch] = React.useState<string>("");
+  const [isEditingAmenityList, setIsEditingAmenityList] = React.useState(false);
+  const [collapsingAccessibilityFeature, setCollapsingAccessibilityFeature] = React.useState<string | null>(null);
+  const [openingAccessibilityFeature, setOpeningAccessibilityFeature] = React.useState<string | null>(null);
+  const accessibilityCollapseTimerRef = React.useRef<number | null>(null);
+  const accessibilityOpenFrameRef = React.useRef<number | null>(null);
+  const amenitiesScrollRef = React.useRef<HTMLDivElement>(null);
+  const amenitiesScrollFrameRef = React.useRef<number | null>(null);
+  const [amenitiesScrollThumb, setAmenitiesScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
   const accessibilityPhotoInput = React.useRef<HTMLInputElement>(null);
   const [accessibilityPhotoFeatureId, setAccessibilityPhotoFeatureId] = React.useState<string | null>(null);
   const [uploadingAccessibilityPhoto, setUploadingAccessibilityPhoto] = React.useState(false);
   const [accessibilityPhotoError, setAccessibilityPhotoError] = React.useState<string | null>(null);
+
+  const collapseAccessibilityFeature = React.useCallback((featureId: string) => {
+    if (accessibilityCollapseTimerRef.current !== null) {
+      window.clearTimeout(accessibilityCollapseTimerRef.current);
+    }
+
+    setCollapsingAccessibilityFeature(featureId);
+    accessibilityCollapseTimerRef.current = window.setTimeout(() => {
+      setExpandedAccessibility?.(null);
+      setCollapsingAccessibilityFeature(null);
+      accessibilityCollapseTimerRef.current = null;
+    }, 300);
+  }, [setExpandedAccessibility]);
+
+  const expandAccessibilityFeature = React.useCallback((featureId: string) => {
+    if (accessibilityOpenFrameRef.current !== null) {
+      cancelAnimationFrame(accessibilityOpenFrameRef.current);
+    }
+
+    setExpandedAccessibility?.(featureId);
+    setOpeningAccessibilityFeature(featureId);
+    accessibilityOpenFrameRef.current = requestAnimationFrame(() => {
+      accessibilityOpenFrameRef.current = requestAnimationFrame(() => {
+        setOpeningAccessibilityFeature(null);
+        accessibilityOpenFrameRef.current = null;
+      });
+    });
+  }, [setExpandedAccessibility]);
+
+  React.useEffect(() => () => {
+    if (accessibilityCollapseTimerRef.current !== null) {
+      window.clearTimeout(accessibilityCollapseTimerRef.current);
+    }
+    if (accessibilityOpenFrameRef.current !== null) {
+      cancelAnimationFrame(accessibilityOpenFrameRef.current);
+    }
+  }, []);
+
+  const updateAmenitiesScrollThumb = React.useCallback(() => {
+    if (amenitiesScrollFrameRef.current !== null) cancelAnimationFrame(amenitiesScrollFrameRef.current);
+
+    amenitiesScrollFrameRef.current = requestAnimationFrame(() => {
+      const element = amenitiesScrollRef.current;
+      if (!element) return;
+
+      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
+      const height = hasOverflow ? 60 : 0;
+      const maxTop = Math.max(0, element.clientHeight - height - 10);
+      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
+      const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+
+      setAmenitiesScrollThumb((current) => (
+        current.height === height && current.top === top && current.visible === hasOverflow
+          ? current
+          : { height, top, visible: hasOverflow }
+      ));
+      amenitiesScrollFrameRef.current = null;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const element = amenitiesScrollRef.current;
+    if (!element) return;
+
+    updateAmenitiesScrollThumb();
+    const resizeObserver = new ResizeObserver(updateAmenitiesScrollThumb);
+    const mutationObserver = new MutationObserver(updateAmenitiesScrollThumb);
+    resizeObserver.observe(element);
+    mutationObserver.observe(element, { childList: true, subtree: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      if (amenitiesScrollFrameRef.current !== null) cancelAnimationFrame(amenitiesScrollFrameRef.current);
+    };
+  }, [activeSection, updateAmenitiesScrollThumb]);
 
   const updateAccessibilityDetail = (featureId: string, updater: (detail: AccessibilityFeatureDetail) => AccessibilityFeatureDetail) => {
     const current = accessibilityDetails.find((detail) => detail.featureId === featureId) ?? { featureId, photos: [] };
@@ -264,19 +349,22 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in max-w-[calc(100%-75px)] pb-10 font-sans">
           {/* Header & Back Button */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
+          <div className="sm:space-y-1.5 space-y-3">
+            <div className="flex items-start gap-6">
               <BackButton onClick={() => setActiveSection("title")} />
-              <h1>Description</h1>
+              <div>
+                <h1>Description</h1>
+                <p className="sm:text-base text-sm text-[#727272] font-normal">
+                  *These settings apply to all nights, unless you customize them by date.{" "}
+                  <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer text-[#1f1f1f] hover:text-[#727272]">
+                    Learn more
+                  </a>
+                </p>
+              </div>
             </div>
-            <p className="text-base text-[#727272] font-normal pl-11">
-              *These settings apply to all nights, unless you customize them by date.{" "}
-              <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer hover:text-zinc-700">
-                Learn more
-              </a>
-            </p>
+
           </div>
 
           {isLoading ? (
@@ -284,7 +372,7 @@ export function PropertyDetailsViews({
           ) : (
             <div className="space-y-3 pt-1">
               {/* 1. Listing description */}
-              <div className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-4 space-y-3 shadow-2xs">
+              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300">
                 <div
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
@@ -316,7 +404,7 @@ export function PropertyDetailsViews({
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         placeholder="Describe your space, ambiance, surroundings, and amenities..."
-                        className="w-full text-base text-[rgb(31,31,31,0.5)] outline-none bg-transparent leading-relaxed resize-none"
+                        className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none"
                       />
                     </div>
                     <button
@@ -332,7 +420,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 2. Your property */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-3 transition-all">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "property" ? null : "property")}
                   className="flex items-center justify-between cursor-pointer select-none"
@@ -361,7 +449,7 @@ export function PropertyDetailsViews({
                       value={editPropertyDetails}
                       onChange={(e) => setEditPropertyDetails(e.target.value)}
                       placeholder="Tell guests more about the property itself."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[rgb(31,31,31,0.5)] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
                     />
                     <button
                       type="button"
@@ -376,7 +464,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 3. Guest access */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-3 transition-all">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "access" ? null : "access")}
                   className="flex items-center justify-between cursor-pointer select-none"
@@ -405,7 +493,7 @@ export function PropertyDetailsViews({
                       value={editAccessDetails}
                       onChange={(e) => setEditAccessDetails(e.target.value)}
                       placeholder="Explain which spaces guests can use."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[rgb(31,31,31,0.5)] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
                     />
                     <button
                       type="button"
@@ -420,7 +508,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 4. Interaction with guests */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-3 transition-all">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "interaction" ? null : "interaction")}
                   className="flex items-center justify-between cursor-pointer select-none"
@@ -449,7 +537,7 @@ export function PropertyDetailsViews({
                       value={interactionDetails}
                       onChange={(e) => setInteractionDetails?.(e.target.value)}
                       placeholder="Let guests know how much interaction they can expect."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[rgb(31,31,31,0.5)] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
                     />
                     <button
                       type="button"
@@ -464,7 +552,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 5. Other details to note */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-3 transition-all">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "other" ? null : "other")}
                   className="flex items-center justify-between cursor-pointer select-none"
@@ -493,7 +581,7 @@ export function PropertyDetailsViews({
                       value={otherDetails}
                       onChange={(e) => setOtherDetails?.(e.target.value)}
                       placeholder="Share anything else guests should know before booking."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[rgb(31,31,31,0.5)] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
                     />
                     <button
                       type="button"
@@ -516,7 +604,7 @@ export function PropertyDetailsViews({
       {/* --------------------------------------------------------- */}
       {activeSection === "title" && (
         <div className="space-y-6 animate-in fade-in max-w-xl">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
             <h1>Listing title</h1>
           </div>
@@ -530,9 +618,9 @@ export function PropertyDetailsViews({
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 placeholder="e.g. Modern Villa in Downtown"
-                className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[rgb(31,31,31,0.5)] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px]"
+                className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px]"
               />
-              <div className="flex justify-between items-center text-xs text-[rgb(31,31,31,0.5)] mb-0">
+              <div className="flex justify-between items-center text-xs text-[#727272] mb-0">
                 <span>50 characters maximum</span>
                 <span>{editTitle.length}/50</span>
               </div>
@@ -556,7 +644,7 @@ export function PropertyDetailsViews({
       {activeSection === "propertyType" && (
         <div className="space-y-6 animate-in fade-in pb-10 pr-0 font-sans lg:pr-6">
           {/* Back button & Section Header */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <span className="hidden lg:block"><BackButton onClick={() => setActiveSection("description")} /></span>
             <h1>Property type</h1>
           </div>
@@ -573,7 +661,7 @@ export function PropertyDetailsViews({
                     <select
                       value={whichIsMostLike}
                       onChange={(e) => setWhichIsMostLike(e.target.value)}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[rgb(31,31,31,0.5)] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="APARTMENT">Apartment</option>
                       <option value="HOUSE">House</option>
@@ -600,7 +688,7 @@ export function PropertyDetailsViews({
                         setEditPropertyType(e.target.value);
                         setWhichIsMostLike(normalizeMostLikeSelection(e.target.value));
                       }}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[rgb(31,31,31,0.5)] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="APARTMENT">Apartment</option>
                       <option value="HOUSE">House</option>
@@ -631,7 +719,7 @@ export function PropertyDetailsViews({
                     <select
                       value={editListingType}
                       onChange={(e) => setEditListingType(e.target.value)}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[rgb(31,31,31,0.5)] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="ENTIRE_PLACE">Entire place</option>
                       <option value="ROOM">Private room</option>
@@ -660,7 +748,7 @@ export function PropertyDetailsViews({
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
                           className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
                         >
-                          -
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
                         <button
@@ -682,7 +770,7 @@ export function PropertyDetailsViews({
                           onClick={() => setListingFloor?.(Math.max(0, (listingFloor || 1) - 1))}
                           className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
                         >
-                          -
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{listingFloor ?? 1}</span>
                         <button
@@ -738,7 +826,7 @@ export function PropertyDetailsViews({
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
                           className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
                         >
-                          -
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
                         <button
@@ -788,7 +876,7 @@ export function PropertyDetailsViews({
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                      className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-[rgb(31,31,31,0.5)] font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-9 text-base"
+                      className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-[#727272] font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-9 text-base"
                     >
                       <option value="">Select year (optional)</option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
@@ -815,7 +903,7 @@ export function PropertyDetailsViews({
                         placeholder="e.g. 120"
                         min={1}
                         max={50000}
-                        className="h-14 w-full rounded-lg border border-[#727272] bg-white px-4 text-base font-normal text-[rgb(31,31,31,0.5)] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3"
+                        className="h-14 w-full rounded-lg border border-[#727272] bg-white px-4 text-base font-normal text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3"
                       />
                     </div>
                     <div className="space-y-2">
@@ -824,7 +912,7 @@ export function PropertyDetailsViews({
                         <select
                           value={propertySizeUnit}
                           onChange={(e) => setPropertySizeUnit?.(e.target.value)}
-                          className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-base font-normal text-[rgb(31,31,31,0.5)] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-8"
+                          className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-base font-normal text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-8"
                         >
                           <option value="SQM">SQM (m²)</option>
                           <option value="SQFT">SQFT (sq ft)</option>
@@ -877,22 +965,19 @@ export function PropertyDetailsViews({
       {/* VIEW: GUESTS & SLEEPING ARRANGEMENTS */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "guests" || activeSection === "sleeping-arrangements") && (
-        <div className="space-y-8 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full space-y-6 animate-in fade-in pb-10 font-sans"}>
           {/* Header */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveSection("propertyType")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-              >
-                ‹
-              </button>
-              <h1>Guests & Sleeping arrangements</h1>
+          <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
+            <div className="flex items-start gap-6 max-w-[491px]">
+              <BackButton onClick={() => setActiveSection("propertyType")} />
+              <div className="space-y-1.5">
+                <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F]">{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
+                <p className="text-[14px] leading-5 text-[#727272]">
+                  {activeSection === "guests" ? "How many guests can fit comfortably in your space?" : "Configure bedroom sleeping arrangements and bathroom breakdown."}
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-zinc-500 font-normal pl-11">
-              Configure maximum capacity, bedroom sleeping arrangements, and bathroom breakdown.
-            </p>
+
           </div>
 
           {isLoading ? (
@@ -902,91 +987,100 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <>
+            <div className="space-y-6 pt-10">
               {/* Section 1: Guest Capacity Counter */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xs font-semibold text-zinc-900">Maximum guests</h3>
-                    <p className="text-[11px] text-zinc-400">Total number of guests allowed to stay</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-                      className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 font-semibold text-sm hover:bg-zinc-100 cursor-pointer transition-all shadow-2xs"
-                    >
-                      -
-                    </button>
-                    <span className="w-6 text-center text-sm font-semibold text-zinc-950">{editGuests}</span>
-                    <button
-                      type="button"
-                      onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
-                      className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 font-semibold text-sm hover:bg-zinc-100 cursor-pointer transition-all shadow-2xs"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Quick Counters: Bedrooms & Beds */}
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-100">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-semibold text-zinc-800 block">Bedrooms</span>
-                      <span className="text-[11px] text-zinc-400">Total bedroom spaces</span>
-                    </div>
+              <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
+                <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] bg-white p-4"}`}>
+                  {activeSection === "guests" && (
+                    <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272]">
+                      How many guests can fit comfortably in your space?
+                    </p>
+                  )}
+                  <div className={`flex items-center ${activeSection === "guests" ? "gap-12" : "justify-between"}`}>
+                    {activeSection !== "guests" && (
+                      <div>
+                        <h3 className="text-base font-medium text-[#1F1F1F]">Maximum guests</h3>
+                        <p className="text-[14px] font-normal text-[#727272]">Total number of guests allowed to stay</p>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
+                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
                       >
-                        -
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
-                      <span className="w-4 text-center text-xs font-semibold text-zinc-900">{editBedrooms}</span>
+                      <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] text-[42px]" : "w-5 text-center text-base"} font-normal text-[#1F1F1F]`}>{editGuests}</span>
                       <button
                         type="button"
-                        onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
+                        className={`${activeSection === "guests" ? "size-8" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white font-normal text-lg hover:bg-[#1f1f1f] cursor-pointer transition-all`}
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-semibold text-zinc-800 block">Beds</span>
-                      <span className="text-[11px] text-zinc-400">Total beds available</span>
+                  {/* Quick Counters: Bedrooms & Beds */}
+                  {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] pt-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-medium text-[#1F1F1F] block">Bedrooms</span>
+                        <span className="text-[14px] font-normal text-[#727272]">Total bedroom spaces</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain" />
+                        </button>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBedrooms}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                      >
-                        -
-                      </button>
-                      <span className="w-4 text-center text-xs font-semibold text-zinc-900">{editBeds}</span>
-                      <button
-                        type="button"
-                        onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
-                      >
-                        +
-                      </button>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-medium text-[#1F1F1F] block">Beds</span>
+                        <span className="text-[14px] font-normal text-[#727272]">Total beds available</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain" />
+                        </button>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBeds}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
+                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </div>}
                 </div>
               </div>
 
               {/* Section 2: Room-Level Sleeping Arrangements */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
+                <div className="flex items-center justify-between gap-6">
                   <div>
-                    <h3 className="text-xs font-semibold text-zinc-900">Room-by-room sleeping arrangements</h3>
-                    <p className="text-[11px] text-zinc-400">Specify beds for each bedroom or common space</p>
+                    <h3 className="text-base font-medium text-[#1F1F1F]">Room-by-room sleeping arrangements</h3>
+                    <p className="text-[14px] font-normal text-[#727272]">Specify beds for each bedroom or common space</p>
                   </div>
                   <button
                     type="button"
@@ -1004,16 +1098,15 @@ export function PropertyDetailsViews({
                       const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                       setEditBeds(Math.max(1, totalBeds));
                     }}
-                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-1.5 rounded-full cursor-pointer transition-colors"
-                  >
+                    className="rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white cursor-pointer transition-colors whitespace-nowrap">
                     + Add room
                   </button>
                 </div>
 
                 {/* Render Rooms List */}
                 {(!rooms || rooms.length === 0) ? (
-                  <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center space-y-2">
-                    <p className="text-xs text-zinc-500">No rooms configured yet.</p>
+                  <div className="rounded-md border border-dashed border-[#DDDDDE] bg-zinc-50 p-6 text-center space-y-2">
+                    <p className="text-[14px] text-[#727272]">No rooms configured yet.</p>
                     <button
                       type="button"
                       onClick={() => {
@@ -1033,7 +1126,7 @@ export function PropertyDetailsViews({
                 ) : (
                   <div className="space-y-3">
                     {rooms.map((room, roomIdx) => (
-                      <div key={room.id || roomIdx} className="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+                      <div key={room.id || roomIdx} className="rounded-md border border-[#DDDDDE] bg-white p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">🛏️</span>
@@ -1045,9 +1138,9 @@ export function PropertyDetailsViews({
                                 updated[roomIdx] = { ...updated[roomIdx], name: e.target.value };
                                 setRooms?.(updated);
                               }}
-                              className="text-xs font-semibold text-zinc-900 border-b border-transparent hover:border-zinc-300 focus:border-zinc-900 outline-none px-1 py-0.5"
+                              className="text-base font-medium text-[#1F1F1F] border-b border-transparent hover:border-zinc-300 focus:border-[#1F1F1F] outline-none px-1 py-0.5"
                             />
-                            <span className="text-[10px] font-medium bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
+                            <span className="text-[14px] font-normal bg-zinc-100 text-[#727272] px-2 py-0.5 rounded-full">
                               {room.type}
                             </span>
                           </div>
@@ -1068,10 +1161,10 @@ export function PropertyDetailsViews({
                         </div>
 
                         {/* Beds in this room */}
-                        <div className="space-y-2 pl-6 pt-1">
+                        <div className="space-y-2 pt-1">
                           {room.beds.map((bed, bedIdx) => (
-                            <div key={bedIdx} className="flex items-center justify-between text-xs py-1 border-b border-zinc-50 last:border-0">
-                              <span className="text-zinc-700 font-medium capitalize">
+                            <div key={bedIdx} className="flex items-center justify-between text-base py-2 border-b border-[#DDDDDE] last:border-0">
+                              <span className="text-[#1F1F1F] font-normal capitalize">
                                 {bed.type.toLowerCase().replace(/_/g, " ")} bed
                               </span>
                               <div className="flex items-center gap-2">
@@ -1089,11 +1182,11 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="w-6 h-6 rounded-full border border-zinc-300 flex items-center justify-center text-xs text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                                  className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                                 >
-                                  -
+                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={12} height={12} className="size-3 object-contain" />
                                 </button>
-                                <span className="w-4 text-center font-semibold text-zinc-900">{bed.count}</span>
+                                <span className="w-5 text-center font-normal text-[#1F1F1F]">{bed.count}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1103,7 +1196,7 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="w-6 h-6 rounded-full border border-zinc-300 flex items-center justify-center text-xs text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                                  className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
                                 >
                                   +
                                 </button>
@@ -1130,7 +1223,7 @@ export function PropertyDetailsViews({
                                 setEditBeds(Math.max(1, totalBeds));
                                 e.target.value = "";
                               }}
-                              className="text-[11px] font-medium text-zinc-600 bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-1.5 outline-none cursor-pointer"
+                              className="text-[14px] font-normal text-[#727272] bg-white border border-[#DDDDDE] rounded-md px-3 py-2 outline-none cursor-pointer"
                             >
                               <option value="">+ Add bed type...</option>
                               <option value="KING">King bed</option>
@@ -1149,19 +1242,19 @@ export function PropertyDetailsViews({
                     ))}
                   </div>
                 )}
-              </div>
+              </div>}
 
               {/* Section 3: Bathroom Breakdown */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
+              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] bg-white p-4 space-y-4">
                 <div>
-                  <h3 className="text-xs font-semibold text-zinc-900">Bathroom breakdown</h3>
-                  <p className="text-[11px] text-zinc-400">Specify full and half bathrooms available to guests</p>
+                  <h3 className="text-base font-medium text-[#1F1F1F]">Bathroom breakdown</h3>
+                  <p className="text-[14px] font-normal text-[#727272]">Specify full and half bathrooms available to guests</p>
                 </div>
 
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-semibold text-zinc-800 block">Full bathrooms</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] block">Full bathrooms</span>
                       <span className="text-[11px] text-zinc-400">Includes shower/bathtub, sink, and toilet</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1172,11 +1265,11 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                       >
-                        -
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
-                      <span className="w-4 text-center text-xs font-semibold text-zinc-900">{fullBathrooms ?? 1}</span>
+                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{fullBathrooms ?? 1}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1184,7 +1277,7 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                       >
                         +
                       </button>
@@ -1193,7 +1286,7 @@ export function PropertyDetailsViews({
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
                     <div>
-                      <span className="text-xs font-semibold text-zinc-800 block">Half bathrooms</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] block">Half bathrooms</span>
                       <span className="text-[11px] text-zinc-400">Includes sink and toilet only (no bath or shower)</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1204,11 +1297,11 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                       >
-                        -
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain" />
                       </button>
-                      <span className="w-4 text-center text-xs font-semibold text-zinc-900">{halfBathrooms ?? 0}</span>
+                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{halfBathrooms ?? 0}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1216,7 +1309,7 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="w-7 h-7 rounded-full border border-zinc-300 flex items-center justify-center text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                        className="w-8 h-8 rounded-full border border-[#1f1f1f] flex items-center justify-center text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                       >
                         +
                       </button>
@@ -1225,7 +1318,7 @@ export function PropertyDetailsViews({
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
                     <div>
-                      <span className="text-xs font-semibold text-zinc-800 block">Bathroom privacy</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] block">Bathroom privacy</span>
                       <span className="text-[11px] text-zinc-400">Are the bathrooms private or shared with host/others?</span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -1235,9 +1328,9 @@ export function PropertyDetailsViews({
                           setPrivateBathrooms?.(fullBathrooms || 1);
                           setSharedBathrooms?.(0);
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${(sharedBathrooms ?? 0) === 0
-                          ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
-                          : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) === 0
+                          ? "bg-[#FCDF9C] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
+                          : "bg-[#F3F4F5] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
                           }`}
                       >
                         Private
@@ -1248,9 +1341,9 @@ export function PropertyDetailsViews({
                           setSharedBathrooms?.(1);
                           setPrivateBathrooms?.(0);
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${(sharedBathrooms ?? 0) > 0
-                          ? "bg-[#FEE08B] border border-amber-300 text-zinc-950 shadow-2xs"
-                          : "bg-white border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) > 0
+                          ? "bg-[#FCDF9C] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
+                          : "bg-[#F3F4F5] border border-[#1f1f1f] text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
                           }`}
                       >
                         Shared
@@ -1258,20 +1351,20 @@ export function PropertyDetailsViews({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>}
 
               {/* Save Button */}
-              <div className="pt-2 aaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+              <div className={`${activeSection === "guests" ? "pt-2 text-center" : "pt-2"}`}>
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("guests")}
-                  className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-sm px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       )}
@@ -1282,16 +1375,18 @@ export function PropertyDetailsViews({
       {(activeSection === "amenities" || activeSection === "add-amenities") && (() => {
         const AMENITY_FILTER_CATEGORIES = [
           { id: "all", label: "All" },
-          { id: "favorites", label: "Favorites" },
-          { id: "kitchen_dining", label: "Kitchen & dining" },
+          { id: "favorites", label: "Basics" },
           { id: "bathroom", label: "Bathroom" },
-          { id: "bedroom_laundry", label: "Bedroom & laundry" },
-          { id: "climate", label: "Heating & cooling" },
+          { id: "bedroom_laundry", label: "Bedroom and laundry" },
           { id: "entertainment", label: "Entertainment" },
+          { id: "family", label: "Family" },
+          { id: "climate", label: "Heating and cooling" },
+          { id: "safety", label: "Home safety" },
+          { id: "internet_workspace", label: "Internet and office" },
+          { id: "kitchen_dining", label: "Kitchen and dining" },
+          { id: "location_features", label: "Location features" },
           { id: "outdoor", label: "Outdoor" },
-          { id: "standout", label: "Standout & pool" },
-          { id: "facilities", label: "Parking & facilities" },
-          { id: "safety", label: "Safety" },
+          { id: "parking_facilities", label: "Parking and facilities" },
           { id: "services", label: "Services" },
         ] as const;
 
@@ -1305,16 +1400,16 @@ export function PropertyDetailsViews({
               if (!item.isPopular && item.category !== "favorites" && item.category !== "essentials") {
                 return false;
               }
-            } else if (amenityCategory === "facilities") {
-              if (item.category !== "facilities" && item.category !== "parking") {
+            } else if (amenityCategory === "location_features") {
+              if (item.category !== "facilities" && item.category !== "standout" && item.category !== "premium") {
                 return false;
               }
-            } else if (amenityCategory === "standout") {
-              if (item.category !== "standout" && item.category !== "premium") {
+            } else if (amenityCategory === "parking_facilities") {
+              if (item.category !== "parking" && item.category !== "facilities") {
                 return false;
               }
             } else if (amenityCategory === "services") {
-              if (item.category !== "services" && item.category !== "family" && item.category !== "accessibility") {
+              if (item.category !== "services") {
                 return false;
               }
             } else if (item.category !== amenityCategory) {
@@ -1342,33 +1437,25 @@ export function PropertyDetailsViews({
         };
 
         return (
-          <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+          <div className="w-full sm:max-w-[calc(100%-75px)] space-y-5 animate-in fade-in font-sans">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex sm:flex-row flex-col sm:gap-0 gap-5 sm:items-center items-start justify-between">
               <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (activeSection === "add-amenities") {
-                        setActiveSection("amenities");
-                      } else {
-                        setActiveSection("description");
-                      }
-                    }}
-                    className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-                  >
-                    ‹
-                  </button>
-                  <h1 className="tracking-tight text-[#1F1F1F]">
-                    {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
-                  </h1>
+                <div className="flex items-start gap-6">
+                  <BackButton onClick={() => {
+                    setIsEditingAmenityList(false);
+                    setActiveSection(activeSection === "add-amenities" ? "amenities" : "description");
+                  }} />
+                  <div className="space-y-1">
+                    <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F]">
+                      {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
+                    </h1>
+                    <p className="sm:text-[14px] text-xs font-normal leading-5.5 text-[#727272]">
+                      You&apos;ve added these to your listing so far.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-base text-[#727272] font-normal pl-11">
-                  {activeSection === "add-amenities"
-                    ? `${normalizedSelectedIds.size} amenities selected for your listing.`
-                    : `You've added ${normalizedSelectedIds.size} ${normalizedSelectedIds.size === 1 ? "amenity" : "amenities"} to your listing.`}
-                </p>
+
               </div>
 
               {/* Edit / Add Switch Buttons */}
@@ -1380,22 +1467,37 @@ export function PropertyDetailsViews({
                     if (activeSection === "add-amenities") {
                       await handleSaveSection("amenities");
                       setActiveSection("amenities");
+                    } else if (isEditingAmenityList) {
+                      await handleSaveSection("amenities");
+                      setIsEditingAmenityList(false);
                     } else {
-                      setActiveSection("add-amenities");
+                      setIsEditingAmenityList(true);
                     }
                   }}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer shadow-2xs flex items-center gap-1.5 transition-all"
+                  className={`flex items-center rounded-full px-4.5 py-2 text-base font-medium text-[#1F1F1F] hover:text-white duration-300 group transition-all disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px] ${activeSection === "add-amenities" || isEditingAmenityList
+                    ? "bg-[#FCDF9C] hover:bg-[#1F1F1F]"
+                    : "bg-[#F3F4F5] hover:bg-[#1F1F1F]"
+                    }`}
                 >
-                  <span>{activeSection === "add-amenities" ? "✓" : "✏️"}</span>
-                  <span>{activeSection === "add-amenities" ? (isSaving ? "Saving..." : "Done") : "Add amenities"}</span>
+                  {activeSection === "amenities" && !isEditingAmenityList && (
+                    <Image
+                      src="/images/icons/writing-pen.svg"
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="mr-2 size-6 object-contain transition-[filter] group-hover:brightness-0 group-hover:invert"
+                    />
+                  )}
+                  {activeSection === "add-amenities" || isEditingAmenityList ? (isSaving ? "Saving..." : "Done") : "Edit"}
                 </button>
-                <button
+                {activeSection === "amenities" && !isEditingAmenityList && <button
                   type="button"
-                  onClick={() => setActiveSection(activeSection === "add-amenities" ? "amenities" : "add-amenities")}
-                  className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-sm font-semibold cursor-pointer shadow-2xs transition-all"
+                  onClick={() => setActiveSection("add-amenities")}
+                  className="size-12 rounded-full bg-[#F3F4F5] flex items-center justify-center text-[#1F1F1F] hover:text-white hover:bg-[#1f1f1f] text-2xl font-normal cursor-pointer transition-all"
+                  aria-label="Add amenities"
                 >
-                  {activeSection === "add-amenities" ? "✕" : "+"}
-                </button>
+                  +
+                </button>}
               </div>
             </div>
 
@@ -1403,15 +1505,15 @@ export function PropertyDetailsViews({
               <AmenitiesSkeleton />
             ) : activeSection === "add-amenities" ? (
               /* Add Amenities Selection View */
-              <div className="space-y-5 pt-1">
-                {/* Search Bar */}
-                <div className="relative">
+              <div className="space-y-3 pt-1">
+                {/* Search remains available on compact screens without changing the desktop Figma layout. */}
+                <div className="relative sm:hidden">
                   <input
                     type="text"
                     value={amenitySearch}
                     onChange={(e) => setAmenitySearch(e.target.value)}
                     placeholder="Search amenities (e.g. Wifi, Pool, Kitchen)..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 focus:bg-white focus:border-amber-400 focus:outline-none text-xs text-[#1F1F1F] placeholder-zinc-400 transition-all"
+                    className="w-full rounded-md border border-[#DDDDDE] bg-white px-3 py-2.5 focus:border-[#1F1F1F] focus:outline-none text-sm font-normal text-[#1F1F1F] placeholder:text-[#727272] transition-all"
                   />
                   {amenitySearch && (
                     <button
@@ -1425,15 +1527,15 @@ export function PropertyDetailsViews({
                 </div>
 
                 {/* Category Filter Chips */}
-                <div className="flex flex-wrap gap-2 pt-0.5">
+                <div className="flex flex-wrap gap-x-1 gap-y-2 pt-2">
                   {AMENITY_FILTER_CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
                       type="button"
                       onClick={() => setAmenityCategory(cat.id)}
-                      className={`rounded-full px-3.5 py-1 text-[11px] font-semibold transition-all cursor-pointer shadow-2xs ${amenityCategory === cat.id
-                        ? "bg-zinc-900 text-white"
-                        : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                      className={`rounded-full border px-6 py-2 text-sm font-normal transition-all cursor-pointer ${amenityCategory === cat.id
+                        ? "border-[#727272] bg-[#F3F4F5] text-[#1F1F1F]"
+                        : "border-[#727272] hover:border-[#1F1F1F] bg-white text-[#727272] hover:text-[#1F1F1F] hover:bg-[#F3F4F5]"
                         }`}
                     >
                       {cat.label}
@@ -1442,79 +1544,72 @@ export function PropertyDetailsViews({
                 </div>
 
                 {/* Filtered Amenities List */}
-                <div className="divide-y divide-zinc-150/80 pt-1 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
-                  {filteredCatalog.length === 0 ? (
-                    <div className="py-12 text-center text-zinc-400 text-xs">
-                      No amenities found matching "{amenitySearch}".
-                    </div>
-                  ) : (
-                    filteredCatalog.map((item) => {
-                      const isSelected = normalizedSelectedIds.has(item.id);
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => toggleAmenity(item.id)}
-                          className="py-3 flex items-center justify-between cursor-pointer group select-none hover:bg-zinc-50/70 px-2 rounded-xl transition-all"
-                        >
-                          <div className="flex items-center gap-3.5 min-w-0 pr-4">
-                            <div className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-xs shrink-0 shadow-2xs group-hover:border-zinc-300">
-                              {item.icon || "✨"}
-                            </div>
-                            <div className="min-w-0">
-                              <span className="font-medium text-base text-[#1F1F1F] block tracking-tight">
-                                {item.label}
-                              </span>
-                              {item.description && (
-                                <span className="text-[10px] text-zinc-400 font-normal truncate block">
-                                  {item.description}
+                <div className="relative min-h-0">
+                  <div
+                    ref={amenitiesScrollRef}
+                    onScroll={updateAmenitiesScrollThumb}
+                    className="custom-scrollbar max-h-[calc(100vh-21rem)] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
+                  >
+                    {filteredCatalog.length === 0 ? (
+                      <div className="py-12 text-center text-zinc-400 text-xs">
+                        No amenities found matching "{amenitySearch}".
+                      </div>
+                    ) : (
+                      filteredCatalog.map((item) => {
+                        const isSelected = normalizedSelectedIds.has(item.id);
+                        const iconSource = AMENITY_ICON_SOURCES[item.id];
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => toggleAmenity(item.id)}
+                            className="flex items-center justify-between gap-3 py-3 cursor-pointer group select-none transition-all"
+                          >
+                            <div className="flex items-center sm:gap-6 gap-4 min-w-0 pr-4">
+                              <div className="size-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-base shrink-0 group-hover:border-[#727272]">
+                                {iconSource ? (
+                                  <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain" />
+                                ) : (
+                                  item.icon || "✨"
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-medium text-base text-[#1F1F1F] block">
+                                  {item.label}
                                 </span>
-                              )}
+                              </div>
                             </div>
+
+                            {isSelected ? (
+                              <div className="size-8 rounded-full bg-[#FCDF9C] flex items-center justify-center text-[#1F1F1F] font-normal text-base shrink-0">
+                                <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain" />
+                              </div>
+                            ) : (
+                              <div className="size-8 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] flex items-center justify-center text-[#1f1f1f] group-hover:bg-zinc-100 text-base font-normal transition-all shrink-0">
+                                <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain" />
+                              </div>
+                            )}
                           </div>
-
-                          {isSelected ? (
-                            <div className="w-6 h-6 rounded-full bg-[#FEE08B] border border-amber-300/60 flex items-center justify-center text-zinc-950 font-semibold text-xs shadow-2xs shrink-0">
-                              ✓
-                            </div>
-                          ) : (
-                            <div className="w-6 h-6 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all shrink-0">
-                              +
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
+                        );
+                      })
+                    )}
+                  </div>
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
+                    {amenitiesScrollThumb.visible && (
+                      <div
+                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-transform duration-150 ease-out will-change-transform"
+                        style={{ height: `${amenitiesScrollThumb.height}px`, transform: `translate3d(0, ${amenitiesScrollThumb.top}px, 0)` }}
+                      />
+                    )}
+                  </div>
                 </div>
 
-                {/* Bottom Save & Done Buttons */}
-                <div className="flex items-center gap-3 pt-3 border-t border-zinc-200/60">
-                  <button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={async () => {
-                      await handleSaveSection("amenities");
-                      setActiveSection("amenities");
-                    }}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
-                  >
-                    {isSaving ? "Saving..." : "Save & apply"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection("amenities")}
-                    className="rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer"
-                  >
-                    Back to list
-                  </button>
-                </div>
               </div>
             ) : (
               /* Main Amenities List View */
-              <div className="space-y-4 pt-1">
+              <div className="max-w-[716px] space-y-2 pt-1">
                 {editAmenities.length === 0 ? (
-                  <div className="p-10 text-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 space-y-3">
-                    <p className="text-xs text-zinc-500 font-normal">
+                  <div className="p-8 text-center rounded-md border border-dashed border-[#DDDDDE] bg-zinc-50/50 space-y-3">
+                    <p className="text-[14px] text-[#727272] font-normal">
                       No amenities added yet. Tell guests what makes your place special!
                     </p>
                     <button
@@ -1526,55 +1621,46 @@ export function PropertyDetailsViews({
                     </button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-zinc-150/80">
+                  <div className="divide-y divide-[#DDDDDE]">
                     {editAmenities.map((am) => {
                       const meta = getAmenityMeta(am);
+                      const iconSource = AMENITY_ICON_SOURCES[meta.id];
                       return (
-                        <div key={am} className="py-3.5 flex items-start gap-4">
-                          <div className="w-9 h-9 rounded-full border border-zinc-200/80 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs">
-                            {meta.icon || "✨"}
-                          </div>
-                          <div className="flex-1 min-w-0 pt-0.5 space-y-0.5">
-                            <h4 className="font-medium text-base text-[#1F1F1F] tracking-tight">
+                        <div key={am} className="py-3 flex items-start sm:gap-6 gap-4">
+                          {isEditingAmenityList ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleAmenity(am)}
+                              className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] bg-white text-base font-normal text-[#727272] hover:border-[#1F1F1F] hover:bg-[#F3F4F5] cursor-pointer transition-colors"
+                              aria-label={`Remove ${meta.label}`}
+                            >
+                              <Image src="/images/icons/minus-icon.svg" alt={`Remove ${meta.label}`} width={14} height={14} className="size-3.5 object-contain" />
+                            </button>
+                          ) : (
+                            <div className="size-10 rounded-full border border-[#B9B9BA] bg-white flex items-center justify-center text-sm shrink-0">
+                              {iconSource ? (
+                                <Image src={iconSource} alt="" width={20} height={20} className="size-6 object-contain" />
+                              ) : (
+                                meta.icon || "✨"
+                              )}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <h4 className="font-medium text-lg text-[#1F1F1F]">
                               {meta.label}
                             </h4>
                             {meta.description && (
-                              <p className="text-base text-[#727272] font-normal leading-relaxed">
+                              <p className="sm:text-base text-sm text-[#727272] font-normal leading-5">
                                 {meta.description}
                               </p>
                             )}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => toggleAmenity(am)}
-                            className="text-[11px] text-zinc-400 hover:text-rose-600 font-medium cursor-pointer pt-1 transition-colors"
-                          >
-                            Remove
-                          </button>
                         </div>
                       );
                     })}
                   </div>
                 )}
 
-                {/* Save & Add More Buttons */}
-                <div className="flex items-center gap-3 pt-4 border-t border-zinc-200/60">
-                  <button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={() => handleSaveSection("amenities")}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
-                  >
-                    {isSaving ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection("add-amenities")}
-                    className="rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer"
-                  >
-                    + Add more amenities
-                  </button>
-                </div>
               </div>
             )}
           </div>
@@ -1585,7 +1671,7 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in max-w-[calc(100%-75px)] pb-10 font-sans">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1619,7 +1705,7 @@ export function PropertyDetailsViews({
           ) : (
             <>
               {/* List of Accessibility Features */}
-              <div className="space-y-3 pt-2">
+              <div className="sm:mt-[64px] mt-6">
                 {[
                   {
                     id: "disabled_parking",
@@ -1664,18 +1750,23 @@ export function PropertyDetailsViews({
                     : false;
                   const featurePhotos = accessibilityDetails.find((detail) => detail.featureId === featureId)?.photos ?? [];
                   const isExpanded = expandedAccessibility === feature.id;
+                  const isCollapsing = collapsingAccessibilityFeature === feature.id;
+                  const isOpening = openingAccessibilityFeature === feature.id;
 
                   if (isExpanded) {
                     return (
                       /* Expanded Grey Container Card matching Figma Screenshot 1 */
                       <div
                         key={feature.id}
-                        className="rounded-2xl bg-zinc-100/90 border border-zinc-200/80 p-5 space-y-4 shadow-2xs animate-in fade-in"
+                        className={`overflow-hidden rounded-2xl space-y-4 transition-[max-height,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
+                          ? "pointer-events-none max-h-0 -translate-y-1 border-transparent bg-transparent p-0 opacity-0"
+                          : "max-h-[1600px] translate-y-0 border border-[#1f1f1f] bg-zinc-100/90 p-5 opacity-100 shadow-2xs"
+                          }`}
                       >
                         {/* Top Row: Icon, Title, Description, Minus Button */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-3.5">
-                            <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
+                            <div className="w-10 h-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
                               {feature.icon}
                             </div>
                             <div className="space-y-1">
@@ -1689,31 +1780,31 @@ export function PropertyDetailsViews({
                           {/* Minus Button to Collapse */}
                           <button
                             type="button"
-                            onClick={() => setExpandedAccessibility?.(null)}
-                            className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                            onClick={() => collapseAccessibilityFeature(feature.id)}
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                           >
-                            -
+                            <Image src="/images/icons/minus-icon.svg" alt="Collapse" width={12} height={12} className="size-3 object-contain" />
                           </button>
                         </div>
 
                         {/* Examples Gallery Grid */}
                         <div className="space-y-2 pt-1">
-                          <span className="text-[11px] font-semibold text-zinc-500">Examples:</span>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="aspect-[4/3] rounded-xl bg-zinc-200/80 border border-zinc-300/40 flex items-center justify-center text-[10px] text-zinc-400 font-medium">
-                              Photo 1
+                          <span className="text-sm mb-3 font-normal text-[#727272]">Examples:</span>
+                          <div className="grid grid-cols-4 gap-6">
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                              {/* Photo 1 */}
                             </div>
-                            <div className="aspect-[4/3] rounded-xl bg-zinc-200/80 border border-zinc-300/40 flex items-center justify-center text-[10px] text-zinc-400 font-medium">
-                              Photo 2
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                              {/* Photo 2 */}
                             </div>
-                            <div className="aspect-[4/3] rounded-xl bg-zinc-200/80 border border-zinc-300/40 flex items-center justify-center text-[10px] text-zinc-400 font-medium">
-                              Photo 3
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                              {/* Photo 3 */}
                             </div>
                           </div>
                         </div>
 
                         {/* Feature Selection Options */}
-                        <div className="space-y-2 pt-1">
+                        <div className="feature-selection-options space-y-2 pt-1 max-w-[490px]">
                           {/* Option 1: I don't have this feature */}
                           <div
                             onClick={() => {
@@ -1724,16 +1815,16 @@ export function PropertyDetailsViews({
                               }
                               setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
                             }}
-                            className={`rounded-xl p-3.5 flex items-center gap-3 cursor-pointer transition-all ${!isSelected
-                              ? "bg-white border-2 border-zinc-900 shadow-2xs"
-                              : "bg-white border border-zinc-200 hover:border-zinc-300"
+                            className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${!isSelected
+                              ? "bg-white border border-[#1f1f1f]"
+                              : "bg-transparent border border-[#727272] hover:border-[#1f1f1f]"
                               }`}
                           >
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 bg-zinc-900" : "border-zinc-400"
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 bg-[#1f1f1f]" : "border-[#727272]"
                               }`}>
                               {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
-                            <span className="font-medium text-base text-[#1F1F1F]">I don't have this feature</span>
+                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F]`}>I don't have this feature</span>
                           </div>
 
                           {/* Option 2: I have this feature */}
@@ -1747,16 +1838,16 @@ export function PropertyDetailsViews({
                                 setAccessibilityFeatures([featureId]);
                               }
                             }}
-                            className={`rounded-xl p-3.5 flex items-center gap-3 cursor-pointer transition-all ${isSelected
-                              ? "bg-white border-2 border-zinc-900 shadow-2xs"
-                              : "bg-white border border-zinc-200 hover:border-zinc-300"
+                            className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${isSelected
+                              ? "bg-white border border-[#1f1f1f]"
+                              : "bg-transparent border border-[#727272] hover:border-[#1f1f1f]"
                               }`}
                           >
                             <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-zinc-900 bg-zinc-900" : "border-zinc-400"
                               }`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
-                            <span className="font-medium text-base text-[#1F1F1F]">I have this feature</span>
+                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F]`}>I have this feature</span>
                           </div>
                         </div>
 
@@ -1764,8 +1855,8 @@ export function PropertyDetailsViews({
                           <div className="rounded-xl border border-zinc-200 bg-white p-3.5 space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div>
-                                <h4 className="text-xs font-semibold text-[#1F1F1F]">Photos of this feature</h4>
-                                <p className="mt-0.5 text-[11px] text-zinc-500">Add at least one photo to verify this accessibility feature.</p>
+                                <h4 className="text-base font-medium text-[#1F1F1F]">Photos of this feature</h4>
+                                <p className="mt-0.5 text-xs text-[#727272]">Add at least one photo to verify this accessibility feature.</p>
                               </div>
                               <button
                                 type="button"
@@ -1777,9 +1868,9 @@ export function PropertyDetailsViews({
                                   }
                                   accessibilityPhotoInput.current?.click();
                                 }}
-                                className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-wait disabled:opacity-60"
+                                className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 disabled:cursor-wait disabled:opacity-60"
                               >
-                                {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? "Uploading…" : "Add photos"}
+                                {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? "Uploading…" : "+ Add photos"}
                               </button>
                             </div>
 
@@ -1800,7 +1891,7 @@ export function PropertyDetailsViews({
                                 ))}
                               </div>
                             ) : (
-                              <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">A photo is required before this feature can be saved.</p>
+                              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">A photo is required before this feature can be saved.</p>
                             )}
                           </div>
                         )}
@@ -1812,13 +1903,13 @@ export function PropertyDetailsViews({
                     /* Collapsed Line Item */
                     <div
                       key={feature.id}
-                      className="py-3 flex items-center justify-between cursor-pointer group select-none border-b border-zinc-150/80"
+                      className="py-3 px-5 flex items-center justify-between cursor-pointer group select-none"
                     >
                       <div
-                        className="flex items-center gap-4 flex-1"
-                        onClick={() => setExpandedAccessibility?.(feature.id)}
+                        className="flex items-center gap-3 flex-1"
+                        onClick={() => expandAccessibilityFeature(feature.id)}
                       >
-                        <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300">
+                        <div className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300">
                           {feature.icon}
                         </div>
                         <span className="font-medium text-base text-[#1F1F1F] tracking-tight">{feature.name}</span>
@@ -1826,10 +1917,10 @@ export function PropertyDetailsViews({
 
                       <button
                         type="button"
-                        onClick={() => setExpandedAccessibility?.(isExpanded ? null : feature.id)}
-                        className="w-7 h-7 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 group-hover:bg-zinc-100 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                        onClick={() => expandAccessibilityFeature(feature.id)}
+                        className="w-8 h-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] flex items-center justify-center text-[#1f1f1f] group-hover:bg-[#1f1f1f] text-lg font-normal transition-all cursor-pointer group duration-300"
                       >
-                        +
+                        <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert" />
                       </button>
                     </div>
                   );

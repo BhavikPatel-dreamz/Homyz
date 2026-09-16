@@ -63,6 +63,7 @@ function getPrismaClient() {
     typeof existing.adminPermissionOverride !== "undefined" &&
     typeof existing.adminInvitation !== "undefined" &&
     typeof existing.listingCoHost !== "undefined" &&
+    typeof existing.appSettings !== "undefined" &&
     typeof existing.listing !== "undefined"
   ) {
     return existing;

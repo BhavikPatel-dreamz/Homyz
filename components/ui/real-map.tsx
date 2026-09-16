@@ -1,7 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 import { reverseGeocodeLocation } from "@/lib/location/geocoding";
+
+interface LeafletMapInstance {
+  remove: () => void;
+  setView: (center: [number, number], zoom: number) => void;
+  getZoom: () => number;
+  zoomIn: () => void;
+  zoomOut: () => void;
+}
+
+interface LeafletMarkerInstance {
+  setLatLng: (center: [number, number]) => void;
+  getLatLng: () => { lat: number; lng: number };
+}
+
+interface LeafletCircleInstance {
+  setLatLng: (center: [number, number]) => void;
+  setRadius: (radius: number) => void;
+  setStyle: (style: { fillOpacity: number }) => void;
+}
 
 export interface LocationDetails {
   address?: string;
@@ -42,9 +62,9 @@ export function RealMap({
   className = "h-[220px] w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-xs relative",
 }: RealMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
-  const circleRef = useRef<any>(null);
+  const mapInstanceRef = useRef<LeafletMapInstance | null>(null);
+  const markerRef = useRef<LeafletMarkerInstance | null>(null);
+  const circleRef = useRef<LeafletCircleInstance | null>(null);
   const isInternalUpdateRef = useRef(false);
   const didRunForwardGeocodeRef = useRef(false);
 
@@ -234,7 +254,7 @@ export function RealMap({
       mapInstanceRef.current = map;
 
       // Click on map to reposition marker and update inputs dynamically
-      map.on("click", (e: any) => {
+      map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
         const { lat: clickLat, lng: clickLng } = e.latlng;
         handlePositionChange(clickLat, clickLng);
       });
@@ -309,7 +329,7 @@ export function RealMap({
           className="w-8 h-8 flex items-center justify-center bg-white hover:bg-zinc-100 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
           title="Zoom out"
         >
-          -
+          <Image src="/images/icons/minus-icon.svg" alt="Zoom out" width={14} height={14} className="size-3.5 object-contain" />
         </button>
       </div>
     </div>

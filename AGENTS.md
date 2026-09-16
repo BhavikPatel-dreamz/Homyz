@@ -14,3 +14,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Use `ModalOverlay` from `@/components/ui/modal-overlay` as the outer overlay, rendered only while open. It shares a reference-counted body scroll lock, restores the prior scroll position/styles on final close or unmount, and ignores responsive overlays while hidden.
 - Keep modal content scrollable when it exceeds the viewport. Do not add independent `document.body` or `document.documentElement` scroll-style mutations; they conflict with stacked modals.
 - Anchored non-modal dropdowns do not need to lock background scrolling.
+
+## Host listing editor UI work
+
+- Preserve existing state, navigation, save behavior, and developer functionality when implementing host listing editor designs. Make UI-only changes unless a task explicitly requests functional changes.
+- Do not alter the Listing Description page unless the task explicitly includes it.

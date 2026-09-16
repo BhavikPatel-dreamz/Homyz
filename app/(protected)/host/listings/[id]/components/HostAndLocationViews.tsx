@@ -2,6 +2,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
+import { BackButton } from "@/components/ui/back-button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -44,6 +46,7 @@ export type HostProfile = {
 };
 interface Props {
   activeSection: string;
+  onBack: () => void;
   isSaving: boolean;
   isLoading?: boolean;
   handleSaveSection: (sectionKey: "location") => void;
@@ -77,6 +80,8 @@ interface Props {
   setLocationIsResolving: (value: boolean) => void;
   showExactLocation: boolean;
   setShowExactLocation: (value: boolean) => void;
+  addressPrivacyForCancellation: boolean;
+  setAddressPrivacyForCancellation: (value: boolean) => void;
   openLocationAccordion?: string | null;
   setOpenLocationAccordion?: (val: string | null) => void;
   listingId: string;
@@ -122,16 +127,18 @@ const SCENIC_VIEWS = [
 function Toggle({
   checked,
   onChange,
+  tone = "amber",
 }: {
   checked: boolean;
   onChange: () => void;
+  tone?: "amber" | "rose";
 }) {
   return (
     <button
       type="button"
       aria-pressed={checked}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-[#E9C979]" : "bg-zinc-300"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? tone === "rose" ? "bg-[#EF4662]" : "bg-[#E9C979]" : "bg-zinc-300"}`}
     >
       <span
         className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
@@ -273,14 +280,17 @@ function LocationView(props: Props) {
     setLocationFeatures,
     showExactLocation,
     setShowExactLocation,
+    addressPrivacyForCancellation,
+    setAddressPrivacyForCancellation,
     isSaving,
     handleSaveSection,
     isLoading,
     openLocationAccordion,
     setOpenLocationAccordion,
+    onBack,
   } = props;
 
-  const [internalOpen, setInternalOpen] = useState<string | null>("address");
+  const [internalOpen, setInternalOpen] = useState<string | null>("sharing");
   const open = openLocationAccordion !== undefined ? openLocationAccordion : internalOpen;
   const setOpen = setOpenLocationAccordion ?? setInternalOpen;
 
@@ -362,35 +372,29 @@ function LocationView(props: Props) {
   };
 
   return (
-    <div className="max-w-xl space-y-5 pb-10">
-      <div>
-        <h1 className="text-xl font-bold text-[#1F1F1F]">Location</h1>
-        <p className="mt-1 text-xs text-zinc-500">
-          Search for an address or move the pin on the map. Address details stay synchronized automatically.
-        </p>
+    <div className="w-full max-w-[640px] space-y-3 pb-10 sm:space-y-5">
+      <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
+        <BackButton onClick={onBack} />
+        <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] sm:text-2xl">Location</h1>
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Close location editor"
+          className="absolute right-0 top-1 flex size-10 items-center justify-center text-4xl font-normal leading-none text-[#1F1F1F] sm:hidden"
+        >
+          ×
+        </button>
       </div>
+
+
 
       {isLoading ? (
         <LocationSkeleton />
       ) : (
         <>
-          {/* 1. Address Search Autocomplete Input */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-700">
-              Search address or landmark
-            </label>
-            <AddressAutocomplete
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onSelect={handleAutocompleteSelect}
-              onClear={handleClearSearch}
-              placeholder="Search by street, building, city, or postal code..."
-            />
-          </div>
-
-          {/* 2. Interactive RealMap with Draggable Pin */}
-          <div className="space-y-2">
-            <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 shadow-xs">
+          {/* Interactive map with draggable pin */}
+          <div className="space-y-2 pt-3 sm:pt-8">
+            <div className="overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 shadow-[0_2px_4px_rgba(0,0,0,0.15)]">
               <RealMap
                 address={editAddress}
                 city={editCity}
@@ -404,22 +408,8 @@ function LocationView(props: Props) {
                   setLocationIsResolving(false);
                   setLocationResolutionError(message);
                 }}
-                className="h-72 sm:h-80 w-full relative z-0"
+                className="relative z-0 h-[376px] w-full sm:h-[340px]"
               />
-            </div>
-
-            {/* Coordinates indicator & helpful tip */}
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-zinc-500">
-              <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-600 bg-zinc-100 px-2.5 py-1 rounded-full border border-zinc-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>
-                  {latitude != null ? latitude.toFixed(5) : "—"},{" "}
-                  {longitude != null ? longitude.toFixed(5) : "—"}
-                </span>
-              </div>
-              <span className="text-[11px] text-zinc-500">
-                💡 Drag pin or click map to refine the exact spot
-              </span>
             </div>
 
             {locationIsResolving && (
@@ -438,11 +428,19 @@ function LocationView(props: Props) {
 
           {/* 3. Address Details Accordion */}
           <Card
-            title="Address details"
+            title="Address"
+            summary={[editAddress, editCity, editPostalCode, editCountry].filter(Boolean).join(", ") || "Add location, Post Code, Country"}
             open={open === "address"}
             onToggle={() => setOpen(open === "address" ? "" : "address")}
           >
             <div className="space-y-3">
+              <AddressAutocomplete
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onSelect={handleAutocompleteSelect}
+                onClear={handleClearSearch}
+                placeholder="Search by street, building, city, or postal code..."
+              />
               <div>
                 <label className="text-[11px] font-medium text-zinc-500 block mb-1">
                   Street address
@@ -534,27 +532,56 @@ function LocationView(props: Props) {
             title="Location sharing"
             open={open === "sharing"}
             onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
+            mutedWhenOpen
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-[#1F1F1F]">Show exact location</p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  When enabled, guests can see your exact pinpoint location before booking. When disabled, guests only see an approximate general area until a reservation is confirmed.
+                <p className="text-base font-medium text-[#1F1F1F]">Show you specific location</p>
+                <p className="mt-1 text-[14px] leading-5 text-[#727272]">
+                  Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed.
                 </p>
               </div>
               <Toggle
                 checked={showExactLocation}
                 onChange={() => setShowExactLocation(!showExactLocation)}
+                tone="rose"
               />
             </div>
-            <div className="pt-2">
-              <SaveButton saving={isSaving} onSave={handleSave} />
+            <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] pt-4">
+              <div>
+                <p className="text-base font-medium text-[#1F1F1F]">Address privacy for cancellation</p>
+                <p className="mt-1 text-[14px] leading-5 text-[#727272]">
+                  Keep your full address private until a reservation is confirmed, even when a guest cancels.
+                </p>
+              </div>
+              <Toggle
+                checked={addressPrivacyForCancellation}
+                onChange={() => setAddressPrivacyForCancellation(!addressPrivacyForCancellation)}
+              />
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={handleSave}
+                className="rounded-full bg-[#FCDF9C] px-7 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F3D98C] disabled:opacity-60"
+              >
+                {isSaving ? "Saving…" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen("")}
+                className="rounded-full border border-[#727272] bg-transparent px-7 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-white"
+              >
+                Cancel
+              </button>
             </div>
           </Card>
 
           {/* 5. Location Features */}
           <Card
             title="Location features"
+            summary="Add details"
             open={open === "features"}
             onToggle={() => setOpen(open === "features" ? "" : "features")}
           >
@@ -602,6 +629,7 @@ function LocationView(props: Props) {
           {/* 6. Neighborhood Description */}
           <Card
             title="Neighborhood description"
+            summary="Add details"
             open={open === "neighborhood"}
             onToggle={() => setOpen(open === "neighborhood" ? "" : "neighborhood")}
           >
@@ -621,6 +649,7 @@ function LocationView(props: Props) {
           {/* 7. Getting Around */}
           <Card
             title="Getting around"
+            summary="Add details"
             open={open === "getting-around"}
             onToggle={() => setOpen(open === "getting-around" ? "" : "getting-around")}
           >
@@ -640,6 +669,7 @@ function LocationView(props: Props) {
           {/* 8. Scenic Views */}
           <Card
             title="Scenic views"
+            summary="Add details"
             open={open === "views"}
             onToggle={() => setOpen(open === "views" ? "" : "views")}
           >
@@ -660,14 +690,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full bg-[#F5D98C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-[#EFCF76] disabled:opacity-60 cursor-pointer"
+                  className="rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 cursor-pointer"
+                className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-zinc-700 hover:text-white transition-colors hover:bg-[#1f1f1f] cursor-pointer"
               >
                 Cancel
               </button>
@@ -680,27 +710,36 @@ function LocationView(props: Props) {
 }
 function Card({
   title,
+  summary,
   open,
   onToggle,
+  mutedWhenOpen = false,
   children,
 }: {
   title: string;
+  summary?: string;
   open: boolean;
   onToggle: () => void;
+  mutedWhenOpen?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+    <section className={`overflow-hidden rounded-xl border border-white shadow-[0_2px_4px_rgba(0,0,0,0.2)] ${open && mutedWhenOpen ? "bg-[#F3F4F5]" : "bg-white"}`}>
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-3.5 text-left"
+        className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left sm:px-4"
       >
-        <span className="text-sm font-semibold text-[#1F1F1F]">{title}</span>
-        <span className="text-base text-zinc-500">{open ? "−" : "+"}</span>
+        <span className="min-w-0">
+          <span className="block text-base font-medium text-[#1F1F1F]">{title}</span>
+          {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272]">{summary}</span>}
+        </span>
+        <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain" />
+        </span>
       </button>
       {open && (
-        <div className="space-y-4 border-t border-zinc-100 p-4">{children}</div>
+        <div className="space-y-4 border-t border-[#DDDDDE] px-4 pb-4 pt-3.5">{children}</div>
       )}
     </section>
   );
@@ -767,31 +806,6 @@ function getLanguageIds(value: unknown): string[] {
   return value.split(/,|\sand\s/i).map((name) => LANGUAGE_OPTIONS.find((language) => language.name.toLowerCase() === name.trim().toLowerCase())?.id).filter((id): id is string => Boolean(id));
 }
 
-function hostingTenure(createdAt: Date | string): string {
-  const joined = new Date(createdAt);
-  if (Number.isNaN(joined.getTime())) return "New host";
-  const months = Math.max(0, (new Date().getFullYear() - joined.getFullYear()) * 12 + new Date().getMonth() - joined.getMonth());
-  if (months < 1) return "Hosting for less than a month";
-  if (months < 12) return `Hosting for ${months} ${months === 1 ? "month" : "months"}`;
-  const years = Math.floor(months / 12);
-  return `Hosting for ${years} ${years === 1 ? "year" : "years"}`;
-}
-
-function TagEditor({
-  label, values, draft, setDraft, onAdd, onRemove, placeholder,
-}: {
-  label: string; values: string[]; draft: string; setDraft: (value: string) => void;
-  onAdd: () => void; onRemove: (value: string) => void; placeholder: string;
-}) {
-  return (
-    <div>
-      <p className="text-sm font-medium text-zinc-700">{label}</p>
-      {values.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{values.map((value) => <button key={value} type="button" onClick={() => onRemove(value)} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{value} ×</button>)}</div>}
-      <div className="mt-2 flex gap-2"><input value={draft} maxLength={60} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); onAdd(); } }} placeholder={placeholder} className="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" /><button type="button" onClick={onAdd} className="rounded-full bg-[#FCDF9C] px-4 text-xs font-semibold">Add</button></div>
-    </div>
-  );
-}
-
 function AboutHostView(props: Props) {
   const { hostProfile, onHostProfileSaved } = props;
   const router = useRouter();
@@ -814,10 +828,8 @@ function AboutHostView(props: Props) {
   const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [languageSearch, setLanguageSearch] = useState("");
-  const [hobbyDraft, setHobbyDraft] = useState("");
-  const [interestDraft, setInterestDraft] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [showAllPrompts, setShowAllPrompts] = useState(false);
 
   useEffect(() => {
     const next = hostProfile.publicProfile ?? {};
@@ -860,16 +872,6 @@ function AboutHostView(props: Props) {
     }
   };
 
-  const addTag = (value: string, setValues: React.Dispatch<React.SetStateAction<string[]>>) => {
-    const next = value.trim();
-    if (!next) return false;
-    setValues((current) => current.some((item) => item.localeCompare(next, undefined, { sensitivity: "accent" }) === 0) ? current : [...current, next]);
-    return true;
-  };
-  const filteredLanguages = LANGUAGE_OPTIONS.filter((language) =>
-    !languages.includes(language.id) && language.name.toLowerCase().includes(languageSearch.trim().toLowerCase()),
-  ).slice(0, 12);
-
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -898,121 +900,165 @@ function AboutHostView(props: Props) {
     }
   };
 
+  const profilePrompts = [
+    ["Where I’ve always wanted to go", hobbies[0] || ""],
+    ["My work", education],
+    ["My favorite song in high school", ""],
+    ["What makes my home unique", homeUnique],
+    ["Pets", ""],
+    ["Decade I was born", ""],
+    ["Where I went to school", education],
+    ["I spend too much time", hobbies[1] || ""],
+    ["My most useless skill", ""],
+    ["My fun fact", ""],
+    ["I’m obsessed with", hobbies[2] || ""],
+    ["Language I speak", languages[0] ? getLanguageNameById(languages[0]) : ""],
+    ["My biography title would be", ""],
+    ["Where I live", ""],
+    ["For guests I always", guestsShouldKnow],
+    ["What’s for breakfast", perfectGuest],
+  ];
+  const displayedInterests = interests.length > 0
+    ? interests
+    : ["Architecture", "Cooking", "Food scenes", "History", "Live sports", "Museums", "Outdoors", "Shopping", "Video games"];
+
   return (
-    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full space-y-5 pb-12">
+    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="w-full max-w-[760px] space-y-6 pb-12 sm:space-y-7">
       <header className="flex items-center gap-3">
-        <Link href="/host/listings" aria-label="Back to listings" className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-300 text-sm text-zinc-500 transition-colors hover:bg-zinc-100">‹</Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1F1F1F]">About the host</h1>
+        <Link href="/host/listings" aria-label="Back to listings" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-lg leading-none text-[#1F1F1F] transition-colors hover:bg-[#F3F4F5]">‹</Link>
+        <h1 className="hidden text-2xl font-semibold tracking-tight text-[#1F1F1F] sm:block sm:text-[25px]">About the host</h1>
       </header>
 
       {props.isLoading ? (
         <AboutHostSkeleton />
       ) : (
         <>
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
-        <div className="relative h-48 w-full shrink-0 overflow-visible sm:h-44 sm:w-60">
-          <div className="h-full w-full overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100 shadow-2xs">
-            {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
-          </div>
-          <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
-            <span aria-hidden="true">▧</span>{uploadingImage ? "Uploading…" : "Edit"}
-          </button>
-          <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
-        </div>
-        <div className="max-w-md space-y-2 text-sm leading-6 text-[#727272]"><p>Your public host profile is shared across all of your listings. Only guest-facing details appear here.</p><div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-zinc-700"><span>New host · no guest ratings yet</span><span>{hostingTenure(hostProfile.createdAt)}</span>{languages.length > 0 && <span>Speaks {languages.map(getLanguageNameById).join(", ")}</span>}</div><Link href="/profile?tab/profile_management" className="font-medium underline underline-offset-2 hover:text-zinc-950">Learn more</Link></div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 shadow-2xs">
-        <label htmlFor="host-bio" className="block text-sm font-semibold text-[#1F1F1F]">About me</label>
-        <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Tell guests a little about yourself." className="mt-3 min-h-28 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-zinc-500" />
-        <p className="mt-1 text-right text-xs text-zinc-400">{bio.length}/2000</p>
-      </section>
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">About my home</h2><div className="mt-4 grid gap-4"><label className="text-sm font-medium text-zinc-700">What makes your home unique<textarea value={homeUnique} maxLength={500} onChange={(event) => setHomeUnique(event.target.value)} placeholder="Tell guests what makes your place unique." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">What guests should know<textarea value={guestsShouldKnow} maxLength={500} onChange={(event) => setGuestsShouldKnow(event.target.value)} placeholder="Share anything important guests should know about your place or hosting style." className="mt-2 min-h-24 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">More about me</h2><div className="mt-4 grid gap-4"><div><label htmlFor="host-language-search" className="text-sm font-medium text-zinc-700">Languages spoken</label>{languages.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{languages.map((language) => <button key={language} type="button" onClick={() => setLanguages((current) => current.filter((value) => value !== language))} className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs">{getLanguageNameById(language)} ×</button>)}</div>}<input id="host-language-search" value={languageSearch} onChange={(event) => setLanguageSearch(event.target.value)} placeholder="Search and add a language" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500" />{languageSearch.trim() && <div className="mt-1 max-h-36 overflow-y-auto rounded-xl border border-zinc-200 bg-white">{filteredLanguages.map((language) => <button key={language.id} type="button" onClick={() => { setLanguages((current) => [...current, language.id]); setLanguageSearch(""); }} className="block w-full px-3 py-2 text-left text-sm hover:bg-zinc-50">{language.name}</button>)}{filteredLanguages.length === 0 && <p className="px-3 py-2 text-xs text-zinc-500">No matching languages available.</p>}</div>}</div><TagEditor label="Hobbies" values={hobbies} draft={hobbyDraft} setDraft={setHobbyDraft} onAdd={() => { if (addTag(hobbyDraft, setHobbies)) setHobbyDraft(""); }} onRemove={(value) => setHobbies((current) => current.filter((item) => item !== value))} placeholder="Add a hobby" /><label className="text-sm font-medium text-zinc-700">Education / background<input value={education} maxLength={300} onChange={(event) => setEducation(event.target.value)} placeholder="Share your education or background (optional)" className="mt-2 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label><label className="text-sm font-medium text-zinc-700">Perfect guest<textarea value={perfectGuest} maxLength={300} onChange={(event) => setPerfectGuest(event.target.value)} placeholder="Describe the kind of stay you enjoy hosting." className="mt-2 min-h-20 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-normal outline-none focus:border-zinc-500" /></label></div></section>
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 pb-3">
-          <div>
-            <h2 className="text-sm font-semibold text-[#1F1F1F]">Where I’ve been</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
-          </div>
-          <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} />
-        </div>
-        <div className="flex min-h-32 flex-col gap-4 py-4">
-          <div className="flex items-center gap-3">
-            {selectedStamps.length > 0 ? (
-              <>
-                <div className="flex -space-x-2">
-                  {visibleSelectedStamps.map((stampId) => {
-                    const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
-                    if (!stamp) return null;
-                    return (
-                      <div key={stamp.id} className="rounded-full border border-white bg-white shadow-sm">
-                        <TravelStampGraphic stamp={stamp} size="sm" />
-                      </div>
-                    );
-                  })}
+          <section className="pt-1 sm:pt-0">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-5">
+              <div className="relative mx-auto h-44 w-44 shrink-0 overflow-visible sm:mx-0 sm:h-[172px] sm:w-[235px]">
+                <div className="h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-xl">
+                  {avatarUrl ? <img src={avatarUrl} alt={`${hostProfile.name || "Host"} profile`} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-amber-100 text-3xl font-semibold text-amber-900">{initials(hostProfile.name)}</div>}
                 </div>
-              </>
-            ) : (
-              <p className="text-sm text-zinc-500">No travel stamps selected yet.</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsStampEditorOpen(true)}
-            className="inline-flex w-fit rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]"
-          >
-            Edit travel stamps
-          </button>
-        </div>
-      </section>
+                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="absolute -bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-sm transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">
+                  <Image src="/images/icons/writing-pen.svg" alt="" width={15} height={15} className="size-3.5" />{uploadingImage ? "Uploading…" : "Edit"}
+                </button>
+                <input ref={imageInputRef} type="file" accept="image/*" onChange={uploadAvatar} className="sr-only" />
+              </div>
+              <div className="max-w-sm space-y-2 text-sm leading-5 text-[#727272] sm:pt-0.5">
+                <h2 className="text-xl font-semibold text-[#1F1F1F] sm:hidden">About the host</h2>
+                <p>Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community. <Link href="/profile?tab/profile_management" className="font-medium text-[#1F1F1F] underline underline-offset-2">Learn more</Link></p>
+              </div>
+            </div>
+          </section>
 
-      {isStampEditorOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
+          <section className="grid gap-x-16 sm:grid-cols-2">
+            {profilePrompts.map(([label, value], index) => (
+              <div key={`${label}-${index}`} className={`flex min-h-14 items-center gap-3 border-b border-[#DDDDDE] py-2.5 ${index > 7 && !showAllPrompts ? "hidden sm:flex" : ""}`}>
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]">
+                  <Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" />
+                </span>
+                <p className="min-w-0 truncate text-sm font-normal text-[#727272]">{label}{value ? <><span className="text-[#1F1F1F]">: </span><span className="font-medium text-[#1F1F1F]">{value}</span></> : ""}</p>
+              </div>
+            ))}
+            {!showAllPrompts && <button type="button" onClick={() => setShowAllPrompts(true)} className="mt-3 w-fit text-sm font-medium underline underline-offset-2 sm:hidden">See more</button>}
+          </section>
+
+          <section className="rounded-xl bg-[#F3F4F5] p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+            <label htmlFor="host-bio" className="block text-sm font-medium text-[#1F1F1F]">About me</label>
+            <textarea id="host-bio" value={bio} maxLength={2000} onChange={(event) => setBio(event.target.value)} placeholder="Type something about you" className="mt-3 min-h-28 w-full resize-y rounded-lg border border-[#DDDDDE] bg-white px-3 py-2.5 text-sm leading-6 text-[#1F1F1F] outline-none transition focus:border-[#727272]" />
+          </section>
+
+          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#DDDDDE] pb-3">
               <div>
-                <h3 className="text-lg font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
-                <p className="text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
+                <h2 className="text-base font-medium text-[#1F1F1F]">Where I’ve been</h2>
+                <p className="mt-1 text-sm text-[#727272]">Pick the stamps you want other people to see on your profile.</p>
+              </div>
+              <Toggle checked={stampsVisible} onChange={() => setStampsVisible((visible) => !visible)} tone="rose" />
+            </div>
+            <div className="flex min-h-52 flex-col gap-4 py-5">
+              <div className="flex min-h-36 items-center gap-3">
+                {selectedStamps.length > 0 ? (
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      {visibleSelectedStamps.map((stampId) => {
+                        const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
+                        if (!stamp) return null;
+                        return (
+                          <div key={stamp.id} className="overflow-hidden rounded-xl bg-white">
+                            <TravelStampGraphic stamp={stamp} size="md" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                ) : (
+                  <p className="text-sm text-[#727272]">Choose stamps to show the places and experiences you love.</p>
+                )}
               </div>
               <button
                 type="button"
-                onClick={() => setIsStampEditorOpen(false)}
-                className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                onClick={() => setIsStampEditorOpen(true)}
+                className="inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:w-fit"
               >
-                Close
+                Edit travel stamp
               </button>
             </div>
-            <WhereIveBeenSelector
-              initialSelectedStamps={selectedStamps}
-              initialStampsVisible={stampsVisible}
-              currentPublicProfile={publicProfile}
-              maxStamps={10}
-              isOwner={true}
-              onSaved={(updatedProfile) => {
-                const nextProfile = { ...publicProfile, ...updatedProfile };
-                setPublicProfile(nextProfile);
-                setStampsVisible(updatedProfile.stampsVisible ?? nextProfile.stampsVisible ?? true);
-                onHostProfileSaved(nextProfile as Record<string, unknown>);
-                setIsStampEditorOpen(false);
-              }}
-            />
+          </section>
+
+          {isStampEditorOpen && (
+            <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+              <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
+                    <p className="text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsStampEditorOpen(false)}
+                    className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                  >
+                    Close
+                  </button>
+                </div>
+                <WhereIveBeenSelector
+                  initialSelectedStamps={selectedStamps}
+                  initialStampsVisible={stampsVisible}
+                  currentPublicProfile={publicProfile}
+                  maxStamps={10}
+                  isOwner={true}
+                  onSaved={(updatedProfile) => {
+                    const nextProfile = { ...publicProfile, ...updatedProfile };
+                    setPublicProfile(nextProfile);
+                    setStampsVisible(updatedProfile.stampsVisible ?? nextProfile.stampsVisible ?? true);
+                    onHostProfileSaved(nextProfile as Record<string, unknown>);
+                    setIsStampEditorOpen(false);
+                  }}
+                />
+              </div>
+            </ModalOverlay>
+          )}
+
+          <section className="rounded-xl border border-white bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.2)] sm:p-5">
+            <h2 className="border-b border-[#DDDDDE] pb-3 text-base font-medium text-[#1F1F1F]">My interests</h2>
+            <div className="grid pt-3 sm:grid-cols-2 sm:gap-x-12">
+              {displayedInterests.map((interest) => {
+                const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0);
+                return (
+                  <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className="flex min-h-12 items-center gap-3 border-b border-[#DDDDDE] py-2 text-left text-sm font-normal text-[#1F1F1F]">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#727272]"><Image src="/images/icons/about-me-active.svg" alt="" width={16} height={16} className="size-4 object-contain" /></span>
+                    {interest}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" onClick={() => setInterests(REFERENCE_INTERESTS.slice(0, 9))} className="mt-5 inline-flex w-full justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#F7D37D] sm:w-fit">Edit interests</button>
+          </section>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
+            <button type="submit" disabled={saving} className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button>
           </div>
-        </ModalOverlay>
-      )}
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs"><h2 className="text-sm font-semibold text-[#1F1F1F]">My interests</h2><p className="mt-0.5 text-xs text-zinc-500">Select the things you enjoy sharing with guests.</p><div className="mt-4 flex flex-wrap gap-2">{REFERENCE_INTERESTS.map((interest) => { const selected = interests.some((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) === 0); return <button key={interest} type="button" aria-pressed={selected} onClick={() => setInterests((current) => selected ? current.filter((value) => value.localeCompare(interest, undefined, { sensitivity: "accent" }) !== 0) : [...current, interest])} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${selected ? "border-[#1F1F1F] bg-[#1F1F1F] text-white" : "border-zinc-200 bg-white text-zinc-700"}`}>{interest}</button>; })}</div><div className="mt-4"><TagEditor label="Selected interests" values={interests} draft={interestDraft} setDraft={setInterestDraft} onAdd={() => { if (addTag(interestDraft, setInterests)) setInterestDraft(""); }} onRemove={(value) => setInterests((current) => current.filter((item) => item !== value))} placeholder="Add a custom interest" /></div></section>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p aria-live="polite" className="text-xs text-zinc-600">{message}</p>
-        <button type="submit" disabled={saving} className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button>
-      </div>
-      </>
+        </>
       )}
     </form>
   );
@@ -1114,40 +1160,40 @@ function CoHostView(props: Props) {
         <CoHostSkeleton />
       ) : (
         <>
-      {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
-      {active.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
-          No co-hosts or pending invitations.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {active.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 p-4"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">
-                  {item.user?.name || item.email || item.phone}
-                </p>
-                <p className="mt-0.5 text-xs text-zinc-500">
-                  {item.status === "PENDING"
-                    ? `Invitation pending${item.email ? " · sent by email" : " · sent by text"}`
-                    : "Accepted co-host"}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => revoke(item.id)}
-                className="text-xs font-semibold underline"
-              >
-                {item.status === "PENDING" ? "Cancel" : "Remove"}
-              </button>
+          {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
+          {active.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+              No co-hosts or pending invitations.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {active.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
+                      {item.user?.name || item.email || item.phone}
+                    </p>
+                    <p className="mt-0.5 text-xs text-zinc-500">
+                      {item.status === "PENDING"
+                        ? `Invitation pending${item.email ? " · sent by email" : " · sent by text"}`
+                        : "Accepted co-host"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => revoke(item.id)}
+                    className="text-xs font-semibold underline"
+                  >
+                    {item.status === "PENDING" ? "Cancel" : "Remove"}
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-      </>
+          )}
+        </>
       )}
       {open && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 sm:p-6">

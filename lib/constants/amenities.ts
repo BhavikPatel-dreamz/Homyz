@@ -20,6 +20,35 @@ export const AMENITY_CATEGORIES = [
 
 export type AmenityCategory = (typeof AMENITY_CATEGORIES)[number];
 
+// These are the curated amenity illustrations used in the listing-editor sidebar.
+// Keeping the mapping here lets every amenity view render the same visual language.
+export const AMENITY_ICON_SOURCES: Record<string, string> = {
+  wifi: "/images/icons/wifi.svg",
+  tv: "/images/icons/tv.svg",
+  kitchen: "/images/icons/kitchen.svg",
+  washer: "/images/icons/washer.svg",
+  free_parking: "/images/icons/free-parking.svg",
+  paid_parking: "/images/icons/paid-parking.svg",
+  air_conditioning: "/images/icons/air-conditioning.svg",
+  workspace: "/images/icons/workspace.svg",
+  bed_linens: "/images/icons/bed-linens.svg",
+  body_soap: "/images/icons/body-soap.svg",
+  pool: "/images/icons/pool.svg",
+  private_pool: "/images/icons/pool.svg",
+  shared_pool: "/images/icons/pool.svg",
+  hot_tub: "/images/icons/hot-tub.svg",
+  indoor_fireplace: "/images/icons/indoor-fireplace.svg",
+  piano: "/images/icons/piano.svg",
+  patio: "/images/icons/patio.svg",
+  outdoor_dining_area: "/images/icons/outdoor-dining-area.svg",
+  bbq_grill: "/images/icons/bbg-grill.svg",
+  fire_pit: "/images/icons/fire-pit.svg",
+  pool_table: "/images/icons/pool-table.svg",
+  smoke_alarm: "/images/icons/smoke-alarm.svg",
+  first_aid_kit: "/images/icons/first-aid-kit.svg",
+  fire_extinguisher: "/images/icons/fire-extinguisher.svg",
+};
+
 export interface CanonicalAmenity {
   id: string;
   label: string;
@@ -343,4 +372,3 @@ export function getAmenityMeta(idOrLabel: string): CanonicalAmenity {
     description: "Amenity available on premises",
   };
 }
-
