@@ -695,13 +695,7 @@ export function HouseRulesAndArrivalViews({
       {activeSection === "parking" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveSection("arrival-guide")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs"
-            >
-              ‹
-            </button>
+            <BackButton onClick={() => setActiveSection("arrival-guide")} />
             <h1>Parking instructions & details</h1>
           </div>
           <p className="text-xs text-zinc-500 font-normal pl-11">

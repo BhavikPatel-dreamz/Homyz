@@ -194,7 +194,7 @@ export function CancellationPolicyView({
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <BackButton onClick={() => setActiveSection("description")} />
+          <BackButton onClick={() => setActiveSection("house-rules")} />
           <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F]">
             Cancellation policy
           </h1>

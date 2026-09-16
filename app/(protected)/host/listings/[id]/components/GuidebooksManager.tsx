@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/toast";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { BackButton } from "@/components/ui/back-button";
 import { GuidebookMap, MapPlacePin } from "@/components/guidebook/guidebook-map";
 import {
   GUIDEBOOK_CATEGORIES,
@@ -607,14 +608,11 @@ export function GuidebooksManager({
           {/* Header & Subtitle & Create Action */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200/80">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
+              <BackButton
                 onClick={() => setActiveSection("arrival-guide")}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs shrink-0"
+                className="flex"
                 title="Back to Arrival guide"
-              >
-                ‹
-              </button>
+              />
               <div>
                 <h1 className="text-xl font-bold tracking-tight text-[#1F1F1F]">Guidebooks</h1>
                 <p className="text-xs text-zinc-500 font-normal mt-0.5">
@@ -778,13 +776,10 @@ export function GuidebooksManager({
       {viewMode === "create" && (
         <div className="max-w-xl space-y-6">
           <div className="flex items-center gap-3 pb-2 border-b border-zinc-200/80">
-            <button
-              type="button"
+            <BackButton
               onClick={() => setViewMode("list")}
-              className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs shrink-0"
-            >
-              ‹
-            </button>
+              className="flex"
+            />
             <div>
               <h2 className="text-xl font-bold tracking-tight text-[#1F1F1F]">Create a Guidebook</h2>
               <p className="text-xs text-zinc-500 font-normal">
@@ -944,17 +939,14 @@ export function GuidebooksManager({
           {/* Top Bar Navigation & Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
+              <BackButton
                 onClick={() => {
                   setViewMode("list");
                   loadGuidebooks();
                 }}
-                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-100 text-sm transition-all cursor-pointer shadow-2xs shrink-0"
+                className="flex"
                 title="Back to Guidebooks list"
-              >
-                ‹
-              </button>
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-bold tracking-tight text-zinc-900 truncate max-w-sm sm:max-w-md">

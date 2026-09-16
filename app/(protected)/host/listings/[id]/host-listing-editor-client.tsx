@@ -1904,6 +1904,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         <div className={presentation === "admin" ? "order-first lg:order-1" : ""}><EditorSidebar
           presentation={presentation}
+          routeBase={routeBase}
           editorTab={editorTab}
           setEditorTab={setEditorTab}
           activeSection={activeSection}

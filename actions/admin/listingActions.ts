@@ -392,7 +392,10 @@ export async function getAdminListingAuditHistoryAction(input: { listingId: stri
       limit: pageSize,
     });
     return {
-      items: items.map((item) => ({ ...item, createdAt: item.createdAt.toISOString() })),
+      items: items.map((item: { id: string; action: string; description: string | null; actorEmail: string | null; createdAt: Date }) => ({
+        ...item,
+        createdAt: item.createdAt.toISOString(),
+      })),
       page,
       pageSize,
       total,
