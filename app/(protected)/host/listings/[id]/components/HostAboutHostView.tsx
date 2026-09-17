@@ -433,7 +433,7 @@ export function HostAboutHostView({
   }
 
   return (
-    <div className="relative w-full xl:max-w-[calc(100%-75px)] max-w-[calc(100%-20px)]">
+    <div className="relative w-full max-w-full lg:max-w-[calc(100%-20px)] xl:max-w-[calc(100%-75px)]">
       <div
         ref={aboutHostScrollRef}
         onScroll={updateAboutHostScrollThumb}
@@ -447,7 +447,7 @@ export function HostAboutHostView({
               onClick={() => router.push("/host/listings")}
             />
             <div>
-              <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h1>
                 About the host
               </h1>
             </div>
@@ -522,7 +522,7 @@ export function HostAboutHostView({
                 className="absolute -bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2.75 text-base font-normal text-[#1f1f1f] dark:text-zinc-950 transition-all hover:bg-[#1f1f1f] dark:hover:bg-amber-300 group disabled:opacity-60 duration-300 hover:text-white dark:hover:text-zinc-950 hover:border-[#1f1f1f] dark:hover:border-amber-300"
               >
                 <Image src="/images/icons/camera.svg" alt="" width={24} height={17} className="max-w-6 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert transition-all duration-300" />
-                {uploadingImage ? "Uploading…" : "Edit photo"}
+                {uploadingImage ? "Uploading…" : "Edit"}
               </button>
               <input
                 ref={imageInputRef}

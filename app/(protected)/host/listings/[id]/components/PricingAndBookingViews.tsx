@@ -153,7 +153,7 @@ export function PricingAndBookingViews({
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
-              <BackButton onClick={() => setActiveSection("description")} />
+              <BackButton onClick={() => setActiveSection("description")} className="mt-2" />
               <div>
                 <h1>Pricing</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
@@ -407,10 +407,10 @@ export function PricingAndBookingViews({
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
-              <BackButton onClick={() => handleBack("pricing")} />
+              <BackButton onClick={() => handleBack("pricing")} className="mt-2" />
               <div>
                 <h1>Availability</h1>
-                <p className="text-sm leading-5 text-[#727272] font-normal dark:text-zinc-400">
+                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
                   *These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button>
                 </p>
               </div>
@@ -717,7 +717,7 @@ export function PricingAndBookingViews({
       {/* --------------------------------------------------------- */}
       {activeSection === "booking-settings" && (
         <div className="xl:max-w-[608px] md:max-w-[80%] space-y-4 pb-10 font-sans animate-in fade-in">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <BackButton onClick={() => handleBack("pricing")} />
             <h1>Booking settings</h1>
           </div>

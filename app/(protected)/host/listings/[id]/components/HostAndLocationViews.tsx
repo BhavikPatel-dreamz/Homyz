@@ -392,8 +392,8 @@ function LocationView(props: Props) {
   return (
     <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
-        <BackButton onClick={onBack} className="mt-2" />
-        <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">Location</h1>
+        <BackButton onClick={onBack} className="mt-1" />
+        <h1>Location</h1>
         <button
           type="button"
           onClick={onBack}
@@ -556,7 +556,7 @@ function LocationView(props: Props) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Show you specific location</p>
-                <p className="mt-1 text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
+                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
                   Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed.
                 </p>
               </div>
@@ -569,7 +569,7 @@ function LocationView(props: Props) {
             <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] dark:border-zinc-700 pt-4">
               <div>
                 <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Address privacy for cancellation</p>
-                <p className="mt-1 text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
+                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
                   Keep your full address private until a reservation is confirmed, even when a guest cancels.
                 </p>
               </div>
@@ -913,8 +913,8 @@ function CoHostView(props: Props) {
     (item) => item.status === "PENDING" || item.status === "ACCEPTED",
   );
   return (
-    <div className="max-w-[calc(100%-75px)] space-y-5 pb-10">
-      <div className="flex items-start gap-4">
+    <div className="w-full max-w-full space-y-5 pb-10 lg:max-w-[calc(100%-75px)]">
+      <div className="flex items-start gap-6">
         <BackButton onClick={onBack} className="mt-2" />
         <div className="flex w-full justify-between">
           <div className="flex flex-col items-start">
@@ -1008,7 +1008,7 @@ function CoHostView(props: Props) {
                 void invite();
               }}
             >
-              <div className="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)] gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
                 <label className="block min-w-0 text-sm font-medium leading-5">
                   Country code <span aria-hidden="true">*</span>
                   <span className="relative mt-1.5 block">

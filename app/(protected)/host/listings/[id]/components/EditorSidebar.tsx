@@ -484,9 +484,9 @@ export function EditorSidebar({
       className={`editor-sidebar ${mobileOpen
         ? "flex h-full w-full overflow-hidden border-0 bg-white px-5 pt-6 sm:px-8 sm:pt-8"
         : "hidden border-r border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
-        } min-w-0 flex-col lg:col-span-1 lg:-mt-[109px] lg:flex lg:h-auto lg:w-auto lg:self-stretch lg:overflow-visible lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] lg:bg-[rgba(241,241,241,0.5)] lg:px-0 lg:pl-8 lg:pt-[176px]`}
+        } min-w-0 flex-col xl:col-span-1 xl:-mt-[109px] xl:flex xl:h-auto xl:w-auto xl:self-stretch xl:overflow-visible xl:border-r xl:border-transparent xl:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] xl:bg-[rgba(241,241,241,0.5)] xl:px-0 xl:pl-8 xl:pt-[176px]`}
     >
-      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:max-h-none lg:self-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
+      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} xl:max-h-none xl:self-start xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none`}>
         {/* Header Title & Status Badge */}
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between">
@@ -498,7 +498,7 @@ export function EditorSidebar({
                 type="button"
                 aria-label="Return to listing form"
                 onClick={onMobileClose}
-                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 lg:hidden"
+                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 xl:hidden"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
                   <path d="m5 5 14 14M19 5 5 19" />
@@ -1565,7 +1565,7 @@ export function EditorSidebar({
             )}
           </div>
           {sidebarScrollThumb.visible && (
-            <div ref={sidebarScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] lg:block">
+            <div ref={sidebarScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] xl:block">
               <div
                 className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
                 style={{ height: `${sidebarScrollThumb.height}px`, transform: `translate3d(0, ${sidebarScrollThumb.top}px, 0)` }}
@@ -1578,7 +1578,7 @@ export function EditorSidebar({
   );
 
   return mobileOpen ? (
-    <ModalOverlay className="fixed inset-0 z-50 bg-white lg:contents">
+    <ModalOverlay className="fixed inset-0 z-50 bg-white xl:contents">
       {sidebar}
     </ModalOverlay>
   ) : sidebar;

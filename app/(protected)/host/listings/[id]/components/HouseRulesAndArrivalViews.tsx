@@ -715,9 +715,9 @@ export function HouseRulesAndArrivalViews({
       {/* --------------------------------------------------------- */}
       {activeSection === "parking" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("arrival-guide")} />
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Parking instructions & details</h1>
+            <h1>Parking instructions & details</h1>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal pl-11">
             Let guests know if parking is available, where to park, and any permit or reservation requirements.
@@ -1196,7 +1196,7 @@ function CheckOutInstructionsView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Check-out instructions</h1>
+        <h1>Check-out instructions</h1>
       </div>
 
       {/* Description text */}
@@ -1323,7 +1323,7 @@ function CheckOutInstructionsView({
       {/* ===================================== */}
       {isModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               disabled={isSaving}
@@ -1661,7 +1661,7 @@ function LanguagesView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Languages</h1>
+        <h1>Languages</h1>
       </div>
 
       <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed pt-1">
@@ -1818,7 +1818,7 @@ function GuestRequirementsView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Guest requirements</h1>
+        <h1>Guest requirements</h1>
       </div>
 
       {/* Toggle Row: Require a profile photo */}
@@ -1930,25 +1930,25 @@ function CheckInCheckOutView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("house-rules")} />
         <h1>Check-in and check-out times</h1>
       </div>
 
       {/* Group 1: Check-in window and check-out times */}
       <div className="space-y-3 pt-2">
-        <span className="text-xs font-semibold text-zinc-600 block">
+        <span className="text-base font-normal text-zinc-600 block">
           Check-in window and check-out times
         </span>
 
         {/* Row 1: Start time */}
-        <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
+        <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
           <div
             onClick={() => setEditingStart((v) => !v)}
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-400 block">Start time</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Start time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart || "3:00 PM"}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingStart ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1966,7 +1966,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingStart(false);
                   }}
-                  className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((t) => (
                     <option key={t} value={t}>
@@ -1983,13 +1983,13 @@ function CheckInCheckOutView({
         </div>
 
         {/* Row 2: End time */}
-        <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
+        <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
           <div
             onClick={() => setEditingEnd((v) => !v)}
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-400 block">End time</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">End time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd || "Flexible"}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingEnd ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -2007,7 +2007,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingEnd(false);
                   }}
-                  className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((t) => (
                     <option key={t} value={t}>
@@ -2026,18 +2026,18 @@ function CheckInCheckOutView({
 
       {/* Group 2: Check-out time */}
       <div className="space-y-3 pt-4">
-        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block">
+        <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-400 block">
           Check-out time
         </span>
 
         {/* Row 3: Select time */}
-        <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
+        <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-3 shadow-2xs">
           <div
             onClick={() => setEditingCheckOut((v) => !v)}
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-400 block">Select time</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Select time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime || "12:00 PM"}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingCheckOut ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -2055,7 +2055,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingCheckOut(false);
                   }}
-                  className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((t) => (
                     <option key={t} value={t}>
@@ -2098,8 +2098,8 @@ function DirectionsView({
         <div className="flex items-start gap-4">
           <BackButton onClick={() => setActiveSection("check-in-out")} />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Directions to property</h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed mt-1">
+            <h1>Directions to property</h1>
+            <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
               Provide clear directions on how to reach your property. Include details that navigation apps might miss.
             </p>
           </div>
@@ -2406,9 +2406,9 @@ function CheckInMethodView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("check-in-out")} />
-        <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Check-in method</h1>
+        <h1>Check-in method</h1>
       </div>
 
       {/* Card: Selected Method */}
@@ -2500,7 +2500,7 @@ function CheckInMethodView({
       {/* ===================================== */}
       {isSelectModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setIsSelectModalOpen(false)}
@@ -2544,7 +2544,7 @@ function CheckInMethodView({
       {/* ===================================== */}
       {isDetailModalOpen && selectedDetailMethod && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"
               disabled={isSaving}
@@ -2609,7 +2609,7 @@ function CheckInMethodView({
       {/* ===================================== */}
       {isInstructionModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"
               disabled={isSaving}
