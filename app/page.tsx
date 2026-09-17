@@ -4,7 +4,12 @@ import { HomeView } from "@/components/home/home-view";
 import { homepageService, type HomepageSection } from "@/services/homepage.service";
 import { getSessionUser } from "@/lib/auth/session";
 import { resolveSearchContext, type SearchContext } from "@/lib/location/search-context";
-import { parseServerLastSearch, LAST_SEARCH_COOKIE } from "@/lib/storage/client-history";
+import {
+  parseServerLastSearch,
+  parseServerRecentSearches,
+  LAST_SEARCH_COOKIE,
+  RECENT_SEARCHES_COOKIE,
+} from "@/lib/storage/client-history";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +129,32 @@ export default async function HomePage({
     sections = homepage.sections;
     trendingLocations = homepage.trendingLocations;
     mode = homepage.mode;
+
+    let recentSearchSections: HomepageSection[] = [];
+    if (!isExplicitClear) {
+      const cookieStore = await cookies();
+      const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
+      const recentSearches = parseServerRecentSearches(recentCookie);
+      if (recentSearches.length > 0) {
+        recentSearchSections = await homepageService.getRecentSearchSections({
+          searches: recentSearches,
+          userId: user?.id,
+          currentLocationQuery: resolvedContext?.city || resolvedContext?.displayName || undefined,
+          limit: 4,
+        });
+      }
+    }
+
+    return (
+      <HomeView
+        sections={sections}
+        recentSearchSections={recentSearchSections}
+        trendingLocations={trendingLocations}
+        canFavorite={Boolean(user)}
+        mode={mode}
+        searchContext={resolvedContext}
+      />
+    );
   } catch (error) {
     console.error("Failed to load homepage discovery data:", error);
   }
@@ -131,6 +162,7 @@ export default async function HomePage({
   return (
     <HomeView
       sections={sections}
+      recentSearchSections={[]}
       trendingLocations={trendingLocations}
       canFavorite={Boolean(user)}
       mode={mode}

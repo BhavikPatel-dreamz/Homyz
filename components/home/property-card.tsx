@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatListingPrice } from "@/lib/currency";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface PropertyCardData {
   id: string;
@@ -59,6 +60,7 @@ export function PropertyCard({
   currency,
   alternativeDates,
 }: PropertyCardData) {
+  const { t } = useLanguage();
   const router = useRouter();
   const { data: session } = useSession();
   const isAuthenticated = canFavorite || Boolean(session?.user);
@@ -186,7 +188,7 @@ export function PropertyCard({
         {/* Badges: Only rendered when qualified by backend formula */}
         {showFeatured && (
           <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-zinc-900 shadow-xs border border-white/60">
-            Featured
+            {t("home_featured")}
           </span>
         )}
 
@@ -203,13 +205,13 @@ export function PropertyCard({
             >
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
-            Guest favorite
+            {t("home_guest_favorite")}
           </span>
         )}
 
         {showSuperhost && (
           <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center rounded-full bg-[#eca7b0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-normal text-white shadow-xs">
-            Superhost
+            {t("home_superhost")}
           </span>
         )}
 
@@ -291,7 +293,7 @@ export function PropertyCard({
             </span>
           ) : (
             <span className="text-[10px] text-zinc-400 font-normal">
-              {guests ? `Up to ${guests} guests` : propertyType || "Stay"}
+              {guests ? t("home_up_to_guests", { count: guests }) : propertyType || "Stay"}
             </span>
           )}
         </div>

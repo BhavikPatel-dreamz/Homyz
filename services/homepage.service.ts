@@ -1080,7 +1080,163 @@ async function getHomepageData(input: {
   }
 }
 
+async function getRecentSearchSections(params: {
+  searches: Array<SearchContext | any>;
+  userId?: string;
+  currentLocationQuery?: string | null;
+  limit?: number;
+}): Promise<HomepageSection[]> {
+  const { searches = [], userId, currentLocationQuery, limit = 4 } = params;
+  if (!searches.length) return [];
+
+  const normCurrent = currentLocationQuery?.trim().toLowerCase() || "";
+  const seenLocations = new Set<string>();
+  if (normCurrent) {
+    seenLocations.add(normCurrent);
+  }
+
+  // Filter valid, unique past searches
+  const uniqueSearches: Array<SearchContext | any> = [];
+  for (const s of searches) {
+    const locName = (s.city || s.displayName || s.query || "").trim();
+    if (!locName || locName === "Stays" || locName === "All") continue;
+    const norm = locName.toLowerCase();
+    if (seenLocations.has(norm)) continue;
+    seenLocations.add(norm);
+    uniqueSearches.push(s);
+    if (uniqueSearches.length >= limit) break;
+  }
+
+  if (!uniqueSearches.length) return [];
+
+  // Fetch candidate active listings
+  const allListings = (await prisma.listing.findMany({
+    where: {
+      published: true,
+      status: ListingStatus.ACTIVE,
+      isPaused: false,
+      deletedAt: null,
+      photos: { isEmpty: false },
+    },
+    select: {
+      id: true,
+      customSlug: true,
+      title: true,
+      city: true,
+      district: true,
+      country: true,
+      latitude: true,
+      longitude: true,
+      photos: true,
+      price: true,
+      weekdayBasePrice: true,
+      guests: true,
+      propertyType: true,
+      isFeatured: true,
+      blockedDates: true,
+      minNights: true,
+      maxNights: true,
+      advanceNotice: true,
+      sameDayCutoff: true,
+      allowSameDayRequests: true,
+      createdAt: true,
+      host: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          publicProfile: true,
+          bookings: {
+            select: { status: true },
+          },
+        },
+      },
+      bookings: {
+        select: { startDate: true, endDate: true, status: true },
+      },
+    },
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+    take: CANDIDATE_LIMIT,
+  })) as DiscoveryListing[];
+
+  // For user favorites if logged in
+  let favoriteIds = new Set<string>();
+  if (userId) {
+    try {
+      const allIds = allListings.map((l) => l.id);
+      favoriteIds = await favoriteService.getFavoriteListingIds(userId, allIds);
+    } catch {}
+  }
+
+  const sections: HomepageSection[] = [];
+
+  for (const s of uniqueSearches) {
+    const locName = (s.city || s.displayName || s.query || "").trim();
+    const isLandmark = s.placeType === "landmark";
+    const searchedLat = s.latitude;
+    const searchedLng = s.longitude;
+    const searchedCountry = s.country?.trim().toLowerCase() || "";
+    const normCity = (s.city || s.query || "").trim().toLowerCase();
+
+    // Match listings strictly to this searched location
+    const matched = allListings.filter((l) => {
+      if (searchedCountry && l.country && l.country.toLowerCase() !== searchedCountry) {
+        return false;
+      }
+      if (searchedLat != null && searchedLng != null && l.latitude != null && l.longitude != null) {
+        const dist = calculateDistance(searchedLat, searchedLng, l.latitude, l.longitude);
+        if (dist <= 30) return true;
+      }
+      if (l.city && normCity) {
+        const lc = l.city.trim().toLowerCase();
+        if (lc === normCity || (lc.length >= 4 && normCity.includes(lc)) || (normCity.length >= 4 && lc.includes(normCity))) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    if (matched.length === 0) continue; // Do not render empty carousel rows
+
+    const title = isLandmark ? `Homes near ${s.displayName || locName}` : `Homes in ${locName}`;
+    const sp = new URLSearchParams();
+    if (s.displayName || s.query) sp.set("destination", s.displayName || s.query);
+    if (s.city) sp.set("city", s.city);
+    if (s.checkIn) sp.set("checkIn", s.checkIn);
+    if (s.checkOut) sp.set("checkOut", s.checkOut);
+    if (s.guests && s.guests > 1) sp.set("guests", String(s.guests));
+
+    const properties = matched.slice(0, 10).map((l) => {
+      const prop = toProperty(l);
+      if (favoriteIds.has(l.id)) {
+        prop.favoriteStatus = true;
+        prop.isFavorite = true;
+      }
+      return prop;
+    });
+
+    sections.push({
+      id: `recent-search-${locName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+      title,
+      subtitle: s.checkIn && s.checkOut ? `Available stays for your dates` : undefined,
+      type: "PROPERTY",
+      source: "RECOMMENDATION",
+      priority: 105,
+      properties,
+      items: properties,
+      seeAllHref: `/listings?${sp.toString()}`,
+      previewImages: matched.slice(0, 3).flatMap((l) => l.photos || []).filter(Boolean),
+      totalCount: matched.length,
+    });
+
+    if (sections.length >= limit) break;
+  }
+
+  return sections;
+}
+
 export const homepageService = {
   getHomepageData,
+  getRecentSearchSections,
   resolvePopularHomesCity,
 };

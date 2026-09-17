@@ -755,7 +755,7 @@ export function AdminUserTable({
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
                           <Link
-                            href={`/admin/admins/permissions?userId=${u.id}`}
+                            href={`/admin/admins/${u.id}/permissions`}
                             className="inline-flex items-center gap-1 text-[11px] text-[var(--accent)] hover:underline font-semibold"
                           >
                             <span>Permissions</span>
@@ -945,7 +945,7 @@ export function AdminUserTable({
                 <div className="pt-2 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-end gap-1.5">
                   {!superAdmin ? (
                     <Link
-                      href={`/admin/admins/permissions?userId=${u.id}`}
+                      href={`/admin/admins/${u.id}/permissions`}
                       className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)]"
                     >
                       Permissions

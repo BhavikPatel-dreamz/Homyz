@@ -106,6 +106,10 @@ const nextConfig: NextConfig = {
         source: "/search",
         destination: "/listings",
       },
+      {
+        source: "/property/:id*",
+        destination: "/listings/:id*",
+      },
     ];
   },
 };

@@ -130,7 +130,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
           </Link>
 
           <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5" ref={menuRef}>
-            {user && (
+            {user ? (
               <button
                 type="button"
                 onClick={handleBecomeHost}
@@ -139,6 +139,13 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
               >
                 {isConvertingRole ? "Loading..." : "Become a host"}
               </button>
+            ) : (
+              <Link
+                href="/login?callbackUrl=/host/onboarding"
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+              >
+                Become a host
+              </Link>
             )}
 
             {isHostRoute ? (

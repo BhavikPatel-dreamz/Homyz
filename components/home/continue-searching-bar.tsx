@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { SearchContext } from "@/lib/location/search-context";
 import type { PersistedSearchContext } from "@/lib/storage/client-history";
 
@@ -163,6 +164,7 @@ export function ContinueSearchingBar({
   thumbnailUrl,
   className = "",
 }: ContinueSearchingBarProps) {
+  const { t } = useLanguage();
   const { preposition, locationName } = getContinueSearchLocationPhrase(context);
   const dateRange = formatSearchDateRange(context.checkIn, context.checkOut);
   const href = buildContinueSearchHref(context);
@@ -206,7 +208,7 @@ export function ContinueSearchingBar({
         {/* Text and Arrow */}
         <div className="flex items-center flex-wrap gap-x-1.5 text-[14px] sm:text-[15px] leading-tight text-[#1f1f1f]">
           <span className="font-semibold text-zinc-900 group-hover:text-black">
-            Continue searching for homes
+            {t("home_continue_searching_for_homes")}
             {locationName ? ` ${preposition} ${locationName}` : ""}
           </span>
           {dateRange && (
