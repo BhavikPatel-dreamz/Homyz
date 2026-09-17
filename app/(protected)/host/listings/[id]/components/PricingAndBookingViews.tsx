@@ -763,7 +763,14 @@ export function PricingAndBookingViews({
                   </div>
                   <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
                     <div><h3 className="text-base font-medium text-[#1f1f1f]">Add a custom message</h3><p className="mt-0.5 text-sm leading-5 text-[#727272]">{hasCustomBookingMessage ? "Custom message added for guests." : "Guests must read this before booking."}</p></div>
-                    <span aria-hidden="true" className="text-3xl font-light leading-none text-zinc-800">›</span>
+                    <Image
+                      src="/images/icons/chevron-down-dark.svg"
+                      alt=""
+                      aria-hidden="true"
+                      width={16}
+                      height={9}
+                      className="h-4 w-4 shrink-0 -rotate-90"
+                    />
                   </button>
                 </div>
               </section>
@@ -821,7 +828,7 @@ export function PricingAndBookingViews({
           <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
             <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
               {/* Counter text */}
-              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 tracking-tight">
+              <span className="text-base font-medium text-[#727272] dark:text-zinc-300 tracking-tight">
                 {Math.max(0, 100 - (customSlug?.length || 0))}/100 characters available
               </span>
 
@@ -841,7 +848,7 @@ export function PricingAndBookingViews({
               </div>
 
               {/* Validation feedback */}
-              <div className="text-xs text-center min-h-[20px]">
+              <div className="text-base text-center min-h-[20px]">
                 {tooShort && (
                   <span className="text-red-500 dark:text-red-400 font-medium">Link must be at least 3 characters.</span>
                 )}
@@ -855,7 +862,7 @@ export function PricingAndBookingViews({
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium">Valid link: homyz.com/stay/{trimmedSlug}</span>
                 )}
                 {!hasInput && (
-                  <span className="text-zinc-400 dark:text-zinc-500 font-normal">Create a memorable web address for your listing.</span>
+                  <span className="text-[#727272] dark:text-zinc-500 font-normal">Create a memorable web address for your listing.</span>
                 )}
               </div>
 
@@ -864,7 +871,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving || (hasInput && !isSlugValid)}
                 onClick={() => handleSaveSection("custom-link")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] dark:bg-amber-400 dark:hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>

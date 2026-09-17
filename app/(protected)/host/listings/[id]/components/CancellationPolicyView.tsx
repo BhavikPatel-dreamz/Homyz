@@ -193,9 +193,9 @@ export function CancellationPolicyView({
     <div className="space-y-6 animate-in fade-in max-w-2xl w-full pb-16 font-sans">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={() => setActiveSection("house-rules")} />
-          <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+        <div className="flex items-start gap-6">
+          <BackButton onClick={() => setActiveSection("house-rules")} className="mb-2" />
+          <h1>
             Cancellation policy
           </h1>
         </div>
@@ -206,101 +206,99 @@ export function CancellationPolicyView({
         <CancellationPolicySkeleton />
       ) : (
         <div className="space-y-4 pt-1">
-        {/* 1. Short-term stays Card */}
-        <div
-          onClick={() => {
-            setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
-            setIsShortTermModalOpen(true);
-          }}
-          className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
-        >
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200 block">Short-term stays</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal block">For less than 28 nights</span>
-            <span className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
-              {cancellationPolicyLabel(cancellationPolicy)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 underline group-hover:text-zinc-900 dark:group-hover:text-zinc-100">Edit</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </div>
-        </div>
-
-        {/* 2. Long-term stays Card */}
-        <div
-          onClick={() => {
-            setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
-            setIsLongTermModalOpen(true);
-          }}
-          className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
-        >
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200 block">Long-term stays</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal block">For 28 nights or more</span>
-            <span className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
-              {longTermCancellationPolicy === "STRICT" ? "Strict Long-Term" : "Firm Long-Term"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 underline group-hover:text-zinc-900 dark:group-hover:text-zinc-100">Edit</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </div>
-        </div>
-
-        {/* 3. Non-refundable option Card */}
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 flex items-center justify-between gap-4 shadow-2xs">
-          <div className="space-y-1 max-w-md">
-            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200 block">
-              Non-refundable option
-            </span>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
-              {nonRefundableDiscountPercentage
-                ? `Offer guests a ${nonRefundableDiscountPercentage}% discount when they choose a non-refundable reservation. If they cancel, you retain the booked payout.`
-                : "Offer guests a discounted price when they choose a non-refundable reservation. An administrator must configure the discount before guests can select it."}{" "}
-              <button
-                type="button"
-                onClick={() => setIsLearnMoreOpen(true)}
-                className="text-zinc-900 dark:text-zinc-100 underline font-semibold hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
-              >
-                Learn more
-              </button>
-            </p>
-          </div>
-
-          {/* Toggle switch matching other editor toggles */}
-          <button
-            type="button"
-            role="switch"
-            aria-label="Toggle non-refundable option"
-            aria-checked={nonRefundable}
-            disabled={isSaving}
-            onClick={handleToggleNonRefundable}
-            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
-              nonRefundable ? "bg-[#E9C979] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"
-            }`}
+          {/* 1. Short-term stays Card */}
+          <div
+            onClick={() => {
+              setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
+              setIsShortTermModalOpen(true);
+            }}
+            className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
           >
-            <span
-              className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700 transition-transform ${
-                nonRefundable ? "translate-x-5" : "translate-x-0.5"
-              }`}
-            />
-          </button>
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200 block">Short-term stays</span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-400 font-normal block">For less than 28 nights</span>
+              <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
+                {cancellationPolicyLabel(cancellationPolicy)}
+              </span>
+            </div>
+              <div className="flex items-center gap-2 text-[#1f1f1f] dark:text-zinc-500 group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-300 transition-colors">
+                <span className="text-base font-medium text-[#1f1f1f] dark:text-zinc-400 underline group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-100">Edit</span>
+              <svg className="w-4 h-4" fill="none" stroke="#1f1f1f" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+          </div>
+
+          {/* 2. Long-term stays Card */}
+          <div
+            onClick={() => {
+              setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
+              setIsLongTermModalOpen(true);
+            }}
+            className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
+          >
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200 block">Long-term stays</span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-400 font-normal block">For 28 nights or more</span>
+              <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
+                {longTermCancellationPolicy === "STRICT" ? "Strict Long-Term" : "Firm Long-Term"}
+              </span>
+            </div>
+              <div className="flex items-center gap-2 text-[#1f1f1f] dark:text-zinc-500 group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-300 transition-colors">
+                <span className="text-base font-medium text-[#1f1f1f] dark:text-zinc-400 underline group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-100">Edit</span>
+              <svg className="w-4 h-4" fill="none" stroke="#1f1f1f" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+          </div>
+
+          {/* 3. Non-refundable option Card */}
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 flex items-center justify-between gap-4 shadow-2xs">
+            <div className="space-y-1 max-w-md">
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200 block">
+                Non-refundable option
+              </span>
+              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+                {nonRefundableDiscountPercentage
+                  ? `Offer guests a ${nonRefundableDiscountPercentage}% discount when they choose a non-refundable reservation. If they cancel, you retain the booked payout.`
+                  : "Offer guests a discounted price when they choose a non-refundable reservation. An administrator must configure the discount before guests can select it."}{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsLearnMoreOpen(true)}
+                  className="text-zinc-900 dark:text-zinc-100 underline font-medium hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
+                >
+                  Learn more
+                </button>
+              </p>
+            </div>
+
+            {/* Toggle switch matching other editor toggles */}
+            <button
+              type="button"
+              role="switch"
+              aria-label="Toggle non-refundable option"
+              aria-checked={nonRefundable}
+              disabled={isSaving}
+              onClick={handleToggleNonRefundable}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${nonRefundable ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"
+                }`}
+            >
+              <span
+                className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700 transition-transform ${nonRefundable ? "translate-x-5.5" : "translate-x-0.5"
+                  }`}
+              />
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {/* Footer note with Help Centre link */}
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pt-2">
+      <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed pt-2">
         All standard stay policies include a 24-hour free cancellation period. Review the full policies in the{" "}
         <button
           type="button"
           onClick={() => setIsHelpCentreOpen(true)}
-          className="text-zinc-900 dark:text-zinc-100 underline font-semibold hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
+          className="text-zinc-900 dark:text-zinc-100 underline font-medium hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
         >
           Help Centre
         </button>
@@ -343,11 +341,10 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftShortPolicy(option.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${
-                      isSelected
-                        ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
-                        : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
-                    }`}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${isSelected
+                      ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
+                      : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <span className="text-sm font-bold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
@@ -443,11 +440,10 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftLongPolicy(option.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${
-                      isSelected
-                        ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
-                        : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
-                    }`}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${isSelected
+                      ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
+                      : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <span className="text-sm font-bold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
