@@ -64,6 +64,10 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
     if (params.guestDetails) {
       const totalGuests = (params.guestDetails.adults || 0) + (params.guestDetails.children || 0);
       if (totalGuests > 0) sp.set("guests", String(totalGuests));
+      if (params.guestDetails.adults > 0) sp.set("adults", String(params.guestDetails.adults));
+      if (params.guestDetails.children > 0) sp.set("children", String(params.guestDetails.children));
+      if (params.guestDetails.infants > 0) sp.set("infants", String(params.guestDetails.infants));
+      if (params.guestDetails.pets > 0) sp.set("pets", String(params.guestDetails.pets));
     } else if (params.guests) {
       // Parse "2 guests" → "2"
       const n = parseInt(params.guests, 10);
@@ -136,7 +140,14 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
             ) : (
               <>
                 {propertySections.map((section) => (
-                  <HomePropertySection key={section.id} title={section.title} cards={section.cards} />
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
                 ))}
               </>
             )}

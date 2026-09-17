@@ -42,9 +42,14 @@ interface ListingsResultsClientProps {
     bathrooms?: number;
     beds?: number;
     instantBook?: boolean;
+    featured?: boolean;
     sortBy?: SortBy;
   };
   favoriteIds?: Set<string>;
+  locationContextName?: string;
+  targetCoords?: { lat: number; lng: number };
+  appliedRadiusKm?: number;
+  isRadiusExpanded?: boolean;
 }
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
@@ -102,11 +107,31 @@ export function ListingsResultsClient({
   priceRange,
   currentFilters,
   favoriteIds = new Set(),
+  locationContextName,
+  targetCoords,
+  appliedRadiusKm,
+  isRadiusExpanded,
 }: ListingsResultsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  const mapCenter: [number, number] | undefined =
+    targetCoords
+      ? [targetCoords.lat, targetCoords.lng]
+      : typeof currentFilters.lat === "number" && typeof currentFilters.lng === "number"
+      ? [currentFilters.lat, currentFilters.lng]
+      : undefined;
+
+  const mapZoom =
+    appliedRadiusKm && appliedRadiusKm <= 6
+      ? 14
+      : appliedRadiusKm && appliedRadiusKm <= 15
+      ? 12
+      : appliedRadiusKm && appliedRadiusKm <= 35
+      ? 11
+      : 10;
 
   // All listings accumulated (for infinite scroll)
   const [allListings, setAllListings] = useState(initialListings);
@@ -155,6 +180,7 @@ export function ListingsResultsClient({
     currentFilters.bathrooms && currentFilters.bathrooms > 0,
     currentFilters.beds && currentFilters.beds > 0,
     currentFilters.instantBook,
+    currentFilters.featured,
   ].filter(Boolean).length;
 
   // ── URL helpers ──────────────────────────────
@@ -383,6 +409,23 @@ export function ListingsResultsClient({
           )}
         </button>
 
+        {/* Active Featured Chip */}
+        {currentFilters.featured && (
+          <button
+            type="button"
+            onClick={() => {
+              startTransition(() => {
+                router.push(buildUrl({ featured: null }));
+              });
+            }}
+            className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs font-semibold px-3.5 py-1.5 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
+            aria-label="Clear featured filter"
+          >
+            <span>✨ Featured</span>
+            <span className="text-zinc-400 hover:text-white font-bold text-xs ml-0.5">✕</span>
+          </button>
+        )}
+
         {/* Quick amenity chips */}
         {QUICK_AMENITIES.map((am) => {
           const isSelected = (currentFilters.amenities ?? []).includes(am.id);
@@ -474,6 +517,7 @@ export function ListingsResultsClient({
                     <ListingCard
                       listing={item}
                       initialFavorite={favoriteIds.has(item.id)}
+                      targetLocationName={locationContextName}
                     />
                   </div>
                 ))}
@@ -504,11 +548,8 @@ export function ListingsResultsClient({
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
               guests={currentFilters.guests}
-              center={
-                typeof currentFilters.lat === "number" && typeof currentFilters.lng === "number"
-                  ? [currentFilters.lat, currentFilters.lng]
-                  : undefined
-              }
+              center={mapCenter}
+              zoom={mapZoom}
               className="w-full h-full"
             />
           </div>
@@ -540,11 +581,8 @@ export function ListingsResultsClient({
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
               guests={currentFilters.guests}
-              center={
-                typeof currentFilters.lat === "number" && typeof currentFilters.lng === "number"
-                  ? [currentFilters.lat, currentFilters.lng]
-                  : undefined
-              }
+              center={mapCenter}
+              zoom={mapZoom}
               className="w-full h-full"
             />
           </div>
