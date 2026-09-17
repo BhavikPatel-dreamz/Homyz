@@ -7,6 +7,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
 import type { PublicListingDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
+import { saveLastSearch } from "@/lib/storage/client-history";
 
 // Lazy-load the map (Leaflet is heavy & client-only)
 const SearchMap = dynamic(
@@ -116,6 +117,52 @@ export function ListingsResultsClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  // Synchronize active search URL/filter state into lastSearch context
+  useEffect(() => {
+    const destination =
+      searchParams.get("destination") ||
+      currentFilters.placeName ||
+      currentFilters.city ||
+      locationContextName ||
+      "";
+    const city = currentFilters.city || searchParams.get("city") || destination || null;
+    const lat = typeof currentFilters.lat === "number" ? currentFilters.lat : targetCoords?.lat ?? null;
+    const lng = typeof currentFilters.lng === "number" ? currentFilters.lng : targetCoords?.lng ?? null;
+
+    if (destination || city || (lat !== null && lng !== null)) {
+      saveLastSearch({
+        query: destination || city || "Stays",
+        displayName: locationContextName || destination || city || "Stays",
+        placeId: currentFilters.placeId || searchParams.get("placeId") || null,
+        placeType: (currentFilters.locationType as any) || "general",
+        latitude: lat,
+        longitude: lng,
+        city: city,
+        checkIn: currentFilters.checkIn || searchParams.get("checkIn") || null,
+        checkOut: currentFilters.checkOut || searchParams.get("checkOut") || null,
+        guests: currentFilters.guests || Number(searchParams.get("guests")) || 1,
+        radiusKm: currentFilters.radiusKm || Number(searchParams.get("radius")) || undefined,
+        filters: {
+          minPrice: currentFilters.minPrice,
+          maxPrice: currentFilters.maxPrice,
+          propertyType: currentFilters.propertyType,
+          amenities: currentFilters.amenities,
+          bedrooms: currentFilters.bedrooms,
+          bathrooms: currentFilters.bathrooms,
+          beds: currentFilters.beds,
+          instantBook: currentFilters.instantBook,
+          featured: currentFilters.featured,
+          sortBy: currentFilters.sortBy,
+        },
+      });
+    }
+  }, [
+    searchParams,
+    currentFilters,
+    locationContextName,
+    targetCoords,
+  ]);
 
   const mapCenter: [number, number] | undefined =
     targetCoords

@@ -3,6 +3,7 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
 
 const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
@@ -282,6 +283,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const searchParams = useSearchParams();
+
   // Load recent searches and dynamic suggestions on mount
   useEffect(() => {
     setRecentSearches(getRecentSearches());
@@ -297,6 +300,22 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       }
     } catch {}
   }, []);
+
+  // Sync state from URL search params to preserve context across back/forward/refresh
+  useEffect(() => {
+    if (!searchParams) return;
+    const urlDest = searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName");
+    if (urlDest && urlDest.trim()) {
+      setDestination(urlDest.trim());
+    } else if (searchParams.toString() === "") {
+      setDestination("");
+      setSelectedLocation(null);
+    }
+    const urlIn = searchParams.get("checkIn");
+    if (urlIn) setCheckIn(urlIn);
+    const urlOut = searchParams.get("checkOut");
+    if (urlOut) setCheckOut(urlOut);
+  }, [searchParams]);
 
   const handleUseCurrentLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {

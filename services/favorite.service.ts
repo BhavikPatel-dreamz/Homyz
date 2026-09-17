@@ -4,11 +4,15 @@ import { prisma } from "@/lib/db/prisma";
 
 async function getFavoriteListingIds(userId: string, listingIds: string[]): Promise<Set<string>> {
   if (!listingIds.length) return new Set();
-  const favorites = await prisma.listingFavorite.findMany({
-    where: { userId, listingId: { in: listingIds } },
-    select: { listingId: true },
-  });
-  return new Set(favorites.map((favorite: { listingId: string }) => favorite.listingId));
+  try {
+    const favorites = await prisma.listingFavorite.findMany({
+      where: { userId, listingId: { in: listingIds } },
+      select: { listingId: true },
+    });
+    return new Set(favorites.map((favorite: { listingId: string }) => favorite.listingId));
+  } catch {
+    return new Set();
+  }
 }
 
 async function saveFavorite(userId: string, listingId: string): Promise<void> {

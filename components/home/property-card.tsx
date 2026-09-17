@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatListingPrice } from "@/lib/currency";
 
 export interface PropertyCardData {
   id: string;
@@ -18,6 +19,8 @@ export interface PropertyCardData {
   propertyType?: string | null;
   initialFavorite?: boolean;
   canFavorite?: boolean;
+  currency?: string;
+  alternativeDates?: string | null;
 }
 
 export function PropertyCard({
@@ -34,6 +37,8 @@ export function PropertyCard({
   propertyType,
   initialFavorite = false,
   canFavorite = false,
+  currency,
+  alternativeDates,
 }: PropertyCardData) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
@@ -60,7 +65,7 @@ export function PropertyCard({
   };
 
   const formattedPrice =
-    typeof price === "number" ? `SAR ${Math.round(price / 100)}` : price;
+    typeof price === "number" ? formatListingPrice(price, currency) : price;
 
   const displaySubtitle =
     subtitle ||
@@ -158,9 +163,15 @@ export function PropertyCard({
         <h3 className="truncate text-[13.5px] sm:text-base font-medium text-[#1f1f1f] leading-snug">
           {name || "Untitled stay"}
         </h3>
-        <p className="truncate text-[11px] sm:text-xs font-normal text-zinc-500 leading-normal mt-0.5 sm:mt-1">
-          {displaySubtitle}
-        </p>
+        {alternativeDates ? (
+          <p className="truncate text-[11px] sm:text-xs font-medium text-amber-800 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-sm mt-0.5 sm:mt-1 inline-block">
+            🗓️ {alternativeDates}
+          </p>
+        ) : (
+          <p className="truncate text-[11px] sm:text-xs font-normal text-zinc-500 leading-normal mt-0.5 sm:mt-1">
+            {displaySubtitle}
+          </p>
+        )}
         <div className="flex items-center justify-between text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
           <span className="font-semibold">{formattedPrice}</span>
           {/* Rating only displayed if genuine rating exists */}
