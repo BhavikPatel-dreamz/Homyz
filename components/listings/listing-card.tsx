@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { PublicListingDTO } from "@/services/mappers";
 
@@ -43,6 +43,21 @@ export function ListingCard({
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
 
+  useEffect(() => {
+    setIsFavorite(initialFavorite);
+  }, [initialFavorite]);
+
+  useEffect(() => {
+    function onFavoriteChanged(event: Event) {
+      const customEvent = event as CustomEvent<{ listingId: string; isFavorite: boolean }>;
+      if (customEvent.detail && customEvent.detail.listingId === listing.id) {
+        setIsFavorite(customEvent.detail.isFavorite);
+      }
+    }
+    window.addEventListener("homyz:favorite-changed", onFavoriteChanged);
+    return () => window.removeEventListener("homyz:favorite-changed", onFavoriteChanged);
+  }, [listing.id]);
+
   const coverPhoto =
     Array.isArray(listing.photos) && listing.photos.length > 0 && !imageError
       ? listing.photos[0]
@@ -76,6 +91,15 @@ export function ListingCard({
         }
         if (!res.ok) {
           setIsFavorite(!next); // Revert on error
+          return;
+        }
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("homyz:favorite-changed", {
+              detail: { listingId: listing.id, isFavorite: next },
+            }),
+          );
         }
       } catch {
         setIsFavorite(!next); // Revert on network error

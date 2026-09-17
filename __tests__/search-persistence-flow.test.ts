@@ -195,8 +195,8 @@ async function runSearchPersistenceSuite() {
   assert(homeViewCode.includes("saveLastSearch"), "home-view.tsx must call saveLastSearch on search submission");
   assert(homeViewCode.includes("router.push(`/listings"), "home-view.tsx must navigate to /listings search results page");
   assert(homeViewCode.includes("clearLastSearch"), "home-view.tsx must clear last search on reset");
-  assert(!homeViewCode.includes("Continue searching in"), "Banner must not be rendered on homepage");
-  console.log("  ✓ components/home/home-view.tsx navigates to /listings on search & renders clean discovery carousels without banner");
+  assert(homeViewCode.includes("ContinueSearchingBar"), "home-view.tsx must render ContinueSearchingBar when searchContext is active");
+  console.log("  ✓ components/home/home-view.tsx renders ContinueSearchingBar when activeContext exists");
 
   // 4.3 Search Results Client: app/listings/listings-results-client.tsx
   const listingsCode = fs.readFileSync(path.resolve(__dirname, "../app/listings/listings-results-client.tsx"), "utf-8");

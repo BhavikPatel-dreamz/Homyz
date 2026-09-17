@@ -10,6 +10,7 @@ import { reverseGeocodeLocation } from "@/lib/location/geocoding";
 import { calculateDistance } from "@/lib/location/places-search";
 import { getCurrencyForCountry } from "@/lib/currency";
 import type { SearchContext } from "@/lib/location/search-context";
+import { qualificationService } from "@/services/qualification.service";
 
 export const SECTION_LIMIT = 12;
 const CANDIDATE_LIMIT = 200;
@@ -18,19 +19,27 @@ const MIN_PROPERTY_CAROUSEL = 3;
 export type HomepageProperty = {
   id: string;
   slug: string | null;
+  name: string;
   title: string;
   city: string | null;
   area: string | null;
   country: string | null;
+  image: string;
+  imageUrl: string;
   mainImage: string;
   price: number;
+  pricePerNight: number;
   currency: string;
   maxGuests: number;
   propertyType: string | null;
   featured: boolean;
+  isFavorite: boolean;
   favoriteStatus: boolean;
-  rating?: number | null;
-  reviewCount?: number;
+  isGuestFavorite: boolean;
+  isSuperhost: boolean;
+  averageRating: number | null;
+  rating: number | null;
+  reviewCount: number | null;
   badge?: "guest_favorite" | "superhost" | "featured" | null;
   alternativeDates?: string | null;
   distanceKm?: number;
@@ -120,6 +129,13 @@ export type DiscoveryListing = {
   sameDayCutoff: string | null;
   allowSameDayRequests: boolean;
   createdAt: Date;
+  host?: {
+    id: string;
+    name: string | null;
+    createdAt: Date;
+    publicProfile: Record<string, unknown> | null;
+    bookings?: Array<{ status: BookingStatus }>;
+  } | null;
   bookings: Array<{ startDate: Date; endDate: Date; status: BookingStatus }>;
 };
 
@@ -151,23 +167,58 @@ function toProperty(
   },
 ): HomepageProperty {
   const currency = getCurrencyForCountry(listing.country);
+  const hostProfile = (listing.host?.publicProfile || {}) as Record<string, unknown>;
+  const genuineRating =
+    typeof hostProfile.rating === "number" && hostProfile.rating > 0 ? hostProfile.rating : null;
+  const genuineReviews =
+    typeof hostProfile.reviewCount === "number"
+      ? hostProfile.reviewCount
+      : typeof hostProfile.reviewsCount === "number"
+      ? hostProfile.reviewsCount
+      : null;
+
+  const isGuestFav = qualificationService.isGuestFavorite({
+    isFeatured: listing.isFeatured,
+    rating: genuineRating,
+    reviewCount: genuineReviews,
+    bookings: listing.bookings,
+    status: ListingStatus.ACTIVE,
+    published: true,
+  });
+
+  const isSuperh = qualificationService.isSuperhost(listing.host);
+
+  const calculatedBadge: "guest_favorite" | "superhost" | "featured" | null =
+    extra?.badge ?? (isGuestFav ? "guest_favorite" : isSuperh ? "superhost" : listing.isFeatured ? "featured" : null);
+
+  const priceVal = listing.weekdayBasePrice ?? listing.price;
+  const mainPhoto = listing.photos[0] ?? "/images/home/hero-banner.png";
+
   return {
     id: listing.id,
     slug: listing.customSlug,
+    name: listing.title,
     title: listing.title,
     city: listing.city,
     area: listing.district,
     country: listing.country,
-    mainImage: listing.photos[0] ?? "/images/home/hero-banner.png",
-    price: listing.weekdayBasePrice ?? listing.price,
+    image: mainPhoto,
+    imageUrl: mainPhoto,
+    mainImage: mainPhoto,
+    price: priceVal,
+    pricePerNight: priceVal,
     currency,
     maxGuests: listing.guests,
     propertyType: listing.propertyType,
     featured: listing.isFeatured,
     favoriteStatus: false,
-    rating: listing.isFeatured ? 4.95 : null,
-    reviewCount: listing.isFeatured ? 28 : undefined,
-    badge: extra?.badge ?? (listing.isFeatured ? "featured" : null),
+    isFavorite: false,
+    isGuestFavorite: isGuestFav,
+    isSuperhost: isSuperh,
+    averageRating: genuineRating,
+    rating: genuineRating,
+    reviewCount: genuineReviews,
+    badge: calculatedBadge,
     alternativeDates: extra?.alternativeDates ?? null,
     distanceKm: extra?.distanceKm,
   };
@@ -508,11 +559,18 @@ async function assembleHomepageData(params: {
       sameDayCutoff: true,
       allowSameDayRequests: true,
       createdAt: true,
-      bookings: {
-        where: {
-          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-          endDate: { gt: startOfDay() },
+      host: {
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          publicProfile: true,
+          bookings: {
+            select: { status: true },
+          },
         },
+      },
+      bookings: {
         select: { startDate: true, endDate: true, status: true },
       },
     },
@@ -692,8 +750,15 @@ async function assembleHomepageData(params: {
     }
 
     // 4. Priority 50: Guest favourites in {location}
-    const guestFavourites = destinationCandidates.filter(
-      (c) => c.listing.isFeatured || c.listing.bookings.length >= 1,
+    const guestFavourites = destinationCandidates.filter((c) =>
+      qualificationService.isGuestFavorite({
+        isFeatured: c.listing.isFeatured,
+        rating: (c.listing.host?.publicProfile as any)?.rating,
+        reviewCount: (c.listing.host?.publicProfile as any)?.reviewCount,
+        bookings: c.listing.bookings,
+        status: ListingStatus.ACTIVE,
+        published: true,
+      }),
     );
     addSection({
       id: "guest-favourites-search",
@@ -845,19 +910,30 @@ async function assembleHomepageData(params: {
     });
 
     // 1. Priority 50: Guest favourites
-    const guestFavourites = allListings.filter((l) => l.isFeatured);
-    addSection({
-      id: "guest-favourites",
-      title: "Guest favourites",
-      type: "FEATURED",
-      source: "RECOMMENDATION",
-      priority: 50,
-      candidates: (guestFavourites.length > 0 ? guestFavourites : allListings).map((listing) => ({
-        listing,
-        extra: { badge: "guest_favorite" as const },
-      })),
-      seeAllHref: "/listings?featured=true",
-    });
+    const guestFavourites = allListings.filter((l) =>
+      qualificationService.isGuestFavorite({
+        isFeatured: l.isFeatured,
+        rating: (l.host?.publicProfile as any)?.rating,
+        reviewCount: (l.host?.publicProfile as any)?.reviewCount,
+        bookings: l.bookings,
+        status: ListingStatus.ACTIVE,
+        published: true,
+      }),
+    );
+    if (guestFavourites.length >= MIN_PROPERTY_CAROUSEL) {
+      addSection({
+        id: "guest-favourites",
+        title: "Guest favourites",
+        type: "FEATURED",
+        source: "RECOMMENDATION",
+        priority: 50,
+        candidates: guestFavourites.map((listing) => ({
+          listing,
+          extra: { badge: "guest_favorite" as const },
+        })),
+        seeAllHref: "/listings?featured=true",
+      });
+    }
 
     // 2. Priority 100: Popular stays near you (if current location detected)
     if (userLocation.city) {
@@ -990,10 +1066,12 @@ async function getHomepageData(input: {
         properties: section.properties.map((property) => ({
           ...property,
           favoriteStatus: favoriteIds.has(property.id),
+          isFavorite: favoriteIds.has(property.id),
         })),
         items: section.properties.map((property) => ({
           ...property,
           favoriteStatus: favoriteIds.has(property.id),
+          isFavorite: favoriteIds.has(property.id),
         })),
       })),
     };

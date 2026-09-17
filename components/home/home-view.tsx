@@ -20,6 +20,7 @@ import {
 } from "@/lib/storage/client-history";
 import { HomepageLoadingState } from "./home-section-skeleton";
 import { Container } from "../ui";
+import { ContinueSearchingBar } from "./continue-searching-bar";
 
 export interface HomeViewProps {
   sections?: HomepageSection[];
@@ -47,17 +48,31 @@ export function HomeView({
   const router = useRouter();
   const [isNavigatingSearch, setIsNavigatingSearch] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<ViewedPropertyItem[]>([]);
+  const [activeContext, setActiveContext] = useState<SearchContext | PersistedSearchContext | null>(searchContext);
 
-  // Load client-persisted recently viewed properties on mount
+  // Load client-persisted search context & recently viewed properties on mount
   useEffect(() => {
     setRecentlyViewed(getRecentlyViewedProperties());
     if (typeof window !== "undefined") {
       const sp = new URLSearchParams(window.location.search);
       if (sp.get("clear") === "true") {
         clearLastSearch();
+        setActiveContext(null);
+      } else if (!searchContext) {
+        const last = getLastSearch();
+        if (last) {
+          setActiveContext(last);
+        }
       }
     }
-  }, []);
+  }, [searchContext]);
+
+  // Sync activeContext with incoming searchContext from SSR or navigation
+  useEffect(() => {
+    if (searchContext) {
+      setActiveContext(searchContext);
+    }
+  }, [searchContext]);
 
   // Stop skeleton spinner once new sections arrive
   useEffect(() => {
@@ -171,27 +186,50 @@ export function HomeView({
 
   const handleClearSearch = () => {
     clearLastSearch();
+    setActiveContext(null);
     setIsNavigatingSearch(true);
     router.push("/?clear=true", { scroll: false });
   };
+
+  const continueSearchThumbnail = useMemo(() => {
+    for (const section of sections) {
+      if (section.properties?.length) {
+        const p = section.properties[0];
+        const img = p.image || p.mainImage || p.imageUrl;
+        if (img) return img;
+      }
+    }
+    if (trendingLocations.length > 0 && trendingLocations[0]?.imageUrl) {
+      return trendingLocations[0].imageUrl;
+    }
+    return null;
+  }, [sections, trendingLocations]);
 
   const propertySections = useMemo(() => {
     return sections.map((section) => ({
       ...section,
       cards: section.properties.map((property) => ({
         id: property.id,
-        name: property.title,
+        slug: property.slug,
+        name: property.name || property.title,
+        image: property.image || property.mainImage,
+        imageUrl: property.imageUrl || property.mainImage,
         subtitle: [property.area, property.city].filter(Boolean).join(", ") || property.country || undefined,
+        pricePerNight: property.pricePerNight ?? property.price,
         price: property.price,
-        badge: property.badge ?? (property.featured ? ("featured" as const) : null),
-        imageUrl: property.mainImage,
+        currency: property.currency,
+        badge: property.badge,
+        isGuestFavorite: property.isGuestFavorite,
+        isSuperhost: property.isSuperhost,
         city: property.city,
         country: property.country,
         guests: property.maxGuests,
         propertyType: property.propertyType,
+        averageRating: property.averageRating ?? property.rating ?? null,
         rating: property.rating ?? null,
-        currency: property.currency,
+        reviewCount: property.reviewCount ?? null,
         alternativeDates: property.alternativeDates,
+        isFavorite: property.isFavorite ?? property.favoriteStatus,
         initialFavorite: property.favoriteStatus,
         canFavorite,
       })),
@@ -209,7 +247,15 @@ export function HomeView({
           {/* Hero Section */}
           <HeroSection onSearch={handleSearch} />
 
-          {/* Trending Locations Destination Cards */}
+          {/* Continue Searching Bar */}
+          {activeContext && (
+            <div className="mt-4 sm:mt-6 flex justify-center w-full">
+              <ContinueSearchingBar
+                context={activeContext}
+                thumbnailUrl={continueSearchThumbnail}
+              />
+            </div>
+          )}
 
           {/* Trending Locations Destination Cards */}
           {trendingLocations.length > 0 && mode === "DEFAULT" && (
@@ -253,13 +299,16 @@ export function HomeView({
                 cards={recentlyViewed.map((item) => ({
                   id: item.id,
                   name: item.title,
-                  subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
-                  price: item.price,
+                  image: item.mainImage,
                   imageUrl: item.mainImage,
+                  subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
+                  pricePerNight: item.price,
+                  price: item.price,
                   city: item.city,
                   country: item.country,
                   guests: item.maxGuests,
                   propertyType: item.propertyType,
+                  averageRating: item.rating ?? null,
                   rating: item.rating ?? null,
                   canFavorite,
                 }))}
