@@ -19,12 +19,7 @@ import type { AuthMode, AuthProviders, SocialProvider } from "@/components/auth/
 import { authFieldErrorClass, authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
 import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
-
-
-
-
-
-
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HomyzAuthFormProps {
   initialMode?: "login" | "signup";
@@ -43,6 +38,7 @@ export function HomyzAuthForm({
 }: HomyzAuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -381,7 +377,7 @@ export function HomyzAuthForm({
           <div className="left-column lg:pt-2.5 w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
             <AuthHeading
-              title={authMode === "login" ? "Log in or sign up" : "Log in or sign up"}
+              title={t("auth_login_or_signup")}
               onBack={() => {
                 if (otpSent) {
                   setOtpSent(false);
@@ -397,22 +393,22 @@ export function HomyzAuthForm({
             <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
               {authMode === "login" ? (
                 <>
-                  Don&apos;t have an account?{" "}
+                  {t("auth_dont_have_account")}{" "}
                   <Link
                     href={getAuthToggleHref("signup")}
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
-                    Sign up
+                    {t("auth_signup_link")}
                   </Link>
                 </>
               ) : (
                 <>
-                  Already have an account?{" "}
+                  {t("auth_already_have_account")}{" "}
                   <Link
                     href={getAuthToggleHref("login")}
                     className="underline text-[#1F1F1F] hover:opacity-80 font-normal cursor-pointer"
                   >
-                    Log in
+                    {t("auth_login_link")}
                   </Link>
                 </>
               )}
@@ -431,11 +427,6 @@ export function HomyzAuthForm({
                 <Alert tone="error">{error}</Alert>
               </div>
             )}
-            {/* {success && (
-              <div className="mb-4 pl-0 sm:pl-13.5">
-                <Alert tone="success">{success}</Alert>
-              </div>
-            )} */}
 
             {/* FORM CONTAINER (Frame 1996663726 - responsive width) */}
             <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
@@ -455,7 +446,7 @@ export function HomyzAuthForm({
                         {/* Country code (full width on mobile, 171px on sm+) */}
                         <div className="flex flex-col gap-1.5 sm:gap-2 w-full sm:w-[171px] shrink-0">
                           <label className="font-['Poppins'] font-medium text-base sm:text-lg leading-[24px] text-[#1F1F1F]">
-                            Country code *
+                            {t("auth_country_code")} *
                           </label>
                           <div className="relative h-[56px]">
                             <select
@@ -468,8 +459,6 @@ export function HomyzAuthForm({
                                   {c.flag} {c.name} ({c.code})
                                 </option>
                               ))}
-
-
                             </select>
                             <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
                               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -482,7 +471,7 @@ export function HomyzAuthForm({
                         {/* Phone number (full width on mobile, flex-1 on sm+) */}
                         <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full min-w-0" suppressHydrationWarning>
                           <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
-                            Phone number *
+                            {t("auth_phone_number")} *
                           </label>
                           <input
                             type="tel"
@@ -494,19 +483,18 @@ export function HomyzAuthForm({
                             suppressHydrationWarning
                             className="w-full h-[56px] rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors"
                           />
-
                         </div>
                       </div>
 
                       {/* Disclaimer text */}
                       <p className="font-['Poppins'] font-normal text-sm leading-5.25 text-[#727272]">
-                        We’ll call or text you to confirm your number. Standard message and data rates apply.{" "}
+                        {t("auth_sms_disclaimer")}{" "}
                         <a href="#" className="underline text-[#1F1F1F] hover:text-[#727272]">
-                          Privacy Policy
+                          {t("auth_privacy_policy")}
                         </a>
                       </p>
 
-                      {/* Continue Button (Height 56px, bg #FCDF9C, border #1F1F1F, radius 30px) */}
+                      {/* Continue Button */}
                       <Button
                         type="submit"
                         disabled={pending || !isPhoneValid}
@@ -515,10 +503,8 @@ export function HomyzAuthForm({
                         loadingText="Sending code..."
                         className="auth-action-button"
                       >
-                        Continue
+                        {t("auth_continue")}
                       </Button>
-
-
                     </>
                   ) : (
                     /* OTP Verification */
@@ -530,7 +516,7 @@ export function HomyzAuthForm({
                       )}
                       <div className="flex flex-col gap-2">
                         <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] text-[#1F1F1F]">
-                          Enter 6-digit Verification Code *
+                          {t("auth_enter_otp")} *
                         </label>
                         <input
                           type="text"
@@ -550,7 +536,7 @@ export function HomyzAuthForm({
                         loadingText="Verifying..."
                         className="auth-action-button"
                       >
-                        Verify &amp; Continue
+                        {t("auth_verify_continue")}
                       </Button>
                     </div>
                   )}
@@ -562,7 +548,7 @@ export function HomyzAuthForm({
                     <>
                       <div className="flex flex-col gap-2">
                         <label className={authLabelClass}>
-                          Full name *
+                          {t("auth_full_name")} *
                         </label>
                         <input
                           type="text"
@@ -584,7 +570,7 @@ export function HomyzAuthForm({
                       {/* Join as Guest / Host */}
                       <div className="flex flex-col gap-2">
                         <label className={authLabelClass}>
-                          I want to join as *
+                          {t("auth_join_as")} *
                         </label>
                         <div className="grid grid-cols-2 gap-3">
                           <button
@@ -596,7 +582,7 @@ export function HomyzAuthForm({
                               : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                               }`}
                           >
-                            Guest User
+                            {t("auth_guest_user")}
                           </button>
                           <button
                             type="button"
@@ -604,10 +590,10 @@ export function HomyzAuthForm({
                             aria-pressed={role === "HOST"}
                             className={`flex h-[56px] cursor-pointer items-center justify-center rounded-[8px] border text-sm font-medium transition-colors ${role === "HOST"
                               ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]"
-                              : "border-[#727272] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+                              : "border-[#727272] bg-[#F3F4F5] hover:bg-zinc-200"
                               }`}
                           >
-                            Property Host
+                            {t("auth_property_host")}
                           </button>
                         </div>
                       </div>
@@ -617,7 +603,7 @@ export function HomyzAuthForm({
                   {/* Email address */}
                   <div className="flex flex-col gap-2" suppressHydrationWarning>
                     <label className={authLabelClass}>
-                      Email address *
+                      {t("auth_email_address")} *
                     </label>
                     <input
                       type="email"
@@ -641,7 +627,7 @@ export function HomyzAuthForm({
                   {/* Password */}
                   <div className="flex flex-col gap-2" suppressHydrationWarning>
                     <label className={authLabelClass}>
-                      Password *
+                      {t("auth_password")} *
                     </label>
                     <div className="relative h-[56px]" suppressHydrationWarning>
                       <input
@@ -686,21 +672,20 @@ export function HomyzAuthForm({
                           href="/forgot-password"
                           className="font-['Poppins'] text-xs sm:text-sm text-[#1F1F1F] hover:underline font-normal cursor-pointer"
                         >
-                          Forgot password?
+                          {t("auth_forgot_password")}
                         </Link>
                       </div>
                     )}
 
-
                     {authMode === "signup" && (
                       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1">
-                        <div className="font-semibold text-zinc-800 mb-0.5">Password Requirements:</div>
+                        <div className="font-semibold text-zinc-800 mb-0.5">{t("auth_pwd_requirements")}</div>
                         <div className="flex items-center gap-2">
                           <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
                             {hasMinLength ? "✓" : "○"}
                           </span>
                           <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
-                            Minimum 8 characters
+                            {t("auth_pwd_min_length")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -708,7 +693,7 @@ export function HomyzAuthForm({
                             {hasUppercase ? "✓" : "○"}
                           </span>
                           <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
-                            At least one uppercase letter (A-Z)
+                            {t("auth_pwd_uppercase")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -716,7 +701,7 @@ export function HomyzAuthForm({
                             {hasNumber ? "✓" : "○"}
                           </span>
                           <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
-                            At least one number (0-9)
+                            {t("auth_pwd_number")}
                           </span>
                         </div>
                       </div>
@@ -726,7 +711,7 @@ export function HomyzAuthForm({
                   {authMode === "signup" && (
                     <div className="flex flex-col gap-2">
                       <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
-                        Repeat password *
+                        {t("auth_repeat_password")} *
                       </label>
                       <input
                         type="password"
@@ -754,9 +739,8 @@ export function HomyzAuthForm({
                     isLoading={pending}
                     className="auth-action-button mt-2"
                   >
-                    Continue
+                    {t("auth_continue")}
                   </Button>
-
                 </form>
               )}
 
