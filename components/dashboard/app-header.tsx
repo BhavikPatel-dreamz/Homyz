@@ -10,6 +10,7 @@ import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { BecomeHostModal } from "@/components/host/become-host-modal";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type AppHeaderProps = {
   showBottomBorder?: boolean;
@@ -23,10 +24,10 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   const role = user?.role;
   const [isConvertingRole, setIsConvertingRole] = useState(false);
 
+  const { selectedLangLabel, setLanguage, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("English (US)");
   const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -196,7 +197,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       <svg className="w-5 h-5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                       </svg>
-                      <span>Languages &amp; currency</span>
+                      <span>{t("header_languages_currency")}</span>
                     </button>
 
                     {/* Help Centre */}
@@ -208,7 +209,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       <svg className="w-5 h-5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Help Centre</span>
+                      <span>{t("header_help_centre")}</span>
                     </Link>
 
                     <div className="my-2 border-t border-zinc-100" />
@@ -223,7 +224,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100/90 border border-zinc-200/60 transition-all group cursor-pointer text-left"
                     >
                       <div className="pr-2">
-                        <p className="text-sm font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">Become a host</p>
+                        <p className="text-sm font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">{t("header_become_a_host")}</p>
                         <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">It&apos;s easy to start hosting and earn extra income.</p>
                       </div>
                       {/* Host Illustration matching Screenshot 3 */}
@@ -249,7 +250,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       onClick={() => setMenuOpen(false)}
                       className="block px-3.5 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-2xl transition-colors"
                     >
-                      Refer a host
+                      {t("header_refer_a_host")}
                     </Link>
 
                     {/* Find a co-host */}
@@ -258,7 +259,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       onClick={() => setMenuOpen(false)}
                       className="block px-3.5 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-2xl transition-colors"
                     >
-                      Find a co-host
+                      {t("header_find_cohost")}
                     </Link>
 
                     <div className="my-2 border-t border-zinc-100" />
@@ -269,7 +270,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                       onClick={() => setMenuOpen(false)}
                       className="block px-3.5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 rounded-2xl transition-colors"
                     >
-                      Log in or sign up
+                      {t("header_login_signup")}
                     </Link>
                   </div>
                 ) : (
@@ -295,7 +296,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                         disabled={isConvertingRole}
                         className="w-full flex items-center px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl text-amber-900 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer lg:hidden mb-1"
                       >
-                        {isConvertingRole ? "Loading..." : "Become a host"}
+                        {isConvertingRole ? "Loading..." : t("header_become_a_host")}
                       </button>
                       {navItems.map((item) => {
                         if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
@@ -328,11 +329,11 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                         <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                         </svg>
-                        <span>Languages &amp; currency</span>
+                        <span>{t("header_languages_currency")}</span>
                       </button>
 
                       <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
-                        Sign out
+                        {t("header_sign_out")}
                       </LogoutButton>
                     </div>
                   </div>
@@ -350,7 +351,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
         <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
-              <h3 className="text-lg font-semibold text-[#1F1F1F]">Languages &amp; currency</h3>
+              <h3 className="text-lg font-semibold text-[#1F1F1F]">{t("header_languages_currency")}</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}
@@ -363,14 +364,14 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
             <div className="space-y-6">
               {/* Language Selection */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Language</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Hindi"].map((lang) => (
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_language")}</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Hindi", "العربية"].map((lang) => (
                     <button
                       key={lang}
                       type="button"
-                      onClick={() => setSelectedLang(lang)}
-                      className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${selectedLang === lang
+                      onClick={() => setLanguage(lang)}
+                      className={`p-3 rounded-2xl border text-xs font-semibold text-left transition-all cursor-pointer ${selectedLangLabel === lang
                         ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                         : "border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50"
                         }`}
@@ -383,7 +384,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
               {/* Currency Selection */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Currency</label>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_currency")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
                     <button
@@ -408,7 +409,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                 onClick={() => setLangModalOpen(false)}
                 className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
               >
-                Done
+                {t("header_done")}
               </button>
             </div>
           </div>

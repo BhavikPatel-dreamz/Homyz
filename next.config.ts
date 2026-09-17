@@ -100,6 +100,14 @@ const nextConfig: NextConfig = {
       allowedOrigins: actionOrigins,
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: "/search",
+        destination: "/listings",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

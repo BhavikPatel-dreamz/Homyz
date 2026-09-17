@@ -7,6 +7,38 @@ const CACHE_KEY = CACHE_KEYS.APP_SETTINGS_HOST_SERVICE_FEE();
 const NON_REFUNDABLE_DISCOUNT_CACHE_KEY = CACHE_KEYS.APP_SETTINGS_NON_REFUNDABLE_DISCOUNT();
 const CACHE_TTL_VAL = CACHE_TTL.APP_SETTINGS;
 
+export type HomepagePopularHomesMode = "STATIC" | "USER_LOCATION" | "USER_IP";
+
+export interface HomepagePopularHomesConfig {
+  mode: HomepagePopularHomesMode;
+  city: string;
+  title: string;
+  enabled: boolean;
+}
+
+const HOMEPAGE_POPULAR_HOMES_CONFIG_KEY = "HOMEPAGE_POPULAR_HOMES_CONFIG";
+const DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG: HomepagePopularHomesConfig = {
+  mode: "STATIC",
+  city: "Riyadh",
+  title: "Popular homes in Riyadh",
+  enabled: true,
+};
+
+function normalizeHomepagePopularHomesConfig(
+  config?: Partial<HomepagePopularHomesConfig> | null,
+): HomepagePopularHomesConfig {
+  const mode = config?.mode === "USER_LOCATION" || config?.mode === "USER_IP" ? config.mode : "STATIC";
+  const city = (config?.city ?? DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG.city).trim();
+  const title = (config?.title ?? (city ? `Popular homes in ${city}` : DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG.title)).trim();
+
+  return {
+    mode,
+    city: city || DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG.city,
+    title: title || DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG.title,
+    enabled: config?.enabled !== false,
+  };
+}
+
 /**
  * Get the current Host Service Fee percentage from app settings.
  * Fetches from cache first, then database, with a 1-hour TTL.
@@ -193,6 +225,51 @@ export async function updateSetting(
   }
 }
 
+export async function getHomepagePopularHomesConfig(): Promise<HomepagePopularHomesConfig> {
+  try {
+    const setting = await prisma.appSettings.findUnique({
+      where: { key: HOMEPAGE_POPULAR_HOMES_CONFIG_KEY },
+    });
+
+    if (!setting?.value) {
+      return DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG;
+    }
+
+    const parsed = JSON.parse(setting.value) as Partial<HomepagePopularHomesConfig> | null;
+    return normalizeHomepagePopularHomesConfig(parsed);
+  } catch (error) {
+    console.error("[AppSettings] Error fetching homepage popular homes config:", error);
+    return DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG;
+  }
+}
+
+export async function updateHomepagePopularHomesConfig(
+  input: Partial<HomepagePopularHomesConfig>,
+  updatedBy?: string,
+): Promise<HomepagePopularHomesConfig> {
+  const normalized = normalizeHomepagePopularHomesConfig(input);
+
+  await prisma.appSettings.upsert({
+    where: { key: HOMEPAGE_POPULAR_HOMES_CONFIG_KEY },
+    update: {
+      value: JSON.stringify(normalized),
+      updatedBy: updatedBy || null,
+      updatedAt: new Date(),
+    },
+    create: {
+      key: HOMEPAGE_POPULAR_HOMES_CONFIG_KEY,
+      value: JSON.stringify(normalized),
+      description: "Homepage popular homes selection mode and city override.",
+      dataType: "JSON",
+      category: "GENERAL",
+      isPublic: false,
+      updatedBy: updatedBy || null,
+    },
+  });
+
+  return normalized;
+}
+
 export const appSettingsService = {
   getHostServiceFeePercentage,
   updateHostServiceFeePercentage,
@@ -201,4 +278,6 @@ export const appSettingsService = {
   getSettingsByCategory,
   getSetting,
   updateSetting,
+  getHomepagePopularHomesConfig,
+  updateHomepagePopularHomesConfig,
 };

@@ -81,3 +81,50 @@ export function getCurrencyForCountry(country?: string | null): string {
   const normalized = country.toLowerCase().replace(/[^a-z0-9]/g, "");
   return COUNTRY_CURRENCY_MAP[normalized] || LISTING_CURRENCY;
 }
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  SAR: "SAR",
+  AED: "AED",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  INR: "₹",
+  KWD: "KWD",
+  QAR: "QAR",
+  BHD: "BHD",
+  OMR: "OMR",
+  CAD: "CA$",
+  AUD: "A$",
+  JPY: "¥",
+  CHF: "CHF",
+};
+
+export function getCurrencySymbol(currencyCode?: string | null): string {
+  if (!currencyCode) return "SAR";
+  return CURRENCY_SYMBOLS[currencyCode.toUpperCase()] || currencyCode.toUpperCase();
+}
+
+/** Formats a listing amount persisted in minor units (e.g. cents/halalas) using dynamic currency. */
+export function formatListingPrice(
+  amountMinorUnits: number,
+  currencyCode: string = LISTING_CURRENCY,
+  fractionDigits = 0,
+): string {
+  const safeAmount = Number.isFinite(amountMinorUnits) ? amountMinorUnits / 100 : 0;
+  const currency = currencyCode?.trim().toUpperCase() || LISTING_CURRENCY;
+  const symbol = CURRENCY_SYMBOLS[currency];
+
+  const formattedNum = new Intl.NumberFormat("en", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(safeAmount);
+
+  if (symbol) {
+    if (["$", "€", "£", "₹", "¥"].includes(symbol)) {
+      return `${symbol}${formattedNum}`;
+    }
+    return `${symbol} ${formattedNum}`;
+  }
+
+  return `${currency} ${formattedNum}`;
+}

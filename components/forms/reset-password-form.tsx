@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { resetPasswordAction } from "@/actions/auth/resetPassword";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function ResetPasswordForm({ token }: { token: string }) {
+  const { t } = useLanguage();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -47,13 +49,13 @@ export function ResetPasswordForm({ token }: { token: string }) {
     return (
       <div className="flex flex-col gap-4 py-2">
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 font-medium">
-          This password reset link is invalid or missing its security token.
+          {t("auth_invalid_reset_token")}
         </div>
         <Link
           href="/forgot-password"
           className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
         >
-          Request New Reset Link →
+          {t("auth_request_new_reset_link")} →
         </Link>
       </div>
     );
@@ -70,22 +72,22 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950">
-            Password Reset Successful!
+            {t("auth_reset_success_title")}
           </h2>
           <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
-            Your password has been updated successfully. All active sessions have been invalidated for security.
+            {t("auth_reset_success_body")}
           </p>
         </div>
 
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900 font-medium">
-          You can now log in using your new credentials.
+          {t("auth_reset_success_box")}
         </div>
 
         <Link
           href="/login"
           className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
-          Sign In to Admin Console →
+          {t("auth_signin")} →
         </Link>
       </div>
     );
@@ -102,7 +104,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       {/* New Password */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="password" className="text-xs font-semibold text-zinc-800">
-          New Password *
+          {t("auth_new_password")} *
         </label>
         <div className="relative">
           <input
@@ -139,7 +141,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       {/* Confirm Password */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="confirmPassword" className="text-xs font-semibold text-zinc-800">
-          Confirm Password *
+          {t("auth_confirm_password")} *
         </label>
         <input
           id="confirmPassword"
@@ -157,7 +159,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       {/* Complexity Checklist */}
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-xs flex flex-col gap-2">
         <div className="font-semibold text-zinc-700 uppercase tracking-wider text-[10px]">
-          Password Requirements:
+          {t("auth_pwd_requirements")}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div
@@ -167,7 +169,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{minLength ? "✓" : "○"}</span> At least 8 characters
+            <span className="font-semibold">{minLength ? "✓" : "○"}</span> {t("auth_pwd_min_length")}
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -176,7 +178,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> One uppercase (A-Z)
+            <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> {t("auth_pwd_uppercase")}
           </div>
           <div
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
@@ -185,7 +187,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 : "bg-white text-zinc-500 border-zinc-200"
             }`}
           >
-            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> One number (0-9)
+            <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> {t("auth_pwd_number")}
           </div>
           {confirmPassword ? (
             <div
@@ -195,11 +197,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              <span className="font-semibold">{matches ? "✓" : "✕"}</span> Passwords match
+              <span className="font-semibold">{matches ? "✓" : "✕"}</span> {t("auth_passwords_match")}
             </div>
           ) : (
             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
-              <span>○</span> Match confirmation
+              <span>○</span> {t("auth_match_confirmation")}
             </div>
           )}
         </div>
@@ -213,7 +215,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         {pending && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />
         )}
-        <span>{pending ? "Updating Password…" : "Update Password"}</span>
+        <span>{pending ? t("auth_updating_password") : t("auth_update_password")}</span>
       </button>
     </form>
   );

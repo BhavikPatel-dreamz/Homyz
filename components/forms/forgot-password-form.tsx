@@ -6,8 +6,10 @@ import { forgotPasswordAction } from "@/actions/auth/forgotPassword";
 import { authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
 import { Alert } from "@/components/ui";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function ForgotPasswordForm() {
+  const { t } = useLanguage();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -44,22 +46,22 @@ export function ForgotPasswordForm() {
 
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-zinc-950">
-            Check Your Email
+            {t("auth_check_email_title")}
           </h2>
           <p className="mt-1.5 text-sm font-normal leading-6 text-[#727272]">
-            If an account exists for <strong className="text-zinc-800">{emailVal}</strong>, we have sent password reset instructions to your inbox.
+            {t("auth_check_email_body")}
           </p>
         </div>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-sm font-normal leading-6 text-amber-900">
-          Please check your spam or junk folder if you don&apos;t see the email within a few minutes.
+          {t("auth_check_spam")}
         </div>
 
         <Link
           href="/login"
           className="auth-action-button box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium text-[#1F1F1F] transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 border border-[#727272] hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] h-12 min-h-12 sm:h-[56px] sm:min-h-[56px] bg-[#FCDF9C] px-6 py-4 sm:text-lg text-base leading-6 active:border-[#1F1F1F] active:bg-[#F3F4F5] w-full"
         >
-          ← Return to Sign In
+          {t("auth_return_to_signin")}
         </Link>
       </div>
     );
@@ -73,7 +75,7 @@ export function ForgotPasswordForm() {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="email" className={authLabelClass}>
-          Email address *
+          {t("auth_email_address")} *
         </label>
         <input
           id="email"
@@ -96,7 +98,7 @@ export function ForgotPasswordForm() {
         loadingText="Sending Reset Link…"
         className="auth-action-button mt-2 h-12 min-h-12 py-0 sm:h-[57px] sm:min-h-[57px]"
       >
-        Send Reset Link
+        {t("auth_send_reset_link")}
       </Button>
 
       <div className="text-center pt-2">
@@ -104,7 +106,7 @@ export function ForgotPasswordForm() {
           href="/login"
           className="font-['Poppins'] text-[14px] font-normal text-[#1F1F1F] underline transition-opacity hover:opacity-80 sm:text-[16px]"
         >
-          Remember your password? Log in
+          {t("auth_remember_password")}
         </Link>
       </div>
     </form>

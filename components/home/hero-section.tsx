@@ -3,6 +3,7 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
 
 const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
@@ -282,6 +283,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const searchParams = useSearchParams();
+
   // Load recent searches and dynamic suggestions on mount
   useEffect(() => {
     setRecentSearches(getRecentSearches());
@@ -297,6 +300,22 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       }
     } catch {}
   }, []);
+
+  // Sync state from URL search params to preserve context across back/forward/refresh
+  useEffect(() => {
+    if (!searchParams) return;
+    const urlDest = searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName");
+    if (urlDest && urlDest.trim()) {
+      setDestination(urlDest.trim());
+    } else if (searchParams.toString() === "") {
+      setDestination("");
+      setSelectedLocation(null);
+    }
+    const urlIn = searchParams.get("checkIn");
+    if (urlIn) setCheckIn(urlIn);
+    const urlOut = searchParams.get("checkOut");
+    if (urlOut) setCheckOut(urlOut);
+  }, [searchParams]);
 
   const handleUseCurrentLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -434,8 +453,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   }, [desktopPanel]);
   const [mobileGuests, setMobileGuests] = useState(emptyMobileGuests);
   const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
+  const effectiveGuestCount = Math.max(1, mobileGuestCount);
   const mobileGuestSummary = [
-    mobileGuestCount ? `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}` : "",
+    `${effectiveGuestCount} guest${effectiveGuestCount === 1 ? "" : "s"}`,
     mobileGuests.infants ? `${mobileGuests.infants} infant${mobileGuests.infants === 1 ? "" : "s"}` : "",
     mobileGuests.pets ? `${mobileGuests.pets} pet${mobileGuests.pets === 1 ? "" : "s"}` : "",
   ].filter(Boolean).join(", ");
@@ -558,7 +578,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   }, [allSuggestItems]);
 
   const handleMobileSubmit = () => {
-    if (destination.trim()) saveRecentSearch(destination.trim());
+    const destinationValue = destination.trim() || selectedLocation?.city || selectedLocation?.name || "";
+    if (destinationValue) saveRecentSearch(destinationValue);
     // Auto-resolve best location match if user typed destination without clicking suggestion
     const effectiveLoc = selectedLocation || (
       primaryCity ? {
@@ -607,23 +628,30 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       effectiveLoc?.locationType === "university" ||
       effectiveLoc?.locationType === "hospital";
     const initialRadius = isLandmarkOrPoi ? 5 : 25;
+    const guestCountForSearch = Math.max(1, mobileGuestCount);
+    const guestDetailsForSearch = {
+      adults: mobileGuests.adults > 0 ? mobileGuests.adults : guestCountForSearch,
+      children: mobileGuests.children,
+      infants: mobileGuests.infants,
+      pets: mobileGuests.pets,
+    };
 
     if (onSearch) {
       onSearch({
-        destination,
+        destination: destinationValue,
         checkIn: datePreferences.mode === "dates" ? checkIn : "",
         checkOut: datePreferences.mode === "dates" ? checkOut : "",
         datePreferences,
-        guests: `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}`,
-        guestDetails: { ...mobileGuests },
+        guests: `${guestCountForSearch} guest${guestCountForSearch === 1 ? "" : "s"}`,
+        guestDetails: guestDetailsForSearch,
         lat: effectiveLoc?.latitude,
         lng: effectiveLoc?.longitude,
         radiusKm: effectiveLoc ? initialRadius : undefined,
         placeId: effectiveLoc?.providerPlaceId,
         locationType: effectiveLoc?.locationType,
-        placeName: effectiveLoc?.name || destination,
+        placeName: effectiveLoc?.name || destinationValue,
         fullAddress: effectiveLoc?.fullAddress,
-        city: effectiveLoc?.city || destination,
+        city: effectiveLoc?.city || destinationValue,
         country: effectiveLoc?.country,
       });
     }

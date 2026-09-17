@@ -11,6 +11,7 @@ import { RealMap } from "@/components/ui/real-map";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
+import { saveRecentlyViewedProperty } from "@/lib/storage/client-history";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -60,6 +61,24 @@ export function PublicListingDetailClient({
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  useEffect(() => {
+    if (listing?.id) {
+      saveRecentlyViewedProperty({
+        id: listing.id,
+        slug: listing.customSlug,
+        title: listing.title,
+        city: listing.city,
+        area: listing.district,
+        country: listing.country,
+        price: listing.price,
+        mainImage: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos[0] : "",
+        rating: null,
+        maxGuests: listing.guests,
+        propertyType: listing.propertyType,
+      });
+    }
+  }, [listing]);
 
   const photos = Array.isArray(listing.photos) ? listing.photos : [];
   const amenitiesSet = new Set(Array.isArray(listing.amenities) ? listing.amenities : []);
