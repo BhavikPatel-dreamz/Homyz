@@ -2,11 +2,15 @@
 
 import React, { useState, useTransition, useEffect, type FormEvent } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
-import { Alert } from "../ui";
+import { Alert, Button } from "../ui";
 import { toast } from "@/components/ui/toast";
+import { AppHeader } from "@/components/dashboard/app-header";
+import { AuthHeading } from "@/components/auth/auth-heading";
+import { AuthHeroImage } from "@/components/auth/auth-hero-image";
+import { Footer } from "@/components/dashboard/footer";
+import { authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -78,145 +82,143 @@ export function AdminLoginForm() {
     });
   }
 
+  const isFormValid = Boolean(email.trim() && password);
+
   return (
-    <div className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-4 sm:px-6 bg-white text-[#1F1F1F] font-sans flex flex-col justify-center">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-        {/* Left Column: Form Area */}
-        <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center">
-          {/* Homyz Admin Logo */}
-          <Link href="/" className="mb-6 flex items-center gap-3 group w-fit">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-[#FBDE9B] font-black shadow-xs transition-transform group-hover:scale-105">
-              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
-              </svg>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tight text-zinc-950 leading-none">
-                homyz
-              </span>
-              <span className="text-[10px] font-semibold tracking-wider text-amber-700 uppercase mt-1">
-                Admin Console
-              </span>
-            </div>
-          </Link>
+    <div className="account-page min-h-screen flex flex-col bg-white text-[#1F1F1F] font-sans selection:bg-amber-100 overflow-x-hidden w-full">
+      {/* 1. TOP HEADER (Unified AppHeader with official logo) */}
+      <AppHeader />
 
-          {/* Heading */}
-          <h1 className="mb-6">
-            Log in
-          </h1>
-
-          {/* Mobile Image */}
-          <div className="block lg:hidden mb-6 rounded-2xl overflow-hidden shadow-xs border border-zinc-200">
-            <div className="relative aspect-[4/3] w-full">
-              <Image
-                src="/images/auth-traveler-street.jpg"
-                alt="Traveler with backpack"
-                fill
-                priority
-                className="object-cover object-center"
-              />
-            </div>
-          </div>
-
-          {/* Error Banner */}
-          {error && (
-            <div className="mb-4">
-              <Alert tone="error">{error}</Alert>
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Email Address */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-800">
-                Email address *
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="emailexample@gmail.com"
-                required
-                autoComplete="email"
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-zinc-800">
-                  Password *
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-zinc-500 hover:text-[#1F1F1F]"
-                >
-                  Forget password? <span className="underline">reset password</span>
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="••••••••••••"
-                  required
-                  autoComplete="current-password"
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Sign In Button */}
-            <button
-              type="submit"
-              disabled={pending}
-              className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
-            >
-              {pending ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-        </div>
-
-        {/* Right Column: Hero Photo on Desktop */}
-        <div className="hidden lg:flex items-center justify-center">
-          <div className="relative aspect-[4/5] w-full max-w-[520px] rounded-3xl overflow-hidden shadow-xs border border-zinc-200">
-            <Image
-              src="/images/auth-traveler-street.jpg"
-              alt="Traveler with backpack"
-              fill
-              priority
-              sizes="(min-width: 1024px) 500px, 100vw"
-              className="object-cover object-center"
+      {/* 2. MAIN FORM & HERO SECTION (Matches /login structure) */}
+      <main className="flex-1 w-full flex items-center justify-center py-6 sm:py-8 lg:py-22.5 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1318px] flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-8 xl:gap-[56px] mx-auto">
+          {/* Left Column: Form Area */}
+          <div className="left-column lg:pt-2.5 w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
+            {/* Header / Title area with Slide Back Button */}
+            <AuthHeading
+              title="Log in"
+              onBack={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/");
+                }
+              }}
             />
+
+            {/* Subtitle */}
+            <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
+              Enter your credentials to access the admin portal.
+            </div>
+
+            {/* Mobile/Tablet Hero Image */}
+            <AuthHeroImage
+              mobile
+              src="/images/auth-traveler-street.jpg"
+              alt="Traveler carrying a backpack on a city street"
+            />
+
+            {/* Error feedback */}
+            {error && (
+              <div className="mb-4 pl-0 sm:pl-13.5 flex flex-col gap-2.5">
+                <Alert tone="error">{error}</Alert>
+              </div>
+            )}
+
+            {/* FORM CONTAINER */}
+            <div className="w-full max-w-[538px] pl-0 lg:pl-13.5 flex flex-col gap-5 lg:gap-6">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+                {/* Email address */}
+                <div className="flex flex-col gap-2">
+                  <label className={authLabelClass}>
+                    Email address *
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    placeholder="emailexample@gmail.com"
+                    required
+                    autoComplete="email"
+                    className={`${authInputClass} placeholder:text-[#1F1F1F]/50`}
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-2">
+                  <label className={authLabelClass}>
+                    Password *
+                  </label>
+                  <div className="relative h-[56px]">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="••••••••••••"
+                      required
+                      autoComplete="current-password"
+                      className="w-full h-full rounded-[8px] border border-[#727272] bg-white px-4 pr-12 font-['Poppins'] font-normal text-[15px] sm:text-[16px] text-[#1F1F1F] placeholder:text-[#1F1F1F]/50 outline-none focus:border-[#1F1F1F]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <Link
+                      href="/forgot-password"
+                      className="font-['Poppins'] text-xs sm:text-sm text-[#1F1F1F] hover:underline font-normal cursor-pointer"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Continue / Sign in Button */}
+                <Button
+                  type="submit"
+                  disabled={pending || !isFormValid}
+                  fullWidth
+                  isLoading={pending}
+                  loadingText="Signing in..."
+                  className="auth-action-button mt-2"
+                >
+                  Log in
+                </Button>
+              </form>
+            </div>
           </div>
+
+          {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
+          <AuthHeroImage
+            src="/images/auth-traveler-street.jpg"
+            alt="Traveler carrying a backpack on a city street"
+          />
         </div>
-      </div>
+      </main>
+
+      {/* 3. FOOTER */}
+      <Footer />
     </div>
   );
 }
