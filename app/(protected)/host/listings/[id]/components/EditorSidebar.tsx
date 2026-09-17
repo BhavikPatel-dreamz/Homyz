@@ -550,7 +550,7 @@ export function EditorSidebar({
                 setEditorTab("space");
                 setActiveSection("description");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -564,7 +564,7 @@ export function EditorSidebar({
                 setEditorTab("arrival");
                 setActiveSection("check-in-out");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -580,7 +580,7 @@ export function EditorSidebar({
               setEditorTab("preferences");
               setActiveSection("listing-status");
             }}
-            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
+            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950 dark:bg-amber-400 dark:border-amber-400"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
               }`}
@@ -937,7 +937,7 @@ export function EditorSidebar({
                 {/* 2. Property type */}
                 <div
                   onClick={() => setActiveSection("propertyType")}
-                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "propertyType"
+                    className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
                     ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
@@ -1144,7 +1144,7 @@ export function EditorSidebar({
                     lng={longitude ?? undefined}
                     preferInitialCoordinates={true}
                     showExactLocation={showExactLocation}
-                    className="rounded-xl overflow-hidden border border-zinc-200/80 relative h-24 mb-2.5 pointer-events-none"
+                    className="rounded-[10px] overflow-hidden border border-zinc-200/156 relative h-24 mb-2.5 pointer-events-none"
                   />
                   <span className="text-base font-normal text-[#727272] block truncate">
                     {editAddress

@@ -182,6 +182,11 @@ export function HostListingEditorClient({
   const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
   const requestBrowserLeaveRef = useRef<(destination: string) => void>(() => {});
 
+  const scrollEditorToTop = useCallback(() => {
+    if (typeof window === "undefined") return;
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+  }, []);
+
   const applySectionNavigation = useCallback(
     (newSection: SectionKey, updateHistory = true) => {
       setActiveSectionState(newSection);
@@ -200,8 +205,9 @@ export function HostListingEditorClient({
       if (updateHistory && typeof window !== "undefined" && `${window.location.pathname}${window.location.search}` !== targetPath) {
         window.history.pushState(null, "", targetPath);
       }
+      scrollEditorToTop();
     },
-    [listing.id, presentation, routeBase]
+    [listing.id, presentation, routeBase, scrollEditorToTop]
   );
 
   useEffect(() => {
@@ -580,7 +586,10 @@ export function HostListingEditorClient({
   }, [applySectionNavigation]);
 
   const requestSectionNavigation = useCallback((newSection: SectionKey, fromHistory = false) => {
-    if (newSection === activeSectionRef.current) return;
+    if (newSection === activeSectionRef.current) {
+      scrollEditorToTop();
+      return;
+    }
 
     const leave = () => {
       restoreSavedPreferenceDraft();
@@ -601,7 +610,7 @@ export function HostListingEditorClient({
 
     pendingNavigationRef.current = leave;
     setIsUnsavedChangesDialogOpen(true);
-  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, listing.id, presentation, restoreSavedPreferenceDraft, routeBase]);
+  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, listing.id, presentation, restoreSavedPreferenceDraft, routeBase, scrollEditorToTop]);
 
   const requestBrowserLeave = useCallback((destination: string) => {
     if (!hasUnsavedPreferenceChanges || typeof window === "undefined") return;
@@ -632,6 +641,7 @@ export function HostListingEditorClient({
   const setMobileEditorSection = useCallback((newSection: SectionKey) => {
     if (newSection === activeSectionRef.current) {
       setIsMobileSidebarOpen(false);
+      scrollEditorToTop();
       return;
     }
 
@@ -647,7 +657,7 @@ export function HostListingEditorClient({
 
     completeSectionNavigation(newSection);
     setIsMobileSidebarOpen(false);
-  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, restoreSavedPreferenceDraft]);
+  }, [completeSectionNavigation, hasUnsavedPreferenceChanges, restoreSavedPreferenceDraft, scrollEditorToTop]);
 
   const cancelPreferenceChanges = useCallback((targetSection: SectionKey) => {
     restoreSavedPreferenceDraft();

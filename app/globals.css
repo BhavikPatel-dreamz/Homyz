@@ -561,6 +561,22 @@ input[type="number"] {
   scrollbar-gutter: stable;
 }
 
+/* Compact modal scrollbar with equal clearance from both panel edges. */
+.modal-content-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 transparent;
+  scrollbar-gutter: stable;
+}
+
+/* Keep every divided modal row equally spaced above and below its border. */
+.modal-content-scrollbar.divide-y > * {
+  padding-block: 1rem !important;
+}
+
+.modal-content-scrollbar.divide-y > * + * {
+  margin-top: 0 !important;
+}
+
 /* Large, soft scrollbar for the Add amenities catalogue. */
 .amenities-list-scrollbar {
   scrollbar-width: auto;
@@ -605,12 +621,23 @@ input[type="number"] {
     height: 18px;
   }
 
+  .modal-content-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 12px;
+  }
+
   .amenities-list-scrollbar::-webkit-scrollbar {
     display: block;
     width: 22px;
   }
 
   .calendar-panel-scrollbar::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #f3f4f5;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-track {
+    margin-block: 12px;
     border-radius: 999px;
     background: #f3f4f5;
   }
@@ -628,6 +655,13 @@ input[type="number"] {
     box-shadow: inset 0 0 0 1px #c5c5c5;
   }
 
+  .modal-content-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 46px;
+    border: 2px solid #f3f4f5;
+    border-radius: 999px;
+    background: #d1d1d1;
+  }
+
   .amenities-list-scrollbar::-webkit-scrollbar-thumb {
     min-height: 62px;
     border: 4px solid #f3f4f5;
@@ -640,12 +674,22 @@ input[type="number"] {
     background: #bcbcbc;
   }
 
+  .modal-content-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bcbcbc;
+  }
+
   .amenities-list-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #bcbcbc;
   }
 
   .calendar-panel-scrollbar::-webkit-scrollbar-button {
     display: none;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start,

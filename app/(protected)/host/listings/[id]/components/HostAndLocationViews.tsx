@@ -29,6 +29,7 @@ import {
 } from "./YourSpaceSkeletons";
 import { AdminAboutHostView } from "@/app/(protected)/admin/listings/[id]/components/AdminAboutHostView";
 import { HostAboutHostView } from "./HostAboutHostView";
+import { CloseIcon } from "@/components/ui/close-icon";
 
 type CoHost = {
   id: string;
@@ -391,7 +392,7 @@ function LocationView(props: Props) {
   return (
     <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
-        <BackButton onClick={onBack} />
+        <BackButton onClick={onBack} className="mt-2" />
         <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">Location</h1>
         <button
           type="button"
@@ -399,7 +400,7 @@ function LocationView(props: Props) {
           aria-label="Close location editor"
           className="absolute right-0 top-1 flex size-10 items-center justify-center text-4xl font-normal leading-none text-[#1F1F1F] dark:text-zinc-100 sm:hidden"
         >
-          ×
+          <CloseIcon className="size-5" />
         </button>
       </div>
 
@@ -582,14 +583,14 @@ function LocationView(props: Props) {
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -631,14 +632,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -709,14 +710,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 border border-[#FCDF9C] dark:border-amber-400 hover:border-[#1f1f1f] dark:hover:border-zinc-600 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-950 hover:text-white transition-colors hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 hover:text-white transition-colors hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -914,7 +915,7 @@ function CoHostView(props: Props) {
   return (
     <div className="max-w-[calc(100%-75px)] space-y-5 pb-10">
       <div className="flex items-start gap-4">
-        <BackButton onClick={onBack} />
+        <BackButton onClick={onBack} className="mt-2" />
         <div className="flex w-full justify-between">
           <div className="flex flex-col items-start">
             <h1>Co-hosts</h1>
@@ -980,11 +981,11 @@ function CoHostView(props: Props) {
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={descriptionId}
-            className="max-h-[calc(100dvh-2rem)] w-full max-w-[340px] overflow-y-auto rounded-2xl bg-white px-6 py-7 text-[#222222] shadow-[0_18px_55px_rgba(0,0,0,0.16)] sm:max-w-[390px] sm:px-7"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-[340px] overflow-y-auto rounded-2xl bg-white px-6 py-7 text-[#222222] shadow-[0_18px_55px_rgba(0,0,0,0.16)] sm:max-w-[390px] sm:px-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id={titleId} className="text-[24px] font-medium">Add your co-host&apos;s info</h2>
+                <h3 className="text-2xl font-medium" id={titleId}>Add your co-host&apos;s info</h3>
                 <p id={descriptionId} className="mt-1.5 text-[14px] leading-5 text-[#717171]">
                   We&apos;ll text or email them the invite
                 </p>
@@ -996,7 +997,7 @@ function CoHostView(props: Props) {
                 disabled={saving}
                 className="-mr-1 -mt-1 grid size-8 shrink-0 place-items-center rounded-full text-[26px] font-light leading-none transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-40"
               >
-                ×
+                <CloseIcon className="size-5" />
               </button>
             </div>
 
@@ -1015,7 +1016,7 @@ function CoHostView(props: Props) {
                       value={countryCode}
                       onChange={(event) => setCountryCode(event.target.value)}
                       aria-label="Country code"
-                      className="h-11 w-full appearance-none rounded-lg border border-[#b0b0b0] bg-white px-2.5 pr-7 text-[12px] text-[#717171] outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                      className="h-11 w-full appearance-none rounded-lg border border-[#b0b0b0] bg-white px-2.5 pr-7 text-sm text-[#1f1f1f] outline-none transition focus:border-zinc-900 font-normal"
                     >
                       {COUNTRY_CODES.map((country, index) => (
                         <option key={`${country.iso2}-${country.code}-${index}`} value={country.code}>
@@ -1039,7 +1040,7 @@ function CoHostView(props: Props) {
                     }}
                     placeholder={selectedCountry?.placeholder || "5XX XXX XXXX"}
                     aria-describedby={inviteError ? "co-host-invite-error" : undefined}
-                    className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-[12px] text-[#222] outline-none transition placeholder:text-[#9a9a9a] focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                    className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9a9a9a] font-normal"
                   />
                 </label>
               </div>
@@ -1061,7 +1062,7 @@ function CoHostView(props: Props) {
                   }}
                   placeholder="name@example.com"
                   aria-describedby={inviteError ? "co-host-invite-error" : undefined}
-                  className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-[12px] text-[#222] outline-none transition placeholder:text-[#9a9a9a] focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                  className="mt-1.5 h-11 w-full rounded-lg border border-[#b0b0b0] px-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9a9a9a] font-normal"
                 />
               </label>
 
@@ -1072,14 +1073,14 @@ function CoHostView(props: Props) {
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving || (!hasEmail && !hasPhone) || (hasEmail && hasPhone)}
-                  className="rounded-full bg-[#FEE08B] px-5 py-2 text-[13px] font-semibold transition hover:bg-[#1f1f1f] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 duration-300"
+                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {saving ? "Sending…" : "Next"}
                 </button>

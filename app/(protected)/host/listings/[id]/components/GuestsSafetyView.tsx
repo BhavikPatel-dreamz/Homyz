@@ -12,6 +12,7 @@ import {
   sanitizeGuestSafetyState,
 } from "./guest-safety-helpers";
 import { GuestsSafetySkeleton } from "./YourSpaceSkeletons";
+import { CloseIcon } from "@/components/ui/close-icon";
 
 interface GuestsSafetyViewProps {
   activeSection: string;
@@ -61,11 +62,10 @@ function AllowDenyButtons({
         aria-label={`No for ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
-          value === false
-            ? "border border-zinc-900 bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900"
-            : "border border-zinc-200 bg-zinc-100/80 !text-zinc-600 hover:bg-zinc-200/80 dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
-        }`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === false
+            ? "border border-[#727272] bg-zinc-900 hover:bg-[#1f1f1f] !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900 hover:!text-white"
+          : "border border-[#727272] bg-white hover:bg-[#1f1f1f] !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
+          }`}
       >
         <svg className="w-4 h-4 text-current" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -76,11 +76,10 @@ function AllowDenyButtons({
         aria-label={`Yes for ${label}`}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
-          value === true
-            ? "border border-zinc-900 bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900"
-            : "border border-zinc-200 bg-zinc-100/80 !text-zinc-600 hover:bg-zinc-200/80 dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
-        }`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === true
+            ? "border border-[#727272] hover:bg-[#1f1f1f] bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900 hover:!text-white"
+            : "border border-[#727272] hover:bg-[#1f1f1f] bg-white !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
+          }`}
       >
         <svg className="w-4 h-4 text-current" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -311,18 +310,21 @@ export function GuestsSafetyView({
       <div className="space-y-6 animate-in fade-in max-w-xl pb-12 font-sans">
         {/* Header with Back Button */}
         <div className="space-y-2 border-b border-zinc-200/80 dark:border-zinc-800 pb-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-6">
             <BackButton
               onClick={() => {
                 setEditorTab?.("space");
                 setActiveSection("house-rules");
               }}
+              className="mt-2"
             />
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Guest safety</h1>
+            <div>
+              <h1 className="mb-2">Guest safety</h1>
+              <p className="text-sm text-[#727272]">
+                The safety details you share will appear on your listing, along with information like your House Rules.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal pl-11 leading-relaxed">
-            The safety details you share will appear on your listing, along with information like your House Rules.
-          </p>
         </div>
 
         {/* 3 Clickable Category Rows */}
@@ -330,54 +332,54 @@ export function GuestsSafetyView({
           <GuestsSafetySkeleton />
         ) : (
           <div className="divide-y divide-zinc-200/80 dark:divide-zinc-800 pt-1">
-          {/* 1. Safety considerations */}
-          <div
-            onClick={() => openModal("considerations")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
-          >
-            <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                Safety considerations
-              </h4>
-              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getConsiderationsSummary()}</p>
+            {/* 1. Safety considerations */}
+            <div
+              onClick={() => openModal("considerations")}
+              className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
+            >
+              <div className="space-y-0.5">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                  Safety considerations
+                </h4>
+                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getConsiderationsSummary()}</p>
+              </div>
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </div>
 
-          {/* 2. Safety devices */}
-          <div
-            onClick={() => openModal("devices")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
-          >
-            <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                Safety devices
-              </h4>
-              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getDevicesSummary()}</p>
+            {/* 2. Safety devices */}
+            <div
+              onClick={() => openModal("devices")}
+              className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
+            >
+              <div className="space-y-0.5">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                  Safety devices
+                </h4>
+                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getDevicesSummary()}</p>
+              </div>
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </div>
 
-          {/* 3. Property info */}
-          <div
-            onClick={() => openModal("propertyInfo")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
-          >
-            <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                Property info
-              </h4>
-              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getPropertyInfoSummary()}</p>
+            {/* 3. Property info */}
+            <div
+              onClick={() => openModal("propertyInfo")}
+              className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
+            >
+              <div className="space-y-0.5">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                  Property info
+                </h4>
+                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getPropertyInfoSummary()}</p>
+              </div>
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
           </div>
-        </div>
         )}
       </div>
 
@@ -386,40 +388,40 @@ export function GuestsSafetyView({
       {/* ========================================================= */}
       {isConsiderationsOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety considerations</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety considerations</h3>
+                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
                   Select any specific considerations guests should know about.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
+                className="text-[#1f1f1f] hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-[#727272] font-semibold text-base cursor-pointer p-1"
               >
-                ✕
+                <CloseIcon className="size-6" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
+            <div className="modal-content-scrollbar flex-1 overflow-y-auto p-6 divide-y divide-[#727272] dark:divide-white">
               {/* 1. Children */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Not a good fit for children 2–12
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       This property has features that may not be safe for kids.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("children")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -454,16 +456,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Not a good fit for infants under 2
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       This property has features that may not be safe for babies or toddlers this age.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("infants")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -498,10 +500,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Pool or hot tub doesn&apos;t have a gate or lock
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests have access to an unsecured swimming pool or hot tub. Check your local laws for specific requirements.
                     </p>
                   </div>
@@ -535,10 +537,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Nearby water, like a lake or river
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests have unrestricted access to a body of water, like an ocean, pond, creek or wetlands, directly on or next to the property.
                     </p>
                   </div>
@@ -572,10 +574,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Climbing or play structure(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests will have access to structures like a playset, slide, swings or climbing ropes.
                     </p>
                   </div>
@@ -609,10 +611,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       There are heights without rails or protection
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests have access to an area higher than 30 inches (76 centimetres), such as a balcony, roof, terrace or cliff, that doesn&apos;t have a rail or other protection.
                     </p>
                   </div>
@@ -646,16 +648,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Potentially dangerous animal(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests and their pets will be around animals, like a horse, puma or farm animal, that could cause harm.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("animals")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -690,16 +692,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Other safety or regulatory notes
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Add any other safety concern or regulatory information guests should know before booking.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("special")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -734,11 +736,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Construction work is scheduled nearby weekdays from 8 AM–5 PM; an unpaved entrance may be slippery when wet."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.specialConsiderationsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.specialConsiderationsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.specialConsiderationsDetails && (
@@ -754,7 +755,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -762,7 +763,7 @@ export function GuestsSafetyView({
                 type="button"
                 disabled={saving}
                 onClick={() => handleSaveModal("considerations")}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {saving && (
                   <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
@@ -770,7 +771,7 @@ export function GuestsSafetyView({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 )}
-                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
+                {saving ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
@@ -786,8 +787,8 @@ export function GuestsSafetyView({
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety devices</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety devices</h3>
+                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
                   Disclose safety devices and alarms installed at your space.
                 </p>
               </div>
@@ -801,24 +802,24 @@ export function GuestsSafetyView({
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
+            <div className="modal-content-scrollbar flex-1 overflow-y-auto p-6 divide-y divide-[#727272] dark:divide-white">
               {/* 1. Exterior Camera */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Exterior security camera present
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       This property has one or more exterior cameras that record or transmit video, images or audio. You must disclose them if they&apos;re turned off.
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed italic pt-0.5">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
                       Note: Security cameras that monitor indoor spaces or outdoor areas where greater privacy is expected, such as a shower, are not allowed.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("camera")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -853,11 +854,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Ring doorbell camera on front entrance and floodlight camera over driveway, active 24/7."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.securityCameraDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.securityCameraDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.securityCameraDetails && (
@@ -871,16 +871,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Noise decibel monitor present
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       This property has one or more devices that can assess sound level but don&apos;t record audio.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("noise")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -915,11 +915,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Minut sensor in the living room."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.noiseMonitorDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noiseMonitorDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.noiseMonitorDetails && (
@@ -933,16 +932,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Carbon monoxide alarm
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       A device that alerts if it detects unsafe levels of carbon monoxide (Check your local laws, which may require a working carbon monoxide detector in your listing).
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("co")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -977,16 +976,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Smoke alarm
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       A device that alerts when it detects smoke (Check your local laws, which may require a working smoke detector in your listing).
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("smoke")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -1055,8 +1054,8 @@ export function GuestsSafetyView({
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property info</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property info</h3>
+                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
                   Select any specific characteristics about your space.
                 </p>
               </div>
@@ -1070,15 +1069,15 @@ export function GuestsSafetyView({
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
+            <div className="modal-content-scrollbar flex-1 overflow-y-auto p-6 divide-y divide-[#727272] dark:divide-white">
               {/* 1. Stairs */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Guests must climb stairs
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests can expect to walk up and down stairs during their stay.
                     </p>
                   </div>
@@ -1112,11 +1111,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., 2 flights of outdoor steps to front door, handrail provided on right."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.climbStairsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.climbStairsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.climbStairsDetails && (
@@ -1130,10 +1128,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Construction or other potential noise during stays
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests should expect to hear some noise during their stay. For example, traffic, construction or nearby businesses.
                     </p>
                   </div>
@@ -1167,11 +1165,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Light street traffic during morning commute hours."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.potentialNoiseDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.potentialNoiseDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.potentialNoiseDetails && (
@@ -1185,10 +1182,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Pet(s) live at the property
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests may meet or interact with pets during their stay.
                     </p>
                   </div>
@@ -1222,11 +1219,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Friendly golden retriever stays in the fenced backyard area."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.petsLiveOnPropertyDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.petsLiveOnPropertyDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.petsLiveOnPropertyDetails && (
@@ -1240,10 +1236,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       No parking on the property
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       This property doesn&apos;t have dedicated parking spots for guests.
                     </p>
                   </div>
@@ -1277,11 +1273,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Free street parking available on 4th Ave, paid garage 2 blocks away."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.noParkingDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noParkingDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.noParkingDetails && (
@@ -1295,10 +1290,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Property has shared spaces
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Guests should expect to share spaces, such as a kitchen, bathroom or patio, with other people during their stay.
                     </p>
                   </div>
@@ -1332,11 +1327,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Shared kitchen and patio with other guests."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.sharedSpacesDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.sharedSpacesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.sharedSpacesDetails && (
@@ -1350,10 +1344,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Limited essential amenities
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       Some common essentials are not included on this property. For example, wifi, running water, indoor shower.
                     </p>
                   </div>
@@ -1387,11 +1381,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Off-grid cabin: no wifi, rainwater shower only."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.limitedAmenitiesDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.limitedAmenitiesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.limitedAmenitiesDetails && (
@@ -1405,19 +1398,19 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       Weapon(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
                       There&apos;s at least one weapon stored on this property. Check your local laws for specific requirements.
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed italic pt-0.5">
+                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
                       Reminder: Airbnb requires all weapons to be properly stored and secured.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("weapons")}
-                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
+                      className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -1452,11 +1445,10 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Hunting rifle kept unloaded inside locked biometric safe."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
-                        validationErrors.weaponsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.weaponsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
-                      }`}
+                        }`}
                       maxLength={500}
                     />
                     {validationErrors.weaponsDetails && (
