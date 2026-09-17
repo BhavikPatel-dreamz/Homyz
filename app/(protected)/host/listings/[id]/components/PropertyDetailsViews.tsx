@@ -364,9 +364,9 @@ export function PropertyDetailsViews({
               <BackButton onClick={() => setActiveSection("title")} />
               <div>
                 <h1>Description</h1>
-                <p className="sm:text-base text-sm text-[#727272] font-normal">
+                <p className="sm:text-base text-sm text-[#727272] font-normal dark:text-zinc-400">
                   *These settings apply to all nights, unless you customize them by date.{" "}
-                  <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer text-[#1f1f1f] hover:text-[#727272]">
+                  <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-100 dark:hover:text-amber-400">
                     Learn more
                   </a>
                 </p>
@@ -380,14 +380,14 @@ export function PropertyDetailsViews({
           ) : (
             <div className="space-y-3 pt-1">
               {/* 1. Listing description */}
-              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300">
+              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
                 >
                   <div className="space-y-0.5">
-                    <h3 className="font-medium text-base text-[#1F1F1F]">Listing description</h3>
-                    <span className="text-base text-[#727272] font-normal block">
+                    <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Listing description</h3>
+                    <span className="text-base text-[#727272] font-normal block dark:text-zinc-400">
                       {editDescription ? `${500 - editDescription.length}/500 available` : "295/500 available"}
                     </span>
                   </div>
@@ -397,27 +397,27 @@ export function PropertyDetailsViews({
                       alt={openDescAccordion === "description" ? "Collapse" : "Expand"}
                       width={16}
                       height={16}
-                      className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "description" ? "rotate-180" : "rotate-[270deg]"}`}
+                      className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "description" ? "rotate-180" : "rotate-[270deg]"}`}
                     />
                   </div>
                 </div>
 
                 {openDescAccordion === "description" && (
                   <div className="space-y-3 pt-1">
-                    <div className="rounded-xl bg-white border border-zinc-200 p-1 shadow-2xs">
+                    <div className="rounded-xl bg-white border border-zinc-200 p-1 shadow-2xs dark:bg-zinc-900 dark:border-zinc-700">
                       <textarea
                         rows={5}
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         placeholder="Describe your space, ambiance, surroundings, and amenities..."
-                        className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none p-4 sm:p-5 font-normal"
+                        className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none p-4 sm:p-5 font-normal dark:text-zinc-200 dark:placeholder-zinc-500"
                       />
                     </div>
                     <button
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleSaveSection("description")}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
                       {isSaving ? "Saving..." : "Save"}
                     </button>
@@ -426,14 +426,14 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 2. Your property */}
-              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "property" ? null : "property")}
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F]">Your property</h4>
-                    <p className="text-base text-[#727272] font-normal">
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Your property</h4>
+                    <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
                       {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
@@ -442,7 +442,7 @@ export function PropertyDetailsViews({
                     alt={openDescAccordion === "property" ? "Collapse" : "Expand"}
                     width={16}
                     height={16}
-                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "property" ? "rotate-180" : "rotate-[270deg]"}`}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "property" ? "rotate-180" : "rotate-[270deg]"}`}
                   />
                 </div>
 
@@ -453,13 +453,13 @@ export function PropertyDetailsViews({
                       value={editPropertyDetails}
                       onChange={(e) => setEditPropertyDetails(e.target.value)}
                       placeholder="Tell guests more about the property itself."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleSaveSection("description", "property")}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
                       {isSaving ? "Saving..." : "Save"}
                     </button>
@@ -468,14 +468,14 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 3. Guest access */}
-              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "access" ? null : "access")}
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F]">Guest access</h4>
-                    <p className="text-base text-[#727272] font-normal">
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Guest access</h4>
+                    <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
                       {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
@@ -484,7 +484,7 @@ export function PropertyDetailsViews({
                     alt={openDescAccordion === "access" ? "Collapse" : "Expand"}
                     width={16}
                     height={16}
-                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "access" ? "rotate-180" : "rotate-[270deg]"}`}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "access" ? "rotate-180" : "rotate-[270deg]"}`}
                   />
                 </div>
 
@@ -495,13 +495,13 @@ export function PropertyDetailsViews({
                       value={editAccessDetails}
                       onChange={(e) => setEditAccessDetails(e.target.value)}
                       placeholder="Explain which spaces guests can use."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleSaveSection("description", "access")}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
                       {isSaving ? "Saving..." : "Save"}
                     </button>
@@ -510,14 +510,14 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 4. Interaction with guests */}
-              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "interaction" ? null : "interaction")}
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F]">Interaction with guests</h4>
-                    <p className="text-base text-[#727272] font-normal">
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Interaction with guests</h4>
+                    <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
                       {interactionDetails ? interactionDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
@@ -526,7 +526,7 @@ export function PropertyDetailsViews({
                     alt={openDescAccordion === "interaction" ? "Collapse" : "Expand"}
                     width={16}
                     height={16}
-                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "interaction" ? "rotate-180" : "rotate-[270deg]"}`}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "interaction" ? "rotate-180" : "rotate-[270deg]"}`}
                   />
                 </div>
 
@@ -537,13 +537,13 @@ export function PropertyDetailsViews({
                       value={interactionDetails}
                       onChange={(e) => setInteractionDetails?.(e.target.value)}
                       placeholder="Let guests know how much interaction they can expect."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleSaveSection("description", "interaction")}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
                       {isSaving ? "Saving..." : "Save"}
                     </button>
@@ -552,14 +552,14 @@ export function PropertyDetailsViews({
               </div>
 
               {/* 5. Other details to note */}
-              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   onClick={() => setOpenDescAccordion(openDescAccordion === "other" ? null : "other")}
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F]">Other details to note</h4>
-                    <p className="text-base text-[#727272] font-normal">
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Other details to note</h4>
+                    <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
                       {otherDetails ? otherDetails.slice(0, 40) + "..." : "Add details"}
                     </p>
                   </div>
@@ -568,7 +568,7 @@ export function PropertyDetailsViews({
                     alt={openDescAccordion === "other" ? "Collapse" : "Expand"}
                     width={16}
                     height={16}
-                    className={`size-4 object-contain transition-transform duration-200 ease-out ${openDescAccordion === "other" ? "rotate-180" : "rotate-[270deg]"}`}
+                    className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "other" ? "rotate-180" : "rotate-[270deg]"}`}
                   />
                 </div>
 
@@ -579,13 +579,13 @@ export function PropertyDetailsViews({
                       value={otherDetails}
                       onChange={(e) => setOtherDetails?.(e.target.value)}
                       placeholder="Share anything else guests should know before booking."
-                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px"
+                      className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleSaveSection("description", "other")}
-                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                      className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
                       {isSaving ? "Saving..." : "Save"}
                     </button>
@@ -644,7 +644,7 @@ export function PropertyDetailsViews({
           {/* Back button & Section Header */}
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
-            <h1>Property type</h1>
+            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property type</h1>
           </div>
 
           {isLoading ? (
@@ -654,12 +654,12 @@ export function PropertyDetailsViews({
               <div className="max-w-none space-y-5 lg:max-w-[491px]">
                 {/* 1. Which is most like your place? */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F]">Which is most like your place?</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Which is most like your place?</label>
                   <div className="relative">
                     <select
                       value={whichIsMostLike}
                       onChange={(e) => setWhichIsMostLike(e.target.value)}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="APARTMENT">Apartment</option>
                       <option value="HOUSE">House</option>
@@ -668,9 +668,9 @@ export function PropertyDetailsViews({
                       <option value="BED_AND_BREAKFAST">Bed & breakfast</option>
                       <option value="BOUTIQUE_HOTEL">Boutique hotel</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="#1D1D1D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                   </div>
@@ -678,7 +678,7 @@ export function PropertyDetailsViews({
 
                 {/* 2. Property type */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F]">Property type</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Property type</label>
                   <div className="relative">
                     <select
                       value={editPropertyType}
@@ -686,7 +686,7 @@ export function PropertyDetailsViews({
                         setEditPropertyType(e.target.value);
                         setWhichIsMostLike(normalizeMostLikeSelection(e.target.value));
                       }}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="APARTMENT">Apartment</option>
                       <option value="HOUSE">House</option>
@@ -699,37 +699,37 @@ export function PropertyDetailsViews({
                       <option value="TOWNHOUSE">Townhouse</option>
                       <option value="GUEST_HOUSE">Guest house</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="#1D1D1D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                   </div>
-                  <p className="text-xs text-[#727272] font-normal pt-0.5">
+                  <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal pt-0.5">
                     A rental place with a multi-unit residential building or complex.
                   </p>
                 </div>
 
                 {/* 3. Listing type */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F]">Listing type</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Listing type</label>
                   <div className="relative">
                     <select
                       value={editListingType}
                       onChange={(e) => setEditListingType(e.target.value)}
-                      className="w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 py-3.5 pr-10 text-base text-[#727272] font-normal outline-none focus:border-[#1F1F1F] transition-colors cursor-pointer min-h-[56px]"
+                      className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="ENTIRE_PLACE">Entire place</option>
                       <option value="ROOM">Private room</option>
                       <option value="SHARED_ROOM">Shared room</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="#1D1D1D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                   </div>
-                  <p className="text-xs text-[#727272] font-normal pt-0.5 leading-relaxed">
+                  <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal pt-0.5 leading-relaxed">
                     Guests have the whole place to themselves. This usually includes a bedroom, a bathroom and a kitchen.
                   </p>
                 </div>
@@ -739,20 +739,20 @@ export function PropertyDetailsViews({
                   <>
                     {/* 4. How many floors are in the building */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800">How many floors are in the building</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">How many floors are in the building</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
+                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
                           +
                         </button>
@@ -761,20 +761,20 @@ export function PropertyDetailsViews({
 
                     {/* 5. Which floor is the listing on? */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800">Which floor is the listing on?</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Which floor is the listing on?</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setListingFloor?.(Math.max(0, (listingFloor || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{listingFloor ?? 1}</span>
+                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{listingFloor ?? 1}</span>
                         <button
                           type="button"
                           onClick={() => setListingFloor?.((listingFloor || 0) + 1)}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
                           +
                         </button>
@@ -784,16 +784,16 @@ export function PropertyDetailsViews({
                     {/* Elevator Available */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-xs font-semibold text-zinc-800">Elevator available</label>
-                        <p className="text-base text-[#727272] font-normal">Is there an elevator to access this floor?</p>
+                        <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Elevator available</label>
+                        <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">Is there an elevator to access this floor?</p>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => setElevatorAvailable?.(false)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === false
-                            ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                            : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
                           ✕
@@ -802,8 +802,8 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setElevatorAvailable?.(true)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === true
-                            ? "bg-[#FEE08B] border-amber-300 text-zinc-950 shadow-2xs"
-                            : "bg-white border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
                           ✓
@@ -816,21 +816,21 @@ export function PropertyDetailsViews({
                     {/* Standalone House / Villa fields */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
                       <div className="space-y-0.5">
-                        <p className="text-base text-[#1F1F1F] font-normal">How many floors are in the building?</p>
+                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">How many floors are in the building?</p>
                       </div>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F]">{buildingFloors || 1}</span>
+                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
-                          className="w-8 h-8 rounded-full border border[#1F1F1F] bg-white flex items-center justify-center text-xl font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer transition-all duration-300"
+                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
                           +
                         </button>
@@ -839,15 +839,15 @@ export function PropertyDetailsViews({
 
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
                       <div className="space-y-0.5">
-                        <p className="text-base text-[#1F1F1F] font-normal">Guests have their own private exterior door or gate</p>
+                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">Guests have their own private exterior door or gate</p>
                       </div>
                       <div className="flex items-center gap-3 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setPrivateEntrance?.(false)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === false
-                            ? "bg-[#FEE08B] border-[#FEE08B] text-[#1F1F1F]"
-                            : "bg-white border-[#1F1F1F] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
                           ✕
@@ -856,8 +856,8 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setPrivateEntrance?.(true)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === true
-                            ? "bg-[#FEE08B] border-[#FEE08B] text-[#1F1F1F]"
-                            : "bg-white border-[#1F1F1F] text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
                           ✓
@@ -869,21 +869,21 @@ export function PropertyDetailsViews({
 
                 {/* 6. Year built */}
                 <div className="w-full space-y-2 sm:w-[13.5rem]">
-                  <label className="block text-base font-normal text-[#1F1F1F]">Year built</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Year built</label>
                   <div className="relative">
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                      className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-[#727272] font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-9 text-base"
+                      className="h-14 w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-[#727272] dark:text-zinc-100 font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-9 text-base"
                     >
                       <option value="">Select year (optional)</option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
                         <option key={yr} value={yr}>{yr}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500 dark:text-zinc-300">
                       <svg width="14" height="8" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="#1D1D1D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
                   </div>
@@ -893,7 +893,7 @@ export function PropertyDetailsViews({
                 <div className="space-y-2">
                   <div className="grid max-w-md grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-4">
                     <div className="space-y-2">
-                      <label className="block text-base font-normal text-[#1F1F1F]">Property size</label>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Property size</label>
                       <input
                         type="number"
                         value={propertySize}
@@ -901,29 +901,29 @@ export function PropertyDetailsViews({
                         placeholder="e.g. 120"
                         min={1}
                         max={50000}
-                        className="h-14 w-full rounded-lg border border-[#727272] bg-white px-4 text-base font-normal text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3"
+                        className="h-14 w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-base font-normal text-[#1F1F1F]">Unit</label>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Unit</label>
                       <div className="relative">
                         <select
                           value={propertySizeUnit}
                           onChange={(e) => setPropertySizeUnit?.(e.target.value)}
-                          className="h-14 w-full appearance-none rounded-lg border border-[#727272] bg-white px-4 pr-10 text-base font-normal text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] sm:h-11 sm:px-3 sm:pr-8"
+                          className="h-14 w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
                         >
                           <option value="SQM">SQM (m²)</option>
                           <option value="SQFT">SQFT (sq ft)</option>
                         </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500 dark:text-zinc-300">
                           <svg width="14" height="8" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M15 1L8 8L1 1" stroke="#1D1D1D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p className="pt-0.5 text-xs font-normal text-[#727272]">
+                  <p className="pt-0.5 text-xs font-normal text-[#727272] dark:text-zinc-400">
                     The amount of indoor space that&apos;s available to guests.
                   </p>
                 </div>
@@ -932,13 +932,13 @@ export function PropertyDetailsViews({
               {/* 8. Category Information */}
               <div className="grid grid-cols-1 gap-6 pt-8 sm:grid-cols-[minmax(0,1fr)_20.25rem] sm:items-end">
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-medium text-[#1F1F1F]">Your category</h3>
-                  <p className="text-base font-normal leading-relaxed text-[#727272] mb-0">
+                  <h3 className="text-2xl font-medium text-[#1F1F1F] dark:text-zinc-100">Your category</h3>
+                  <p className="text-base font-normal leading-relaxed text-[#727272] dark:text-zinc-400 mb-0">
                     Categorizing your place accurately helps guests find the exact space type they need. Your listing is classified based on your property type and amenities.
                   </p>
-                  <button type="button" className="text-base font-normal text-[#1F1F1F] underline underline-offset-2 hover:text-[#727272] transition-all duration-300">Learn more</button>
+                  <button type="button" className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100 underline underline-offset-2 hover:text-[#727272] dark:hover:text-amber-400 transition-all duration-300">Learn more</button>
                 </div>
-                <div className="flex min-h-12 items-center rounded-lg bg-zinc-100 px-5 text-base font-normal text-[#1F1F1F] sm:min-h-[140px] sm:rounded-[24px]">
+                <div className="flex min-h-12 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 px-5 text-base font-normal text-[#1F1F1F] dark:text-zinc-200 sm:min-h-[140px] sm:rounded-[24px]">
                   *Your listing isn&apos;t part of a part yet.
                 </div>
               </div>
@@ -949,7 +949,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("propertyType")}
-                  className="w-full rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2.25 text-lg font-medium text-[#1F1F1F] transition-all duration-300 cursor-pointer hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white sm:w-auto sm:py-2.5 sm:text-base min-w-[136px]"
+                  className="w-full rounded-full border border-transparent bg-[#FCDF9C] dark:bg-amber-400 dark:text-zinc-950 px-4 py-2.25 text-lg font-medium text-[#1F1F1F] transition-all duration-300 cursor-pointer hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 sm:w-auto sm:py-2.5 sm:text-base min-w-[136px]"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -969,8 +969,8 @@ export function PropertyDetailsViews({
             <div className="flex items-start gap-6 max-w-[491px]">
               <BackButton onClick={() => setActiveSection("propertyType")} />
               <div className="space-y-1.5">
-                <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F]">{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
-                <p className="text-[14px] leading-5 text-[#727272]">
+                <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
+                <p className="text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
                   {activeSection === "guests" ? "How many guests can fit comfortably in your space?" : "Configure bedroom sleeping arrangements and bathroom breakdown."}
                 </p>
               </div>
@@ -988,24 +988,24 @@ export function PropertyDetailsViews({
             <div className="space-y-6 pt-12">
               {/* Section 1: Guest Capacity Counter */}
               <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
-                <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] bg-white p-4"}`}>
+                <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
                   {activeSection === "guests" && (
-                    <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272]">
+                    <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272] dark:text-zinc-300">
                       How many guests can fit comfortably in your space?
                     </p>
                   )}
                   <div className={`flex items-center ${activeSection === "guests" ? "gap-12" : "justify-between"}`}>
                     {activeSection !== "guests" && (
                       <div>
-                        <h3 className="text-base font-medium text-[#1F1F1F]">Maximum guests</h3>
-                        <p className="text-[14px] font-normal text-[#727272]">Total number of guests allowed to stay</p>
+                        <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Maximum guests</h3>
+                        <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total number of guests allowed to stay</p>
                       </div>
                     )}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer transition-all shrink-0`}
+                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Decrease guests"
                       >
                         <svg
@@ -1020,11 +1020,11 @@ export function PropertyDetailsViews({
                           <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                       </button>
-                      <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] text-[42px]" : "w-5 text-center text-base"} font-normal text-[#1F1F1F]`}>{editGuests}</span>
+                      <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 text-[42px]" : "w-5 text-center text-base text-[#1F1F1F] dark:text-zinc-100"} font-normal`}>{editGuests}</span>
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
-                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer transition-all shrink-0`}
+                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Increase guests"
                       >
                         <svg
@@ -1044,25 +1044,25 @@ export function PropertyDetailsViews({
                   </div>
 
                   {/* Quick Counters: Bedrooms & Beds */}
-                  {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] pt-3">
+                  {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] dark:border-zinc-700 pt-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-base font-medium text-[#1F1F1F] block">Bedrooms</span>
-                        <span className="text-[14px] font-normal text-[#727272]">Total bedroom spaces</span>
+                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">Bedrooms</span>
+                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total bedroom spaces</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                         </button>
-                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBedrooms}</span>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBedrooms}</span>
                         <button
                           type="button"
                           onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
                           +
                         </button>
@@ -1071,22 +1071,22 @@ export function PropertyDetailsViews({
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-base font-medium text-[#1F1F1F] block">Beds</span>
-                        <span className="text-[14px] font-normal text-[#727272]">Total beds available</span>
+                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">Beds</span>
+                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total beds available</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                         </button>
-                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F]">{editBeds}</span>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBeds}</span>
                         <button
                           type="button"
                           onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base font-normal text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
                           +
                         </button>
@@ -1100,8 +1100,8 @@ export function PropertyDetailsViews({
               {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
                 <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-6">
                   <div>
-                    <h3 className="text-base font-medium text-[#1F1F1F]">Room-by-room sleeping arrangements</h3>
-                    <p className="text-[14px] font-normal text-[#727272]">Specify beds for each bedroom or common space</p>
+                    <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Room-by-room sleeping arrangements</h3>
+                    <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Specify beds for each bedroom or common space</p>
                   </div>
                   <button
                     type="button"
@@ -1119,15 +1119,15 @@ export function PropertyDetailsViews({
                       const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                       setEditBeds(Math.max(1, totalBeds));
                     }}
-                    className="rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white cursor-pointer transition-colors whitespace-nowrap">
+                    className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 px-4 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-950 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer transition-colors whitespace-nowrap">
                     + Add room
                   </button>
                 </div>
 
                 {/* Render Rooms List */}
                 {(!rooms || rooms.length === 0) ? (
-                  <div className="rounded-md border border-dashed border-[#DDDDDE] bg-zinc-50 p-6 text-center space-y-2">
-                    <p className="text-[14px] text-[#727272]">No rooms configured yet.</p>
+                  <div className="rounded-md border border-dashed border-[#DDDDDE] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-center space-y-2">
+                    <p className="text-[14px] text-[#727272] dark:text-zinc-400">No rooms configured yet.</p>
                     <button
                       type="button"
                       onClick={() => {
@@ -1139,7 +1139,7 @@ export function PropertyDetailsViews({
                         };
                         setRooms?.([defaultRoom]);
                       }}
-                      className="text-xs font-semibold text-amber-700 underline cursor-pointer"
+                      className="text-xs font-semibold text-amber-700 dark:text-amber-400 underline cursor-pointer"
                     >
                       Add Bedroom 1
                     </button>
@@ -1147,7 +1147,7 @@ export function PropertyDetailsViews({
                 ) : (
                   <div className="space-y-3">
                     {rooms.map((room, roomIdx) => (
-                      <div key={room.id || roomIdx} className="rounded-md border border-[#DDDDDE] bg-white p-4 space-y-3">
+                      <div key={room.id || roomIdx} className="rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">🛏️</span>
@@ -1159,9 +1159,9 @@ export function PropertyDetailsViews({
                                 updated[roomIdx] = { ...updated[roomIdx], name: e.target.value };
                                 setRooms?.(updated);
                               }}
-                              className="text-base font-medium text-[#1F1F1F] border-b border-transparent hover:border-zinc-300 focus:border-[#1F1F1F] outline-none px-1 py-0.5"
+                              className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 bg-transparent border-b border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:border-[#1F1F1F] dark:focus:border-zinc-400 outline-none px-1 py-0.5"
                             />
-                            <span className="text-[14px] font-normal bg-zinc-100 text-[#727272] px-2 py-0.5 rounded-full">
+                            <span className="text-[14px] font-normal bg-zinc-100 dark:bg-zinc-700 text-[#727272] dark:text-zinc-300 px-2 py-0.5 rounded-full">
                               {room.type}
                             </span>
                           </div>
@@ -1174,7 +1174,7 @@ export function PropertyDetailsViews({
                               const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                               setEditBeds(Math.max(1, totalBeds));
                             }}
-                            className="text-xs text-zinc-400 hover:text-red-600 cursor-pointer transition-colors p-1"
+                            className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition-colors p-1"
                             title="Remove room"
                           >
                             ✕
@@ -1184,8 +1184,8 @@ export function PropertyDetailsViews({
                         {/* Beds in this room */}
                         <div className="space-y-2 pt-1">
                           {room.beds.map((bed, bedIdx) => (
-                            <div key={bedIdx} className="flex items-center justify-between text-base py-2 border-b border-[#DDDDDE] last:border-0">
-                              <span className="text-[#1F1F1F] font-normal capitalize">
+                            <div key={bedIdx} className="flex items-center justify-between text-base py-2 border-b border-[#DDDDDE] dark:border-zinc-700 last:border-0">
+                              <span className="text-[#1F1F1F] dark:text-zinc-100 font-normal capitalize">
                                 {bed.type.toLowerCase().replace(/_/g, " ")} bed
                               </span>
                               <div className="flex items-center gap-2">
@@ -1203,11 +1203,11 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                                  className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
-                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={12} height={12} className="size-3 object-contain" />
+                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={12} height={12} className="size-3 object-contain dark:invert" />
                                 </button>
-                                <span className="w-5 text-center font-normal text-[#1F1F1F]">{bed.count}</span>
+                                <span className="w-5 text-center font-normal text-[#1F1F1F] dark:text-zinc-100">{bed.count}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1217,7 +1217,7 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                                  className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
                                   +
                                 </button>
@@ -1244,7 +1244,7 @@ export function PropertyDetailsViews({
                                 setEditBeds(Math.max(1, totalBeds));
                                 e.target.value = "";
                               }}
-                              className="text-[14px] font-normal text-[#727272] bg-white border border-[#DDDDDE] rounded-md px-3 py-2 outline-none cursor-pointer"
+                              className="text-[14px] font-normal text-[#727272] dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-[#DDDDDE] dark:border-zinc-700 rounded-md px-3 py-2 outline-none cursor-pointer"
                             >
                               <option value="">+ Add bed type...</option>
                               <option value="KING">King bed</option>
@@ -1266,17 +1266,17 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Section 3: Bathroom Breakdown */}
-              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] bg-white p-4 space-y-4">
+              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Bathroom breakdown</h3>
-                  <p className="text-[14px] font-normal text-[#727272]">Specify full and half bathrooms available to guests</p>
+                  <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Bathroom breakdown</h3>
+                  <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Specify full and half bathrooms available to guests</p>
                 </div>
 
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] block">Full bathrooms</span>
-                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Includes shower/bathtub, sink, and toilet</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Full bathrooms</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Includes shower/bathtub, sink, and toilet</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1286,11 +1286,11 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                       </button>
-                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{fullBathrooms ?? 1}</span>
+                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{fullBathrooms ?? 1}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1298,17 +1298,17 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-700">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] block">Half bathrooms</span>
-                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Includes sink and toilet only (no bath or shower)</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Half bathrooms</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Includes sink and toilet only (no bath or shower)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1318,11 +1318,11 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                       </button>
-                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f]">{halfBathrooms ?? 0}</span>
+                      <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{halfBathrooms ?? 0}</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1330,17 +1330,17 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] flex items-center justify-center text-base text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white cursor-pointer"
+                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-700">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] block">Bathroom privacy</span>
-                      <span className="sm:text-sm text-xs text-[#727272] leading-tight">Are the bathrooms private or shared with host/others?</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Bathroom privacy</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Are the bathrooms private or shared with host/others?</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -1350,8 +1350,8 @@ export function PropertyDetailsViews({
                           setSharedBathrooms?.(0);
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) === 0
-                          ? "bg-[#FCDF9C] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
-                          : "bg-[#F3F4F5] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
+                          ? "bg-[#FCDF9C] dark:bg-amber-400 border border-transparent text-[#1f1f1f] dark:text-zinc-950 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white"
+                          : "bg-[#F3F4F5] dark:bg-zinc-800 border border-transparent dark:border-zinc-700 text-[#1f1f1f] dark:text-zinc-100 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700"
                           }`}
                       >
                         Private
@@ -1363,8 +1363,8 @@ export function PropertyDetailsViews({
                           setPrivateBathrooms?.(0);
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer duration-300 ${(sharedBathrooms ?? 0) > 0
-                          ? "bg-[#FCDF9C] border border-transparent text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
-                          : "bg-[#F3F4F5] border border-[#1f1f1f] text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
+                          ? "bg-[#FCDF9C] dark:bg-amber-400 border border-transparent text-[#1f1f1f] dark:text-zinc-950 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white"
+                          : "bg-[#F3F4F5] dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 text-[#1f1f1f] dark:text-zinc-100 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700"
                           }`}
                       >
                         Shared
@@ -1380,7 +1380,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("guests")}
-                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
+                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -1468,10 +1468,10 @@ export function PropertyDetailsViews({
                     setActiveSection(activeSection === "add-amenities" ? "amenities" : "description");
                   }} />
                   <div className="space-y-1">
-                    <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F]">
+                    <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                       {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
                     </h1>
-                    <p className="sm:text-[14px] text-xs font-normal leading-5.5 text-[#727272]">
+                    <p className="sm:text-[14px] text-xs font-normal leading-5.5 text-[#727272] dark:text-zinc-400">
                       You&apos;ve added these to your listing so far.
                     </p>
                   </div>
@@ -1495,9 +1495,9 @@ export function PropertyDetailsViews({
                       setIsEditingAmenityList(true);
                     }
                   }}
-                  className={`flex items-center rounded-full px-4.5 py-2 text-base font-medium text-[#1F1F1F] hover:text-white duration-300 group transition-all disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px] ${activeSection === "add-amenities" || isEditingAmenityList
-                    ? "bg-[#FCDF9C] hover:bg-[#1F1F1F]"
-                    : "bg-[#F3F4F5] hover:bg-[#1F1F1F]"
+                  className={`flex items-center rounded-full px-4.5 py-2 text-base font-medium transition-all duration-300 group disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px] ${activeSection === "add-amenities" || isEditingAmenityList
+                    ? "bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-amber-300 dark:hover:text-zinc-950"
+                    : "bg-[#F3F4F5] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 dark:border dark:border-zinc-700"
                     }`}
                 >
                   {activeSection === "amenities" && !isEditingAmenityList && (
@@ -1506,7 +1506,7 @@ export function PropertyDetailsViews({
                       alt=""
                       width={24}
                       height={24}
-                      className="mr-2 size-6 object-contain transition-[filter] group-hover:brightness-0 group-hover:invert"
+                      className="mr-2 size-6 object-contain transition-[filter] group-hover:brightness-0 group-hover:invert dark:invert"
                     />
                   )}
                   {activeSection === "add-amenities" || isEditingAmenityList ? (isSaving ? "Saving..." : "Done") : "Edit"}
@@ -1514,7 +1514,7 @@ export function PropertyDetailsViews({
                 {activeSection === "amenities" && !isEditingAmenityList && <button
                   type="button"
                   onClick={() => setActiveSection("add-amenities")}
-                  className="size-12 rounded-full bg-[#F3F4F5] flex items-center justify-center text-[#1F1F1F] hover:text-white hover:bg-[#1f1f1f] text-2xl font-normal cursor-pointer transition-all"
+                  className="size-12 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 dark:border dark:border-zinc-700 flex items-center justify-center text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-2xl font-normal cursor-pointer transition-all"
                   aria-label="Add amenities"
                 >
                   +
@@ -1534,13 +1534,13 @@ export function PropertyDetailsViews({
                     value={amenitySearch}
                     onChange={(e) => setAmenitySearch(e.target.value)}
                     placeholder="Search amenities (e.g. Wifi, Pool, Kitchen)..."
-                    className="w-full rounded-md border border-[#DDDDDE] bg-white px-3 py-2.5 focus:border-[#1F1F1F] focus:outline-none text-sm font-normal text-[#1F1F1F] placeholder:text-[#727272] transition-all"
+                    className="w-full rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 focus:border-[#1F1F1F] dark:focus:border-amber-400 focus:outline-none text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-zinc-500 transition-all"
                   />
                   {amenitySearch && (
                     <button
                       type="button"
                       onClick={() => setAmenitySearch("")}
-                      className="absolute right-3 top-2.5 text-xs text-zinc-400 hover:text-zinc-600"
+                      className="absolute right-3 top-2.5 text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
                     >
                       ✕
                     </button>
@@ -1555,8 +1555,8 @@ export function PropertyDetailsViews({
                       type="button"
                       onClick={() => setAmenityCategory(cat.id)}
                       className={`rounded-full border px-6 py-2 text-sm font-normal transition-all cursor-pointer ${amenityCategory === cat.id
-                        ? "border-[#727272] bg-[#F3F4F5] text-[#1F1F1F]"
-                        : "border-[#727272] hover:border-[#1F1F1F] bg-white text-[#727272] hover:text-[#1F1F1F] hover:bg-[#F3F4F5]"
+                        ? "border-[#727272] bg-[#F3F4F5] text-[#1F1F1F] dark:border-zinc-500 dark:bg-zinc-700 dark:text-zinc-100"
+                        : "border-[#727272] hover:border-[#1F1F1F] bg-white text-[#727272] hover:text-[#1F1F1F] hover:bg-[#F3F4F5] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 dark:hover:border-zinc-500"
                         }`}
                     >
                       {cat.label}
@@ -1569,10 +1569,10 @@ export function PropertyDetailsViews({
                   <div
                     ref={amenitiesScrollRef}
                     onScroll={updateAmenitiesScrollThumb}
-                    className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
+                    className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] dark:divide-zinc-800 overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
                   >
                     {filteredCatalog.length === 0 ? (
-                      <div className="py-12 text-center text-zinc-400 text-xs">
+                      <div className="py-12 text-center text-zinc-400 dark:text-zinc-500 text-xs">
                         No amenities found matching "{amenitySearch}".
                       </div>
                     ) : (
@@ -1586,27 +1586,27 @@ export function PropertyDetailsViews({
                             className="flex items-center justify-between gap-3 py-3 cursor-pointer group select-none transition-all"
                           >
                             <div className="flex items-center sm:gap-6 gap-4 min-w-0 pr-4">
-                              <div className="size-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-base shrink-0 group-hover:border-[#727272]">
+                              <div className="size-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base shrink-0 group-hover:border-[#727272] dark:group-hover:border-zinc-500">
                                 {iconSource ? (
-                                  <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain" />
+                                  <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain dark:invert" />
                                 ) : (
                                   item.icon || "✨"
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <span className="font-medium text-base text-[#1F1F1F] block">
+                                <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 block">
                                   {item.label}
                                 </span>
                               </div>
                             </div>
 
                             {isSelected ? (
-                              <div className="size-8 rounded-full bg-[#FCDF9C] flex items-center justify-center text-[#1F1F1F] font-normal text-base shrink-0">
-                                <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain" />
+                              <div className="size-8 rounded-full bg-[#FCDF9C] dark:bg-amber-400 flex items-center justify-center text-[#1F1F1F] dark:text-zinc-950 font-normal text-base shrink-0">
+                                <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain dark:invert-0" />
                               </div>
                             ) : (
-                              <div className="size-8 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] flex items-center justify-center text-[#1f1f1f] group-hover:bg-zinc-100 text-base font-normal transition-all shrink-0">
-                                <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain" />
+                              <div className="size-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 text-base font-normal transition-all shrink-0">
+                                <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                               </div>
                             )}
                           </div>
@@ -1615,9 +1615,9 @@ export function PropertyDetailsViews({
                     )}
                   </div>
                   {amenitiesScrollThumb.visible && (
-                    <div ref={amenitiesScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
+                    <div ref={amenitiesScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
                       <div
-                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
+                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white dark:border-zinc-700 bg-[#DDDDDE] dark:bg-zinc-600 shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
                         style={{ height: `${amenitiesScrollThumb.height}px`, transform: `translate3d(0, ${amenitiesScrollThumb.top}px, 0)` }}
                       />
                     </div>
@@ -1629,20 +1629,20 @@ export function PropertyDetailsViews({
               /* Main Amenities List View */
               <div className="max-w-[716px] space-y-2 pt-1">
                 {editAmenities.length === 0 ? (
-                  <div className="p-8 text-center rounded-md border border-dashed border-[#DDDDDE] bg-zinc-50/50 space-y-3">
-                    <p className="text-[14px] text-[#727272] font-normal">
+                  <div className="p-8 text-center rounded-md border border-dashed border-[#DDDDDE] dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 space-y-3">
+                    <p className="text-[14px] text-[#727272] dark:text-zinc-400 font-normal">
                       No amenities added yet. Tell guests what makes your place special!
                     </p>
                     <button
                       type="button"
                       onClick={() => setActiveSection("add-amenities")}
-                      className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                      className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                     >
                       + Add amenities
                     </button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#DDDDDE]">
+                  <div className="divide-y divide-[#DDDDDE] dark:divide-zinc-800">
                     {editAmenities.map((am) => {
                       const meta = getAmenityMeta(am);
                       const iconSource = AMENITY_ICON_SOURCES[meta.id];
@@ -1652,26 +1652,26 @@ export function PropertyDetailsViews({
                             <button
                               type="button"
                               onClick={() => toggleAmenity(am)}
-                              className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] bg-white text-base font-normal text-[#727272] hover:border-[#1F1F1F] hover:bg-[#F3F4F5] cursor-pointer transition-colors"
+                              className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#F3F4F5] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
                               aria-label={`Remove ${meta.label}`}
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt={`Remove ${meta.label}`} width={14} height={14} className="size-3.5 object-contain" />
+                              <Image src="/images/icons/minus-icon.svg" alt={`Remove ${meta.label}`} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                             </button>
                           ) : (
-                            <div className="size-10 rounded-full border border-[#B9B9BA] bg-white flex items-center justify-center text-sm shrink-0">
+                            <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
                               {iconSource ? (
-                                <Image src={iconSource} alt="" width={20} height={20} className="size-6 object-contain" />
+                                <Image src={iconSource} alt="" width={20} height={20} className="size-6 object-contain dark:invert" />
                               ) : (
                                 meta.icon || "✨"
                               )}
                             </div>
                           )}
                           <div className="flex-1 min-w-0 space-y-0.5">
-                            <h4 className="font-medium text-lg text-[#1F1F1F]">
+                            <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">
                               {meta.label}
                             </h4>
                             {meta.description && (
-                              <p className="sm:text-base text-sm text-[#727272] font-normal leading-5">
+                              <p className="sm:text-base text-sm text-[#727272] dark:text-zinc-400 font-normal leading-5">
                                 {meta.description}
                               </p>
                             )}
@@ -1697,7 +1697,7 @@ export function PropertyDetailsViews({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BackButton onClick={() => setActiveSection("description")} />
-              <h1>Accessibility features</h1>
+              <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">Accessibility features</h1>
             </div>
 
           </div>
@@ -1716,7 +1716,7 @@ export function PropertyDetailsViews({
             }}
           />
           {accessibilityPhotoError && (
-            <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+            <p role="alert" className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs text-rose-700 dark:text-rose-300">
               {accessibilityPhotoError}
             </p>
           )}
@@ -1781,18 +1781,18 @@ export function PropertyDetailsViews({
                         key={feature.id}
                         className={`overflow-hidden rounded-2xl space-y-4 transition-[max-height,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
                           ? "pointer-events-none max-h-0 -translate-y-1 border-transparent bg-transparent p-0 opacity-0"
-                          : "max-h-[1600px] translate-y-0 border border-[#1f1f1f] bg-zinc-100/90 p-5 opacity-100 shadow-2xs"
+                          : "max-h-[1600px] translate-y-0 border border-[#1f1f1f] dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/90 p-5 opacity-100 shadow-2xs"
                           }`}
                       >
                         {/* Top Row: Icon, Title, Description, Minus Button */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-3.5">
-                            <div className="w-10 h-10 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
+                            <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
                               {feature.icon}
                             </div>
                             <div className="space-y-1">
-                              <h3 className="font-medium text-base text-[#1F1F1F]">{feature.name}</h3>
-                              <p className="text-base text-[#727272] font-normal leading-relaxed max-w-md">
+                              <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
+                              <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
                                 {feature.desc}
                               </p>
                             </div>
@@ -1802,23 +1802,23 @@ export function PropertyDetailsViews({
                           <button
                             type="button"
                             onClick={() => collapseAccessibilityFeature(feature.id)}
-                            className="w-8 h-8 rounded-full border border-[#1f1f1f] bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-100 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                           >
-                            <Image src="/images/icons/minus-icon.svg" alt="Collapse" width={12} height={12} className="size-3 object-contain" />
+                            <Image src="/images/icons/minus-icon.svg" alt="Collapse" width={12} height={12} className="size-3 object-contain dark:invert" />
                           </button>
                         </div>
 
                         {/* Examples Gallery Grid */}
                         <div className="space-y-2 pt-1">
-                          <span className="text-sm mb-3 font-normal text-[#727272]">Examples:</span>
+                          <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">Examples:</span>
                           <div className="grid grid-cols-4 gap-6">
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                               {/* Photo 1 */}
                             </div>
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                               {/* Photo 2 */}
                             </div>
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] border border-[#D9D9D9] flex items-center justify-center text-[10px] text-[#1f1f1f] font-medium">
+                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                               {/* Photo 3 */}
                             </div>
                           </div>
@@ -1837,15 +1837,15 @@ export function PropertyDetailsViews({
                               setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
                             }}
                             className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${!isSelected
-                              ? "bg-white border border-[#1f1f1f]"
-                              : "bg-transparent border border-[#727272] hover:border-[#1f1f1f]"
+                              ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
+                              : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
                               }`}
                           >
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 bg-[#1f1f1f]" : "border-[#727272]"
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 dark:border-zinc-100 bg-[#1f1f1f] dark:bg-zinc-100" : "border-[#727272] dark:border-zinc-600"
                               }`}>
-                              {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                             </div>
-                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F]`}>I don't have this feature</span>
+                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>I don't have this feature</span>
                           </div>
 
                           {/* Option 2: I have this feature */}
@@ -1860,24 +1860,24 @@ export function PropertyDetailsViews({
                               }
                             }}
                             className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${isSelected
-                              ? "bg-white border border-[#1f1f1f]"
-                              : "bg-transparent border border-[#727272] hover:border-[#1f1f1f]"
+                              ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
+                              : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
                               }`}
                           >
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-zinc-900 bg-zinc-900" : "border-zinc-400"
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100" : "border-zinc-400 dark:border-zinc-600"
                               }`}>
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                             </div>
-                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F]`}>I have this feature</span>
+                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>I have this feature</span>
                           </div>
                         </div>
 
                         {isSelected && (
-                          <div className="rounded-xl border border-zinc-200 bg-white p-3.5 space-y-3">
+                          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3.5 space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div>
-                                <h4 className="text-base font-medium text-[#1F1F1F]">Photos of this feature</h4>
-                                <p className="mt-0.5 text-xs text-[#727272]">Add at least one photo to verify this accessibility feature.</p>
+                                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Photos of this feature</h4>
+                                <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">Add at least one photo to verify this accessibility feature.</p>
                               </div>
                               <button
                                 type="button"
@@ -1889,7 +1889,7 @@ export function PropertyDetailsViews({
                                   }
                                   accessibilityPhotoInput.current?.click();
                                 }}
-                                className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 disabled:cursor-wait disabled:opacity-60"
+                                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60"
                               >
                                 {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? "Uploading…" : "+ Add photos"}
                               </button>
@@ -1898,13 +1898,13 @@ export function PropertyDetailsViews({
                             {featurePhotos.length > 0 ? (
                               <div className="grid grid-cols-3 gap-2">
                                 {featurePhotos.map((photo) => (
-                                  <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100">
+                                  <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
                                     <img src={photo} alt={`${feature.name} evidence`} className="h-full w-full object-cover" />
                                     <button
                                       type="button"
                                       aria-label={`Remove ${feature.name} photo`}
                                       onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
-                                      className="absolute right-1 top-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                                      className="absolute right-1 top-1 rounded-full bg-white/95 dark:bg-zinc-900/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
                                     >
                                       ×
                                     </button>
@@ -1912,7 +1912,7 @@ export function PropertyDetailsViews({
                                 ))}
                               </div>
                             ) : (
-                              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">A photo is required before this feature can be saved.</p>
+                              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/40 dark:border dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">A photo is required before this feature can be saved.</p>
                             )}
                           </div>
                         )}
@@ -1930,18 +1930,18 @@ export function PropertyDetailsViews({
                         className="flex items-center gap-3 flex-1"
                         onClick={() => expandAccessibilityFeature(feature.id)}
                       >
-                        <div className="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300">
+                        <div className="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300 dark:group-hover:border-zinc-600">
                           {feature.icon}
                         </div>
-                        <span className="font-medium text-base text-[#1F1F1F] tracking-tight">{feature.name}</span>
+                        <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 tracking-tight">{feature.name}</span>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => expandAccessibilityFeature(feature.id)}
-                        className="w-8 h-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] flex items-center justify-center text-[#1f1f1f] group-hover:bg-[#1f1f1f] text-lg font-normal transition-all cursor-pointer group duration-300"
+                        className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-[#1f1f1f] dark:group-hover:bg-zinc-700 text-lg font-normal transition-all cursor-pointer group duration-300"
                       >
-                        <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert" />
+                        <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert" />
                       </button>
                     </div>
                   );
@@ -1954,7 +1954,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving || uploadingAccessibilityPhoto}
                   onClick={() => handleSaveSection("accessibility")}
-                  className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-amber-300 text-[#1f1f1f] dark:text-zinc-950 hover:text-white dark:hover:text-zinc-950 font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
                 >
                   {uploadingAccessibilityPhoto ? "Uploading..." : isSaving ? "Saving..." : "Save"}
                 </button>

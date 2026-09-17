@@ -1999,12 +1999,12 @@ export function HostListingEditorClient({
             role="dialog"
             aria-modal="true"
             aria-labelledby="unsaved-preferences-title"
-            className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl sm:p-7"
+            className="w-full max-w-md rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl sm:p-7"
           >
-            <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950">
+            <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
               You have unsaved changes
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+            <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               Your changes haven&apos;t been saved. Are you sure you want to leave?
             </p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -2014,7 +2014,7 @@ export function HostListingEditorClient({
                   pendingNavigationRef.current = null;
                   setIsUnsavedChangesDialogOpen(false);
                 }}
-                className="rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50"
+                className="w-full sm:w-auto rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
               >
                 Stay and continue editing
               </button>
@@ -2026,7 +2026,7 @@ export function HostListingEditorClient({
                   setIsUnsavedChangesDialogOpen(false);
                   pendingNavigation?.();
                 }}
-                className="rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800"
+                className="w-full sm:w-auto rounded-full !bg-zinc-950 dark:!bg-zinc-100 px-5 py-2.5 text-sm font-semibold !text-white dark:!text-zinc-950 transition-colors hover:!bg-zinc-800 dark:hover:!bg-zinc-200 cursor-pointer shadow-2xs"
               >
                 Discard changes and leave
               </button>
@@ -2040,41 +2040,41 @@ export function HostListingEditorClient({
       {/* --------------------------------------------------------- */}
       {isTurnOffInstantBookModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             {/* Top Close Button */}
             <button
               type="button"
               disabled={isSaving}
               onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-              className="absolute top-6 right-6 cursor-pointer p-1 text-sm font-semibold text-zinc-600 hover:text-zinc-950 disabled:cursor-wait disabled:opacity-50"
+              className="absolute top-6 right-6 cursor-pointer p-1 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white disabled:cursor-wait disabled:opacity-50"
             >
               ✕
             </button>
 
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 Turn off Instant Book?
               </h3>
-              <p className="text-xs text-zinc-500 font-normal">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                 Your setting will not change until you confirm.
               </p>
             </div>
 
-            <div className="border-t border-zinc-200" />
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
 
             {/* 3 Consideration Items */}
             <div className="space-y-5">
               {/* Item 1 */}
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs mt-0.5">
-                  <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 shadow-2xs mt-0.5">
+                  <svg className="w-4 h-4 text-zinc-700 dark:text-zinc-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Guests may experience slower confirmation</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
+                  <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Guests may experience slower confirmation</h4>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal">
                     Guests will wait for your approval instead of receiving an immediate booking confirmation.
                   </p>
                 </div>
@@ -2082,14 +2082,14 @@ export function HostListingEditorClient({
 
               {/* Item 2 */}
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs mt-0.5">
-                  <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 shadow-2xs mt-0.5">
+                  <svg className="w-4 h-4 text-zinc-700 dark:text-zinc-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Review every booking request</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
+                  <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Review every booking request</h4>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal">
                     All booking requests will need your review before they are confirmed.
                   </p>
                 </div>
@@ -2097,21 +2097,21 @@ export function HostListingEditorClient({
 
               {/* Item 3 */}
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 shrink-0 shadow-2xs mt-0.5">
-                  <svg className="w-4 h-4 text-zinc-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 shadow-2xs mt-0.5">
+                  <svg className="w-4 h-4 text-zinc-700 dark:text-zinc-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Respond within 24 hours</h4>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed font-normal">
+                  <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Respond within 24 hours</h4>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed font-normal">
                     Unanswered requests expire automatically after 24 hours and affect your host response rate.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-zinc-200" />
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
 
             {/* Modal Actions */}
             <div className="flex items-center justify-between gap-3 pt-1">
@@ -2119,7 +2119,7 @@ export function HostListingEditorClient({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -2132,7 +2132,7 @@ export function HostListingEditorClient({
                     setIsTurnOffInstantBookModalOpen(false);
                   }
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] dark:bg-amber-400 dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Turn Instant Book off
               </button>
@@ -2146,19 +2146,19 @@ export function HostListingEditorClient({
       {/* --------------------------------------------------------- */}
       {isCustomMessageModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"
               disabled={isSaving}
               onClick={() => setIsCustomMessageModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-50"
+              className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Add a custom message</h3>
-              <p className="text-xs text-zinc-500 font-normal">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Add a custom message</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                 This note appears to guests before they reserve. Do not include access codes or other private arrival information.
               </p>
             </div>
@@ -2170,7 +2170,7 @@ export function HostListingEditorClient({
               disabled={isSaving}
               placeholder="Write a custom message for your guests..."
               maxLength={1000}
-              className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
+              className="w-full rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-400 transition-colors shadow-2xs placeholder:text-zinc-300 dark:placeholder:text-zinc-500"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
@@ -2180,7 +2180,7 @@ export function HostListingEditorClient({
                 onClick={() => {
                   setIsCustomMessageModalOpen(false);
                 }}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -2196,7 +2196,7 @@ export function HostListingEditorClient({
                     setIsCustomMessageModalOpen(false);
                   }
                 }}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] dark:bg-amber-400 dark:hover:bg-amber-300 px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {isSaving && <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-zinc-600/35 border-t-zinc-950" />}
                 {isSaving ? "Saving..." : "Save Message"}
@@ -2211,18 +2211,18 @@ export function HostListingEditorClient({
       {/* --------------------------------------------------------- */}
       {isEditingAdditionalRulesModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-950 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Additional house rules</h3>
-              <p className="text-xs text-zinc-500 font-normal">
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Additional house rules</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                 Share any specific requirements or guidelines guests must follow.
               </p>
             </div>
@@ -2232,14 +2232,14 @@ export function HostListingEditorClient({
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
               placeholder="e.g. Please remove shoes inside, no loud music after 10 PM..."
-              className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
+              className="w-full rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-zinc-300 dark:placeholder:text-zinc-500"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -2250,7 +2250,7 @@ export function HostListingEditorClient({
                   await handleSaveSection("house-rules");
                   setIsEditingAdditionalRulesModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Save Rules"}
               </button>

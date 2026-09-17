@@ -285,10 +285,10 @@ export function WhereIveBeenSelector({
       {/* Top Header Row — Pixel Perfect Matching Reference Screenshot */}
       <div className="flex sm:flex-nowrap flex-wrap items-start justify-between">
         <div>
-          <h3 className="text-[19px] font-semibold text-[#27272A] tracking-tight mb-0.5">
+          <h3 className="text-[19px] font-semibold text-[#27272A] dark:text-zinc-100 tracking-tight mb-0.5">
             Where I&apos;ve been
           </h3>
-          <p className="text-[#71717A] text-[13px] font-normal leading-relaxed">
+          <p className="text-[#71717A] dark:text-zinc-400 text-[13px] font-normal leading-relaxed">
             Pick the stamps you want other people to see on your profile.
           </p>
         </div>
@@ -300,7 +300,7 @@ export function WhereIveBeenSelector({
               type="button"
               onClick={openAddModal}
               disabled={pending}
-              className="bg-[#FDE29B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-xs px-3.5 py-2.5 rounded-full transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 hover:bg-[#1F1F1F] dark:hover:bg-amber-300 hover:text-white dark:hover:text-zinc-950 font-medium text-xs px-3.5 py-2.5 rounded-full transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className="text-sm font-semibold leading-none">+</span>
               <span>Add Stamp</span>
@@ -311,8 +311,8 @@ export function WhereIveBeenSelector({
           <span
             className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all ${
               isLimitReached
-              ? "bg-amber-50 text-amber-900 border-amber-900"
-                : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                ? "bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-900 dark:border-amber-700"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
             }`}
           >
             {selectedStamps.length} / {maxStamps}
@@ -325,7 +325,7 @@ export function WhereIveBeenSelector({
               disabled={pending}
               onClick={handleToggleVisibility}
               className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer disabled:opacity-50 focus:outline-none ${
-                stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300"
+                stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300 dark:bg-zinc-700"
               }`}
               title={
                 stampsVisible
@@ -345,7 +345,7 @@ export function WhereIveBeenSelector({
 
       {/* Saving Notification */}
       {pending && (
-        <div className="text-xs text-amber-600 font-semibold flex items-center gap-2 animate-in fade-in">
+        <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-2 animate-in fade-in">
           <svg
             className="w-3.5 h-3.5 animate-spin"
             viewBox="0 0 24 24"
@@ -370,9 +370,9 @@ export function WhereIveBeenSelector({
       )}
 
       {/* Stamps Display Grid — Reference Design Layout */}
-      <div className="rounded-3xl border border-zinc-200/80 bg-white p-6 shadow-2xs sm:p-6">
+      <div className="rounded-3xl border border-zinc-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6 shadow-2xs sm:p-6">
         {allStamps.length === 0 ? (
-          <div className="py-12 text-center text-xs text-zinc-400">
+          <div className="py-12 text-center text-xs text-zinc-400 dark:text-zinc-500">
             No travel stamps available. Click &quot;+ Add Stamp&quot; to search for your
             first destination!
           </div>
@@ -406,7 +406,7 @@ export function WhereIveBeenSelector({
                         <button
                           type="button"
                           onClick={(e) => openEditModal(e, stamp)}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-[11px] text-zinc-700 shadow-2xs hover:bg-zinc-100"
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] text-zinc-700 dark:text-zinc-200 shadow-2xs hover:bg-zinc-100 dark:hover:bg-zinc-700"
                           title="Edit stamp"
                         >
                           ✏️
@@ -417,7 +417,7 @@ export function WhereIveBeenSelector({
                             e.stopPropagation();
                             setConfirmDeleteId(stamp.id);
                           }}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-[11px] text-zinc-700 shadow-2xs hover:bg-rose-500 hover:text-white"
+                          className="flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] text-zinc-700 dark:text-zinc-200 shadow-2xs hover:bg-rose-500 hover:text-white"
                           title="Delete stamp"
                         >
                           ✕
@@ -437,18 +437,18 @@ export function WhereIveBeenSelector({
       {/* Delete Confirmation Dialog */}
       {confirmDeleteId && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-center">
-            <h4 className="text-base font-semibold text-[#1F1F1F] mb-2">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl border border-zinc-200 dark:border-zinc-700 text-center">
+            <h4 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 mb-2">
               Delete Travel Stamp?
             </h4>
-            <p className="text-xs text-zinc-500 mb-6">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6">
               Are you sure you want to remove this stamp from your collection?
             </p>
             <div className="flex justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(null)}
-                className="px-5 py-2 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                className="px-5 py-2 rounded-full text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 Cancel
               </button>
@@ -467,15 +467,15 @@ export function WhereIveBeenSelector({
       {/* Add / Edit Stamp Modal */}
       {modalMode && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="w-full max-w-lg rounded-xl bg-white px-6 py-4 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
-            <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
-              <h3 className="text-lg font-semibold text-[#1F1F1F]">
+          <div className="w-full max-w-lg rounded-xl bg-white dark:bg-zinc-900 px-6 py-4 shadow-2xl border border-zinc-200 dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 relative my-auto">
+            <div className="flex items-center justify-between mb-4 border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                 {modalMode === "add" ? "Add Travel Stamp" : "Edit Travel Stamp"}
               </h3>
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="text-[#1f1f1f] hover:text-[#727272] text-lg font-semibold"
+                className="text-[#1f1f1f] dark:text-zinc-300 hover:text-[#727272] dark:hover:text-zinc-100 text-lg font-semibold"
                 aria-label="Close dialog"
               >
                 <CloseIcon className="size-4" />
@@ -483,8 +483,8 @@ export function WhereIveBeenSelector({
             </div>
 
             {/* Live Interactive Stamp Preview */}
-            <div className="flex flex-col items-center justify-center py-4 bg-zinc-50/80 rounded-2xl border border-zinc-200/60 mb-6">
-              <span className="text-base font-medium text-[#727272] mb-2">
+            <div className="flex flex-col items-center justify-center py-4 bg-zinc-50/80 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200/60 dark:border-zinc-700 mb-6">
+              <span className="text-base font-medium text-[#727272] dark:text-zinc-400 mb-2">
                 Live Stamp Preview
               </span>
               <TravelStampGraphic stamp={previewStamp} size="lg" />
@@ -492,10 +492,10 @@ export function WhereIveBeenSelector({
 
             {/* Step 1: Icon Image Upload */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[#1F1F1F] mb-1.5">
+              <label className="block text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 mb-1.5">
                 Stamp Icon / Artwork (Optional)
               </label>
-              <p className="text-xs text-[#727272] mb-2">
+              <p className="text-xs text-[#727272] dark:text-zinc-400 mb-2">
                 Upload a custom PNG, JPG, or WebP graphic for your stamp.
                 Transparency is preserved.
               </p>
@@ -510,19 +510,19 @@ export function WhereIveBeenSelector({
 
               <div className="flex items-center gap-3">
                 {uploadedIconUrl ? (
-                  <div className="flex items-center gap-3 w-full p-3 rounded-2xl bg-zinc-100 border border-zinc-200">
+                  <div className="flex items-center gap-3 w-full p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                     <img
                       src={uploadedIconUrl}
                       alt="Icon preview"
-                      className="w-10 h-10 object-contain rounded-lg bg-white p-1"
+                      className="w-10 h-10 object-contain rounded-lg bg-white dark:bg-zinc-900 p-1"
                     />
-                    <span className="text-sm text-emerald-700 font-medium flex-1">
+                    <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium flex-1">
                       Image uploaded successfully
                     </span>
                     <button
                       type="button"
                       onClick={() => setUploadedIconUrl(null)}
-                      className="text-sm font-medium text-rose-600 hover:underline"
+                      className="text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline"
                     >
                       Remove
                     </button>
@@ -532,13 +532,13 @@ export function WhereIveBeenSelector({
                     type="button"
                     disabled={uploadingImage}
                     onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50 hover:bg-white text-sm font-medium text-[#1f1f1f] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 sm:min-h-[60px] min-h-[56px]"
+                    className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-400 bg-zinc-50 dark:bg-zinc-800 hover:bg-white dark:hover:bg-zinc-800 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 sm:min-h-[60px] min-h-[56px]"
                   >
                     {uploadingImage ? (
                       <span>Uploading icon image...</span>
                     ) : (
                       <>
-                        <Image src="/images/icons/camera.svg" alt="" width={24} height={24} className="object-contain" />
+                        <Image src="/images/icons/camera.svg" alt="" width={24} height={24} className="object-contain dark:invert" />
                         <span>Click to Upload Stamp Artwork</span>
                       </>
                     )}
@@ -566,11 +566,11 @@ export function WhereIveBeenSelector({
             </div>
 
             {/* Modal Control Actions */}
-            <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white"
               >
                 Cancel
               </button>
@@ -578,7 +578,7 @@ export function WhereIveBeenSelector({
                 type="button"
                 onClick={handleSaveStamp}
                 disabled={!stampLocationValue.trim() || pending}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-950 transition-colors duration-300 hover:border-[#1f1f1f] dark:hover:border-amber-300 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 hover:text-white dark:hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {modalMode === "add" ? "Save Stamp" : "Update Stamp"}
               </button>

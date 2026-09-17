@@ -7,7 +7,7 @@ import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
 
 const controlClass =
-  "rounded-xl bg-[#F3F4F5] px-3.5 py-3 shadow-[0_2px_4px_#00000025] border border-white";
+  "rounded-xl bg-[#F3F4F5] dark:bg-zinc-800 px-3.5 py-3 shadow-[0_2px_4px_#00000025] border border-white dark:border-zinc-700";
 
 function ExpandControl({
   title,
@@ -22,21 +22,21 @@ function ExpandControl({
     <details className={`${controlClass} group`}>
       <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <span>
-          <span className="block text-sm text-[#1F1F1F]">{title}</span>
+          <span className="block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{title}</span>
           {subtitle && (
-            <span className="mt-1 block text-sm leading-5 text-[#727272]">
+            <span className="mt-1 block text-sm leading-5 text-[#727272] dark:text-zinc-400 font-normal">
               {subtitle}
             </span>
           )}
         </span>
         <span
           aria-hidden="true"
-          className="text-lg font-light leading-4 group-open:rotate-45"
+          className="text-lg font-light leading-4 group-open:rotate-45 text-[#1F1F1F] dark:text-zinc-100"
         >
           +
         </span>
       </summary>
-      <div className="mt-4 border-t border-zinc-200 pt-3 text-xs leading-5 text-[#727272]">
+      <div className="mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-3 text-xs leading-5 text-[#727272] dark:text-zinc-400">
         {children}
       </div>
     </details>
@@ -84,8 +84,8 @@ export function CalendarSettingsPanel({
     max?: number,
   ) => (
     <label className={`block ${controlClass}`}>
-      <span className="mb-2 block text-sm text-[#1F1F1F]">{label}</span>
-      <span className="flex items-center gap-1 text-sm font-medium">
+      <span className="mb-2 block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{label}</span>
+      <span className="flex items-center gap-1 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
         {suffix === "SAR" && <span>SAR</span>}
         <input
           aria-label={label}
@@ -96,7 +96,7 @@ export function CalendarSettingsPanel({
           max={max}
           step="0.01"
           required={name !== "weekendPrice"}
-          className={`${suffix === "%" ? "w-7" : "w-full"} min-w-0 bg-transparent outline-offset-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+          className={`${suffix === "%" ? "w-7" : "w-full"} min-w-0 bg-transparent text-[#1F1F1F] dark:text-zinc-100 outline-offset-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
         />
         {suffix === "%" && <span>%</span>}
       </span>
@@ -104,15 +104,15 @@ export function CalendarSettingsPanel({
   );
   if (panel === "overview")
     return (
-      <div className="space-y-8 text-sm">
+      <div className="space-y-8 text-sm text-[#1F1F1F] dark:text-zinc-100">
         <button
-          className="flex w-full justify-between text-left"
+          className="flex w-full justify-between text-left hover:text-amber-600 dark:hover:text-amber-400"
           onClick={() => setPanel("pricing")}
         >
           Price settings <span>›</span>
         </button>
         <button
-          className="flex w-full justify-between text-left"
+          className="flex w-full justify-between text-left hover:text-amber-600 dark:hover:text-amber-400"
           onClick={() => setPanel("availability")}
         >
           Availability settings <span>›</span>
@@ -120,7 +120,7 @@ export function CalendarSettingsPanel({
       </div>
     );
   return (
-    <div className="text-[#1F1F1F]">
+    <div className="text-[#1F1F1F] dark:text-zinc-100">
       <BackButton
         aria-label="Back to calendar settings"
         onClick={() => setPanel("overview")}
@@ -128,19 +128,19 @@ export function CalendarSettingsPanel({
       />
       {panel === "availability" ? (
         <div className="space-y-5">
-          <h2 className="text-sm font-medium">Availability settings</h2>
+          <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Availability settings</h2>
           <div className={controlClass}>
-            <p className="text-xs text-[#727272]">Trip length</p>
-            <p className="mt-2 text-sm">
+            <p className="text-xs text-[#727272] dark:text-zinc-400">Trip length</p>
+            <p className="mt-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
               {listing.minNights}–{listing.maxNights} nights
             </p>
           </div>
-          <p className="text-xs leading-5 text-[#727272]">
+          <p className="text-xs leading-5 text-[#727272] dark:text-zinc-400">
             Select dates on the calendar to manage availability.
           </p>
           <Link
             href={`/host/listings/${listing.id}/availability`}
-            className="block text-xs underline"
+            className="block text-xs underline text-[#1F1F1F] dark:text-zinc-300 dark:hover:text-amber-400"
           >
             Edit availability and connect calendars
           </Link>
@@ -184,31 +184,31 @@ export function CalendarSettingsPanel({
         >
           <section className="space-y-3 pb-6">
             <div>
-              <h2 className="text-sm font-medium">Price settings</h2>
-              <p className="mt-1 text-xs leading-5 text-[#727272]">
+              <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Price settings</h2>
+              <p className="mt-1 text-xs leading-5 text-[#727272] dark:text-zinc-400">
                 These apply to all nights, unless you customize them by date.
               </p>
             </div>
             <div className="flex items-center justify-between pt-1">
-              <span className="text-sm font-normal">Weekday base price</span>
+              <span className="text-sm font-normal text-[#1F1F1F] dark:text-zinc-100">Weekday base price</span>
               <div className="relative inline-flex shrink-0 items-center">
                 <Image
                   src="/images/icons/SAR-icon.svg"
                   alt=""
                   width={20}
                   height={19}
-                  className="pointer-events-none absolute left-3"
+                  className="pointer-events-none absolute left-3 dark:invert"
                 />
                 <select
                   aria-label="Pricing currency"
                   defaultValue="SAR"
-                  className="h-10 w-[114px] cursor-pointer appearance-none rounded-full border border-[#858585] bg-white pl-10 pr-8 text-base font-normal text-[#1F1F1F] focus-visible:outline-none"
+                  className="h-10 w-[114px] cursor-pointer appearance-none rounded-full border border-[#858585] dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-10 pr-8 text-base font-normal text-[#1F1F1F] dark:text-zinc-100 focus-visible:outline-none"
                 >
                   <option value="SAR">SAR</option>
                 </select>
                 <svg
                   aria-hidden="true"
-                  className="pointer-events-none absolute right-3 size-4 text-[#1F1F1F]"
+                  className="pointer-events-none absolute right-3 size-4 text-[#1F1F1F] dark:text-zinc-100"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -235,9 +235,9 @@ export function CalendarSettingsPanel({
               </p>
             </ExpandControl>
           </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] py-6">
-            <h3 className="text-sm font-medium">Discounts</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272]">
+          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
+            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Discounts</h3>
+            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-zinc-400">
               Offer lower nightly rates for longer stays.
             </p>
             {input(
@@ -258,21 +258,21 @@ export function CalendarSettingsPanel({
               title="More discounts"
               subtitle="Early birds | Last minute"
             >
-              <Link href={editorHref} className="underline">
+              <Link href={editorHref} className="underline dark:text-zinc-300 dark:hover:text-amber-400">
                 Manage additional discounts
               </Link>
             </ExpandControl>
           </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] py-6">
-            <h3 className="text-sm font-medium">Promotions</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272]">
+          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
+            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Promotions</h3>
+            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-zinc-400">
               Manage offers and discounts for your listing.
             </p>
             <ExpandControl
               title="Custom promotion"
               subtitle="Choose the dates and discounts"
             >
-              <Link href={editorHref} className="underline">
+              <Link href={editorHref} className="underline dark:text-zinc-300 dark:hover:text-amber-400">
                 View promotion options
               </Link>
             </ExpandControl>
@@ -280,8 +280,8 @@ export function CalendarSettingsPanel({
               <p>No promotion history is available.</p>
             </ExpandControl>
           </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] py-6">
-            <h3 className="text-sm font-medium">Additional charges</h3>
+          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
+            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Additional charges</h3>
             <ExpandControl title="Fees" subtitle="Cleaning, pets, extra guests">
               {input(
                 "cleaningFee",
@@ -293,7 +293,7 @@ export function CalendarSettingsPanel({
                 "Extra guest fee (per guest per night) · SAR",
                 ((listing as any).extraGuestFee || 0) / 100,
               )}
-              <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F]">
+              <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F] dark:text-zinc-300 dark:hover:text-amber-400">
                 More fee settings
               </Link>
             </ExpandControl>
@@ -302,7 +302,7 @@ export function CalendarSettingsPanel({
             <button
               type="submit"
               disabled={saving}
-              className="w-full rounded-full bg-[#FDE29B] px-4 py-2.5 text-xs font-medium disabled:opacity-50"
+              className="w-full rounded-full bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-semibold px-4 py-2.5 text-xs disabled:opacity-50 hover:bg-amber-300 dark:hover:bg-amber-300 transition-colors cursor-pointer"
             >
               {saving ? "Saving…" : "Save changes"}
             </button>
@@ -310,7 +310,7 @@ export function CalendarSettingsPanel({
           {(notice || validation) && (
             <p
               role={validation ? "alert" : "status"}
-              className="mt-3 text-xs leading-5"
+              className="mt-3 text-xs leading-5 dark:text-zinc-300"
             >
               {validation || notice}
             </p>

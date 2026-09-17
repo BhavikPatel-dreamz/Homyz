@@ -299,27 +299,27 @@ export function AdminAboutHostView({
   }, [languages, languageSearch]);
 
   return (
-    <div className="w-full max-w-4xl space-y-6 pb-20 font-sans text-zinc-900 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl space-y-6 pb-20 font-sans text-zinc-900 dark:text-zinc-100 animate-in fade-in duration-200">
       {/* 1. Header with Breadcrumb & Admin Context */}
       <div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-md">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-2.5 py-0.5 rounded-md">
             Admin Workspace
           </span>
-          <span className="text-zinc-400">/</span>
-          <span className="text-xs font-semibold text-zinc-500">Your Space</span>
+          <span className="text-zinc-400 dark:text-zinc-600">/</span>
+          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Your Space</span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-950 mt-2">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100 mt-2">
           About Host
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
           Manage the public profile, background details, languages, and travel information for this listing&apos;s host.
         </p>
       </div>
 
       {!canEdit && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs font-medium text-amber-900 flex items-center gap-2">
-          <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-4 text-xs font-medium text-amber-900 dark:text-amber-300 flex items-center gap-2">
+          <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <span>You have view-only access for listing management. Editable fields are disabled.</span>
@@ -327,10 +327,10 @@ export function AdminAboutHostView({
       )}
 
       {/* 2. Host Profile Card (Admin Card) */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-100">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-4">
-            <div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 shadow-2xs">
+            <div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shadow-2xs">
               {hostProfile.image ? (
                 <img
                   src={hostProfile.image}
@@ -338,7 +338,7 @@ export function AdminAboutHostView({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-xl font-bold text-indigo-700">
+                <div className="flex h-full w-full items-center justify-center bg-indigo-50 dark:bg-indigo-950/60 text-xl font-bold text-indigo-700 dark:text-indigo-300">
                   {getInitials(hostProfile.name)}
                 </div>
               )}
@@ -346,14 +346,14 @@ export function AdminAboutHostView({
 
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-bold text-zinc-950 leading-tight">
+                <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-100 leading-tight">
                   {hostProfile.name || "Unnamed Host"}
                 </h2>
-                <span className="text-[10px] font-semibold text-zinc-500 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
                   Primary Host
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 font-mono">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
                 ID: {hostProfile.name ? `host-${hostProfile.name.toLowerCase().replace(/\s+/g, "")}` : "N/A"}
               </p>
             </div>
@@ -361,29 +361,29 @@ export function AdminAboutHostView({
 
           {/* System Information: Rating & Tenure (Strictly Read-Only) */}
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50 px-4 py-2.5 text-center min-w-[110px]">
-              <span className="text-xs text-zinc-500 block uppercase font-bold tracking-wider text-[10px]">
+            <div className="rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-zinc-50 dark:bg-zinc-800/60 px-4 py-2.5 text-center min-w-[110px]">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 block uppercase font-bold tracking-wider text-[10px]">
                 Host Rating
               </span>
-              <span className="text-sm font-bold text-zinc-900 mt-0.5 block flex items-center justify-center gap-1">
+              <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-0.5 block flex items-center justify-center gap-1">
                 {hostRating}
               </span>
-              <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">System derived</span>
+              <span className="text-[9px] text-zinc-400 dark:text-zinc-400 block mt-0.5 font-medium">System derived</span>
             </div>
 
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50 px-4 py-2.5 text-center min-w-[130px]">
-              <span className="text-xs text-zinc-500 block uppercase font-bold tracking-wider text-[10px]">
+            <div className="rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 bg-zinc-50 dark:bg-zinc-800/60 px-4 py-2.5 text-center min-w-[130px]">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 block uppercase font-bold tracking-wider text-[10px]">
                 Hosting Tenure
               </span>
-              <span className="text-sm font-bold text-zinc-900 mt-0.5 block">
+              <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-0.5 block">
                 {hostingTenure}
               </span>
-              <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">Account age</span>
+              <span className="text-[9px] text-zinc-400 dark:text-zinc-400 block mt-0.5 font-medium">Account age</span>
             </div>
           </div>
         </div>
 
-        <div className="pt-4 flex items-center justify-between text-xs text-zinc-500">
+        <div className="pt-4 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
           <p>
             Host profile data is stored globally on the host account and displayed across their public listings.
           </p>
@@ -391,10 +391,10 @@ export function AdminAboutHostView({
       </section>
 
       {/* 3. Host Details (Admin Card) */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-6">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-6">
         <div>
-          <h2 className="text-base font-bold text-zinc-950 tracking-tight">Host Details</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h2 className="text-base font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">Host Details</h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
             Structured highlights and personality prompts displayed to guests.
           </p>
         </div>
@@ -403,7 +403,7 @@ export function AdminAboutHostView({
           {/* What makes your home unique */}
           <div className="space-y-1.5 md:col-span-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="homeUnique" className="text-xs font-bold text-zinc-800">
+              <label htmlFor="homeUnique" className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 What makes your home unique
               </label>
               <span className="text-[11px] text-zinc-400">{homeUnique.length}/500</span>
@@ -416,14 +416,14 @@ export function AdminAboutHostView({
               value={homeUnique}
               onChange={(e) => setHomeUnique(e.target.value)}
               placeholder="e.g. Peaceful backyard terrace overlooking the city hills with direct garden access."
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed transition-colors"
             />
           </div>
 
           {/* What guests should know */}
           <div className="space-y-1.5 md:col-span-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="guestsShouldKnow" className="text-xs font-bold text-zinc-800">
+              <label htmlFor="guestsShouldKnow" className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 What guests should know
               </label>
               <span className="text-[11px] text-zinc-400">{guestsShouldKnow.length}/500</span>
@@ -436,35 +436,35 @@ export function AdminAboutHostView({
               value={guestsShouldKnow}
               onChange={(e) => setGuestsShouldKnow(e.target.value)}
               placeholder="e.g. I respond promptly to guest messages and love sharing local restaurant recommendations."
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed transition-colors"
             />
           </div>
 
           {/* Languages spoken (Multi-select) */}
           <div className="space-y-2 md:col-span-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-zinc-800">
+              <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 Languages spoken
               </label>
               <span className="text-[11px] text-zinc-400">{languages.length} selected</span>
             </div>
 
             {/* Selected Language Chips */}
-            <div className="flex flex-wrap items-center gap-1.5 min-h-[36px] p-2 rounded-xl border border-zinc-200 bg-zinc-50/70">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-[36px] p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50">
               {languages.length === 0 ? (
                 <span className="text-xs text-zinc-400 px-1 italic">No languages selected yet</span>
               ) : (
                 languages.map((langId) => (
                   <span
                     key={langId}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-800 shadow-2xs"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-2xs"
                   >
                     <span>{getLanguageNameById(langId)}</span>
                     {canEdit && (
                       <button
                         type="button"
                         onClick={() => removeLanguage(langId)}
-                        className="text-zinc-400 hover:text-zinc-700 cursor-pointer ml-0.5"
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer ml-0.5"
                         aria-label={`Remove ${getLanguageNameById(langId)}`}
                       >
                         ✕
@@ -488,13 +488,13 @@ export function AdminAboutHostView({
                     }}
                     onFocus={() => setIsLanguageDropdownOpen(true)}
                     placeholder="Search and add languages (e.g. English, Arabic, Spanish)..."
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900"
+                    className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
                   />
                   {isLanguageDropdownOpen && (
                     <button
                       type="button"
                       onClick={() => setIsLanguageDropdownOpen(false)}
-                      className="rounded-xl border border-zinc-300 px-3 text-xs text-zinc-600 hover:bg-zinc-100"
+                      className="rounded-xl border border-zinc-300 dark:border-zinc-700 px-3 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     >
                       Done
                     </button>
@@ -502,13 +502,13 @@ export function AdminAboutHostView({
                 </div>
 
                 {isLanguageDropdownOpen && filteredLanguages.length > 0 && (
-                  <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg divide-y divide-zinc-50">
+                  <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-1 shadow-lg divide-y divide-zinc-50 dark:divide-zinc-700/50">
                     {filteredLanguages.map((lang) => (
                       <li key={lang.id}>
                         <button
                           type="button"
                           onClick={() => addLanguage(lang.id)}
-                          className="w-full px-4 py-2 text-left text-xs font-medium text-zinc-800 hover:bg-zinc-50 flex items-center justify-between cursor-pointer"
+                          className="w-full px-4 py-2 text-left text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 flex items-center justify-between cursor-pointer"
                         >
                           <span>{lang.name}</span>
                           {lang.nativeName && (
@@ -526,28 +526,28 @@ export function AdminAboutHostView({
           {/* My hobbies */}
           <div className="space-y-2 md:col-span-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-zinc-800">
+              <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 My hobbies
               </label>
               <span className="text-[11px] text-zinc-400">{hobbies.length}/20 tags</span>
             </div>
 
             {/* Hobby Tags */}
-            <div className="flex flex-wrap items-center gap-1.5 min-h-[36px] p-2 rounded-xl border border-zinc-200 bg-zinc-50/70">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-[36px] p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50">
               {hobbies.length === 0 ? (
                 <span className="text-xs text-zinc-400 px-1 italic">No hobbies added yet</span>
               ) : (
                 hobbies.map((hobby, index) => (
                   <span
                     key={`${hobby}-${index}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-zinc-300 px-2.5 py-1 text-xs font-semibold text-zinc-800 shadow-2xs"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-2xs"
                   >
                     <span>{hobby}</span>
                     {canEdit && (
                       <button
                         type="button"
                         onClick={() => removeHobby(index)}
-                        className="text-zinc-400 hover:text-zinc-700 cursor-pointer ml-0.5"
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer ml-0.5"
                         aria-label={`Remove ${hobby}`}
                       >
                         ✕
@@ -573,13 +573,13 @@ export function AdminAboutHostView({
                     }
                   }}
                   placeholder="Type a hobby and press enter (e.g. Scuba diving, Gardening)..."
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900"
+                  className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
                 />
                 <button
                   type="button"
                   onClick={addHobby}
                   disabled={!hobbyInput.trim()}
-                  className="rounded-xl bg-zinc-900 text-white px-4 py-2 text-xs font-semibold hover:bg-black disabled:bg-zinc-200 disabled:text-zinc-400 cursor-pointer"
+                  className="rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 text-xs font-semibold hover:bg-black dark:hover:bg-white disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-500 cursor-pointer"
                 >
                   Add
                 </button>
@@ -590,7 +590,7 @@ export function AdminAboutHostView({
           {/* Education / background */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="education" className="text-xs font-bold text-zinc-800">
+              <label htmlFor="education" className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 Education / background
               </label>
               <span className="text-[11px] text-zinc-400">{education.length}/300</span>
@@ -603,14 +603,14 @@ export function AdminAboutHostView({
               value={education}
               onChange={(e) => setEducation(e.target.value)}
               placeholder="e.g. Architecture Degree from King Saud University"
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed"
             />
           </div>
 
           {/* Biography headline prompt */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="biography" className="text-xs font-bold text-zinc-800">
+              <label htmlFor="biography" className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 Biography headline
               </label>
               <span className="text-[11px] text-zinc-400">{biography.length}/500</span>
@@ -623,14 +623,14 @@ export function AdminAboutHostView({
               value={biography}
               onChange={(e) => setBiography(e.target.value)}
               placeholder="e.g. Architect & World Traveler hosting in Riyadh"
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed"
             />
           </div>
 
           {/* My perfect guest */}
           <div className="space-y-1.5 md:col-span-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="perfectGuest" className="text-xs font-bold text-zinc-800">
+              <label htmlFor="perfectGuest" className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                 My perfect guest
               </label>
               <span className="text-[11px] text-zinc-400">{perfectGuest.length}/300</span>
@@ -643,9 +643,9 @@ export function AdminAboutHostView({
               value={perfectGuest}
               onChange={(e) => setPerfectGuest(e.target.value)}
               placeholder="e.g. Respectful travelers who appreciate thoughtful architecture and quiet evenings."
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed"
             />
-            <p className="text-[11px] text-zinc-400 italic">
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 italic">
               Profile note only; does not affect guest eligibility or automated booking rules.
             </p>
           </div>
@@ -653,11 +653,11 @@ export function AdminAboutHostView({
       </section>
 
       {/* 4. About Me (Long-Form Textarea) */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-3">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-zinc-950 tracking-tight">About Me</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h2 className="text-base font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">About Me</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Long-form host biography displayed on the public property listing page and the host profile.
             </p>
           </div>
@@ -671,23 +671,23 @@ export function AdminAboutHostView({
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           placeholder="Tell guests about your background, your hosting style, what you love about your city, and what makes your stays memorable..."
-          className="w-full rounded-xl border border-zinc-300 bg-white p-3.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:cursor-not-allowed leading-relaxed"
+          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed leading-relaxed"
         />
       </section>
 
       {/* 5. Where I've Been (Travel Stamps & Public Visibility) */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
           <div>
-            <h2 className="text-base font-bold text-zinc-950 tracking-tight">Where I&apos;ve Been</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h2 className="text-base font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">Where I&apos;ve Been</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Travel stamps showcasing places and experiences the host has visited.
             </p>
           </div>
 
           {/* Visibility Toggle [ ON / OFF ] */}
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-semibold text-zinc-700">
+            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Show on public profile:
             </span>
             <button
@@ -698,8 +698,8 @@ export function AdminAboutHostView({
               onClick={() => setStampsVisible((v) => !v)}
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer disabled:cursor-not-allowed ${
                 stampsVisible
-                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200"
-                  : "bg-zinc-200 text-zinc-700 border border-zinc-300 hover:bg-zinc-300"
+                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900/60"
+                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700"
               }`}
             >
               [ {stampsVisible ? "ON" : "OFF"} ]
@@ -709,7 +709,7 @@ export function AdminAboutHostView({
 
         {/* Travel Stamps Gallery */}
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3 min-h-[90px] p-4 rounded-xl border border-zinc-200 bg-zinc-50/50">
+          <div className="flex flex-wrap items-center gap-3 min-h-[90px] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
             {selectedStamps.length === 0 ? (
               <p className="text-xs text-zinc-400 italic">No travel stamps selected yet.</p>
             ) : (
@@ -717,7 +717,7 @@ export function AdminAboutHostView({
                 const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
                 if (!stamp) return null;
                 return (
-                  <div key={stamp.id} className="overflow-hidden rounded-xl bg-white border border-zinc-200 shadow-2xs p-1">
+                  <div key={stamp.id} className="overflow-hidden rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-2xs p-1">
                     <TravelStampGraphic stamp={stamp} size="sm" />
                   </div>
                 );
@@ -729,7 +729,7 @@ export function AdminAboutHostView({
             <button
               type="button"
               onClick={() => setIsStampEditorOpen(true)}
-              className="rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 px-4 py-2 text-xs font-semibold shadow-2xs cursor-pointer"
+              className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 px-4 py-2 text-xs font-semibold shadow-2xs cursor-pointer"
             >
               Manage travel stamps ({selectedStamps.length}/10)
             </button>
@@ -739,16 +739,16 @@ export function AdminAboutHostView({
         {/* Modal for selecting travel stamps */}
         {isStampEditorOpen && (
           <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-            <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200">
-              <div className="mb-4 flex items-center justify-between border-b border-zinc-200 pb-3">
+            <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800">
+              <div className="mb-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
                 <div>
-                  <h3 className="text-base font-bold text-zinc-950">Select Travel Stamps</h3>
-                  <p className="text-xs text-zinc-500">Pick up to 10 stamps for the host&apos;s public profile.</p>
+                  <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-100">Select Travel Stamps</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Pick up to 10 stamps for the host&apos;s public profile.</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsStampEditorOpen(false)}
-                  className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                  className="rounded-full border border-zinc-300 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
                   ✕ Close
                 </button>
@@ -776,11 +776,11 @@ export function AdminAboutHostView({
       </section>
 
       {/* 6. My Interests (Multi-select, Selected Chips with [ × ], + Add Interest) */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs space-y-4">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-zinc-950 tracking-tight">My Interests</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h2 className="text-base font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">My Interests</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Personal interests and topics displayed on the host&apos;s profile.
             </p>
           </div>
@@ -788,21 +788,21 @@ export function AdminAboutHostView({
         </div>
 
         {/* Selected Chips with [ × ] */}
-        <div className="flex flex-wrap items-center gap-2 min-h-[44px] p-3 rounded-xl border border-zinc-200 bg-zinc-50/70">
+        <div className="flex flex-wrap items-center gap-2 min-h-[44px] p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50">
           {interests.length === 0 ? (
-            <span className="text-xs text-zinc-400 italic">No interests selected yet</span>
+            <span className="text-xs text-zinc-400 px-1 italic">No interests selected yet</span>
           ) : (
             interests.map((interest) => (
               <span
                 key={interest}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white border border-zinc-300 px-3 py-1 text-xs font-semibold text-zinc-800 shadow-2xs hover:border-zinc-400 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-2xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
               >
                 <span>{interest}</span>
                 {canEdit && (
                   <button
                     type="button"
                     onClick={() => removeInterest(interest)}
-                    className="text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer text-xs ml-0.5"
+                    className="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer text-xs ml-0.5"
                     aria-label={`Remove ${interest}`}
                   >
                     ✕
@@ -816,7 +816,7 @@ export function AdminAboutHostView({
         {/* Quick-Add from Reference Dataset */}
         {canEdit && (
           <div className="space-y-2 pt-2">
-            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
               Suggested Interests
             </span>
             <div className="flex flex-wrap items-center gap-1.5">
@@ -828,7 +828,7 @@ export function AdminAboutHostView({
                     key={refInterest}
                     type="button"
                     onClick={() => addInterest(refInterest)}
-                    className="rounded-full border border-dashed border-zinc-300 bg-white hover:bg-zinc-50 hover:border-zinc-400 text-zinc-700 px-3 py-1 text-xs font-medium transition-colors cursor-pointer"
+                    className="rounded-full border border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300 px-3 py-1 text-xs font-medium transition-colors cursor-pointer"
                   >
                     + {refInterest}
                   </button>
@@ -853,13 +853,13 @@ export function AdminAboutHostView({
                 }
               }}
               placeholder="Add custom interest..."
-              className="w-full max-w-xs rounded-xl border border-zinc-300 bg-white px-3.5 py-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-hidden focus:ring-1 focus:ring-zinc-900"
+              className="w-full max-w-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
             />
             <button
               type="button"
               onClick={() => addInterest(interestInput)}
               disabled={!interestInput.trim()}
-              className="rounded-xl bg-zinc-900 text-white px-4 py-2 text-xs font-semibold hover:bg-black disabled:bg-zinc-200 disabled:text-zinc-400 cursor-pointer"
+              className="rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 text-xs font-semibold hover:bg-black dark:hover:bg-white disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-500 cursor-pointer"
             >
               + Add interest
             </button>
@@ -873,16 +873,16 @@ export function AdminAboutHostView({
           role="alert"
           className={`rounded-xl border p-4 text-xs font-medium flex items-center gap-2 animate-in fade-in ${
             feedback.type === "success"
-              ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-              : "border-rose-300 bg-rose-50 text-rose-900"
+              ? "border-emerald-300 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300"
+              : "border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           ) : (
-            <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           )}
@@ -892,11 +892,11 @@ export function AdminAboutHostView({
 
       {/* 8. Sticky Action Buttons: [ Cancel ]  [ Save ] */}
       {canEdit && (
-        <div className="sticky bottom-4 z-20 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm">
+        <div className="sticky bottom-4 z-20 flex items-center justify-between rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 p-4 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {isDirty ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2.5 py-1 rounded-full">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse" />
                 Unsaved changes
               </span>
             ) : (
@@ -909,7 +909,7 @@ export function AdminAboutHostView({
               type="button"
               disabled={!isDirty || isSaving}
               onClick={handleCancel}
-              className="rounded-xl border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-700 shadow-2xs hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+              className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>
@@ -918,7 +918,7 @@ export function AdminAboutHostView({
               type="button"
               disabled={!isDirty || isSaving}
               onClick={handleSave}
-              className="rounded-xl bg-zinc-900 px-6 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-300 cursor-pointer transition-colors"
+              className="rounded-xl bg-zinc-900 dark:bg-zinc-100 px-6 py-2 text-xs font-semibold text-white dark:text-zinc-900 shadow-2xs hover:bg-black dark:hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-300 dark:disabled:bg-zinc-800 cursor-pointer transition-colors"
             >
               {isSaving ? "Saving…" : "Save changes"}
             </button>

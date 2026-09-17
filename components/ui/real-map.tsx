@@ -319,18 +319,18 @@ export function RealMap({
 
       {/* Geocoding Loading Indicator */}
       {isLoadingGeocode && (
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 text-[11px] font-semibold text-zinc-700 shadow-xs z-10 flex items-center gap-2">
+        <div className="absolute top-3 left-3 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-xs z-10 flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
           Updating address details...
         </div>
       )}
 
       {/* Zoom Controls Overlay (Top Right - Matches Figma Layout) */}
-      <div className="absolute top-3 right-3 flex flex-col gap-3 items-center divide-y divide-zinc-200 text-xs font-semibold text-zinc-800 z-10">
+      <div className="absolute top-3 right-3 flex flex-col gap-3 items-center text-xs font-semibold text-zinc-800 dark:text-zinc-100 z-10">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-8 h-8 flex items-center justify-center bg-white hover:bg-zinc-100 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
+          className="w-8 h-8 flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-100 border border-transparent dark:border-zinc-700 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
           title="Zoom in"
         >
           +
@@ -338,10 +338,10 @@ export function RealMap({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="w-8 h-8 flex items-center justify-center bg-white hover:bg-zinc-100 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
+          className="w-8 h-8 flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-100 border border-transparent dark:border-zinc-700 cursor-pointer rounded-full transition-colors text-2xl font-normal shadow-md"
           title="Zoom out"
         >
-          <Image src="/images/icons/minus-icon.svg" alt="Zoom out" width={14} height={14} className="size-3.5 object-contain" />
+          <Image src="/images/icons/minus-icon.svg" alt="Zoom out" width={14} height={14} className="size-3.5 object-contain dark:invert" />
         </button>
       </div>
     </div>

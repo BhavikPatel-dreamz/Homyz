@@ -16,7 +16,7 @@ export function SkeletonBox({
   return (
     <div
       style={style}
-      className={`animate-pulse rounded-xl bg-zinc-200/80 skeleton-shimmer ${className}`}
+      className={`animate-pulse rounded-xl bg-zinc-200/80 dark:bg-zinc-700/80 skeleton-shimmer ${className}`}
       aria-hidden="true"
     />
   );
@@ -32,7 +32,7 @@ export function SkeletonText({
   return (
     <div
       style={width ? { width } : undefined}
-      className={`animate-pulse rounded-md bg-zinc-200/80 skeleton-shimmer ${className}`}
+      className={`animate-pulse rounded-md bg-zinc-200/80 dark:bg-zinc-700/80 skeleton-shimmer ${className}`}
       aria-hidden="true"
     />
   );
@@ -45,7 +45,7 @@ export function SkeletonCircle({
 }) {
   return (
     <div
-      className={`animate-pulse rounded-full bg-zinc-200/80 skeleton-shimmer shrink-0 ${className}`}
+      className={`animate-pulse rounded-full bg-zinc-200/80 dark:bg-zinc-700/80 skeleton-shimmer shrink-0 ${className}`}
       aria-hidden="true"
     />
   );
@@ -58,7 +58,7 @@ export function SkeletonButton({
 }) {
   return (
     <div
-      className={`animate-pulse rounded-full bg-zinc-200/90 skeleton-shimmer shrink-0 ${className}`}
+      className={`animate-pulse rounded-full bg-zinc-200/90 dark:bg-zinc-700/90 skeleton-shimmer shrink-0 ${className}`}
       aria-hidden="true"
     />
   );
@@ -67,7 +67,7 @@ export function SkeletonButton({
 export function SkeletonToggle() {
   return (
     <div
-      className="h-6 w-11 rounded-full bg-zinc-200 skeleton-shimmer shrink-0"
+      className="h-6 w-11 rounded-full bg-zinc-200 dark:bg-zinc-700 skeleton-shimmer shrink-0"
       aria-hidden="true"
     />
   );
@@ -82,7 +82,7 @@ export function SkeletonCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs ${className}`}
+      className={`rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 shadow-2xs ${className}`}
     >
       {children}
     </div>

@@ -185,10 +185,10 @@ export function ReservationDetails({
     <WorkspaceDialog title="Reservation details" onClose={onClose} maxWidth="max-w-lg">
       <div className="space-y-6 text-sm">
         {/* Confirmed Header & Guest Info */}
-        <div className="rounded-2xl bg-zinc-50 p-5 border border-zinc-100">
+        <div className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 p-5 border border-zinc-100 dark:border-zinc-700">
           <div className="flex items-center gap-2 mb-3">
             <span className="size-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
               Confirmed
             </span>
           </div>
@@ -199,18 +199,18 @@ export function ReservationDetails({
               <img
                 src={booking.guestImage}
                 alt={booking.guestName}
-                className="size-14 rounded-full object-cover border border-zinc-200"
+                className="size-14 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
               />
             ) : (
-              <div className="flex size-14 items-center justify-center rounded-full bg-amber-100 text-amber-900 font-semibold text-lg border border-amber-200">
+              <div className="flex size-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-semibold text-lg border border-amber-200 dark:border-amber-800">
                 {booking.guestName[0] || "G"}
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-bold text-zinc-900">{booking.guestName}</h3>
-              <p className="text-xs text-zinc-600 mt-0.5 truncate">{listing.title}</p>
-              <p className="text-xs text-zinc-500">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
-              <p className="mt-2 text-xs font-medium text-zinc-800">
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{booking.guestName}</h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 truncate">{listing.title}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
+              <p className="mt-2 text-xs font-medium text-zinc-800 dark:text-zinc-200">
                 {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
               </p>
             </div>
@@ -218,17 +218,17 @@ export function ReservationDetails({
         </div>
 
         {/* About Guest Card */}
-        <div className="rounded-2xl border border-zinc-200 p-4 space-y-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             About {booking.guestName}
           </h4>
-          <div className="space-y-1.5 text-xs text-zinc-700">
+          <div className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
             <div className="flex items-center gap-2">
               <span className="text-amber-500">★</span>
               <span>5.0 rating from 1 review</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-600">✔</span>
+              <span className="text-emerald-600 dark:text-emerald-400">✔</span>
               <span>Identity verified</span>
             </div>
             <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export function ReservationDetails({
               <span>Joined Homyz in 2022</span>
             </div>
           </div>
-          <button type="button" className="text-xs font-medium text-zinc-900 underline pt-1">
+          <button type="button" className="text-xs font-medium text-zinc-900 dark:text-zinc-100 underline pt-1 cursor-pointer">
             Show profile
           </button>
         </div>
@@ -246,13 +246,13 @@ export function ReservationDetails({
           <button
             type="button"
             onClick={onMoney}
-            className="w-full rounded-full border border-zinc-900 px-4 py-3 font-medium text-xs hover:bg-zinc-50 transition-colors shadow-2xs"
+            className="w-full rounded-full border border-zinc-900 dark:border-zinc-700 px-4 py-3 font-medium text-xs text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs cursor-pointer"
           >
             Send or request money
           </button>
           <a
             href="/host/messages"
-            className="w-full rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-xs font-medium text-white hover:bg-black transition-colors shadow-2xs"
+            className="w-full rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-3 text-center text-xs font-medium text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors shadow-2xs"
           >
             Message
           </a>
@@ -260,101 +260,101 @@ export function ReservationDetails({
 
         {/* Booking Details */}
         <div>
-          <h4 className="font-semibold text-zinc-900 text-sm mb-3">Booking details</h4>
-          <dl className="divide-y divide-zinc-100 text-xs">
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Booking details</h4>
+          <dl className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Guests</dt>
-              <dd className="font-medium text-zinc-800">2 Adults</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Guests</dt>
+              <dd className="font-medium text-zinc-800 dark:text-zinc-200">2 Adults</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Check-in</dt>
-              <dd className="font-medium text-zinc-800">{shortDate(booking.startDate)} ({listing.checkInStart || "15:00"})</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Check-in</dt>
+              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.startDate)} ({listing.checkInStart || "15:00"})</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Check-out</dt>
-              <dd className="font-medium text-zinc-800">{shortDate(booking.endDate)} ({listing.checkOutTime || "11:00"})</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Check-out</dt>
+              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.endDate)} ({listing.checkOutTime || "11:00"})</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Booking date</dt>
-              <dd className="font-medium text-zinc-800">{shortDate(booking.createdAt)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Booking date</dt>
+              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.createdAt)}</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Confirmation code</dt>
-              <dd className="font-mono text-zinc-800">{booking.id.slice(-8).toUpperCase()}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Confirmation code</dt>
+              <dd className="font-mono text-zinc-800 dark:text-zinc-200">{booking.id.slice(-8).toUpperCase()}</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500">Cancellation policy</dt>
-              <dd className="font-medium capitalize text-zinc-800">
+              <dt className="text-zinc-500 dark:text-zinc-400">Cancellation policy</dt>
+              <dd className="font-medium capitalize text-zinc-800 dark:text-zinc-200">
                 {listing.cancellationPolicy.replaceAll("_", " ").toLowerCase()}
               </dd>
             </div>
           </dl>
-          <a href="/host/calendar" className="inline-block text-xs font-medium text-zinc-900 underline mt-2">
+          <a href="/host/calendar" className="inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline mt-2">
             Show calendar
           </a>
         </div>
 
         {/* Financial Breakdown: Guest Paid */}
-        <div className="border-t border-zinc-200 pt-4">
-          <h4 className="font-semibold text-zinc-900 text-sm mb-3">Guest paid</h4>
+        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-zinc-500">{money(nightlyRate)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
-              <dd className="text-zinc-800">{money(roomFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">{money(nightlyRate)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
+              <dd className="text-zinc-800 dark:text-zinc-200">{money(roomFee)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Cleaning fee</dt>
-              <dd className="text-zinc-800">{money(cleaningFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
+              <dd className="text-zinc-800 dark:text-zinc-200">{money(cleaningFee)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Guest service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-zinc-800">{money(hostServiceFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dd className="text-zinc-800 dark:text-zinc-200">{money(hostServiceFee)}</dd>
             </div>
             {taxes > 0 && (
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Taxes</dt>
-                <dd className="text-zinc-800">{money(taxes)}</dd>
+                <dt className="text-zinc-500 dark:text-zinc-400">Taxes</dt>
+                <dd className="text-zinc-800 dark:text-zinc-200">{money(taxes)}</dd>
               </div>
             )}
-            <div className="flex justify-between border-t border-zinc-100 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900">Total (SAR)</dt>
-              <dd className="text-zinc-900">{money(guestTotal)}</dd>
+            <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
+              <dt className="text-zinc-900 dark:text-zinc-100">Total (SAR)</dt>
+              <dd className="text-zinc-900 dark:text-zinc-100">{money(guestTotal)}</dd>
             </div>
           </dl>
         </div>
 
         {/* Financial Breakdown: Host Payout */}
-        <div className="border-t border-zinc-200 pt-4">
-          <h4 className="font-semibold text-zinc-900 text-sm mb-3">Host payout</h4>
+        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Host payout</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-zinc-500">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
-              <dd className="text-zinc-800">{money(roomFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
+              <dd className="text-zinc-800 dark:text-zinc-200">{money(roomFee)}</dd>
             </div>
             {cleaningFee > 0 && (
               <div className="flex justify-between">
-                <dt className="text-zinc-500">Cleaning fee</dt>
-                <dd className="text-zinc-800">{money(cleaningFee)}</dd>
+                <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
+                <dd className="text-zinc-800 dark:text-zinc-200">{money(cleaningFee)}</dd>
               </div>
             )}
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Guest service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-rose-600">- {money(hostServiceFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dd className="text-rose-600 dark:text-rose-400">- {money(hostServiceFee)}</dd>
             </div>
-            <div className="flex justify-between border-t border-zinc-100 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900">Total payout (SAR)</dt>
-              <dd className="text-emerald-700">{money(hostPayout)}</dd>
+            <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
+              <dt className="text-zinc-900 dark:text-zinc-100">Total payout (SAR)</dt>
+              <dd className="text-emerald-700 dark:text-emerald-400">{money(hostPayout)}</dd>
             </div>
           </dl>
         </div>
 
         {/* Bottom Document Links */}
-        <div className="border-t border-zinc-200 pt-3 space-y-2 text-xs">
-          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 hover:text-zinc-950">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 space-y-2 text-xs">
+          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer">
             <span>VAT invoice</span>
             <span>›</span>
           </button>
-          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 hover:text-zinc-950">
+          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer">
             <span>Transaction history</span>
             <span>›</span>
           </button>
@@ -378,41 +378,41 @@ export function MoneyDialog({
   return (
     <WorkspaceDialog title="Send or request money" onClose={onClose} maxWidth="max-w-md">
       <div className="space-y-5 text-sm">
-        <div className="rounded-xl bg-zinc-50 p-4 border border-zinc-100">
+        <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">From</p>
-          <p className="my-1 font-bold text-base text-zinc-900">{booking.guestName}</p>
-          <p className="text-xs text-zinc-500">
+          <p className="my-1 font-bold text-base text-zinc-900 dark:text-zinc-100">{booking.guestName}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
           </p>
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="mb-2 font-semibold text-zinc-900 text-sm">What would you like to do?</legend>
-          <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-colors">
-            <input type="radio" name="money-action" defaultChecked className="size-4 accent-[#1F1F1F]" />
-            <span className="text-sm font-medium text-zinc-800">Send money</span>
+          <legend className="mb-2 font-semibold text-zinc-900 dark:text-zinc-100 text-sm">What would you like to do?</legend>
+          <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+            <input type="radio" name="money-action" defaultChecked className="size-4 accent-[#1F1F1F] dark:accent-amber-400" />
+            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Send money</span>
           </label>
-          <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-colors">
-            <input type="radio" name="money-action" className="size-4 accent-[#1F1F1F]" />
-            <span className="text-sm font-medium text-zinc-800">Request money</span>
+          <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+            <input type="radio" name="money-action" className="size-4 accent-[#1F1F1F] dark:accent-amber-400" />
+            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Request money</span>
           </label>
         </fieldset>
 
-        <p className="rounded-xl bg-amber-50 p-3.5 text-xs text-amber-900 leading-relaxed border border-amber-200/60">
+        <p className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-300 leading-relaxed border border-amber-200/60 dark:border-amber-900/60">
           Payments are securely handled via Homyz escrow. You can also contact your guest directly through Messages.
         </p>
 
-        <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-4">
+        <div className="mt-6 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="text-sm font-medium text-zinc-600 hover:text-zinc-900 underline"
+            className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline"
           >
             Cancel
           </button>
           <a
             href="/host/messages"
-            className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors"
+            className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-semibold text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors"
           >
             Next
           </a>
