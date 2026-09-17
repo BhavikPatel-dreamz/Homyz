@@ -5,13 +5,14 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
 const mobileGuestRows = [
-  { key: "adults", label: "Adults", description: "Ages 13 or above" },
-  { key: "children", label: "Children", description: "Ages 2 – 12" },
-  { key: "infants", label: "Infants", description: "Under 2" },
-  { key: "pets", label: "Pets", description: "Bringing a service animal?" },
+  { key: "adults", labelKey: "home_adults", descKey: "home_adults_desc" },
+  { key: "children", labelKey: "home_children", descKey: "home_children_desc" },
+  { key: "infants", labelKey: "home_infants", descKey: "home_infants_desc" },
+  { key: "pets", labelKey: "home_pets", descKey: "home_pets_desc" },
 ] as const;
 
 const RECENT_KEY = "homyz_recent_searches";
@@ -258,6 +259,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onSearch }: HeroSectionProps) {
+  const { t, language } = useLanguage();
   const [destination, setDestination] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocationData | null>(null);
   const [checkIn, setCheckIn] = useState("");
@@ -455,9 +457,15 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
   const effectiveGuestCount = Math.max(1, mobileGuestCount);
   const mobileGuestSummary = [
-    `${effectiveGuestCount} guest${effectiveGuestCount === 1 ? "" : "s"}`,
-    mobileGuests.infants ? `${mobileGuests.infants} infant${mobileGuests.infants === 1 ? "" : "s"}` : "",
-    mobileGuests.pets ? `${mobileGuests.pets} pet${mobileGuests.pets === 1 ? "" : "s"}` : "",
+    mobileGuestCount
+      ? t(mobileGuestCount === 1 ? "home_guest_one" : "home_guest_many", { count: mobileGuestCount })
+      : "",
+    mobileGuests.infants
+      ? t(mobileGuests.infants === 1 ? "home_infant_one" : "home_infant_many", { count: mobileGuests.infants })
+      : "",
+    mobileGuests.pets
+      ? t(mobileGuests.pets === 1 ? "home_pet_one" : "home_pet_many", { count: mobileGuests.pets })
+      : "",
   ].filter(Boolean).join(", ");
   const [datePreferences, setDatePreferences] = useState<DatePreferences>(initialDatePreferences);
   const destinationListRef = useRef<HTMLDivElement>(null);
@@ -703,9 +711,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             </div>
             <div className="min-w-0">
               <div className="text-[14px] font-bold text-zinc-900 group-hover:text-blue-700 transition-colors">
-                {isLocating ? "Detecting current location…" : "Use current location"}
+                {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
               </div>
-              <div className="text-[12px] text-zinc-500 truncate">Find stays near where you are right now</div>
+              <div className="text-[12px] text-zinc-500 truncate">{t("home_find_stays_near_you")}</div>
             </div>
           </div>
           <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-800">
@@ -756,7 +764,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             {places.length > 0 && (
               <div>
                 <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                  Places in {primaryCity?.name || "Destination"}
+                  {t("home_places_in", { name: primaryCity?.name || t("home_search_where") })}
                 </p>
                 <div className="space-y-1">
                   {places.map((p) => {
@@ -798,7 +806,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             {districts.length > 0 && (
               <div>
                 <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                  Nearby Areas & Districts
+                  {t("home_nearby_areas_districts")}
                 </p>
                 <div className="space-y-1">
                   {districts.map((d) => {
@@ -928,7 +936,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         ) : isLoadingSuggestions ? (
           <div className="py-6 px-2 text-center text-[13px] text-zinc-500 flex items-center justify-center gap-2">
             <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
-            Searching destinations & places…
+            {t("home_searching_destinations")}
           </div>
         ) : destination.trim().length >= 2 ? (
           <div className="py-8 px-4 text-center">
@@ -939,8 +947,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <p className="text-[14px] font-semibold text-zinc-900">No matching location found</p>
-            <p className="text-[12px] text-zinc-500 mt-1">Try checking your spelling or searching for a different city, street, or landmark.</p>
+            <p className="text-[14px] font-semibold text-zinc-900">{t("home_no_matching_location")}</p>
+            <p className="text-[12px] text-zinc-500 mt-1">{t("home_no_matching_location_hint")}</p>
           </div>
         ) : (
           /* Fallback: recent searches & popular destinations */
@@ -948,7 +956,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             {recentSearches.length > 0 && (
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-1.5 px-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Recent searches</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t("home_recent_searches")}</p>
                   <button
                     type="button"
                     onClick={() => {
@@ -957,7 +965,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                     }}
                     className="text-[11px] text-zinc-500 underline hover:text-zinc-900 cursor-pointer"
                   >
-                    Clear
+                    {t("home_clear")}
                   </button>
                 </div>
                 {recentSearches.map((term) => (
@@ -986,7 +994,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             {cities.length > 0 ? (
               <div>
                 <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                  Popular destinations worldwide
+                  {t("home_popular_destinations_worldwide")}
                 </p>
                 <div className="space-y-1">
                   {cities.map((d) => (
@@ -1008,7 +1016,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                         </div>
                       </div>
                       <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
-                        Explore
+                        {t("home_explore")}
                       </span>
                     </button>
                   ))}
@@ -1022,8 +1030,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                     <circle cx="12" cy="8" r="2" />
                   </svg>
                 </div>
-                <p className="text-[13px] font-medium text-zinc-800">Search any city worldwide</p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">Type Mumbai, Surat, London, or any destination to view all places</p>
+                <p className="text-[13px] font-medium text-zinc-800">{t("home_search_any_city_worldwide")}</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">{t("home_search_city_hint")}</p>
               </div>
             )}
           </>
@@ -1033,32 +1041,52 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   );
 
   const guestOptions = (
-                <div className="mt-1 divide-y divide-[#aaa]">
-                  {mobileGuestRows.map(({ key, label, description }) => (
-                    <div key={key} className="flex items-center justify-between gap-3 py-5 last:pb-0">
-                      <div className="min-w-0">
-                        <p className="text-[15px] text-[#1f1f1f]">{label}</p>
-                        <p className={`mt-1 text-[14px] leading-[1.5] text-[#777] ${key === "pets" ? "max-w-[145px] underline underline-offset-4" : ""}`}>
-                          {description}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <button type="button" aria-label={`Remove ${label.toLowerCase()}`}
-                          disabled={mobileGuests[key] === 0}
-                          onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: Math.max(0, counts[key] - 1) }))}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] disabled:border-[#aaa] disabled:text-[#999] hover:bg-white disabled:hover:bg-transparent">
-                          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M5 12h14" /></svg>
-                        </button>
-                        <span aria-live="polite" aria-label={`${label}: ${mobileGuests[key]}`} className="min-w-3 text-center text-[16px] tabular-nums">{mobileGuests[key]}</span>
-                        <button type="button" aria-label={`Add ${label.toLowerCase()}`}
-                          onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: counts[key] + 1 }))}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] hover:bg-white">
-                          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M5 12h14M12 5v14" /></svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+    <div className="mt-1 divide-y divide-[#aaa]">
+      {mobileGuestRows.map(({ key, labelKey, descKey }) => {
+        const label = t(labelKey);
+        const description = t(descKey);
+        return (
+          <div key={key} className="flex items-center justify-between gap-3 py-5 last:pb-0">
+            <div className="min-w-0">
+              <p className="text-[15px] text-[#1f1f1f]">{label}</p>
+              <p
+                className={`mt-1 text-[14px] leading-[1.5] text-[#777] ${
+                  key === "pets" ? "max-w-[145px] underline underline-offset-4" : ""
+                }`}
+              >
+                {description}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                aria-label={`Remove ${label.toLowerCase()}`}
+                disabled={mobileGuests[key] === 0}
+                onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: Math.max(0, counts[key] - 1) }))}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] disabled:border-[#aaa] disabled:text-[#999] hover:bg-white disabled:hover:bg-transparent"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+              <span aria-live="polite" aria-label={`${label}: ${mobileGuests[key]}`} className="min-w-3 text-center text-[16px] tabular-nums">
+                {mobileGuests[key]}
+              </span>
+              <button
+                type="button"
+                aria-label={`Add ${label.toLowerCase()}`}
+                onClick={() => setMobileGuests((counts) => ({ ...counts, [key]: counts[key] + 1 }))}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#444] hover:bg-white"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <path d="M5 12h14M12 5v14" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 
   return (
@@ -1080,8 +1108,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         {/* Heading */}
         <div className="mt-6">
           <h1 className="text-[28px] font-normal leading-[1.18] tracking-[-0.6px] text-[#1f1f1f]">
-            Book cozy stays<br />
-            <span className="font-medium">that feel like home</span>
+            {t("home_hero_title")}
           </h1>
         </div>
 
@@ -1098,7 +1125,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
             aria-label="Start your search"
           >
             <span className="text-base font-medium text-[#1f1f1f]">
-              {destination || "Start your search"}
+              {destination || t("home_search_where_placeholder")}
             </span>
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
               <svg
@@ -1136,8 +1163,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         {/* Hero Content & Search Bar */}
         <div className="relative z-10 w-full px-7 sm:px-12 lg:px-8 xl:px-8">
           <h1 className="mb-11 text-[34px] font-normal leading-[1.12] tracking-[-1.4px] text-[#1f1f1f] sm:text-[42px] lg:text-[50px] lg:leading-[1.08] xl:text-[52px]">
-            Book cozy stays<br />
-            <span className="font-semibold">that feel like home</span>
+            {t("home_hero_title")}
           </h1>
 
           {/* Floating Search Container */}
@@ -1155,7 +1181,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               onClick={() => setDesktopPanel("where")}
             >
               <label htmlFor="desktop-destination" className="text-[12px] font-bold uppercase tracking-wider text-zinc-800 cursor-pointer">
-                Where
+                {t("home_search_where")}
               </label>
               <div className="flex items-center gap-1.5 w-full">
                 <input
@@ -1235,9 +1261,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 desktopPanel === "checkIn" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
               }`}
             >
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">Check in</span>
+              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_when")}</span>
               <span className="block truncate text-[14px] font-medium text-zinc-600">
-                {datePreferences.mode !== "dates" ? "Flexible" : checkIn || "Add dates"}
+                {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkIn || t("home_search_add_dates")}
               </span>
             </button>
 
@@ -1253,9 +1279,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 desktopPanel === "checkOut" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
               }`}
             >
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">Check out</span>
+              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_when")}</span>
               <span className="block truncate text-[14px] font-medium text-zinc-600">
-                {datePreferences.mode !== "dates" ? "Flexible" : checkOut || "Add dates"}
+                {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkOut || t("home_search_add_dates")}
               </span>
             </button>
 
@@ -1272,9 +1298,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                   desktopPanel === "who" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">Who</span>
+                <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_who")}</span>
                 <span className="block truncate text-[14px] font-medium text-zinc-600">
-                  {mobileGuestSummary || "Add guests"}
+                  {mobileGuestSummary || t("home_search_add_guests")}
                 </span>
               </button>
               <button
@@ -1349,7 +1375,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
           >
             {/* Close Button at top right */}
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-bold text-zinc-900">Find your stay</h2>
+              <h2 className="text-base font-bold text-zinc-900">{t("home_find_your_stay")}</h2>
               <button
                 type="button"
                 onClick={() => setIsMobileSearchOpen(false)}
@@ -1371,12 +1397,12 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 aria-expanded={false}
                 className="flex w-full items-center justify-between gap-3 rounded-[22px] border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 px-5 py-3.5 text-left transition-colors cursor-pointer"
               >
-                <span className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wider">Where</span>
-                <span className="truncate text-[15px] font-semibold text-zinc-900">{destination || "Search destinations"}</span>
+                <span className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wider">{t("home_search_where")}</span>
+                <span className="truncate text-[15px] font-semibold text-zinc-900">{destination || t("home_search_where_placeholder")}</span>
               </button>
             ) : (
               <div className="rounded-[24px] bg-white border border-zinc-200/90 p-4 shadow-xs">
-                <h3 className="text-[18px] font-bold text-zinc-900 mb-3">Where to?</h3>
+                <h3 className="text-[18px] font-bold text-zinc-900 mb-3">{t("home_where_to")}</h3>
 
                 {/* Search input pill */}
                 <div className="flex items-center justify-between rounded-full border border-zinc-300 bg-zinc-50/70 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 pl-4 pr-1.5 py-1.5 shadow-2xs mb-3 transition-all">
@@ -1395,7 +1421,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                     data-form-type="other"
                     data-lpignore="true"
                     data-1p-ignore="true"
-                    placeholder="Search destinations (e.g. Surat, Mumbai)"
+                    placeholder={t("home_search_where_placeholder")}
                     value={destination}
                     onChange={(e) => handleDestinationChange(e.target.value)}
                     onKeyDown={(e) => {
@@ -1436,7 +1462,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                   </button>
                 </div>
 
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Destinations</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-2">{t("home_search_where")}</p>
                 {destinationSuggestions}
               </div>
             )}
@@ -1452,25 +1478,37 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
               >
                 <span className={activeStep === "when" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
-                  {activeStep === "when" ? "When's your trip?" : "When"}
+                  {activeStep === "when" ? t("home_when_trip") : t("home_search_when")}
                 </span>
                 {activeStep !== "when" && (
                   <span className="text-right text-[15px] font-semibold text-zinc-900">
                     {datePreferences.mode !== "dates"
-                      ? `${datePreferences.mode === "flexible" ? datePreferences.stay + " · " : ""}${
+                      ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as any) + " · " : ""}${
                           datePreferences.months.length
                             ? datePreferences.months
-                                .map((m) => new Date(m + "-01T00:00:00").toLocaleDateString("en-US", { month: "short" }))
+                                .map((m) =>
+                                  new Date(m + "-01T00:00:00").toLocaleDateString(
+                                    language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+                                    { month: "short" }
+                                  )
+                                )
                                 .join(", ")
-                            : "Anytime"
+                            : t("home_when_anytime")
                         }`
                       : checkIn
-                      ? `${new Date(checkIn + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}${
+                      ? `${new Date(checkIn + "T00:00:00").toLocaleDateString(
+                          language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+                          { month: "short", day: "numeric" }
+                        )}${
                           checkOut
-                            ? " – " + new Date(checkOut + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                            : " – Add checkout"
+                            ? " – " +
+                              new Date(checkOut + "T00:00:00").toLocaleDateString(
+                                language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+                                { month: "short", day: "numeric" }
+                              )
+                            : " – " + t("home_when_add_checkout")
                         }`
-                      : "Add dates"}
+                      : t("home_search_add_dates")}
                   </span>
                 )}
               </button>
@@ -1498,11 +1536,11 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}
               >
                 <span className={activeStep === "who" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
-                  {activeStep === "who" ? "Who's coming?" : "Who"}
+                  {activeStep === "who" ? t("home_whos_coming") : t("home_search_who")}
                 </span>
                 {activeStep !== "who" && (
                   <span className="text-right text-[15px] font-semibold text-zinc-900">
-                    {mobileGuestSummary || "Add guests"}
+                    {mobileGuestSummary || t("home_search_add_guests")}
                   </span>
                 )}
               </button>
@@ -1524,14 +1562,14 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 }}
                 className="text-[14px] font-semibold underline text-zinc-700 cursor-pointer hover:text-zinc-950"
               >
-                Clear all
+                {t("home_clear_all")}
               </button>
               <button
                 type="button"
                 onClick={handleMobileNext}
                 className="rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-zinc-900 shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer"
               >
-                {activeStep === "who" ? "Search" : "Next"}
+                {activeStep === "who" ? t("home_search_btn") : t("home_next")}
               </button>
             </div>
           </div>

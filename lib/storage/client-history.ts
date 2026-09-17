@@ -336,17 +336,15 @@ export function parseServerRecentSearches(cookieValue?: string | null): StoredSe
     } catch {}
     const parsed = JSON.parse(unescaped);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((item) => {
-        const validated = validateSearchContext(item);
-        if (!validated) return null;
-        return {
-          ...validated,
-          savedAt: validated.searchedAt,
-        };
-      })
-      .filter((item): item is StoredSearchContext => item !== null)
-      .slice(0, 4);
+    const mapped: (StoredSearchContext | null)[] = parsed.map((item) => {
+      const validated = validateSearchContext(item);
+      if (!validated) return null;
+      return {
+        ...validated,
+        savedAt: validated.searchedAt,
+      };
+    });
+    return mapped.filter((item): item is StoredSearchContext => item !== null).slice(0, 4);
   } catch {
     return [];
   }

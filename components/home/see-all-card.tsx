@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface SeeAllCardProps {
   href: string;
@@ -22,6 +23,7 @@ export function SeeAllCard({
   title,
   totalCount,
 }: SeeAllCardProps) {
+  const { t } = useLanguage();
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   // Ensure we always have 3 images for the fan stack
@@ -76,11 +78,11 @@ export function SeeAllCard({
       {/* "See all" Text & Count */}
       <div className="flex flex-col items-center">
         <span className="text-base sm:text-lg font-bold text-[#0052cc] group-hover:text-[#003b95] group-hover:underline transition-colors">
-          See all
+          {t("home_see_all")}
         </span>
         {totalCount && totalCount > 0 ? (
           <span className="text-[11px] text-zinc-400 font-normal mt-0.5">
-            {totalCount} stays
+            {t("home_count_stays", { count: totalCount })}
           </span>
         ) : null}
       </div>
