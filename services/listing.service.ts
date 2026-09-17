@@ -679,11 +679,12 @@ async function updateForAdmin(id: string, data: Prisma.ListingUpdateInput) {
   return prisma.listing.update({ where: { id }, data });
 }
 
-async function listForAdminDashboard() {
+async function listForAdminDashboard(options?: { take?: number; skip?: number }) {
   const [listings, totalCount, publishedCount, featuredCount, pausedCount] = await Promise.all([
     prisma.listing.findMany({
       where: { deletedAt: null },
-      take: 100,
+      ...(options?.take !== undefined ? { take: options.take } : {}),
+      ...(options?.skip !== undefined ? { skip: options.skip } : {}),
       orderBy: { createdAt: "desc" },
       include: {
         host: { select: { id: true, name: true, email: true, image: true } },

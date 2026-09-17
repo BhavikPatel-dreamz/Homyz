@@ -68,7 +68,7 @@ function MonthGrid({
   return (
     <div className="min-w-0">
       <div
-        className={`mb-4 grid grid-cols-7 text-center text-base font-medium pb-4 border-b border-b-[#DDDDDE] text-[#1F1F1F] ${
+        className={`mb-4 grid grid-cols-7 text-center text-base font-medium pb-4 border-b border-b-[#DDDDDE] dark:border-b-zinc-800 text-[#1F1F1F] dark:text-zinc-300 ${
           compact ? "max-sm:hidden text-[12px]" : ""
         }`}
       >
@@ -118,24 +118,24 @@ function MonthGrid({
                   : "min-h-20 p-2 sm:min-h-24 lg:min-h-36.5"
               } ${
                 reservation
-                  ? "border-zinc-900 bg-zinc-900 text-white shadow-xs"
+                  ? "border-zinc-900 dark:border-zinc-700 bg-zinc-900 text-white shadow-xs"
                   : blocked
-                    ? "border-zinc-200 bg-zinc-100/60 opacity-60"
-                    : "border-transparent bg-[#F3F4F5] hover:border-zinc-300 text-zinc-900"
+                    ? "border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-900/60 opacity-60"
+                    : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-900 dark:text-zinc-100"
               }`}
             >
               {/* Day Number */}
               <span
                 className={`flex items-center justify-center rounded-full font-normal transition-transform ${
                   compact
-                    ? "size-1 max-sm:bg-zinc-500 text-[0px] sm:size-5 sm:border sm:border-zinc-300 sm:bg-white sm:text-zinc-800 sm:text-[12px] sm:font-normal"
+                    ? "size-1 max-sm:bg-zinc-500 text-[0px] sm:size-5 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px] sm:font-normal"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                 } ${
                   isToday
-                    ? "bg-[#FDE29B] text-zinc-900 shadow-xs"
+                    ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-bold shadow-xs"
                     : reservation
                       ? "bg-zinc-800 text-white"
-                      : "text-zinc-800 bg-white group-hover:bg-zinc-200"
+                      : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-600"
                 } ${blocked ? "line-through text-zinc-400" : ""}`}
               >
                 {i + 1}
@@ -147,16 +147,16 @@ function MonthGrid({
                   reservation
                     ? "text-zinc-300"
                     : blocked
-                    ? "text-[#1F1F1F] line-through"
+                    ? "text-[#1F1F1F] dark:text-zinc-400 line-through"
                     : customPrice !== null
-                    ? "text-amber-600 font-bold"
-                    : "text-[#1F1F1F]"
+                    ? "text-amber-600 dark:text-amber-400 font-bold"
+                    : "text-[#1F1F1F] dark:text-zinc-100"
                 }`}
               >
                 {blocked ? "Blocked" : money(rate)}
               </span>
               {customPrice !== null && !blocked && !reservation && (
-                <span className="text-[9px] font-semibold text-amber-700 bg-amber-100 px-1 rounded">
+                <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
                   custom
                 </span>
               )}
@@ -306,7 +306,7 @@ export function HostCalendarWorkspace({
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 pb-24 pt-8 sm:px-8 sm:pt-10">
         {/* Mobile Title */}
-        <h1 className="mb-6 text-2xl font-medium text-zinc-900 sm:hidden">
+        <h1 className="mb-6 text-2xl font-medium text-zinc-900 dark:text-zinc-100 sm:hidden">
           Calendars
         </h1>
 
@@ -318,7 +318,7 @@ export function HostCalendarWorkspace({
               <button
                 type="button"
                 onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                className="flex items-center gap-2 text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900"
+                className="flex items-center gap-2 text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-zinc-100"
               >
                 <span>
                   {view === "year"
@@ -331,14 +331,14 @@ export function HostCalendarWorkspace({
                     alt={"chevron-down.svg"}
                     width={25}
                     height={22}
-                    className="ml-3"
+                    className="ml-3 dark:invert"
                   />
                 )}
               </button>
 
               {/* Month Picker Dropdown */}
               {showMonthDropdown && (
-                <div className="absolute left-0 top-full z-50 mt-2 grid w-64 grid-cols-3 gap-1 rounded-2xl border border-zinc-200 bg-white p-3 shadow-xl">
+                <div className="absolute left-0 top-full z-50 mt-2 grid w-64 grid-cols-3 gap-1 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 shadow-xl">
                   {monthsList.map((m, idx) => (
                     <button
                       key={m}
@@ -350,8 +350,8 @@ export function HostCalendarWorkspace({
                       }}
                       className={`rounded-xl py-2 text-xs font-semibold transition-colors ${
                         month.getMonth() === idx
-                          ? "bg-[#FDE29B] text-zinc-900"
-                          : "hover:bg-zinc-100 text-zinc-700"
+                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-bold"
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
                       }`}
                     >
                       {m.slice(0, 3)}
@@ -367,7 +367,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setTips(true)}
-              className="flex items-center gap-1.5 rounded-full  bg-[#F3F4F5] px-4 py-2 text-base font-medium text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 text-base font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs"
             >
               <span className="text-amber-500">
                 <Image
@@ -375,6 +375,7 @@ export function HostCalendarWorkspace({
                   alt={"price-tips.svg"}
                   width={25}
                   height={22}
+                  className="dark:invert"
                 />
               </span>
               <span>Price tips</span>
@@ -388,14 +389,14 @@ export function HostCalendarWorkspace({
                 onChange={(event) =>
                   setView(event.target.value === "year" ? "year" : "month")
                 }
-                className="cursor-pointer appearance-none rounded-full border border-transparent bg-[#F3F4F5] py-2 pl-4 pr-10 text-base font-medium text-[#1F1F1F] shadow-2xs cursor-pointer transition-colors hover:border-[#1F1F1F] focus-visible:outline-none"
+                className="cursor-pointer appearance-none rounded-full border border-transparent dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 py-2 pl-4 pr-10 text-base font-medium text-[#1F1F1F] dark:text-zinc-100 shadow-2xs cursor-pointer transition-colors hover:border-[#1F1F1F] dark:hover:border-zinc-600 focus-visible:outline-none"
               >
                 <option value="month">Month</option>
                 <option value="year">Year</option>
               </select>
               <svg
                 aria-hidden="true"
-                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#1F1F1F] dark:text-zinc-100"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -411,7 +412,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-semibold text-white lg:hidden"
+              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-xs font-semibold text-white dark:text-zinc-900 lg:hidden"
             >
               Settings
             </button>
@@ -436,8 +437,8 @@ export function HostCalendarWorkspace({
                   aria-pressed={isSelected}
                   className={`group relative h-[94px] w-[105px] shrink-0 rounded-[18px] overflow-hidden transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d88ee] ${
                     isSelected
-                      ? "border-[7px] border-[#A5A0FF] bg-[#A5A0FF]"
-                      : "border border-[#aaa] hover:border-[#8d88ee]"
+                      ? "border-[7px] border-[#A5A0FF] dark:border-indigo-500 bg-[#A5A0FF] dark:bg-indigo-500"
+                      : "border border-[#aaa] dark:border-zinc-700 hover:border-[#8d88ee] dark:hover:border-indigo-400"
                   }`}
                 >
                   <Image
@@ -456,14 +457,14 @@ export function HostCalendarWorkspace({
               (_, idx) => (
                 <div
                   key={`placeholder-${idx}`}
-                  className="h-[94px] w-[105px] shrink-0 rounded-[18px] border border-[#aaa] bg-[#F3F4F5]"
+                  className="h-[94px] w-[105px] shrink-0 rounded-[18px] border border-[#aaa] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800"
                 />
               ),
             )}
           </aside>
 
           {/* 2. Center Calendar Matrix */}
-          <div className="min-w-0 flex-1 border-y border-[#727272] py-4 lg:h-full lg:overflow-y-auto lg:pr-5 calendar-panel-scrollbar">
+          <div className="min-w-0 flex-1 border-y border-[#727272] dark:border-zinc-700 py-4 lg:h-full lg:overflow-y-auto lg:pr-5 calendar-panel-scrollbar">
             {view === "month" ? (
               <MonthGrid
                 month={month}
@@ -484,18 +485,18 @@ export function HostCalendarWorkspace({
                   return (
                     <Fragment key={d.toISOString()}>
                       {i > 0 && d.getMonth() === 0 && (
-                        <h2 className="col-span-full border-t border-zinc-100 pt-5 text-xl font-medium">
+                        <h2 className="col-span-full border-t border-zinc-100 dark:border-zinc-800 pt-5 text-xl font-medium dark:text-zinc-100">
                           {d.getFullYear()}
                         </h2>
                       )}
-                      <section className="min-w-0 border-b border-[#F3F4F5] pb-6">
+                      <section className="min-w-0 border-b border-[#F3F4F5] dark:border-zinc-800 pb-6">
                         <button
                           type="button"
                           onClick={() => {
                             setMonth(d);
                             setView("month");
                           }}
-                          className="mb-5 text-sm font-medium text-zinc-900 hover:text-amber-700 flex items-center justify-between w-full"
+                          className="mb-5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-amber-700 dark:hover:text-amber-400 flex items-center justify-between w-full"
                         >
                           <span>{monthName(d)}</span>
                         </button>
@@ -517,7 +518,7 @@ export function HostCalendarWorkspace({
           {/* Shared pricing sidebar for both calendar views. */}
           <aside
             aria-label="Calendar settings"
-            className="hidden h-full w-60 shrink-0 overflow-y-auto overscroll-contain border-y border-zinc-200 border-l border-l-[#F3F4F5] px-5 py-5 lg:block xl:w-84.5 calendar-panel-scrollbar"
+            className="hidden h-full w-60 shrink-0 overflow-y-auto overscroll-contain border-y border-zinc-200 dark:border-zinc-800 border-l border-l-[#F3F4F5] dark:border-l-zinc-800 px-5 py-5 lg:block xl:w-84.5 calendar-panel-scrollbar"
           >
             <CalendarSettingsPanel
               key={listing.id}
@@ -608,7 +609,7 @@ export function HostCalendarWorkspace({
                   </button>
                 </div>
 
-                {/* Nightly Price & Custom Override */}
+                {/* Base Price & Custom Override */}
                 <div className="rounded-xl bg-white/10 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-zinc-300">
@@ -721,17 +722,17 @@ export function HostCalendarWorkspace({
             onClose={() => setTips(false)}
             maxWidth="max-w-md"
           >
-            <div className="space-y-4 text-sm text-zinc-700 leading-relaxed">
-              <div className="rounded-xl bg-amber-50 p-4 border border-amber-200/60">
-                <h4 className="font-bold text-zinc-900 text-sm mb-1">
+            <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60">
+                <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm mb-1">
                   Local demand is rising
                 </h4>
-                <p className="text-xs text-amber-900">
+                <p className="text-xs text-amber-900 dark:text-amber-300">
                   Properties in your area typically command 15% higher nightly
                   rates on weekends and during seasonal holidays.
                 </p>
               </div>
-              <ul className="space-y-2 text-xs text-zinc-600 list-disc list-inside">
+              <ul className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400 list-disc list-inside">
                 <li>
                   Turn on Smart Pricing to automatically optimize rates based on
                   real-time search trends.
@@ -748,7 +749,7 @@ export function HostCalendarWorkspace({
                 <button
                   type="button"
                   onClick={() => setTips(false)}
-                  className="rounded-full bg-[#1F1F1F] px-6 py-2 text-xs font-semibold text-white hover:bg-black"
+                  className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2 text-xs font-semibold text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
                 >
                   Got it
                 </button>

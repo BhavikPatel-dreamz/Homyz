@@ -145,6 +145,11 @@ export function StepLocationSearch({
                   </span>
                   <input
                     type="text"
+                    name="location-search"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
                     placeholder="Add your location"
                     value={searchQuery}
                     onChange={(e) => handleInputChange(e.target.value)}
@@ -153,6 +158,9 @@ export function StepLocationSearch({
                     aria-haspopup="listbox"
                     aria-controls="location-suggestions"
                     aria-expanded={suggestions.length > 0}
+                    data-form-type="other"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
                     className="min-w-0 flex-1 text-base font-normal text-[#1F1F1F] bg-transparent outline-none placeholder:text-[#1F1F1F] placeholder:opacity-50"
                   />
                   {isSearching && (

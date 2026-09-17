@@ -63,11 +63,11 @@ function AllowDenyButtons({
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
           value === false
-            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
-            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+            ? "border border-zinc-900 bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900"
+            : "border border-zinc-200 bg-zinc-100/80 !text-zinc-600 hover:bg-zinc-200/80 dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
         }`}
       >
-        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-current" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -78,11 +78,11 @@ function AllowDenyButtons({
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${
           value === true
-            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
-            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+            ? "border border-zinc-900 bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900"
+            : "border border-zinc-200 bg-zinc-100/80 !text-zinc-600 hover:bg-zinc-200/80 dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
         }`}
       >
-        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-current" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
       </button>
@@ -110,6 +110,9 @@ export function GuestsSafetyView({
   );
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [learnMoreTopic, setLearnMoreTopic] = useState<string | null>(null);
+  const [modalSaving, setModalSaving] = useState(false);
+
+  const saving = isSaving || modalSaving;
 
   // Keep draft state in sync when modals are closed
   React.useEffect(() => {
@@ -287,8 +290,15 @@ export function GuestsSafetyView({
     setValidationErrors({});
     const sanitized = sanitizeGuestSafetyState(draftState);
     setGuestSafetyState(sanitized);
-    await onSaveSafety(sanitized);
-    closeModal();
+    setModalSaving(true);
+    try {
+      await onSaveSafety(sanitized);
+      closeModal();
+    } catch (err) {
+      console.error("Error saving guest safety section:", err);
+    } finally {
+      setModalSaving(false);
+    }
   };
 
 
@@ -300,7 +310,7 @@ export function GuestsSafetyView({
       {/* --------------------------------------------------------- */}
       <div className="space-y-6 animate-in fade-in max-w-xl pb-12 font-sans">
         {/* Header with Back Button */}
-        <div className="space-y-2 border-b border-zinc-200/80 pb-5">
+        <div className="space-y-2 border-b border-zinc-200/80 dark:border-zinc-800 pb-5">
           <div className="flex items-center gap-3">
             <BackButton
               onClick={() => {
@@ -308,9 +318,9 @@ export function GuestsSafetyView({
                 setActiveSection("house-rules");
               }}
             />
-            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F]">Guest safety</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Guest safety</h1>
           </div>
-          <p className="text-xs text-zinc-500 font-normal pl-11 leading-relaxed">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal pl-11 leading-relaxed">
             The safety details you share will appear on your listing, along with information like your House Rules.
           </p>
         </div>
@@ -319,19 +329,19 @@ export function GuestsSafetyView({
         {isLoading ? (
           <GuestsSafetySkeleton />
         ) : (
-          <div className="divide-y divide-zinc-200/80 pt-1">
+          <div className="divide-y divide-zinc-200/80 dark:divide-zinc-800 pt-1">
           {/* 1. Safety considerations */}
           <div
             onClick={() => openModal("considerations")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 px-2 rounded-xl transition-colors"
+            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
           >
             <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] group-hover:text-zinc-900 transition-colors">
+              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                 Safety considerations
               </h4>
-              <p className="text-xs text-[#727272] font-normal">{getConsiderationsSummary()}</p>
+              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getConsiderationsSummary()}</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </div>
@@ -339,15 +349,15 @@ export function GuestsSafetyView({
           {/* 2. Safety devices */}
           <div
             onClick={() => openModal("devices")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 px-2 rounded-xl transition-colors"
+            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
           >
             <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] group-hover:text-zinc-900 transition-colors">
+              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                 Safety devices
               </h4>
-              <p className="text-xs text-[#727272] font-normal">{getDevicesSummary()}</p>
+              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getDevicesSummary()}</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </div>
@@ -355,15 +365,15 @@ export function GuestsSafetyView({
           {/* 3. Property info */}
           <div
             onClick={() => openModal("propertyInfo")}
-            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 px-2 rounded-xl transition-colors"
+            className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
           >
             <div className="space-y-0.5">
-              <h4 className="text-sm font-semibold text-[#1F1F1F] group-hover:text-zinc-900 transition-colors">
+              <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                 Property info
               </h4>
-              <p className="text-xs text-[#727272] font-normal">{getPropertyInfoSummary()}</p>
+              <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal">{getPropertyInfoSummary()}</p>
             </div>
-            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </div>
@@ -376,40 +386,40 @@ export function GuestsSafetyView({
       {/* ========================================================= */}
       {isConsiderationsOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 border-b border-zinc-200/80 flex items-start justify-between">
+            <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Safety considerations</h3>
-                <p className="text-xs text-zinc-500 font-normal">
+                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety considerations</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                   Select any specific considerations guests should know about.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 font-semibold text-base cursor-pointer p-1"
+                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
               {/* 1. Children */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Not a good fit for children 2–12
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       This property has features that may not be safe for kids.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("children")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -423,17 +433,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.unsuitableChildren === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableChildrenDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableChildrenDetails", e.target.value)}
                       placeholder="Describe any child safety considerations or hazards..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -444,16 +454,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Not a good fit for infants under 2
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       This property has features that may not be safe for babies or toddlers this age.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("infants")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -467,17 +477,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.unsuitableInfants === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableInfantsDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableInfantsDetails", e.target.value)}
                       placeholder="Describe any infant safety considerations or hazards..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -488,10 +498,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Pool or hot tub doesn&apos;t have a gate or lock
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests have access to an unsecured swimming pool or hot tub. Check your local laws for specific requirements.
                     </p>
                   </div>
@@ -504,17 +514,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.poolNoGate === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.poolNoGateDetails || ""}
                       onChange={(e) => updateConsideration("poolNoGateDetails", e.target.value)}
                       placeholder="Describe pool or hot tub access and safety features..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -525,10 +535,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Nearby water, like a lake or river
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests have unrestricted access to a body of water, like an ocean, pond, creek or wetlands, directly on or next to the property.
                     </p>
                   </div>
@@ -541,17 +551,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.nearbyWater === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.nearbyWaterDetails || ""}
                       onChange={(e) => updateConsideration("nearbyWaterDetails", e.target.value)}
                       placeholder="Describe proximity to water and any barriers or safety guidance..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -562,10 +572,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Climbing or play structure(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests will have access to structures like a playset, slide, swings or climbing ropes.
                     </p>
                   </div>
@@ -578,17 +588,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.climbingStructure === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.climbingStructureDetails || ""}
                       onChange={(e) => updateConsideration("climbingStructureDetails", e.target.value)}
                       placeholder="Describe the play or climbing structures on the property..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -599,10 +609,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       There are heights without rails or protection
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests have access to an area higher than 30 inches (76 centimetres), such as a balcony, roof, terrace or cliff, that doesn&apos;t have a rail or other protection.
                     </p>
                   </div>
@@ -615,17 +625,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.heightsNoRails === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.heightsNoRailsDetails || ""}
                       onChange={(e) => updateConsideration("heightsNoRailsDetails", e.target.value)}
                       placeholder="Describe the elevated areas without rails..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -636,16 +646,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Potentially dangerous animal(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests and their pets will be around animals, like a horse, puma or farm animal, that could cause harm.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("animals")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -659,17 +669,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.dangerousAnimals === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.dangerousAnimalsDetails || ""}
                       onChange={(e) => updateConsideration("dangerousAnimalsDetails", e.target.value)}
                       placeholder="Describe any animals that guests may encounter..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -680,16 +690,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Other safety or regulatory notes
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Add any other safety concern or regulatory information guests should know before booking.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("special")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -703,12 +713,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.considerations.specialConsiderations === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Add other safety or regulatory notes *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -724,15 +734,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Construction work is scheduled nearby weekdays from 8 AM–5 PM; an unpaved entrance may be slippery when wet."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.specialConsiderationsDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.specialConsiderationsDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.specialConsiderationsDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.specialConsiderationsDetails}</p>
                     )}
                   </div>
                 )}
@@ -740,7 +750,7 @@ export function GuestsSafetyView({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-zinc-200/80 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60">
+            <div className="border-t border-zinc-200/80 dark:border-zinc-800 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60 dark:bg-zinc-900/60">
               <button
                 type="button"
                 onClick={closeModal}
@@ -750,11 +760,17 @@ export function GuestsSafetyView({
               </button>
               <button
                 type="button"
-                disabled={isSaving}
+                disabled={saving}
                 onClick={() => handleSaveModal("considerations")}
                 className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {saving && (
+                  <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
               </button>
             </div>
           </div>
@@ -766,43 +782,43 @@ export function GuestsSafetyView({
       {/* ========================================================= */}
       {isDevicesOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 border-b border-zinc-200/80 flex items-start justify-between">
+            <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Safety devices</h3>
-                <p className="text-xs text-zinc-500 font-normal">
+                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety devices</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                   Disclose safety devices and alarms installed at your space.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 font-semibold text-base cursor-pointer p-1"
+                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
               {/* 1. Exterior Camera */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Exterior security camera present
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       This property has one or more exterior cameras that record or transmit video, images or audio. You must disclose them if they&apos;re turned off.
                     </p>
-                    <p className="text-xs text-zinc-500 leading-relaxed italic pt-0.5">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed italic pt-0.5">
                       Note: Security cameras that monitor indoor spaces or outdoor areas where greater privacy is expected, such as a shower, are not allowed.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("camera")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -816,12 +832,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.devices.securityCamera === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Where are the exterior cameras located and will they be on or off during stays? *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.devices.securityCameraDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.securityCameraDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -837,15 +853,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Ring doorbell camera on front entrance and floodlight camera over driveway, active 24/7."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.securityCameraDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.securityCameraDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.securityCameraDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.securityCameraDetails}</p>
                     )}
                   </div>
                 )}
@@ -855,16 +871,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Noise decibel monitor present
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       This property has one or more devices that can assess sound level but don&apos;t record audio.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("noise")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -878,12 +894,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.devices.noiseMonitor === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Where are the noise decibel monitors located? *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -899,15 +915,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Minut sensor in the living room."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.noiseMonitorDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.noiseMonitorDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.noiseMonitorDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.noiseMonitorDetails}</p>
                     )}
                   </div>
                 )}
@@ -917,16 +933,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Carbon monoxide alarm
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       A device that alerts if it detects unsafe levels of carbon monoxide (Check your local laws, which may require a working carbon monoxide detector in your listing).
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("co")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -940,17 +956,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.devices.carbonMonoxideAlarm === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details (optional)</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.carbonMonoxideAlarmDetails || ""}
                       onChange={(e) => updateDevice("carbonMonoxideAlarmDetails", e.target.value)}
                       placeholder="Add details about carbon monoxide alarm location (optional)"
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -961,16 +977,16 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Smoke alarm
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       A device that alerts when it detects smoke (Check your local laws, which may require a working smoke detector in your listing).
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("smoke")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -984,17 +1000,17 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.devices.smokeAlarm === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">Add details (optional)</label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.smokeAlarmDetails || ""}
                       onChange={(e) => updateDevice("smokeAlarmDetails", e.target.value)}
                       placeholder="Add details about smoke alarm location (optional)"
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -1003,7 +1019,7 @@ export function GuestsSafetyView({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-zinc-200/80 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60">
+            <div className="border-t border-zinc-200/80 dark:border-zinc-800 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60 dark:bg-zinc-900/60">
               <button
                 type="button"
                 onClick={closeModal}
@@ -1013,11 +1029,17 @@ export function GuestsSafetyView({
               </button>
               <button
                 type="button"
-                disabled={isSaving}
+                disabled={saving}
                 onClick={() => handleSaveModal("devices")}
                 className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {saving && (
+                  <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
               </button>
             </div>
           </div>
@@ -1029,34 +1051,34 @@ export function GuestsSafetyView({
       {/* ========================================================= */}
       {isPropertyInfoOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 border-b border-zinc-200/80 flex items-start justify-between">
+            <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F]">Property info</h3>
-                <p className="text-xs text-zinc-500 font-normal">
+                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property info</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                   Select any specific characteristics about your space.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 font-semibold text-base cursor-pointer p-1"
+                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 divide-y divide-zinc-200/80 dark:divide-zinc-800">
               {/* 1. Stairs */}
               <div className="pt-2 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Guests must climb stairs
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests can expect to walk up and down stairs during their stay.
                     </p>
                   </div>
@@ -1069,12 +1091,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.climbStairs === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe the stairs (e.g. number of flights, handrails, or elevator access) *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1090,15 +1112,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., 2 flights of outdoor steps to front door, handrail provided on right."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.climbStairsDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.climbStairsDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.climbStairsDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.climbStairsDetails}</p>
                     )}
                   </div>
                 )}
@@ -1108,10 +1130,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Construction or other potential noise during stays
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests should expect to hear some noise during their stay. For example, traffic, construction or nearby businesses.
                     </p>
                   </div>
@@ -1124,12 +1146,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.potentialNoise === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe the noise and when guests might hear it *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1145,15 +1167,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Light street traffic during morning commute hours."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.potentialNoiseDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.potentialNoiseDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.potentialNoiseDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.potentialNoiseDetails}</p>
                     )}
                   </div>
                 )}
@@ -1163,10 +1185,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Pet(s) live at the property
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests may meet or interact with pets during their stay.
                     </p>
                   </div>
@@ -1179,12 +1201,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.petsLiveOnProperty === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe what pets live on the property and where they stay *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1200,15 +1222,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Friendly golden retriever stays in the fenced backyard area."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.petsLiveOnPropertyDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.petsLiveOnPropertyDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.petsLiveOnPropertyDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.petsLiveOnPropertyDetails}</p>
                     )}
                   </div>
                 )}
@@ -1218,10 +1240,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       No parking on the property
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       This property doesn&apos;t have dedicated parking spots for guests.
                     </p>
                   </div>
@@ -1234,12 +1256,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.noParking === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe nearby parking options *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1255,15 +1277,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Free street parking available on 4th Ave, paid garage 2 blocks away."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.noParkingDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.noParkingDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.noParkingDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.noParkingDetails}</p>
                     )}
                   </div>
                 )}
@@ -1273,10 +1295,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Property has shared spaces
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Guests should expect to share spaces, such as a kitchen, bathroom or patio, with other people during their stay.
                     </p>
                   </div>
@@ -1289,12 +1311,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.sharedSpaces === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe which spaces are shared and with whom *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1310,15 +1332,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Shared kitchen and patio with other guests."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.sharedSpacesDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.sharedSpacesDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.sharedSpacesDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.sharedSpacesDetails}</p>
                     )}
                   </div>
                 )}
@@ -1328,10 +1350,10 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Limited essential amenities
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       Some common essentials are not included on this property. For example, wifi, running water, indoor shower.
                     </p>
                   </div>
@@ -1344,12 +1366,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.limitedAmenities === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         List the essential amenities that are not included *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1365,15 +1387,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Off-grid cabin: no wifi, rainwater shower only."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.limitedAmenitiesDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.limitedAmenitiesDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.limitedAmenitiesDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.limitedAmenitiesDetails}</p>
                     )}
                   </div>
                 )}
@@ -1383,19 +1405,19 @@ export function GuestsSafetyView({
               <div className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-sm font-semibold text-[#1F1F1F] block">
+                    <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                       Weapon(s) on the property
                     </span>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                       There&apos;s at least one weapon stored on this property. Check your local laws for specific requirements.
                     </p>
-                    <p className="text-xs text-zinc-500 leading-relaxed italic pt-0.5">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed italic pt-0.5">
                       Reminder: Airbnb requires all weapons to be properly stored and secured.
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("weapons")}
-                      className="text-xs font-semibold underline text-zinc-900 hover:text-zinc-700 inline-block cursor-pointer pt-0.5"
+                      className="text-xs font-semibold underline text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
                       Learn more
                     </button>
@@ -1409,12 +1431,12 @@ export function GuestsSafetyView({
                   />
                 </div>
                 {draftState.propertyInfo.weapons === true && (
-                  <div className="rounded-2xl bg-zinc-50/90 border border-zinc-200/80 p-3.5 space-y-2 animate-in fade-in">
+                  <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800">
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe how weapons are stored and secured *
                       </label>
-                      <span className="text-[11px] text-zinc-400">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1430,15 +1452,15 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder="e.g., Hunting rifle kept unloaded inside locked biometric safe."
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white focus:outline-none transition-colors ${
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${
                         validationErrors.weaponsDetails
-                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300"
-                          : "border-zinc-300 focus:border-zinc-900"
+                          ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
+                          : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                       }`}
                       maxLength={500}
                     />
                     {validationErrors.weaponsDetails && (
-                      <p className="text-[11px] text-rose-600 font-medium">{validationErrors.weaponsDetails}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{validationErrors.weaponsDetails}</p>
                     )}
                   </div>
                 )}
@@ -1446,7 +1468,7 @@ export function GuestsSafetyView({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-zinc-200/80 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60">
+            <div className="border-t border-zinc-200/80 dark:border-zinc-800 p-4 sm:px-6 flex items-center justify-between bg-zinc-50/60 dark:bg-zinc-900/60">
               <button
                 type="button"
                 onClick={closeModal}
@@ -1456,11 +1478,17 @@ export function GuestsSafetyView({
               </button>
               <button
                 type="button"
-                disabled={isSaving}
+                disabled={saving}
                 onClick={() => handleSaveModal("propertyInfo")}
                 className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {saving && (
+                  <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
               </button>
             </div>
           </div>
@@ -1472,16 +1500,16 @@ export function GuestsSafetyView({
       {/* ========================================================= */}
       {learnMoreTopic && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[24px] p-6 sm:p-8 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-[24px] p-6 sm:p-8 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setLearnMoreTopic(null)}
-              className="absolute top-5 right-5 text-zinc-500 hover:text-zinc-900 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-5 right-5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
 
-            <h3 className="font-semibold text-lg text-[#1F1F1F]">
+            <h3 className="font-semibold text-lg text-[#1F1F1F] dark:text-zinc-100">
               {learnMoreTopic === "camera" && "Security cameras and recording devices"}
               {learnMoreTopic === "noise" && "Noise decibel monitors"}
               {learnMoreTopic === "co" && "Carbon monoxide alarms"}
@@ -1493,13 +1521,13 @@ export function GuestsSafetyView({
               {learnMoreTopic === "special" && "Special considerations"}
             </h3>
 
-            <div className="text-xs text-zinc-600 leading-relaxed space-y-3">
+            <div className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed space-y-3">
               {learnMoreTopic === "camera" && (
                 <>
                   <p>
                     Hosts are required to disclose any exterior security cameras, doorbell cameras, or recording devices. You must describe their location and whether they are powered on during stays.
                   </p>
-                  <p className="font-medium text-zinc-900">
+                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
                     Cameras in private spaces (such as bedrooms, bathrooms, or indoor areas) are strictly prohibited.
                   </p>
                 </>
@@ -1550,7 +1578,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={() => setLearnMoreTopic(null)}
-                className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs px-6 py-2 transition-all cursor-pointer"
+                className="rounded-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs px-6 py-2 transition-all cursor-pointer"
               >
                 Close
               </button>

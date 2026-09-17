@@ -81,7 +81,7 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   if (price <= 0) {
     missing.push({
       key: "price",
-      label: "Base nightly price",
+      label: "Base price",
       description: "Specify a standard weekday base price",
       section: "pricing",
     });
@@ -91,7 +91,7 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   if (weekendPrice <= 0) {
     missing.push({
       key: "weekendPrice",
-      label: "Weekend nightly price",
+      label: "Weekend price",
       description: "Set a weekend price or premium for Friday/Saturday",
       section: "pricing",
     });
@@ -384,27 +384,27 @@ export function ListingStatusView({
       {/* Header & Back Navigation */}
       <div className="flex items-center gap-3">
         <BackButton onClick={() => setActiveSection("propertyType")} />
-        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F]">Listing status</h1>
+        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F] dark:text-zinc-100">Listing status</h1>
       </div>
 
       {/* Visual Approval Progress Timeline */}
-      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xs">
-        <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4 sm:px-6">
+      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">Listing journey</p>
-            <p className="mt-0.5 text-sm font-semibold text-zinc-900">Approval &amp; publishing progress</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">Listing journey</p>
+            <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Approval &amp; publishing progress</p>
           </div>
           <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
-            displayState === "PUBLISHED" ? "bg-emerald-100 text-emerald-800" :
-            displayState === "REJECTED" ? "bg-rose-100 text-rose-800" :
-            "bg-amber-100 text-amber-800"
+            displayState === "PUBLISHED" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300" :
+            displayState === "REJECTED" ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300" :
+            "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
           }`}>
             {displayState === "PUBLISHED" ? "Live" : displayState === "REJECTED" ? "Action needed" : "In progress"}
           </span>
         </div>
         <div className="overflow-x-auto px-5 py-6 sm:px-6">
           <div className={`relative flex min-w-[560px] ${isSaudi ? "sm:min-w-0" : "lg:min-w-0"}`}>
-            <div className="absolute left-[8%] right-[8%] top-4 h-px bg-zinc-200" aria-hidden="true" />
+            <div className="absolute left-[8%] right-[8%] top-4 h-px bg-zinc-200 dark:bg-zinc-700" aria-hidden="true" />
             {steps.map((step, idx) => {
               const stepStatus = getStepStatus(step.id);
               const isComplete = stepStatus === "completed";
@@ -414,18 +414,18 @@ export function ListingStatusView({
                 <div key={step.id} className="relative z-10 flex min-w-[112px] flex-1 flex-col items-center text-center">
                   <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
                     isComplete ? "border-emerald-500 bg-emerald-500 text-white" :
-                    isCurrent ? "border-amber-400 bg-amber-50 text-amber-800 ring-4 ring-amber-100" :
+                    isCurrent ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-4 ring-amber-100 dark:ring-amber-900/40" :
                     isWarning ? "border-rose-500 bg-rose-500 text-white" :
-                    "border-zinc-200 bg-white text-zinc-400"
+                    "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
                   }`}>
                     {isComplete ? "✓" : isWarning ? "!" : idx + 1}
                   </span>
                   <span className={`mt-3 max-w-[108px] text-[11px] font-semibold leading-snug ${
-                    isComplete ? "text-emerald-800" : isCurrent ? "text-zinc-950" : isWarning ? "text-rose-800" : "text-zinc-400"
+                    isComplete ? "text-emerald-800 dark:text-emerald-400" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-zinc-400 dark:text-zinc-500"
                   }`}>
                     {step.label}
                   </span>
-                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700">Current step</span>}
+                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700 dark:text-amber-400">Current step</span>}
                 </div>
               );
             })}
@@ -439,55 +439,53 @@ export function ListingStatusView({
 
       {/* 1. STATE: PENDING_APPROVAL (Under Admin Review for non-Saudi) */}
       {!isSaudi && (displayState === "PENDING_APPROVAL" || justSubmitted) && (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50/80 dark:bg-amber-950/40 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-              <h2 className="font-semibold text-amber-950 text-base">
+              <h2 className="font-semibold text-amber-950 dark:text-amber-200 text-base">
                 Admin approval required
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 uppercase">
               Under Review
             </span>
           </div>
-          <p className="text-xs text-amber-900 leading-relaxed">
+          <p className="text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
             Your listing has been submitted for review. Our team will review the property details before it becomes publicly available.
           </p>
-          <div className="p-3 rounded-xl bg-white/90 border border-amber-200 text-xs text-amber-950 flex items-start gap-2.5">
+          <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
             <span className="text-sm">🔒</span>
             <span className="leading-relaxed">
               <strong>Do not show the listing as fully published until the admin has actually approved it.</strong> The &quot;Listed&quot; option below is temporarily disabled until administrative review is complete.
             </span>
           </div>
           {formattedDate && (
-            <p className="text-[11px] text-amber-800 pt-1">
+            <p className="text-[11px] text-amber-800 dark:text-amber-400 pt-1">
               Submitted for review on: <span className="font-semibold">{formattedDate}</span>
             </p>
           )}
         </div>
       )}
 
-
-
       {/* 2. STATE: REJECTED (Changes Required) */}
       {displayState === "REJECTED" && !justSubmitted && (
-        <div className="rounded-2xl border border-rose-300 bg-rose-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
+        <div className="rounded-2xl border border-rose-300 dark:border-rose-700 bg-rose-50/80 dark:bg-rose-950/40 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-              <h2 className="font-semibold text-rose-950 text-base">
+              <h2 className="font-semibold text-rose-950 dark:text-rose-200 text-base">
                 Changes Required
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 uppercase">
               Action Needed
             </span>
           </div>
-          <p className="text-xs text-rose-900 leading-relaxed">
+          <p className="text-xs text-rose-900 dark:text-rose-300 leading-relaxed">
             The admin reviewed your listing and requested modifications before it can be approved:
           </p>
-          <div className="p-3.5 rounded-xl bg-white/95 border border-rose-200 text-xs text-rose-900 font-medium leading-relaxed">
+          <div className="p-3.5 rounded-xl bg-white/95 dark:bg-zinc-900/80 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200 font-medium leading-relaxed">
             {listing?.rejectionReason || listing?.requestedChanges || "Please review your listing details and resubmit."}
           </div>
           <div className="pt-1 flex flex-wrap items-center gap-3">
@@ -502,7 +500,7 @@ export function ListingStatusView({
             <button
               type="button"
               onClick={() => setActiveSection("description")}
-              className="rounded-full bg-white border border-rose-300 hover:bg-rose-100 text-rose-900 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="rounded-full bg-white dark:bg-zinc-800 border border-rose-300 dark:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-900 dark:text-rose-200 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
               Edit Listing Details
             </button>
@@ -512,19 +510,19 @@ export function ListingStatusView({
 
       {/* 3. STATE: DRAFT (Incomplete Details) */}
       {displayState === "DRAFT" && !justSubmitted && (
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 space-y-3 shadow-2xs animate-in fade-in">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/60 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
-              <h2 className="font-semibold text-zinc-900 text-base">
+              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+              <h2 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">
                 Complete your listing
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-700 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 uppercase">
               Draft
             </span>
           </div>
-          <p className="text-xs text-zinc-600 leading-relaxed">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
             {isSaudi
               ? "Complete all required sections below to publish your property live on Homyz. Admin approval is not required for Saudi listings."
               : "Admin approval is required before your listing can be published. Please complete all required sections below to submit your property for review."}
@@ -533,16 +531,16 @@ export function ListingStatusView({
             {missing.map((req) => (
               <div
                 key={req.key}
-                className="flex items-center justify-between p-3 rounded-xl bg-white border border-zinc-200 text-xs"
+                className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs"
               >
                 <div>
-                  <span className="font-semibold text-zinc-900">{req.label}</span>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{req.description}</p>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{req.label}</span>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">{req.description}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setActiveSection(req.section)}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer shrink-0 ml-3"
+                  className="text-xs font-semibold text-indigo-600 dark:text-amber-400 hover:text-indigo-800 dark:hover:text-amber-300 hover:underline cursor-pointer shrink-0 ml-3"
                 >
                   Complete →
                 </button>
@@ -554,19 +552,19 @@ export function ListingStatusView({
 
       {/* 4. STATE: APPROVED (ready for the host to publish) */}
       {displayState === "APPROVED" && !justSubmitted && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
+        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 text-base">
+              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
                 {isSaudi ? "Ready to Publish" : "Listing Approved"}
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
               {isSaudi ? "Ready" : "Approved"}
             </span>
           </div>
-          <p className="text-xs text-emerald-900 leading-relaxed">
+          <p className="text-xs text-emerald-900 dark:text-emerald-300 leading-relaxed">
             {isSaudi
               ? "No admin approval is required for Saudi listings. Your listing is complete and ready to publish."
               : "Your listing has been approved. Select Listed below and save to publish it to guests."}
@@ -574,51 +572,21 @@ export function ListingStatusView({
         </div>
       )}
 
-      {/* 5. STATE: READY_TO_SUBMIT (All Fields Complete, Awaiting Host Submission) */}
-      {/* {displayState === "READY_TO_SUBMIT" && !justSubmitted && (
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 space-y-3 shadow-2xs animate-in fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-              <h2 className="font-semibold text-indigo-950 text-base">
-                Ready for review
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-200 text-indigo-900 uppercase">
-              All Details Completed
-            </span>
-          </div>
-          <p className="text-xs text-indigo-900 leading-relaxed">
-            Your listing has all required details completed. Submit it now for admin review. Once approved, you will be able to publish it live to guests.
-          </p>
-          <div className="pt-1">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={handleSubmitForReview}
-              className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-            >
-              {isSubmitting ? "Submitting for review..." : "Submit for Admin Approval"}
-            </button>
-          </div>
-        </div>
-      )} */}
-
-      {/* 6. STATE: PUBLISHED (Live on Marketplace) */}
+      {/* 5. STATE: PUBLISHED (Live on Marketplace) */}
       {displayState === "PUBLISHED" && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-2 shadow-2xs animate-in fade-in">
+        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 text-base">
+              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
                 Your Listing is Live
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
               Live on Marketplace
             </span>
           </div>
-          <p className="text-xs text-emerald-900 leading-relaxed">
+          <p className="text-xs text-emerald-900 dark:text-emerald-300 leading-relaxed">
             Guests can now find and book your property in search results. If you need to temporarily hide it, select &quot;Unlisted&quot; below and save.
           </p>
         </div>
@@ -630,24 +598,24 @@ export function ListingStatusView({
       <div className="flex justify-center py-4 sm:py-6">
         <svg className="w-56 h-44" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Main House Body */}
-          <rect x="60" y="60" width="75" height="75" rx="3" fill="#F8FAFC" stroke="#1E293B" strokeWidth="2.5" />
+          <rect x="60" y="60" width="75" height="75" rx="3" className="fill-slate-50 dark:fill-zinc-800 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2.5" />
           {/* Slanted Roof */}
-          <polygon points="50,62 97.5,25 145,62" fill="#FDE047" stroke="#1E293B" strokeWidth="2.5" />
+          <polygon points="50,62 97.5,25 145,62" className="fill-yellow-300 dark:fill-amber-400 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2.5" />
           {/* Windows */}
-          <rect x="72" y="72" width="18" height="24" rx="2" fill="#93C5FD" stroke="#1E293B" strokeWidth="2" />
-          <line x1="81" y1="72" x2="81" y2="96" stroke="#1E293B" strokeWidth="1.5" />
-          <line x1="72" y1="84" x2="90" y2="84" stroke="#1E293B" strokeWidth="1.5" />
+          <rect x="72" y="72" width="18" height="24" rx="2" className="fill-blue-300 dark:fill-blue-900/80 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2" />
+          <line x1="81" y1="72" x2="81" y2="96" className="stroke-slate-800 dark:stroke-zinc-300" strokeWidth="1.5" />
+          <line x1="72" y1="84" x2="90" y2="84" className="stroke-slate-800 dark:stroke-zinc-300" strokeWidth="1.5" />
           {/* Door */}
-          <rect x="102" y="95" width="20" height="40" rx="1" fill="#334155" stroke="#1E293B" strokeWidth="2" />
-          <circle cx="106" cy="115" r="1.5" fill="#FDE047" />
+          <rect x="102" y="95" width="20" height="40" rx="1" className="fill-slate-700 dark:fill-zinc-700 stroke-slate-800 dark:stroke-zinc-300" strokeWidth="2" />
+          <circle cx="106" cy="115" r="1.5" className="fill-yellow-300 dark:fill-amber-400" />
           {/* Ground Line */}
-          <path d="M40 135 H160" stroke="#15803D" strokeWidth="4" strokeLinecap="round" />
+          <path d="M40 135 H160" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="4" strokeLinecap="round" />
           {/* Tree Left */}
-          <ellipse cx="46" cy="120" rx="10" ry="16" fill="#22C55E" stroke="#15803D" strokeWidth="2" />
-          <line x1="46" y1="128" x2="46" y2="135" stroke="#15803D" strokeWidth="2.5" />
+          <ellipse cx="46" cy="120" rx="10" ry="16" className="fill-green-500 dark:fill-emerald-600 stroke-green-700 dark:stroke-emerald-500" strokeWidth="2" />
+          <line x1="46" y1="128" x2="46" y2="135" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="2.5" />
           {/* Tree Right */}
-          <ellipse cx="152" cy="116" rx="12" ry="18" fill="#16A34A" stroke="#15803D" strokeWidth="2" />
-          <line x1="152" y1="126" x2="152" y2="135" stroke="#15803D" strokeWidth="2.5" />
+          <ellipse cx="152" cy="116" rx="12" ry="18" className="fill-green-600 dark:fill-emerald-700 stroke-green-700 dark:stroke-emerald-500" strokeWidth="2" />
+          <line x1="152" y1="126" x2="152" y2="135" className="stroke-green-700 dark:stroke-emerald-500" strokeWidth="2.5" />
         </svg>
       </div>
 
@@ -660,33 +628,33 @@ export function ListingStatusView({
           onClick={() => handleSelectStatus("listed")}
           className={`p-5 rounded-2xl border transition-all space-y-2 shadow-2xs relative ${
             !isApproved
-              ? "opacity-60 cursor-not-allowed bg-zinc-50/70 border-zinc-200 select-none"
+              ? "opacity-60 cursor-not-allowed bg-zinc-50/70 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700 select-none"
               : effectiveStatus === "listed"
-              ? "bg-[#FEF9EC] border-amber-300 ring-1 ring-amber-300/60 shadow-2xs cursor-pointer"
-              : "bg-white border-zinc-200 hover:border-zinc-300 cursor-pointer"
+              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 ring-1 ring-amber-300/60 dark:ring-amber-500/40 shadow-2xs cursor-pointer"
+              : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 cursor-pointer"
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F]">Listed</h3>
+            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Listed</h3>
             {!isApproved ? (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-600 flex items-center gap-1">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 {isSaudi ? "Incomplete" : "Locked"}
               </span>
             ) : effectiveStatus === "listed" ? (
-              <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Active
               </span>
             ) : null}
           </div>
-          <p className="text-base text-[#727272] font-normal leading-relaxed">
+          <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
             Guests can find your listing in search results and book available dates.
           </p>
           {!isApproved && (
-            <div className="pt-1 text-[10px] font-medium text-amber-800 flex items-center gap-1">
+            <div className="pt-1 text-[10px] font-medium text-amber-800 dark:text-amber-400 flex items-center gap-1">
               <span>●</span>
               <span>
                 {isSaudi
@@ -702,20 +670,20 @@ export function ListingStatusView({
           onClick={() => handleSelectStatus("unlisted")}
           className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
             effectiveStatus === "unlisted"
-              ? "bg-[#FEF9EC] border-amber-300 ring-1 ring-amber-300/60 shadow-2xs"
-              : "bg-white border-zinc-200 hover:border-zinc-300"
+              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 ring-1 ring-amber-300/60 dark:ring-amber-500/40 shadow-2xs"
+              : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F]">Unlisted</h3>
+            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Unlisted</h3>
             {effectiveStatus === "unlisted" && (
-              <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
                 {!isApproved ? (isSaudi ? "Draft (Incomplete)" : "Unlisted (Awaiting Approval)") : "Hidden"}
               </span>
             )}
           </div>
-          <p className="text-base text-[#727272] font-normal leading-relaxed">
+          <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
             Your listing is hidden from search results and guests cannot book dates.
           </p>
         </div>
@@ -731,8 +699,8 @@ export function ListingStatusView({
           onClick={handleSave}
           className={`rounded-full font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all ${
             !isApproved
-              ? "bg-zinc-100 text-zinc-400 cursor-not-allowed border border-zinc-200"
-              : "bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 cursor-pointer"
+              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
+              : "bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 cursor-pointer"
           }`}
         >
           {isSaving
@@ -747,7 +715,7 @@ export function ListingStatusView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>

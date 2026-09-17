@@ -156,7 +156,7 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => setActiveSection("description")} />
               <div>
                 <h1>Pricing</h1>
-                <p className="text-sm leading-5 text-[#727272]">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline">Learn more</button></p>
+                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
               </div>
             </div>
 
@@ -166,10 +166,10 @@ export function PricingAndBookingViews({
             <PricingSkeleton />
           ) : (
             <div className="space-y-5 sm:mt-21.25 mt-6">
-              {/* 1. Nightly Price Card */}
+              {/* 1. Base Price Card */}
               <div className="space-y-3">
                 <div className="flex min-[360px]:items-center items-start justify-between min-[360px]:flex-row flex-col min-[360px]:gap-0 gap-3">
-                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Nightly price"}</span>
+                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Base price"}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-base font-normal text-[#727272]">Smart pricing</span>
                     <button
@@ -251,15 +251,15 @@ export function PricingAndBookingViews({
                               type="button"
                               aria-label="Decrease weekend premium"
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
-                              className="flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] text-lg font-normal text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] transition-colors duration-300 cursor-pointer"
+                              className="flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-3.5 object-contain" />
+                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                             </button>
                             <button
                               type="button"
                               aria-label="Increase weekend premium"
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
-                              className="ml-auto flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] text-lg font-normal text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] transition-colors duration-300 cursor-pointer"
+                              className="ml-auto flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
                               +
                             </button>
@@ -272,15 +272,15 @@ export function PricingAndBookingViews({
 
                   {/* 3. Discounts section */}
                   <div className="space-y-2 pt-1">
-                    <label className="block text-base font-normal text-[#1F1F1F]">Discounts</label>
+                    <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Discounts</label>
 
                     {/* Weekly discount card */}
-                    <div className="rounded-xl border border-[#727272] bg-white p-4 space-y-2">
-                      <span className="text-sm font-medium text-[#1F1F1F] block">
-                        Weekly <span className="text-xs font-normal text-[#727272]">— For 7+ nights</span>
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
+                      <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                        Weekly <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">— For 7+ nights</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] bg-white px-3 py-1.5 focus-within:border-[#1F1F1F] focus-within:ring-1 focus-within:ring-[#1F1F1F] transition-all">
+                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
                           <input
                             type="number"
                             min={0}
@@ -296,23 +296,23 @@ export function PricingAndBookingViews({
                               setWeeklyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
                             placeholder="5"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F]">%</span>
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
-                        <span className="text-xs text-[#727272] font-normal">
+                        <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
                           weekly average is {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
                         </span>
                       </div>
                     </div>
 
                     {/* Monthly discount card */}
-                    <div className="rounded-xl border border-[#727272] bg-white p-4 space-y-2">
-                      <span className="text-sm font-medium text-[#1F1F1F] block">
-                        Monthly <span className="text-xs font-normal text-[#727272]">— For 28+ nights</span>
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
+                      <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                        Monthly <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">— For 28+ nights</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] bg-white px-3 py-1.5 focus-within:border-[#1F1F1F] focus-within:ring-1 focus-within:ring-[#1F1F1F] transition-all">
+                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
                           <input
                             type="number"
                             min={0}
@@ -328,11 +328,11 @@ export function PricingAndBookingViews({
                               setMonthlyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
                             placeholder="10"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <span className="text-xl font-semibold text-[#1F1F1F]">%</span>
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
-                        <span className="text-xs text-[#727272] font-normal">
+                        <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
                           monthly average is {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
                         </span>
                       </div>
@@ -353,9 +353,9 @@ export function PricingAndBookingViews({
                             disabled={!lastMinuteEnabled}
                             onChange={(e) => setLastMinuteDiscount(Number(e.target.value))}
                             placeholder="15"
-                            className="w-12 text-lg font-semibold text-[#1F1F1F] outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="w-12 text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
                           />
-                          <span className="text-lg font-semibold text-[#1F1F1F]">%</span>
+                          <span className="text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                       </div>
                       <button
@@ -378,9 +378,9 @@ export function PricingAndBookingViews({
               )}
 
               {/* 4. Calendar notice card */}
-              <div className="rounded-md bg-[#F3F4F5] px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
-                <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} />
-                <span className="text-base text-[#1f1f1f] font-normal">Find more discounts and fees in the calendar</span>
+              <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
+                <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} className="dark:invert" />
+                <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">Find more discounts and fees in the calendar</span>
               </div>
 
               {/* Save Button */}
@@ -389,7 +389,7 @@ export function PricingAndBookingViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("pricing")}
-                  className="rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#F3F4F5] dark:hover:bg-amber-300 text-[#1F1F1F] dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
@@ -410,8 +410,8 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => handleBack("pricing")} />
               <div>
                 <h1>Availability</h1>
-                <p className="text-sm leading-5 text-[#727272] font-normal">
-                  *These settings apply to all nights, unless you customize them by date. <button type="button" className="underline">Learn more</button>
+                <p className="text-sm leading-5 text-[#727272] font-normal dark:text-zinc-400">
+                  *These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button>
                 </p>
               </div>
             </div>
@@ -821,13 +821,13 @@ export function PricingAndBookingViews({
           <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
             <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
               {/* Counter text */}
-              <span className="text-xs font-semibold text-zinc-700 tracking-tight">
+              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 tracking-tight">
                 {Math.max(0, 100 - (customSlug?.length || 0))}/100 characters available
               </span>
 
               {/* homyz/stay/ slug input field */}
-              <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] tracking-tight">
-                <span className="text-zinc-500">homyz.com/stay/</span>
+              <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-tight">
+                <span className="text-zinc-500 dark:text-zinc-400">homyz.com/stay/</span>
                 <input
                   type="text"
                   value={customSlug}
@@ -835,7 +835,7 @@ export function PricingAndBookingViews({
                     setCustomSlug?.(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                   }
                   placeholder="your-space"
-                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] font-semibold min-w-[60px] max-w-[280px] pl-2.5 sm:pl-3"
+                  className="outline-none bg-transparent border-b-2 border-transparent focus:border-amber-400 text-[#1F1F1F] dark:text-zinc-100 font-semibold min-w-[60px] max-w-[280px] pl-2.5 sm:pl-3 placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
                   autoFocus
                 />
               </div>
@@ -843,19 +843,19 @@ export function PricingAndBookingViews({
               {/* Validation feedback */}
               <div className="text-xs text-center min-h-[20px]">
                 {tooShort && (
-                  <span className="text-red-500 font-medium">Link must be at least 3 characters.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">Link must be at least 3 characters.</span>
                 )}
                 {reserved && (
-                  <span className="text-red-500 font-medium">This link is a reserved system route.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">This link is a reserved system route.</span>
                 )}
                 {invalidChars && !tooShort && (
-                  <span className="text-red-500 font-medium">Use lowercase letters, numbers, and single hyphens.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">Use lowercase letters, numbers, and single hyphens.</span>
                 )}
                 {hasInput && isSlugValid && !tooShort && (
-                  <span className="text-emerald-600 font-medium">Valid link: homyz.com/stay/{trimmedSlug}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Valid link: homyz.com/stay/{trimmedSlug}</span>
                 )}
                 {!hasInput && (
-                  <span className="text-zinc-400 font-normal">Create a memorable web address for your listing.</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 font-normal">Create a memorable web address for your listing.</span>
                 )}
               </div>
 
@@ -864,7 +864,7 @@ export function PricingAndBookingViews({
                 type="button"
                 disabled={isSaving || (hasInput && !isSlugValid)}
                 onClick={() => handleSaveSection("custom-link")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
+                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] dark:bg-amber-400 dark:hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer mt-2"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>

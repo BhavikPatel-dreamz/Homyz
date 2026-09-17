@@ -1,9 +1,9 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { formatSarFromHalalas } from "@/lib/currency";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { toast } from "@/components/ui/toast";
@@ -102,15 +102,127 @@ const HOUSE_RULE_OPTIONS = [
 export function AdminListingsClient({
   initialListings,
   summary,
+  initialSearch = "",
+  initialStatus = "ALL",
+  initialPage = 1,
+  initialPageSize = 10,
 }: {
   initialListings: FullListingItem[];
   summary: { total: number; published: number; draft: number; featured: number; paused: number };
+  initialSearch?: string;
+  initialStatus?: string;
+  initialPage?: number;
+  initialPageSize?: number;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [listings, setListings] = useState<FullListingItem[]>(initialListings);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+
+  // Synchronize state whenever fresh listings arrive from server revalidation
+  useEffect(() => {
+    setListings(initialListings);
+  }, [initialListings]);
+
+  // Read URL search params with fallback to server-rendered props
+  const urlSearch = searchParams?.get("search") ?? initialSearch;
+  const urlStatus = (searchParams?.get("status") ?? initialStatus).toUpperCase();
+  const urlPage = Number(searchParams?.get("page")) || initialPage;
+  const urlPageSize = Number(searchParams?.get("pageSize")) || initialPageSize;
+
+  const [search, setSearch] = useState(urlSearch);
+  const [statusFilter, setStatusFilter] = useState(urlStatus);
+  const [currentPage, setCurrentPage] = useState(urlPage);
+  const [pageSize, setPageSize] = useState(urlPageSize);
   const [selectedListing, setSelectedListing] = useState<FullListingItem | null>(null);
+
+  // Debounced URL sync helper (so typing does not spam history)
+  const isInitialMount = useRef(true);
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const syncUrl = useCallback(
+    (newSearch: string, newStatus: string, newPage: number, newPageSize: number) => {
+      const params = new URLSearchParams();
+      if (newSearch.trim()) params.set("search", newSearch.trim());
+      if (newStatus && newStatus !== "ALL") params.set("status", newStatus);
+      if (newPage > 1) params.set("page", String(newPage));
+      if (newPageSize !== 10) params.set("pageSize", String(newPageSize));
+
+      const queryStr = params.toString();
+      const targetUrl = queryStr ? `${pathname}?${queryStr}` : pathname;
+      window.history.replaceState(null, "", targetUrl);
+    },
+    [pathname]
+  );
+
+  // Sync state if user navigates back/forward with browser buttons
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    const s = searchParams?.get("search") ?? "";
+    const st = (searchParams?.get("status") ?? "ALL").toUpperCase();
+    const p = Number(searchParams?.get("page")) || 1;
+    const ps = Number(searchParams?.get("pageSize")) || 10;
+
+    setSearch((prev) => (prev !== s ? s : prev));
+    setStatusFilter((prev) => (prev !== st ? st : prev));
+    setCurrentPage((prev) => (prev !== p ? p : prev));
+    setPageSize((prev) => (prev !== ps ? ps : prev));
+  }, [searchParams]);
+
+  // User filter handlers with synchronized URL updating
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setCurrentPage(1);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      syncUrl(val, statusFilter, 1, pageSize);
+    }, 250);
+  };
+
+  const handleClearSearch = () => {
+    setSearch("");
+    setCurrentPage(1);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    syncUrl("", statusFilter, 1, pageSize);
+  };
+
+  const handleStatusFilterChange = (newStatus: string) => {
+    setStatusFilter(newStatus);
+    setCurrentPage(1);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    syncUrl(search, newStatus, 1, pageSize);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    syncUrl(search, statusFilter, newPage, pageSize);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+    syncUrl(search, statusFilter, 1, newSize);
+  };
+
+  // Dynamic summary metrics that update live with any listing edits or status changes
+  const metrics = useMemo(() => {
+    const total = listings.length;
+    const published = listings.filter((l) => l.published).length;
+    const featured = listings.filter((l) => l.isFeatured).length;
+    const paused = listings.filter((l) => l.isPaused).length;
+    const draft = total - published;
+    return {
+      total: total || summary.total,
+      published: total ? published : summary.published,
+      featured: total ? featured : summary.featured,
+      paused: total ? paused : summary.paused,
+      draft: total ? draft : summary.draft,
+    };
+  }, [listings, summary]);
 
   // Modal active tab: "overview" | "details" | "photos" | "policies" | "pricing" | "moderation"
   const [activeTab, setActiveTab] = useState<"overview" | "details" | "photos" | "policies" | "pricing" | "moderation">("overview");
@@ -177,14 +289,13 @@ export function AdminListingsClient({
         const matchHost = l.host.name?.toLowerCase().includes(q) || l.host.email?.toLowerCase().includes(q);
         const matchId = l.id.toLowerCase().includes(q);
         const matchCity = l.city.toLowerCase().includes(q);
-        if (!matchTitle && !matchHost && !matchId && !matchCity) return false;
+        const matchCountry = l.country?.toLowerCase().includes(q);
+        const matchAddress = l.address?.toLowerCase().includes(q);
+        if (!matchTitle && !matchHost && !matchId && !matchCity && !matchCountry && !matchAddress) return false;
       }
       return true;
     });
   }, [listings, search, statusFilter]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const activePage = Math.min(currentPage, totalPages);
@@ -317,6 +428,7 @@ export function AdminListingsClient({
         setFeedbackMsg({ type: "error", text: msg });
         toast.error(msg);
       }
+      router.refresh();
     } else {
       const msg = res.error || "Failed to delete selected properties.";
       setFeedbackMsg({ type: "error", text: msg });
@@ -339,6 +451,7 @@ export function AdminListingsClient({
       toast.success("Property listing permanently deleted.");
       setShowDeleteModal(false);
       setListingToDelete(null);
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to delete listing." });
       toast.error(res.error || "Failed to delete listing.");
@@ -355,6 +468,7 @@ export function AdminListingsClient({
     if (res.ok) {
       updateLocalListing({ isFeatured: newFeatured });
       setFeedbackMsg({ type: "success", text: newFeatured ? "Property marked as Featured!" : "Property removed from Featured." });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to update featured status." });
     }
@@ -369,6 +483,7 @@ export function AdminListingsClient({
     if (res.ok) {
       updateLocalListing({ isPaused: newPaused, published: newPaused ? false : selectedListing.published });
       setFeedbackMsg({ type: "success", text: newPaused ? "Listing disabled/paused." : "Listing enabled." });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to disable listing." });
     }
@@ -383,6 +498,7 @@ export function AdminListingsClient({
     if (res.ok) {
       updateLocalListing({ published: newPublished, status: newPublished ? "ACTIVE" : selectedListing.status, isPaused: false });
       setFeedbackMsg({ type: "success", text: newPublished ? "Listing published & active!" : "Listing unpublished." });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to toggle visibility." });
     }
@@ -433,6 +549,7 @@ export function AdminListingsClient({
         houseRules: editHouseRules,
       });
       setFeedbackMsg({ type: "success", text: "Property details updated successfully!" });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to update property details." });
     }
@@ -449,6 +566,7 @@ export function AdminListingsClient({
     if (res.ok) {
       updateLocalListing({ photos: editPhotos });
       setFeedbackMsg({ type: "success", text: `Updated property gallery (${editPhotos.length} photos saved)!` });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to update photos." });
     }
@@ -483,6 +601,7 @@ export function AdminListingsClient({
         blockedDates: editBlockedDates,
       });
       setFeedbackMsg({ type: "success", text: "Check-in details, policies & availability updated successfully!" });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to update policies." });
     }
@@ -507,6 +626,7 @@ export function AdminListingsClient({
         securityDeposit: Math.round(editSecurityDeposit * 100),
       });
       setFeedbackMsg({ type: "success", text: "Pricing & fees updated successfully!" });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Failed to update pricing." });
     }
@@ -529,6 +649,7 @@ export function AdminListingsClient({
         rejectionReason: updated?.rejectionReason ?? null,
       });
       setFeedbackMsg({ type: "success", text: `Quality moderation action applied: ${action}` });
+      router.refresh();
     } else {
       setFeedbackMsg({ type: "error", text: res.error || "Moderation action failed." });
     }
@@ -602,32 +723,77 @@ export function AdminListingsClient({
         </button>
       </div>
 
-      {/* Summary Stat Cards */}
+      {/* Summary Stat Cards with Interactive Quick-Filtering */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => handleStatusFilterChange("ALL")}
+          title="Show all properties"
+          className={`rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer hover:shadow-xs hover:border-amber-500/50 ${
+            statusFilter === "ALL"
+              ? "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Total Listings</p>
-          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{summary.total}</p>
-        </div>
+          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{metrics.total}</p>
+        </button>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => handleStatusFilterChange(statusFilter === "PUBLISHED" ? "ALL" : "PUBLISHED")}
+          title="Filter by published & active properties"
+          className={`rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer hover:shadow-xs hover:border-emerald-500/50 ${
+            statusFilter === "PUBLISHED"
+              ? "border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/10"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active & Live</p>
-          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">{summary.published}</p>
-        </div>
+          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">{metrics.published}</p>
+        </button>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => handleStatusFilterChange(statusFilter === "FEATURED" ? "ALL" : "FEATURED")}
+          title="Filter by featured properties"
+          className={`rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer hover:shadow-xs hover:border-amber-500/50 ${
+            statusFilter === "FEATURED"
+              ? "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/10 dark:bg-amber-500/15"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">Featured ★</p>
-          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">{summary.featured}</p>
-        </div>
+          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">{metrics.featured}</p>
+        </button>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => handleStatusFilterChange(statusFilter === "PAUSED" ? "ALL" : "PAUSED")}
+          title="Filter by paused or disabled properties"
+          className={`rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer hover:shadow-xs hover:border-rose-500/50 ${
+            statusFilter === "PAUSED"
+              ? "border-rose-500 ring-2 ring-rose-500/20 bg-rose-500/5 dark:bg-rose-500/10"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-500">Disabled / Paused</p>
-          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-rose-500">{summary.paused}</p>
-        </div>
+          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-rose-500">{metrics.paused}</p>
+        </button>
 
-        <div className="col-span-2 sm:col-span-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => handleStatusFilterChange(statusFilter === "DRAFT" ? "ALL" : "DRAFT")}
+          title="Filter by draft or unreviewed properties"
+          className={`col-span-2 sm:col-span-1 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer hover:shadow-xs hover:border-amber-500/50 ${
+            statusFilter === "DRAFT"
+              ? "border-amber-500 ring-2 ring-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10"
+              : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Drafts / Review</p>
-          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{summary.draft}</p>
-        </div>
+          <p className="mt-1.5 text-2xl sm:text-3xl font-black text-muted-foreground">{metrics.draft}</p>
+        </button>
       </div>
 
       {/* Filter Bar */}
@@ -636,15 +802,20 @@ export function AdminListingsClient({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search title, city, host name, ID..."
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search title, city, country, host name, ID..."
             className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-2.5 pl-9 pr-9 text-xs text-muted-foreground outline-none focus:border-amber-500 transition-all"
           />
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)] pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           {search && (
-            <button type="button" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)] hover:text-muted-foreground">
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)] hover:text-muted-foreground cursor-pointer"
+              title="Clear search"
+            >
               ✕
             </button>
           )}
@@ -653,14 +824,14 @@ export function AdminListingsClient({
         <div className="flex items-center gap-2">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground outline-none"
+            onChange={(e) => handleStatusFilterChange(e.target.value)}
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground outline-none cursor-pointer"
           >
-            <option value="ALL">Status: All Properties</option>
-            <option value="PUBLISHED">Published & Active</option>
-            <option value="FEATURED">Featured Properties ★</option>
-            <option value="PAUSED">Disabled / Paused</option>
-            <option value="DRAFT">Draft Listings</option>
+            <option value="ALL">Status: All Properties ({metrics.total})</option>
+            <option value="PUBLISHED">Published & Active ({metrics.published})</option>
+            <option value="FEATURED">Featured Properties ★ ({metrics.featured})</option>
+            <option value="PAUSED">Disabled / Paused ({metrics.paused})</option>
+            <option value="DRAFT">Draft Listings ({metrics.draft})</option>
             <option value="PENDING_REVIEW">Pending Review</option>
             <option value="CHANGES_REQUESTED">Changes Requested</option>
           </select>
@@ -843,49 +1014,59 @@ export function AdminListingsClient({
 
       {/* Mobile Card List */}
       <div className="md:hidden flex flex-col gap-3">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            onClick={() => openListingModal(item)}
-            className={`rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)] ${
-              selectedListingIds.includes(item.id) ? "border-amber-500 ring-1 ring-amber-500/30" : ""
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2.5">
-                <input
-                  type="checkbox"
-                  aria-label={`Select property ${item.title}`}
-                  checked={selectedListingIds.includes(item.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={() => toggleSelectListing(item.id)}
-                  className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
-                />
-                <div>
-                  <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
-                  <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{item.title}</h3>
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center text-[var(--muted-foreground)]">
+            No property listings match the selected criteria.
+          </div>
+        ) : (
+          paginatedListings.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => router.push(`/admin/listings/${item.id}`)}
+              className={`rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs flex flex-col gap-2.5 active:bg-[var(--surface-secondary)] cursor-pointer ${
+                selectedListingIds.includes(item.id) ? "border-amber-500 ring-1 ring-amber-500/30" : ""
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select property ${item.title}`}
+                    checked={selectedListingIds.includes(item.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => toggleSelectListing(item.id)}
+                    className="size-4 rounded border-[var(--border)] text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
+                  />
+                  <div>
+                    <span className="font-mono text-[10px] text-[var(--muted-foreground)] block">#{item.id.slice(-8)}</span>
+                    <h3 className="font-semibold text-xs text-muted-foreground mt-0.5">{item.title}</h3>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {item.isFeatured && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                      ★ Featured
+                    </span>
+                  )}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${item.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
+                    {item.published ? "ACTIVE" : item.status}
+                  </span>
                 </div>
               </div>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${item.published ? "bg-emerald-500/20 text-emerald-600" : "bg-amber-500/20 text-amber-600"}`}>
-                {item.published ? "ACTIVE" : item.status}
-              </span>
-            </div>
 
-            <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-semibold">
-              <span>{formatSarFromHalalas(item.price)} / night</span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openListingModal(item);
-                }}
-                className="rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-zinc-950"
-              >
-                Manage
-              </button>
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-semibold">
+                <span>{formatSarFromHalalas(item.price)} / night</span>
+                <Link
+                  href={`/admin/listings/${item.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-full bg-amber-500 hover:bg-amber-400 px-3 py-1 text-xs font-semibold text-zinc-950 transition-colors"
+                >
+                  Manage →
+                </Link>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Pagination Footer */}
@@ -894,13 +1075,10 @@ export function AdminListingsClient({
         totalPages={totalPages}
         totalItems={filtered.length}
         pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setCurrentPage(1);
-        }}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         itemLabel="listings"
-        pageSizeOptions={[10, 20, 50]}
+        pageSizeOptions={[10, 20, 50, 100]}
       />
 
       {/* Admin Full Management Workspace Drawer / Modal */}

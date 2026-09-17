@@ -197,7 +197,7 @@ export function BecomeHostModal({
 
       {/* STEP 2: What would you like to host? */}
       {step === 2 && (
-        <div className="relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
+        <div className="relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
           {/* Header Controls: Back Button & Close Button */}
           <div className="flex items-center justify-between mb-4">
             <BackButton
@@ -209,10 +209,10 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               aria-label="Close modal"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1A1A1A" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

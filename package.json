@@ -19,7 +19,11 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "seed:locations": "tsx -r dotenv/config scripts/seed-locations.ts",
     "db:studio": "prisma studio",
+    "seed:search-properties": "tsx -r dotenv/config scripts/seed-search-properties.ts",
+    "seed:search-properties:reset": "tsx -r dotenv/config scripts/seed-search-properties.ts --reset",
+    "seed:search-properties:delete": "tsx -r dotenv/config scripts/seed-search-properties.ts --delete",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -60,5 +64,8 @@
   },
   "optionalDependencies": {
     "ioredis": "^6.0.0"
+  },
+  "prisma": {
+    "seed": "tsx -r dotenv/config prisma/seed.ts"
   }
 }

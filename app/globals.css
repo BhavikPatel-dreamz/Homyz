@@ -373,8 +373,18 @@ body {
   outline: none;
 }
 
+.dark .input {
+  background: #27272a;
+  border-color: #3f3f46;
+  color: #f4f4f5;
+}
+
 .input:focus {
   border-color: #18181b;
+}
+
+.dark .input:focus {
+  border-color: #a1a1aa;
 }
 
 /* Skeleton shimmer animation */

@@ -197,9 +197,9 @@ function AdminEditorSidebar({
         <div className="flex items-center justify-between gap-2">
           <Link
             href={routeBase || "/admin/listings"}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           >
-            <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)] dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Back</span>
@@ -498,7 +498,7 @@ export function EditorSidebar({
                 type="button"
                 aria-label="Return to listing form"
                 onClick={onMobileClose}
-                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] lg:hidden"
+                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 lg:hidden"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
                   <path d="m5 5 14 14M19 5 5 19" />
@@ -543,7 +543,7 @@ export function EditorSidebar({
 
         {/* Sub-Pills: [Your space] [Arrival guide] ⚙️ (Fixed) */}
         <div className="mb-6 flex shrink-0 items-center justify-between gap-2 lg:mb-12 lg:max-w-[calc(100%-70px)]">
-          <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5">
+          <div className="flex w-full max-w-none items-center rounded-full border border-[#1F1F1F] bg-white p-1 lg:max-w-[272px] lg:p-1.5 dark:border-zinc-700 dark:bg-zinc-800">
             <button
               type="button"
               onClick={() => {
@@ -551,8 +551,8 @@ export function EditorSidebar({
                 setActiveSection("description");
               }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "space"
-                ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
-                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
+                ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
+                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
             >
               Your space
@@ -565,8 +565,8 @@ export function EditorSidebar({
                 setActiveSection("check-in-out");
               }}
               className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 ${editorTab === "arrival"
-                ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs"
-                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F]"
+                ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
+                : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
             >
               Arrival guide
@@ -581,11 +581,11 @@ export function EditorSidebar({
               setActiveSection("listing-status");
             }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
-              ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950"
-              : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F]"
+              ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950 dark:bg-amber-400 dark:border-amber-400"
+              : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
               }`}
           >
-            <Image src="/images/icons/setting-icon.svg" alt="" width={24} height={24} className="h-6 w-6 transition-[filter] group-hover:brightness-0 group-hover:invert" />
+            <Image src="/images/icons/setting-icon.svg" alt="" width={24} height={24} className="h-6 w-6 transition-[filter] group-hover:brightness-0 group-hover:invert dark:invert dark:group-hover:invert-0" />
           </button>
         </div>
 
@@ -602,24 +602,24 @@ export function EditorSidebar({
                 {/* Card 1: Listing status */}
                 <div
                   onClick={() => setActiveSection("listing-status")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "listing-status" || activeSection === "listingstatus"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer dark:bg-zinc-800/90 dark:border-zinc-700 ${activeSection === "listing-status" || activeSection === "listingstatus"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#727272] block mb-1">
+                  <span className="text-base font-medium text-[#727272] dark:text-zinc-300 block mb-1">
                     Listing status
                   </span>
                   <span
                     className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                      ? "text-emerald-700 bg-emerald-100/70"
+                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60"
                       : displayState === "PENDING_APPROVAL"
-                        ? "text-amber-800 bg-amber-100/70"
+                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60"
                         : displayState === "REJECTED"
-                          ? "text-rose-800 bg-rose-100/70"
+                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60"
                           : displayState === "READY_TO_SUBMIT"
-                            ? "text-indigo-800 bg-indigo-100/70"
-                            : "text-zinc-700 bg-zinc-100"
+                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60"
+                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700"
                       }`}
                   >
                     <span
@@ -651,17 +651,17 @@ export function EditorSidebar({
                 {/* Card 2: Languages */}
                 <div
                   onClick={() => setActiveSection("language")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "language" || activeSection === "languages"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "language" || activeSection === "languages"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Languages
                     </span>
                     <p
-                      className="max-w-[15rem] truncate text-sm font-normal text-zinc-500"
+                      className="max-w-[15rem] truncate text-sm font-normal text-zinc-500 dark:text-zinc-400"
                       title={getLanguageDisplayNames(
                         Array.isArray(listing?.languages) ? listing.languages : [],
                       ).join(", ")}
@@ -674,95 +674,95 @@ export function EditorSidebar({
                       })()}
                     </p>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 3: Guest requirements */}
                 <div
                   onClick={() => setActiveSection("guest-requirements")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "guest-requirements" || activeSection === "guestrequirements"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "guest-requirements" || activeSection === "guestrequirements"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Guest requirements
                     </span>
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
                       {listing?.requireProfilePhoto ? "Profile photo required" : "Profile photo not required"}
                     </p>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 4: Local laws */}
                 <div
                   onClick={() => setActiveSection("local-laws")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "local-laws" || activeSection === "locallaws"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "local-laws" || activeSection === "locallaws"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Local laws
                     </span>
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
                       Review your local laws
                     </p>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 5: Regulations */}
                 <div
                   onClick={() => setActiveSection("regulations")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "regulations"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "regulations"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Regulations
                     </span>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 6: Taxes */}
                 <div
                   onClick={() => setActiveSection("taxes")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "taxes"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "taxes"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Taxes
                     </span>
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
                       Learn how taxes work for Hosts
                     </p>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 7: homyz.org stays */}
                 <div
                   onClick={() => setActiveSection("homyz-org-stays")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "homyz-org-stays" ||
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "homyz-org-stays" ||
                     activeSection === "airbnb-org-stays" ||
                     activeSection === "homyz-stays" ||
                     activeSection === "homyzstays"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       homyz.org stays
                     </span>
                     {(() => {
@@ -772,15 +772,15 @@ export function EditorSidebar({
                         if (type === "DISCOUNT") {
                           const pct = Number(org.discountPercentage) || Number(org.discount) || 0;
                           return (
-                            <p className="text-base text-zinc-500 font-normal">{pct}% off for homyz.org guests</p>
+                            <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">{pct}% off for homyz.org guests</p>
                           );
                         }
-                        return <p className="text-base text-zinc-500 font-normal">Available for homyz.org guests</p>;
+                        return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Available for homyz.org guests</p>;
                       }
-                      return <p className="text-base text-zinc-500 font-normal">Learn how you can help</p>;
+                      return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Learn how you can help</p>;
                     })()}
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
 
                 {/* Card 8: Remove listing */}
@@ -789,20 +789,20 @@ export function EditorSidebar({
                     setActiveSection("remove-listing");
                     setIsRemoveListingModalOpen?.(true);
                   }}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between ${activeSection === "remove-listing" || activeSection === "removelisting"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "remove-listing" || activeSection === "removelisting"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
                   <div>
-                    <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       Remove listing
                     </span>
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
                       Permanently remove your listing
                     </p>
                   </div>
-                  <span className="text-zinc-400 text-xs font-medium select-none ml-2">›</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
                 </div>
               </div>
             ) : editorTab === "space" ? (
@@ -937,15 +937,15 @@ export function EditorSidebar({
                 {/* 2. Property type */}
                 <div
                   onClick={() => setActiveSection("propertyType")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "propertyType"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "propertyType"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
-                  <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     Property type
                   </span>
-                  <span className="text-base font-normal text-[#727272] block">
+                  <span className="text-base font-normal text-[#727272] dark:text-zinc-400 block">
                     {editListingType} · {editPropertyType}
                   </span>
                 </div>
@@ -1037,14 +1037,14 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("description")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "description"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs dark:!bg-indigo-950/60 dark:border-indigo-500"
+                    : "bg-white border-white hover:border-white dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600"
                     }`}
                 >
-                  <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5 dark:text-zinc-100">
                     Description
                   </span>
-                  <p className="text-base font-normal text-[#727272] line-clamp-3 leading-relaxed">
+                  <p className="text-base font-normal text-[#727272] line-clamp-3 leading-relaxed dark:text-zinc-400">
                     {editDescription || "No description provided yet."}
                   </p>
                 </div>
@@ -1396,15 +1396,15 @@ export function EditorSidebar({
                 {/* 16. Custom link */}
                 <div
                   onClick={() => setActiveSection("custom-link")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "custom-link"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border border-white dark:border-zinc-800 bg-white dark:bg-zinc-800/80 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] dark:shadow-none transition-all cursor-pointer ${activeSection === "custom-link"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-700 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800/80 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
+                  <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     Custom link
                   </span>
-                  <p className="text-base text-zinc-500 font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
+                  <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
                     {customSlug ? `homyz.com/stay/${customSlug}` : "Add details"}
                   </p>
                 </div>

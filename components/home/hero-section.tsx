@@ -936,6 +936,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
           <form
             ref={desktopSearchRef}
             onSubmit={handleSearchSubmit}
+            autoComplete="off"
             className="relative flex h-[66px] w-full max-w-[820px] items-center rounded-full bg-white shadow-[0_4px_24px_rgba(0,0,0,0.09)] border border-zinc-200/90 transition-shadow hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)]"
           >
             {/* Where */}
@@ -951,10 +952,22 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               <div className="flex items-center gap-1.5 w-full">
                 <input
                   id="desktop-destination"
+                  name="destination"
                   type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={desktopPanel === "where"}
+                  aria-haspopup="listbox"
+                  aria-controls="desktop-search-panel"
+                  data-form-type="other"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                   placeholder="Search destinations (e.g. Surat, Mumbai)"
                   value={destination}
-                  aria-controls="desktop-search-panel"
                   onFocus={() => setDesktopPanel("where")}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1160,7 +1173,20 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                 {/* Search input pill */}
                 <div className="flex items-center justify-between rounded-full border border-zinc-300 bg-zinc-50/70 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 pl-4 pr-1.5 py-1.5 shadow-2xs mb-3 transition-all">
                   <input
+                    id="mobile-destination"
+                    name="destination-mobile"
                     type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={true}
+                    aria-haspopup="listbox"
+                    data-form-type="other"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
                     placeholder="Search destinations (e.g. Surat, Mumbai)"
                     value={destination}
                     onChange={(e) => handleDestinationChange(e.target.value)}

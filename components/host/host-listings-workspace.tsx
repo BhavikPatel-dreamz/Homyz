@@ -1234,7 +1234,7 @@ export function HostListingsWorkspace({
                   type="button"
                   disabled={editorStep === 1}
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
-                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground disabled:opacity-30"
+                  className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-all cursor-pointer disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
                   ← Back
                 </button>

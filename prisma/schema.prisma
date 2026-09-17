@@ -436,8 +436,8 @@ model Listing {
   cleaningFee          Int?    @default(0) // Fee in cents
   securityDeposit      Int?    @default(0) // Fee in cents
   smartPricing         Boolean @default(false)
-  smartPricingMinPrice Int? // Minimum nightly price in cents when Smart Pricing is enabled
-  smartPricingMaxPrice Int? // Maximum nightly price in cents when Smart Pricing is enabled
+  smartPricingMinPrice Int? // Minimum Base price in cents when Smart Pricing is enabled
+  smartPricingMaxPrice Int? // Maximum Base price in cents when Smart Pricing is enabled
   weekendPrice         Int? // Weekend price in cents
   weekendPremium       Int? // Weekend premium percentage
   discounts            Json? // Discounts configuration
