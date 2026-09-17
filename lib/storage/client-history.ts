@@ -5,6 +5,7 @@ export const RECENT_SEARCHES_KEY = "homyz_recent_search_contexts";
 export const LEGACY_RECENT_KEY = "homyz_recent_searches";
 export const LAST_SEARCH_KEY = "homyz_last_search_context";
 export const LAST_SEARCH_COOKIE = "homyz_last_search";
+export const RECENT_SEARCHES_COOKIE = "homyz_recent_searches";
 export const MAX_SEARCH_AGE_DAYS = 30;
 export const MAX_SEARCH_AGE_MS = MAX_SEARCH_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -26,6 +27,8 @@ export interface ViewedPropertyItem {
 
 export interface StoredSearchContext extends SearchContext {
   savedAt: string;
+  searchedAt?: string;
+  filters?: PersistedSearchFilters;
 }
 
 export interface PersistedSearchFilters {
@@ -303,6 +306,15 @@ export function saveRecentSearchContext(ctx: SearchContext): void {
     ].slice(0, MAX_SEARCHES);
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
 
+    // Sync top 4 recent searches to cookie for SSR hydration
+    try {
+      setClientCookie(
+        RECENT_SEARCHES_COOKIE,
+        JSON.stringify(updated.slice(0, 4)),
+        MAX_SEARCH_AGE_DAYS,
+      );
+    } catch {}
+
     // Also update legacy string searches for backward compatibility
     const legacyRaw = localStorage.getItem(LEGACY_RECENT_KEY);
     const legacy = legacyRaw ? (JSON.parse(legacyRaw) as string[]) : [];
@@ -312,6 +324,34 @@ export function saveRecentSearchContext(ctx: SearchContext): void {
       JSON.stringify([ctx.query, ...legacyFiltered].slice(0, 5)),
     );
   } catch {}
+}
+
+/**
+ * Server-safe parser for reading the homyz_recent_searches cookie inside Server Components.
+ */
+export function parseServerRecentSearches(cookieValue?: string | null): StoredSearchContext[] {
+  if (!cookieValue) return [];
+  try {
+    let unescaped = cookieValue;
+    try {
+      unescaped = decodeURIComponent(cookieValue);
+    } catch {}
+    const parsed = JSON.parse(unescaped);
+    if (!Array.isArray(parsed)) return [];
+    const results: StoredSearchContext[] = [];
+    for (const raw of parsed) {
+      const validated = validateSearchContext(raw);
+      if (validated) {
+        results.push({
+          ...validated,
+          savedAt: validated.searchedAt,
+        });
+      }
+    }
+    return results.slice(0, 4);
+  } catch {
+    return [];
+  }
 }
 
 export function clearRecentlyViewedProperties(): void {
@@ -326,5 +366,6 @@ export function clearRecentSearchContexts(): void {
   try {
     localStorage.removeItem(RECENT_SEARCHES_KEY);
     localStorage.removeItem(LEGACY_RECENT_KEY);
+    deleteClientCookie(RECENT_SEARCHES_COOKIE);
   } catch {}
 }
