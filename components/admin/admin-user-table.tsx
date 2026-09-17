@@ -1086,7 +1086,7 @@ export function AdminUserTable({
                   type="button"
                   onClick={() => setShowAddModal(false)}
                   disabled={pending}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] disabled:opacity-50 transition-all cursor-pointer"
+                  className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>

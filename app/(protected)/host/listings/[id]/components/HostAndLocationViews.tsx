@@ -144,10 +144,10 @@ function Toggle({
       type="button"
       aria-pressed={checked}
       onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? tone === "rose" ? "bg-[#EF4662]" : "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? tone === "rose" ? "bg-[#EF4662]" : "bg-[#DF4557]" : "bg-[#DDDDDE] dark:bg-zinc-700"}`}
     >
       <span
-        className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${checked ? "translate-x-5.5" : "translate-x-0.5"}`}
+        className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-100 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600 transition-transform ${checked ? "translate-x-5.5" : "translate-x-0.5"}`}
       />
     </button>
   );
@@ -392,12 +392,12 @@ function LocationView(props: Props) {
     <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
         <BackButton onClick={onBack} />
-        <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] sm:text-2xl">Location</h1>
+        <h1 className="text-4xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">Location</h1>
         <button
           type="button"
           onClick={onBack}
           aria-label="Close location editor"
-          className="absolute right-0 top-1 flex size-10 items-center justify-center text-4xl font-normal leading-none text-[#1F1F1F] sm:hidden"
+          className="absolute right-0 top-1 flex size-10 items-center justify-center text-4xl font-normal leading-none text-[#1F1F1F] dark:text-zinc-100 sm:hidden"
         >
           ×
         </button>
@@ -411,7 +411,7 @@ function LocationView(props: Props) {
         <>
           {/* Interactive map with draggable pin */}
           <div className="space-y-2 pt-3 sm:pt-8">
-            <div className="overflow-hidden rounded-[20px] border border-[#1F1F1F] bg-zinc-100 shadow-[0_2px_4px_rgba(0,0,0,0.15)]">
+            <div className="overflow-hidden rounded-[20px] border border-[#1F1F1F] dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shadow-[0_2px_4px_rgba(0,0,0,0.15)]">
               <RealMap
                 address={editAddress}
                 city={editCity}
@@ -430,13 +430,13 @@ function LocationView(props: Props) {
             </div>
 
             {locationIsResolving && (
-              <p className="text-xs text-amber-700 animate-pulse">Finding this address on the map…</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 animate-pulse">Finding this address on the map…</p>
             )}
 
             {(locationResolutionError || validationError) && (
               <p
                 role="alert"
-                className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 font-medium"
+                className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs text-rose-700 dark:text-rose-300 font-medium"
               >
                 {validationError || locationResolutionError}
               </p>
@@ -459,7 +459,7 @@ function LocationView(props: Props) {
                 placeholder="Search by street, building, city, or postal code..."
               />
               <div>
-                <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                   Street address
                 </label>
                 <input
@@ -474,7 +474,7 @@ function LocationView(props: Props) {
               </div>
 
               <div>
-                <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                   Apt, suite, unit (optional)
                 </label>
                 <input
@@ -487,7 +487,7 @@ function LocationView(props: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                     District / Neighborhood
                   </label>
                   <input
@@ -498,7 +498,7 @@ function LocationView(props: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                     City
                   </label>
                   <input
@@ -515,7 +515,7 @@ function LocationView(props: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                     Postal code
                   </label>
                   <input
@@ -526,7 +526,7 @@ function LocationView(props: Props) {
                   />
                 </div>
                 <div>
-                  <label className="text-base font-normal text-[#1f1f1f] block mb-1">
+                  <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
                     Country
                   </label>
                   <input
@@ -554,8 +554,8 @@ function LocationView(props: Props) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-base font-medium text-[#1F1F1F]">Show you specific location</p>
-                <p className="mt-1 text-[14px] leading-5 text-[#727272]">
+                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Show you specific location</p>
+                <p className="mt-1 text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
                   Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed.
                 </p>
               </div>
@@ -565,10 +565,10 @@ function LocationView(props: Props) {
                 tone="rose"
               />
             </div>
-            <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] pt-4">
+            <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] dark:border-zinc-700 pt-4">
               <div>
-                <p className="text-base font-medium text-[#1F1F1F]">Address privacy for cancellation</p>
-                <p className="mt-1 text-[14px] leading-5 text-[#727272]">
+                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Address privacy for cancellation</p>
+                <p className="mt-1 text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
                   Keep your full address private until a reservation is confirmed, even when a guest cancels.
                 </p>
               </div>
@@ -582,14 +582,14 @@ function LocationView(props: Props) {
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white"
               >
                 Cancel
               </button>
@@ -607,10 +607,10 @@ function LocationView(props: Props) {
             <div className="grid grid-cols-1 gap-x-12 sm:grid-cols-2 sm:gap-x-16">
               {LOCATION_FEATURES.map(([id, label]) => (
                 <div key={id} className="py-2.5 sm:py-3">
-                  <div className="flex items-start justify-between gap-4 border-b border-[#D7D7D7] pb-3.5">
+                  <div className="flex items-start justify-between gap-4 border-b border-[#D7D7D7] dark:border-zinc-700 pb-3.5">
                     <div className="min-w-0 flex-1">
-                      <div className="text-base font-normal leading-6 text-[#1F1F1F]">{label}</div>
-                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272]">Highlight this feature for prospective guests</div>
+                      <div className="text-base font-normal leading-6 text-[#1F1F1F] dark:text-zinc-100">{label}</div>
+                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272] dark:text-zinc-400">Highlight this feature for prospective guests</div>
                     </div>
                     <Toggle
                       checked={locationFeatures.includes(id)}
@@ -631,14 +631,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white"
               >
                 Cancel
               </button>
@@ -709,14 +709,14 @@ function LocationView(props: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 border border-[#FCDF9C] dark:border-amber-400 hover:border-[#1f1f1f] dark:hover:border-zinc-600 px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-950 hover:text-white transition-colors hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 disabled:opacity-60 cursor-pointer duration-300"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
-                className="rounded-full bg-white border border-[#1f1f1f] hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-60 cursor-pointer duration-300"
+                className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:border-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 hover:text-white transition-colors hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 disabled:opacity-60 cursor-pointer duration-300"
               >
                 Cancel
               </button>
@@ -743,22 +743,22 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`overflow-hidden rounded-xl border border-white shadow-[0_2px_4px_rgba(0,0,0,0.2)] ${open && mutedWhenOpen ? "bg-[#F3F4F5]" : "bg-white"}`}>
+    <section className={`overflow-hidden rounded-xl border border-white dark:border-zinc-700 shadow-[0_2px_4px_rgba(0,0,0,0.2)] ${open && mutedWhenOpen ? "bg-[#F3F4F5] dark:bg-zinc-800/90" : "bg-white dark:bg-zinc-800"}`}>
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left"
       >
         <span className="min-w-0">
-          <span className="block text-base font-medium text-[#1F1F1F]">{title}</span>
-          {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272]">{summary}</span>}
+          <span className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{title}</span>
+          {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272] dark:text-zinc-400">{summary}</span>}
         </span>
         <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
-          <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain" />
+          <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain dark:invert" />
         </span>
       </button>
       {open && (
-        <div className="space-y-4 border-t border-[#DDDDDE] px-4 pb-4 pt-3.5">{children}</div>
+        <div className="space-y-4 border-t border-[#DDDDDE] dark:border-zinc-700 px-4 pb-4 pt-3.5">{children}</div>
       )}
     </section>
   );
@@ -773,9 +773,9 @@ function FeatureToggle({
   onChange: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-zinc-200 py-3.5 last:border-b-0">
+    <div className="flex items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-700 py-3.5 last:border-b-0">
       <div className="min-w-0 flex-1">
-        <span className="block text-sm text-zinc-700">{label}</span>
+        <span className="block text-sm text-zinc-700 dark:text-zinc-200">{label}</span>
       </div>
       <Toggle checked={checked} onChange={onChange} />
     </div>
@@ -793,7 +793,7 @@ function SaveButton({
       type="button"
       disabled={saving}
       onClick={onSave}
-      className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-60"
+      className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
     >
       {saving ? "Saving…" : "Save"}
     </button>
@@ -1072,7 +1072,7 @@ function CoHostView(props: Props) {
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-full border border-[#1f1f1f] px-4 py-2 text-[13px] font-medium transition hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 hover:text-white focus-visible:outline-zinc-900 disabled:opacity-40"
+                  className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>

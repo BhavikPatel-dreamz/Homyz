@@ -20,7 +20,7 @@ export function OnboardingMobileCloseButton({
         onClick={() => router.back()}
         disabled={disabled}
         aria-label="Close"
-        className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-100 dark:hover:bg-zinc-800"
       >
         <CloseIcon />
       </button>

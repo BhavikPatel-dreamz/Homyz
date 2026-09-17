@@ -915,14 +915,14 @@ export function GuidebooksManager({
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className="rounded-full border border-zinc-200 px-5 py-2.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !createTitle.trim()}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs disabled:opacity-50 cursor-pointer"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {isLoading ? "Creating..." : "Save & Open Editor"}
               </button>
@@ -1566,14 +1566,14 @@ export function GuidebooksManager({
                   <button
                     type="button"
                     onClick={() => setModalType(null)}
-                    className="rounded-full border border-zinc-200 px-5 py-2.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
+                    className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleSavePlaceItem}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs cursor-pointer"
+                    className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
                   >
                     {editingItem ? "Save changes" : "Add to guidebook"}
                   </button>
@@ -1668,7 +1668,7 @@ export function GuidebooksManager({
                 <button
                   type="button"
                   onClick={() => setModalType(null)}
-                  className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
+                  className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>

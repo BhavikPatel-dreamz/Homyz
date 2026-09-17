@@ -289,7 +289,7 @@ export function LoyaltyWalletView() {
               <button
                 type="button"
                 onClick={() => setRedeemingReward(null)}
-                className="rounded-full px-5 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>

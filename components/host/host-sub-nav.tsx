@@ -234,16 +234,16 @@ export function HostSubNav({
                       tab.minWidthClass
                     } ${
                       isActive
-                      ? "bg-[#FCDF9C] border-[#FCDF9C] text-[#1F1F1F]"
-                        : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
+                      ? "bg-[#FCDF9C] border-[#FCDF9C] text-[#1F1F1F] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950"
+                        : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                     }`}
                   >
                     <div className="shrink-0">{tab.icon}</div>
                     <span
                       className={`font-['Poppins'] font-normal text-base leading-tight whitespace-nowrap ${
                         isActive
-                          ? "text-[#1F1F1F]"
-                          : "text-[#727272] group-hover:text-[#1F1F1F]"
+                          ? "text-[#1F1F1F] dark:text-zinc-950"
+                          : "text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
                       }`}
                     >
                       {tab.label}
@@ -260,10 +260,10 @@ export function HostSubNav({
                 <button
                   type="button"
                   onClick={onMenuClick}
-                  className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer"
+                  className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                 >
                   <MenuNavIcon className="shrink-0" />
-                  <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F]">
+                  <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100">
                     Menu
                   </span>
                 </button>
@@ -274,16 +274,16 @@ export function HostSubNav({
                   onClick={onFilterClick}
                   className={`group flex h-[76px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer ${
                     filterActive
-                      ? "bg-[#1F1F1F] border-[#1F1F1F] text-[#FCDF9C]"
-                      : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F]"
+                      ? "bg-[#1F1F1F] border-[#1F1F1F] text-[#FCDF9C] dark:bg-zinc-700 dark:border-zinc-600 dark:text-amber-300"
+                      : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                   }`}
                 >
                   <FiltersNavIcon className="shrink-0" />
                   <span
                     className={`font-['Poppins'] text-[14px] leading-tight ${
                       filterActive
-                        ? "font-medium text-[#FCDF9C]"
-                        : "font-normal text-[#727272] group-hover:text-[#1F1F1F]"
+                        ? "font-medium text-[#FCDF9C] dark:text-amber-300"
+                        : "font-normal text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
                     }`}
                   >
                     Filters
