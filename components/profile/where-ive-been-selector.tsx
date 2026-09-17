@@ -1,6 +1,8 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { CloseIcon } from "@/components/ui/close-icon";
+import Image from "next/image";
 import React, { useState, useTransition, useRef } from "react";
 import {
   BUILTIN_TRAVEL_STAMPS,
@@ -298,7 +300,7 @@ export function WhereIveBeenSelector({
               type="button"
               onClick={openAddModal}
               disabled={pending}
-              className="bg-[#FDE29B] hover:bg-[#F3F4F5] text-[#1F1F1F] font-medium text-xs px-3.5 py-1.5 rounded-full transition-all shadow-2xs hover:scale-105 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="bg-[#FDE29B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-xs px-3.5 py-2.5 rounded-full transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className="text-sm font-semibold leading-none">+</span>
               <span>Add Stamp</span>
@@ -309,7 +311,7 @@ export function WhereIveBeenSelector({
           <span
             className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all ${
               isLimitReached
-                ? "bg-amber-50 text-amber-900 border-amber-300"
+              ? "bg-amber-50 text-amber-900 border-amber-900"
                 : "bg-zinc-100 text-zinc-600 border-zinc-200"
             }`}
           >
@@ -385,7 +387,7 @@ export function WhereIveBeenSelector({
                   <div
                     key={stamp.id}
                     onClick={() => !isDisabled && handleToggleStamp(stamp.id)}
-                    className={`group relative flex m-2 flex-col items-center justify-center p-2 transition-all select-none ${
+                    className={`group relative flex m-2 flex-col items-center justify-center p-2 transition-all select-none duration-300 ${
                       isDisabled
                         ? "cursor-not-allowed opacity-40"
                         : "cursor-pointer hover:scale-105"
@@ -465,7 +467,7 @@ export function WhereIveBeenSelector({
       {/* Add / Edit Stamp Modal */}
       {modalMode && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
+          <div className="w-full max-w-lg rounded-xl bg-white px-6 py-4 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
             <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">
                 {modalMode === "add" ? "Add Travel Stamp" : "Edit Travel Stamp"}
@@ -473,15 +475,16 @@ export function WhereIveBeenSelector({
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="text-zinc-400 hover:text-zinc-700 text-sm font-semibold p-1"
+                className="text-[#1f1f1f] hover:text-[#727272] text-lg font-semibold"
+                aria-label="Close dialog"
               >
-                ✕
+                <CloseIcon className="size-4" />
               </button>
             </div>
 
             {/* Live Interactive Stamp Preview */}
             <div className="flex flex-col items-center justify-center py-4 bg-zinc-50/80 rounded-2xl border border-zinc-200/60 mb-6">
-              <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+              <span className="text-base font-medium text-[#727272] mb-2">
                 Live Stamp Preview
               </span>
               <TravelStampGraphic stamp={previewStamp} size="lg" />
@@ -489,10 +492,10 @@ export function WhereIveBeenSelector({
 
             {/* Step 1: Icon Image Upload */}
             <div className="mb-6">
-              <label className="block text-xs font-semibold text-[#1F1F1F] mb-1.5">
+              <label className="block text-sm font-medium text-[#1F1F1F] mb-1.5">
                 Stamp Icon / Artwork (Optional)
               </label>
-              <p className="text-[11px] text-zinc-500 mb-2">
+              <p className="text-xs text-[#727272] mb-2">
                 Upload a custom PNG, JPG, or WebP graphic for your stamp.
                 Transparency is preserved.
               </p>
@@ -513,13 +516,13 @@ export function WhereIveBeenSelector({
                       alt="Icon preview"
                       className="w-10 h-10 object-contain rounded-lg bg-white p-1"
                     />
-                    <span className="text-xs text-emerald-700 font-semibold flex-1">
+                    <span className="text-sm text-emerald-700 font-medium flex-1">
                       Image uploaded successfully
                     </span>
                     <button
                       type="button"
                       onClick={() => setUploadedIconUrl(null)}
-                      className="text-xs font-semibold text-rose-600 hover:underline"
+                      className="text-sm font-medium text-rose-600 hover:underline"
                     >
                       Remove
                     </button>
@@ -529,13 +532,13 @@ export function WhereIveBeenSelector({
                     type="button"
                     disabled={uploadingImage}
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50 hover:bg-white text-xs font-semibold text-zinc-700 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50 hover:bg-white text-sm font-medium text-[#1f1f1f] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 sm:min-h-[60px] min-h-[56px]"
                   >
                     {uploadingImage ? (
                       <span>Uploading icon image...</span>
                     ) : (
                       <>
-                        <span>📷</span>
+                        <Image src="/images/icons/camera.svg" alt="" width={24} height={24} className="object-contain" />
                         <span>Click to Upload Stamp Artwork</span>
                       </>
                     )}
@@ -567,7 +570,7 @@ export function WhereIveBeenSelector({
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
               >
                 Cancel
               </button>
@@ -575,7 +578,7 @@ export function WhereIveBeenSelector({
                 type="button"
                 onClick={handleSaveStamp}
                 disabled={!stampLocationValue.trim() || pending}
-                className="bg-[#FA595D] hover:bg-rose-600 text-white text-xs font-semibold px-6 py-2.5 rounded-full shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {modalMode === "add" ? "Save Stamp" : "Update Stamp"}
               </button>

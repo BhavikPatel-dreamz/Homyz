@@ -128,24 +128,24 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
             </span>
           </Link>
 
-          <div className="ml-auto flex items-center gap-2.5 sm:gap-5" ref={menuRef}>
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5" ref={menuRef}>
             {user && (
               <button
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? "Loading..." : "Become a host"}
               </button>
             )}
 
             {isHostRoute ? (
-              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to traveling
               </Link>
             ) : role === "HOST" ? (
-              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
                 Switch to hosting
               </Link>
             ) : null}
@@ -178,7 +178,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
             {menuOpen && (
-              <div className="absolute right-0 top-full w-72 sm:w-80 rounded-3xl border border-zinc-200/80 bg-white p-3.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 text-[#1F1F1F] max-h-[calc(100vh-80px)] overflow-y-auto">
+              <div className="absolute right-0 top-full z-50 max-h-[calc(100dvh-80px)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-3xl border border-zinc-200/80 bg-white p-3.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80">
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/

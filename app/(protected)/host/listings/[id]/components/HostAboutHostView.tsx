@@ -433,14 +433,14 @@ export function HostAboutHostView({
   }
 
   return (
-    <div className="relative w-full max-w-[calc(100%-75px)]">
+    <div className="relative w-full xl:max-w-[calc(100%-75px)] max-w-[calc(100%-20px)]">
       <div
         ref={aboutHostScrollRef}
         onScroll={updateAboutHostScrollThumb}
-        className="custom-scrollbar space-y-8 pb-28 pr-1 lg:h-[1850px] lg:overflow-x-hidden lg:overflow-y-auto pl-1.5 lg:pr-[100px]"
+        className="custom-scrollbar space-y-8 pb-28 sm:pr-1 lg:h-[1850px] lg:overflow-x-hidden lg:overflow-y-auto sm:pl-1.5 lg:pr-[50px] xl:pr-[100px]"
       >
         {/* Top Header */}
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-6">
             <BackButton
               aria-label="Back to listings"
@@ -455,7 +455,7 @@ export function HostAboutHostView({
         </header>
 
         {/* Global Community Notice */}
-        <div className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 sm:p-5">
+        <div className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50/80 p-4 sm:p-5">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-700">
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -498,10 +498,10 @@ export function HostAboutHostView({
 
         {/* 1. Host Profile Card (Airbnb Style) */}
         <section className="profile-card">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-7">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:gap-7">
             {/* Avatar Container */}
-            <div className="relative mx-auto shrink-0 sm:mx-0 w-[362px] h-[264px]">
-              <div className="size-full overflow-hidden rounded-[20px] border-2 border-[#1f1f1f] bg-[#727272]">
+            <div className="relative mx-auto shrink-0 sm:mx-0 sm:w-[362px] w-[200px] sm:h-[264px] h-[200px]">
+              <div className="size-full overflow-hidden sm:rounded-[20px] rounded-full border-2 border-[#1f1f1f] bg-[#727272]">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -534,7 +534,7 @@ export function HostAboutHostView({
             </div>
 
             {/* Identity & Badges */}
-            <div className="flex-1 space-y-3 text-center sm:text-left">
+            <div className="flex-1 space-y-3 text-center sm:text-left sm:mt-0 mt-4">
               <div>
                 <div className="flex items-center justify-center gap-2 sm:justify-start">
                   <h2 className="text-xl font-medium text-[#1f1f1f] sm:text-2xl">
@@ -545,7 +545,7 @@ export function HostAboutHostView({
                   </span>
                 </div>
                 {(hostProfile.email || session?.user?.email) && (
-                  <p className="mt-0.5 text-sm text-[#727272]">{hostProfile.email || session?.user?.email}</p>
+                  <p className="wordbreak-all whitespace-normal mt-0.5 text-sm text-[#727272]">{hostProfile.email || session?.user?.email}</p>
                 )}
               </div>
 
@@ -567,7 +567,7 @@ export function HostAboutHostView({
         </section>
 
         {/* 2. About Me / Biography Card */}
-        <section className="rounded-xl border border-white bg-[#F3F4F5] p-6 shadow-[0px_2px_4px_0px_#00000040]">
+        <section className="rounded-xl border border-white bg-[#F3F4F5] p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6">
           <div className="border-b border[#727272] pb-4">
             <h2 className="text-lg font-medium text-[#1f1f1f]">About me</h2>
             <p className="mt-0.5 text-sm font-normal text-[#727272]">
@@ -617,7 +617,7 @@ export function HostAboutHostView({
         </section>
 
         {/* 3. Host Details & Prompts Card */}
-        <section className="rounded-xl border border-white bg-white p-6 shadow-[0px_2px_4px_0px_#00000040]">
+        <section className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6">
           <div className="border-b border[#727272] pb-4">
             <h2 className="text-lg font-medium text-[#1f1f1f]">Host details & prompts</h2>
             <p className="mt-0.5 text-sm font-normal text-[#727272]">
@@ -725,7 +725,7 @@ export function HostAboutHostView({
         </section>
 
         {/* 4. Languages Spoken */}
-        <section className="rounded-xl border border-white bg-white p-6 shadow-[0px_2px_4px_0px_#00000040]">
+        <section className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6">
           <div className="border-b border[#727272] pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -747,7 +747,7 @@ export function HostAboutHostView({
                 languages.map((langId) => (
                   <span
                     key={langId}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-medium text-[#1f1f1f]"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-normal text-zinc-800"
                   >
                     {getLanguageNameById(langId)}
                     <button
@@ -767,7 +767,7 @@ export function HostAboutHostView({
 
             {/* Search / Select Dropdown */}
             <div className="relative">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                   <input
                     type="text"
@@ -793,7 +793,7 @@ export function HostAboutHostView({
                 <button
                   type="button"
                   onClick={() => setIsLanguageDropdownOpen((prev) => !prev)}
-                  className="rounded-lg border border-zinc-300 px-3.5 py-2.5 text-base font-medium text-[#1f1f1f] hover:bg-zinc-50 sm:min-h-[60px] min-h-[56px]"
+                  className="w-full rounded-lg border border-zinc-300 px-3.5 py-2.5 text-base font-medium text-[#1f1f1f] hover:bg-zinc-50 sm:w-auto sm:min-h-[60px] min-h-[56px]"
                 >
                   {isLanguageDropdownOpen ? "Close" : "Browse all"}
                 </button>
@@ -850,7 +850,7 @@ export function HostAboutHostView({
                 hobbies.map((hobby) => (
                   <span
                     key={hobby}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-medium text-zinc-800"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-normal text-zinc-800"
                   >
                     {hobby}
                     <button
@@ -869,7 +869,7 @@ export function HostAboutHostView({
             </div>
 
             {/* Add Custom Hobby Input */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <input
                 type="text"
                 value={hobbyInput}
@@ -886,7 +886,7 @@ export function HostAboutHostView({
               <button
                 type="button"
                 onClick={() => handleAddHobby()}
-                className="rounded-lg bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-colors hover:bg-black sm:min-h-[60px] min-h-[56px] min-w-[80px]"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-base font-medium text-[#1f1f1f] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-black hover:text-white sm:min-h-[60px] sm:min-w-[80px] sm:w-auto min-h-[56px]"
               >
                 Add
               </button>
@@ -904,7 +904,7 @@ export function HostAboutHostView({
                       key={sug}
                       type="button"
                       onClick={() => handleAddHobby(sug)}
-                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 bg-white px-3 py-1.5 text-xs font-normal text-[#1f1f1f] transition-colors hover:border-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
                     >
                       <span>+</span> {sug}
                     </button>
@@ -927,7 +927,7 @@ export function HostAboutHostView({
 
             {/* Visibility Switch */}
             <div className="flex items-center gap-2.5">
-              
+
               <button
                 type="button"
                 role="switch"
@@ -947,9 +947,9 @@ export function HostAboutHostView({
 
           {/* Stamps Gallery Preview */}
           <div className="mt-5 space-y-4">
-            <div className="flex min-h-24 items-center">
+            <div className="flex w-full min-h-24 items-center">
               {selectedStamps.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-4 sm:grid-cols-2">
                   {selectedStamps.slice(0, 8).map((stampId) => {
                     const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
                     if (!stamp) return null;
@@ -957,7 +957,7 @@ export function HostAboutHostView({
                       <div
                         key={stamp.id}
                       >
-                        <TravelStampGraphic stamp={stamp} size="sm" />
+                        <TravelStampGraphic stamp={stamp} size="lg" />
                       </div>
                     );
                   })}
@@ -969,16 +969,16 @@ export function HostAboutHostView({
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-xs text-zinc-500">
                 {selectedStamps.length} / 10 stamps selected
               </span>
               <button
                 type="button"
                 onClick={() => setIsStampEditorOpen(true)}
-                className="rounded-full border border-[#FCDF9C] hover:border-[#1f1f1f] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                className="w-full rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white sm:w-auto"
               >
-                Pick travel stamps
+                Edit travel stamp
               </button>
             </div>
           </div>
@@ -986,21 +986,8 @@ export function HostAboutHostView({
 
         {/* Modal Overlay for Travel Stamps Selector */}
         {isStampEditorOpen && (
-          <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-            <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
-              <div className="mb-4 flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-zinc-900">Where I&apos;ve been</h3>
-                  <p className="text-xs text-zinc-500">Choose the travel stamps that appear on your profile.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsStampEditorOpen(false)}
-                  className="rounded-full border border-zinc-200 px-3.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
-                >
-                  Close
-                </button>
-              </div>
+          <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs w-full h-full">
+            <div className="max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto overscroll-contain rounded-xl bg-white p-4 shadow-2xl ring-1 ring-zinc-200 sm:p-6">
               <WhereIveBeenSelector
                 initialSelectedStamps={selectedStamps}
                 initialStampsVisible={stampsVisible}
@@ -1048,7 +1035,7 @@ export function HostAboutHostView({
                 interests.map((interest) => (
                   <span
                     key={interest}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-medium text-zinc-800"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3.5 py-1.5 text-xs font-normal text-zinc-800"
                   >
                     {interest}
                     <button
@@ -1067,7 +1054,7 @@ export function HostAboutHostView({
             </div>
 
             {/* Add Custom Interest Input */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <input
                 type="text"
                 value={interestInput}
@@ -1084,7 +1071,7 @@ export function HostAboutHostView({
               <button
                 type="button"
                 onClick={() => handleAddInterest()}
-                className="rounded-lg bg-zinc-900 px-4 py-2.5 text-base font-medium text-white transition-colors hover:bg-black sm:min-h-[60px] min-h-[56px] min-w-[80px]"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-base font-medium text-[#1f1f1f] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-black hover:text-white sm:min-h-[60px] sm:min-w-[80px] sm:w-auto min-h-[56px]"
               >
                 Add
               </button>
@@ -1102,7 +1089,7 @@ export function HostAboutHostView({
                       key={ref}
                       type="button"
                       onClick={() => handleAddInterest(ref)}
-                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
+                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-zinc-300 bg-white px-3 py-1.5 text-xs font-normal text-[#1f1f1f] transition-colors hover:border-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
                     >
                       <span>+</span> {ref}
                     </button>
@@ -1114,47 +1101,30 @@ export function HostAboutHostView({
         </section>
 
         {/* 8. Sticky Action Footer Bar (Airbnb Style) */}
-        <div className="bottom-0 z-30 -mx-4 -mb-12 border-t border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur-md sm:mx-0 sm:rounded-2xl sm:border sm:shadow-lg">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2.5">
-              {isDirty ? (
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
-                  <span className="size-2 rounded-full bg-amber-500" />
-                  You have unsaved changes
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-                  <span className="size-2 rounded-full bg-emerald-500" />
-                  All changes saved
-                </span>
-              )}
-            </div>
 
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={!isDirty || isSaving}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSave()}
-                disabled={!isDirty || isSaving}
-                className="rounded-full border border-[#FCDF9C] hover:border-[#1f1f1f] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
-              >
-                {isSaving && (
-                  <svg className="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                  </svg>
-                )}
-                {isSaving ? "Saving changes…" : "Save profile"}
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={!isDirty || isSaving}
+            className="w-full rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white sm:w-auto"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            disabled={!isDirty || isSaving}
+            className="w-full rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white sm:w-auto"
+          >
+            {isSaving && (
+              <svg className="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            )}
+            {isSaving ? "Saving changes…" : "Save profile"}
+          </button>
         </div>
       </div>
       {aboutHostScrollThumb.visible && (
