@@ -93,6 +93,42 @@ function LocationIcon({ type }: { type?: string }) {
           </svg>
         </div>
       );
+    case "airport":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z" />
+          </svg>
+        </div>
+      );
+    case "mall":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-700 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </div>
+      );
+    case "university":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-700 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+      );
+    case "hospital":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-700 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <path d="M12 6v12M6 12h12" />
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+          </svg>
+        </div>
+      );
     case "street":
       return (
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 shadow-2xs">
@@ -129,6 +165,37 @@ function LocationIcon({ type }: { type?: string }) {
             <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" fill="currentColor" fillOpacity="0.1" />
             <line x1="8" y1="2" x2="8" y2="18" />
             <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+        </div>
+      );
+    case "stay":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        </div>
+      );
+    case "country":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+        </div>
+      );
+    case "current_location":
+      return (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-2xs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+            <circle cx="12" cy="12" r="7" />
+            <line x1="12" y1="2" x2="12" y2="5" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="5" y2="12" />
+            <line x1="19" y1="12" x2="22" y2="12" />
           </svg>
         </div>
       );
@@ -195,6 +262,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [desktopPanel, setDesktopPanel] = useState<"where" | "checkIn" | "checkOut" | "who" | null>(null);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState<"where" | "when" | "who">("where");
   const desktopSearchRef = useRef<HTMLFormElement>(null);
 
   // Autocomplete state
@@ -206,6 +275,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
     properties: [],
   });
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestIndex, setSuggestIndex] = useState(-1); // keyboard nav
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -226,6 +297,67 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       }
     } catch {}
   }, []);
+
+  const handleUseCurrentLocation = useCallback(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      return;
+    }
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        let placeName = "Nearby stays";
+        let city = "";
+        let country = "";
+
+        try {
+          const res = await fetch(`/api/v1/listings/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          if (res.ok) {
+            const data = await res.json();
+            const payload = data.data || data;
+            if (payload?.name || payload?.city) {
+              placeName = payload.name || payload.city;
+              city = payload.city || "";
+              country = payload.country || "";
+            }
+          }
+        } catch {}
+
+        const loc: SelectedLocationData = {
+          name: placeName,
+          fullAddress: `${placeName}${country ? `, ${country}` : ""}`,
+          city: city || placeName,
+          country: country,
+          latitude,
+          longitude,
+          locationType: "current_location",
+          providerPlaceId: `gps:${latitude.toFixed(4)},${longitude.toFixed(4)}`,
+        };
+
+        setSelectedLocation(loc);
+        setDestination(placeName);
+        try {
+          localStorage.setItem("homyz_selected_location", JSON.stringify(loc));
+        } catch {}
+
+        setIsLocating(false);
+        setActiveStep("when");
+        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+      },
+      (err) => {
+        setIsLocating(false);
+        if (err.code === 1 /* PERMISSION_DENIED */) {
+          setLocationError("Location permission was denied. Please type your destination.");
+        } else {
+          setLocationError("Unable to retrieve location. Please type your destination.");
+        }
+      },
+      { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false },
+    );
+  }, [isMobileSearchOpen]);
 
   const fetchSuggestions = useCallback(async (q: string) => {
     if (abortControllerRef.current) {
@@ -266,8 +398,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
     setDestination(value);
     setSelectedLocation(null);
     setSuggestIndex(-1);
+    setLocationError(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => fetchSuggestions(value), 300);
+    debounceTimer.current = setTimeout(() => fetchSuggestions(value), 180);
   }, [fetchSuggestions]);
 
   const handleClearDestination = useCallback((e?: React.MouseEvent) => {
@@ -311,8 +444,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   const [destinationScroll, setDestinationScroll] = useState(0);
 
   // Mobile search popup state
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [activeStep, setActiveStep] = useState<"where" | "when" | "who">("where");
+
 
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("searchModal")) {
@@ -465,6 +597,17 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       } : null
     );
 
+    const isLandmarkOrPoi =
+      effectiveLoc?.locationType === "landmark" ||
+      effectiveLoc?.locationType === "poi" ||
+      effectiveLoc?.locationType === "station" ||
+      effectiveLoc?.locationType === "airport" ||
+      effectiveLoc?.locationType === "beach" ||
+      effectiveLoc?.locationType === "mall" ||
+      effectiveLoc?.locationType === "university" ||
+      effectiveLoc?.locationType === "hospital";
+    const initialRadius = isLandmarkOrPoi ? 5 : 25;
+
     if (onSearch) {
       onSearch({
         destination,
@@ -475,7 +618,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         guestDetails: { ...mobileGuests },
         lat: effectiveLoc?.latitude,
         lng: effectiveLoc?.longitude,
-        radiusKm: effectiveLoc ? 25 : undefined,
+        radiusKm: effectiveLoc ? initialRadius : undefined,
         placeId: effectiveLoc?.providerPlaceId,
         locationType: effectiveLoc?.locationType,
         placeName: effectiveLoc?.name || destination,
@@ -509,6 +652,43 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         }}
         className="no-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1"
       >
+        {/* Use Current Location Action Button */}
+        <button
+          type="button"
+          onClick={handleUseCurrentLocation}
+          disabled={isLocating}
+          className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-100/90 bg-zinc-50/50 mb-2"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
+              {isLocating ? (
+                <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <circle cx="12" cy="12" r="7" />
+                  <line x1="12" y1="2" x2="12" y2="5" />
+                  <line x1="12" y1="19" x2="12" y2="22" />
+                  <line x1="2" y1="12" x2="5" y2="12" />
+                  <line x1="19" y1="12" x2="22" y2="12" />
+                </svg>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[14px] font-bold text-zinc-900 group-hover:text-blue-700 transition-colors">
+                {isLocating ? "Detecting current location…" : "Use current location"}
+              </div>
+              <div className="text-[12px] text-zinc-500 truncate">Find stays near where you are right now</div>
+            </div>
+          </div>
+          <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-800">
+            GPS
+          </span>
+        </button>
+        {locationError && (
+          <div className="px-3 py-2 mb-2 text-[12px] text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
+            {locationError}
+          </div>
+        )}
         {/* Live World & DB results */}
         {(primaryCity || places.length > 0 || districts.length > 0 || cities.length > 0 || properties.length > 0) ? (
           <>

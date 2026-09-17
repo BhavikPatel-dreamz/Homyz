@@ -24,6 +24,8 @@ export interface ListingCardProps {
     distanceKm?: number | null;
   };
   className?: string;
+  /** Optional contextual landmark / place name (e.g. "Burj Khalifa") */
+  targetLocationName?: string;
   /** Whether this listing is already saved as a favorite (server-provided initial state). */
   initialFavorite?: boolean;
   /** Pass false to hide the heart button entirely (e.g., on admin pages). */
@@ -33,6 +35,7 @@ export interface ListingCardProps {
 export function ListingCard({
   listing,
   className = "",
+  targetLocationName,
   initialFavorite = false,
   showFavorite = true,
 }: ListingCardProps) {
@@ -170,7 +173,11 @@ export function ListingCard({
 
         <p className="text-xs text-zinc-500 font-normal truncate">
           {locationString}
-          {typeof listing.distanceKm === "number" ? ` · ${listing.distanceKm} km away` : ""}
+          {typeof listing.distanceKm === "number"
+            ? targetLocationName
+              ? ` · ${listing.distanceKm} km from ${targetLocationName}`
+              : ` · ${listing.distanceKm} km away`
+            : ""}
         </p>
 
         <p className="text-base text-[#727272] font-normal truncate">

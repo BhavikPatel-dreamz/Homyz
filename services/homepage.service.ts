@@ -6,8 +6,8 @@ import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
 import { parseCutoffHour, parseRequiredAdvanceDays } from "@/services/booking.service";
 import { favoriteService } from "@/services/favorite.service";
 
-const SECTION_LIMIT = 8;
-const CANDIDATE_LIMIT = 48;
+const SECTION_LIMIT = 12;
+const CANDIDATE_LIMIT = 150;
 
 export type HomepageProperty = {
   id: string;
@@ -30,6 +30,9 @@ export type HomepageSection = {
   title: string;
   type: "FEATURED" | "LOCATION" | "WEEKEND" | "THIS_MONTH" | "NEXT_MONTH";
   properties: HomepageProperty[];
+  seeAllHref: string;
+  previewImages: string[];
+  totalCount: number;
 };
 
 export type HomepageData = {
@@ -188,18 +191,82 @@ async function loadHomepageData(city?: string): Promise<HomepageData> {
     ? listings.filter((listing) => listing.city?.toLocaleLowerCase() === resolvedCity.toLocaleLowerCase())
     : listings;
   const sections: HomepageSection[] = [];
-  const addSection = (id: HomepageSection["id"], title: string, type: HomepageSection["type"], source: DiscoveryListing[]) => {
+  const addSection = (
+    id: HomepageSection["id"],
+    title: string,
+    type: HomepageSection["type"],
+    source: DiscoveryListing[],
+    seeAllHref: string,
+  ) => {
     const properties = uniqueProperties(source);
-    if (properties.length) sections.push({ id, title, type, properties });
+    if (properties.length) {
+      const previewImages = source
+        .flatMap((listing) => listing.photos || [])
+        .filter(Boolean)
+        .slice(0, 3);
+
+      sections.push({
+        id,
+        title,
+        type,
+        properties,
+        seeAllHref,
+        previewImages,
+        totalCount: source.length,
+      });
+    }
   };
 
-  addSection("featured", "Featured stays", "FEATURED", listings.filter((listing) => listing.isFeatured));
-  if (resolvedCity) addSection(`city-${resolvedCity.toLowerCase()}`, `Explore stays in ${resolvedCity}`, "LOCATION", locationListings);
-  addSection("weekend", "Available this weekend", "WEEKEND", locationListings.filter((listing) => hasBookableRange(listing, weekend.start, weekend.end)));
-  if (thisMonthEnd > today) {
-    addSection("this-month", resolvedCity ? `Available this month in ${resolvedCity}` : "Available this month", "THIS_MONTH", locationListings.filter((listing) => hasBookableRange(listing, today, thisMonthEnd)));
+  const featuredHref = resolvedCity
+    ? `/listings?featured=true&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}`
+    : "/listings?featured=true";
+  addSection(
+    "featured",
+    "Featured stays",
+    "FEATURED",
+    listings.filter((listing) => listing.isFeatured),
+    featuredHref,
+  );
+
+  if (resolvedCity) {
+    const cityHref = `/listings?city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}`;
+    addSection(
+      `city-${resolvedCity.toLowerCase()}`,
+      `Explore stays in ${resolvedCity}`,
+      "LOCATION",
+      locationListings,
+      cityHref,
+    );
   }
-  addSection("next-month", resolvedCity ? `Available next month in ${resolvedCity}` : "Available next month", "NEXT_MONTH", locationListings.filter((listing) => hasBookableRange(listing, nextMonthStart, nextMonthEnd)));
+
+  const weekendHref = `/listings?checkIn=${dateKey(weekend.start)}&checkOut=${dateKey(weekend.end)}${resolvedCity ? `&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}` : ""}&sortBy=recommended`;
+  addSection(
+    "weekend",
+    "Available this weekend",
+    "WEEKEND",
+    locationListings.filter((listing) => hasBookableRange(listing, weekend.start, weekend.end)),
+    weekendHref,
+  );
+
+  if (thisMonthEnd > today) {
+    const thisMonthHref = `/listings?checkIn=${dateKey(today)}&checkOut=${dateKey(thisMonthEnd)}${resolvedCity ? `&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}` : ""}&sortBy=recommended`;
+    addSection(
+      "this-month",
+      resolvedCity ? `Available this month in ${resolvedCity}` : "Available this month",
+      "THIS_MONTH",
+      locationListings.filter((listing) => hasBookableRange(listing, today, thisMonthEnd)),
+      thisMonthHref,
+    );
+  }
+
+  const nextMonthHref = `/listings?checkIn=${dateKey(nextMonthStart)}&checkOut=${dateKey(nextMonthEnd)}${resolvedCity ? `&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}` : ""}&sortBy=recommended`;
+  addSection(
+    "next-month",
+    resolvedCity ? `Available next month in ${resolvedCity}` : "Available next month",
+    "NEXT_MONTH",
+    locationListings.filter((listing) => hasBookableRange(listing, nextMonthStart, nextMonthEnd)),
+    nextMonthHref,
+  );
 
   return { location: { city: resolvedCity }, sections };
 }

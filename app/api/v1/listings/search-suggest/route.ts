@@ -2,6 +2,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { prisma } from "@/lib/db/prisma";
 import { ListingStatus } from "@/generated/prisma/enums";
+import { getCache, setCache } from "@/lib/redis/cache";
 import {
   searchPlacesAutocomplete,
   type UnifiedLocationSuggestion,
@@ -41,6 +42,14 @@ function getLocationBadge(type: LocationType): string {
       return "Beach";
     case "station":
       return "Station";
+    case "airport":
+      return "Airport";
+    case "mall":
+      return "Mall";
+    case "university":
+      return "University";
+    case "hospital":
+      return "Hospital";
     case "street":
       return "Street";
     case "landmark":
@@ -49,6 +58,12 @@ function getLocationBadge(type: LocationType): string {
       return "Area";
     case "district":
       return "District";
+    case "country":
+      return "Country";
+    case "stay":
+      return "Stay";
+    case "poi":
+      return "Attraction";
     default:
       return "Place";
   }
@@ -57,7 +72,7 @@ function getLocationBadge(type: LocationType): string {
 /**
  * GET /api/v1/listings/search-suggest?q=surat
  * Returns Airbnb-style destination and granular place / neighborhood / POI lists.
- * Powered by Mapbox Search, local high-precision registry, and active database listings.
+ * Powered by World Landmarks Registry, Mapbox Search, and active database listings.
  */
 export const GET = apiHandler(async (req) => {
   const { searchParams } = new URL(req.url);
@@ -76,7 +91,7 @@ export const GET = apiHandler(async (req) => {
       where,
       select: { city: true, country: true, district: true, latitude: true, longitude: true },
       distinct: ["city"],
-      take: 4,
+      take: 8,
       orderBy: { city: "asc" },
     }).catch(() => []);
 
@@ -88,7 +103,7 @@ export const GET = apiHandler(async (req) => {
             city: c.city as string,
             fullLabel: `${c.city}${c.country ? `, ${c.country}` : ""}`,
             country: c.country || "Available stays",
-            subtitle: "Stays in Homyz",
+            subtitle: "Verified stays in Homyz",
             badge: "Available Stays",
             latitude: c.latitude || 0,
             longitude: c.longitude || 0,
@@ -107,7 +122,14 @@ export const GET = apiHandler(async (req) => {
     });
   }
 
-  // 1. Query Places Autocomplete Provider (Mapbox Search + Local Fallback)
+  // Check Redis cache for fast response (fail-open)
+  const cacheKey = `homyz:loc:suggest:${q.toLowerCase()}`;
+  try {
+    const cached = await getCache<any>(cacheKey);
+    if (cached) return ok(cached);
+  } catch {}
+
+  // 1. Query Places Autocomplete Provider (World Landmarks + Mapbox + Nominatim + CSC)
   const placesPromise = searchPlacesAutocomplete(q, { limit: 12 });
 
   // 2. Query DB listings for matching cities, districts, and property titles
@@ -166,13 +188,9 @@ export const GET = apiHandler(async (req) => {
   const primaryCity = formattedPlaces.find((p) => p.locationType === "city") || null;
   const places = formattedPlaces.filter(
     (p) =>
-      p.locationType === "neighborhood" ||
-      p.locationType === "area" ||
-      p.locationType === "beach" ||
-      p.locationType === "station" ||
-      p.locationType === "landmark" ||
-      p.locationType === "street" ||
-      p.locationType === "poi",
+      p.locationType !== "city" &&
+      p.locationType !== "district" &&
+      p.locationType !== "country",
   );
   const districts = formattedPlaces.filter((p) => p.locationType === "district");
 
@@ -186,12 +204,18 @@ export const GET = apiHandler(async (req) => {
     longitude: r.longitude,
   }));
 
-  return ok({
+  const payload = {
     suggestions: formattedPlaces,
     primaryCity,
     places,
     districts,
     cities: formattedPlaces,
     properties,
-  });
+  };
+
+  try {
+    await setCache(cacheKey, payload, 86400);
+  } catch {}
+
+  return ok(payload);
 });

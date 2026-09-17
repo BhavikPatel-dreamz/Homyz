@@ -1,14 +1,25 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { PropertyCard, PropertyCardData } from "./property-card";
+import { SeeAllCard } from "./see-all-card";
 
 interface HomePropertySectionProps {
   title: string;
   cards: PropertyCardData[];
+  seeAllHref?: string;
+  previewImages?: string[];
+  totalCount?: number;
 }
 
-export function HomePropertySection({ title, cards }: HomePropertySectionProps) {
+export function HomePropertySection({
+  title,
+  cards,
+  seeAllHref,
+  previewImages,
+  totalCount,
+}: HomePropertySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [pageCount, setPageCount] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +65,7 @@ export function HomePropertySection({ title, cards }: HomePropertySectionProps) 
     resizeObserver.observe(track);
 
     return () => resizeObserver.disconnect();
-  }, [displayCards.length, updateCarouselState]);
+  }, [displayCards.length, Boolean(seeAllHref), updateCarouselState]);
 
   const goToPage = (index: number) => {
     const track = containerRef.current;
@@ -102,9 +113,22 @@ export function HomePropertySection({ title, cards }: HomePropertySectionProps) 
   return (
     <section data-purpose="category-carousel">
       <div className="mb-4 sm:mb-6 flex items-center justify-between">
-        <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
-          {title}
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
+            {title}
+          </h2>
+          {seeAllHref && (
+            <Link
+              href={seeAllHref}
+              className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#0052cc] hover:text-[#003b95] hover:underline transition-colors ml-1"
+            >
+              <span>See all</span>
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          )}
+        </div>
         <div className="hidden sm:flex w-[112px] shrink-0 items-center justify-end gap-3">
           <button
             type="button"
@@ -162,6 +186,16 @@ export function HomePropertySection({ title, cards }: HomePropertySectionProps) 
             <PropertyCard {...card} />
           </div>
         ))}
+        {seeAllHref && (
+          <div className="min-w-0 snap-start">
+            <SeeAllCard
+              href={seeAllHref}
+              previewImages={previewImages}
+              title={title}
+              totalCount={totalCount}
+            />
+          </div>
+        )}
       </div>
 
       {/* Carousel Pagination Indicator */}

@@ -6,6 +6,7 @@
  */
 
 import { City, Country, State } from "country-state-city";
+import { searchWorldLandmarks, findLandmarkByNameOrId } from "./world-landmarks";
 
 export type LocationType =
   | "city"
@@ -14,8 +15,13 @@ export type LocationType =
   | "locality"
   | "street"
   | "landmark"
+  | "airport"
   | "station"
   | "beach"
+  | "mall"
+  | "university"
+  | "hospital"
+  | "stay"
   | "poi"
   | "district"
   | "country"
@@ -502,7 +508,7 @@ function searchCSCPlaces(query: string, limit: number = 8): UnifiedLocationSugge
 
 /**
  * Main Places Autocomplete Function
- * Resolves location dynamically via Mapbox or OpenStreetMap Nominatim.
+ * Resolves location dynamically via World Landmarks Registry, Mapbox, OpenStreetMap Nominatim, and CSC.
  * ZERO static fallback lists. If no location exists, returns an empty array [].
  */
 export async function searchPlacesAutocomplete(
@@ -522,37 +528,70 @@ export async function searchPlacesAutocomplete(
     return cached;
   }
 
-  // 1. Primary: Mapbox Geocoding & Search API (if token configured)
+  const results: UnifiedLocationSuggestion[] = [];
+  const seenKeys = new Set<string>();
+
+  const addResult = (item: UnifiedLocationSuggestion) => {
+    const nameKey = `${item.name.toLowerCase()}|${item.city.toLowerCase()}|${item.country.toLowerCase()}`;
+    const coordKey = `${item.latitude.toFixed(3)},${item.longitude.toFixed(3)}`;
+    if (!seenKeys.has(item.id) && !seenKeys.has(nameKey) && !seenKeys.has(coordKey)) {
+      seenKeys.add(item.id);
+      seenKeys.add(nameKey);
+      seenKeys.add(coordKey);
+      results.push(item);
+      return true;
+    }
+    return false;
+  };
+
+  // 1. Tier 1: World Landmarks, POIs, Airports, Stations & Beaches Registry (instant <1ms, typo-tolerant)
+  const landmarkMatches = searchWorldLandmarks(trimmed, limit);
+  for (const lm of landmarkMatches) {
+    addResult(lm);
+  }
+
+  // 2. Tier 2: Mapbox Geocoding & Search API (if token configured)
   const mapboxToken =
     process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
     process.env.MAPBOX_ACCESS_TOKEN ||
     process.env.MAPBOX_TOKEN;
 
-  if (mapboxToken && mapboxToken.trim()) {
-    const mapboxResults = await searchMapboxPlaces(trimmed, mapboxToken.trim(), limit);
-    if (mapboxResults.length > 0) {
-      setCache(cacheKey, mapboxResults);
-      return mapboxResults;
+  if (results.length < limit && mapboxToken && mapboxToken.trim()) {
+    try {
+      const mapboxResults = await searchMapboxPlaces(trimmed, mapboxToken.trim(), limit);
+      for (const item of mapboxResults) {
+        addResult(item);
+        if (results.length >= limit) break;
+      }
+    } catch {}
+  }
+
+  // 3. Tier 3: OpenStreetMap Nominatim API (Free, dynamic, global with 2000ms safety timeout)
+  if (results.length < limit) {
+    try {
+      const nominatimResults = await searchNominatimPlaces(trimmed, limit);
+      for (const item of nominatimResults) {
+        addResult(item);
+        if (results.length >= limit) break;
+      }
+    } catch {}
+  }
+
+  // 4. Tier 4: Country-State-City database (148,000+ worldwide cities & all countries)
+  if (results.length < limit) {
+    const cscResults = searchCSCPlaces(trimmed, limit);
+    for (const item of cscResults) {
+      addResult(item);
+      if (results.length >= limit) break;
     }
   }
 
-  // 2. Secondary: OpenStreetMap Nominatim API (Free, dynamic, global)
-  const nominatimResults = await searchNominatimPlaces(trimmed, limit);
-  if (nominatimResults.length > 0) {
-    setCache(cacheKey, nominatimResults);
-    return nominatimResults;
-  }
+  const finalResults = results.slice(0, limit);
 
-  // 3. Dynamic offline fallback: Query country-state-city database
-  const cscResults = searchCSCPlaces(trimmed, limit);
-  if (cscResults.length > 0) {
-    setCache(cacheKey, cscResults);
-    return cscResults;
-  }
+  // Cache in LRU
+  setCache(cacheKey, finalResults);
 
-  // 4. No matching location found: return empty array (zero fake locations!)
-  setCache(cacheKey, []);
-  return [];
+  return finalResults;
 }
 
 /**
@@ -576,51 +615,129 @@ export async function reverseGeocodeCoords(
     process.env.MAPBOX_TOKEN;
 
   if (mapboxToken && mapboxToken.trim()) {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${encodeURIComponent(
-      mapboxToken.trim(),
-    )}&limit=1`;
-    const data = await safeFetchJson<any>(url, {}, 3500);
-    const f = data?.features?.[0];
-    if (f) {
-      const item: UnifiedLocationSuggestion = {
-        id: `mapbox_${f.id}`,
-        name: f.text || f.place_name?.split(",")[0],
-        fullAddress: f.place_name,
-        city: f.context?.find((c: any) => c.id.startsWith("place"))?.text || "",
-        state: f.context?.find((c: any) => c.id.startsWith("region"))?.text || "",
-        country: f.context?.find((c: any) => c.id.startsWith("country"))?.text || "",
-        latitude: lat,
-        longitude: lng,
-        locationType: "address",
-        providerPlaceId: `mapbox:${f.id}`,
-        provider: "mapbox",
-      };
-      reverseCache.set(cacheKey, item);
-      return item;
-    }
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${encodeURIComponent(
+        mapboxToken.trim(),
+      )}&limit=1`;
+      const data = await safeFetchJson<any>(url, {}, 3000);
+      const f = data?.features?.[0];
+      if (f) {
+        const item: UnifiedLocationSuggestion = {
+          id: `mapbox_${f.id}`,
+          name: f.text || f.place_name?.split(",")[0],
+          fullAddress: f.place_name,
+          city: f.context?.find((c: any) => c.id.startsWith("place"))?.text || "",
+          state: f.context?.find((c: any) => c.id.startsWith("region"))?.text || "",
+          country: f.context?.find((c: any) => c.id.startsWith("country"))?.text || "",
+          latitude: lat,
+          longitude: lng,
+          locationType: "address",
+          providerPlaceId: `mapbox:${f.id}`,
+          provider: "mapbox",
+        };
+        reverseCache.set(cacheKey, item);
+        return item;
+      }
+    } catch {}
   }
 
   // 2. OpenStreetMap Nominatim Reverse Geocoding
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-  const data = await safeFetchJson<any>(url, { "User-Agent": "HomyzApp/1.0", "Accept-Language": "en" }, 4000);
-  if (data && data.address) {
-    const item = parseNominatimFeature(data, "");
-    item.latitude = lat;
-    item.longitude = lng;
-    reverseCache.set(cacheKey, item);
-    return item;
-  }
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    const data = await safeFetchJson<any>(url, { "User-Agent": "HomyzApp/1.0", "Accept-Language": "en" }, 3000);
+    if (data && data.address) {
+      const item = parseNominatimFeature(data, "");
+      item.latitude = lat;
+      item.longitude = lng;
+      reverseCache.set(cacheKey, item);
+      return item;
+    }
+  } catch {}
+
+  // 3. Fallback to nearest city in CSC database
+  try {
+    const allCities = City.getAllCities();
+    let closestCity: any = null;
+    let minDistance = Infinity;
+    for (let i = 0; i < allCities.length; i++) {
+      const c = allCities[i];
+      if (!c.latitude || !c.longitude) continue;
+      const cLat = parseFloat(c.latitude);
+      const cLng = parseFloat(c.longitude);
+      const dLat = Math.abs(cLat - lat);
+      const dLng = Math.abs(cLng - lng);
+      if (dLat < 0.5 && dLng < 0.5) {
+        const dist = (cLat - lat) ** 2 + (cLng - lng) ** 2;
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestCity = c;
+        }
+      }
+    }
+
+    if (closestCity) {
+      const country = Country.getCountryByCode(closestCity.countryCode);
+      const fallbackItem: UnifiedLocationSuggestion = {
+        id: `csc_reverse_${closestCity.countryCode}_${closestCity.name}`,
+        name: closestCity.name,
+        fullAddress: `${closestCity.name}, ${country?.name || closestCity.countryCode}`,
+        city: closestCity.name,
+        state: closestCity.stateCode || "",
+        country: country?.name || closestCity.countryCode,
+        countryCode: closestCity.countryCode,
+        latitude: lat,
+        longitude: lng,
+        locationType: "city",
+        providerPlaceId: `csc:${closestCity.countryCode}:${closestCity.name}`,
+        provider: "csc",
+      };
+      reverseCache.set(cacheKey, fallbackItem);
+      return fallbackItem;
+    }
+  } catch {}
 
   reverseCache.set(cacheKey, null);
   return null;
 }
 
 /**
- * Forward geocodes an address string to coordinates and structured location.
+ * Forward geocodes an address or landmark string to coordinates and structured location.
+ * Resolves landmarks, cities, districts, and addresses worldwide.
  */
 export async function forwardGeocodeQuery(
   query: string,
 ): Promise<UnifiedLocationSuggestion | null> {
-  const results = await searchPlacesAutocomplete(query, { limit: 1 });
-  return results[0] ?? null;
+  const trimmed = (query || "").trim();
+  if (!trimmed) return null;
+
+  // 1. Check exact or aliased landmark in registry
+  const landmark = findLandmarkByNameOrId(trimmed);
+  if (landmark) {
+    const subParts = [landmark.name !== landmark.city ? landmark.city : null, landmark.state, landmark.country].filter(Boolean);
+    return {
+      id: `landmark_${landmark.id}`,
+      name: landmark.name,
+      fullAddress: [landmark.name, ...subParts].join(", "),
+      city: landmark.city,
+      state: landmark.state || "",
+      country: landmark.country,
+      countryCode: landmark.countryCode,
+      latitude: landmark.latitude,
+      longitude: landmark.longitude,
+      locationType: landmark.type,
+      providerPlaceId: `landmark:${landmark.id}`,
+      provider: "osm",
+      distanceKm: landmark.defaultRadiusKm,
+    };
+  }
+
+  // 2. Search places autocomplete
+  const results = await searchPlacesAutocomplete(trimmed, { limit: 1 });
+  if (results.length > 0) return results[0];
+
+  // 3. Fallback to CSC places
+  const csc = searchCSCPlaces(trimmed, 1);
+  if (csc.length > 0) return csc[0];
+
+  return null;
 }
