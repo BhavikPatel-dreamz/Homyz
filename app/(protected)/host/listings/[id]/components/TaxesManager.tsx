@@ -876,7 +876,7 @@ export function TaxesManager({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="text-xs font-semibold text-zinc-900 underline hover:text-black cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -884,7 +884,7 @@ export function TaxesManager({
                 type="button"
                 onClick={() => handleSave()}
                 disabled={isSaving}
-                className="px-6 py-2.5 rounded-lg text-xs font-semibold bg-black text-white hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -997,7 +997,7 @@ export function TaxesManager({
                   setIsDeleteModalOpen(false);
                   setDeletingTaxId(null);
                 }}
-                className="px-4 py-2 border border-zinc-300 rounded-lg text-xs font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>

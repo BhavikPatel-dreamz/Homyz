@@ -570,7 +570,7 @@ export function WhereIveBeenSelector({
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="cursor-pointer rounded-full border border-[#1f1f1f] bg-white px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -578,7 +578,7 @@ export function WhereIveBeenSelector({
                 type="button"
                 onClick={handleSaveStamp}
                 disabled={!stampLocationValue.trim() || pending}
-                className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {modalMode === "add" ? "Save Stamp" : "Update Stamp"}
               </button>

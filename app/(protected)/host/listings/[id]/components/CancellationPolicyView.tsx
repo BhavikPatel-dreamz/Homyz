@@ -384,7 +384,7 @@ export function CancellationPolicyView({
                   setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
                   setIsShortTermModalOpen(false);
                 }}
-                className="text-xs font-semibold text-zinc-700 hover:text-zinc-950 underline cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -392,7 +392,7 @@ export function CancellationPolicyView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSaveShortTerm}
-                className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -478,7 +478,7 @@ export function CancellationPolicyView({
                   setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
                   setIsLongTermModalOpen(false);
                 }}
-                className="text-xs font-semibold text-zinc-700 hover:text-zinc-950 underline cursor-pointer"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -486,7 +486,7 @@ export function CancellationPolicyView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSaveLongTerm}
-                className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>

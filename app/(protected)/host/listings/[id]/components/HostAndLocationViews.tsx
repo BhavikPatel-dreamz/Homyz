@@ -1072,7 +1072,7 @@ function CoHostView(props: Props) {
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-full border border-[#1f1f1f] px-4 py-2 text-[13px] font-medium transition hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 hover:text-white focus-visible:outline-zinc-900 disabled:opacity-40"
+                  className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
