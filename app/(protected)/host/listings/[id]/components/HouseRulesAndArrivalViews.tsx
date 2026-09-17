@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import { CloseIcon } from "@/components/ui/close-icon";
 import Image from "next/image";
 import {
   DEFAULT_LANGUAGE_IDS,
@@ -43,13 +44,11 @@ function AllowDenyButtons({
         aria-pressed={value === false}
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === false
-            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
-            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+          : "border border-[#727272] bg-white text-zinc-500 hover:bg-zinc-200/80"
           }`}
       >
-        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <CloseIcon className="size-4 stroke-[2.5]" />
       </button>
       <button
         type="button"
@@ -57,13 +56,18 @@ function AllowDenyButtons({
         aria-pressed={value === true}
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === true
-            ? "border border-zinc-900 bg-zinc-900 text-white shadow-xs"
-            : "border border-zinc-200 bg-zinc-100/80 text-zinc-500 hover:bg-zinc-200/80"
+          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+          : "border border-[#727272] bg-white text-zinc-500 hover:bg-zinc-200/80"
           }`}
       >
-        <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-        </svg>
+        <Image
+          src="/images/icons/right-mark.svg"
+          alt=""
+          aria-hidden="true"
+          width={14}
+          height={14}
+          className={`size-3.5 ${value === true ? "brightness-0 invert" : ""}`}
+        />
       </button>
     </div>
   );
@@ -284,13 +288,15 @@ export function HouseRulesAndArrivalViews({
         <div className="max-w-3xl space-y-6 pb-10 font-sans animate-in fade-in">
           {/* Header & Subtitle */}
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <BackButton onClick={() => setActiveSection("description")} />
-              <h1 className="text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">House rules</h1>
+              <div>
+                <h1>House rules</h1>
+                <p className="text-sm text-[#727272]">
+                  Guests are expected to follow your rules and may be removed from Airbnb if they don&apos;t.
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal pl-11 leading-relaxed">
-              Guests are expected to follow your rules and may be removed from Airbnb if they don&apos;t.
-            </p>
           </div>
 
           {isLoading ? (
@@ -303,13 +309,13 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <span className="font-semibold text-sm text-[#1F1F1F] dark:text-zinc-100 block">Pets allowed</span>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-md">
+                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Pets allowed</span>
+                      <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed max-w-md">
                         You can refuse pets, but must reasonably accommodate service animals.{" "}
                         <a
                           href="#service-animals"
                           onClick={(e) => e.preventDefault()}
-                          className="underline font-semibold text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-amber-400 inline-block"
+                          className="underline font-semibold text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
                         >
                           Learn more
                         </a>
@@ -347,7 +353,7 @@ export function HouseRulesAndArrivalViews({
                             onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
                             className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
-                            +
+                              <Image src="/images/icons/add-Icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                         </div>
                       </div>
@@ -406,7 +412,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 2: Events allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-semibold text-sm text-[#1F1F1F] dark:text-zinc-100 block">Events allowed</span>
+                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Events allowed</span>
                   </div>
                   <AllowDenyButtons
                     label="events"
@@ -418,7 +424,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-semibold text-sm text-[#1F1F1F] dark:text-zinc-100 block">Smoking, vaping, e-cigarettes allowed</span>
+                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Smoking, vaping, e-cigarettes allowed</span>
                   </div>
                   <AllowDenyButtons
                     label="smoking"
@@ -431,7 +437,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-sm text-[#1F1F1F] dark:text-zinc-100 block">Quiet hours</span>
+                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Quiet hours</span>
                     </div>
                     <AllowDenyButtons
                       label="quiet hours"
@@ -444,7 +450,7 @@ export function HouseRulesAndArrivalViews({
                   {quietHours === true && (
                     <div className="rounded-2xl border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-800 grid grid-cols-2 overflow-hidden shadow-2xs">
                       <div className="p-3 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Start time</span>
+                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">Start time</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
                           <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursStart, "11:00 pm")}
@@ -466,7 +472,7 @@ export function HouseRulesAndArrivalViews({
                       </div>
 
                       <div className="p-3 border-l border-zinc-400 dark:border-zinc-700 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400">End time</span>
+                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">End time</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
                           <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursEnd, "7:00 am")}
@@ -493,7 +499,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 5: Commercial photography and filming allowed */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">Commercial photography and filming allowed</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Commercial photography and filming allowed</span>
                   </div>
                   <AllowDenyButtons
                     label="commercial photography and filming"
@@ -505,7 +511,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 6: Number of guests */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">Number of guests</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Number of guests</span>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <button
@@ -513,7 +519,7 @@ export function HouseRulesAndArrivalViews({
                       aria-label="Decrease maximum guests"
                       disabled={maxGuestsCount <= 1}
                       onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
@@ -523,9 +529,9 @@ export function HouseRulesAndArrivalViews({
                       aria-label="Increase maximum guests"
                       disabled={maxGuestsCount >= 50}
                       onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      +
+                        <Image src="/images/icons/add-Icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
@@ -537,7 +543,7 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5">
-                    <span className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">Check-in and checkout times</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Check-in and checkout times</span>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
                       Arrive between {formatTimeDisplay(checkInStart, "3:00 pm")} and {checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}
                     </p>
@@ -557,7 +563,7 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5 max-w-md">
-                    <span className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">Additional rules</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Additional rules</span>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal line-clamp-2">
                       {additionalHouseRules?.trim() || "Add rules"}
                     </p>
@@ -574,14 +580,14 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("house-rules")}
-                  className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveSection("description")}
-                  className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -592,37 +598,37 @@ export function HouseRulesAndArrivalViews({
           {/* Check-in and checkout times Modal */}
           {isCheckInOutModalOpen && (
             <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-lg w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
+              <div className="bg-white dark:bg-zinc-900 rounded-xl sm:p-5 p-4 max-w-lg w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative">
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => setIsCheckInOutModalOpen(false)}
                   className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
                 >
-                  ✕
+                  <CloseIcon className="size-5" />
                 </button>
 
                 <div className="space-y-1">
                   <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                     Check-in and checkout times
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                  <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
                     Set arrival windows and checkout times for your guests.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   {/* Check-in window */}
-                  <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
-                    <label className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Check-in window</label>
+                  <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
+                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">Check-in window</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 block mb-1">Start time</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">Start time</span>
                         <div className="relative">
                           <select
                             value={formatTimeDisplay(checkInStart, "3:00 pm")}
                             onChange={(e) => setCheckInStart(e.target.value)}
-                            className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                            className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                           >
                             {ALL_HOURS_OPTIONS.map((t) => (
                               <option key={t} value={t}>{t}</option>
@@ -634,12 +640,12 @@ export function HouseRulesAndArrivalViews({
                         </div>
                       </div>
                       <div>
-                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 block mb-1">End time</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">End time</span>
                         <div className="relative">
                           <select
                             value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
                             onChange={(e) => setCheckInEnd(e.target.value)}
-                            className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                            className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                           >
                             <option value="Flexible">Flexible</option>
                             {ALL_HOURS_OPTIONS.map((t) => (
@@ -655,15 +661,15 @@ export function HouseRulesAndArrivalViews({
                   </div>
 
                   {/* Checkout time */}
-                  <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
-                    <label className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Checkout time</label>
+                  <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
+                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">Checkout time</label>
                     <div>
-                      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 block mb-1">Guests must leave before</span>
+                      <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">Guests must leave before</span>
                       <div className="relative">
                         <select
                           value={formatTimeDisplay(checkOutTime, "11:00 am")}
                           onChange={(e) => setCheckOutTime(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                          className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                         >
                           {ALL_HOURS_OPTIONS.map((t) => (
                             <option key={t} value={t}>{t}</option>
@@ -682,7 +688,7 @@ export function HouseRulesAndArrivalViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => setIsCheckInOutModalOpen(false)}
-                    className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                    className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                   >
                     Cancel
                   </button>
@@ -693,7 +699,7 @@ export function HouseRulesAndArrivalViews({
                       await handleSaveSection("house-rules");
                       setIsCheckInOutModalOpen(false);
                     }}
-                    className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                    className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                   >
                     {isSaving ? "Saving..." : "Save Times"}
                   </button>
@@ -729,8 +735,8 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   onClick={() => setParkingAvailable?.(false)}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === false
-                      ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                      : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   ✕
@@ -739,8 +745,8 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   onClick={() => setParkingAvailable?.(true)}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === true
-                      ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                      : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   ✓
@@ -759,8 +765,8 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingType?.("FREE")}
                       className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "FREE"
-                          ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                          : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
                       Free
@@ -769,8 +775,8 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingType?.("PAID")}
                       className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "PAID"
-                          ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                          : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
                       Paid
@@ -795,7 +801,7 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
                       className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
-                      +
+                      <Image src="/images/icons/plus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
@@ -808,8 +814,8 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingReservation?.(false)}
                       className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === false
-                          ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                          : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
                       ✕
@@ -818,8 +824,8 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingReservation?.(true)}
                       className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === true
-                          ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                          : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
                       ✓
@@ -848,14 +854,14 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {isSaving ? "Saving..." : "Save"}
             </button>
             <button
               type="button"
               onClick={() => setActiveSection("arrival-guide")}
-              className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+              className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               Cancel
             </button>
@@ -1393,7 +1399,7 @@ function CheckOutInstructionsView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -1571,8 +1577,8 @@ function InteractionPreferencesView({
               type="button"
               onClick={() => onChange?.(option)}
               className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
-                  ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                  : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
+                ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 }`}
               role="radio"
               aria-checked={isActive}
@@ -2171,14 +2177,14 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
           onClick={() => setActiveSection("check-in-out")}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+          className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           Cancel
         </button>
@@ -2522,7 +2528,7 @@ function CheckInMethodView({
                       <CheckInMethodIcon id={method.id} />
                     </div>
                     <div className="min-w-0">
-                      <span className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 mb-0.5">{method.label}</span>
+                      <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100 mb-0.5">{method.label}</span>
                       <p className="text-xs text-zinc-400 dark:text-zinc-400 leading-relaxed font-normal">{method.description}</p>
                     </div>
                   </button>
@@ -2589,7 +2595,7 @@ function CheckInMethodView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSaveDetail}
-                className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -2653,7 +2659,7 @@ function CheckInMethodView({
                   await handleSaveSection("check-in-method");
                   setIsInstructionModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect -- legacy editor integration surface; narrowed incrementally outside E4. */
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { CloseIcon } from "@/components/ui/close-icon";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -2211,18 +2212,18 @@ export function HostListingEditorClient({
       {/* --------------------------------------------------------- */}
       {isEditingAdditionalRulesModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl sm:p-6 p-4 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
               className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
             >
-              ✕
+              <CloseIcon className="size-5 stroke-[2.5]" />
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Additional house rules</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Additional house rules</h3>
+              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
                 Share any specific requirements or guidelines guests must follow.
               </p>
             </div>
@@ -2232,14 +2233,14 @@ export function HostListingEditorClient({
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
               placeholder="e.g. Please remove shoes inside, no loud music after 10 PM..."
-              className="w-full rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-zinc-300 dark:placeholder:text-zinc-500"
+              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -2250,7 +2251,7 @@ export function HostListingEditorClient({
                   await handleSaveSection("house-rules");
                   setIsEditingAdditionalRulesModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? "Saving..." : "Save Rules"}
               </button>

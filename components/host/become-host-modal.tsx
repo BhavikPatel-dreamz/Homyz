@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export type HostingTypeOption = "HOME" | "EXPERIENCE" | "SERVICE";
 
@@ -22,6 +23,7 @@ export function BecomeHostModal({
   initialType = "HOME",
   initialStep,
 }: BecomeHostModalProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
@@ -139,10 +141,10 @@ export function BecomeHostModal({
           {/* Modal Header Titles */}
           <div className="px-2 mb-6">
             <h2 className="text-lg sm:text-xl font-medium text-[#727272] tracking-tight">
-              Welcome back, <span className="capitalize text-[#1F1F1F] ">{displayName}</span>
+              {t("host_welcome_back")} <span className="capitalize text-[#1F1F1F] ">{displayName}</span>
             </h2>
             <p className="text-sm font-normal text-[#727272] mt-3">
-              Start a new listing
+              {t("host_start_new_listing")}
             </p>
           </div>
 
@@ -162,7 +164,7 @@ export function BecomeHostModal({
                   </svg>
                 </div>
                 <span className="text-base font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">
-                  Create a new listing
+                  {t("host_create_new")}
                 </span>
               </div>
               <svg className="w-5 h-5 text-[#1D1D1D] group-hover:text-[#727272] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -184,7 +186,7 @@ export function BecomeHostModal({
                   </svg>
                 </div>
                 <span className="text-base font-normal text-[#1F1F1F] group-hover:text-[#727272] transition-colors">
-                  Create from an existing listing
+                  {t("host_create_from_existing")}
                 </span>
               </div>
               <svg className="w-5 h-5 text-[#1D1D1D] group-hover:text-[#727272] transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -220,7 +222,7 @@ export function BecomeHostModal({
 
           {/* Modal Header Title */}
           <h2 className="text-2xl sm:text-3xl font-medium text-[#1F1F1F] text-left tracking-tight mb-2">
-            What would you like to host?
+            {t("host_what_would_you_like_to_host")}
           </h2>
 
           {/* 3 Hosting Category Choice Cards */}
@@ -244,7 +246,7 @@ export function BecomeHostModal({
               <div className="w-16 h-16 flex items-center justify-center mb-3">
                 <Image src="/images/icons/home-icon.svg" alt="" width={37} height={47} />
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">Home</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_home")}</span>
             </button>
 
             {/* Option 2: Experience */}
@@ -263,7 +265,7 @@ export function BecomeHostModal({
               }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
-                Soon
+                {t("host_soon")}
               </span>
               {/* Experience Icon */}
               <div className="w-16 h-16 flex items-center justify-center mb-3 opacity-80">
@@ -274,7 +276,7 @@ export function BecomeHostModal({
                   <path d="M 8 40 C 18 35, 38 35, 48 40 C 48 42, 8 42, 8 40 Z" fill="#7BAA9C" />
                 </svg>
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">Experience</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_experience")}</span>
             </button>
 
             {/* Option 3: Service */}
@@ -293,7 +295,7 @@ export function BecomeHostModal({
               }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
-                Soon
+                {t("host_soon")}
               </span>
               {/* Service Icon */}
               <div className="w-16 h-16 flex items-center justify-center mb-3 opacity-80">
@@ -306,7 +308,7 @@ export function BecomeHostModal({
                   <path d="M 33.5 18 L 35 19.5 L 38.5 16" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">Service</span>
+              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_service")}</span>
             </button>
           </div>
 
@@ -317,7 +319,7 @@ export function BecomeHostModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>
-                <strong>{selectedType === "EXPERIENCE" ? "Experience" : "Service"} hosting</strong> is coming soon to Homyz. Please select <strong>Home</strong> to create a place listing today.
+                <strong>{selectedType === "EXPERIENCE" ? t("host_experience") : t("host_service")} hosting</strong> is coming soon to Homyz. Please select <strong>{t("host_home")}</strong> to create a place listing today.
               </span>
             </div>
           )}
@@ -329,7 +331,7 @@ export function BecomeHostModal({
               onClick={onClose}
               className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
             >
-              Cancel
+              {t("host_cancel")}
             </button>
             <button
               type="button"
@@ -341,7 +343,7 @@ export function BecomeHostModal({
                 : "bg-[#F3F4F5] text-zinc-400 cursor-not-allowed"
               }`}
             >
-              {isNavigating ? "Loading..." : "Next"}
+              {isNavigating ? t("host_loading") : t("host_next")}
             </button>
           </div>
         </div>
