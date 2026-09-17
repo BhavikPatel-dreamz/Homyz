@@ -21,7 +21,7 @@ INSERT INTO "AppSettings" ("key", "value", "description", "dataType", "category"
 VALUES (
     'HOST_SERVICE_FEE_PERCENTAGE',
     '15',
-    'Platform service fee charged to hosts as a percentage of nightly price',
+    'Platform service fee charged to hosts as a percentage of Base price',
     'NUMBER',
     'PRICING',
     false,

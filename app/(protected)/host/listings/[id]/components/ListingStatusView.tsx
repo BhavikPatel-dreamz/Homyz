@@ -81,7 +81,7 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   if (price <= 0) {
     missing.push({
       key: "price",
-      label: "Base nightly price",
+      label: "Base price",
       description: "Specify a standard weekday base price",
       section: "pricing",
     });
@@ -91,7 +91,7 @@ export function computeMissingRequirements(listing: Partial<HostListingData>): M
   if (weekendPrice <= 0) {
     missing.push({
       key: "weekendPrice",
-      label: "Weekend nightly price",
+      label: "Weekend price",
       description: "Set a weekend price or premium for Friday/Saturday",
       section: "pricing",
     });

@@ -3,8 +3,16 @@ import { Role } from "@/generated/prisma/enums";
 import { listingService } from "@/services/listing.service";
 import { AdminListingsClient } from "./admin-listings-client";
 
-export default async function AdminListingsPage() {
+export default async function AdminListingsPage(props: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   await requirePageRole([Role.ADMIN]);
+
+  const resolvedParams = props.searchParams ? await props.searchParams : {};
+  const initialSearch = typeof resolvedParams.search === "string" ? resolvedParams.search : "";
+  const initialStatus = typeof resolvedParams.status === "string" ? resolvedParams.status.toUpperCase() : "ALL";
+  const initialPage = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page, 10) || 1 : 1;
+  const initialPageSize = typeof resolvedParams.pageSize === "string" ? parseInt(resolvedParams.pageSize, 10) || 10 : 10;
 
   const { listings, totalCount, publishedCount, featuredCount, pausedCount } =
     await listingService.listForAdminDashboard();
@@ -67,6 +75,10 @@ export default async function AdminListingsPage() {
         featured: featuredCount,
         paused: pausedCount,
       }}
+      initialSearch={initialSearch}
+      initialStatus={initialStatus}
+      initialPage={initialPage}
+      initialPageSize={initialPageSize}
     />
   );
 }

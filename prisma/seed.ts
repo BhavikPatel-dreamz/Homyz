@@ -3,8 +3,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
 import { Role, UserStatus } from "@/generated/prisma/enums";
 import { ALL_PERMISSIONS, PERMISSIONS } from "@/lib/permissions/permissions";
+import { seedCuratedLocations } from "@/lib/location/seed";
 
 async function main() {
+  const curatedLocations = await seedCuratedLocations();
+  console.log(`[seed] Curated locations ready: ${curatedLocations.countries} countries / ${curatedLocations.locations} locations.`);
   console.log("[seed] Seeding permissions...");
   for (const perm of ALL_PERMISSIONS) {
     await prisma.adminPermission.upsert({

@@ -166,10 +166,10 @@ export function PricingAndBookingViews({
             <PricingSkeleton />
           ) : (
             <div className="space-y-5 sm:mt-21.25 mt-6">
-              {/* 1. Nightly Price Card */}
+              {/* 1. Base Price Card */}
               <div className="space-y-3">
                 <div className="flex min-[360px]:items-center items-start justify-between min-[360px]:flex-row flex-col min-[360px]:gap-0 gap-3">
-                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Nightly price"}</span>
+                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Base price"}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-base font-normal text-[#727272]">Smart pricing</span>
                     <button

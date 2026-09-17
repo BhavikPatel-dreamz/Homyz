@@ -263,7 +263,7 @@ export const PropertyTypeBoxSkeleton = PropertyTypeSkeleton;
 export function PricingSkeleton() {
   return (
     <div className="space-y-5 pt-1 animate-in fade-in font-sans">
-      {/* Card 1: Nightly price card */}
+      {/* Card 1: Base price card */}
       <SkeletonCard className="space-y-3">
         <div className="flex items-center justify-between">
           <SkeletonText className="h-3.5 w-24" />

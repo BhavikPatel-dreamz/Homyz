@@ -186,6 +186,11 @@ export function AddressAutocomplete({
         {/* Text Input */}
         <input
           type="text"
+          name="address-search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           value={value}
           onChange={handleInputChange}
           onFocus={() => {
@@ -199,6 +204,9 @@ export function AddressAutocomplete({
           aria-autocomplete="list"
           aria-haspopup="listbox"
           aria-controls="address-autocomplete-listbox"
+          data-form-type="other"
+          data-lpignore="true"
+          data-1p-ignore="true"
           className={`w-full pl-10 pr-16 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all ${
             disabled ? "opacity-60 cursor-not-allowed bg-zinc-50" : ""
           } ${inputClassName}`}

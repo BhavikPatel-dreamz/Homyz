@@ -57,7 +57,7 @@ export async function updateHostServiceFeePercentage(
         key: "HOST_SERVICE_FEE_PERCENTAGE",
         value: validPercentage.toString(),
         description:
-          "Platform service fee charged to hosts as a percentage of nightly price",
+          "Platform service fee charged to hosts as a percentage of base price",
         dataType: "NUMBER",
         category: "PRICING",
         isPublic: false,

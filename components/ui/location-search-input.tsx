@@ -87,7 +87,18 @@ export function LocationSearchInput({
 
         <input
           id={inputId}
+          name="location-picker"
           type="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          data-form-type="other"
+          data-lpignore="true"
+          data-1p-ignore="true"
           disabled={disabled}
           value={value}
           onChange={(e) => {

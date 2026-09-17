@@ -608,7 +608,7 @@ export function HostCalendarWorkspace({
                   </button>
                 </div>
 
-                {/* Nightly Price & Custom Override */}
+                {/* Base Price & Custom Override */}
                 <div className="rounded-xl bg-white/10 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-zinc-300">

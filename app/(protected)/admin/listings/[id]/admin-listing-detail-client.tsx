@@ -1152,7 +1152,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-2.5">
-              <span className="font-semibold text-muted-foreground">Standard Nightly Price Set:</span>
+              <span className="font-semibold text-muted-foreground">Standard Base Price Set:</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">✓ PASSED (SAR {editPrice}/night)</span>
             </div>
           </div>

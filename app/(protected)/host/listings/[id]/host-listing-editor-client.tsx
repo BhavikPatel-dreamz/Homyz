@@ -835,7 +835,7 @@ export function HostListingEditorClient({
     } else if (sectionToSave === "pricing") {
       if (!editPrice || editPrice <= 0) {
         setIsSaving(false);
-        setFeedbackMsg({ type: "error", text: "Nightly price must be greater than zero." });
+        setFeedbackMsg({ type: "error", text: "Base price must be greater than zero." });
         return;
       }
       const manualPricing = !smartPricing;
