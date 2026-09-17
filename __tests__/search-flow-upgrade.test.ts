@@ -76,7 +76,16 @@ assert(heroSectionCode.includes("search-suggest"), "HeroSection must call search
 assert(heroSectionCode.includes("saveRecentSearch"), "HeroSection must save recent searches");
 assert(heroSectionCode.includes("getRecentSearches"), "HeroSection must load recent searches");
 assert(heroSectionCode.includes("handleDestinationChange"), "HeroSection must handle destination input changes");
+assert(heroSectionCode.includes("Math.max(1, mobileGuestCount)"), "HeroSection must default guest counts to at least 1");
+assert(heroSectionCode.includes("destinationValue = destination.trim() || selectedLocation?.city"), "HeroSection must fall back to the selected/current city when destination is empty");
+assert(fs.readFileSync(path.resolve(__dirname, "../components/home/home-view.tsx"), "utf-8").includes("const resolvedDestination = (params.destination || params.city || params.placeName || \"\").trim()"), "HomeView must carry city through when destination is empty");
 console.log("✓ HeroSection debounced autocomplete and recent searches verified!");
+
+const searchAnalyticsPath = path.resolve(__dirname, "../services/search-analytics.service.ts");
+assert(fs.existsSync(searchAnalyticsPath), "services/search-analytics.service.ts must exist");
+const searchAnalyticsCode = fs.readFileSync(searchAnalyticsPath, "utf-8");
+assert(searchAnalyticsCode.includes("trackHomepageSearchEvent"), "Search analytics service must expose trackHomepageSearchEvent");
+console.log("✓ Search analytics tracking service verified!");
 
 // --- [5] Search Results Page & Interactive Client Audit ---
 console.log("\n--- [5] Search Results Page & Client Audit ---");

@@ -5,6 +5,8 @@ import { CACHE_TTL } from "@/lib/redis/ttl";
 import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
 import { parseCutoffHour, parseRequiredAdvanceDays } from "@/services/booking.service";
 import { favoriteService } from "@/services/favorite.service";
+import { getHomepagePopularHomesConfig, type HomepagePopularHomesConfig } from "@/services/app-settings.service";
+import { reverseGeocodeLocation } from "@/lib/location/geocoding";
 
 const SECTION_LIMIT = 12;
 const CANDIDATE_LIMIT = 150;
@@ -35,9 +37,19 @@ export type HomepageSection = {
   totalCount: number;
 };
 
+export type TrendingLocation = {
+  id: string;
+  name: string;
+  subtitle: string;
+  imageUrl: string;
+  href: string;
+  count: number;
+};
+
 export type HomepageData = {
   location: { city: string | null };
   sections: HomepageSection[];
+  trendingLocations: TrendingLocation[];
 };
 
 type DiscoveryListing = {
@@ -132,18 +144,172 @@ function uniqueProperties(listings: DiscoveryListing[]): HomepageProperty[] {
   return listings.slice(0, SECTION_LIMIT).map(toProperty);
 }
 
+function normalizeCityName(value?: string | null): string | null {
+  const cleaned = (value || "").trim();
+  if (!cleaned) return null;
+  const blocked = new Set(["Nearby", "Recent searches", "Suggested destinations", "Current location"]);
+  return blocked.has(cleaned) ? null : cleaned;
+}
+
+export type HomepageRequestContext = {
+  city?: string | null;
+  destination?: string | null;
+  placeName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  ip?: string | null;
+};
+
+export async function resolvePopularHomesCity(
+  config: HomepagePopularHomesConfig | null | undefined,
+  requestContext: HomepageRequestContext = {},
+  locationResolver: (lat: number, lng: number) => Promise<string | null> = async (lat, lng) => {
+    const resolved = await reverseGeocodeLocation(lat, lng);
+    return normalizeCityName(resolved?.city || null);
+  },
+): Promise<{ city: string | null; title: string; enabled: boolean }> {
+  if (!config?.enabled) {
+    return { city: null, title: "Popular homes", enabled: false };
+  }
+
+  const explicitCity = normalizeCityName(requestContext.city || requestContext.destination || requestContext.placeName);
+  const staticCity = normalizeCityName(config.city);
+  const coordsCity =
+    typeof requestContext.lat === "number" && typeof requestContext.lng === "number" &&
+    Number.isFinite(requestContext.lat) && Number.isFinite(requestContext.lng)
+      ? await locationResolver(requestContext.lat, requestContext.lng)
+      : null;
+
+  switch (config.mode) {
+    case "USER_LOCATION":
+      return {
+        city: explicitCity || coordsCity || staticCity || null,
+        title: (config.title || (explicitCity || coordsCity || staticCity ? `Popular homes in ${explicitCity || coordsCity || staticCity}` : "Popular homes")).trim(),
+        enabled: true,
+      };
+    case "USER_IP": {
+      const ipAwareCity = explicitCity || coordsCity || staticCity || null;
+      return {
+        city: ipAwareCity,
+        title: (config.title || (ipAwareCity ? `Popular homes in ${ipAwareCity}` : "Popular homes")).trim(),
+        enabled: true,
+      };
+    }
+    case "STATIC":
+    default:
+      return {
+        city: staticCity || explicitCity || coordsCity || null,
+        title: (config.title || (staticCity || explicitCity || coordsCity ? `Popular homes in ${staticCity || explicitCity || coordsCity}` : "Popular homes")).trim(),
+        enabled: true,
+      };
+  }
+}
+
 function getWeekendWindow(today: Date): { start: Date; end: Date } {
   const daysUntilFriday = (5 - today.getDay() + 7) % 7;
   const start = addDays(today, daysUntilFriday);
   return { start, end: addDays(start, 3) };
 }
 
-async function loadHomepageData(city?: string): Promise<HomepageData> {
+async function loadTrendingLocations(): Promise<TrendingLocation[]> {
+  const searchAnalyticsKey = CACHE_KEYS.SEARCH_ANALYTICS();
+  const recentSearches: Array<{
+    destination?: string | null;
+    city?: string | null;
+    country?: string | null;
+    placeName?: string | null;
+  }> = (await getOrSetCache(searchAnalyticsKey, async () => [], { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY })) as Array<{
+    destination?: string | null;
+    city?: string | null;
+    country?: string | null;
+    placeName?: string | null;
+  }> | null ?? [];
+
+  const cityCounts = new Map<string, { city: string; country: string; count: number }>();
+  for (const item of recentSearches) {
+    const city = (item.city || item.destination || item.placeName || "").trim();
+    if (!city) continue;
+    const country = item.country?.trim() || "";
+    const entry = cityCounts.get(city.toLowerCase()) ?? { city, country, count: 0 };
+    entry.count += 1;
+    cityCounts.set(city.toLowerCase(), entry);
+  }
+
+  if (cityCounts.size === 0) {
+    const fallbackCities: Array<{ city: string | null; country: string | null; photos: string[] }> = await prisma.listing.findMany({
+      where: {
+        published: true,
+        status: ListingStatus.ACTIVE,
+        isPaused: false,
+        deletedAt: null,
+        photos: { isEmpty: false },
+      },
+      select: { city: true, country: true, photos: true },
+      distinct: ["city"],
+      take: 6,
+      orderBy: { city: "asc" },
+    });
+
+    return fallbackCities
+      .filter((entry: { city: string | null; country: string | null; photos: string[] }) => Boolean(entry.city))
+      .map((entry: { city: string | null; country: string | null; photos: string[] }) => ({
+        id: `trend-${entry.city}`,
+        name: entry.city as string,
+        subtitle: entry.country || "Popular destination",
+        imageUrl: entry.photos[0] ?? "/images/home/hero-banner.png",
+        href: `/listings?city=${encodeURIComponent(entry.city as string)}&destination=${encodeURIComponent(entry.city as string)}`,
+        count: 1,
+      }));
+  }
+
+  const rankedCities: Array<{ city: string; country: string; count: number }> = [...cityCounts.values()]
+    .sort((a: { city: string; country: string; count: number }, b: { city: string; country: string; count: number }) => b.count - a.count)
+    .slice(0, 6);
+
+  const cityDetails: Array<{ id: string; city: string | null; country: string | null; photos: string[]; title: string }> = await prisma.listing.findMany({
+    where: {
+      published: true,
+      status: ListingStatus.ACTIVE,
+      isPaused: false,
+      deletedAt: null,
+      photos: { isEmpty: false },
+      OR: rankedCities.map((entry: { city: string; country: string; count: number }) => ({ city: { equals: entry.city, mode: "insensitive" } })),
+    },
+    select: { id: true, city: true, country: true, photos: true, title: true },
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+  });
+
+  return rankedCities.map((entry: { city: string; country: string; count: number }) => {
+    const item = cityDetails.find((listing: { city: string | null; country: string | null; photos: string[]; title: string }) => listing.city?.toLowerCase() === entry.city.toLowerCase());
+    const city = entry.city;
+    return {
+      id: `trend-${city}`,
+      name: city,
+      subtitle: entry.country || item?.country || "Popular destination",
+      imageUrl: item?.photos[0] ?? "/images/home/hero-banner.png",
+      href: `/listings?city=${encodeURIComponent(city)}&destination=${encodeURIComponent(city)}`,
+      count: entry.count,
+    };
+  });
+}
+
+async function loadHomepageData(
+  city?: string,
+  requestContext?: HomepageRequestContext,
+): Promise<HomepageData> {
   const today = startOfDay();
   const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
   const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 1);
   const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1);
   const weekend = getWeekendWindow(today);
+  const popularHomesConfig = await getHomepagePopularHomesConfig();
+  const popularHomesResolution = await resolvePopularHomesCity(popularHomesConfig, {
+    ...requestContext,
+    city: requestContext?.city || city || null,
+    destination: requestContext?.destination || city || null,
+  });
+  const popularHomesCity = popularHomesResolution.city;
+  const popularHomesTitle = popularHomesResolution.title;
 
   const listings = await prisma.listing.findMany({
     where: {
@@ -217,14 +383,25 @@ async function loadHomepageData(city?: string): Promise<HomepageData> {
     }
   };
 
-  const featuredHref = resolvedCity
-    ? `/listings?featured=true&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}`
-    : "/listings?featured=true";
+  const popularListings = popularHomesCity
+    ? listings.filter((listing) => listing.city?.toLocaleLowerCase() === popularHomesCity.toLocaleLowerCase())
+    : listings.filter((listing) => listing.isFeatured);
+  const featuredSource = popularListings.length > 0 ? popularListings : listings.filter((listing) => listing.isFeatured);
+  const featureSectionTitle = popularHomesResolution.enabled && (popularHomesTitle || popularHomesCity)
+    ? popularHomesTitle
+    : resolvedCity
+      ? `Popular homes in ${resolvedCity}`
+      : "Featured stays";
+  const featuredHref = popularHomesCity
+    ? `/listings?featured=true&city=${encodeURIComponent(popularHomesCity)}&destination=${encodeURIComponent(popularHomesCity)}`
+    : resolvedCity
+      ? `/listings?featured=true&city=${encodeURIComponent(resolvedCity)}&destination=${encodeURIComponent(resolvedCity)}`
+      : "/listings?featured=true";
   addSection(
     "featured",
-    "Featured stays",
+    featureSectionTitle,
     "FEATURED",
-    listings.filter((listing) => listing.isFeatured),
+    featuredSource,
     featuredHref,
   );
 
@@ -268,15 +445,22 @@ async function loadHomepageData(city?: string): Promise<HomepageData> {
     nextMonthHref,
   );
 
-  return { location: { city: resolvedCity }, sections };
+  const trendingLocations = await loadTrendingLocations();
+  return { location: { city: resolvedCity }, sections, trendingLocations };
 }
 
-async function getHomepageData(input: { city?: string; userId?: string } = {}): Promise<HomepageData> {
+async function getHomepageData(
+  input: {
+    city?: string;
+    userId?: string;
+    requestContext?: HomepageRequestContext;
+  } = {},
+): Promise<HomepageData> {
   const city = input.city?.trim().toLocaleLowerCase() || "all";
   const version = await getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER());
   const publicData = await getOrSetCache(
     CACHE_KEYS.HOMEPAGE_DISCOVERY(version, city),
-    () => loadHomepageData(input.city),
+    () => loadHomepageData(input.city, input.requestContext),
     { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
   );
   if (!input.userId) return publicData;

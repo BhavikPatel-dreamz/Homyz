@@ -434,8 +434,9 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   }, [desktopPanel]);
   const [mobileGuests, setMobileGuests] = useState(emptyMobileGuests);
   const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
+  const effectiveGuestCount = Math.max(1, mobileGuestCount);
   const mobileGuestSummary = [
-    mobileGuestCount ? `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}` : "",
+    `${effectiveGuestCount} guest${effectiveGuestCount === 1 ? "" : "s"}`,
     mobileGuests.infants ? `${mobileGuests.infants} infant${mobileGuests.infants === 1 ? "" : "s"}` : "",
     mobileGuests.pets ? `${mobileGuests.pets} pet${mobileGuests.pets === 1 ? "" : "s"}` : "",
   ].filter(Boolean).join(", ");
@@ -558,7 +559,8 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   }, [allSuggestItems]);
 
   const handleMobileSubmit = () => {
-    if (destination.trim()) saveRecentSearch(destination.trim());
+    const destinationValue = destination.trim() || selectedLocation?.city || selectedLocation?.name || "";
+    if (destinationValue) saveRecentSearch(destinationValue);
     // Auto-resolve best location match if user typed destination without clicking suggestion
     const effectiveLoc = selectedLocation || (
       primaryCity ? {
@@ -607,23 +609,30 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
       effectiveLoc?.locationType === "university" ||
       effectiveLoc?.locationType === "hospital";
     const initialRadius = isLandmarkOrPoi ? 5 : 25;
+    const guestCountForSearch = Math.max(1, mobileGuestCount);
+    const guestDetailsForSearch = {
+      adults: mobileGuests.adults > 0 ? mobileGuests.adults : guestCountForSearch,
+      children: mobileGuests.children,
+      infants: mobileGuests.infants,
+      pets: mobileGuests.pets,
+    };
 
     if (onSearch) {
       onSearch({
-        destination,
+        destination: destinationValue,
         checkIn: datePreferences.mode === "dates" ? checkIn : "",
         checkOut: datePreferences.mode === "dates" ? checkOut : "",
         datePreferences,
-        guests: `${mobileGuestCount} guest${mobileGuestCount === 1 ? "" : "s"}`,
-        guestDetails: { ...mobileGuests },
+        guests: `${guestCountForSearch} guest${guestCountForSearch === 1 ? "" : "s"}`,
+        guestDetails: guestDetailsForSearch,
         lat: effectiveLoc?.latitude,
         lng: effectiveLoc?.longitude,
         radiusKm: effectiveLoc ? initialRadius : undefined,
         placeId: effectiveLoc?.providerPlaceId,
         locationType: effectiveLoc?.locationType,
-        placeName: effectiveLoc?.name || destination,
+        placeName: effectiveLoc?.name || destinationValue,
         fullAddress: effectiveLoc?.fullAddress,
-        city: effectiveLoc?.city || destination,
+        city: effectiveLoc?.city || destinationValue,
         country: effectiveLoc?.country,
       });
     }

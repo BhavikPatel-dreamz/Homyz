@@ -45,6 +45,7 @@ export const CACHE_KEYS = {
   ADMIN_STATS: () => `${NS}:admin:stats:global`,
   ADMIN_UNIFIED_HOSTS: (filterHash: string) => `${NS}:admin:hosts:${filterHash}`,
   GUEST_ANALYTICS: () => `${NS}:admin:guest:analytics`,
+  SEARCH_ANALYTICS: () => `${NS}:search:analytics:recent`,
   HOST_OPS_METRICS: (preset: string) => `${NS}:host:ops:${preset}`,
   HOST_COMPLIANCE_METRICS: () => `${NS}:host:compliance:metrics`,
 
@@ -65,4 +66,5 @@ export const keys = {
   hostOperationsMetrics: CACHE_KEYS.HOST_OPS_METRICS,
   hostComplianceMetrics: CACHE_KEYS.HOST_COMPLIANCE_METRICS,
   guestAnalytics: CACHE_KEYS.GUEST_ANALYTICS,
+  searchAnalytics: CACHE_KEYS.SEARCH_ANALYTICS,
 } as const;

@@ -4,14 +4,29 @@ import { useState, useTransition } from "react";
 import { Alert } from "../ui";
 import { toast } from "@/components/ui/toast";
 import { changePasswordAction } from "@/actions/user/changePassword";
-import { updateHostServiceFeeAction, updateNonRefundableDiscountAction } from "@/actions/admin/settingsActions";
+import {
+  updateHostServiceFeeAction,
+  updateNonRefundableDiscountAction,
+  updatePopularHomesSelectionAction,
+} from "@/actions/admin/settingsActions";
+import type { HomepagePopularHomesConfig } from "@/services/app-settings.service";
 
 interface AdminSettingsFormProps {
   initialHostServiceFee?: number;
   initialNonRefundableDiscount?: number | null;
+  initialHomepagePopularHomesConfig?: HomepagePopularHomesConfig;
 }
 
-export function AdminSettingsForm({ initialHostServiceFee = 15, initialNonRefundableDiscount = null }: AdminSettingsFormProps) {
+export function AdminSettingsForm({
+  initialHostServiceFee = 15,
+  initialNonRefundableDiscount = null,
+  initialHomepagePopularHomesConfig = {
+    mode: "STATIC",
+    city: "Riyadh",
+    title: "Popular homes in Riyadh",
+    enabled: true,
+  },
+}: AdminSettingsFormProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,6 +41,13 @@ export function AdminSettingsForm({ initialHostServiceFee = 15, initialNonRefund
   const [nonRefundableDiscount, setNonRefundableDiscount] = useState<string>(initialNonRefundableDiscount?.toString() ?? "");
   const [savedNonRefundableDiscount, setSavedNonRefundableDiscount] = useState<number | null>(initialNonRefundableDiscount);
   const [isNonRefundableSaving, startNonRefundableTransition] = useTransition();
+
+  const [popularHomesMode, setPopularHomesMode] = useState<HomepagePopularHomesConfig["mode"]>(initialHomepagePopularHomesConfig.mode);
+  const [popularHomesCity, setPopularHomesCity] = useState(initialHomepagePopularHomesConfig.city);
+  const [popularHomesTitle, setPopularHomesTitle] = useState(initialHomepagePopularHomesConfig.title);
+  const [popularHomesEnabled, setPopularHomesEnabled] = useState(initialHomepagePopularHomesConfig.enabled);
+  const [savedPopularHomesConfig, setSavedPopularHomesConfig] = useState<HomepagePopularHomesConfig>(initialHomepagePopularHomesConfig);
+  const [isPopularHomesSaving, startPopularHomesTransition] = useTransition();
 
   const [pending, startTransition] = useTransition();
 
@@ -62,6 +84,28 @@ export function AdminSettingsForm({ initialHostServiceFee = 15, initialNonRefund
       }
       setSavedNonRefundableDiscount(percentage);
       toast.success("Non-refundable booking discount updated.");
+    });
+  }
+
+  function handleSavePopularHomes(e: React.FormEvent) {
+    e.preventDefault();
+
+    const nextConfig = {
+      mode: popularHomesMode,
+      city: popularHomesCity.trim() || "Riyadh",
+      title: popularHomesTitle.trim() || "Popular homes",
+      enabled: popularHomesEnabled,
+    } satisfies HomepagePopularHomesConfig;
+
+    startPopularHomesTransition(async () => {
+      const res = await updatePopularHomesSelectionAction(nextConfig);
+      if (!res.ok) {
+        toast.error(res.error || "Failed to update the homepage popular homes configuration.");
+        return;
+      }
+
+      setSavedPopularHomesConfig(nextConfig);
+      toast.success("Homepage popular homes configuration updated.");
     });
   }
 
@@ -286,6 +330,88 @@ export function AdminSettingsForm({ initialHostServiceFee = 15, initialNonRefund
           <span className="pb-2.5 text-xs text-[var(--muted-foreground)]">
             {savedNonRefundableDiscount === null ? "Not configured" : `Current: ${savedNonRefundableDiscount}%`}
           </span>
+        </form>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
+        <div className="mb-5 space-y-1">
+          <h2 className="text-base font-bold text-muted-foreground">Popular homes section</h2>
+          <p className="text-xs text-[var(--muted-foreground)] max-w-2xl">
+            Configure the homepage’s popular homes section. Choose a fixed city, a user-location-based city, or a user-IP-based selection, and save the section title shown to visitors.
+          </p>
+        </div>
+
+        <form onSubmit={handleSavePopularHomes} className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="lg:col-span-3 flex flex-col gap-2">
+            <label htmlFor="popular-homes-enabled" className="text-xs font-semibold text-muted-foreground">Enabled</label>
+            <button
+              id="popular-homes-enabled"
+              type="button"
+              onClick={() => setPopularHomesEnabled((current) => !current)}
+              className={`inline-flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all ${
+                popularHomesEnabled ? "border-emerald-500 bg-emerald-500/10 text-emerald-700" : "border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)]"
+              }`}
+            >
+              <span>{popularHomesEnabled ? "Visible" : "Hidden"}</span>
+              <span className={`h-5 w-9 rounded-full p-1 transition-all ${popularHomesEnabled ? "bg-emerald-500" : "bg-zinc-300"}`}>
+                <span className={`block h-3 w-3 rounded-full bg-white transition-all ${popularHomesEnabled ? "translate-x-4" : "translate-x-0"}`} />
+              </span>
+            </button>
+          </div>
+
+          <div className="lg:col-span-3 flex flex-col gap-2">
+            <label htmlFor="popular-homes-mode" className="text-xs font-semibold text-muted-foreground">Selection mode</label>
+            <select
+              id="popular-homes-mode"
+              value={popularHomesMode}
+              onChange={(e) => setPopularHomesMode(e.target.value as HomepagePopularHomesConfig["mode"])}
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-sm text-muted-foreground outline-none focus:border-[var(--accent)]"
+            >
+              <option value="STATIC">Static city</option>
+              <option value="USER_LOCATION">User location</option>
+              <option value="USER_IP">User IP</option>
+            </select>
+          </div>
+
+          <div className="lg:col-span-3 flex flex-col gap-2">
+            <label htmlFor="popular-homes-city" className="text-xs font-semibold text-muted-foreground">City</label>
+            <input
+              id="popular-homes-city"
+              value={popularHomesCity}
+              onChange={(e) => setPopularHomesCity(e.target.value)}
+              placeholder="Riyadh"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-sm text-muted-foreground outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+
+          <div className="lg:col-span-3 flex flex-col gap-2">
+            <label htmlFor="popular-homes-title" className="text-xs font-semibold text-muted-foreground">Section title</label>
+            <input
+              id="popular-homes-title"
+              value={popularHomesTitle}
+              onChange={(e) => setPopularHomesTitle(e.target.value)}
+              placeholder="Popular homes in Riyadh"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-3 py-2.5 text-sm text-muted-foreground outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+
+          <div className="lg:col-span-12 flex items-center justify-between gap-3 pt-2">
+            <div className="text-[11px] text-[var(--muted-foreground)]">
+              Current: {savedPopularHomesConfig.enabled ? `${savedPopularHomesConfig.title} (${savedPopularHomesConfig.mode})` : "Hidden"}
+            </div>
+            <button
+              type="submit"
+              disabled={isPopularHomesSaving || (
+                popularHomesMode === savedPopularHomesConfig.mode &&
+                popularHomesCity === savedPopularHomesConfig.city &&
+                popularHomesTitle === savedPopularHomesConfig.title &&
+                popularHomesEnabled === savedPopularHomesConfig.enabled
+              )}
+              className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs disabled:opacity-50"
+            >
+              {isPopularHomesSaving ? "Saving..." : "Save popular homes section"}
+            </button>
+          </div>
         </form>
       </div>
 

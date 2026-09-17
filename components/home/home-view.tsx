@@ -7,11 +7,12 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { HeroSection } from "./hero-section";
 import { HomePropertySection } from "./category-carousel";
 import { Footer } from "@/components/dashboard/footer";
-import type { HomepageSection } from "@/services/homepage.service";
+import type { HomepageSection, TrendingLocation } from "@/services/homepage.service";
 import { Container } from "../ui";
 
 export interface HomeViewProps {
   sections?: HomepageSection[];
+  trendingLocations?: TrendingLocation[];
   canFavorite?: boolean;
   /** @deprecated Homepage data is now grouped into server-provided sections. */
   initialListings?: Array<{
@@ -23,7 +24,7 @@ export interface HomeViewProps {
   }>;
 }
 
-export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) {
+export function HomeView({ sections = [], trendingLocations = [], canFavorite = false }: HomeViewProps) {
   const router = useRouter();
 
   const handleSearch = (params: {
@@ -46,9 +47,12 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
 
     // Ignore placeholder values from the old static suggestions
     const staticValues = new Set(["Recent searches", "Nearby", "Suggested destinations"]);
-    if (params.destination && !staticValues.has(params.destination)) {
-      sp.set("destination", params.destination.trim());
-      sp.set("city", (params.city || params.destination).trim());
+    const resolvedDestination = (params.destination || params.city || params.placeName || "").trim();
+    if (resolvedDestination && !staticValues.has(resolvedDestination)) {
+      sp.set("destination", resolvedDestination);
+      sp.set("city", (params.city || resolvedDestination).trim());
+    } else if (params.city && !staticValues.has(params.city)) {
+      sp.set("city", params.city.trim());
     }
     if (params.placeName) sp.set("placeName", params.placeName);
     if (params.fullAddress) sp.set("fullAddress", params.fullAddress);
@@ -61,18 +65,45 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
     if (params.checkIn) sp.set("checkIn", params.checkIn);
     if (params.checkOut) sp.set("checkOut", params.checkOut);
 
+    const normalizedGuestCount = Math.max(
+      1,
+      params.guestDetails
+        ? (params.guestDetails.adults || 0) + (params.guestDetails.children || 0)
+        : parseInt(params.guests || "0", 10) || 0,
+    );
+
     if (params.guestDetails) {
-      const totalGuests = (params.guestDetails.adults || 0) + (params.guestDetails.children || 0);
-      if (totalGuests > 0) sp.set("guests", String(totalGuests));
-      if (params.guestDetails.adults > 0) sp.set("adults", String(params.guestDetails.adults));
-      if (params.guestDetails.children > 0) sp.set("children", String(params.guestDetails.children));
+      const adults = params.guestDetails.adults > 0 ? params.guestDetails.adults : normalizedGuestCount > 0 ? 1 : 0;
+      const children = params.guestDetails.children > 0 ? params.guestDetails.children : 0;
+      sp.set("guests", String(normalizedGuestCount));
+      if (adults > 0) sp.set("adults", String(adults));
+      if (children > 0) sp.set("children", String(children));
       if (params.guestDetails.infants > 0) sp.set("infants", String(params.guestDetails.infants));
       if (params.guestDetails.pets > 0) sp.set("pets", String(params.guestDetails.pets));
     } else if (params.guests) {
-      // Parse "2 guests" → "2"
-      const n = parseInt(params.guests, 10);
-      if (n > 0) sp.set("guests", String(n));
+      const n = Math.max(1, parseInt(params.guests, 10) || 1);
+      sp.set("guests", String(n));
+    } else {
+      sp.set("guests", "1");
     }
+
+    void fetch("/api/v1/search/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        destination: params.destination || params.city || params.placeName || null,
+        destinationType: params.locationType || null,
+        city: params.city || null,
+        country: params.country || null,
+        lat: typeof params.lat === "number" ? params.lat : null,
+        lng: typeof params.lng === "number" ? params.lng : null,
+        checkIn: params.checkIn || null,
+        checkOut: params.checkOut || null,
+        guestCount: normalizedGuestCount,
+        timestamp: new Date().toISOString(),
+      }),
+    }).catch(() => undefined);
 
     router.push(`/listings?${sp.toString()}`);
   };
@@ -106,6 +137,39 @@ export function HomeView({ sections = [], canFavorite = false }: HomeViewProps) 
         <Container>
           {/* Hero Section */}
           <HeroSection onSearch={handleSearch} />
+
+          {trendingLocations.length > 0 && (
+            <section className="mt-8 sm:mt-[92px]">
+              <div className="mb-4 sm:mb-6 flex items-center justify-between gap-3">
+                <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
+                  Trending destinations
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                {trendingLocations.map((location) => (
+                  <Link
+                    key={location.id}
+                    href={location.href}
+                    className="group relative block overflow-hidden rounded-[22px] border border-zinc-200 bg-white transition-transform hover:-translate-y-0.5"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden">
+                      <img
+                        src={location.imageUrl}
+                        alt={location.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" />
+                      <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                        <div className="text-base font-semibold leading-tight">{location.name}</div>
+                        <div className="mt-1 text-[11px] text-white/80">{location.subtitle}</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Listing Sections Container */}
           <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
