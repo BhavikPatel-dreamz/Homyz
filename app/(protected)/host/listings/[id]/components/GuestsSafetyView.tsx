@@ -438,7 +438,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -482,7 +482,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -519,7 +519,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -556,7 +556,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -593,7 +593,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -630,7 +630,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -674,7 +674,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -720,7 +720,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Add other safety or regulatory notes *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -838,7 +838,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Where are the exterior cameras located and will they be on or off during stays? *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.securityCameraDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.securityCameraDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -899,7 +899,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Where are the noise decibel monitors located? *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -958,7 +958,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
@@ -1002,7 +1002,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
@@ -1095,7 +1095,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe the stairs (e.g. number of flights, handrails, or elevator access) *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1149,7 +1149,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe the noise and when guests might hear it *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1203,7 +1203,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe what pets live on the property and where they stay *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1257,7 +1257,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe nearby parking options *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1311,7 +1311,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe which spaces are shared and with whom *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1365,7 +1365,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         List the essential amenities that are not included *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1429,7 +1429,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         Describe how weapons are stored and secured *
                       </label>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}

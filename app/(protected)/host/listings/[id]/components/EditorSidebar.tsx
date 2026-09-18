@@ -1463,7 +1463,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("directions")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >

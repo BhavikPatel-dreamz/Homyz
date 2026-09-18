@@ -380,7 +380,7 @@ export function PropertyDetailsViews({
           ) : (
             <div className="space-y-3 pt-1">
               {/* 1. Listing description */}
-              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
