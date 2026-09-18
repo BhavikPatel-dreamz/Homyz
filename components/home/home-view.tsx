@@ -291,15 +291,43 @@ export function HomeView({
     }));
   }, [sections, canFavorite]);
 
+  const searchLocationSections = useMemo(() => {
+    if (mode !== "SEARCH") return [];
+    return propertySections.filter((s) => s.priority < 100).slice(0, 3);
+  }, [propertySections, mode]);
+
+  const otherSections = useMemo(() => {
+    if (mode !== "SEARCH") return [];
+    return propertySections.filter((s) => s.priority >= 100);
+  }, [propertySections, mode]);
+
   const uniquePastSections = useMemo(() => {
-    const existingTitles = new Set(propertySections.map((s) => s.title.toLowerCase()));
-    const activeCity = mode === "SEARCH" ? (activeContext?.city || activeContext?.displayName || "").toLowerCase() : "";
+    const existingTitles = new Set([
+      ...searchLocationSections.map((s) => s.title.toLowerCase()),
+      ...(mode === "DEFAULT" ? propertySections.map((s) => s.title.toLowerCase()) : []),
+    ]);
+    const activeCity = (
+      activeContext?.city ||
+      activeContext?.displayName ||
+      searchContext?.city ||
+      searchContext?.displayName ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
 
     return pastSearchSections
       .filter((s) => {
         const normTitle = s.title.toLowerCase();
         if (existingTitles.has(normTitle)) return false;
-        if (activeCity && normTitle.includes(activeCity)) return false;
+        if (
+          activeCity &&
+          (normTitle.includes(activeCity) ||
+            normTitle === `stays in ${activeCity}` ||
+            normTitle === `stays near ${activeCity}`)
+        ) {
+          return false;
+        }
         return true;
       })
       .slice(0, 4)
@@ -331,7 +359,7 @@ export function HomeView({
           canFavorite,
         })),
       }));
-  }, [pastSearchSections, propertySections, activeContext, canFavorite]);
+  }, [pastSearchSections, searchLocationSections, propertySections, mode, activeContext, searchContext, canFavorite]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -425,9 +453,21 @@ export function HomeView({
                   </Link>
                 </div>
               </div>
-            ) : (
+            ) : mode === "SEARCH" ? (
               <>
-                {/* Recent search rows (e.g. Stays in Dubai, Stays in London, Stays in California — 1 row per location, max 3-4 rows) */}
+                {/* 1. Latest searched location: 2-3 sections of that destination ONLY */}
+                {searchLocationSections.map((section) => (
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
+                ))}
+
+                {/* 2. Last-to-last search rows (1 row each for previous searches) */}
                 {uniquePastSections.map((section) => (
                   <HomePropertySection
                     key={section.id}
@@ -439,7 +479,33 @@ export function HomeView({
                   />
                 ))}
 
+                {/* 3. Others (Trending stays, etc.) */}
+                {otherSections.map((section) => (
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                {/* Default mode: general property sections followed by past searches */}
                 {propertySections.map((section) => (
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
+                ))}
+
+                {uniquePastSections.map((section) => (
                   <HomePropertySection
                     key={section.id}
                     title={section.title}
@@ -454,7 +520,7 @@ export function HomeView({
           </div>
 
              {/* Trending Locations Destination Cards */}
-          {trendingLocations.length > 0 && mode === "DEFAULT" && (
+          {trendingLocations.length > 0 && (
             <section className="mt-8 sm:mt-[92px]">
               <div className="mb-4 sm:mb-6 flex items-center justify-between gap-3">
                 <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">

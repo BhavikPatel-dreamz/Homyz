@@ -17,6 +17,39 @@ function logOpFailure(op: string, err: unknown): void {
 
 const CACHE_MISS = Symbol("CACHE_MISS");
 
+// In-memory L1 cache tier: provides instant sub-1ms responses and acts as
+// a zero-downtime fallback when Redis is offline or disconnected.
+interface MemoryCacheEntry {
+  value: unknown;
+  expiresAt: number;
+}
+
+const memoryCache = new Map<string, MemoryCacheEntry>();
+const memoryCounters = new Map<string, number>();
+const MAX_MEMORY_ENTRIES = 500;
+
+function getFromMemoryCache<T>(key: string): T | typeof CACHE_MISS {
+  const entry = memoryCache.get(key);
+  if (!entry) return CACHE_MISS;
+  if (Date.now() > entry.expiresAt) {
+    memoryCache.delete(key);
+    return CACHE_MISS;
+  }
+  return entry.value as T;
+}
+
+function setToMemoryCache(key: string, value: unknown, ttlSeconds?: number): void {
+  if (memoryCache.size >= MAX_MEMORY_ENTRIES) {
+    const keysToDelete = Array.from(memoryCache.keys()).slice(0, 50);
+    for (const k of keysToDelete) memoryCache.delete(k);
+  }
+  const ttl = Math.max(1, Math.trunc(ttlSeconds ?? redisConfig.defaultTtl));
+  memoryCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttl * 1000,
+  });
+}
+
 /**
  * Ceiling on any single Redis command so a hung/slow server can never stall a
  * request. The losing command settles in the background and is ignored. This
@@ -33,12 +66,18 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 }
 
 async function readCache<T>(key: string): Promise<T | typeof CACHE_MISS> {
+  // Check in-memory L1 cache first for fastest response
+  const mem = getFromMemoryCache<T>(key);
+  if (mem !== CACHE_MISS) return mem;
+
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return CACHE_MISS;
     const raw = await withTimeout(client.get(key), redisConfig.connectTimeout);
     if (raw == null) return CACHE_MISS;
-    return JSON.parse(raw) as T;
+    const parsed = JSON.parse(raw) as T;
+    setToMemoryCache(key, parsed, 60);
+    return parsed;
   } catch (err) {
     logOpFailure("get", err);
     return CACHE_MISS;
@@ -57,10 +96,11 @@ export async function setCache(
   value: unknown,
   ttlSeconds?: number,
 ): Promise<void> {
+  const ttl = Math.max(1, Math.trunc(ttlSeconds ?? redisConfig.defaultTtl));
+  setToMemoryCache(key, value, ttl);
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return;
-    const ttl = Math.max(1, Math.trunc(ttlSeconds ?? redisConfig.defaultTtl));
     const payload = JSON.stringify(value);
     await withTimeout(client.set(key, payload, "EX", ttl), redisConfig.connectTimeout);
   } catch (err) {
@@ -71,6 +111,7 @@ export async function setCache(
 /** Delete one or more keys. No-op on disabled/any error. */
 export async function deleteCache(...cacheKeys: string[]): Promise<void> {
   if (cacheKeys.length === 0) return;
+  for (const k of cacheKeys) memoryCache.delete(k);
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return;
@@ -82,6 +123,7 @@ export async function deleteCache(...cacheKeys: string[]): Promise<void> {
 
 /** True if the key exists. Returns false on disabled/any error. */
 export async function hasCache(key: string): Promise<boolean> {
+  if (getFromMemoryCache(key) !== CACHE_MISS) return true;
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return false;
@@ -99,6 +141,10 @@ export async function hasCache(key: string): Promise<boolean> {
  * bumps (incrCounter) instead, to avoid a keyspace scan on every write.
  */
 export async function deleteCacheByPattern(pattern: string): Promise<void> {
+  const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+  for (const k of memoryCache.keys()) {
+    if (regex.test(k)) memoryCache.delete(k);
+  }
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return;
@@ -115,6 +161,8 @@ export async function deleteCacheByPattern(pattern: string): Promise<void> {
 
 /** Atomically increment a counter (used for version-tag invalidation). */
 export async function incrCounter(key: string): Promise<void> {
+  const nextVal = (memoryCounters.get(key) || 0) + 1;
+  memoryCounters.set(key, nextVal);
   try {
     const client = await getRedisClient();
     if (!client || !isRedisAvailable()) return;
@@ -128,13 +176,13 @@ export async function incrCounter(key: string): Promise<void> {
 export async function getCounter(key: string): Promise<number> {
   try {
     const client = await getRedisClient();
-    if (!client || !isRedisAvailable()) return 0;
+    if (!client || !isRedisAvailable()) return memoryCounters.get(key) || 0;
     const raw = await withTimeout(client.get(key), redisConfig.connectTimeout);
     const n = raw == null ? 0 : Number(raw);
-    return Number.isFinite(n) ? n : 0;
+    return Number.isFinite(n) && n > 0 ? n : memoryCounters.get(key) || 0;
   } catch (err) {
     logOpFailure("get", err);
-    return 0;
+    return memoryCounters.get(key) || 0;
   }
 }
 

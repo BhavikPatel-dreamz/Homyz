@@ -431,89 +431,174 @@ function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSec
   };
 }
 
-async function loadTrendingLocations(): Promise<TrendingLocation[]> {
-  const searchAnalyticsKey = CACHE_KEYS.SEARCH_ANALYTICS();
-  const recentSearches: Array<{
-    destination?: string | null;
-    city?: string | null;
-    country?: string | null;
-    placeName?: string | null;
-  }> = ((await getOrSetCache(searchAnalyticsKey, async () => [], { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY })) as Array<{
-    destination?: string | null;
-    city?: string | null;
-    country?: string | null;
-    placeName?: string | null;
-  }> | null) ?? [];
-
-  const cityCounts = new Map<string, { city: string; country: string; count: number }>();
-  for (const item of recentSearches) {
-    const city = (item.city || item.destination || item.placeName || "").trim();
-    if (!city) continue;
-    const country = item.country?.trim() || "";
-    const entry = cityCounts.get(city.toLowerCase()) ?? { city, country, count: 0 };
-    entry.count += 1;
-    cityCounts.set(city.toLowerCase(), entry);
-  }
-
-  if (cityCounts.size === 0) {
-    const fallbackCities = await prisma.listing.findMany({
-      where: {
-        published: true,
-        status: ListingStatus.ACTIVE,
-        isPaused: false,
-        deletedAt: null,
-        photos: { isEmpty: false },
-      },
-      select: { city: true, country: true, photos: true },
-      distinct: ["city"],
-      take: 6,
-      orderBy: { city: "asc" },
-    });
-
-    return fallbackCities
-      .filter((entry: { city: string | null; country: string | null; photos: string[] }) => Boolean(entry.city))
-      .map((entry: { city: string | null; country: string | null; photos: string[] }) => ({
-        id: `trend-${entry.city}`,
-        name: entry.city as string,
-        subtitle: entry.country || "Popular destination",
-        imageUrl: entry.photos[0] ?? "/images/home/hero-banner.png",
-        href: `/listings?city=${encodeURIComponent(entry.city as string)}&destination=${encodeURIComponent(entry.city as string)}`,
-        count: 1,
-      }));
-  }
-
-  const rankedCities = [...cityCounts.values()]
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
-
-  const cityDetails: Array<{ id: string; city: string | null; country: string | null; photos: string[]; title: string }> = await prisma.listing.findMany({
-    where: {
-      published: true,
-      status: ListingStatus.ACTIVE,
-      isPaused: false,
-      deletedAt: null,
-      photos: { isEmpty: false },
-      OR: rankedCities.map((entry) => ({ city: { equals: entry.city, mode: "insensitive" } })),
+/**
+ * Cached candidate listing fetcher (L1 memory + Redis).
+ * Reused by both assembleHomepageData and getRecentSearchSections,
+ * preventing duplicate database scans on the same page load.
+ */
+export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[]> {
+  const version = await getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER());
+  const cacheKey = `homyz:discovery:candidates:${version}`;
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      return (await prisma.listing.findMany({
+        where: {
+          published: true,
+          status: ListingStatus.ACTIVE,
+          isPaused: false,
+          deletedAt: null,
+          photos: { isEmpty: false },
+        },
+        select: {
+          id: true,
+          customSlug: true,
+          title: true,
+          city: true,
+          district: true,
+          country: true,
+          latitude: true,
+          longitude: true,
+          photos: true,
+          price: true,
+          weekdayBasePrice: true,
+          guests: true,
+          propertyType: true,
+          isFeatured: true,
+          blockedDates: true,
+          minNights: true,
+          maxNights: true,
+          advanceNotice: true,
+          sameDayCutoff: true,
+          allowSameDayRequests: true,
+          createdAt: true,
+          host: {
+            select: {
+              id: true,
+              name: true,
+              createdAt: true,
+              publicProfile: true,
+              bookings: {
+                select: { status: true },
+              },
+            },
+          },
+          bookings: {
+            select: { startDate: true, endDate: true, status: true },
+          },
+        },
+        orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+        take: CANDIDATE_LIMIT,
+      })) as DiscoveryListing[];
     },
-    select: { id: true, city: true, country: true, photos: true, title: true },
-    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-  });
+    { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
+  );
+}
 
-  return rankedCities.map((entry) => {
-    const item = cityDetails.find((listing: { city: string | null; country: string | null; photos: string[]; title: string }) => listing.city?.toLowerCase() === entry.city.toLowerCase());
-    const city = entry.city;
-    return {
-      id: `trend-${city}`,
-      name: city,
-      subtitle: entry.country || item?.country || "Popular destination",
-      imageUrl: item?.photos[0] ?? "/images/home/hero-banner.png",
-      href: `/listings?city=${encodeURIComponent(city)}&destination=${encodeURIComponent(city)}`,
-      count: entry.count,
-    };
-  });
+async function loadTrendingLocations(): Promise<TrendingLocation[]> {
+  const version = await getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER());
+  const cacheKey = `homyz:discovery:trending_locations:${version}`;
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const searchAnalyticsKey = CACHE_KEYS.SEARCH_ANALYTICS();
+      const recentSearches: Array<{
+        destination?: string | null;
+        city?: string | null;
+        country?: string | null;
+        placeName?: string | null;
+      }> = ((await getOrSetCache(searchAnalyticsKey, async () => [], { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY })) as Array<{
+        destination?: string | null;
+        city?: string | null;
+        country?: string | null;
+        placeName?: string | null;
+      }> | null) ?? [];
+
+      const cityCounts = new Map<string, { city: string; country: string; count: number }>();
+      for (const item of recentSearches) {
+        const city = (item.city || item.destination || item.placeName || "").trim();
+        if (!city) continue;
+        const country = item.country?.trim() || "";
+        const entry = cityCounts.get(city.toLowerCase()) ?? { city, country, count: 0 };
+        entry.count += 1;
+        cityCounts.set(city.toLowerCase(), entry);
+      }
+
+      if (cityCounts.size === 0) {
+        const fallbackCities = await prisma.listing.findMany({
+          where: {
+            published: true,
+            status: ListingStatus.ACTIVE,
+            isPaused: false,
+            deletedAt: null,
+            photos: { isEmpty: false },
+          },
+          select: { city: true, country: true, photos: true },
+          distinct: ["city"],
+          take: 6,
+          orderBy: { city: "asc" },
+        });
+
+        return fallbackCities
+          .filter((entry: { city: string | null; country: string | null; photos: string[] }) => Boolean(entry.city))
+          .map((entry: { city: string | null; country: string | null; photos: string[] }) => ({
+            id: `trend-${entry.city}`,
+            name: entry.city as string,
+            subtitle: entry.country || "Popular destination",
+            imageUrl: entry.photos[0] ?? "/images/home/hero-banner.png",
+            href: `/listings?city=${encodeURIComponent(entry.city as string)}&destination=${encodeURIComponent(entry.city as string)}`,
+            count: 1,
+          }));
+      }
+
+      const rankedCities = [...cityCounts.values()]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+
+      const cityDetails: Array<{ id: string; city: string | null; country: string | null; photos: string[]; title: string }> = await prisma.listing.findMany({
+        where: {
+          published: true,
+          status: ListingStatus.ACTIVE,
+          isPaused: false,
+          deletedAt: null,
+          photos: { isEmpty: false },
+          OR: rankedCities.map((entry) => ({ city: { equals: entry.city, mode: "insensitive" } })),
+        },
+        select: { id: true, city: true, country: true, photos: true, title: true },
+        orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      });
+
+      return rankedCities.map((entry) => {
+        const item = cityDetails.find((listing: { city: string | null; country: string | null; photos: string[]; title: string }) => listing.city?.toLowerCase() === entry.city.toLowerCase());
+        const city = entry.city;
+        return {
+          id: `trend-${city}`,
+          name: city,
+          subtitle: entry.country || item?.country || "Popular destination",
+          imageUrl: item?.photos[0] ?? "/images/home/hero-banner.png",
+          href: `/listings?city=${encodeURIComponent(city)}&destination=${encodeURIComponent(city)}`,
+          count: entry.count,
+        };
+      });
+    },
+    { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
+  );
 }
 
 /**
+ * Priority Hierarchy Reference for Discovery & Search-Aware Engine:
+ * - priority: 20 -> Based on search ("Based on your {location} search" or "Homes near {landmark}")
+ * - priority: 30 -> Available for selected dates (exact match)
+ * - priority: 40 -> Available for similar dates
+ * - priority: 50 -> Guest favourites in searched location
+ * - priority: 60 -> Popular stays in searched location
+ * - priority: 70 -> Child areas/neighborhoods (group.length >= 5)
+ * - priority: 80 -> Nearby destinations (d >= 20 && d <= 250)
+ * - priority: 100 -> Current location stays
+ * - priority: 110 -> Current country trending
+ * - priority: 120 -> Global trending discovery
+ * - priority: 150 -> Recommended for you
+ *
  * Builds the complete dynamic discovery rows.
  * Seamlessly handles DEFAULT mode and SEARCH-AWARE mode with exact priority ordering.
  */
@@ -528,55 +613,8 @@ async function assembleHomepageData(params: {
     (searchContext.query || searchContext.city || (searchContext.latitude != null && searchContext.longitude != null)),
   );
 
-  // Fetch candidate published listings from database
-  const allListings = (await prisma.listing.findMany({
-    where: {
-      published: true,
-      status: ListingStatus.ACTIVE,
-      isPaused: false,
-      deletedAt: null,
-      photos: { isEmpty: false },
-    },
-    select: {
-      id: true,
-      customSlug: true,
-      title: true,
-      city: true,
-      district: true,
-      country: true,
-      latitude: true,
-      longitude: true,
-      photos: true,
-      price: true,
-      weekdayBasePrice: true,
-      guests: true,
-      propertyType: true,
-      isFeatured: true,
-      blockedDates: true,
-      minNights: true,
-      maxNights: true,
-      advanceNotice: true,
-      sameDayCutoff: true,
-      allowSameDayRequests: true,
-      createdAt: true,
-      host: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          publicProfile: true,
-          bookings: {
-            select: { status: true },
-          },
-        },
-      },
-      bookings: {
-        select: { startDate: true, endDate: true, status: true },
-      },
-    },
-    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-    take: CANDIDATE_LIMIT,
-  })) as DiscoveryListing[];
+  // Fetch candidate published listings (cached across requests)
+  const allListings = await getDiscoveryCandidateListings();
 
   // Detect user current location (distinct from searched location)
   const userLocation: UserLocationContext = {
@@ -706,50 +744,29 @@ async function assembleHomepageData(params: {
       seeAllHref: searchHrefBase,
     });
 
-    // 2. Priority 30: Available for your selected dates (Exact match)
+    // 2. Section 2 & 3 for the searched destination (capped strictly to 2–3 sections total for this location)
+    let locationSectionCount = 1; // Section 1 (Based on your search) is already added
+
+    // If user searched with checkIn and checkOut dates, prioritize date availability as Section 2
     if (hasDates) {
       const exactAvailable = destinationCandidates.filter((c) =>
         isListingAvailable(c.listing, parsedIn!, parsedOut!, guestCount),
       );
-      addSection({
-        id: "available-selected-dates",
-        title: `Available for your dates in ${displayName}`,
-        type: "LOCATION",
-        source: "DATE",
-        priority: 30,
-        candidates: exactAvailable.map((c) => ({ listing: c.listing })),
-        seeAllHref: `${searchHrefBase}&sortBy=recommended`,
-      });
-
-      // 3. Priority 40: Available for similar dates (Flexible ±1–2 days)
-      const similarDateCandidates: Array<{ listing: DiscoveryListing; extra: { alternativeDates: string } }> = [];
-      for (const c of destinationCandidates) {
-        // Only test listings that were either not bookable on exact dates or additional inventory
-        const isExact = isListingAvailable(c.listing, parsedIn!, parsedOut!, guestCount);
-        if (!isExact) {
-          const sim = findSimilarDateRange(c.listing, parsedIn!, parsedOut!, guestCount);
-          if (sim) {
-            similarDateCandidates.push({
-              listing: c.listing,
-              extra: { alternativeDates: sim.label },
-            });
-          }
-        }
+      if (exactAvailable.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "available-selected-dates",
+          title: `Available for your dates in ${displayName}`,
+          type: "LOCATION",
+          source: "DATE",
+          priority: 30,
+          candidates: exactAvailable.map((c) => ({ listing: c.listing })),
+          seeAllHref: `${searchHrefBase}&sortBy=recommended`,
+        });
+        locationSectionCount++;
       }
-
-      addSection({
-        id: "available-similar-dates",
-        title: "Available for similar dates",
-        subtitle: "Flexible date options near your selected stay",
-        type: "LOCATION",
-        source: "SIMILAR_DATE",
-        priority: 40,
-        candidates: similarDateCandidates,
-        seeAllHref: `/listings?destination=${encodeURIComponent(displayName)}&flexibleDates=true&guests=${guestCount}`,
-      });
     }
 
-    // 4. Priority 50: Guest favourites in {location}
+    // Guest favourites in {location}
     const guestFavourites = destinationCandidates.filter((c) =>
       qualificationService.isGuestFavorite({
         isFeatured: c.listing.isFeatured,
@@ -760,122 +777,37 @@ async function assembleHomepageData(params: {
         published: true,
       }),
     );
-    addSection({
-      id: "guest-favourites-search",
-      title: `Guest favourites in ${displayName}`,
-      type: "PROPERTY",
-      source: "SEARCH",
-      priority: 50,
-      candidates: guestFavourites.map((c) => ({
-        listing: c.listing,
-        extra: { badge: "guest_favorite" as const },
-      })),
-      seeAllHref: `${searchHrefBase}&featured=true`,
-    });
-
-    // 5. Priority 60: Popular stays in {location}
-    addSection({
-      id: "popular-stays-search",
-      title: `Popular stays in ${displayName}`,
-      type: "LOCATION",
-      source: "SEARCH",
-      priority: 60,
-      candidates: destinationCandidates.map((c) => ({ listing: c.listing })),
-      seeAllHref: `${searchHrefBase}&sortBy=top_rated`,
-    });
-
-    // 6. Priority 70: Popular child areas/neighborhoods inside {location} (min 5 properties)
-    const neighborhoodGroups = new Map<string, DiscoveryListing[]>();
-    for (const c of destinationCandidates) {
-      const dist = c.listing.district?.trim();
-      if (dist) {
-        const group = neighborhoodGroups.get(dist.toLowerCase()) || [];
-        group.push(c.listing);
-        neighborhoodGroups.set(dist.toLowerCase(), group);
-      }
-    }
-
-    for (const [distKey, group] of neighborhoodGroups.entries()) {
-      if (group.length >= 5) {
-        const districtName = group[0].district || distKey;
-        addSection({
-          id: `area-${distKey}`,
-          title: `Stay in ${districtName}`,
-          type: "LOCATION",
-          source: "AREA",
-          priority: 70,
-          candidates: group.map((listing) => ({ listing })),
-          seeAllHref: `/listings?city=${encodeURIComponent(searchedCity || displayName)}&district=${encodeURIComponent(districtName)}`,
-        });
-      }
-    }
-
-    // 7. Priority 80: Nearby destinations from {search location}
-    if (searchedLat != null && searchedLng != null) {
-      const nearbyListings = allListings
-        .filter((l) => {
-          if (!l.city || l.city.toLowerCase() === searchedCity.toLowerCase()) return false;
-          if (l.latitude == null || l.longitude == null) return false;
-          if (searchedCountry && l.country && l.country.toLowerCase() !== searchedCountry.toLowerCase()) {
-            return false;
-          }
-          const d = calculateDistance(searchedLat, searchedLng, l.latitude, l.longitude);
-          return d >= 20 && d <= 250;
-        })
-        .map((l) => ({
-          listing: l,
-          distanceKm: calculateDistance(searchedLat, searchedLng, l.latitude!, l.longitude!),
-        }))
-        .sort((a, b) => a.distanceKm - b.distanceKm);
-
+    if (locationSectionCount < 3 && guestFavourites.length >= MIN_PROPERTY_CAROUSEL) {
       addSection({
-        id: "nearby-destinations-search",
-        title: `Nearby destinations from ${displayName}`,
-        type: "DESTINATION",
-        source: "NEARBY",
-        priority: 80,
-        candidates: nearbyListings.map((c) => ({
-          listing: c.listing,
-          extra: { distanceKm: c.distanceKm },
-        })),
-        seeAllHref: `/listings?lat=${searchedLat}&lng=${searchedLng}&radius=150`,
-      });
-    }
-
-    // 8. Priority 100: Popular stays near your current location (separate from search destination)
-    if (userLocation.city && userLocation.city.toLowerCase() !== searchedCity.toLowerCase()) {
-      const userLocListings = allListings.filter(
-        (l) => l.city?.toLowerCase() === userLocation.city!.toLowerCase(),
-      );
-      addSection({
-        id: "popular-near-user-location",
-        title: `Popular stays near ${userLocation.city}`,
-        subtitle: "Based on your current location",
-        type: "LOCATION",
-        source: "CURRENT_LOCATION",
-        priority: 100,
-        candidates: userLocListings.map((listing) => ({ listing })),
-        seeAllHref: `/listings?city=${encodeURIComponent(userLocation.city)}`,
-      });
-    }
-
-    // 9. Priority 110: Trending in your current country (separate from search destination)
-    if (userLocation.country && userLocation.country.toLowerCase() !== searchContext.country?.toLowerCase()) {
-      const countryListings = allListings.filter(
-        (l) => l.country?.toLowerCase() === userLocation.country!.toLowerCase(),
-      );
-      addSection({
-        id: "trending-user-country",
-        title: `Trending in ${userLocation.country}`,
+        id: "guest-favourites-search",
+        title: `Guest favourites in ${displayName}`,
         type: "PROPERTY",
-        source: "TRENDING",
-        priority: 110,
-        candidates: countryListings.map((listing) => ({ listing })),
-        seeAllHref: `/listings?country=${encodeURIComponent(userLocation.country)}`,
+        source: "SEARCH",
+        priority: 50,
+        candidates: guestFavourites.map((c) => ({
+          listing: c.listing,
+          extra: { badge: "guest_favorite" as const },
+        })),
+        seeAllHref: `${searchHrefBase}&featured=true`,
       });
+      locationSectionCount++;
     }
 
-    // 10. Priority 120: Global trending discovery
+    // Popular stays in {location} (to reach 2–3 sections for this destination)
+    if (locationSectionCount < 3 && destinationCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+      addSection({
+        id: "popular-stays-search",
+        title: `Popular stays in ${displayName}`,
+        type: "LOCATION",
+        source: "SEARCH",
+        priority: 60,
+        candidates: destinationCandidates.map((c) => ({ listing: c.listing })),
+        seeAllHref: `${searchHrefBase}&sortBy=top_rated`,
+      });
+      locationSectionCount++;
+    }
+
+    // Global trending discovery under "Others"
     const trendingRanked = allListings.slice().sort(
       (a, b) => calculateTrendingScore(b) - calculateTrendingScore(a),
     );
@@ -887,17 +819,6 @@ async function assembleHomepageData(params: {
       priority: 120,
       candidates: trendingRanked.map((listing) => ({ listing })),
       seeAllHref: "/listings?sortBy=top_rated",
-    });
-
-    // 11. Priority 150: Recommended for you
-    addSection({
-      id: "recommended-stays-search",
-      title: "Recommended stays",
-      type: "PROPERTY",
-      source: "RECOMMENDATION",
-      priority: 150,
-      candidates: allListings.map((listing) => ({ listing })),
-      seeAllHref: "/listings?sortBy=recommended",
     });
 
   } else {
@@ -1109,55 +1030,8 @@ async function getRecentSearchSections(params: {
 
   if (!uniqueSearches.length) return [];
 
-  // Fetch candidate active listings
-  const allListings = (await prisma.listing.findMany({
-    where: {
-      published: true,
-      status: ListingStatus.ACTIVE,
-      isPaused: false,
-      deletedAt: null,
-      photos: { isEmpty: false },
-    },
-    select: {
-      id: true,
-      customSlug: true,
-      title: true,
-      city: true,
-      district: true,
-      country: true,
-      latitude: true,
-      longitude: true,
-      photos: true,
-      price: true,
-      weekdayBasePrice: true,
-      guests: true,
-      propertyType: true,
-      isFeatured: true,
-      blockedDates: true,
-      minNights: true,
-      maxNights: true,
-      advanceNotice: true,
-      sameDayCutoff: true,
-      allowSameDayRequests: true,
-      createdAt: true,
-      host: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          publicProfile: true,
-          bookings: {
-            select: { status: true },
-          },
-        },
-      },
-      bookings: {
-        select: { startDate: true, endDate: true, status: true },
-      },
-    },
-    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-    take: CANDIDATE_LIMIT,
-  })) as DiscoveryListing[];
+  // Fetch candidate active listings (reusing cached discovery listings)
+  const allListings = await getDiscoveryCandidateListings();
 
   // For user favorites if logged in
   let favoriteIds = new Set<string>();

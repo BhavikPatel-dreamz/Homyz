@@ -79,7 +79,7 @@ export function getTranslatedSectionTitle(title: string, t: (key: any, params?: 
   return title;
 }
 
-export function HomePropertySection({
+function HomePropertySectionComponent({
   title,
   cards,
   seeAllHref,
@@ -291,4 +291,5 @@ export function HomePropertySection({
 
 // Kept as an alias for existing imports while homepage sections use the
 // domain-oriented name above.
+export const HomePropertySection = React.memo(HomePropertySectionComponent);
 export const CategoryCarousel = HomePropertySection;

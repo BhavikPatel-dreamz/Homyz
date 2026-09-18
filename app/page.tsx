@@ -98,14 +98,18 @@ export default async function HomePage({
       } else {
         // Read persisted last search context from cookie for SSR zero-flicker restoration
         const cookieStore = await cookies();
-        const isCurrentSession = cookieStore.get(SEARCH_SESSION_COOKIE)?.value === "1";
         const cookieValue = cookieStore.get(LAST_SEARCH_COOKIE)?.value;
         const persisted = parseServerLastSearch(cookieValue);
-        if (persisted && !isCurrentSession) {
+        if (persisted) {
           resolvedContext = persisted;
         }
       }
     }
+
+    const hasSearch = Boolean(
+      hasExplicitUrlSearch ||
+        (resolvedContext && (resolvedContext.city || resolvedContext.displayName || resolvedContext.query)),
+    );
 
     const parsedLat = params.lat
       ? Number(params.lat)
@@ -114,50 +118,55 @@ export default async function HomePage({
       ? Number(params.lng)
       : resolvedContext?.longitude ?? null;
 
-    const homepage = await homepageService.getHomepageData({
-      city: hasExplicitUrlSearch
+    // Concurrently fetch homepage discovery and recent search sections in parallel
+    const resolveRecentSearches = async (): Promise<any[]> => {
+      if (isExplicitClear) return [];
+      if (user?.id) {
+        const userRecent = await getUserRecentSearches(user.id);
+        if (userRecent.length) return userRecent;
+      }
+      const cookieStore = await cookies();
+      const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
+      return parseServerRecentSearches(recentCookie);
+    };
+
+    const recentSearchesPromise = resolveRecentSearches().then(async (searches) => {
+      if (!searches.length) return [];
+      return homepageService.getRecentSearchSections({
+        searches,
+        userId: user?.id,
+        currentLocationQuery: hasSearch
+          ? (resolvedContext?.city || resolvedContext?.displayName || undefined)
+          : undefined,
+        limit: 4,
+      });
+    });
+
+    const homepagePromise = homepageService.getHomepageData({
+      city: hasSearch
         ? (params.city || params.destination || params.placeName || resolvedContext?.city || undefined)
         : undefined,
       userId: user?.id,
-      searchContext: hasExplicitUrlSearch ? resolvedContext : null,
+      searchContext: hasSearch ? resolvedContext : null,
       requestContext: {
-        city: hasExplicitUrlSearch ? (params.city || params.destination || resolvedContext?.city || null) : null,
-        destination: hasExplicitUrlSearch ? (params.destination || params.city || resolvedContext?.displayName || null) : null,
-        placeName: hasExplicitUrlSearch ? (params.placeName || resolvedContext?.displayName || null) : null,
-        lat: hasExplicitUrlSearch && Number.isFinite(parsedLat) ? parsedLat : null,
-        lng: hasExplicitUrlSearch && Number.isFinite(parsedLng) ? parsedLng : null,
+        city: hasSearch ? (params.city || params.destination || resolvedContext?.city || null) : null,
+        destination: hasSearch ? (params.destination || params.city || resolvedContext?.displayName || null) : null,
+        placeName: hasSearch ? (params.placeName || resolvedContext?.displayName || null) : null,
+        lat: hasSearch && Number.isFinite(parsedLat) ? parsedLat : null,
+        lng: hasSearch && Number.isFinite(parsedLng) ? parsedLng : null,
         ip: requestIp || params.ip || null,
-        country: hasExplicitUrlSearch ? (params.country || resolvedContext?.country || null) : null,
+        country: hasSearch ? (params.country || resolvedContext?.country || null) : null,
       },
     });
 
+    const [homepage, recentSearchSections] = await Promise.all([
+      homepagePromise,
+      recentSearchesPromise,
+    ]);
+
     sections = homepage.sections;
     trendingLocations = homepage.trendingLocations;
-    mode = hasExplicitUrlSearch ? "SEARCH" : "DEFAULT";
-
-    let recentSearchSections: HomepageSection[] = [];
-    if (!isExplicitClear) {
-      let recentSearches: any[] = [];
-      if (user?.id) {
-        recentSearches = await getUserRecentSearches(user.id);
-      }
-      if (!recentSearches.length) {
-        const cookieStore = await cookies();
-        const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
-        recentSearches = parseServerRecentSearches(recentCookie);
-      }
-
-      if (recentSearches.length > 0) {
-        recentSearchSections = await homepageService.getRecentSearchSections({
-          searches: recentSearches,
-          userId: user?.id,
-          currentLocationQuery: hasExplicitUrlSearch
-            ? (resolvedContext?.city || resolvedContext?.displayName || undefined)
-            : undefined,
-          limit: 4,
-        });
-      }
-    }
+    mode = hasSearch ? "SEARCH" : "DEFAULT";
 
     return (
       <HomeView
