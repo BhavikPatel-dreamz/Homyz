@@ -51,6 +51,8 @@ export function CalendarNavIcon({ className = "" }: { className?: string }) {
       alt="Calendar Icon"
       width={24}
       height={19}
+      className={className}
+      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -63,6 +65,8 @@ export function ListingNavIcon({ className = "" }: { className?: string }) {
       alt="Listing Edit Icon"
       width={24}
       height={24}
+      className={className}
+      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
@@ -75,6 +79,8 @@ export function MessagesNavIcon({ className = "" }: { className?: string }) {
       alt="Message Icon"
       width={24}
       height={24}
+      className={className}
+      style={{ width: "auto", height: "auto" }}
       priority
     />
   );
