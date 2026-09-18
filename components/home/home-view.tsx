@@ -17,6 +17,7 @@ import {
   saveLastSearch,
   getLastSearch,
   clearLastSearch,
+  shouldShowContinueSearching,
   type PersistedSearchContext,
   type StoredSearchContext,
 } from "@/lib/storage/client-history";
@@ -53,6 +54,7 @@ export function HomeView({
   const [isNavigatingSearch, setIsNavigatingSearch] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<ViewedPropertyItem[]>([]);
   const [activeContext, setActiveContext] = useState<SearchContext | PersistedSearchContext | null>(searchContext);
+  const [showContinueSearchingBar, setShowContinueSearchingBar] = useState(false);
   const [pastSearchSections, setPastSearchSections] = useState<HomepageSection[]>(recentSearchSections);
 
   // Load client-persisted search contexts & recently viewed properties on mount
@@ -63,13 +65,19 @@ export function HomeView({
       if (sp.get("clear") === "true") {
         clearLastSearch();
         setActiveContext(null);
+        setShowContinueSearchingBar(false);
       } else {
-        if (!searchContext) {
-          const last = getLastSearch();
-          if (last) {
-            setActiveContext(last);
-          }
+        const last = getLastSearch();
+        if (last) {
+          setActiveContext(last);
+          setShowContinueSearchingBar(shouldShowContinueSearching(last));
+        } else if (searchContext) {
+          setActiveContext(searchContext);
+          setShowContinueSearchingBar(shouldShowContinueSearching(searchContext));
+        } else {
+          setShowContinueSearchingBar(false);
         }
+      }
 
         // Check recent searches from client storage to load extra rows if needed
         const pastSearches = getRecentSearchContexts();
@@ -100,7 +108,6 @@ export function HomeView({
           }
         }
       }
-    }
   }, [searchContext]);
 
   // Sync activeContext with incoming searchContext from SSR or navigation
@@ -282,7 +289,7 @@ export function HomeView({
 
   const uniquePastSections = useMemo(() => {
     const existingTitles = new Set(propertySections.map((s) => s.title.toLowerCase()));
-    const activeCity = (activeContext?.city || activeContext?.displayName || "").toLowerCase();
+    const activeCity = mode === "SEARCH" ? (activeContext?.city || activeContext?.displayName || "").toLowerCase() : "";
 
     return pastSearchSections
       .filter((s) => {
@@ -333,8 +340,8 @@ export function HomeView({
           {/* Hero Section */}
           <HeroSection onSearch={handleSearch} />
 
-          {/* Continue Searching Bar */}
-          {activeContext && (
+          {/* Continue Searching Bar - only show when user returns after closing session or closing tab */}
+          {activeContext && showContinueSearchingBar && (
             <div className="mt-4 sm:mt-6 flex justify-center w-full">
               <ContinueSearchingBar
                 context={activeContext}
@@ -452,29 +459,31 @@ export function HomeView({
                     </div>
                   </div>
                 ) : (
-                  propertySections.map((section) => (
-                    <HomePropertySection
-                      key={section.id}
-                      title={section.title}
-                      cards={section.cards}
-                      seeAllHref={section.seeAllHref}
-                      previewImages={section.previewImages}
-                      totalCount={section.totalCount}
-                    />
-                  ))
-                )}
+                  <>
+                    {/* Recent search rows (e.g. Stays in Dubai, Stays in London, Stays in California — 1 row per location, max 3-4 rows) */}
+                    {uniquePastSections.map((section) => (
+                      <HomePropertySection
+                        key={section.id}
+                        title={section.title}
+                        cards={section.cards}
+                        seeAllHref={section.seeAllHref}
+                        previewImages={section.previewImages}
+                        totalCount={section.totalCount}
+                      />
+                    ))}
 
-                {/* Extra Rows for Past Searches (e.g. London, Dubai, California — max 3-4 extra rows) */}
-                {uniquePastSections.map((section) => (
-                  <HomePropertySection
-                    key={section.id}
-                    title={section.title}
-                    cards={section.cards}
-                    seeAllHref={section.seeAllHref}
-                    previewImages={section.previewImages}
-                    totalCount={section.totalCount}
-                  />
-                ))}
+                    {propertySections.map((section) => (
+                      <HomePropertySection
+                        key={section.id}
+                        title={section.title}
+                        cards={section.cards}
+                        seeAllHref={section.seeAllHref}
+                        previewImages={section.previewImages}
+                        totalCount={section.totalCount}
+                      />
+                    ))}
+                  </>
+                )}
               </>
             )}
           </div>

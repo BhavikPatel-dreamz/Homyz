@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/language-context";
 import type { SearchContext } from "@/lib/location/search-context";
-import type { PersistedSearchContext } from "@/lib/storage/client-history";
+import { type PersistedSearchContext, markSearchInCurrentSession } from "@/lib/storage/client-history";
 
 export interface ContinueSearchingBarProps {
   context: SearchContext | PersistedSearchContext;
@@ -179,6 +179,7 @@ export function ContinueSearchingBar({
     <div className={`continue-searching-wrapper flex items-center justify-center w-full ${className}`}>
       <Link
         href={href}
+        onClick={() => markSearchInCurrentSession()}
         className="group inline-flex items-center justify-center gap-3 sm:gap-3.5 py-1.5 px-3 rounded-2xl hover:bg-zinc-50 transition-all duration-200 cursor-pointer"
         aria-label={`Continue searching for homes ${preposition ? `${preposition} ` : ""}${locationName}${dateRange ? ` ${dateRange}` : ""}`}
       >

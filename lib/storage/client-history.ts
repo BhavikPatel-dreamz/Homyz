@@ -6,6 +6,8 @@ export const LEGACY_RECENT_KEY = "homyz_recent_searches";
 export const LAST_SEARCH_KEY = "homyz_last_search_context";
 export const LAST_SEARCH_COOKIE = "homyz_last_search";
 export const RECENT_SEARCHES_COOKIE = "homyz_recent_searches";
+export const ACTIVE_SESSION_SEARCH_KEY = "homyz_active_session_search";
+export const SEARCH_SESSION_COOKIE = "homyz_session_active";
 export const MAX_SEARCH_AGE_DAYS = 30;
 export const MAX_SEARCH_AGE_MS = MAX_SEARCH_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -175,6 +177,45 @@ export function parseServerLastSearch(cookieValue?: string | null): PersistedSea
  * Writes to both localStorage and a 30-day cookie (so Next.js SSR can hydrate without flicker),
  * and updates the multi-item search history.
  */
+/**
+ * Marks that a search occurred within the current active browser tab/session.
+ */
+export function markSearchInCurrentSession(): void {
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.setItem(ACTIVE_SESSION_SEARCH_KEY, "true");
+      // Session cookie without Max-Age/Expires automatically expires when browser session ends
+      document.cookie = `${SEARCH_SESSION_COOKIE}=1; path=/; SameSite=Lax`;
+    } catch {}
+  }
+}
+
+/**
+ * Checks if the current session was the one where the search took place.
+ * Returns true if the user is still in the same tab/session after searching.
+ */
+export function isSearchInCurrentSession(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(ACTIVE_SESSION_SEARCH_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns true ONLY when the user closed their previous tab/session after searching
+ * and has returned in a new session (re-engagement), and has not booked/cleared.
+ * If the user simply navigates back to the homepage in the same session, returns false.
+ */
+export function shouldShowContinueSearching(lastSearch: PersistedSearchContext | SearchContext | null): boolean {
+  if (!lastSearch) return false;
+  if (typeof window === "undefined") return false;
+  // If user is still in the active browsing session where they searched, do NOT show
+  if (isSearchInCurrentSession()) return false;
+  return true;
+}
+
 export function saveLastSearch(
   ctx: SearchContext | PersistedSearchContext,
 ): PersistedSearchContext | null {
@@ -190,6 +231,7 @@ export function saveLastSearch(
       const serialized = JSON.stringify(normalized);
       localStorage.setItem(LAST_SEARCH_KEY, serialized);
       setClientCookie(LAST_SEARCH_COOKIE, serialized, MAX_SEARCH_AGE_DAYS);
+      markSearchInCurrentSession();
     } catch {}
   }
 
@@ -250,6 +292,8 @@ export function clearLastSearch(): void {
     try {
       localStorage.removeItem(LAST_SEARCH_KEY);
       deleteClientCookie(LAST_SEARCH_COOKIE);
+      sessionStorage.removeItem(ACTIVE_SESSION_SEARCH_KEY);
+      deleteClientCookie(SEARCH_SESSION_COOKIE);
     } catch {}
   }
 }

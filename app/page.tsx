@@ -9,6 +9,7 @@ import {
   parseServerRecentSearches,
   LAST_SEARCH_COOKIE,
   RECENT_SEARCHES_COOKIE,
+  SEARCH_SESSION_COOKIE,
 } from "@/lib/storage/client-history";
 import { getUserRecentSearches } from "@/services/search-analytics.service";
 
@@ -97,9 +98,10 @@ export default async function HomePage({
       } else {
         // Read persisted last search context from cookie for SSR zero-flicker restoration
         const cookieStore = await cookies();
+        const isCurrentSession = cookieStore.get(SEARCH_SESSION_COOKIE)?.value === "1";
         const cookieValue = cookieStore.get(LAST_SEARCH_COOKIE)?.value;
         const persisted = parseServerLastSearch(cookieValue);
-        if (persisted) {
+        if (persisted && !isCurrentSession) {
           resolvedContext = persisted;
         }
       }
@@ -113,23 +115,25 @@ export default async function HomePage({
       : resolvedContext?.longitude ?? null;
 
     const homepage = await homepageService.getHomepageData({
-      city: params.city || params.destination || params.placeName || resolvedContext?.city || undefined,
+      city: hasExplicitUrlSearch
+        ? (params.city || params.destination || params.placeName || resolvedContext?.city || undefined)
+        : undefined,
       userId: user?.id,
-      searchContext: resolvedContext,
+      searchContext: hasExplicitUrlSearch ? resolvedContext : null,
       requestContext: {
-        city: params.city || params.destination || resolvedContext?.city || null,
-        destination: params.destination || params.city || resolvedContext?.displayName || null,
-        placeName: params.placeName || resolvedContext?.displayName || null,
-        lat: Number.isFinite(parsedLat) ? parsedLat : null,
-        lng: Number.isFinite(parsedLng) ? parsedLng : null,
+        city: hasExplicitUrlSearch ? (params.city || params.destination || resolvedContext?.city || null) : null,
+        destination: hasExplicitUrlSearch ? (params.destination || params.city || resolvedContext?.displayName || null) : null,
+        placeName: hasExplicitUrlSearch ? (params.placeName || resolvedContext?.displayName || null) : null,
+        lat: hasExplicitUrlSearch && Number.isFinite(parsedLat) ? parsedLat : null,
+        lng: hasExplicitUrlSearch && Number.isFinite(parsedLng) ? parsedLng : null,
         ip: requestIp || params.ip || null,
-        country: params.country || resolvedContext?.country || null,
+        country: hasExplicitUrlSearch ? (params.country || resolvedContext?.country || null) : null,
       },
     });
 
     sections = homepage.sections;
     trendingLocations = homepage.trendingLocations;
-    mode = homepage.mode;
+    mode = hasExplicitUrlSearch ? "SEARCH" : "DEFAULT";
 
     let recentSearchSections: HomepageSection[] = [];
     if (!isExplicitClear) {
@@ -147,7 +151,9 @@ export default async function HomePage({
         recentSearchSections = await homepageService.getRecentSearchSections({
           searches: recentSearches,
           userId: user?.id,
-          currentLocationQuery: resolvedContext?.city || resolvedContext?.displayName || undefined,
+          currentLocationQuery: hasExplicitUrlSearch
+            ? (resolvedContext?.city || resolvedContext?.displayName || undefined)
+            : undefined,
           limit: 4,
         });
       }
