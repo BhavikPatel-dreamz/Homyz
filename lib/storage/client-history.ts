@@ -50,7 +50,7 @@ export interface PersistedSearchContext extends SearchContext {
 }
 
 const MAX_VIEWED = 12;
-const MAX_SEARCHES = 8;
+const MAX_SEARCHES = 4;
 
 /**
  * Validates any raw or persisted search context object against formatting,
@@ -295,22 +295,30 @@ export function getRecentSearchContexts(): StoredSearchContext[] {
 }
 
 export function saveRecentSearchContext(ctx: SearchContext): void {
-  if (typeof window === "undefined" || !ctx?.query) return;
+  const queryStr = ctx?.query || ctx?.displayName || ctx?.city;
+  if (typeof window === "undefined" || !queryStr) return;
   try {
-    const current = getRecentSearchContexts().filter(
-      (s) => s.query.toLowerCase() !== ctx.query.toLowerCase(),
-    );
+    const locKey = (ctx.city || ctx.displayName || ctx.query || "").trim().toLowerCase();
+    const current = getRecentSearchContexts().filter((s) => {
+      const existingKey = (s.city || s.displayName || s.query || "").trim().toLowerCase();
+      if (locKey && existingKey && locKey === existingKey) return false;
+      if (ctx.city && s.city && ctx.city.trim().toLowerCase() === s.city.trim().toLowerCase()) return false;
+      if (ctx.query && s.query && ctx.query.trim().toLowerCase() === s.query.trim().toLowerCase()) return false;
+      return true;
+    });
+
     const updated: StoredSearchContext[] = [
       { ...ctx, savedAt: new Date().toISOString() },
       ...current,
     ].slice(0, MAX_SEARCHES);
+
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
 
     // Sync top 4 recent searches to cookie for SSR hydration
     try {
       setClientCookie(
         RECENT_SEARCHES_COOKIE,
-        JSON.stringify(updated.slice(0, 4)),
+        JSON.stringify(updated.slice(0, MAX_SEARCHES)),
         MAX_SEARCH_AGE_DAYS,
       );
     } catch {}
@@ -318,11 +326,30 @@ export function saveRecentSearchContext(ctx: SearchContext): void {
     // Also update legacy string searches for backward compatibility
     const legacyRaw = localStorage.getItem(LEGACY_RECENT_KEY);
     const legacy = legacyRaw ? (JSON.parse(legacyRaw) as string[]) : [];
-    const legacyFiltered = legacy.filter((s) => s.toLowerCase() !== ctx.query.toLowerCase());
+    const legacyFiltered = legacy.filter((s) => s.toLowerCase() !== queryStr.toLowerCase());
     localStorage.setItem(
       LEGACY_RECENT_KEY,
-      JSON.stringify([ctx.query, ...legacyFiltered].slice(0, 5)),
+      JSON.stringify([queryStr, ...legacyFiltered].slice(0, MAX_SEARCHES)),
     );
+
+    // Sync to tracking API in background
+    void fetch("/api/v1/search/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        destination: ctx.displayName || ctx.query || ctx.city,
+        city: ctx.city,
+        country: ctx.country,
+        destinationType: ctx.placeType,
+        lat: ctx.latitude,
+        lng: ctx.longitude,
+        checkIn: ctx.checkIn,
+        checkOut: ctx.checkOut,
+        guestCount: ctx.guests,
+        timestamp: new Date().toISOString(),
+      }),
+    }).catch(() => undefined);
   } catch {}
 }
 

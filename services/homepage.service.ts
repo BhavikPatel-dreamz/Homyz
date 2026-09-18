@@ -1173,35 +1173,75 @@ async function getRecentSearchSections(params: {
   for (const s of uniqueSearches) {
     const locName = (s.city || s.displayName || s.query || "").trim();
     const isLandmark = s.placeType === "landmark";
-    const searchedLat = s.latitude;
-    const searchedLng = s.longitude;
+    const searchedLat = typeof s.latitude === "number" ? s.latitude : null;
+    const searchedLng = typeof s.longitude === "number" ? s.longitude : null;
     const searchedCountry = s.country?.trim().toLowerCase() || "";
-    const normCity = (s.city || s.query || "").trim().toLowerCase();
+    const normCity = (s.city || "").trim().toLowerCase();
+    const normQuery = (s.query || s.displayName || "").trim().toLowerCase();
 
-    // Match listings strictly to this searched location
+    // Match listings strictly to this searched location across multi-level entities:
+    // landmark / coordinates, city, area/district, neighborhood, state, country
     const matched = allListings.filter((l) => {
-      if (searchedCountry && l.country && l.country.toLowerCase() !== searchedCountry) {
-        return false;
-      }
+      // 1. Proximity match for landmarks or coordinates
       if (searchedLat != null && searchedLng != null && l.latitude != null && l.longitude != null) {
         const dist = calculateDistance(searchedLat, searchedLng, l.latitude, l.longitude);
-        if (dist <= 30) return true;
+        if (dist <= 35) return true;
       }
-      if (l.city && normCity) {
-        const lc = l.city.trim().toLowerCase();
-        if (lc === normCity || (lc.length >= 4 && normCity.includes(lc)) || (normCity.length >= 4 && lc.includes(normCity))) {
-          return true;
+
+      // 2. Country-level filter
+      if (searchedCountry && l.country) {
+        const lcCountry = l.country.trim().toLowerCase();
+        if (searchedCountry === lcCountry) {
+          if (normQuery === searchedCountry || normCity === searchedCountry || s.placeType === "country") {
+            return true;
+          }
+        } else if (normQuery !== searchedCountry && normCity !== searchedCountry) {
+          // If searching a specific city in a known country, prevent cross-country false positives
+          return false;
         }
       }
+
+      // 3. Multi-level text matching: city, district, neighborhood, state, address, locationSearch
+      const searchTokens = [
+        normCity,
+        normQuery,
+        s.district?.trim().toLowerCase(),
+        s.neighborhood?.trim().toLowerCase(),
+        s.state?.trim().toLowerCase(),
+      ].filter(Boolean) as string[];
+
+      for (const token of searchTokens) {
+        if (!token || token.length < 2) continue;
+        if (l.city) {
+          const lc = l.city.trim().toLowerCase();
+          if (lc === token || lc.includes(token) || token.includes(lc)) return true;
+        }
+        if (l.district) {
+          const ld = l.district.trim().toLowerCase();
+          if (ld === token || ld.includes(token) || token.includes(ld)) return true;
+        }
+        if (l.title) {
+          const lt = l.title.trim().toLowerCase();
+          if (lt.includes(token)) return true;
+        }
+        if (l.country) {
+          const lco = l.country.trim().toLowerCase();
+          if (lco === token) return true;
+        }
+      }
+
       return false;
     });
 
     if (matched.length === 0) continue; // Do not render empty carousel rows
 
-    const title = isLandmark ? `Homes near ${s.displayName || locName}` : `Homes in ${locName}`;
+    const title = isLandmark ? `Stays near ${s.displayName || locName}` : `Stays in ${locName}`;
     const sp = new URLSearchParams();
     if (s.displayName || s.query) sp.set("destination", s.displayName || s.query);
     if (s.city) sp.set("city", s.city);
+    if (s.placeType) sp.set("locationType", s.placeType);
+    if (searchedLat != null) sp.set("lat", String(searchedLat));
+    if (searchedLng != null) sp.set("lng", String(searchedLng));
     if (s.checkIn) sp.set("checkIn", s.checkIn);
     if (s.checkOut) sp.set("checkOut", s.checkOut);
     if (s.guests && s.guests > 1) sp.set("guests", String(s.guests));

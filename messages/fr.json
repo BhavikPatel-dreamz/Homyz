@@ -156,6 +156,8 @@
   "home_no_stays_hint": "Essayez d'élargir la plage de dates, d'ajuster le nombre de voyageurs ou d'explorer les destinations proches.",
   "home_section_homes_in": "Logements à {location}",
   "home_section_homes_near": "Logements près de {location}",
+  "home_section_stays_in": "Séjours à {location}",
+  "home_section_stays_near": "Séjours près de {location}",
   "home_section_popular_homes_in": "Logements populaires à {location}",
   "home_section_popular_homes": "Logements populaires"
 }

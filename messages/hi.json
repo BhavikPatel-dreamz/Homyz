@@ -156,6 +156,8 @@
   "home_no_stays_hint": "अपनी तारीख सीमा बढ़ाने, मेहमानों की संख्या समायोजित करने या आस-पास के गंतव्यों को खोजने का प्रयास करें।",
   "home_section_homes_in": "{location} में आवास",
   "home_section_homes_near": "{location} के पास आवास",
+  "home_section_stays_in": "{location} में आवास",
+  "home_section_stays_near": "{location} के पास आवास",
   "home_section_popular_homes_in": "{location} में लोकप्रिय आवास",
   "home_section_popular_homes": "लोकप्रिय आवास"
 }

@@ -203,6 +203,7 @@ export function HomeView({
       searchedAt: new Date().toISOString(),
     };
     saveLastSearch(persistedContext);
+    saveRecentSearchContext(persistedContext);
 
     void fetch("/api/v1/search/track", {
       method: "POST",

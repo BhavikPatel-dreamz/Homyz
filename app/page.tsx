@@ -10,6 +10,7 @@ import {
   LAST_SEARCH_COOKIE,
   RECENT_SEARCHES_COOKIE,
 } from "@/lib/storage/client-history";
+import { getUserRecentSearches } from "@/services/search-analytics.service";
 
 export const dynamic = "force-dynamic";
 
@@ -132,9 +133,16 @@ export default async function HomePage({
 
     let recentSearchSections: HomepageSection[] = [];
     if (!isExplicitClear) {
-      const cookieStore = await cookies();
-      const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
-      const recentSearches = parseServerRecentSearches(recentCookie);
+      let recentSearches: any[] = [];
+      if (user?.id) {
+        recentSearches = await getUserRecentSearches(user.id);
+      }
+      if (!recentSearches.length) {
+        const cookieStore = await cookies();
+        const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
+        recentSearches = parseServerRecentSearches(recentCookie);
+      }
+
       if (recentSearches.length > 0) {
         recentSearchSections = await homepageService.getRecentSearchSections({
           searches: recentSearches,
