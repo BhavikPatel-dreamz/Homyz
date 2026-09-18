@@ -27,6 +27,8 @@ export interface ViewedPropertyItem {
 
 export interface StoredSearchContext extends SearchContext {
   savedAt: string;
+  searchedAt?: string;
+  filters?: PersistedSearchFilters;
 }
 
 export interface PersistedSearchFilters {
@@ -336,17 +338,17 @@ export function parseServerRecentSearches(cookieValue?: string | null): StoredSe
     } catch {}
     const parsed = JSON.parse(unescaped);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((item) => {
-        const validated = validateSearchContext(item);
-        if (!validated) return null;
-        return {
+    const results: StoredSearchContext[] = [];
+    for (const raw of parsed) {
+      const validated = validateSearchContext(raw);
+      if (validated) {
+        results.push({
           ...validated,
           savedAt: validated.searchedAt,
-        };
-      })
-      .filter((item): item is StoredSearchContext => item !== null)
-      .slice(0, 4);
+        });
+      }
+    }
+    return results.slice(0, 4);
   } catch {
     return [];
   }
