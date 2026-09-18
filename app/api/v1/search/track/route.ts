@@ -11,6 +11,11 @@ export const POST = apiHandler(async (req) => {
 
   const guestCount = Number(payload.guestCount ?? 1);
   const safePayload = {
+    eventType: typeof payload.eventType === "string" ? payload.eventType : (payload.destination || payload.city ? "search" : "unknown"),
+    propertyId: typeof payload.propertyId === "string" ? payload.propertyId : null,
+    action: typeof payload.action === "string" ? payload.action : null,
+    filterKey: typeof payload.filterKey === "string" ? payload.filterKey : null,
+    sortOption: typeof payload.sortOption === "string" ? payload.sortOption : null,
     destination: typeof payload.destination === "string" ? payload.destination : null,
     destinationType: typeof payload.destinationType === "string" ? payload.destinationType : null,
     city: typeof payload.city === "string" ? payload.city : null,
@@ -23,6 +28,7 @@ export const POST = apiHandler(async (req) => {
     guestCount: Number.isFinite(guestCount) ? Math.max(1, Math.round(guestCount)) : 1,
     timestamp: typeof payload.timestamp === "string" ? payload.timestamp : new Date().toISOString(),
     resultCount: typeof payload.resultCount === "number" && Number.isFinite(payload.resultCount) ? Math.max(0, Math.trunc(payload.resultCount)) : undefined,
+    metadata: payload.metadata && typeof payload.metadata === "object" ? payload.metadata : null,
   };
 
   await trackHomepageSearchEvent(safePayload);

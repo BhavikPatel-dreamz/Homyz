@@ -27,11 +27,15 @@ export const GET = apiHandler(async (req) => {
   const beds = sp.get("beds") ? parseInt(sp.get("beds")!, 10) : undefined;
   const instantBook = sp.get("instantBook") === "true" ? true : undefined;
   const sortBy = (sp.get("sortBy") as import("@/services/listing.service").SortBy) || undefined;
-  // Map bounds
-  const neLat = sp.get("neLat") ? parseFloat(sp.get("neLat")!) : undefined;
-  const neLng = sp.get("neLng") ? parseFloat(sp.get("neLng")!) : undefined;
-  const swLat = sp.get("swLat") ? parseFloat(sp.get("swLat")!) : undefined;
-  const swLng = sp.get("swLng") ? parseFloat(sp.get("swLng")!) : undefined;
+  // Map bounds (supports both neLat/neLng/swLat/swLng and north/east/south/west)
+  const rawNorth = sp.get("neLat") || sp.get("north");
+  const rawEast = sp.get("neLng") || sp.get("east");
+  const rawSouth = sp.get("swLat") || sp.get("south");
+  const rawWest = sp.get("swLng") || sp.get("west");
+  const neLat = rawNorth ? parseFloat(rawNorth) : undefined;
+  const neLng = rawEast ? parseFloat(rawEast) : undefined;
+  const swLat = rawSouth ? parseFloat(rawSouth) : undefined;
+  const swLng = rawWest ? parseFloat(rawWest) : undefined;
   const mapBounds = neLat !== undefined && neLng !== undefined && swLat !== undefined && swLng !== undefined
     ? { neLat, neLng, swLat, swLng }
     : undefined;

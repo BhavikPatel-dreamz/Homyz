@@ -12,6 +12,7 @@ import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/ame
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
+import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -486,7 +487,30 @@ export function PublicListingDetailClient({
 
               {/* Location & Map Section */}
               <div className="space-y-3 pb-6">
-                <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
+                  {(() => {
+                    const mapsUrl = getGoogleMapsUrl(listing);
+                    if (!mapsUrl) return null;
+                    return (
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackGoogleMapsOpen(listing.id, "property_details")}
+                        aria-label={`Open ${listing.title || "property"} location in Google Maps`}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-800 hover:text-amber-950 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-full transition-colors shrink-0 cursor-pointer"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-zinc-600" aria-hidden="true">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                        <span>View in Google Maps</span>
+                      </a>
+                    );
+                  })()}
+                </div>
                 <p className="text-xs text-zinc-500 font-normal">
                   {locationString}
                   {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}

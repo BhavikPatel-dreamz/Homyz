@@ -35,9 +35,12 @@ export async function updateListingAction(id: string, input: unknown) {
     const data = updateListingSchema.parse(input);
     // Ownership (host must own; ADMIN bypasses) is enforced in the service.
     const listing = await listingService.update(actor, id, data);
+    revalidatePath("/");
+    revalidatePath("/listings");
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath("/host/listings/[id]");
+    revalidatePath(`/listings/${id}`);
     revalidatePath("/admin/listings");
     revalidatePath(`/admin/listings/${id}`);
     if (data.propertyType !== undefined || data.listingType !== undefined) {
@@ -62,6 +65,8 @@ export async function deleteListingAction(
     if (!actor) throw AppError.unauthorized();
     if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_DELETE);
     const result = await listingService.remove(actor, id, feedback);
+    revalidatePath("/");
+    revalidatePath("/listings");
     revalidatePath("/host/listings");
     revalidatePath("/admin/listings");
     revalidatePath("/admin/hosts");
@@ -75,6 +80,8 @@ export async function publishListingAction(id: string) {
     if (!actor) throw AppError.unauthorized();
     if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.publish(actor, id);
+    revalidatePath("/");
+    revalidatePath("/listings");
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath(`/listings/${id}`);
@@ -93,6 +100,8 @@ export async function unpublishListingAction(id: string) {
     if (!actor) throw AppError.unauthorized();
     if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
     const listing = await listingService.unpublish(actor, id);
+    revalidatePath("/");
+    revalidatePath("/listings");
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
     revalidatePath(`/listings/${id}`);

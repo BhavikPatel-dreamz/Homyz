@@ -17,6 +17,8 @@ import { userService } from "@/services/user.service";
 import { updateHostPublicProfileSchema } from "@/lib/validation/host-profile";
 
 function revalidateListingLifecycle(id: string, customSlug?: string | null) {
+  revalidatePath("/");
+  revalidatePath("/listings");
   revalidatePath("/admin/listings");
   revalidatePath(`/admin/listings/${id}`);
   revalidatePath("/host/listings");

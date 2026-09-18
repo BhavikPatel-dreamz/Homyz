@@ -6,7 +6,6 @@ import { Container } from "@/components/ui";
 import { listingService } from "@/services/listing.service";
 import type { SortBy } from "@/services/listing.service";
 import { ListingsResultsClient } from "./listings-results-client";
-import { ListingCard } from "@/components/listings/listing-card";
 import { getSessionUser } from "@/lib/auth/session";
 import { favoriteService } from "@/services/favorite.service";
 
@@ -53,6 +52,10 @@ interface SearchPageProps {
     neLng?: string;
     swLat?: string;
     swLng?: string;
+    north?: string;
+    south?: string;
+    east?: string;
+    west?: string;
   }>;
 }
 
@@ -87,14 +90,18 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const sortBy = (sp.sortBy as SortBy) || undefined;
   const page = sp.page ? parseInt(sp.page, 10) : 1;
 
-  // Map bounds (for map-based search)
+  // Map bounds (for map-based search, supports both neLat/neLng/swLat/swLng and north/east/south/west)
+  const rawNorth = sp.neLat || sp.north;
+  const rawEast = sp.neLng || sp.east;
+  const rawSouth = sp.swLat || sp.south;
+  const rawWest = sp.swLng || sp.west;
   const mapBounds =
-    sp.neLat && sp.neLng && sp.swLat && sp.swLng
+    rawNorth && rawEast && rawSouth && rawWest
       ? {
-          neLat: parseFloat(sp.neLat),
-          neLng: parseFloat(sp.neLng),
-          swLat: parseFloat(sp.swLat),
-          swLng: parseFloat(sp.swLng),
+          neLat: parseFloat(rawNorth),
+          neLng: parseFloat(rawEast),
+          swLat: parseFloat(rawSouth),
+          swLng: parseFloat(rawWest),
         }
       : undefined;
 
@@ -108,6 +115,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     priceRange: undefined,
   };
 
+  let hasError = false;
   try {
     const res = await listingService.searchPublicListings({
       destination,
@@ -142,6 +150,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     result = res;
   } catch (err) {
     console.error("Search query failed:", err);
+    hasError = true;
   }
 
   // Load favorites for logged-in users (only for the items on this page)
@@ -186,26 +195,6 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   };
 
   const displayLocation = result.locationContextName || placeName || city;
-  const isNearLandmark =
-    locationType === "landmark" ||
-    locationType === "station" ||
-    locationType === "airport" ||
-    locationType === "beach" ||
-    locationType === "mall" ||
-    locationType === "current_location" ||
-    locationType === "poi";
-
-  const headerTitle = featured
-    ? displayLocation
-      ? `Featured stays in ${displayLocation}`
-      : "Featured stays"
-    : displayLocation
-    ? isNearLandmark
-      ? `Stays near ${displayLocation}`
-      : `Stays in ${displayLocation}`
-    : checkIn && checkOut
-    ? "Available stays"
-    : "All available stays";
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -213,19 +202,6 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
 
       <main className="w-full flex-1 py-8">
         <Container>
-          {/* Page Header */}
-          <div className="pb-6 border-b border-zinc-200/80 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
-              {headerTitle}
-            </h1>
-            <p className="text-xs text-zinc-500 font-normal mt-1">
-              {result.total} {result.total === 1 ? "stay" : "stays"} available
-              {checkIn && checkOut ? ` · ${checkIn} to ${checkOut}` : ""}
-              {guests ? ` · ${guests} ${guests === 1 ? "guest" : "guests"}` : ""}
-              {pets ? ` · ${pets} ${pets === 1 ? "pet" : "pets"}` : ""}
-            </p>
-          </div>
-
           {/* Adaptive Radius Expansion Notice Banner */}
           {result.isRadiusExpanded && (
             <div className="mb-6 flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200/80 px-4 py-3 text-amber-900 shadow-2xs">
@@ -245,16 +221,28 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
           {/* Interactive client section (<ListingCard /> rendered in grid) */}
           <Suspense
             fallback={
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="rounded-[22px] border border-zinc-100 overflow-hidden animate-pulse">
-                    <div className="aspect-[4/3] bg-zinc-200 w-full" />
-                    <div className="p-3.5 space-y-2">
-                      <div className="h-3.5 bg-zinc-200 rounded w-3/4" />
-                      <div className="h-3 bg-zinc-200 rounded w-1/2" />
-                    </div>
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {/* Left section skeleton */}
+                <div className="w-full lg:w-[56%] xl:w-[58%] min-w-0">
+                  <div className="pb-4 border-b border-zinc-200/80 mb-5 animate-pulse">
+                    <div className="h-7 w-72 bg-zinc-200 rounded-md mb-2" />
+                    <div className="h-4 w-48 bg-zinc-200 rounded-md" />
                   </div>
-                ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="rounded-[22px] border border-zinc-100 overflow-hidden animate-pulse">
+                        <div className="aspect-[4/3] bg-zinc-200 w-full" />
+                        <div className="p-3.5 space-y-2">
+                          <div className="h-3.5 bg-zinc-200 rounded w-3/4" />
+                          <div className="h-3 bg-zinc-200 rounded w-1/2" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right sticky map skeleton (Desktop) */}
+                <div className="hidden lg:block w-full lg:w-[44%] xl:w-[42%] shrink-0 h-[calc(100vh-104px)] rounded-2xl bg-zinc-100 border border-zinc-200 animate-pulse" />
               </div>
             }
           >
@@ -270,6 +258,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
               targetCoords={result.targetCoords}
               appliedRadiusKm={result.appliedRadiusKm}
               isRadiusExpanded={result.isRadiusExpanded}
+              hasError={hasError}
             />
           </Suspense>
         </Container>
