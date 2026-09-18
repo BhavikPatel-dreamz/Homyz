@@ -256,10 +256,19 @@ interface HeroSectionProps {
     city?: string;
     country?: string;
   }) => void;
+  isSearching?: boolean;
 }
 
-export function HeroSection({ onSearch }: HeroSectionProps) {
+export function HeroSection({ onSearch, isSearching: externalIsSearching = false }: HeroSectionProps) {
   const { t, language } = useLanguage();
+  const [internalIsSearching, setInternalIsSearching] = useState(false);
+  const isSearching = externalIsSearching || internalIsSearching;
+
+  useEffect(() => {
+    if (!externalIsSearching) {
+      setInternalIsSearching(false);
+    }
+  }, [externalIsSearching]);
   const [destination, setDestination] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocationData | null>(null);
   const [checkIn, setCheckIn] = useState("");
@@ -586,6 +595,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
   }, [allSuggestItems]);
 
   const handleMobileSubmit = () => {
+    setInternalIsSearching(true);
     const destinationValue = destination.trim() || selectedLocation?.city || selectedLocation?.name || "";
     if (destinationValue) saveRecentSearch(destinationValue);
     // Auto-resolve best location match if user typed destination without clicking suggestion
@@ -1116,31 +1126,39 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
         <div className="mt-5">
           <button
             type="button"
+            disabled={isSearching}
             onClick={() => {
               setActiveStep("where");
               setDesktopPanel(null);
               setIsMobileSearchOpen(true);
             }}
-            className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform active:scale-[0.99] cursor-pointer"
-            aria-label="Start your search"
+            className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform active:scale-[0.99] cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+            aria-label={isSearching ? "Searching..." : "Start your search"}
           >
             <span className="text-base font-medium text-[#1f1f1f]">
               {destination || t("home_search_where_placeholder")}
             </span>
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4.5 w-4.5"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
+              {isSearching ? (
+                <svg className="h-4.5 w-4.5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4.5 w-4.5"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              )}
             </div>
           </button>
         </div>
@@ -1305,13 +1323,21 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               </button>
               <button
                 type="submit"
-                aria-label="Search"
-                className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-zinc-900 shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer"
+                disabled={isSearching}
+                aria-label={isSearching ? "Searching..." : t("home_search_btn")}
+                className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-zinc-900 shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-[22px] w-[22px]">
-                  <circle cx="10.75" cy="10.75" r="6.75" stroke="currentColor" strokeWidth="2" />
-                  <path d="m15.75 15.75 4.25 4.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
+                {isSearching ? (
+                  <svg className="h-5 w-5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                    <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                ) : (
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-[22px] w-[22px]">
+                    <circle cx="10.75" cy="10.75" r="6.75" stroke="currentColor" strokeWidth="2" />
+                    <path d="m15.75 15.75 4.25 4.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                )}
               </button>
             </div>
 
@@ -1451,14 +1477,22 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
                   )}
                   <button
                     type="button"
+                    disabled={isSearching}
                     onClick={handleMobileSubmit}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-zinc-900 transition-transform active:scale-95 cursor-pointer hover:brightness-95"
-                    aria-label="Search"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-zinc-900 transition-transform active:scale-95 cursor-pointer hover:brightness-95 disabled:opacity-90 disabled:cursor-not-allowed"
+                    aria-label={isSearching ? "Searching..." : "Search"}
                   >
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-4 w-4">
-                      <circle cx="11" cy="11" r="7" />
-                      <path d="m21 21-4.35-4.35" />
-                    </svg>
+                    {isSearching ? (
+                      <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                        <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    ) : (
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-4 w-4">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m21 21-4.35-4.35" />
+                      </svg>
+                    )}
                   </button>
                 </div>
 
@@ -1566,10 +1600,21 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               </button>
               <button
                 type="button"
+                disabled={isSearching}
                 onClick={handleMobileNext}
-                className="rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-zinc-900 shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-zinc-900 shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
               >
-                {activeStep === "who" ? t("home_search_btn") : t("home_next")}
+                {isSearching && activeStep === "who" ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>{t("home_search_btn")}</span>
+                  </>
+                ) : (
+                  activeStep === "who" ? t("home_search_btn") : t("home_next")
+                )}
               </button>
             </div>
           </div>

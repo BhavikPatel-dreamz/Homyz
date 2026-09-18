@@ -124,10 +124,14 @@ export function HomeView({
     }
   }, [recentSearchSections]);
 
-  // Stop skeleton spinner once new sections arrive
+  // Reset search navigation state when sections or searchContext updates, or on initial mount/back
   useEffect(() => {
     setIsNavigatingSearch(false);
   }, [sections, searchContext]);
+
+  useEffect(() => {
+    setIsNavigatingSearch(false);
+  }, []);
 
   const handleSearch = (params: {
     destination: string;
@@ -338,7 +342,7 @@ export function HomeView({
       <main className="homepage-main sm:mt-8 w-full flex-1 pb-16 sm:pb-[150px]">
         <Container>
           {/* Hero Section */}
-          <HeroSection onSearch={handleSearch} />
+          <HeroSection onSearch={handleSearch} isSearching={isNavigatingSearch} />
 
           {/* Continue Searching Bar - only show when user returns after closing session or closing tab */}
           {activeContext && showContinueSearchingBar && (
@@ -350,7 +354,106 @@ export function HomeView({
             </div>
           )}
 
-          {/* Trending Locations Destination Cards */}
+       
+          {/* Recently Viewed Client Section */}
+          {recentlyViewed.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
+            <section className="mt-8 sm:mt-[92px]">
+              <HomePropertySection
+                title="Recently viewed"
+                cards={recentlyViewed.map((item) => ({
+                  id: item.id,
+                  name: item.title,
+                  image: item.mainImage,
+                  imageUrl: item.mainImage,
+                  subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
+                  pricePerNight: item.price,
+                  price: item.price,
+                  city: item.city,
+                  country: item.country,
+                  guests: item.maxGuests,
+                  propertyType: item.propertyType,
+                  averageRating: item.rating ?? null,
+                  rating: item.rating ?? null,
+                  canFavorite,
+                }))}
+                seeAllHref="/listings"
+              />
+            </section>
+          )}
+
+          {/* Listing Sections Container */}
+          <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
+            {propertySections.length === 0 ? (
+              <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-zinc-50/80 rounded-3xl border border-zinc-200 p-8">
+                <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
+                  🏡
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-zinc-900">
+                    {mode === "SEARCH"
+                      ? `No stays found matching your search in ${searchContext?.displayName ?? "this location"}`
+                      : "Discover hand-picked stays on Homyz"}
+                  </h3>
+                  <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                    {mode === "SEARCH"
+                      ? "Try expanding your date range, adjusting guest count, or exploring nearby destinations."
+                      : "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations."}
+                  </p>
+                </div>
+                <div className="pt-2 flex items-center justify-center gap-3">
+                  {mode === "SEARCH" ? (
+                    <button
+                      type="button"
+                      onClick={handleClearSearch}
+                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
+                    >
+                      Clear search
+                    </button>
+                  ) : (
+                    <Link
+                      href="/listings"
+                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all"
+                    >
+                      Browse all stays
+                    </Link>
+                  )}
+                  <Link
+                    href="/become-a-host"
+                    className="rounded-full bg-amber-200 hover:bg-amber-300 text-amber-950 font-semibold text-xs px-6 py-2.5 transition-all"
+                  >
+                    Become a host
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Recent search rows (e.g. Stays in Dubai, Stays in London, Stays in California — 1 row per location, max 3-4 rows) */}
+                {uniquePastSections.map((section) => (
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
+                ))}
+
+                {propertySections.map((section) => (
+                  <HomePropertySection
+                    key={section.id}
+                    title={section.title}
+                    cards={section.cards}
+                    seeAllHref={section.seeAllHref}
+                    previewImages={section.previewImages}
+                    totalCount={section.totalCount}
+                  />
+                ))}
+              </>
+            )}
+          </div>
+
+             {/* Trending Locations Destination Cards */}
           {trendingLocations.length > 0 && mode === "DEFAULT" && (
             <section className="mt-8 sm:mt-[92px]">
               <div className="mb-4 sm:mb-6 flex items-center justify-between gap-3">
@@ -384,109 +487,6 @@ export function HomeView({
             </section>
           )}
 
-          {/* Recently Viewed Client Section */}
-          {recentlyViewed.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
-            <section className="mt-8 sm:mt-[92px]">
-              <HomePropertySection
-                title="Recently viewed"
-                cards={recentlyViewed.map((item) => ({
-                  id: item.id,
-                  name: item.title,
-                  image: item.mainImage,
-                  imageUrl: item.mainImage,
-                  subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
-                  pricePerNight: item.price,
-                  price: item.price,
-                  city: item.city,
-                  country: item.country,
-                  guests: item.maxGuests,
-                  propertyType: item.propertyType,
-                  averageRating: item.rating ?? null,
-                  rating: item.rating ?? null,
-                  canFavorite,
-                }))}
-                seeAllHref="/listings"
-              />
-            </section>
-          )}
-
-          {/* Listing Sections Container */}
-          <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
-            {isNavigatingSearch ? (
-              <HomepageLoadingState />
-            ) : (
-              <>
-                {propertySections.length === 0 ? (
-                  <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-zinc-50/80 rounded-3xl border border-zinc-200 p-8">
-                    <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
-                      🏡
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-semibold text-zinc-900">
-                        {mode === "SEARCH"
-                          ? `No stays found matching your search in ${searchContext?.displayName ?? "this location"}`
-                          : "Discover hand-picked stays on Homyz"}
-                      </h3>
-                      <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                        {mode === "SEARCH"
-                          ? "Try expanding your date range, adjusting guest count, or exploring nearby destinations."
-                          : "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations."}
-                      </p>
-                    </div>
-                    <div className="pt-2 flex items-center justify-center gap-3">
-                      {mode === "SEARCH" ? (
-                        <button
-                          type="button"
-                          onClick={handleClearSearch}
-                          className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
-                        >
-                          Clear search
-                        </button>
-                      ) : (
-                        <Link
-                          href="/listings"
-                          className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all"
-                        >
-                          Browse all stays
-                        </Link>
-                      )}
-                      <Link
-                        href="/become-a-host"
-                        className="rounded-full bg-amber-200 hover:bg-amber-300 text-amber-950 font-semibold text-xs px-6 py-2.5 transition-all"
-                      >
-                        Become a host
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Recent search rows (e.g. Stays in Dubai, Stays in London, Stays in California — 1 row per location, max 3-4 rows) */}
-                    {uniquePastSections.map((section) => (
-                      <HomePropertySection
-                        key={section.id}
-                        title={section.title}
-                        cards={section.cards}
-                        seeAllHref={section.seeAllHref}
-                        previewImages={section.previewImages}
-                        totalCount={section.totalCount}
-                      />
-                    ))}
-
-                    {propertySections.map((section) => (
-                      <HomePropertySection
-                        key={section.id}
-                        title={section.title}
-                        cards={section.cards}
-                        seeAllHref={section.seeAllHref}
-                        previewImages={section.previewImages}
-                        totalCount={section.totalCount}
-                      />
-                    ))}
-                  </>
-                )}
-              </>
-            )}
-          </div>
         </Container>
       </main>
 
