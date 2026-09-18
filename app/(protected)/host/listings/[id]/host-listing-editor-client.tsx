@@ -2010,7 +2010,7 @@ export function HostListingEditorClient({
             role="dialog"
             aria-modal="true"
             aria-labelledby="unsaved-preferences-title"
-            className="w-full max-w-md rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl sm:p-7"
+            className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl sm:p-7"
           >
             <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
               You have unsaved changes
@@ -2025,7 +2025,7 @@ export function HostListingEditorClient({
                   pendingNavigationRef.current = null;
                   setIsUnsavedChangesDialogOpen(false);
                 }}
-                className="w-full sm:w-auto rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                className="w-full sm:w-auto rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-xs font-medium text-[#1f1f1f] dark:text-zinc-200 transition-colors hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 cursor-pointer"
               >
                 Stay and continue editing
               </button>
@@ -2037,7 +2037,7 @@ export function HostListingEditorClient({
                   setIsUnsavedChangesDialogOpen(false);
                   pendingNavigation?.();
                 }}
-                className="w-full sm:w-auto rounded-full !bg-zinc-950 dark:!bg-zinc-100 px-5 py-2.5 text-sm font-semibold !text-white dark:!text-zinc-950 transition-colors hover:!bg-zinc-800 dark:hover:!bg-zinc-200 cursor-pointer shadow-2xs"
+                className="w-full sm:w-auto rounded-full !bg-zinc-950 dark:!bg-zinc-100 px-5 py-2.5 text-xs font-medium !text-white hover:!text-[#1f1f1f] dark:!text-zinc-950 transition-colors hover:!bg-white dark:hover:!bg-zinc-200 cursor-pointer border border-[#1f1f1f]"
               >
                 Discard changes and leave
               </button>

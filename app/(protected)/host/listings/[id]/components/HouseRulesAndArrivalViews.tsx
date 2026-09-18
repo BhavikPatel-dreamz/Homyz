@@ -1442,9 +1442,9 @@ function GuidebooksView({
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button & Plus Circle Icon (Matches Figma Screenshot 100%) */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
           <BackButton onClick={() => setActiveSection("arrival-guide")} />
-          <h1 className="tracking-tight text-[#1F1F1F]">Create a guidebooks</h1>
+          <h1>Create a guidebooks</h1>
         </div>
 
         {/* Plus (+) Button on the right of header */}
@@ -1667,19 +1667,19 @@ function LanguagesView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1>Languages</h1>
       </div>
 
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed pt-1">
+      <p className="text-base font-normal leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px] pt-1">
         Select the languages you and your co-hosts can speak with guests during their stay or via messaging.
       </p>
 
       {/* List of currently selected languages */}
       <div className="flex flex-wrap gap-2 pt-2">
         {selectedLanguageIds.length === 0 && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">No languages selected yet.</p>
+          <p className="text-base text-[#727272] dark:text-zinc-400">No languages selected yet.</p>
         )}
         {selectedLanguageIds.map((languageId) => {
           const languageName = getLanguageDisplayNames([languageId])[0] ?? languageId;
@@ -1785,7 +1785,7 @@ function LanguagesView({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           <span className="text-sm font-semibold">+</span>
           Add a language
@@ -1794,7 +1794,7 @@ function LanguagesView({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSaveSection("language")}
-          className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-base font-normal text-[#1f1f1f] dark:text-zinc-200 shadow-2xs transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-[#1f1f1f] hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           {isSaving ? "Saving..." : "Save changes"}
         </button>
@@ -1824,7 +1824,7 @@ function GuestRequirementsView({
   return (
     <div className="space-y-7 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
         <h1>Guest requirements</h1>
       </div>
@@ -1832,8 +1832,8 @@ function GuestRequirementsView({
       {/* Toggle Row: Require a profile photo */}
       <div className="flex items-start justify-between gap-6 pt-1">
         <div className="space-y-1 max-w-md">
-          <h3 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">Require a profile photo</h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+          <h3 className="text-[#1F1F1F] font-medium">Require a profile photo</h3>
+          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
             Ask guests to upload a confirmed profile photo before booking your place.
           </p>
         </div>
@@ -1845,7 +1845,7 @@ function GuestRequirementsView({
           role="switch"
           aria-checked={requireProfilePhoto}
           aria-label="Require a profile photo"
-          className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${requireProfilePhoto ? "bg-zinc-900 dark:bg-amber-400" : "bg-zinc-200 dark:bg-zinc-700"
+          className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${requireProfilePhoto ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-200 dark:bg-zinc-700"
             }`}
         >
           <div
@@ -1857,21 +1857,21 @@ function GuestRequirementsView({
 
       {/* Bulleted Requirements Section */}
       <div className="space-y-2.5 pt-1">
-        <h3 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
+        <h3 className="text-[#1F1F1F] font-medium">
           All Homyz guests are requires to:
         </h3>
         <ul className="space-y-2 text-xs text-zinc-500 dark:text-zinc-400 font-normal">
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 dark:text-zinc-500 font-semibold">•</span>
-            <span>Provide a confirmed email address and phone number</span>
+            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm">Provide a confirmed email address and phone number</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 dark:text-zinc-500 font-semibold">•</span>
-            <span>Provide payment information</span>
+            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm">Provide payment information</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-zinc-400 dark:text-zinc-500 font-semibold">•</span>
-            <span>Agree to your house rules</span>
+            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm">Agree to your house rules</span>
           </li>
         </ul>
       </div>
@@ -1882,7 +1882,7 @@ function GuestRequirementsView({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSaveSection("guest-requirements")}
-          className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all duration-300 cursor-pointer disabled:opacity-50"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -1896,7 +1896,7 @@ function GuestRequirementsView({
             }
             setActiveSection("arrival-guide");
           }}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-medium text-sm px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           Cancel
         </button>
@@ -2722,7 +2722,7 @@ function RegulationsView({
           <div className="md:col-span-7 space-y-6">
             {/* Section 1: You're all set! */}
             <div className="space-y-2">
-              <h1 className="tracking-tight text-[#1F1F1F]">
+              <h1>
                 You&apos;re all set!
               </h1>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
@@ -2879,20 +2879,20 @@ function RegulationsView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1 className="tracking-tight text-[#1F1F1F]">Regulations</h1>
+        <h1>Regulations</h1>
       </div>
 
       {/* Top Description Paragraph */}
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1 max-w-lg">
+      <p className="text-sm text-[#727272] font-normal leading-relaxed pt-1 max-w-lg">
         Local tourism regulations require short-term rental hosts to display a valid municipal permit number.
       </p>
 
       {/* Registration Status Block */}
       <div className="space-y-3 pt-2">
-        <h3 className="text-xs font-semibold text-[#1F1F1F]">Your registration is complete</h3>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-lg">
+        <h3 className="text-base font-medium text-[#1F1F1F]">Your registration is complete</h3>
+        <p className="text-sm text-[#727272] font-normal leading-relaxed max-w-lg">
           You&apos;re all set! Your registration number is xxxxxxxx and is visible to guests on your listing.
         </p>
       </div>
@@ -2902,7 +2902,7 @@ function RegulationsView({
         <button
           type="button"
           onClick={() => setShowDetails(true)}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer"
         >
           View
         </button>
@@ -2927,9 +2927,9 @@ function TaxesView({
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1 className="tracking-tight text-[#1F1F1F]">Taxes</h1>
+        <h1>Taxes</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
@@ -2985,9 +2985,9 @@ function HomyzStaysView({
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1 className="tracking-tight text-[#1F1F1F]">Homyz.com stays</h1>
+        <h1>Homyz.com stays</h1>
       </div>
 
       <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">

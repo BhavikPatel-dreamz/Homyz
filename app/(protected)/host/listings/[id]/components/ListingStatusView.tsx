@@ -382,19 +382,19 @@ export function ListingStatusView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-2xl pb-12 font-sans">
       {/* Header & Back Navigation */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("propertyType")} />
-        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F] dark:text-zinc-100">Listing status</h1>
+        <h1>Listing status</h1>
       </div>
 
       {/* Visual Approval Progress Timeline */}
-      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
+      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">Listing journey</p>
-            <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Approval &amp; publishing progress</p>
+            <p className="text-sm font-normal text-[#727272] dark:text-zinc-400">Listing journey</p>
+            <p className="mt-0.5 text-base font-medium text-zinc-900 dark:text-zinc-100">Approval &amp; publishing progress</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
+          <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
             displayState === "PUBLISHED" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300" :
             displayState === "REJECTED" ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300" :
             "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
@@ -413,19 +413,19 @@ export function ListingStatusView({
               return (
                 <div key={step.id} className="relative z-10 flex min-w-[112px] flex-1 flex-col items-center text-center">
                   <span className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
-                    isComplete ? "border-emerald-500 bg-emerald-500 text-white" :
+                    isComplete ? "border-emerald-600 bg-emerald-600 text-white" :
                     isCurrent ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-4 ring-amber-100 dark:ring-amber-900/40" :
                     isWarning ? "border-rose-500 bg-rose-500 text-white" :
                     "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
                   }`}>
                     {isComplete ? "✓" : isWarning ? "!" : idx + 1}
                   </span>
-                  <span className={`mt-3 max-w-[108px] text-[11px] font-semibold leading-snug ${
+                  <span className={`mt-3 max-w-[108px] text-xs font-medium ${
                     isComplete ? "text-emerald-800 dark:text-emerald-400" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-zinc-400 dark:text-zinc-500"
                   }`}>
                     {step.label}
                   </span>
-                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700 dark:text-amber-400">Current step</span>}
+                  {isCurrent && <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">Current step</span>}
                 </div>
               );
             })}
@@ -552,19 +552,19 @@ export function ListingStatusView({
 
       {/* 4. STATE: APPROVED (ready for the host to publish) */}
       {displayState === "APPROVED" && !justSubmitted && (
-        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
+        <div className="rounded-lg border border-emerald-500 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
+              <h2 className="font-medium text-emerald-950 dark:text-emerald-200 text-base">
                 {isSaudi ? "Ready to Publish" : "Listing Approved"}
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
+            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
               {isSaudi ? "Ready" : "Approved"}
             </span>
           </div>
-          <p className="text-xs text-emerald-900 dark:text-emerald-300 leading-relaxed">
+          <p className="text-sm text-emerald-900 dark:text-emerald-300 leading-relaxed">
             {isSaudi
               ? "No admin approval is required for Saudi listings. Your listing is complete and ready to publish."
               : "Your listing has been approved. Select Listed below and save to publish it to guests."}
@@ -574,7 +574,7 @@ export function ListingStatusView({
 
       {/* 5. STATE: PUBLISHED (Live on Marketplace) */}
       {displayState === "PUBLISHED" && (
-        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
+        <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-5 space-y-2 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
@@ -582,7 +582,7 @@ export function ListingStatusView({
                 Your Listing is Live
               </h2>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
+            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
               Live on Marketplace
             </span>
           </div>
@@ -626,7 +626,7 @@ export function ListingStatusView({
         {/* Listed Card */}
         <div
           onClick={() => handleSelectStatus("listed")}
-          className={`p-5 rounded-2xl border transition-all space-y-2 shadow-2xs relative ${
+          className={`p-5 rounded-lg border transition-all space-y-2 shadow-2xs relative ${
             !isApproved
               ? "opacity-60 cursor-not-allowed bg-zinc-50/70 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700 select-none"
               : effectiveStatus === "listed"
@@ -637,20 +637,20 @@ export function ListingStatusView({
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Listed</h3>
             {!isApproved ? (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 {isSaudi ? "Incomplete" : "Locked"}
               </span>
             ) : effectiveStatus === "listed" ? (
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Active
               </span>
             ) : null}
           </div>
-          <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
             Guests can find your listing in search results and book available dates.
           </p>
           {!isApproved && (
@@ -668,22 +668,22 @@ export function ListingStatusView({
         {/* Unlisted Card */}
         <div
           onClick={() => handleSelectStatus("unlisted")}
-          className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
+          className={`p-5 rounded-lg border transition-all cursor-pointer space-y-2 shadow-2xs ${
             effectiveStatus === "unlisted"
-              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 ring-1 ring-amber-300/60 dark:ring-amber-500/40 shadow-2xs"
+              ? "bg-[#FEF9EC] dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/80 dark:ring-amber-500/40 shadow-2xs"
               : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
           }`}
         >
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Unlisted</h3>
             {effectiveStatus === "unlisted" && (
-              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
                 {!isApproved ? (isSaudi ? "Draft (Incomplete)" : "Unlisted (Awaiting Approval)") : "Hidden"}
               </span>
             )}
           </div>
-          <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
             Your listing is hidden from search results and guests cannot book dates.
           </p>
         </div>
@@ -697,10 +697,10 @@ export function ListingStatusView({
           type="button"
           disabled={isSaving || !isApproved}
           onClick={handleSave}
-          className={`rounded-full font-semibold text-xs px-8 py-2.5 shadow-2xs transition-all ${
+          className={`rounded-full font-medium text-sm px-5 py-2 shadow-2xs transition-all duration-300 ${
             !isApproved
               ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
-              : "bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 cursor-pointer"
+              : "bg-[#FEE08B] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white cursor-pointer"
           }`}
         >
           {isSaving
@@ -715,7 +715,7 @@ export function ListingStatusView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-5 py-2 shadow-2xs transition-all cursor-pointer  duration-300"
         >
           Cancel
         </button>

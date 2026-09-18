@@ -1791,7 +1791,7 @@ export function PropertyDetailsViews({
                             </div>
                             <div className="space-y-1">
                               <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
-                              <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+                              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
                                 {feature.desc}
                               </p>
                             </div>

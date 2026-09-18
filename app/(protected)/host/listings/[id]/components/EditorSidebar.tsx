@@ -177,18 +177,18 @@ function AdminEditorSidebar({
   const statusLabel = listing.published
     ? "Published"
     : listing.status === "PENDING_APPROVAL"
-    ? "Pending Approval"
-    : listing.status === "REJECTED"
-    ? "Action Needed"
-    : "Draft";
+      ? "Pending Approval"
+      : listing.status === "REJECTED"
+        ? "Action Needed"
+        : "Draft";
 
   const statusBg = listing.published
     ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
     : listing.status === "PENDING_APPROVAL"
-    ? "bg-amber-500/10 text-amber-700 border-amber-200"
-    : listing.status === "REJECTED"
-    ? "bg-rose-500/10 text-rose-700 border-rose-200"
-    : "bg-zinc-500/10 text-zinc-600 border-zinc-200";
+      ? "bg-amber-500/10 text-amber-700 border-amber-200"
+      : listing.status === "REJECTED"
+        ? "bg-rose-500/10 text-rose-700 border-rose-200"
+        : "bg-zinc-500/10 text-zinc-600 border-zinc-200";
 
   return (
     <aside className="admin-editor-sidebar rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] flex flex-col">
@@ -252,19 +252,17 @@ function AdminEditorSidebar({
                   key={id}
                   type="button"
                   onClick={() => setActiveSection(id)}
-                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${
-                    active
-                      ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
-                      : destructive
+                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${active
+                    ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
+                    : destructive
                       ? "text-rose-600 hover:bg-rose-50/80 hover:text-rose-700"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] hover:translate-x-0.5"
-                  }`}
+                    }`}
                 >
                   <span className="truncate">{label}</span>
                   <svg
-                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${
-                      active ? "opacity-90 text-zinc-950 translate-x-0.5" : "opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5"
-                    }`}
+                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${active ? "opacity-90 text-zinc-950 translate-x-0.5" : "opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5"
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -581,7 +579,7 @@ export function EditorSidebar({
               setActiveSection("listing-status");
             }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
-              ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950 dark:bg-amber-400 dark:border-amber-400"
+              ? "bg-[#FEE08B] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
               }`}
           >
@@ -594,7 +592,7 @@ export function EditorSidebar({
           <div
             ref={sidebarScrollRef}
             onScroll={updateSidebarScrollThumb}
-            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "arrival" ? "lg:h-auto" : "lg:h-[1850px]"}`}
+            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "space" ? "lg:h-[1850px]" : "lg:h-auto"}`}
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
@@ -607,19 +605,19 @@ export function EditorSidebar({
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#727272] dark:text-zinc-300 block mb-1">
+                  <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     Listing status
                   </span>
                   <span
-                    className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60"
+                    className={`inline-flex items-center gap-1.5 text-sm font-medium px-2.5 py-0.5 rounded-full border ${displayState === "PUBLISHED" || displayState === "APPROVED"
+                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-500"
                       : displayState === "PENDING_APPROVAL"
-                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60"
+                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border-amber-500"
                         : displayState === "REJECTED"
-                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60"
+                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border-rose-500"
                           : displayState === "READY_TO_SUBMIT"
-                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60"
-                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700"
+                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60 border-indigo-500"
+                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border-zinc-500"
                       }`}
                   >
                     <span
@@ -674,7 +672,14 @@ export function EditorSidebar({
                       })()}
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 3: Guest requirements */}
@@ -693,7 +698,14 @@ export function EditorSidebar({
                       {listing?.requireProfilePhoto ? "Profile photo required" : "Profile photo not required"}
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 4: Local laws */}
@@ -712,7 +724,14 @@ export function EditorSidebar({
                       Review your local laws
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 5: Regulations */}
@@ -728,7 +747,14 @@ export function EditorSidebar({
                       Regulations
                     </span>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 6: Taxes */}
@@ -747,7 +773,14 @@ export function EditorSidebar({
                       Learn how taxes work for Hosts
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 7: homyz.org stays */}
@@ -780,7 +813,14 @@ export function EditorSidebar({
                       return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Learn how you can help</p>;
                     })()}
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 8: Remove listing */}
@@ -802,7 +842,14 @@ export function EditorSidebar({
                       Permanently remove your listing
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
               </div>
             ) : editorTab === "space" ? (
@@ -937,7 +984,7 @@ export function EditorSidebar({
                 {/* 2. Property type */}
                 <div
                   onClick={() => setActiveSection("propertyType")}
-                    className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
                     ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
@@ -1012,7 +1059,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                     Number of guests
                   </span>
-                    <span className="text-base font-normal text-[#727272] block">
+                  <span className="text-base font-normal text-[#727272] block">
                     {editGuests} guests
                   </span>
                 </div>
@@ -1172,7 +1219,7 @@ export function EditorSidebar({
                         <img
                           src={listing.host.image}
                           alt="Host profile"
-                            className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
+                          className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
                         />
                       ) : (
                         <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold text-lg shadow-2xs">
@@ -1471,7 +1518,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F]">
                       Directions to property
                     </span>
-                    
+
                   </div>
                   <p className="text-base text-zinc-500 font-normal truncate">
                     {directions && directions.trim() ? directions : "Add details"}
