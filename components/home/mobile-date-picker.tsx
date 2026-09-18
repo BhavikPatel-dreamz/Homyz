@@ -290,7 +290,7 @@ export function MobileDatePicker({
                         desktop ? "basis-[calc((100%-2rem)/5)] text-[10px] lg:text-xs" : "basis-[calc((100%-1rem)/2.8)] text-xs"
                       } ${preferences.months.includes(key) ? "border-[#1f1f1f] bg-[#fcdf9c]" : "border-[#aaa]"}`}
                     >
-                      <Image src="/images/icons/date-picker-icon.svg" alt="" width={28} height={28} className="mb-1 h-7 w-7" />
+                      <Image src="/images/icons/date-picker-icon.svg" alt="" width={28} height={28} className="mb-1 h-7 w-7" style={{ width: "auto", height: "auto" }} />
                       <span className="max-w-full truncate">
                         {month.toLocaleDateString(locale, { month: desktop ? "long" : "short" })}
                       </span>
