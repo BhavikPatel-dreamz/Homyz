@@ -594,7 +594,7 @@ export function EditorSidebar({
           <div
             ref={sidebarScrollRef}
             onScroll={updateSidebarScrollThumb}
-            className="custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:h-[1850px] lg:pb-5 lg:pr-[55px]"
+            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "arrival" ? "lg:h-auto" : "lg:h-[1850px]"}`}
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
