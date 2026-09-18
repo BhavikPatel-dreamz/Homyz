@@ -18,56 +18,68 @@ export function getTranslatedSectionTitle(title: string, t: (key: any, params?: 
   if (!title) return title;
   const lower = title.trim().toLowerCase();
 
-  if (lower === "featured stays") {
-    return t("home_section_featured_stays");
-  }
-  if (lower === "available this weekend") {
-    return t("home_section_available_weekend");
-  }
-  if (lower === "available this month") {
-    return t("home_section_available_this_month");
-  }
-  if (lower.startsWith("available this month in ")) {
-    const city = title.trim().substring("available this month in ".length).trim();
-    return t("home_section_available_this_month_in", { city });
-  }
-  if (lower === "available next month") {
-    return t("home_section_available_next_month");
-  }
-  if (lower.startsWith("available next month in ")) {
-    const city = title.trim().substring("available next month in ".length).trim();
-    return t("home_section_available_next_month_in", { city });
-  }
-  if (lower.startsWith("explore stays in ")) {
-    const city = title.trim().substring("explore stays in ".length).trim();
-    return t("home_section_explore_stays_in", { city });
-  }
-  if (lower === "trending stays") {
-    return t("home_section_trending_stays");
-  }
-  if (lower === "recommended stays") {
-    return t("home_section_recommended_stays");
-  }
-  if (lower === "popular homes") {
-    return t("home_section_popular_homes");
-  }
-  if (lower.startsWith("popular homes in ")) {
-    const location = title.trim().substring("popular homes in ".length).trim();
-    return t("home_section_popular_homes_in", { location });
-  }
-  if (lower.startsWith("homes in ")) {
-    const location = title.trim().substring("homes in ".length).trim();
-    return t("home_section_homes_in", { location });
-  }
-  if (lower.startsWith("homes near ")) {
-    const location = title.trim().substring("homes near ".length).trim();
-    return t("home_section_homes_near", { location });
+  try {
+    if (lower === "featured stays") {
+      return t("home_section_featured_stays");
+    }
+    if (lower === "available this weekend") {
+      return t("home_section_available_weekend");
+    }
+    if (lower === "available this month") {
+      return t("home_section_available_this_month");
+    }
+    if (lower.startsWith("available this month in ")) {
+      const city = title.trim().substring("available this month in ".length).trim();
+      return t("home_section_available_this_month_in", { city });
+    }
+    if (lower === "available next month") {
+      return t("home_section_available_next_month");
+    }
+    if (lower.startsWith("available next month in ")) {
+      const city = title.trim().substring("available next month in ".length).trim();
+      return t("home_section_available_next_month_in", { city });
+    }
+    if (lower.startsWith("explore stays in ")) {
+      const city = title.trim().substring("explore stays in ".length).trim();
+      return t("home_section_explore_stays_in", { city });
+    }
+    if (lower === "trending stays") {
+      return t("home_section_trending_stays");
+    }
+    if (lower === "recommended stays") {
+      return t("home_section_recommended_stays");
+    }
+    if (lower === "popular homes") {
+      return t("home_section_popular_homes");
+    }
+    if (lower.startsWith("popular homes in ")) {
+      const location = title.trim().substring("popular homes in ".length).trim();
+      return t("home_section_popular_homes_in", { location });
+    }
+    if (lower.startsWith("homes in ")) {
+      const location = title.trim().substring("homes in ".length).trim();
+      return t("home_section_homes_in", { location });
+    }
+    if (lower.startsWith("homes near ")) {
+      const location = title.trim().substring("homes near ".length).trim();
+      return t("home_section_homes_near", { location });
+    }
+    if (lower.startsWith("stays in ")) {
+      const location = title.trim().substring("stays in ".length).trim();
+      return t("home_section_stays_in", { location });
+    }
+    if (lower.startsWith("stays near ")) {
+      const location = title.trim().substring("stays near ".length).trim();
+      return t("home_section_stays_near", { location });
+    }
+  } catch {
+    return title;
   }
 
   return title;
 }
 
-export function HomePropertySection({
+function HomePropertySectionComponent({
   title,
   cards,
   seeAllHref,
@@ -279,4 +291,5 @@ export function HomePropertySection({
 
 // Kept as an alias for existing imports while homepage sections use the
 // domain-oriented name above.
+export const HomePropertySection = React.memo(HomePropertySectionComponent);
 export const CategoryCarousel = HomePropertySection;

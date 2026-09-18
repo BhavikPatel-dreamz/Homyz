@@ -6,6 +6,8 @@ export const LEGACY_RECENT_KEY = "homyz_recent_searches";
 export const LAST_SEARCH_KEY = "homyz_last_search_context";
 export const LAST_SEARCH_COOKIE = "homyz_last_search";
 export const RECENT_SEARCHES_COOKIE = "homyz_recent_searches";
+export const ACTIVE_SESSION_SEARCH_KEY = "homyz_active_session_search";
+export const SEARCH_SESSION_COOKIE = "homyz_session_active";
 export const MAX_SEARCH_AGE_DAYS = 30;
 export const MAX_SEARCH_AGE_MS = MAX_SEARCH_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -50,7 +52,7 @@ export interface PersistedSearchContext extends SearchContext {
 }
 
 const MAX_VIEWED = 12;
-const MAX_SEARCHES = 8;
+const MAX_SEARCHES = 4;
 
 /**
  * Validates any raw or persisted search context object against formatting,
@@ -175,6 +177,45 @@ export function parseServerLastSearch(cookieValue?: string | null): PersistedSea
  * Writes to both localStorage and a 30-day cookie (so Next.js SSR can hydrate without flicker),
  * and updates the multi-item search history.
  */
+/**
+ * Marks that a search occurred within the current active browser tab/session.
+ */
+export function markSearchInCurrentSession(): void {
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.setItem(ACTIVE_SESSION_SEARCH_KEY, "true");
+      // Session cookie without Max-Age/Expires automatically expires when browser session ends
+      document.cookie = `${SEARCH_SESSION_COOKIE}=1; path=/; SameSite=Lax`;
+    } catch {}
+  }
+}
+
+/**
+ * Checks if the current session was the one where the search took place.
+ * Returns true if the user is still in the same tab/session after searching.
+ */
+export function isSearchInCurrentSession(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(ACTIVE_SESSION_SEARCH_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns true ONLY when the user closed their previous tab/session after searching
+ * and has returned in a new session (re-engagement), and has not booked/cleared.
+ * If the user simply navigates back to the homepage in the same session, returns false.
+ */
+export function shouldShowContinueSearching(lastSearch: PersistedSearchContext | SearchContext | null): boolean {
+  if (!lastSearch) return false;
+  if (typeof window === "undefined") return false;
+  // If user is still in the active browsing session where they searched, do NOT show
+  if (isSearchInCurrentSession()) return false;
+  return true;
+}
+
 export function saveLastSearch(
   ctx: SearchContext | PersistedSearchContext,
 ): PersistedSearchContext | null {
@@ -190,6 +231,7 @@ export function saveLastSearch(
       const serialized = JSON.stringify(normalized);
       localStorage.setItem(LAST_SEARCH_KEY, serialized);
       setClientCookie(LAST_SEARCH_COOKIE, serialized, MAX_SEARCH_AGE_DAYS);
+      markSearchInCurrentSession();
     } catch {}
   }
 
@@ -250,6 +292,8 @@ export function clearLastSearch(): void {
     try {
       localStorage.removeItem(LAST_SEARCH_KEY);
       deleteClientCookie(LAST_SEARCH_COOKIE);
+      sessionStorage.removeItem(ACTIVE_SESSION_SEARCH_KEY);
+      deleteClientCookie(SEARCH_SESSION_COOKIE);
     } catch {}
   }
 }
@@ -295,22 +339,30 @@ export function getRecentSearchContexts(): StoredSearchContext[] {
 }
 
 export function saveRecentSearchContext(ctx: SearchContext): void {
-  if (typeof window === "undefined" || !ctx?.query) return;
+  const queryStr = ctx?.query || ctx?.displayName || ctx?.city;
+  if (typeof window === "undefined" || !queryStr) return;
   try {
-    const current = getRecentSearchContexts().filter(
-      (s) => s.query.toLowerCase() !== ctx.query.toLowerCase(),
-    );
+    const locKey = (ctx.city || ctx.displayName || ctx.query || "").trim().toLowerCase();
+    const current = getRecentSearchContexts().filter((s) => {
+      const existingKey = (s.city || s.displayName || s.query || "").trim().toLowerCase();
+      if (locKey && existingKey && locKey === existingKey) return false;
+      if (ctx.city && s.city && ctx.city.trim().toLowerCase() === s.city.trim().toLowerCase()) return false;
+      if (ctx.query && s.query && ctx.query.trim().toLowerCase() === s.query.trim().toLowerCase()) return false;
+      return true;
+    });
+
     const updated: StoredSearchContext[] = [
       { ...ctx, savedAt: new Date().toISOString() },
       ...current,
     ].slice(0, MAX_SEARCHES);
+
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
 
     // Sync top 4 recent searches to cookie for SSR hydration
     try {
       setClientCookie(
         RECENT_SEARCHES_COOKIE,
-        JSON.stringify(updated.slice(0, 4)),
+        JSON.stringify(updated.slice(0, MAX_SEARCHES)),
         MAX_SEARCH_AGE_DAYS,
       );
     } catch {}
@@ -318,11 +370,30 @@ export function saveRecentSearchContext(ctx: SearchContext): void {
     // Also update legacy string searches for backward compatibility
     const legacyRaw = localStorage.getItem(LEGACY_RECENT_KEY);
     const legacy = legacyRaw ? (JSON.parse(legacyRaw) as string[]) : [];
-    const legacyFiltered = legacy.filter((s) => s.toLowerCase() !== ctx.query.toLowerCase());
+    const legacyFiltered = legacy.filter((s) => s.toLowerCase() !== queryStr.toLowerCase());
     localStorage.setItem(
       LEGACY_RECENT_KEY,
-      JSON.stringify([ctx.query, ...legacyFiltered].slice(0, 5)),
+      JSON.stringify([queryStr, ...legacyFiltered].slice(0, MAX_SEARCHES)),
     );
+
+    // Sync to tracking API in background
+    void fetch("/api/v1/search/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        destination: ctx.displayName || ctx.query || ctx.city,
+        city: ctx.city,
+        country: ctx.country,
+        destinationType: ctx.placeType,
+        lat: ctx.latitude,
+        lng: ctx.longitude,
+        checkIn: ctx.checkIn,
+        checkOut: ctx.checkOut,
+        guestCount: ctx.guests,
+        timestamp: new Date().toISOString(),
+      }),
+    }).catch(() => undefined);
   } catch {}
 }
 

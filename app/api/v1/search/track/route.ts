@@ -1,6 +1,7 @@
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
-import { trackHomepageSearchEvent } from "@/services/search-analytics.service";
+import { trackHomepageSearchEvent, saveUserRecentSearch } from "@/services/search-analytics.service";
+import { getSessionUser } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 
@@ -25,5 +26,14 @@ export const POST = apiHandler(async (req) => {
   };
 
   await trackHomepageSearchEvent(safePayload);
+
+  // If user is authenticated, save search history to user account in Redis
+  try {
+    const user = await getSessionUser();
+    if (user?.id) {
+      await saveUserRecentSearch(user.id, safePayload);
+    }
+  } catch {}
+
   return ok({ ok: true, stored: true });
 });

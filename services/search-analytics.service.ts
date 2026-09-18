@@ -43,3 +43,76 @@ export async function trackHomepageSearchEvent(
   const next = [safeEvent, ...existing].slice(0, 200);
   await setCache(key, next, 7 * 24 * 60 * 60);
 }
+
+const USER_SEARCHES_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+
+const globalForUserSearches = globalThis as unknown as {
+  __homyzUserRecentSearches?: Map<string, { data: any[]; expiresAt: number }>;
+};
+
+const userSearchesMemory = (globalForUserSearches.__homyzUserRecentSearches ??= new Map());
+
+export async function getUserRecentSearches(userId: string): Promise<any[]> {
+  if (!userId) return [];
+  try {
+    const key = CACHE_KEYS.USER_RECENT_SEARCHES(userId);
+    const cached = await getCache<any[]>(key);
+    if (Array.isArray(cached) && cached.length > 0) {
+      return cached.slice(0, 4);
+    }
+  } catch {}
+
+  // Graceful fallback to memory store if Redis is unconfigured or empty
+  const mem = userSearchesMemory.get(userId);
+  if (mem && mem.expiresAt > Date.now()) {
+    return mem.data.slice(0, 4);
+  }
+  return [];
+}
+
+export async function saveUserRecentSearch(
+  userId: string,
+  search: Record<string, any>,
+): Promise<void> {
+  if (!userId || !search) return;
+  const locKey = (search.city || search.displayName || search.destination || search.query || "").trim().toLowerCase();
+  if (!locKey || locKey === "stays" || locKey === "all") return;
+
+  try {
+    const existing = await getUserRecentSearches(userId);
+    const filtered = existing.filter((s) => {
+      const k = (s.city || s.displayName || s.destination || s.query || "").trim().toLowerCase();
+      if (locKey === k) return false;
+      if (search.city && s.city && search.city.trim().toLowerCase() === s.city.trim().toLowerCase()) return false;
+      if (search.query && s.query && search.query.trim().toLowerCase() === s.query.trim().toLowerCase()) return false;
+      return true;
+    });
+
+    const updated = [
+      {
+        query: search.destination || search.query || search.city || locKey,
+        displayName: search.destination || search.displayName || search.city || locKey,
+        placeType: search.destinationType || search.placeType || "general",
+        city: search.city || null,
+        country: search.country || null,
+        latitude: typeof search.lat === "number" ? search.lat : search.latitude ?? null,
+        longitude: typeof search.lng === "number" ? search.lng : search.longitude ?? null,
+        checkIn: search.checkIn || null,
+        checkOut: search.checkOut || null,
+        guests: typeof search.guestCount === "number" ? search.guestCount : search.guests ?? 1,
+        savedAt: new Date().toISOString(),
+      },
+      ...filtered,
+    ].slice(0, 4);
+
+    const key = CACHE_KEYS.USER_RECENT_SEARCHES(userId);
+    await setCache(key, updated, USER_SEARCHES_TTL_SECONDS);
+    userSearchesMemory.set(userId, {
+      data: updated,
+      expiresAt: Date.now() + USER_SEARCHES_TTL_SECONDS * 1000,
+    });
+  } catch (error) {
+    console.error("Failed to save user recent search to Redis:", error);
+  }
+}
+

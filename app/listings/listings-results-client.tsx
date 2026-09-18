@@ -7,7 +7,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
 import type { PublicListingDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
-import { saveLastSearch } from "@/lib/storage/client-history";
+import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
 
 // Lazy-load the map (Leaflet is heavy & client-only)
 const SearchMap = dynamic(
@@ -131,7 +131,7 @@ export function ListingsResultsClient({
     const lng = typeof currentFilters.lng === "number" ? currentFilters.lng : targetCoords?.lng ?? null;
 
     if (destination || city || (lat !== null && lng !== null)) {
-      saveLastSearch({
+      const searchContext = {
         query: destination || city || "Stays",
         displayName: locationContextName || destination || city || "Stays",
         placeId: currentFilters.placeId || searchParams.get("placeId") || null,
@@ -155,7 +155,9 @@ export function ListingsResultsClient({
           featured: currentFilters.featured,
           sortBy: currentFilters.sortBy,
         },
-      });
+      };
+      saveLastSearch(searchContext);
+      saveRecentSearchContext(searchContext);
     }
   }, [
     searchParams,

@@ -156,6 +156,8 @@
   "home_no_stays_hint": "جرب توسيع نطاق التواريخ، أو تعديل عدد الضيوف، أو استكشاف الوجهات المجاورة.",
   "home_section_homes_in": "إقامات في {location}",
   "home_section_homes_near": "إقامات بالقرب من {location}",
+  "home_section_stays_in": "إقامات في {location}",
+  "home_section_stays_near": "إقامات بالقرب من {location}",
   "home_section_popular_homes_in": "إقامات شائعة في {location}",
   "home_section_popular_homes": "إقامات شائعة"
 }

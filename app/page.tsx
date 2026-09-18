@@ -9,7 +9,9 @@ import {
   parseServerRecentSearches,
   LAST_SEARCH_COOKIE,
   RECENT_SEARCHES_COOKIE,
+  SEARCH_SESSION_COOKIE,
 } from "@/lib/storage/client-history";
+import { getUserRecentSearches } from "@/services/search-analytics.service";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +106,11 @@ export default async function HomePage({
       }
     }
 
+    const hasSearch = Boolean(
+      hasExplicitUrlSearch ||
+        (resolvedContext && (resolvedContext.city || resolvedContext.displayName || resolvedContext.query)),
+    );
+
     const parsedLat = params.lat
       ? Number(params.lat)
       : resolvedContext?.latitude ?? null;
@@ -111,39 +118,55 @@ export default async function HomePage({
       ? Number(params.lng)
       : resolvedContext?.longitude ?? null;
 
-    const homepage = await homepageService.getHomepageData({
-      city: params.city || params.destination || params.placeName || resolvedContext?.city || undefined,
+    // Concurrently fetch homepage discovery and recent search sections in parallel
+    const resolveRecentSearches = async (): Promise<any[]> => {
+      if (isExplicitClear) return [];
+      if (user?.id) {
+        const userRecent = await getUserRecentSearches(user.id);
+        if (userRecent.length) return userRecent;
+      }
+      const cookieStore = await cookies();
+      const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
+      return parseServerRecentSearches(recentCookie);
+    };
+
+    const recentSearchesPromise = resolveRecentSearches().then(async (searches) => {
+      if (!searches.length) return [];
+      return homepageService.getRecentSearchSections({
+        searches,
+        userId: user?.id,
+        currentLocationQuery: hasSearch
+          ? (resolvedContext?.city || resolvedContext?.displayName || undefined)
+          : undefined,
+        limit: 4,
+      });
+    });
+
+    const homepagePromise = homepageService.getHomepageData({
+      city: hasSearch
+        ? (params.city || params.destination || params.placeName || resolvedContext?.city || undefined)
+        : undefined,
       userId: user?.id,
-      searchContext: resolvedContext,
+      searchContext: hasSearch ? resolvedContext : null,
       requestContext: {
-        city: params.city || params.destination || resolvedContext?.city || null,
-        destination: params.destination || params.city || resolvedContext?.displayName || null,
-        placeName: params.placeName || resolvedContext?.displayName || null,
-        lat: Number.isFinite(parsedLat) ? parsedLat : null,
-        lng: Number.isFinite(parsedLng) ? parsedLng : null,
+        city: hasSearch ? (params.city || params.destination || resolvedContext?.city || null) : null,
+        destination: hasSearch ? (params.destination || params.city || resolvedContext?.displayName || null) : null,
+        placeName: hasSearch ? (params.placeName || resolvedContext?.displayName || null) : null,
+        lat: hasSearch && Number.isFinite(parsedLat) ? parsedLat : null,
+        lng: hasSearch && Number.isFinite(parsedLng) ? parsedLng : null,
         ip: requestIp || params.ip || null,
-        country: params.country || resolvedContext?.country || null,
+        country: hasSearch ? (params.country || resolvedContext?.country || null) : null,
       },
     });
 
+    const [homepage, recentSearchSections] = await Promise.all([
+      homepagePromise,
+      recentSearchesPromise,
+    ]);
+
     sections = homepage.sections;
     trendingLocations = homepage.trendingLocations;
-    mode = homepage.mode;
-
-    let recentSearchSections: HomepageSection[] = [];
-    if (!isExplicitClear) {
-      const cookieStore = await cookies();
-      const recentCookie = cookieStore.get(RECENT_SEARCHES_COOKIE)?.value;
-      const recentSearches = parseServerRecentSearches(recentCookie);
-      if (recentSearches.length > 0) {
-        recentSearchSections = await homepageService.getRecentSearchSections({
-          searches: recentSearches,
-          userId: user?.id,
-          currentLocationQuery: resolvedContext?.city || resolvedContext?.displayName || undefined,
-          limit: 4,
-        });
-      }
-    }
+    mode = hasSearch ? "SEARCH" : "DEFAULT";
 
     return (
       <HomeView

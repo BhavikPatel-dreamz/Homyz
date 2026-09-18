@@ -82,7 +82,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const messages = MESSAGES[language] || MESSAGES.en;
-  const translator = createTranslator({ locale: language, messages });
+  const translator = createTranslator({
+    locale: language,
+    messages,
+    onError: () => {},
+  });
 
   const t = (
     key: TranslationKey,

@@ -85,8 +85,14 @@ export const GET = apiHandler(async (req) => {
     deletedAt: null,
   } as const;
 
-  // For empty queries, return dynamic popular destinations & DB stays
+  // For empty queries, return dynamic popular destinations & DB stays (cached)
   if (q.length < 2) {
+    const defaultCacheKey = "homyz:loc:suggest:default";
+    try {
+      const cached = await getCache<any>(defaultCacheKey);
+      if (cached) return ok(cached);
+    } catch {}
+
     const dbCities = await prisma.listing.findMany({
       where,
       select: { city: true, country: true, district: true, latitude: true, longitude: true },
@@ -113,13 +119,19 @@ export const GET = apiHandler(async (req) => {
           }))
       : [];
 
-    return ok({
+    const defaultResult = {
       primaryCity: null,
       places: [],
       districts: [],
       cities,
       properties: [],
-    });
+    };
+
+    try {
+      await setCache(defaultCacheKey, defaultResult, 3600);
+    } catch {}
+
+    return ok(defaultResult);
   }
 
   // Check Redis cache for fast response (fail-open)

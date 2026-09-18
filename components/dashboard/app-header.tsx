@@ -9,8 +9,13 @@ import { useSession } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { BecomeHostModal } from "@/components/host/become-host-modal";
+import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/i18n/language-context";
+
+const BecomeHostModal = dynamic(
+  () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
+  { ssr: false }
+);
 
 type AppHeaderProps = {
   showBottomBorder?: boolean;

@@ -11,7 +11,7 @@ import { RealMap } from "@/components/ui/real-map";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
-import { saveRecentlyViewedProperty } from "@/lib/storage/client-history";
+import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -215,6 +215,7 @@ export function PublicListingDetailClient({
         }
         alert(data.error?.message || "Failed to complete reservation");
       } else {
+        clearLastSearch();
         setBookingSuccess(true);
       }
     } catch {

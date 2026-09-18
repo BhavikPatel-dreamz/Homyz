@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { formatListingPrice } from "@/lib/currency";
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -34,7 +33,7 @@ export interface PropertyCardData {
   alternativeDates?: string | null;
 }
 
-export function PropertyCard({
+function PropertyCardComponent({
   id,
   slug,
   name,
@@ -62,8 +61,7 @@ export function PropertyCard({
 }: PropertyCardData) {
   const { t } = useLanguage();
   const router = useRouter();
-  const { data: session } = useSession();
-  const isAuthenticated = canFavorite || Boolean(session?.user);
+  const isAuthenticated = canFavorite;
 
   const [isFavorite, setIsFavorite] = useState(
     propFavorite !== undefined ? propFavorite : initialFavorite,
@@ -301,3 +299,5 @@ export function PropertyCard({
     </Link>
   );
 }
+
+export const PropertyCard = memo(PropertyCardComponent);
