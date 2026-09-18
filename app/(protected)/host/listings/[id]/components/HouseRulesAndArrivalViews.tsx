@@ -353,7 +353,7 @@ export function HouseRulesAndArrivalViews({
                             onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
                             className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
-                              <Image src="/images/icons/add-Icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                            <Image src="/images/icons/add-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                         </div>
                       </div>
@@ -531,7 +531,7 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
                       className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
-                        <Image src="/images/icons/add-Icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/add-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
@@ -715,20 +715,22 @@ export function HouseRulesAndArrivalViews({
       {/* --------------------------------------------------------- */}
       {activeSection === "parking" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          <div className="flex items-center gap-6">
-            <BackButton onClick={() => setActiveSection("arrival-guide")} />
-            <h1>Parking instructions & details</h1>
+          <div className="flex items-start gap-6">
+            <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
+            <div>
+              <h1>Parking instructions & details</h1>
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+                Let guests know if parking is available, where to park, and any permit or reservation requirements.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal pl-11">
-            Let guests know if parking is available, where to park, and any permit or reservation requirements.
-          </p>
 
-          <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-4 shadow-2xs">
+          <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-4 shadow-2xs">
             {/* Parking Available Toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Parking available on premises</h3>
-                <p className="text-[11px] text-zinc-400 dark:text-zinc-400">Do guests have dedicated or shared parking?</p>
+                <h3 className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">Parking available on premises</h3>
+                <p className="text-sm text-[#727272] dark:text-zinc-400">Do guests have dedicated or shared parking?</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -736,7 +738,7 @@ export function HouseRulesAndArrivalViews({
                   onClick={() => setParkingAvailable?.(false)}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === false
                     ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                    : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   ✕
@@ -746,7 +748,7 @@ export function HouseRulesAndArrivalViews({
                   onClick={() => setParkingAvailable?.(true)}
                   className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === true
                     ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                    : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                    : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   ✓
@@ -759,7 +761,7 @@ export function HouseRulesAndArrivalViews({
               <div className="space-y-4 pt-3 border-t border-zinc-100 dark:border-zinc-700">
                 {/* Parking Type: Free vs Paid */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Parking fee type</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Parking fee type</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -786,7 +788,7 @@ export function HouseRulesAndArrivalViews({
 
                 {/* Number of spaces */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Available parking spaces</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Available parking spaces</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -801,14 +803,14 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
                       className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
-                      <Image src="/images/icons/plus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/add-icon.svg" alt="Increase maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
 
                 {/* Reservation Required */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Reservation required in advance</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Reservation required in advance</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -841,7 +843,7 @@ export function HouseRulesAndArrivalViews({
                     value={parkingInstructions}
                     onChange={(e) => setParkingInstructions?.(e.target.value)}
                     placeholder="e.g. Park in space #4B in underground garage. Access gate code is 1234."
-                    className="w-full rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-xs font-medium text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
+                    className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
                   />
                 </div>
               </div>
@@ -970,13 +972,16 @@ export function HouseRulesAndArrivalViews({
       {/* --------------------------------------------------------- */}
       {activeSection === "house-manual" && (
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
-          <div className="flex items-center gap-3">
-            <BackButton onClick={() => setActiveSection("check-in-out")} />
-            <h1>House manual</h1>
+          <div className="flex items-start gap-6">
+            <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
+            <div>
+              <h1>House manual</h1>
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+                Share details about AC controls, appliances, trash disposal, or parking spots.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2">
-            Share details about AC controls, appliances, trash disposal, or parking spots.
-          </p>
+
 
           <div className="pt-2">
             <textarea
@@ -1194,35 +1199,38 @@ function CheckOutInstructionsView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1>Check-out instructions</h1>
+      <div className="flex items-start gap-6">
+        <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
+        <div>
+          <h1>Check-out instructions</h1>
+          {/* Description text */}
+          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+            Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time.
+          </p>
+        </div>
       </div>
 
-      {/* Description text */}
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
-        Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time.
-      </p>
+
 
       {/* Card 1: Check-out time info */}
       <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
               </svg>
             </div>
             <div>
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-400 block">Check-out time</span>
+              <span className="text-sm font-medium text-[#727272] dark:text-zinc-400 block">Check-out time</span>
               <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{formattedCheckOut}</span>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setActiveSection("check-in-out")}
-            className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer"
+            className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer"
           >
             Change time
           </button>
@@ -1274,14 +1282,14 @@ function CheckOutInstructionsView({
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/40 p-6 text-center space-y-3">
-          <div className="mx-auto w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shadow-2xs">
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+          <div className="mx-auto w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shadow-2xs">
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
           </div>
           <div className="space-y-0.5">
-            <h3 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">No check-out instructions yet</h3>
-            <p className="text-[11px] text-zinc-400 dark:text-zinc-400 max-w-sm mx-auto">
+            <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">No check-out instructions yet</h3>
+            <p className="text-sm text-[#727272] dark:text-zinc-400 max-w-sm mx-auto">
               Add details about returning keys, taking out trash, or locking doors before leaving.
             </p>
           </div>
@@ -1292,9 +1300,9 @@ function CheckOutInstructionsView({
                 setDraftInstructions("");
                 setIsModalOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-1.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
             >
-              <span className="text-sm font-semibold">+</span>
+              <span className="text-lg font-medium">+</span>
               Add instructions
             </button>
           </div>
@@ -1786,7 +1794,7 @@ function LanguagesView({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSaveSection("language")}
-          className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-2xs transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-base font-normal text-[#1f1f1f] dark:text-zinc-200 shadow-2xs transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? "Saving..." : "Save changes"}
         </button>
