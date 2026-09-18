@@ -1560,18 +1560,18 @@ function InteractionPreferencesView({
   return (
     <div className="max-w-2xl space-y-6 pb-16 font-sans animate-in fade-in">
       {/* Header & Back Button */}
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => setActiveSection("arrival-guide")} />
+      <div className="flex items-start gap-6">
+        <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">Interaction with guests</h1>
-          <p className="mt-0.5 text-xs font-normal text-zinc-500 dark:text-zinc-400">
+          <h1>Interaction with guests</h1>
+          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
             Set expectations before guests arrive.
           </p>
         </div>
       </div>
 
       {/* Description */}
-      <p className="max-w-xl text-xs font-normal leading-relaxed text-zinc-500 dark:text-zinc-400">
+      <p className="max-w-xl text-sm font-normal leading-relaxed text-[#727272] dark:text-zinc-400">
         Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy.
       </p>
 
@@ -1584,7 +1584,7 @@ function InteractionPreferencesView({
               key={option}
               type="button"
               onClick={() => onChange?.(option)}
-              className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
+              className={`flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
                 ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                 : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 }`}
@@ -1617,7 +1617,7 @@ function InteractionPreferencesView({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSaveSection("description", "interaction")}
-          className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -1625,7 +1625,7 @@ function InteractionPreferencesView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
+          className="w-full rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white disabled:opacity-50 sm:w-auto"
         >
           Cancel
         </button>

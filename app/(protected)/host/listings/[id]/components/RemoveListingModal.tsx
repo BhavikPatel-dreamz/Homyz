@@ -112,10 +112,10 @@ export function RemoveListingModal({
           <>
             {/* Modal Heading */}
             <div className="px-6 pb-4">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">
                 Let us know why you&apos;ve changed your mind about hosting
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-1">Choose all that apply</p>
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Choose all that apply</p>
             </div>
 
             {/* Scrollable Accordion List */}
@@ -239,11 +239,11 @@ export function RemoveListingModal({
         {step === 2 && (
           <>
             <div className="px-6 pb-2">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">
                 Permanently remove this listing?
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-1">
-                You are removing <strong className="text-zinc-900 dark:text-zinc-100">{listingTitle}</strong> from Homyz.
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+                You are removing <strong className="text-[#1f1f1f] dark:text-zinc-100">{listingTitle}</strong> from Homyz.
               </p>
             </div>
 

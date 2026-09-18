@@ -607,15 +607,15 @@ export function GuidebooksManager({
         <div className="max-w-4xl space-y-6">
           {/* Header & Subtitle & Create Action */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200/80">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-6">
               <BackButton
                 onClick={() => setActiveSection("arrival-guide")}
-                className="flex"
+                className="flex mt-2"
                 title="Back to Arrival guide"
               />
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[#1F1F1F]">Guidebooks</h1>
-                <p className="text-xs text-zinc-500 font-normal mt-0.5">
+                <h1>Guidebooks</h1>
+                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
                   Share your favorite places and local tips with guests.
                 </p>
               </div>
@@ -624,7 +624,7 @@ export function GuidebooksManager({
             <button
               type="button"
               onClick={() => setViewMode("create")}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 px-5 py-2.5 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
             >
               <span>+</span>
               <span>Create guidebook</span>
@@ -642,20 +642,20 @@ export function GuidebooksManager({
 
           {/* Empty State */}
           {!isLoading && guidebooks.length === 0 && (
-            <div className="rounded-3xl border border-zinc-200 bg-white p-10 text-center flex flex-col items-center justify-center shadow-2xs space-y-4 max-w-lg mx-auto my-8">
-              <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-2xl">
+            <div className="rounded-lg border border-[#727272] bg-white p-10 text-center flex flex-col items-center justify-center shadow-2xs space-y-4 max-w-lg mx-auto my-8">
+              <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-400 flex items-center justify-center text-2xl">
                 📖
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-zinc-900">Create a guidebook</h3>
-                <p className="text-xs text-zinc-500 font-normal max-w-sm leading-relaxed">
+                <h3 className="text-lg font-normal text-[#1f1f1f]">Create a guidebook</h3>
+                <p className="text-sm text-zinc-500 font-normal max-w-sm leading-relaxed">
                   Help guests discover your favorite restaurants, cafés, attractions, shops, and authentic local experiences.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setViewMode("create")}
-                className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 px-6 py-2.5 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
               >
                 Create guidebook
               </button>
@@ -775,14 +775,14 @@ export function GuidebooksManager({
       {/* ========================================================= */}
       {viewMode === "create" && (
         <div className="max-w-xl space-y-6">
-          <div className="flex items-center gap-3 pb-2 border-b border-zinc-200/80">
+          <div className="flex items-start gap-6 pb-2 border-b border-zinc-200/80">
             <BackButton
               onClick={() => setViewMode("list")}
-              className="flex"
+              className="flex mt-2"
             />
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-[#1F1F1F]">Create a Guidebook</h2>
-              <p className="text-xs text-zinc-500 font-normal">
+              <h2>Create a Guidebook</h2>
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
                 Share your favorite places and authentic recommendations with your guests.
               </p>
             </div>
