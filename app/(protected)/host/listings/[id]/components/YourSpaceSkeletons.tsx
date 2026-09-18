@@ -82,7 +82,7 @@ export function SkeletonCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 shadow-2xs ${className}`}
+      className={`rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700 ${className}`}
     >
       {children}
     </div>

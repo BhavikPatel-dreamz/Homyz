@@ -645,7 +645,7 @@ export function AdminAboutHostView({
               placeholder="e.g. Respectful travelers who appreciate thoughtful architecture and quiet evenings."
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 disabled:bg-zinc-100 dark:disabled:bg-zinc-800/50 disabled:cursor-not-allowed"
             />
-            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 italic">
+            <p className="text-xs text-[#1f1f1f] dark:text-zinc-500 italic">
               Profile note only; does not affect guest eligibility or automated booking rules.
             </p>
           </div>

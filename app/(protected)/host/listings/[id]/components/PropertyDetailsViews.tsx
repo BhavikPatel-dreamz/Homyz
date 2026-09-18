@@ -380,7 +380,7 @@ export function PropertyDetailsViews({
           ) : (
             <div className="space-y-3 pt-1">
               {/* 1. Listing description */}
-              <div className="rounded-xl bg-zinc-100/90 border border-white p-4 space-y-3 shadow-[0px_2px_4px_0px_#00000040] duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
+              <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
                 <div
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
@@ -1605,7 +1605,7 @@ export function PropertyDetailsViews({
                               </div>
                             ) : (
                               <div className="size-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 text-base font-normal transition-all shrink-0">
-                                <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                                <Image src="/images/icons/add-icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain dark:invert" />
                               </div>
                             )}
                           </div>
@@ -1940,7 +1940,7 @@ export function PropertyDetailsViews({
                         onClick={() => expandAccessibilityFeature(feature.id)}
                         className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-[#1f1f1f] dark:group-hover:bg-zinc-700 text-lg font-normal transition-all cursor-pointer group duration-300"
                       >
-                        <Image src="/images/icons/add-Icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert" />
+                        <Image src="/images/icons/add-icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert" />
                       </button>
                     </div>
                   );

@@ -594,7 +594,7 @@ export function EditorSidebar({
           <div
             ref={sidebarScrollRef}
             onScroll={updateSidebarScrollThumb}
-            className="custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:h-[1850px] lg:pb-5 lg:pr-[55px]"
+            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "arrival" ? "lg:h-auto" : "lg:h-[1850px]"}`}
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
@@ -1463,7 +1463,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("directions")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
-                    ? "bg-[#ECE9FE] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >

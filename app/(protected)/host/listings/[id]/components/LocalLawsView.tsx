@@ -581,7 +581,7 @@ export function LocalLawsView({
                     {showAiPromptHelper && (
                       <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-3 animate-in fade-in">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                             <span className="text-amber-500">✨</span> Suggested AI Prompt for{" "}
                             {cityDisplay}
                           </span>
@@ -670,7 +670,7 @@ export function LocalLawsView({
                       <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
                         {activeArticle.author}
                       </span>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{activeArticle.date}</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{activeArticle.date}</span>
                     </div>
                   </div>
 
