@@ -3,11 +3,17 @@
 import React, { useState, useCallback, useTransition, useRef, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
+import { ListingSearchBar } from "@/components/listings/listing-search-bar";
+import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
+import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 
 // Lazy-load the map (Leaflet is heavy & client-only)
 const SearchMap = dynamic(
@@ -23,6 +29,7 @@ interface ListingsResultsClientProps {
   total: number;
   page: number;
   totalPages: number;
+  hasError?: boolean;
   priceRange?: { min: number; max: number };
   currentFilters: {
     city?: string;
@@ -35,6 +42,10 @@ interface ListingsResultsClientProps {
     checkIn?: string;
     checkOut?: string;
     guests?: number;
+    adults?: number;
+    children?: number;
+    infants?: number;
+    pets?: number;
     propertyType?: string;
     minPrice?: number;
     maxPrice?: number;
@@ -98,6 +109,101 @@ function SkeletonCard() {
 }
 
 // ─────────────────────────────────────────────
+// Selected Property Preview Card
+// ─────────────────────────────────────────────
+function SelectedPreviewCard({
+  listing,
+  onClose,
+}: {
+  listing: PublicListingDTO;
+  onClose: () => void;
+}) {
+  const currency = getCurrencyForCountry(listing.country);
+  const formattedPrice = formatListingPrice(listing.price, currency);
+
+  return (
+    <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
+      <Link
+        href={`/listings/${listing.customSlug || listing.id}`}
+        className="flex items-center gap-3 flex-1 min-w-0 group"
+      >
+        <div className="relative h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100">
+          {listing.photos && listing.photos.length > 0 ? (
+            <img
+              src={listing.photos[0]}
+              alt={listing.title || "Property"}
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-xl bg-zinc-100">🏡</div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-zinc-900 truncate group-hover:text-amber-950 transition-colors">
+              {listing.title || "Untitled property"}
+            </h4>
+            {typeof listing.rating === "number" && listing.rating > 0 && (
+              <span className="text-[11px] font-semibold text-zinc-800 flex items-center gap-0.5 shrink-0 ml-auto">
+                <svg className="w-3 h-3 text-amber-500 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                {listing.rating.toFixed(1)}
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-zinc-500 truncate">
+            {listing.city || listing.country || "Saudi Arabia"}
+            {typeof listing.distanceKm === "number" ? ` · ${listing.distanceKm} km away` : ""}
+          </p>
+          <div className="text-xs font-bold text-zinc-950 mt-0.5">
+            {formattedPrice}
+            <span className="text-[10px] font-normal text-zinc-500"> / night</span>
+          </div>
+        </div>
+      </Link>
+      <div className="flex items-center gap-1 self-start shrink-0">
+        {(() => {
+          const mapsUrl = getGoogleMapsUrl(listing);
+          if (!mapsUrl) return null;
+          return (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation();
+                trackGoogleMapsOpen(listing.id, "listing_marker_preview");
+              }}
+              aria-label={`Open ${listing.title || "property"} location in Google Maps`}
+              title="Open in Google Maps"
+              className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+          );
+        })()}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          aria-label="Close preview"
+          className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 hover:text-zinc-800 text-xs transition-colors cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
 export function ListingsResultsClient({
@@ -112,6 +218,7 @@ export function ListingsResultsClient({
   targetCoords,
   appliedRadiusKm,
   isRadiusExpanded,
+  hasError = false,
 }: ListingsResultsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -177,23 +284,140 @@ export function ListingsResultsClient({
     appliedRadiusKm && appliedRadiusKm <= 6
       ? 14
       : appliedRadiusKm && appliedRadiusKm <= 15
-      ? 12
-      : appliedRadiusKm && appliedRadiusKm <= 35
-      ? 11
-      : 10;
+      ? 13
+      : 12;
 
   // All listings accumulated (for infinite scroll)
   const [allListings, setAllListings] = useState(initialListings);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [total] = useState(initialTotal);
+  const [total, setTotal] = useState(initialTotal);
+  // Track desktop vs mobile/tablet breakpoint (lg: 1024px)
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => {
+      setIsDesktop(e.matches);
+    };
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
   // UI state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(true);
+  const [mobileViewMode, setMobileViewMode] = useState<"combined" | "map">("combined");
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<{ neLat: number; neLng: number; swLat: number; swLng: number } | null>(null);
+
+  // Card element refs for scroll-into-view
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Abort controller ref to protect against stale/race-condition infinite scroll queries
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Impression telemetry for property cards (fires once per card per session)
+  const seenImpressionsRef = useRef<Set<string>>(new Set());
+
+  // Search query tracking to emit listing_page_view and listing_no_results
+  const prevSearchRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const currentQueryString = searchParams.toString();
+    if (prevSearchRef.current !== currentQueryString) {
+      prevSearchRef.current = currentQueryString;
+
+      trackListingEvent({
+        eventType: "listing_page_view",
+        destination:
+          searchParams.get("destination") ||
+          currentFilters.placeName ||
+          currentFilters.city ||
+          locationContextName ||
+          null,
+        city: currentFilters.city || searchParams.get("city") || null,
+        placeName: currentFilters.placeName || locationContextName || null,
+        lat: typeof currentFilters.lat === "number" ? currentFilters.lat : targetCoords?.lat ?? null,
+        lng: typeof currentFilters.lng === "number" ? currentFilters.lng : targetCoords?.lng ?? null,
+        checkIn: currentFilters.checkIn || searchParams.get("checkIn") || null,
+        checkOut: currentFilters.checkOut || searchParams.get("checkOut") || null,
+        guestCount: currentFilters.guests || Number(searchParams.get("guests")) || 1,
+        resultCount: total,
+        sortOption: currentFilters.sortBy ?? "recommended",
+      });
+
+      if (total === 0) {
+        trackListingEvent({
+          eventType: "listing_no_results",
+          destination:
+            searchParams.get("destination") ||
+            currentFilters.placeName ||
+            currentFilters.city ||
+            locationContextName ||
+            null,
+          checkIn: currentFilters.checkIn || null,
+          checkOut: currentFilters.checkOut || null,
+          guestCount: currentFilters.guests || 1,
+          resultCount: 0,
+        });
+      }
+    }
+  }, [searchParams, currentFilters, locationContextName, targetCoords, total]);
+
+  // Card impression observer: triggers property_card_view when entering viewport
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const target = entry.target as HTMLElement;
+            const listingId = target.getAttribute("data-listing-id");
+            if (listingId && !seenImpressionsRef.current.has(listingId)) {
+              seenImpressionsRef.current.add(listingId);
+              trackListingEvent({
+                eventType: "property_card_view",
+                propertyId: listingId,
+                resultCount: total,
+              });
+            }
+          }
+        }
+      },
+      { threshold: 0.2 },
+    );
+
+    cardRefs.current.forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [allListings, total]);
+
+  // Derived effective highlight ID: hover takes temporary precedence, falls back to persistent selection
+  const effectiveHighlightedId = hoveredPropertyId || selectedPropertyId;
+
+  // Selected listing object for map preview card
+  const selectedListing = selectedPropertyId
+    ? allListings.find((l) => l.id === selectedPropertyId) || null
+    : null;
+
+  const handleMarkerClick = useCallback((listingId: string) => {
+    setSelectedPropertyId(listingId);
+    trackListingEvent({
+      eventType: "map_marker_click",
+      propertyId: listingId,
+    });
+    const cardEl = cardRefs.current.get(listingId);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
 
   // Filter panel state — initialised from current URL params
   const [draftMinPrice, setDraftMinPrice] = useState<number>(
@@ -251,6 +475,11 @@ export function ListingsResultsClient({
 
   // Sort change — immediate URL navigation
   const handleSortChange = (sort: SortBy) => {
+    trackListingEvent({
+      eventType: "listing_sort_changed",
+      sortOption: sort,
+      resultCount: total,
+    });
     startTransition(() => {
       router.push(buildUrl({ sortBy: sort === "recommended" ? null : sort }));
     });
@@ -262,6 +491,12 @@ export function ListingsResultsClient({
     const next = current.includes(amenityId)
       ? current.filter((a) => a !== amenityId)
       : [...current, amenityId];
+    trackListingEvent({
+      eventType: "listing_filter_applied",
+      filterKey: `amenity:${amenityId}`,
+      metadata: { action: current.includes(amenityId) ? "remove" : "add", amenities: next },
+      resultCount: total,
+    });
     startTransition(() => {
       router.push(buildUrl({ amenities: next.length ? next.join(",") : null }));
     });
@@ -270,6 +505,21 @@ export function ListingsResultsClient({
   // Apply filter panel
   const handleApplyFilters = () => {
     setIsFilterOpen(false);
+    trackListingEvent({
+      eventType: "listing_filter_applied",
+      filterKey: "filter_modal",
+      metadata: {
+        minPrice: draftMinPrice,
+        maxPrice: draftMaxPrice,
+        propertyType: draftPropertyType,
+        amenities: draftAmenities,
+        bedrooms: draftBedrooms,
+        bathrooms: draftBathrooms,
+        beds: draftBeds,
+        instantBook: draftInstantBook,
+      },
+      resultCount: total,
+    });
     startTransition(() => {
       router.push(
         buildUrl({
@@ -302,6 +552,12 @@ export function ListingsResultsClient({
   const handleBoundsChange = useCallback(
     (bounds: { neLat: number; neLng: number; swLat: number; swLng: number }) => {
       setMapBounds(bounds);
+      trackListingEvent({
+        eventType: "map_area_search",
+        lat: (bounds.neLat + bounds.swLat) / 2,
+        lng: (bounds.neLng + bounds.swLng) / 2,
+        metadata: bounds,
+      });
       const params = new URLSearchParams(searchParams.toString());
       params.set("neLat", String(bounds.neLat.toFixed(6)));
       params.set("neLng", String(bounds.neLng.toFixed(6)));
@@ -341,13 +597,24 @@ export function ListingsResultsClient({
     if (isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const nextPage = currentPage + 1;
+    trackListingEvent({
+      eventType: "load_more",
+      metadata: { nextPage, currentCount: allListings.length },
+    });
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(nextPage));
 
     try {
       const res = await fetch(`/api/v1/listings?${params.toString()}`, {
         credentials: "same-origin",
+        signal: controller.signal,
       });
       if (res.ok) {
         const data = await res.json();
@@ -357,19 +624,26 @@ export function ListingsResultsClient({
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;
         setHasMore(nextPage < totalPages);
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === "AbortError") return;
       // silently fail
     } finally {
       setIsLoadingMore(false);
     }
   };
 
-  // Sync listings when server data changes (filter navigation)
+  // Sync listings and total when server data changes (filter / search navigation)
   useEffect(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setAllListings(initialListings);
     setCurrentPage(initialPage);
     setHasMore(initialPage < initialTotalPages);
-  }, [initialListings, initialPage, initialTotalPages]);
+    setTotal(initialTotal);
+    // Clear or maintain selectedPropertyId if still present in new search result set
+    setSelectedPropertyId((prev) => (prev && initialListings.some((l) => l.id === prev) ? prev : null));
+  }, [initialListings, initialPage, initialTotalPages, initialTotal]);
 
   // ── Stepper helper ───────────────────────────
   function Stepper({
@@ -419,6 +693,63 @@ export function ListingsResultsClient({
   // ── Render ────────────────────────────────────
   return (
     <>
+      {/* ── Listing Search Bar (Homepage-identical) ── */}
+      <div className="w-full flex justify-center pb-6">
+        <ListingSearchBar />
+      </div>
+
+      {/* ── Results Summary Bar ── */}
+      <ResultsSummaryBar
+        total={total}
+        locationContextName={locationContextName || currentFilters.placeName || currentFilters.city}
+        checkIn={currentFilters.checkIn}
+        checkOut={currentFilters.checkOut}
+        guests={currentFilters.guests}
+        pets={currentFilters.pets}
+        isPending={isPending}
+      />
+
+      {/* ── Mobile Map on Top (Phase 5: Section 2 & 3) ── */}
+      {!isDesktop && mobileViewMode === "combined" && (
+        <div className="block lg:hidden w-full h-[270px] sm:h-[320px] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs relative mb-4">
+          <SearchMap
+            listings={allListings}
+            highlightedId={effectiveHighlightedId}
+            onBoundsChange={handleBoundsChange}
+            onMarkerClick={handleMarkerClick}
+            checkIn={currentFilters.checkIn}
+            checkOut={currentFilters.checkOut}
+            guests={currentFilters.guests}
+            center={mapCenter}
+            zoom={mapZoom}
+            className="w-full h-full"
+          />
+
+          {/* Expand to Map-Focused Mode Button */}
+          <button
+            type="button"
+            onClick={() => setMobileViewMode("map")}
+            className="absolute top-3 right-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 shadow-md text-xs font-semibold text-zinc-800 hover:bg-zinc-100 flex items-center gap-1.5 cursor-pointer"
+            aria-label="Expand to map-focused mode"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+            </svg>
+            <span>Focus map</span>
+          </button>
+
+          {/* Selected Property Preview (when a marker is tapped on mobile inline map) */}
+          {selectedListing && (
+            <div className="absolute bottom-12 left-3 right-3 z-[1000] pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-sm mx-auto">
+              <SelectedPreviewCard
+                listing={selectedListing}
+                onClose={() => setSelectedPropertyId(null)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Top Control Bar ─────────────── */}
       <div className="flex items-center gap-2 pb-5 overflow-x-auto no-scrollbar">
         {/* Sort */}
@@ -482,6 +813,7 @@ export function ListingsResultsClient({
             <button
               key={am.id}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => handleAmenityChip(am.id)}
               className={`rounded-full text-xs font-medium px-3.5 py-1.5 transition-all whitespace-nowrap shrink-0 ${
                 isSelected
@@ -496,52 +828,75 @@ export function ListingsResultsClient({
       </div>
 
       {/* ── Results Area ────────────────── */}
-      <div className="flex gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: listings list */}
-        <div className={`flex-1 min-w-0 ${showMap ? "lg:max-w-[55%]" : ""}`}>
-          {/* Result count */}
-          <p className="text-xs text-zinc-500 font-normal mb-5">
-            {isPending ? (
-              <span className="inline-block h-3 w-32 bg-zinc-200 rounded animate-pulse" />
-            ) : (
-              <>
-                {total} {total === 1 ? "stay" : "stays"} found
-                {currentFilters.city ? ` in ${currentFilters.city}` : ""}
-              </>
-            )}
-          </p>
-
+        <div className={`w-full min-w-0 ${showMap ? "lg:w-[56%] xl:w-[58%]" : "w-full"}`}>
           {isPending ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
+              {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
+            </div>
+          ) : hasError ? (
+            /* ── Error state ── */
+            <div className="py-16 text-center space-y-4 max-w-md mx-auto">
+              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto text-2xl text-red-500">
+                ⚠️
+              </div>
+              <div className="space-y-1.5">
+                <h2 className="text-base sm:text-lg font-bold text-zinc-900">
+                  We couldn&apos;t load these properties
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-500 font-normal leading-relaxed">
+                  Something went wrong while searching. Please try again or clear your filters.
+                </p>
+              </div>
+              <div className="pt-2 flex items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    startTransition(() => {
+                      router.refresh();
+                    });
+                  }}
+                  className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                >
+                  <span>Retry</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                  </svg>
+                </button>
+              </div>
             </div>
           ) : allListings.length === 0 ? (
             /* ── No results ── */
             <div className="py-20 text-center space-y-4 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto text-xl text-zinc-400">
+              <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center mx-auto text-xl text-zinc-400">
                 🔍
               </div>
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold text-zinc-900">No stays match your search</h2>
-                <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-                  Try adjusting your destination, dates, or clearing some filters to find available
-                  homes.
+              <div className="space-y-1.5">
+                <h2 className="text-base sm:text-lg font-bold text-zinc-900">No properties found for these search criteria</h2>
+                <p className="text-xs sm:text-sm text-zinc-500 font-normal leading-relaxed">
+                  Try adjusting your destination, dates, or clearing some filters to find available homes.
                 </p>
               </div>
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-                <a
-                  href="/listings"
-                  className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all inline-block"
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    startTransition(() => {
+                      router.push("/listings");
+                    });
+                  }}
+                  className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all inline-block cursor-pointer"
                 >
                   Clear all filters
-                </a>
+                </button>
                 {currentFilters.amenities && currentFilters.amenities.length > 0 && (
                   <button
                     type="button"
                     onClick={() => startTransition(() => router.push(buildUrl({ amenities: null })))}
-                    className="rounded-full border border-zinc-300 text-zinc-700 font-semibold text-xs px-6 py-2.5 transition-all hover:bg-zinc-50"
+                    className="rounded-full border border-zinc-300 text-zinc-700 font-semibold text-xs px-6 py-2.5 transition-all hover:bg-zinc-50 cursor-pointer"
                   >
                     Remove amenity filters
                   </button>
@@ -557,16 +912,28 @@ export function ListingsResultsClient({
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
                 }`}
               >
-                {allListings.map((item) => (
+                {allListings.map((item, index) => (
                   <div
                     key={item.id}
-                    onMouseEnter={() => setHighlightedId(item.id)}
-                    onMouseLeave={() => setHighlightedId(null)}
+                    data-listing-id={item.id}
+                    ref={(el) => {
+                      if (el) cardRefs.current.set(item.id, el);
+                      else cardRefs.current.delete(item.id);
+                    }}
+                    onMouseEnter={() => setHoveredPropertyId(item.id)}
+                    onMouseLeave={() => setHoveredPropertyId(null)}
+                    onClick={() => setSelectedPropertyId(item.id)}
+                    className={`transition-all duration-200 rounded-[24px] ${
+                      selectedPropertyId === item.id
+                        ? "ring-2 ring-zinc-950 shadow-lg"
+                        : ""
+                    }`}
                   >
                     <ListingCard
                       listing={item}
                       initialFavorite={favoriteIds.has(item.id)}
                       targetLocationName={locationContextName}
+                      priority={index < (isDesktop ? 4 : 2)}
                     />
                   </div>
                 ))}
@@ -588,12 +955,13 @@ export function ListingsResultsClient({
         </div>
 
         {/* Right: sticky map (desktop) */}
-        {showMap && (
-          <div className="hidden lg:block sticky top-20 w-[45%] shrink-0 h-[calc(100vh-120px)] rounded-2xl overflow-hidden border border-zinc-200">
+        {isDesktop && showMap && (
+          <div className="hidden lg:block w-full lg:w-[44%] xl:w-[42%] shrink-0 sticky top-[84px] h-[calc(100vh-104px)] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-10 isolate relative">
             <SearchMap
               listings={allListings}
-              highlightedId={highlightedId}
+              highlightedId={effectiveHighlightedId}
               onBoundsChange={handleBoundsChange}
+              onMarkerClick={handleMarkerClick}
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
               guests={currentFilters.guests}
@@ -601,32 +969,55 @@ export function ListingsResultsClient({
               zoom={mapZoom}
               className="w-full h-full"
             />
+
+            {/* Selected Property Preview on Desktop Map */}
+            {selectedListing && (
+              <div className="absolute bottom-14 left-4 right-4 z-[1000] pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-sm">
+                <SelectedPreviewCard
+                  listing={selectedListing}
+                  onClose={() => setSelectedPropertyId(null)}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Mobile map view */}
-      {showMap && (
-        <div className="lg:hidden fixed inset-0 z-20 bg-white flex flex-col pt-16 pb-20">
-          <div className="p-3 border-b border-zinc-100 flex items-center justify-between bg-white">
-            <span className="text-xs font-semibold text-zinc-900">
-              {currentFilters.placeName || currentFilters.city
-                ? `Map: ${currentFilters.placeName || currentFilters.city}`
-                : "Map view"}
-            </span>
+      {/* ── Mobile Map-Focused Mode (Phase 5: Section 7, 8, 9, 10, 11) ── */}
+      {!isDesktop && mobileViewMode === "map" && (
+        <ModalOverlay className="lg:hidden fixed inset-0 z-40 bg-white flex flex-col pt-16 pb-6 animate-in fade-in">
+          {/* Map Header Bar */}
+          <div className="p-3.5 border-b border-zinc-100 flex items-center justify-between bg-white shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-zinc-900 truncate">
+                {currentFilters.placeName || currentFilters.city
+                  ? `Map: ${currentFilters.placeName || currentFilters.city}`
+                  : "Map view"}
+              </span>
+              <span className="text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full shrink-0">
+                {total} {total === 1 ? "place" : "places"}
+              </span>
+            </div>
             <button
               type="button"
-              onClick={() => setShowMap(false)}
-              className="text-xs font-medium text-zinc-600 bg-zinc-100 px-3 py-1 rounded-full"
+              onClick={() => setMobileViewMode("combined")}
+              className="text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+              aria-label="Back to listings"
             >
-              Close map
+              <span>List view</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
           </div>
+
+          {/* Full Viewport Map */}
           <div className="flex-1 relative">
             <SearchMap
               listings={allListings}
-              highlightedId={highlightedId}
+              highlightedId={effectiveHighlightedId}
               onBoundsChange={handleBoundsChange}
+              onMarkerClick={handleMarkerClick}
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
               guests={currentFilters.guests}
@@ -634,31 +1025,82 @@ export function ListingsResultsClient({
               zoom={mapZoom}
               className="w-full h-full"
             />
+
+            {/* Floating Compact Result Indicator (Section 7, 8, 9) */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] pb-[env(safe-area-inset-bottom)]">
+              <button
+                type="button"
+                onClick={() => setMobileViewMode("combined")}
+                className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold px-5 py-2.5 rounded-full shadow-2xl text-xs cursor-pointer transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                aria-label={`Show ${total} ${total === 1 ? "place" : "places"}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>Show {total} {total === 1 ? "place" : "places"}</span>
+              </button>
+            </div>
+
+            {/* Selected Property Preview at bottom of map (Section 10, 11, 12, 13) */}
+            {selectedListing && (
+              <div className="absolute bottom-20 left-3 right-3 z-[1001] pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-sm mx-auto pb-[env(safe-area-inset-bottom)]">
+                <SelectedPreviewCard
+                  listing={selectedListing}
+                  onClose={() => setSelectedPropertyId(null)}
+                />
+              </div>
+            )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
-      {/* ── Map Toggle FAB (mobile / hide map button) ── */}
+      {/* ── Map Toggle FAB (mobile toggle / desktop expand) ── */}
       <button
         type="button"
-        onClick={() => setShowMap((v) => !v)}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full bg-zinc-900 text-white px-5 py-2.5 text-sm font-semibold shadow-xl hover:bg-zinc-800 transition-colors"
+        onClick={() => {
+          if (isDesktop) {
+            setShowMap((v) => !v);
+          } else {
+            setMobileViewMode((prev) => (prev === "map" ? "combined" : "map"));
+          }
+        }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full bg-zinc-900 text-white px-5 py-2.5 text-sm font-semibold shadow-xl hover:bg-zinc-800 transition-all cursor-pointer"
+        aria-label="Toggle map view"
       >
-        {showMap ? (
-          <>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            </svg>
-            Show list
-          </>
-        ) : (
-          <>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-            </svg>
-            Show map
-          </>
-        )}
+        <span className="hidden lg:inline-flex items-center gap-2">
+          {showMap ? (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              </svg>
+              Hide map
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+              </svg>
+              Show map
+            </>
+          )}
+        </span>
+        <span className="inline-flex lg:hidden items-center gap-2">
+          {mobileViewMode === "map" ? (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              Show list
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+              </svg>
+              Map view
+            </>
+          )}
+        </span>
       </button>
 
       {/* ── Filter Panel Modal ───────────── */}

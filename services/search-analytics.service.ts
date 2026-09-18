@@ -2,6 +2,11 @@ import { getCache, setCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/keys";
 
 export type SearchAnalyticsEvent = {
+  eventType?: string | null;
+  propertyId?: string | null;
+  action?: string | null;
+  filterKey?: string | null;
+  sortOption?: string | null;
   destination?: string | null;
   destinationType?: string | null;
   city?: string | null;
@@ -14,6 +19,7 @@ export type SearchAnalyticsEvent = {
   guestCount?: number;
   timestamp: string;
   resultCount?: number;
+  metadata?: Record<string, unknown> | null;
 };
 
 export async function trackHomepageSearchEvent(
@@ -24,6 +30,11 @@ export async function trackHomepageSearchEvent(
     : null;
 
   const safeEvent: SearchAnalyticsEvent = {
+    eventType: typeof event.eventType === "string" ? event.eventType.slice(0, 50) : null,
+    propertyId: typeof event.propertyId === "string" ? event.propertyId.slice(0, 100) : null,
+    action: typeof event.action === "string" ? event.action.slice(0, 50) : null,
+    filterKey: typeof event.filterKey === "string" ? event.filterKey.slice(0, 50) : null,
+    sortOption: typeof event.sortOption === "string" ? event.sortOption.slice(0, 50) : null,
     destination: safeDestination,
     destinationType: typeof event.destinationType === "string" ? event.destinationType.slice(0, 60) : null,
     city: typeof event.city === "string" ? event.city.trim().slice(0, 80) : null,
@@ -36,6 +47,7 @@ export async function trackHomepageSearchEvent(
     guestCount: Number.isFinite(event.guestCount) ? Math.max(1, Number(event.guestCount)) : 1,
     timestamp: event.timestamp || new Date().toISOString(),
     resultCount: typeof event.resultCount === "number" && Number.isFinite(event.resultCount) ? Math.max(0, Math.trunc(event.resultCount)) : undefined,
+    metadata: event.metadata && typeof event.metadata === "object" ? event.metadata : undefined,
   };
 
   const key = CACHE_KEYS.SEARCH_ANALYTICS();

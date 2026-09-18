@@ -11,6 +11,7 @@ import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -19,9 +20,10 @@ const BecomeHostModal = dynamic(
 
 type AppHeaderProps = {
   showBottomBorder?: boolean;
+  showSearchBar?: boolean;
 };
 
-export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
+export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -47,6 +49,7 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   }, []);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
+  const isListingRoute = showSearchBar === true;
   const routeHasHeaderDivider = !["/", "/dashboard", "/profile", "/profile-management"].some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
   );
@@ -79,15 +82,17 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
   };
 
   const navItems = [
+    { href: "/profile", label: "Profile" },
+    { href: "/bookings", label: "Trips" },
+    { href: "/host/messages", label: "Messages" },
+    { href: "/profile/tab/notifications", label: "Notifications" },
+    { href: "/profile-management", label: "Account settings" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/host/today", label: "Today", requireHost: true },
     { href: "/host/calendar", label: "Calendar", requireHost: true },
     { href: "/host/listings", label: "Your listings", requireHost: true },
-    { href: "/host/messages", label: "Messages", requireHost: true },
-    { href: "/bookings", label: "Bookings" },
     { href: "/host/onboarding", label: "Become a Host / Application" },
     { href: "/admin", label: "Admin", requireAdmin: true },
-    { href: "/profile", label: "Profile" },
   ];
 
   return (
@@ -117,22 +122,38 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
             <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
           </Link>
 
-          <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label="Homyz home">
-            <Image
-              src="/images/brand/homyz-logo-dark-v2.svg"
-              alt="Stay like a homie."
-              width={200}
-              height={53}
-              className="h-auto w-[149px] transition-transform"
-              priority
-            />
-          </Link>
+          {isListingRoute ? (
+            <>
+              {/* Mobile Listing Header Search */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 block md:hidden w-full max-w-[240px] xs:max-w-[280px]">
+                <ListingHeaderSearch />
+              </div>
 
-          <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
-            <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
-              <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
-            </span>
-          </Link>
+              {/* Desktop Listing Header Search */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+                <ListingHeaderSearch />
+              </div>
+            </>
+          ) : (
+            <>
+              <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label="Homyz home">
+                <Image
+                  src="/images/brand/homyz-logo-dark-v2.svg"
+                  alt="Stay like a homie."
+                  width={200}
+                  height={53}
+                  className="h-auto w-[149px] transition-transform"
+                  priority
+                />
+              </Link>
+
+              <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
+                <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
+                  <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
+                </span>
+              </Link>
+            </>
+          )}
 
           <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5" ref={menuRef}>
             {user ? (
@@ -330,6 +351,17 @@ export function AppHeader({ showBottomBorder }: AppHeaderProps = {}) {
                     </div>
 
                     <div className="border-t border-zinc-100 pt-2 mt-1 flex flex-col gap-1">
+                      <Link
+                        href="/help"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-xl transition-colors text-left"
+                      >
+                        <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{t("header_help_centre")}</span>
+                      </Link>
+
                       <button
                         type="button"
                         onClick={() => {

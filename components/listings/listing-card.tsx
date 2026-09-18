@@ -2,8 +2,38 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { PublicListingDTO } from "@/services/mappers";
+import { useRouter } from "next/navigation";
+import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import type { PublicListingDTO } from "@/services/mappers";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
+// ─── Discount Helpers ──────────────────────────────────────────────────────────
+type DiscountEntry =
+  | boolean
+  | { discountType: string; discountPercentage: number };
+
+interface DiscountsJson {
+  weekly?: DiscountEntry;
+  monthly?: DiscountEntry;
+  new_listing?: DiscountEntry;
+  last_minute?: DiscountEntry;
+  [key: string]: DiscountEntry | undefined;
+}
+
+function getDiscountPct(entry?: DiscountEntry): number | null {
+  if (!entry || typeof entry === "boolean") return null;
+  if (
+    typeof entry === "object" &&
+    entry.discountType === "DISCOUNT" &&
+    typeof entry.discountPercentage === "number" &&
+    entry.discountPercentage > 0
+  ) {
+    return entry.discountPercentage;
+  }
+  return null;
+}
+
+// ─── Props ─────────────────────────────────────────────────────────────────────
 export interface ListingCardProps {
   listing: PublicListingDTO | {
     id: string;
@@ -11,17 +41,19 @@ export interface ListingCardProps {
     city?: string | null;
     country?: string | null;
     price: number;
-    photos?: string[];
-    guests?: number;
-    bedrooms?: number;
-    beds?: number;
-    bathrooms?: number;
+    photos?: string[] | null;
+    guests?: number | null;
+    bedrooms?: number | null;
+    beds?: number | null;
+    bathrooms?: number | null;
     propertyType?: string | null;
     listingType?: string | null;
     isFeatured?: boolean;
     rating?: number | null;
-    reviewsCount?: number;
+    reviewsCount?: number | null;
     distanceKm?: number | null;
+    discounts?: unknown;
+    customSlug?: string | null;
   };
   className?: string;
   /** Optional contextual landmark / place name (e.g. "Burj Khalifa") */
@@ -30,44 +62,81 @@ export interface ListingCardProps {
   initialFavorite?: boolean;
   /** Pass false to hide the heart button entirely (e.g., on admin pages). */
   showFavorite?: boolean;
+  /** Pass true to prioritize loading for above-the-fold cards (LCP optimization) */
+  priority?: boolean;
 }
 
+// ─── Component ─────────────────────────────────────────────────────────────────
 export function ListingCard({
   listing,
   className = "",
   targetLocationName,
   initialFavorite = false,
   showFavorite = true,
+  priority = false,
 }: ListingCardProps) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
 
+  // Sync if parent passes a new initial state (e.g., after server re-render)
   useEffect(() => {
     setIsFavorite(initialFavorite);
   }, [initialFavorite]);
 
+  // Broadcast sync: keep sibling card instances in sync across the page
   useEffect(() => {
     function onFavoriteChanged(event: Event) {
-      const customEvent = event as CustomEvent<{ listingId: string; isFavorite: boolean }>;
-      if (customEvent.detail && customEvent.detail.listingId === listing.id) {
-        setIsFavorite(customEvent.detail.isFavorite);
+      const e = event as CustomEvent<{ listingId: string; isFavorite: boolean }>;
+      if (e.detail?.listingId === listing.id) {
+        setIsFavorite(e.detail.isFavorite);
       }
     }
     window.addEventListener("homyz:favorite-changed", onFavoriteChanged);
     return () => window.removeEventListener("homyz:favorite-changed", onFavoriteChanged);
   }, [listing.id]);
 
-  const coverPhoto =
-    Array.isArray(listing.photos) && listing.photos.length > 0 && !imageError
-      ? listing.photos[0]
-      : null;
+  // ── Derived display values ──────────────────────────────────────────────────
+  const photos = Array.isArray(listing.photos) ? listing.photos : [];
+  const coverPhoto = photos.length > 0 && !imageError ? photos[0] : null;
 
-  const formattedPrice = Math.round(listing.price / 100);
+  const currency = getCurrencyForCountry(listing.country);
+  const basePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
+
+  // Discount parsing
+  const rawDiscounts = (listing as { discounts?: unknown }).discounts as DiscountsJson | null | undefined;
+  const weeklyPct = getDiscountPct(rawDiscounts?.weekly);
+  const monthlyPct = getDiscountPct(rawDiscounts?.monthly);
+  // Priority: weekly > monthly
+  const activePct = weeklyPct ?? monthlyPct ?? null;
+  const discountedPrice = activePct != null ? basePrice * (1 - activePct / 100) : null;
+
+  const formattedBasePrice = formatListingPrice(basePrice, currency);
+  const formattedDiscountedPrice =
+    discountedPrice != null ? formatListingPrice(discountedPrice, currency) : null;
+
+  const discountLabel =
+    weeklyPct != null ? "Weekly discount" : monthlyPct != null ? "Monthly discount" : null;
+
+  // Rating
+  const numericRating =
+    typeof listing.rating === "number" && listing.rating > 0 ? listing.rating : null;
+  const reviewCount =
+    typeof (listing as { reviewsCount?: number | null }).reviewsCount === "number"
+      ? ((listing as { reviewsCount?: number | null }).reviewsCount as number)
+      : 0;
+
+  // Location
   const locationString = listing.city
     ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
-    : listing.country || "Saudi Arabia";
+    : listing.country || "";
 
+  // Navigation target — prefer customSlug when available
+  const slug = (listing as { customSlug?: string | null }).customSlug;
+  const targetHref = `/listings/${slug || listing.id}`;
+
+  // ── Favorite action ─────────────────────────────────────────────────────────
   const toggleFavorite = useCallback(
     async (e: React.MouseEvent) => {
       e.preventDefault();
@@ -75,25 +144,37 @@ export function ListingCard({
       if (isFavoriting) return;
 
       const next = !isFavorite;
-      setIsFavorite(next); // Optimistic update
+      setIsFavorite(next); // optimistic
       setIsFavoriting(true);
+
+      trackListingEvent({
+        eventType: next ? "favorite_add" : "favorite_remove",
+        propertyId: listing.id,
+      });
 
       try {
         const res = await fetch(`/api/v1/favorites/${listing.id}`, {
           method: next ? "POST" : "DELETE",
           credentials: "same-origin",
         });
+
         if (res.status === 401) {
-          // Not logged in — revert and redirect
+          // Not authenticated — revert and redirect to login, preserving return URL
           setIsFavorite(!next);
-          window.location.href = `/login?next=/listings/${listing.id}`;
-          return;
-        }
-        if (!res.ok) {
-          setIsFavorite(!next); // Revert on error
+          const returnUrl =
+            typeof window !== "undefined"
+              ? window.location.pathname + window.location.search
+              : targetHref;
+          router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
           return;
         }
 
+        if (!res.ok) {
+          setIsFavorite(!next); // revert on any other error
+          return;
+        }
+
+        // Broadcast to sync any other instances of the same card on page
         if (typeof window !== "undefined") {
           window.dispatchEvent(
             new CustomEvent("homyz:favorite-changed", {
@@ -102,33 +183,43 @@ export function ListingCard({
           );
         }
       } catch {
-        setIsFavorite(!next); // Revert on network error
+        setIsFavorite(!next); // revert on network error
       } finally {
         setIsFavoriting(false);
       }
     },
-    [listing.id, isFavorite, isFavoriting],
+    [listing.id, isFavorite, isFavoriting, targetHref, router],
   );
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Link
-      href={`/listings/${listing.id}`}
+      href={targetHref}
+      aria-label={listing.title || "View property"}
+      onClick={() => {
+        trackListingEvent({
+          eventType: "property_card_click",
+          propertyId: listing.id,
+        });
+      }}
       className={`group block overflow-hidden rounded-[22px] border border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md transition-all duration-200 text-left ${className}`}
     >
-      {/* Media Aspect Container */}
+      {/* ── Image ── */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
         {coverPhoto ? (
           <img
             src={coverPhoto}
-            alt={listing.title || "Listing preview"}
+            alt={listing.title || "Property photo"}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            decoding={priority ? "sync" : "async"}
+            {...(priority ? { fetchPriority: "high" as const } : {})}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
-            <span className="text-3xl mb-1">🏡</span>
-            <span className="text-xs font-medium text-zinc-400">Photo preview</span>
+            <span className="text-3xl mb-1" aria-hidden="true">🏡</span>
+            <span className="text-xs font-medium text-zinc-400">No photo yet</span>
           </div>
         )}
 
@@ -139,11 +230,19 @@ export function ListingCard({
           </span>
         )}
 
-        {/* Favorite Heart Button */}
+        {/* Guest Favorite / Superhost: Backend gap — isGuestFavorite and isSuperhost
+            are NOT yet in PublicListingDTO (not in Prisma schema).
+            These badges will be rendered here once the backend field is added. */}
+
+        {/* Favorite Heart */}
         {showFavorite && (
           <button
             type="button"
-            aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+            aria-label={
+              isFavorite
+                ? `Remove ${listing.title || "property"} from favorites`
+                : `Save ${listing.title || "property"} to favorites`
+            }
             aria-pressed={isFavorite}
             onClick={toggleFavorite}
             disabled={isFavoriting}
@@ -178,40 +277,85 @@ export function ListingCard({
         )}
       </div>
 
-      {/* Card Body */}
+      {/* ── Card Body ── */}
       <div className="p-3.5 space-y-1">
+        {/* Row 1: Title + Rating */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold text-zinc-900 truncate group-hover:text-amber-950 transition-colors">
+          <h3 className="text-sm font-semibold text-zinc-900 truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
             {listing.title || "Untitled property"}
           </h3>
-          {/* Rating only rendered if real numeric rating exists */}
-          {typeof listing.rating === "number" && listing.rating > 0 && (
+
+          {/* Rating (only when real data exists) */}
+          {numericRating !== null ? (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-800 shrink-0">
-              <svg className="w-3.5 h-3.5 text-amber-500 fill-current" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="w-3.5 h-3.5 text-amber-500 fill-current"
+                viewBox="0 0 24 24"
+              >
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              {listing.rating.toFixed(1)}
+              <span>
+                {numericRating.toFixed(2).replace(/\.?0+$/, "") || numericRating.toFixed(1)}
+                {reviewCount > 0 && (
+                  <span className="text-zinc-500 font-normal ml-0.5">
+                    ({reviewCount.toLocaleString()})
+                  </span>
+                )}
+              </span>
+            </span>
+          ) : (
+            /* No reviews yet — show "New" label instead of fake 0.0 */
+            <span className="text-[10px] font-medium text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-full shrink-0">
+              New
             </span>
           )}
         </div>
 
+        {/* Row 2: Location + distance */}
         <p className="text-xs text-zinc-500 font-normal truncate">
           {locationString}
-          {typeof listing.distanceKm === "number"
+          {typeof listing.distanceKm === "number" && isFinite(listing.distanceKm)
             ? targetLocationName
               ? ` · ${listing.distanceKm} km from ${targetLocationName}`
               : ` · ${listing.distanceKm} km away`
             : ""}
         </p>
 
-        <p className="text-base text-[#727272] font-normal truncate">
-          {listing.propertyType || "Home"} · {listing.guests || 1}{" "}
-          {listing.guests === 1 ? "guest" : "guests"}
+        {/* Row 3: Property type + guest capacity */}
+        <p className="text-xs text-zinc-500 font-normal truncate">
+          {listing.propertyType || "Home"} · {listing.guests ?? 1}{" "}
+          {(listing.guests ?? 1) === 1 ? "guest" : "guests"}
         </p>
 
-        <div className="pt-1 flex items-baseline gap-1 text-xs">
-          <span className="font-semibold text-zinc-950 text-sm">SAR {formattedPrice}</span>
-          <span className="text-zinc-500 font-normal">/ night</span>
+        {/* Row 4: Price (with discount if applicable) */}
+        <div className="pt-1.5 space-y-0.5">
+          {formattedDiscountedPrice != null ? (
+            <>
+              {/* Crossed-out original + active discounted price */}
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="line-through text-zinc-400 text-xs font-normal">
+                  {formattedBasePrice}
+                </span>
+                <span className="font-semibold text-zinc-950 text-sm">
+                  {formattedDiscountedPrice}
+                  <span className="text-zinc-500 font-normal text-xs ml-0.5">/ night</span>
+                </span>
+              </div>
+              {/* Discount label pill */}
+              {discountLabel && (
+                <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
+                  {discountLabel} · {activePct}% off
+                </span>
+              )}
+            </>
+          ) : (
+            /* No active discount — plain price */
+            <div className="flex items-baseline gap-1">
+              <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
+              <span className="text-zinc-500 font-normal text-xs">/ night</span>
+            </div>
+          )}
         </div>
       </div>
     </Link>
