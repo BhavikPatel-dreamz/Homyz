@@ -357,14 +357,14 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="space-y-6 animate-in fade-in max-w-[calc(100%-75px)] pb-10 font-sans">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in pb-10 font-sans lg:max-w-[calc(100%-75px)]">
           {/* Header & Back Button */}
           <div className="sm:space-y-1.5 space-y-3">
             <div className="flex items-start gap-6">
-              <BackButton onClick={() => setActiveSection("title")} />
+              <BackButton onClick={() => setActiveSection("title")} className="mt-2" />
               <div>
                 <h1>Description</h1>
-                <p className="sm:text-base text-sm text-[#727272] font-normal dark:text-zinc-400">
+                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
                   *These settings apply to all nights, unless you customize them by date.{" "}
                   <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-100 dark:hover:text-amber-400">
                     Learn more
@@ -601,10 +601,10 @@ export function PropertyDetailsViews({
       {/* VIEW 4: TITLE */}
       {/* --------------------------------------------------------- */}
       {activeSection === "title" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl">
-          <div className="flex items-center gap-6">
+        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
-            <h1>Listing title</h1>
+            <h1 className="min-w-0">Listing title</h1>
           </div>
 
           {isLoading ? (
@@ -644,7 +644,7 @@ export function PropertyDetailsViews({
           {/* Back button & Section Header */}
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
-            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property type</h1>
+            <h1>Property type</h1>
           </div>
 
           {isLoading ? (
@@ -967,15 +967,14 @@ export function PropertyDetailsViews({
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
             <div className="flex items-start gap-6 max-w-[491px]">
-              <BackButton onClick={() => setActiveSection("propertyType")} />
+              <BackButton onClick={() => setActiveSection("propertyType")} className="mt-2" />
               <div className="space-y-1.5">
-                <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
-                <p className="text-[14px] leading-5 text-[#727272] dark:text-zinc-400">
+                <h1>{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
+                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
                   {activeSection === "guests" ? "How many guests can fit comfortably in your space?" : "Configure bedroom sleeping arrangements and bathroom breakdown."}
                 </p>
               </div>
             </div>
-
           </div>
 
           {isLoading ? (
@@ -1463,15 +1462,15 @@ export function PropertyDetailsViews({
             <div className="flex sm:flex-row flex-col sm:gap-0 gap-5 sm:items-center items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-start gap-6">
-                  <BackButton onClick={() => {
+                  <BackButton className="mt-2" onClick={() => {
                     setIsEditingAmenityList(false);
                     setActiveSection(activeSection === "add-amenities" ? "amenities" : "description");
                   }} />
                   <div className="space-y-1">
-                    <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+                    <h1>
                       {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
                     </h1>
-                    <p className="sm:text-[14px] text-xs font-normal leading-5.5 text-[#727272] dark:text-zinc-400">
+                    <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
                       You&apos;ve added these to your listing so far.
                     </p>
                   </div>
@@ -1692,12 +1691,12 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="space-y-6 animate-in fade-in max-w-[calc(100%-75px)] pb-10 font-sans">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in pb-10 font-sans lg:max-w-[calc(100%-75px)]">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <BackButton onClick={() => setActiveSection("description")} />
-              <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100">Accessibility features</h1>
+              <h1>Accessibility features</h1>
             </div>
 
           </div>
@@ -1811,7 +1810,7 @@ export function PropertyDetailsViews({
                         {/* Examples Gallery Grid */}
                         <div className="space-y-2 pt-1">
                           <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">Examples:</span>
-                          <div className="grid grid-cols-4 gap-6">
+                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
                             <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                               {/* Photo 1 */}
                             </div>

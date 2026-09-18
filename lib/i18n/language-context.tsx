@@ -26,7 +26,7 @@ interface LanguageContextType {
   language: SupportedLanguage;
   selectedLangLabel: string;
   setLanguage: (lang: SupportedLanguage | string) => void;
-  t: (key: TranslationKey, fallback?: string) => string;
+  t: (key: TranslationKey, valuesOrFallback?: Record<string, string | number | boolean> | string, fallback?: string) => string;
   dir: "ltr" | "rtl";
 }
 
@@ -84,11 +84,28 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const messages = MESSAGES[language] || MESSAGES.en;
   const translator = createTranslator({ locale: language, messages });
 
-  const t = (key: TranslationKey, fallback?: string): string => {
+  const t = (
+    key: TranslationKey,
+    valuesOrFallback?: Record<string, string | number | boolean> | string,
+    fallback?: string
+  ): string => {
     try {
+      if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
+        return translator(key, valuesOrFallback as any);
+      }
       return translator(key);
     } catch {
-      return messages[key] || MESSAGES.en[key] || fallback || key;
+      let text =
+        messages[key] ||
+        MESSAGES.en[key] ||
+        (typeof valuesOrFallback === "string" ? valuesOrFallback : fallback) ||
+        key;
+      if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
+        Object.entries(valuesOrFallback).forEach(([k, v]) => {
+          text = text.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+        });
+      }
+      return text;
     }
   };
 
@@ -110,7 +127,19 @@ export function useLanguage() {
       language: "en" as SupportedLanguage,
       selectedLangLabel: "English (US)",
       setLanguage: () => {},
-      t: (key: TranslationKey, fallback?: string) => MESSAGES.en[key] || fallback || key,
+      t: (
+        key: TranslationKey,
+        valuesOrFallback?: Record<string, string | number | boolean> | string,
+        fallback?: string
+      ) => {
+        let text = MESSAGES.en[key] || (typeof valuesOrFallback === "string" ? valuesOrFallback : fallback) || key;
+        if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
+          Object.entries(valuesOrFallback).forEach(([k, v]) => {
+            text = text.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+          });
+        }
+        return text;
+      },
       dir: "ltr" as const,
     };
   }

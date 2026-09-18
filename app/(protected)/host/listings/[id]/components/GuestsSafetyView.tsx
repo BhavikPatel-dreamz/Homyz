@@ -320,7 +320,7 @@ export function GuestsSafetyView({
             />
             <div>
               <h1 className="mb-2">Guest safety</h1>
-              <p className="text-sm text-[#727272]">
+              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
                 The safety details you share will appear on your listing, along with information like your House Rules.
               </p>
             </div>

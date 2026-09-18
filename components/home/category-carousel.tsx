@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PropertyCard, PropertyCardData } from "./property-card";
 import { SeeAllCard } from "./see-all-card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HomePropertySectionProps {
   title: string;
@@ -13,6 +14,59 @@ interface HomePropertySectionProps {
   totalCount?: number;
 }
 
+export function getTranslatedSectionTitle(title: string, t: (key: any, params?: any) => string): string {
+  if (!title) return title;
+  const lower = title.trim().toLowerCase();
+
+  if (lower === "featured stays") {
+    return t("home_section_featured_stays");
+  }
+  if (lower === "available this weekend") {
+    return t("home_section_available_weekend");
+  }
+  if (lower === "available this month") {
+    return t("home_section_available_this_month");
+  }
+  if (lower.startsWith("available this month in ")) {
+    const city = title.trim().substring("available this month in ".length).trim();
+    return t("home_section_available_this_month_in", { city });
+  }
+  if (lower === "available next month") {
+    return t("home_section_available_next_month");
+  }
+  if (lower.startsWith("available next month in ")) {
+    const city = title.trim().substring("available next month in ".length).trim();
+    return t("home_section_available_next_month_in", { city });
+  }
+  if (lower.startsWith("explore stays in ")) {
+    const city = title.trim().substring("explore stays in ".length).trim();
+    return t("home_section_explore_stays_in", { city });
+  }
+  if (lower === "trending stays") {
+    return t("home_section_trending_stays");
+  }
+  if (lower === "recommended stays") {
+    return t("home_section_recommended_stays");
+  }
+  if (lower === "popular homes") {
+    return t("home_section_popular_homes");
+  }
+  if (lower.startsWith("popular homes in ")) {
+    const location = title.trim().substring("popular homes in ".length).trim();
+    return t("home_section_popular_homes_in", { location });
+  }
+  if (lower.startsWith("homes in ")) {
+    const location = title.trim().substring("homes in ".length).trim();
+    return t("home_section_homes_in", { location });
+  }
+  if (lower.startsWith("homes near ")) {
+    const location = title.trim().substring("homes near ".length).trim();
+    return t("home_section_homes_near", { location });
+  }
+
+  return title;
+}
+
 export function HomePropertySection({
   title,
   cards,
@@ -20,6 +74,8 @@ export function HomePropertySection({
   previewImages,
   totalCount,
 }: HomePropertySectionProps) {
+  const { t } = useLanguage();
+  const displayTitle = getTranslatedSectionTitle(title, t);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pageCount, setPageCount] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,14 +171,14 @@ export function HomePropertySection({
       <div className="mb-4 sm:mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
-            {title}
+            {displayTitle}
           </h2>
           {seeAllHref && (
             <Link
               href={seeAllHref}
               className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#0052cc] hover:text-[#003b95] hover:underline transition-colors ml-1"
             >
-              <span>See all</span>
+              <span>{t("home_see_all")}</span>
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

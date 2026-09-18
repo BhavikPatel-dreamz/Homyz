@@ -211,7 +211,7 @@ export function HostListingEditorClient({
   );
 
   useEffect(() => {
-    const mobileQuery = window.matchMedia("(max-width: 1023px)");
+    const mobileQuery = window.matchMedia("(max-width: 1279px)");
     if (!mobileQuery.matches) setIsMobileSidebarOpen(false);
 
     const closeOnDesktop = () => {
@@ -1376,7 +1376,7 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className={`flex min-h-screen flex-col bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
+      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       {presentation === "host" && (
@@ -1405,7 +1405,7 @@ export function HostListingEditorClient({
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
       <Container>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:gap-0 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[280px_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,1fr)_440px]"}`}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:gap-0 lg:py-0 ${presentation === "admin" ? "xl:grid-cols-[280px_minmax(0,1fr)]" : "xl:grid-cols-[minmax(0,1fr)_440px]"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
           {/* ============================================================ */}
