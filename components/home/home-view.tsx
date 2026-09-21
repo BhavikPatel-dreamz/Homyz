@@ -235,6 +235,9 @@ export function HomeView({
     }).catch(() => undefined);
 
     // Search results are presented on the full Search/Listings results page
+    // source=home-search flags that the user explicitly searched so the listing
+    // page can show the search bar (vs. See All / View All navigation which should not).
+    sp.set("source", "home-search");
     setIsNavigatingSearch(true);
     router.push(`/listings?${sp.toString()}`);
   };

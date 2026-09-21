@@ -56,15 +56,31 @@ export const CARTO_ATTRIBUTION =
 
 export const CARTO_SUBDOMAINS = ["a", "b", "c", "d"];
 
+/**
+ * English-language raster tile URL.
+ * Stadia Maps "Alidade Smooth" renders place labels in English (romanized script)
+ * globally — including Arabic-script regions like Saudi Arabia and UAE.
+ * This replaces CARTO raster tiles which bake in local-script labels (Arabic, etc.)
+ * that cannot be overridden at runtime.
+ * No API key required for standard usage; supports {r} retina suffix.
+ */
+const ENGLISH_TILE_URL =
+  "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png";
+const ENGLISH_ATTRIBUTION =
+  '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> ' +
+  '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> ' +
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors';
+
 export const MAP_CONFIG = {
-  // Uses CARTO Voyager raster tiles with NEXT_PUBLIC_CARTO_API_KEY appended
+  // Stadia Maps Alidade Smooth — English labels globally (no local-script Arabic watermarks)
+  // Override via NEXT_PUBLIC_MAP_TILE_URL env var to use a custom tile provider
   tileUrl:
     process.env.NEXT_PUBLIC_MAP_TILE_URL ||
-    getCartoTileUrl("voyager"),
+    ENGLISH_TILE_URL,
   attribution:
     process.env.NEXT_PUBLIC_MAP_ATTRIBUTION ||
-    CARTO_ATTRIBUTION,
-  subdomains: CARTO_SUBDOMAINS,
+    ENGLISH_ATTRIBUTION,
+  subdomains: [] as string[], // Stadia Maps uses a single host, no sub-domain rotation needed
   maxZoom: 20,
   minZoom: 2,
   defaultCenter: [24.7136, 46.6753] as [number, number], // Riyadh default / fallback (SAR)

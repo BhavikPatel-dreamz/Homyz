@@ -683,6 +683,8 @@ export function ListingSearchBar() {
     setDesktopPanel(null);
     setIsMobileSearchOpen(false);
     setIsSearching(false);
+    // Preserve source=home-search so the search bar stays visible after re-search
+    sp.set("source", "home-search");
     router.push(`/listings?${sp.toString()}`);
   };
 

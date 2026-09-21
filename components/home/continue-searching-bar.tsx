@@ -151,6 +151,9 @@ export function buildContinueSearchHref(context: SearchContext | PersistedSearch
   if (context.infants && context.infants > 0) sp.set("infants", String(context.infants));
   if (context.pets && context.pets > 0) sp.set("pets", String(context.pets));
 
+  // Mark as a user-initiated search so the /listings page shows the search bar
+  sp.set("source", "home-search");
+
   const qs = sp.toString();
   return qs ? `/listings?${qs}` : "/listings";
 }

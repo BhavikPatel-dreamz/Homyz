@@ -62,6 +62,8 @@ interface ListingsResultsClientProps {
   targetCoords?: { lat: number; lng: number };
   appliedRadiusKm?: number;
   isRadiusExpanded?: boolean;
+  /** "home-search" when user navigated here via a real search; undefined for See All / View All / direct links */
+  source?: string;
 }
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
@@ -219,6 +221,7 @@ export function ListingsResultsClient({
   appliedRadiusKm,
   isRadiusExpanded,
   hasError = false,
+  source,
 }: ListingsResultsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -691,12 +694,22 @@ export function ListingsResultsClient({
   }
 
   // ── Render ────────────────────────────────────
+  // Show the inline search bar only when the user arrived here via a real
+  // search (homepage search bar or continue-searching bar). Do NOT show it
+  // for See All / View All / category / direct /listings navigation.
+  // We use the server-passed `source` prop (reliable) rather than
+  // searchParams.get("source") which can be stale inside Suspense boundaries.
+  const showListingSearchBar =
+    source === "home-search" || searchParams.get("source") === "home-search";
+
   return (
     <>
-      {/* ── Listing Search Bar (Homepage-identical) ── */}
-      <div className="w-full flex justify-center pb-6">
-        <ListingSearchBar />
-      </div>
+      {/* ── Listing Search Bar (shown only for home-search entries) ── */}
+      {showListingSearchBar && (
+        <div className="w-full flex justify-center pb-6">
+          <ListingSearchBar />
+        </div>
+      )}
 
       {/* ── Results Summary Bar ── */}
       <ResultsSummaryBar
@@ -934,6 +947,8 @@ export function ListingsResultsClient({
                       initialFavorite={favoriteIds.has(item.id)}
                       targetLocationName={locationContextName}
                       priority={index < (isDesktop ? 4 : 2)}
+                      checkIn={currentFilters.checkIn}
+                      checkOut={currentFilters.checkOut}
                     />
                   </div>
                 ))}

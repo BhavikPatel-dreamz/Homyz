@@ -56,6 +56,7 @@ interface SearchPageProps {
     south?: string;
     east?: string;
     west?: string;
+    source?: string;
   }>;
 }
 
@@ -201,22 +202,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
       <AppHeader />
 
       <main className="w-full flex-1 py-8">
-        <Container>
-          {/* Adaptive Radius Expansion Notice Banner */}
-          {result.isRadiusExpanded && (
-            <div className="mb-6 flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200/80 px-4 py-3 text-amber-900 shadow-2xs">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-200/70 text-amber-900">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </div>
-              <div className="text-xs sm:text-sm font-medium">
-                We expanded your search to <span className="font-bold">{result.appliedRadiusKm} km</span> around <span className="font-bold">{displayLocation}</span> to bring you the best available verified stays.
-              </div>
-            </div>
-          )}
+        <Container>          
 
           {/* Interactive client section (<ListingCard /> rendered in grid) */}
           <Suspense
@@ -259,6 +245,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
               appliedRadiusKm={result.appliedRadiusKm}
               isRadiusExpanded={result.isRadiusExpanded}
               hasError={hasError}
+              source={sp.source}
             />
           </Suspense>
         </Container>
