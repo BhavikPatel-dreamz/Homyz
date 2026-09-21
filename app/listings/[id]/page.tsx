@@ -18,10 +18,26 @@ interface ListingDetailPageProps {
   }>;
 }
 
+/**
+ * Resolve a listing by either its real `id` or a `customSlug`.
+ * Cards across the site link to `/listings/${customSlug || id}`, so the route
+ * segment may be either a CUID-style id OR a human-readable customSlug such as
+ * "seed-search-test-100-v1-015". We attempt an id-based lookup first; if that
+ * 404s we fall back to a slug-based lookup before giving up.
+ */
+async function resolveListing(idOrSlug: string) {
+  try {
+    return await listingService.getPublicListingById(idOrSlug);
+  } catch {
+    // Not found by id — try treating the segment as a customSlug
+    return await listingService.getPublicListingBySlug(idOrSlug);
+  }
+}
+
 export async function generateMetadata({ params }: ListingDetailPageProps): Promise<Metadata> {
   const { id } = await params;
   try {
-    const listing = await listingService.getPublicListingById(id);
+    const listing = await resolveListing(id);
     const locationStr = listing.city
       ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
       : "Saudi Arabia";
@@ -49,17 +65,18 @@ export default async function PublicListingPage({ params, searchParams }: Listin
   const { id } = await params;
   const sp = await searchParams;
 
-  // Pre-fill booking widget from search URL
+  // Pre-fill booking widget from search URL params
   const searchCheckIn = sp.checkIn || sp.startDate || undefined;
   const searchCheckOut = sp.checkOut || sp.endDate || undefined;
   const searchGuests = sp.guests ? parseInt(sp.guests, 10) : undefined;
 
-  let listing: Awaited<ReturnType<typeof listingService.getPublicListingById>> | null = null;
+  let listing: Awaited<ReturnType<typeof resolveListing>> | null = null;
   let guidebooks: any[] = [];
 
   try {
-    listing = await listingService.getPublicListingById(id);
-    guidebooks = await guidebookService.getGuidebooksForListing(id).catch(() => []);
+    listing = await resolveListing(id);
+    // Always load guidebooks by the resolved real listing.id (not the URL slug/param)
+    guidebooks = await guidebookService.getGuidebooksForListing(listing.id).catch(() => []);
   } catch (err: unknown) {
     const error = err as { statusCode?: number; status?: number; message?: string } | null;
     if (error?.statusCode === 404 || error?.status === 404 || error?.message?.includes("not available")) {
