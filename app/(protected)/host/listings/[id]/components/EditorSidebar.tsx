@@ -26,6 +26,7 @@ import {
 import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { computeMissingRequirements, getListingDisplayState } from "./ListingStatusView";
+import { getCheckInMethodLabel } from "./HouseRulesAndArrivalViews";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
@@ -1480,9 +1481,9 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_checkin")}</span>
-                  <span className="block border-b border-zinc-300 pb-2 text-base text-[#727272]">{checkInStart || "3:00 PM"}</span>
+                  <span className="block border-b border-zinc-300 pb-2 text-base text-[#727272]">{checkInStart === "Flexible" ? (t("host_flexible") || "Flexible") : (checkInStart || "3:00 PM")}</span>
                   <span className="mt-2 block text-base font-medium text-[#1F1F1F]">{t("host_checkout")}</span>
-                  <span className="block text-base text-[#727272]">{checkOutTime || "12:00 PM"}</span>
+                  <span className="block text-base text-[#727272]">{checkOutTime === "Flexible" ? (t("host_flexible") || "Flexible") : (checkOutTime || "12:00 PM")}</span>
                 </button>
 
                 {/* Card 2: Check-in method */}
@@ -1497,7 +1498,7 @@ export function EditorSidebar({
                     {t("host_checkin_method")}
                   </span>
                   <p className="text-base text-[#1F1F1F] font-normal">
-                    {({ "SMART_LOCK": "Smart lock", "Smart lock": "Smart lock", "KEYPAD": "Keypad", "Keypad": "Keypad", "LOCKBOX": "Lockbox", "Lockbox": "Lockbox", "BUILDING_STAFF": "Building staff", "Building staff": "Building staff", "IN_PERSON_GREETING": "In-person greeting", "In-person greeting": "In-person greeting", "Host greets in person": "In-person greeting", "OTHER": "Other", "Other": "Other" } as Record<string, string>)[checkInMethod] || checkInMethod || "Smart lock"}
+                    {getCheckInMethodLabel(checkInMethod, t)}
                   </p>
                 </div>
 

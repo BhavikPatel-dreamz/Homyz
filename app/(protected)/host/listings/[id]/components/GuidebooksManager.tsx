@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/toast";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { BackButton } from "@/components/ui/back-button";
 import { GuidebookMap, MapPlacePin } from "@/components/guidebook/guidebook-map";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   GUIDEBOOK_CATEGORIES,
   TIP_CATEGORIES,
@@ -82,6 +83,7 @@ export function GuidebooksManager({
   setActiveSection,
   initialGuidebooks,
 }: GuidebooksManagerProps) {
+  const { t } = useLanguage();
   // Navigation & View Mode
   const [viewMode, setViewMode] = useState<"list" | "create" | "editor" | "preview">("list");
   const [guidebooks, setGuidebooks] = useState<any[]>(initialGuidebooks ?? []);
@@ -181,7 +183,7 @@ export function GuidebooksManager({
       setSearchQuery("");
       setActivePinId(null);
     } else {
-      showToast("Failed to load guidebook.");
+      showToast(t("host_failed_to_load_guidebook") || "Failed to load guidebook.");
     }
     setIsLoading(false);
   };
@@ -254,10 +256,10 @@ export function GuidebooksManager({
           setSimplePhoto(data.url);
         }
       } else {
-        showToast(data.error || "Failed to upload photo.");
+        showToast(data.error || (t("host_failed_to_upload_photo") || "Failed to upload photo."));
       }
     } catch {
-      showToast("Network error uploading photo.");
+      showToast(t("host_network_error_uploading_photo") || "Network error uploading photo.");
     } finally {
       if (target === "cover") setIsUploadingCover(false);
       if (target === "item") setIsUploadingItemPhoto(false);
@@ -284,7 +286,7 @@ export function GuidebooksManager({
     });
 
     if (res.ok) {
-      showToast("Guidebook created successfully!");
+      showToast(t("host_guidebook_created_success") || "Guidebook created successfully!");
       setCreateTitle("");
       setCreateCover("");
       setCreateDescription("");
@@ -293,7 +295,7 @@ export function GuidebooksManager({
       await loadGuidebooks();
       await openGuidebookEditor(res.data.id);
     } else {
-      showToast(res.error || "Failed to create guidebook.");
+      showToast(res.error || (t("host_failed_to_create_guidebook") || "Failed to create guidebook."));
       setIsLoading(false);
     }
   };
@@ -311,7 +313,7 @@ export function GuidebooksManager({
       loadGuidebooks();
     } else {
       setSaveStatus("error");
-      showToast("Failed to save changes.");
+      showToast(t("host_failed_to_save_changes") || "Failed to save changes.");
     }
   };
 
@@ -321,17 +323,11 @@ export function GuidebooksManager({
     setItemCategory(place.category);
 
     // Duplicate detection
-    const isDup = selectedGuidebook?.items.some(
-      (item) =>
-        item.placeProviderId === place.placeProviderId ||
-        (item.title.toLowerCase() === place.name.toLowerCase() &&
-          item.address?.toLowerCase() === place.address.toLowerCase())
+    const isDuplicate = selectedGuidebook?.items.some(
+      (it) => it.title.toLowerCase() === place.name.toLowerCase()
     );
-
-    if (isDup) {
-      setDuplicateWarning(
-        `"${place.name}" is already in this guidebook. You can edit the existing recommendation.`
-      );
+    if (isDuplicate) {
+      setDuplicateWarning(`"${place.name}" is already in this guidebook.`);
     } else {
       setDuplicateWarning(null);
     }
@@ -403,10 +399,10 @@ export function GuidebooksManager({
         );
         setModalType(null);
         setSaveStatus("saved");
-        showToast("Recommendation updated!");
+        showToast(t("host_recommendation_updated") || "Recommendation updated!");
       } else {
         setSaveStatus("error");
-        showToast(res.error || "Failed to update recommendation.");
+        showToast(res.error || (t("host_failed_to_update_recommendation") || "Failed to update recommendation."));
       }
     } else {
       // Add
@@ -430,10 +426,10 @@ export function GuidebooksManager({
         );
         setModalType(null);
         setSaveStatus("saved");
-        showToast("Place added to guidebook!");
+        showToast(t("host_place_added_to_guidebook") || "Place added to guidebook!");
       } else {
         setSaveStatus("error");
-        showToast(res.error || "Failed to add place.");
+        showToast(res.error || (t("host_failed_to_add_place") || "Failed to add place."));
       }
     }
   };
@@ -507,10 +503,10 @@ export function GuidebooksManager({
       setItemToDelete(null);
       setModalType(null);
       setSaveStatus("saved");
-      showToast("Recommendation removed.");
+      showToast(t("host_recommendation_removed") || "Recommendation removed.");
     } else {
       setSaveStatus("error");
-      showToast("Failed to remove item.");
+      showToast(t("host_failed_to_remove_item") || "Failed to remove item.");
     }
   };
 
@@ -521,11 +517,11 @@ export function GuidebooksManager({
     if (res.ok) {
       setGbToDelete(null);
       setModalType(null);
-      showToast("Guidebook deleted.");
+      showToast(t("host_guidebook_deleted") || "Guidebook deleted.");
       await loadGuidebooks();
       setViewMode("list");
     } else {
-      showToast("Failed to delete guidebook.");
+      showToast(t("host_failed_to_delete_guidebook") || "Failed to delete guidebook.");
     }
   };
 
@@ -551,7 +547,7 @@ export function GuidebooksManager({
       setTimeout(() => setSaveStatus("idle"), 1500);
     } else {
       setSaveStatus("error");
-      showToast("Failed to save reordered items.");
+      showToast(t("host_failed_to_save_reordered_items") || "Failed to save reordered items.");
     }
   };
 
@@ -611,12 +607,12 @@ export function GuidebooksManager({
               <BackButton
                 onClick={() => setActiveSection("arrival-guide")}
                 className="flex mt-2"
-                title="Back to Arrival guide"
+                title={t("host_back_to_arrival_guide") || "Back to Arrival guide"}
               />
               <div>
-                <h1>Guidebooks</h1>
+                <h1>{t("host_guidebooks") || "Guidebooks"}</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                  Share your favorite places and local tips with guests.
+                  {t("host_guidebooks_subtext") || "Share your favorite places and local tips with guests."}
                 </p>
               </div>
             </div>
@@ -627,7 +623,7 @@ export function GuidebooksManager({
               className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
             >
               <span>+</span>
-              <span>Create guidebook</span>
+              <span>{t("host_create_guidebook") || "Create guidebook"}</span>
             </button>
           </div>
 
@@ -647,9 +643,9 @@ export function GuidebooksManager({
                 📖
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-normal text-[#1f1f1f]">Create a guidebook</h3>
+                <h3 className="text-lg font-normal text-[#1f1f1f]">{t("host_create_a_guidebook") || "Create a guidebook"}</h3>
                 <p className="text-sm text-zinc-500 font-normal max-w-sm leading-relaxed">
-                  Help guests discover your favorite restaurants, cafés, attractions, shops, and authentic local experiences.
+                  {t("host_create_guidebook_desc_text") || "Help guests discover your favorite restaurants, cafés, attractions, shops, and authentic local experiences."}
                 </p>
               </div>
               <button
@@ -657,7 +653,7 @@ export function GuidebooksManager({
                 onClick={() => setViewMode("create")}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
               >
-                Create guidebook
+                {t("host_create_guidebook") || "Create guidebook"}
               </button>
             </div>
           )}
@@ -689,7 +685,7 @@ export function GuidebooksManager({
                               : "bg-amber-400/90 text-zinc-950"
                           }`}
                         >
-                          {gb.published ? "Published" : "Draft"}
+                          {gb.published ? (t("host_published") || "Published") : (t("host_draft") || "Draft")}
                         </span>
                       </div>
 
@@ -706,12 +702,12 @@ export function GuidebooksManager({
                       <div className="flex items-center justify-between text-xs text-zinc-600 font-medium">
                         <div className="flex items-center gap-1.5">
                           <span>📍</span>
-                          <span>{gb.itemsCount} {gb.itemsCount === 1 ? "recommendation" : "recommendations"}</span>
+                          <span>{gb.itemsCount} {gb.itemsCount === 1 ? (t("host_recommendation_singular") || "recommendation") : (t("host_recommendations_plural") || "recommendations")}</span>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-zinc-400">
                           {(() => {
                             const count = Array.isArray(gb.listings) ? gb.listings.length : 0;
-                            return <span>{count} {count === 1 ? "listing" : "listings"}</span>;
+                            return <span>{count} {count === 1 ? (t("host_listing_singular") || "listing") : (t("host_listings_plural") || "listings")}</span>;
                           })()}
                         </div>
                       </div>
@@ -724,7 +720,7 @@ export function GuidebooksManager({
                             onClick={() => openGuidebookEditor(gb.id)}
                             className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold px-4 py-1.5 shadow-2xs transition-all cursor-pointer"
                           >
-                            Edit
+                            {t("host_edit") || "Edit"}
                           </button>
                           <a
                             href={`/guidebooks/${gb.id}`}
@@ -732,7 +728,7 @@ export function GuidebooksManager({
                             rel="noopener noreferrer"
                             className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold px-3.5 py-1.5 shadow-2xs transition-all cursor-pointer"
                           >
-                            Preview
+                            {t("host_preview") || "Preview"}
                           </a>
                         </div>
 
@@ -741,10 +737,10 @@ export function GuidebooksManager({
                             type="button"
                             onClick={() => {
                               navigator.clipboard.writeText(`${window.location.origin}/guidebooks/${gb.id}`);
-                              showToast("Share link copied to clipboard!");
+                              showToast(t("host_share_link_copied") || "Share link copied to clipboard!");
                             }}
                             className="w-8 h-8 rounded-full border border-zinc-200 hover:bg-zinc-100 flex items-center justify-center text-xs text-zinc-600 transition-all cursor-pointer"
-                            title="Copy share link"
+                            title={t("host_copy_share_link") || "Copy share link"}
                           >
                             🔗
                           </button>
@@ -755,7 +751,7 @@ export function GuidebooksManager({
                               setModalType("delete_gb");
                             }}
                             className="w-8 h-8 rounded-full border border-zinc-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 flex items-center justify-center text-xs text-zinc-400 transition-all cursor-pointer"
-                            title="Delete guidebook"
+                            title={t("host_delete_guidebook") || "Delete guidebook"}
                           >
                             🗑️
                           </button>
@@ -781,9 +777,9 @@ export function GuidebooksManager({
               className="flex mt-2"
             />
             <div>
-              <h2>Create a Guidebook</h2>
+              <h2>{t("host_create_guidebook_title") || "Create a Guidebook"}</h2>
               <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                Share your favorite places and authentic recommendations with your guests.
+                {t("host_create_guidebook_form_subtext") || "Share your favorite places and authentic recommendations with your guests."}
               </p>
             </div>
           </div>
@@ -792,7 +788,7 @@ export function GuidebooksManager({
             {/* Guidebook Title */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-zinc-900">Guidebook title</label>
+                <label className="block text-xs font-bold text-zinc-900">{t("host_guidebook_title_label") || "Guidebook title"}</label>
                 <span className="text-[10px] text-zinc-400">{createTitle.length}/100</span>
               </div>
               <input
@@ -801,23 +797,23 @@ export function GuidebooksManager({
                 maxLength={100}
                 value={createTitle}
                 onChange={(e) => setCreateTitle(e.target.value)}
-                placeholder="e.g. Bhavik's Favorite Places in Riyadh"
+                placeholder={t("host_guidebook_title_placeholder") || "e.g. Bhavik's Favorite Places in Riyadh"}
                 className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
 
             {/* Destination / Area Autocomplete */}
             <div className="space-y-1.5 relative">
-              <label className="block text-xs font-bold text-zinc-900">Primary location or area</label>
+              <label className="block text-xs font-bold text-zinc-900">{t("host_primary_location_label") || "Primary location or area"}</label>
               <input
                 type="text"
                 value={createLocation}
                 onChange={(e) => setCreateLocation(e.target.value)}
-                placeholder="Search city or neighborhood (e.g. Al Olaya, Riyadh)"
+                placeholder={t("host_primary_location_placeholder") || "Search city or neighborhood (e.g. Al Olaya, Riyadh)"}
                 className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
               />
               {isLocationSearching && (
-                <span className="absolute right-3.5 top-9 text-[10px] text-zinc-400">Searching...</span>
+                <span className="absolute right-3.5 top-9 text-[10px] text-zinc-400">{t("host_searching") || "Searching..."}</span>
               )}
 
               {locationSuggestions.length > 0 && (
@@ -842,13 +838,13 @@ export function GuidebooksManager({
 
             {/* Cover Photo */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-900">Cover photo</label>
+              <label className="block text-xs font-bold text-zinc-900">{t("host_cover_photo_label") || "Cover photo"}</label>
               {createCover ? (
                 <div className="relative h-44 rounded-2xl overflow-hidden border border-zinc-200 group">
                   <img src={createCover} alt="Cover preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <label className="rounded-full bg-white text-zinc-900 text-xs font-semibold px-4 py-2 cursor-pointer shadow-md hover:bg-zinc-100">
-                      Replace
+                      {t("host_replace") || "Replace"}
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
@@ -861,7 +857,7 @@ export function GuidebooksManager({
                       onClick={() => setCreateCover("")}
                       className="rounded-full bg-rose-600 text-white text-xs font-semibold px-4 py-2 cursor-pointer shadow-md hover:bg-rose-700"
                     >
-                      Remove
+                      {t("host_remove_btn") || "Remove"}
                     </button>
                   </div>
                 </div>
@@ -869,9 +865,9 @@ export function GuidebooksManager({
                 <label className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer bg-zinc-50/50 hover:bg-zinc-50 transition-all text-center">
                   <span className="text-2xl mb-1">📷</span>
                   <span className="text-xs font-semibold text-zinc-700">
-                    {isUploadingCover ? "Uploading cover image..." : "Upload cover photo"}
+                    {isUploadingCover ? (t("host_uploading_cover_image") || "Uploading cover image...") : (t("host_upload_cover_photo") || "Upload cover photo")}
                   </span>
-                  <span className="text-[10px] text-zinc-400 mt-0.5">JPEG, PNG, or WebP up to 10MB</span>
+                  <span className="text-[10px] text-zinc-400 mt-0.5">{t("host_photo_upload_note") || "JPEG, PNG, or WebP up to 10MB"}</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -887,7 +883,7 @@ export function GuidebooksManager({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold text-zinc-900" htmlFor="guidebook-details">
-                  Guidebook details <span className="text-zinc-400 font-normal">(optional)</span>
+                  {t("host_guidebook_details_label") || "Guidebook details"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                 </label>
                 <span className="text-[10px] text-zinc-400">{createDescription.length}/1200</span>
               </div>
@@ -897,16 +893,16 @@ export function GuidebooksManager({
                 maxLength={1200}
                 value={createDescription}
                 onChange={(e) => setCreateDescription(e.target.value)}
-                placeholder="Tell guests what makes this guidebook useful, such as your favorite neighborhood or the kind of recommendations inside."
+                placeholder={t("host_guidebook_details_placeholder") || "Tell guests what makes this guidebook useful, such as your favorite neighborhood or the kind of recommendations inside."}
                 className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
 
             {/* Associate Listing Note */}
             <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4 text-xs text-zinc-600 space-y-1">
-              <span className="font-semibold text-zinc-900 block">Listing Association</span>
+              <span className="font-semibold text-zinc-900 block">{t("host_listing_association_title") || "Listing Association"}</span>
               <p className="text-base text-[#727272] font-normal">
-                This guidebook will automatically be linked to this listing. You can link additional listings anytime.
+                {t("host_listing_association_text") || "This guidebook will automatically be linked to this listing. You can link additional listings anytime."}
               </p>
             </div>
 
@@ -917,14 +913,14 @@ export function GuidebooksManager({
                 onClick={() => setViewMode("list")}
                 className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !createTitle.trim()}
                 className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                {isLoading ? "Creating..." : "Save & Open Editor"}
+                {isLoading ? (t("host_creating") || "Creating...") : (t("host_save_and_open_editor") || "Save & Open Editor")}
               </button>
             </div>
           </form>
@@ -945,7 +941,7 @@ export function GuidebooksManager({
                   loadGuidebooks();
                 }}
                 className="flex"
-                title="Back to Guidebooks list"
+                title={t("host_back_to_guidebooks_list") || "Back to Guidebooks list"}
               />
               <div>
                 <div className="flex items-center gap-2">
@@ -960,16 +956,16 @@ export function GuidebooksManager({
                         ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
                         : "bg-amber-100 text-amber-900 hover:bg-amber-200"
                     }`}
-                    title="Toggle public visibility"
+                    title={t("host_toggle_public_visibility") || "Toggle public visibility"}
                   >
-                    {selectedGuidebook.published ? "● Published" : "○ Draft"}
+                    {selectedGuidebook.published ? `● ${t("host_published") || "Published"}` : `○ ${t("host_draft") || "Draft"}`}
                   </button>
                 </div>
                 <span className="text-[11px] text-zinc-500 font-medium">
                   {selectedGuidebook.city ? `${selectedGuidebook.city} · ` : ""}
-                  {selectedGuidebook.items.length} recommendations
-                  {saveStatus === "saving" && <span className="ml-2 text-zinc-400">Saving...</span>}
-                  {saveStatus === "saved" && <span className="ml-2 text-emerald-600">Saved ✓</span>}
+                  {selectedGuidebook.items.length} {t("host_recommendations_plural") || "recommendations"}
+                  {saveStatus === "saving" && <span className="ml-2 text-zinc-400">{t("host_saving") || "Saving..."}</span>}
+                  {saveStatus === "saved" && <span className="ml-2 text-emerald-600">{t("host_saved") || "Saved ✓"}</span>}
                 </span>
               </div>
             </div>
@@ -983,20 +979,20 @@ export function GuidebooksManager({
                 className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold px-4 py-2 shadow-2xs transition-all flex items-center gap-1.5"
               >
                 <span>👁️</span>
-                <span>Preview as guest</span>
+                <span>{t("host_preview_as_guest") || "Preview as guest"}</span>
               </a>
 
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/guidebooks/${selectedGuidebook.id}`);
-                  showToast("Shareable guidebook link copied!");
+                  showToast(t("host_shareable_link_copied") || "Shareable guidebook link copied!");
                 }}
                 className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold px-3.5 py-2 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
-                title="Copy share link"
+                title={t("host_copy_share_link") || "Copy share link"}
               >
                 <span>🔗</span>
-                <span>Share</span>
+                <span>{t("host_share") || "Share"}</span>
               </button>
 
               {/* Mobile List / Map Toggle */}
@@ -1008,7 +1004,7 @@ export function GuidebooksManager({
                     mobileTab === "content" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-500"
                   }`}
                 >
-                  List
+                  {t("host_list_tab") || "List"}
                 </button>
                 <button
                   type="button"
@@ -1017,7 +1013,7 @@ export function GuidebooksManager({
                     mobileTab === "map" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-500"
                   }`}
                 >
-                  Map ({mapPins.length})
+                  {t("host_map_tab") || "Map"} ({mapPins.length})
                 </button>
               </div>
             </div>
@@ -1030,11 +1026,11 @@ export function GuidebooksManager({
               {/* Overview & Progress Checklist */}
               <div className="rounded-3xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Guidebook Overview</span>
+                  <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">{t("host_guidebook_overview") || "Guidebook Overview"}</span>
                   <span className="text-base text-[#727272] font-normal">
                     {(() => {
                       const count = Array.isArray(selectedGuidebook.listings) ? selectedGuidebook.listings.length : 0;
-                      return <>Shown on {count} {count === 1 ? "listing" : "listings"}</>;
+                      return <>{count === 1 ? (t("host_shown_on_listing_singular") || "Shown on 1 listing") : (t("host_shown_on_listings_plural", { count }) || `Shown on ${count} listings`)}</>;
                     })()}
                   </span>
                 </div>
@@ -1042,7 +1038,7 @@ export function GuidebooksManager({
                 <div className="space-y-1.5 border-t border-zinc-100 pt-4">
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-xs font-bold text-zinc-900" htmlFor="edit-guidebook-details">
-                      Guidebook details
+                      {t("host_guidebook_details_label") || "Guidebook details"}
                     </label>
                     <span className="text-[10px] text-zinc-400">{detailsDraft.length}/1200</span>
                   </div>
@@ -1052,7 +1048,7 @@ export function GuidebooksManager({
                     maxLength={1200}
                     value={detailsDraft}
                     onChange={(e) => setDetailsDraft(e.target.value)}
-                    placeholder="Add a short introduction for guests."
+                    placeholder={t("host_add_intro_placeholder") || "Add a short introduction for guests."}
                     className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                   />
                   <div className="flex justify-end">
@@ -1062,34 +1058,34 @@ export function GuidebooksManager({
                       onClick={() => handleSaveGuidebookMeta({ description: detailsDraft.trim() || null })}
                       className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-zinc-700 shadow-2xs transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Save details
+                      {t("host_save_details") || "Save details"}
                     </button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">Title</span>
+                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_title_heading") || "Title"}</span>
                     <span className="font-semibold text-emerald-600 flex items-center gap-1 mt-0.5">
-                      ✓ Ready
+                      {t("host_ready") || "✓ Ready"}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">Cover</span>
+                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_cover") || "Cover"}</span>
                     <span className={`font-semibold flex items-center gap-1 mt-0.5 ${hasCover ? "text-emerald-600" : "text-amber-600"}`}>
-                      {hasCover ? "✓ Added" : "○ Optional"}
+                      {hasCover ? (t("host_added") || "✓ Added") : (t("host_optional") || "○ Optional")}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">Places</span>
+                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_places") || "Places"}</span>
                     <span className={`font-semibold flex items-center gap-1 mt-0.5 ${placesCount > 0 ? "text-emerald-600" : "text-zinc-500"}`}>
-                      {placesCount} places
+                      {placesCount} {t("host_places") || "places"}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">Tips</span>
+                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_tips") || "Tips"}</span>
                     <span className={`font-semibold flex items-center gap-1 mt-0.5 ${tipsCount > 0 ? "text-emerald-600" : "text-zinc-500"}`}>
-                      {tipsCount} tips
+                      {tipsCount} {t("host_tips") || "tips"}
                     </span>
                   </div>
                 </div>
@@ -1105,7 +1101,7 @@ export function GuidebooksManager({
                     className="inline-flex items-center gap-2 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 px-5 py-2 text-xs font-bold shadow-2xs transition-all cursor-pointer"
                   >
                     <span>+</span>
-                    <span>Add to guidebook</span>
+                    <span>{t("host_add_to_guidebook") || "Add to guidebook"}</span>
                     <span className="text-[10px]">▼</span>
                   </button>
 
@@ -1121,8 +1117,8 @@ export function GuidebooksManager({
                       >
                         <span className="text-base">📍</span>
                         <div>
-                          <span>Add a place</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">Café, restaurant, museum, park</span>
+                          <span>{t("host_add_a_place") || "Add a place"}</span>
+                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_place_subtext") || "Café, restaurant, museum, park"}</span>
                         </div>
                       </button>
 
@@ -1141,8 +1137,8 @@ export function GuidebooksManager({
                       >
                         <span className="text-base">🏘️</span>
                         <div>
-                          <span>Add a neighborhood</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">Overview of an area</span>
+                          <span>{t("host_add_a_neighborhood") || "Add a neighborhood"}</span>
+                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_neighborhood_subtext") || "Overview of an area"}</span>
                         </div>
                       </button>
 
@@ -1161,8 +1157,8 @@ export function GuidebooksManager({
                       >
                         <span className="text-base">💡</span>
                         <div>
-                          <span>Add a local tip</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">Transport, etiquette, weather</span>
+                          <span>{t("host_add_a_tip") || "Add a local tip"}</span>
+                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_tip_subtext") || "Transport, etiquette, weather"}</span>
                         </div>
                       </button>
                     </div>
@@ -1175,7 +1171,7 @@ export function GuidebooksManager({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search this guidebook..."
+                    placeholder={t("host_search_this_guidebook_placeholder") || "Search this guidebook..."}
                     className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-8 pr-3 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-400 shadow-2xs"
                   />
                   <span className="absolute left-2.5 top-2.5 text-xs text-zinc-400">🔍</span>
@@ -1193,7 +1189,7 @@ export function GuidebooksManager({
                       : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
                   }`}
                 >
-                  All ({selectedGuidebook.items.length})
+                  {t("host_all") || "All"} ({selectedGuidebook.items.length})
                 </button>
 
                 <button
@@ -1205,7 +1201,7 @@ export function GuidebooksManager({
                       : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
                   }`}
                 >
-                  ⭐ Favorites ({selectedGuidebook.items.filter((it) => it.isFavorite).length})
+                  {t("host_favorites") || "⭐ Favorites"} ({selectedGuidebook.items.filter((it) => it.isFavorite).length})
                 </button>
 
                 {GUIDEBOOK_CATEGORIES.map((cat) => {
@@ -1232,11 +1228,11 @@ export function GuidebooksManager({
               {filteredItems.length === 0 ? (
                 <div className="rounded-3xl border border-zinc-200 bg-white p-8 text-center space-y-2">
                   <span className="text-2xl">🔍</span>
-                  <p className="text-xs font-semibold text-zinc-700">No recommendations found</p>
+                  <p className="text-xs font-semibold text-zinc-700">{t("host_no_recommendations_found") || "No recommendations found"}</p>
                   <p className="text-[11px] text-zinc-400">
                     {searchQuery
-                      ? "Try another search keyword."
-                      : "Click \"+ Add to guidebook\" above to add your first place or tip."}
+                      ? (t("host_try_another_search") || "Try another search keyword.")
+                      : (t("host_click_add_guidebook_subtext") || "Click \"+ Add to guidebook\" above to add your first place or tip.")}
                   </p>
                 </div>
               ) : (
@@ -1277,7 +1273,7 @@ export function GuidebooksManager({
                                 </h4>
                                 {item.isFavorite && (
                                   <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full shrink-0">
-                                    ⭐ Host favorite
+                                    {t("host_favorite_badge") || "⭐ Host favorite"}
                                   </span>
                                 )}
                               </div>
@@ -1294,7 +1290,7 @@ export function GuidebooksManager({
                                 disabled={idx === 0}
                                 onClick={() => handleMoveItem(idx, "up")}
                                 className="w-6 h-6 rounded-md border border-zinc-200 hover:bg-zinc-100 text-[10px] disabled:opacity-30 cursor-pointer flex items-center justify-center"
-                                title="Move up"
+                                title={t("host_move_up") || "Move up"}
                               >
                                 ▲
                               </button>
@@ -1303,7 +1299,7 @@ export function GuidebooksManager({
                                 disabled={idx === filteredItems.length - 1}
                                 onClick={() => handleMoveItem(idx, "down")}
                                 className="w-6 h-6 rounded-md border border-zinc-200 hover:bg-zinc-100 text-[10px] disabled:opacity-30 cursor-pointer flex items-center justify-center"
-                                title="Move down"
+                                title={t("host_move_down") || "Move down"}
                               >
                                 ▼
                               </button>
@@ -1343,7 +1339,7 @@ export function GuidebooksManager({
                               }}
                               className="text-zinc-700 hover:text-zinc-950 cursor-pointer"
                             >
-                              Edit
+                              {t("host_edit") || "Edit"}
                             </button>
                             <button
                               type="button"
@@ -1353,7 +1349,7 @@ export function GuidebooksManager({
                               }}
                               className="text-rose-600 hover:text-rose-700 cursor-pointer"
                             >
-                              Remove
+                              {t("host_remove_btn") || "Remove"}
                             </button>
                           </div>
                         </div>
@@ -1369,9 +1365,9 @@ export function GuidebooksManager({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
-                    Interactive Map ({mapPins.length} pins)
+                    {t("host_interactive_map") || "Interactive Map"} ({mapPins.length} {t("host_pins") || "pins"})
                   </span>
-                  <span className="text-[11px] text-zinc-400">Click a pin to view details</span>
+                  <span className="text-[11px] text-zinc-400">{t("host_click_pin_details") || "Click a pin to view details"}</span>
                 </div>
                 <div className="h-[480px]">
                   <GuidebookMap
@@ -1396,7 +1392,7 @@ export function GuidebooksManager({
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl border border-zinc-200 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3">
               <h3 className="text-base font-bold text-zinc-900">
-                {editingItem ? "Edit recommendation" : "Add a place to guidebook"}
+                {editingItem ? (t("host_edit_recommendation") || "Edit recommendation") : (t("host_add_a_place_to_guidebook") || "Add a place to guidebook")}
               </h3>
               <button
                 type="button"
@@ -1409,18 +1405,18 @@ export function GuidebooksManager({
 
             {/* Step A: Search for Place */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-900">Search for a place</label>
+              <label className="block text-xs font-bold text-zinc-900">{t("host_search_for_place") || "Search for a place"}</label>
               <div className="relative">
                 <input
                   type="text"
                   value={placeSearchInput}
                   onChange={(e) => setPlaceSearchInput(e.target.value)}
-                  placeholder="e.g. Brew92, Kingdom Tower, Danube Supermarket..."
+                  placeholder={t("host_search_place_placeholder") || "e.g. Brew92, Kingdom Tower, Danube Supermarket..."}
                   className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 pl-9 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                 />
                 <span className="absolute left-3 top-3.5 text-xs text-zinc-400">🔍</span>
                 {isSearchingPlaces && (
-                  <span className="absolute right-3.5 top-3.5 text-[10px] text-zinc-400">Searching...</span>
+                  <span className="absolute right-3.5 top-3.5 text-[10px] text-zinc-400">{t("host_searching") || "Searching..."}</span>
                 )}
               </div>
 
@@ -1467,13 +1463,13 @@ export function GuidebooksManager({
                     onClick={() => setSelectedPlace(null)}
                     className="text-xs text-zinc-500 hover:text-zinc-800 underline font-semibold"
                   >
-                    Change
+                    {t("host_change") || "Change"}
                   </button>
                 </div>
 
                 {/* Category Selector */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">Category</label>
+                  <label className="block text-xs font-bold text-zinc-900">{t("host_category") || "Category"}</label>
                   <select
                     value={itemCategory}
                     onChange={(e) => setItemCategory(e.target.value)}
@@ -1490,14 +1486,14 @@ export function GuidebooksManager({
                 {/* Why do you recommend this place? */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-zinc-900">Why do you recommend this place?</label>
+                    <label className="block text-xs font-bold text-zinc-900">{t("host_why_recommend_place") || "Why do you recommend this place?"}</label>
                     <span className="text-[10px] text-zinc-400">{recommendationText.length}/1200</span>
                   </div>
                   <textarea
                     rows={3}
                     value={recommendationText}
                     onChange={(e) => setRecommendationText(e.target.value)}
-                    placeholder="e.g. My favorite place for breakfast. Try the outdoor terrace in the morning!"
+                    placeholder={t("host_recommendation_placeholder") || "e.g. My favorite place for breakfast. Try the outdoor terrace in the morning!"}
                     className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
                   />
                 </div>
@@ -1505,13 +1501,13 @@ export function GuidebooksManager({
                 {/* Personal Host Tip */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-zinc-900">
-                    Host tip <span className="text-zinc-400 font-normal">(optional)</span>
+                    {t("host_host_tip") || "Host tip"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                   </label>
                   <input
                     type="text"
                     value={hostTipText}
                     onChange={(e) => setHostTipText(e.target.value)}
-                    placeholder="e.g. Ask for the terrace, or go before 9 AM to avoid queues."
+                    placeholder={t("host_tip_placeholder") || "e.g. Ask for the terrace, or go before 9 AM to avoid queues."}
                     className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                   />
                 </div>
@@ -1519,7 +1515,7 @@ export function GuidebooksManager({
                 {/* Photo Upload */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-zinc-900">
-                    Photo <span className="text-zinc-400 font-normal">(optional)</span>
+                    {t("host_photo") || "Photo"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                   </label>
                   {itemPhotoUrl ? (
                     <div className="relative h-28 rounded-2xl overflow-hidden border border-zinc-200">
@@ -1535,7 +1531,7 @@ export function GuidebooksManager({
                   ) : (
                     <label className="border border-dashed border-zinc-300 hover:border-zinc-400 rounded-2xl p-4 flex items-center justify-center gap-2 cursor-pointer bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 transition-all">
                       <span>📷</span>
-                      <span>{isUploadingItemPhoto ? "Uploading..." : "Upload photo"}</span>
+                      <span>{isUploadingItemPhoto ? (t("host_uploading") || "Uploading...") : (t("host_upload_photo") || "Upload photo")}</span>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
@@ -1556,8 +1552,8 @@ export function GuidebooksManager({
                     className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400"
                   />
                   <div>
-                    <span className="text-xs font-bold text-zinc-900 block">⭐ Highlight as Host Favorite</span>
-                    <span className="text-[10px] text-zinc-500 block">Standout recommendation shown prominently to guests</span>
+                    <span className="text-xs font-bold text-zinc-900 block">{t("host_highlight_as_favorite") || "⭐ Highlight as Host Favorite"}</span>
+                    <span className="text-[10px] text-zinc-500 block">{t("host_highlight_as_favorite_subtext") || "Standout recommendation shown prominently to guests"}</span>
                   </div>
                 </label>
 
@@ -1568,14 +1564,14 @@ export function GuidebooksManager({
                     onClick={() => setModalType(null)}
                     className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Cancel
+                    {t("host_cancel") || "Cancel"}
                   </button>
                   <button
                     type="button"
                     onClick={handleSavePlaceItem}
                     className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {editingItem ? "Save changes" : "Add to guidebook"}
+                    {editingItem ? (t("host_save_changes") || "Save changes") : (t("host_add_to_guidebook") || "Add to guidebook")}
                   </button>
                 </div>
               </div>
@@ -1592,7 +1588,7 @@ export function GuidebooksManager({
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-zinc-200 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3">
               <h3 className="text-base font-bold text-zinc-900">
-                {modalType === "neighborhood" ? "Add neighborhood advice" : "Add a local tip"}
+                {modalType === "neighborhood" ? (t("host_add_neighborhood_advice") || "Add neighborhood advice") : (t("host_add_a_local_tip") || "Add a local tip")}
               </h3>
               <button
                 type="button"
@@ -1606,7 +1602,7 @@ export function GuidebooksManager({
             <div className="space-y-3.5">
               {modalType === "tip" && (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">Tip category</label>
+                  <label className="block text-xs font-bold text-zinc-900">{t("host_tip_category") || "Tip category"}</label>
                   <select
                     value={simpleCategory}
                     onChange={(e) => setSimpleCategory(e.target.value)}
@@ -1623,20 +1619,20 @@ export function GuidebooksManager({
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-zinc-900">
-                  {modalType === "neighborhood" ? "Neighborhood name" : "Tip title"}
+                  {modalType === "neighborhood" ? (t("host_neighborhood_name") || "Neighborhood name") : (t("host_tip_title") || "Tip title")}
                 </label>
                 <input
                   type="text"
                   value={simpleTitle}
                   onChange={(e) => setSimpleTitle(e.target.value)}
-                  placeholder={modalType === "neighborhood" ? "e.g. Al Olaya" : "e.g. Best time to explore the old town"}
+                  placeholder={modalType === "neighborhood" ? (t("host_neighborhood_placeholder") || "e.g. Al Olaya") : (t("host_tip_title_placeholder") || "e.g. Best time to explore the old town")}
                   className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-zinc-900">
-                  {modalType === "neighborhood" ? "Description & why you recommend it" : "Advice / details"}
+                  {modalType === "neighborhood" ? (t("host_neighborhood_desc_label") || "Description & why you recommend it") : (t("host_tip_desc_label") || "Advice / details")}
                 </label>
                 <textarea
                   rows={3}
@@ -1644,8 +1640,8 @@ export function GuidebooksManager({
                   onChange={(e) => setSimpleDesc(e.target.value)}
                   placeholder={
                     modalType === "neighborhood"
-                      ? "A vibrant central area with fantastic cafés and walkable boutiques..."
-                      : "Ride-hailing apps are the easiest and most reliable way to get around after 10 PM."
+                      ? (t("host_neighborhood_desc_placeholder") || "A vibrant central area with fantastic cafés and walkable boutiques...")
+                      : (t("host_tip_desc_placeholder") || "Ride-hailing apps are the easiest and most reliable way to get around after 10 PM.")
                   }
                   className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                 />
@@ -1653,12 +1649,12 @@ export function GuidebooksManager({
 
               {modalType === "neighborhood" && (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">Insider tip (optional)</label>
+                  <label className="block text-xs font-bold text-zinc-900">{t("host_insider_tip_optional") || "Insider tip (optional)"}</label>
                   <input
                     type="text"
                     value={simpleTip}
                     onChange={(e) => setSimpleTip(e.target.value)}
-                    placeholder="e.g. Walk around Tahlia Street in the evening for the best atmosphere."
+                    placeholder={t("host_insider_tip_placeholder") || "e.g. Walk around Tahlia Street in the evening for the best atmosphere."}
                     className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
                   />
                 </div>
@@ -1670,7 +1666,7 @@ export function GuidebooksManager({
                   onClick={() => setModalType(null)}
                   className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Cancel
+                  {t("host_cancel") || "Cancel"}
                 </button>
                 <button
                   type="button"
@@ -1678,7 +1674,7 @@ export function GuidebooksManager({
                   onClick={handleSaveSimpleItem}
                   className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs disabled:opacity-50 cursor-pointer"
                 >
-                  {editingItem ? "Save changes" : "Add to guidebook"}
+                  {editingItem ? (t("host_save_changes") || "Save changes") : (t("host_add_to_guidebook") || "Add to guidebook")}
                 </button>
               </div>
             </div>
@@ -1697,12 +1693,12 @@ export function GuidebooksManager({
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-zinc-900">
-                {modalType === "delete_item" ? "Remove this recommendation?" : "Delete this guidebook?"}
+                {modalType === "delete_item" ? (t("host_remove_recommendation_confirm") || "Remove this recommendation?") : (t("host_delete_guidebook_confirm") || "Delete this guidebook?")}
               </h3>
               <p className="text-xs text-zinc-500 font-normal">
                 {modalType === "delete_item"
-                  ? "This place will be removed from your guidebook."
-                  : "This action cannot be undone. Guests will no longer see this guidebook."}
+                  ? (t("host_remove_recommendation_subtext") || "This place will be removed from your guidebook.")
+                  : (t("host_delete_guidebook_subtext") || "This action cannot be undone. Guests will no longer see this guidebook.")}
               </p>
             </div>
 
@@ -1716,14 +1712,14 @@ export function GuidebooksManager({
                 }}
                 className="rounded-full border border-zinc-200 px-5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
               <button
                 type="button"
                 onClick={modalType === "delete_item" ? handleConfirmDeleteItem : handleConfirmDeleteGuidebook}
                 className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-5 py-2 shadow-2xs cursor-pointer"
               >
-                Remove
+                {t("host_remove_btn") || "Remove"}
               </button>
             </div>
           </div>

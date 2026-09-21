@@ -720,9 +720,9 @@ export function HouseRulesAndArrivalViews({
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
             <div>
-              <h1>Parking instructions & details</h1>
+              <h1>{t("host_parking_instructions_and_details") || "Parking instructions & details"}</h1>
               <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                Let guests know if parking is available, where to park, and any permit or reservation requirements.
+                {t("host_parking_subtext") || "Let guests know if parking is available, where to park, and any permit or reservation requirements."}
               </p>
             </div>
           </div>
@@ -731,8 +731,8 @@ export function HouseRulesAndArrivalViews({
             {/* Parking Available Toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">Parking available on premises</h3>
-                <p className="text-sm text-[#727272] dark:text-zinc-400">Do guests have dedicated or shared parking?</p>
+                <h3 className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">{t("host_parking_available_premises") || "Parking available on premises"}</h3>
+                <p className="text-sm text-[#727272] dark:text-zinc-400">{t("host_parking_available_subtext") || "Do guests have dedicated or shared parking?"}</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -763,7 +763,7 @@ export function HouseRulesAndArrivalViews({
               <div className="space-y-4 pt-3 border-t border-zinc-100 dark:border-zinc-700">
                 {/* Parking Type: Free vs Paid */}
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Parking fee type</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_parking_fee_type") || "Parking fee type"}</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -773,7 +773,7 @@ export function HouseRulesAndArrivalViews({
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
-                      Free
+                      {t("host_parking_type_free") || "Free"}
                     </button>
                     <button
                       type="button"
@@ -783,21 +783,21 @@ export function HouseRulesAndArrivalViews({
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
-                      Paid
+                      {t("host_parking_type_paid") || "Paid"}
                     </button>
                   </div>
                 </div>
 
                 {/* Number of spaces */}
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Available parking spaces</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_available_parking_spaces") || "Available parking spaces"}</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
                       className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
-                      <Image src="/images/icons/minus-icon.svg" alt="Decrease parking spaces" width={12} height={12} className="size-3 object-contain dark:invert" />
+                      <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_parking_spaces") || "Decrease parking spaces"} width={12} height={12} className="size-3 object-contain dark:invert" />
                     </button>
                     <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{parkingSpaces ?? 1}</span>
                     <button
@@ -805,14 +805,14 @@ export function HouseRulesAndArrivalViews({
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
                       className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
-                      <Image src="/images/icons/add-icon.svg" alt="Increase maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/add-icon.svg" alt={t("host_increase_parking_spaces") || "Increase parking spaces"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
 
                 {/* Reservation Required */}
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">Reservation required in advance</span>
+                  <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_parking_reservation_required") || "Reservation required in advance"}</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -839,12 +839,12 @@ export function HouseRulesAndArrivalViews({
 
                 {/* Parking Instructions */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Parking instructions for guests</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_parking_instructions_label") || "Parking instructions for guests"}</label>
                   <textarea
                     rows={4}
                     value={parkingInstructions}
                     onChange={(e) => setParkingInstructions?.(e.target.value)}
-                    placeholder="e.g. Park in space #4B in underground garage. Access gate code is 1234."
+                    placeholder={t("host_parking_instructions_placeholder") || "e.g. Park in space #4B in underground garage. Access gate code is 1234."}
                     className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
                   />
                 </div>
@@ -860,14 +860,14 @@ export function HouseRulesAndArrivalViews({
               onClick={() => handleSaveSection("parking")}
               className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
             <button
               type="button"
               onClick={() => setActiveSection("arrival-guide")}
               className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
-              Cancel
+              {t("host_cancel") || "Cancel"}
             </button>
           </div>
         </div>
@@ -929,28 +929,28 @@ export function HouseRulesAndArrivalViews({
         <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} />
-            <h1>Wifi details</h1>
+            <h1>{t("host_wifi_details") || "Wifi details"}</h1>
           </div>
 
           <div className="space-y-5 pt-2">
             <div className="space-y-3">
-              <label className="block text-base font-normal text-[#1F1F1F]">Wifi network name</label>
+              <label className="block text-base font-normal text-[#1F1F1F]">{t("host_wifi_network_name") || "Wifi network name"}</label>
               <input
                 type="text"
                 value={wifiNetwork}
                 onChange={(e) => setWifiNetwork(e.target.value)}
-                placeholder="wifi network name"
+                placeholder={t("host_wifi_network_name_placeholder") || "Wifi network name"}
                 className="w-full rounded-lg border border-[#1f1f1f] bg-white sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] outline-none focus:border-[#1F1F1F] mb-0 min-h-[56px] min-h-[48px]"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="block text-base font-normal text-[#1F1F1F]">Wifi password</label>
+              <label className="block text-base font-normal text-[#1F1F1F]">{t("host_wifi_password") || "Wifi password"}</label>
               <input
                 type="text"
                 value={wifiPassword}
                 onChange={(e) => setWifiPassword(e.target.value)}
-                placeholder="wifi password"
+                placeholder={t("host_wifi_password_placeholder") || "Wifi password"}
                 className="w-full rounded-lg border border-[#1f1f1f] bg-white sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] outline-none focus:border-[#1F1F1F] mb-0 min-h-[56px] min-h-[48px]"
               />
             </div>
@@ -963,7 +963,7 @@ export function HouseRulesAndArrivalViews({
               onClick={() => handleSaveSection("arrival-guide")}
               className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
           </div>
         </div>
@@ -977,9 +977,9 @@ export function HouseRulesAndArrivalViews({
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
             <div>
-              <h1>House manual</h1>
+              <h1>{t("host_house_manual") || "House manual"}</h1>
               <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                Share details about AC controls, appliances, trash disposal, or parking spots.
+                {t("host_house_manual_desc") || "Share details about AC controls, appliances, trash disposal, or parking spots."}
               </p>
             </div>
           </div>
@@ -990,7 +990,7 @@ export function HouseRulesAndArrivalViews({
               rows={6}
               value={houseManual}
               onChange={(e) => setHouseManual(e.target.value)}
-              placeholder="Enter your house manual instructions..."
+              placeholder={t("host_house_manual_placeholder") || "Enter your house manual instructions..."}
               className="w-full rounded-lg border border-[#1f1f1f] bg-white sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] outline-none focus:border-[#1F1F1F] mb-0 min-h-[56px] min-h-[48px] leading-relaxed"
             />
           </div>
@@ -1002,7 +1002,7 @@ export function HouseRulesAndArrivalViews({
               onClick={() => handleSaveSection("arrival-guide")}
               className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
           </div>
         </div>
@@ -1160,16 +1160,17 @@ function CheckOutInstructionsView({
     overrides?: Record<string, unknown>,
   ) => Promise<void>;
 }) {
+  const { t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [draftInstructions, setDraftInstructions] = React.useState(checkOutInstructions);
 
   const suggestionChips = [
-    "🗑️ Throw trash away",
-    "🔑 Leave keys on counter",
-    "🔒 Lock doors & windows",
-    "💡 Turn off lights & AC",
-    "🧺 Gather used towels in hamper",
-    "🍽️ Run dishwasher",
+    t("host_chip_throw_trash") || "🗑️ Throw trash away",
+    t("host_chip_leave_keys") || "🔑 Leave keys on counter",
+    t("host_chip_lock_doors") || "🔒 Lock doors & windows",
+    t("host_chip_turn_off_lights") || "💡 Turn off lights & AC",
+    t("host_chip_gather_towels") || "🧺 Gather used towels in hamper",
+    t("host_chip_run_dishwasher") || "🍽️ Run dishwasher",
   ];
 
   const handleAddSuggestion = (suggestion: string) => {
@@ -1204,10 +1205,10 @@ function CheckOutInstructionsView({
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
         <div>
-          <h1>Check-out instructions</h1>
+          <h1>{t("host_checkout_instructions_page_title") || "Check-out instructions"}</h1>
           {/* Description text */}
           <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-            Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time.
+            {t("host_checkout_instructions_subtext") || "Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time."}
           </p>
         </div>
       </div>
@@ -1225,7 +1226,7 @@ function CheckOutInstructionsView({
               </svg>
             </div>
             <div>
-              <span className="text-sm font-medium text-[#727272] dark:text-zinc-400 block">Check-out time</span>
+              <span className="text-sm font-medium text-[#727272] dark:text-zinc-400 block">{t("host_checkout_time_label_title") || "Check-out time"}</span>
               <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{formattedCheckOut}</span>
             </div>
           </div>
@@ -1234,7 +1235,7 @@ function CheckOutInstructionsView({
             onClick={() => setActiveSection("check-in-out")}
             className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer"
           >
-            Change time
+            {t("host_change_time") || "Change time"}
           </button>
         </div>
       </div>
@@ -1244,7 +1245,7 @@ function CheckOutInstructionsView({
         <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-4 shadow-2xs">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3 min-w-0 flex-1">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block">Instructions for guests</span>
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block">{t("host_instructions_for_guests") || "Instructions for guests"}</span>
               <p className="text-xs text-zinc-800 dark:text-zinc-200 font-medium whitespace-pre-line leading-relaxed">
                 {checkOutInstructions}
               </p>
@@ -1256,7 +1257,7 @@ function CheckOutInstructionsView({
                 setIsModalOpen(true);
               }}
               className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
-              aria-label="Edit check-out instructions"
+              aria-label={t("host_edit_instructions") || "Edit check-out instructions"}
             >
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -1270,7 +1271,7 @@ function CheckOutInstructionsView({
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
               </svg>
-              Shared 24 hours before check-out
+              {t("host_shared_24h_before_checkout") || "Shared 24 hours before check-out"}
             </div>
             <button
               type="button"
@@ -1278,7 +1279,7 @@ function CheckOutInstructionsView({
               onClick={handleDelete}
               className="text-[11px] font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors cursor-pointer disabled:opacity-50"
             >
-              Remove
+              {t("host_remove_btn") || "Remove"}
             </button>
           </div>
         </div>
@@ -1290,9 +1291,9 @@ function CheckOutInstructionsView({
             </svg>
           </div>
           <div className="space-y-0.5">
-            <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">No check-out instructions yet</h3>
+            <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_no_checkout_instructions_yet") || "No check-out instructions yet"}</h3>
             <p className="text-sm text-[#727272] dark:text-zinc-400 max-w-sm mx-auto">
-              Add details about returning keys, taking out trash, or locking doors before leaving.
+              {t("host_no_checkout_instructions_desc") || "Add details about returning keys, taking out trash, or locking doors before leaving."}
             </p>
           </div>
           <div className="pt-1">
@@ -1305,7 +1306,7 @@ function CheckOutInstructionsView({
               className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-1.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
             >
               <span className="text-lg font-medium">+</span>
-              Add instructions
+              {t("host_add_instructions") || "Add instructions"}
             </button>
           </div>
         </div>
@@ -1323,7 +1324,7 @@ function CheckOutInstructionsView({
             className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
           >
             <span className="text-sm font-semibold leading-none">✎</span>
-            Edit instructions
+            {t("host_edit_instructions") || "Edit instructions"}
           </button>
         </div>
       )}
@@ -1347,16 +1348,16 @@ function CheckOutInstructionsView({
 
             <div className="mb-5 space-y-1">
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
-                {checkOutInstructions ? "Edit check-out instructions" : "Add check-out instructions"}
+                {checkOutInstructions ? (t("host_edit_checkout_instructions_title") || "Edit check-out instructions") : (t("host_add_checkout_instructions_title") || "Add check-out instructions")}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
-                Guests will see these instructions 24 hours before check-out time.
+                {t("host_checkout_instructions_subtext") || "Guests will see these instructions 24 hours before check-out time."}
               </p>
             </div>
 
             {/* Quick Suggestions */}
             <div className="mb-4 space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block">Quick suggestions (click to add)</span>
+              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block">{t("host_quick_suggestions_label") || "Quick suggestions (click to add)"}</span>
               <div className="flex flex-wrap gap-1.5">
                 {suggestionChips.map((chip) => (
                   <button
@@ -1374,13 +1375,13 @@ function CheckOutInstructionsView({
             {/* Textarea */}
             <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
               <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
-                Instructions for guests
+                {t("host_instructions_for_guests") || "Instructions for guests"}
               </label>
               <textarea
                 rows={6}
                 value={draftInstructions}
                 onChange={(e) => setDraftInstructions(e.target.value)}
-                placeholder="e.g. Please take all bagged trash to the outdoor bins, place used towels in the hamper, turn off the AC, and lock the door behind you."
+                placeholder={t("host_checkout_instructions_placeholder") || "e.g. Please take all bagged trash to the outdoor bins, place used towels in the hamper, turn off the AC, and lock the door behind you."}
                 className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 leading-relaxed resize-none"
               />
               <div className="flex items-center justify-between text-xs text-[#1f1f1f] dark:text-zinc-500 pt-1">
@@ -1389,9 +1390,9 @@ function CheckOutInstructionsView({
                     <circle cx="12" cy="12" r="9" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
                   </svg>
-                  Shared 24 hours before check-out
+                  {t("host_shared_24h_before_checkout") || "Shared 24 hours before check-out"}
                 </span>
-                <span>{draftInstructions.length} characters</span>
+                <span>{draftInstructions.length} {t("host_characters_suffix") || "characters"}</span>
               </div>
             </div>
 
@@ -1403,7 +1404,7 @@ function CheckOutInstructionsView({
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
               <button
                 type="button"
@@ -1411,7 +1412,7 @@ function CheckOutInstructionsView({
                 onClick={handleSave}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
             </div>
           </div>
@@ -1551,12 +1552,30 @@ function InteractionPreferencesView({
   value: string;
   onChange?: (value: string) => void;
 }) {
-  const options = [
-    "I won't be available in person, and prefer communicating through the app.",
-    "I like to say hello in person, but keep to myself otherwise",
-    "I like socializing and spending time with the guests",
-    "No preferences",
+  const { t } = useLanguage();
+  const optionItems = [
+    {
+      value: "I won't be available in person, and prefer communicating through the app.",
+      key: "host_interaction_option_0",
+      fallback: "I won't be available in person, and prefer communicating through the app.",
+    },
+    {
+      value: "I like to say hello in person, but keep to myself otherwise",
+      key: "host_interaction_option_1",
+      fallback: "I like to say hello in person, but keep to myself otherwise",
+    },
+    {
+      value: "I like socializing and spending time with the guests",
+      key: "host_interaction_option_2",
+      fallback: "I like socializing and spending time with the guests",
+    },
+    {
+      value: "No preferences",
+      key: "host_interaction_option_3",
+      fallback: "No preferences",
+    },
   ];
+  const options = optionItems.map((o) => o.value);
   const selectedOption = options.indexOf(value || "No preferences");
 
   return (
@@ -1565,37 +1584,38 @@ function InteractionPreferencesView({
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
         <div>
-          <h1>Interaction with guests</h1>
+          <h1>{t("host_guest_interaction_title") || "Interaction with guests"}</h1>
           <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-            Set expectations before guests arrive.
+            {t("host_interaction_preferences_subtext") || "Set expectations before guests arrive."}
           </p>
         </div>
       </div>
 
       {/* Description */}
       <p className="max-w-xl text-sm font-normal leading-relaxed text-[#727272] dark:text-zinc-400">
-        Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy.
+        {t("host_interaction_preferences_desc") || "Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy."}
       </p>
 
       {/* Options List */}
-      <div className="space-y-2" role="radiogroup" aria-label="Guest interaction preference">
-        {options.map((option, index) => {
+      <div className="space-y-2" role="radiogroup" aria-label={t("host_guest_interaction_title") || "Guest interaction preference"}>
+        {optionItems.map((item, index) => {
           const isActive = selectedOption === index;
+          const displayLabel = t(item.key as any) || item.fallback;
           return (
             <button
-              key={option}
+              key={item.value}
               type="button"
-              onClick={() => onChange?.(option)}
+              onClick={() => onChange?.(item.value)}
               className={`flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
                 ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                 : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 }`}
               role="radio"
               aria-checked={isActive}
-              aria-label={option}
+              aria-label={displayLabel}
             >
               <span className="flex-1 text-sm font-medium leading-relaxed text-current">
-                {option}
+                {displayLabel}
               </span>
 
               <span
@@ -1621,7 +1641,7 @@ function InteractionPreferencesView({
           onClick={() => void handleSaveSection("description", "interaction")}
           className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
         </button>
 
         <button
@@ -1629,7 +1649,7 @@ function InteractionPreferencesView({
           onClick={() => setActiveSection("arrival-guide")}
           className="w-full rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white disabled:opacity-50 sm:w-auto"
         >
-          Cancel
+          {t("host_cancel") || "Cancel"}
         </button>
       </div>
     </div>
@@ -1931,6 +1951,7 @@ function CheckInCheckOutView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
   const [editingStart, setEditingStart] = React.useState(false);
   const [editingEnd, setEditingEnd] = React.useState(false);
   const [editingCheckOut, setEditingCheckOut] = React.useState(false);
@@ -1942,13 +1963,13 @@ function CheckInCheckOutView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("house-rules")} />
-        <h1>Check-in and check-out times</h1>
+        <h1>{t("host_checkin_checkout_times_title") || "Check-in and check-out times"}</h1>
       </div>
 
       {/* Group 1: Check-in window and check-out times */}
       <div className="space-y-3 pt-2">
         <span className="text-base font-normal text-zinc-600 block">
-          Check-in window and check-out times
+          {t("host_checkin_window_and_checkout_times") || "Check-in window and check-out times"}
         </span>
 
         {/* Row 1: Start time */}
@@ -1958,8 +1979,8 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Start time</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart || "3:00 PM"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_start_time") || "Start time"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart === "Flexible" ? (t("host_flexible") || "Flexible") : (checkInStart || "3:00 PM")}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingStart ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -1978,9 +1999,9 @@ function CheckInCheckOutView({
                   }}
                   className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
-                  {timesList.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
+                  {timesList.map((tVal) => (
+                    <option key={tVal} value={tVal}>
+                      {tVal === "Flexible" ? (t("host_flexible") || "Flexible") : tVal}
                     </option>
                   ))}
                 </select>
@@ -1999,8 +2020,8 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">End time</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd || "Flexible"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_end_time") || "End time"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd === "Flexible" || !checkInEnd ? (t("host_flexible") || "Flexible") : checkInEnd}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingEnd ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -2019,9 +2040,9 @@ function CheckInCheckOutView({
                   }}
                   className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
-                  {timesList.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
+                  {timesList.map((tVal) => (
+                    <option key={tVal} value={tVal}>
+                      {tVal === "Flexible" ? (t("host_flexible") || "Flexible") : tVal}
                     </option>
                   ))}
                 </select>
@@ -2037,7 +2058,7 @@ function CheckInCheckOutView({
       {/* Group 2: Check-out time */}
       <div className="space-y-3 pt-4">
         <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-400 block">
-          Check-out time
+          {t("host_checkout_time_heading") || "Check-out time"}
         </span>
 
         {/* Row 3: Select time */}
@@ -2047,8 +2068,8 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Select time</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime || "12:00 PM"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_select_time") || "Select time"}</span>
+              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime === "Flexible" ? (t("host_flexible") || "Flexible") : (checkOutTime || "12:00 PM")}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingCheckOut ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -2067,9 +2088,9 @@ function CheckInCheckOutView({
                   }}
                   className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
-                  {timesList.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
+                  {timesList.map((tVal) => (
+                    <option key={tVal} value={tVal}>
+                      {tVal === "Flexible" ? (t("host_flexible") || "Flexible") : tVal}
                     </option>
                   ))}
                 </select>
@@ -2101,6 +2122,8 @@ function DirectionsView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
@@ -2108,9 +2131,9 @@ function DirectionsView({
         <div className="flex items-start gap-6">
           <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
           <div>
-            <h1>Directions to property</h1>
+            <h1>{t("host_directions_to_property_title") || "Directions to property"}</h1>
             <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-              Provide clear directions on how to reach your property. Include details that navigation apps might miss.
+              {t("host_directions_subtext") || "Provide clear directions on how to reach your property. Include details that navigation apps might miss."}
             </p>
           </div>
         </div>
@@ -2121,43 +2144,43 @@ function DirectionsView({
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 text-amber-800 dark:text-amber-400">
           <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
         </svg>
-        <span>Private · Only confirmed guests receive these directions after booking.</span>
+        <span>{t("host_directions_privacy_notice") || "Private · Only confirmed guests receive these directions after booking."}</span>
       </div>
 
       {/* Structured Suggestion Tips */}
       <div className="space-y-2">
-        <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">Recommended arrival details to include:</span>
+        <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">{t("host_recommended_arrival_details") || "Recommended arrival details to include:"}</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-              Driving directions
+              {t("host_driving_directions_title") || "Driving directions"}
             </span>
             <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
-              Key highway exits, turns, or community gate codes.
+              {t("host_driving_directions_desc") || "Key highway exits, turns, or community gate codes."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-              Parking instructions
+              {t("host_parking_instructions_title") || "Parking instructions"}
             </span>
             <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
-              Designated stall number, garage ramp, or street spots.
+              {t("host_parking_instructions_desc") || "Designated stall number, garage ramp, or street spots."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-              Public transportation
+              {t("host_public_transportation_title") || "Public transportation"}
             </span>
             <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
-              Nearby metro or bus stations and walking path.
+              {t("host_public_transportation_desc") || "Nearby metro or bus stations and walking path."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-              Landmarks & entrance
+              {t("host_landmarks_entrance_title") || "Landmarks & entrance"}
             </span>
             <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
-              Notable buildings, shops, or signs to find the door.
+              {t("host_landmarks_entrance_desc") || "Notable buildings, shops, or signs to find the door."}
             </p>
           </div>
         </div>
@@ -2166,9 +2189,9 @@ function DirectionsView({
       {/* Free-text Editor & Character Count */}
       <div className="space-y-1.5 pt-1">
         <div className="flex items-center justify-between">
-          <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">Directions & arrival notes</label>
+          <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">{t("host_directions_arrival_notes_label") || "Directions & arrival notes"}</label>
           <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-zinc-400 dark:text-zinc-500"}`}>
-            {(directions || "").length} / 5000 characters
+            {t("host_characters_limit", { count: (directions || "").length }) || `${(directions || "").length} / 5000 characters`}
           </span>
         </div>
         <textarea
@@ -2176,7 +2199,7 @@ function DirectionsView({
           maxLength={5000}
           value={directions}
           onChange={(e) => setDirections?.(e.target.value)}
-          placeholder="e.g. From King Khalid Airport or the Northern Ring Road, take Exit 4 towards the Diplomatic Quarter. Turn right after the grand mosque. The building is beige stone with dark bronze balconies next to Al-Nakheel Pharmacy. Park in slot #14 on level B1."
+          placeholder={t("host_directions_placeholder") || "e.g. From King Khalid Airport or the Northern Ring Road, take Exit 4 towards the Diplomatic Quarter. Turn right after the grand mosque. The building is beige stone with dark bronze balconies next to Al-Nakheel Pharmacy. Park in slot #14 on level B1."}
           className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
         />
       </div>
@@ -2189,14 +2212,14 @@ function DirectionsView({
           onClick={() => handleSaveSection("directions")}
           className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
-          {isSaving ? "Saving…" : "Save"}
+          {isSaving ? (t("host_saving") || "Saving…") : (t("host_save") || "Save")}
         </button>
         <button
           type="button"
           onClick={() => setActiveSection("check-in-out")}
           className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
-          Cancel
+          {t("host_cancel") || "Cancel"}
         </button>
       </div>
     </div>
@@ -2207,56 +2230,58 @@ function DirectionsView({
 /* ------------------------------------------------------------------ */
 /* CHECK-IN METHOD DATA                                                  */
 /* ------------------------------------------------------------------ */
-const CHECK_IN_METHODS_DATA = [
-  {
-    id: "SMART_LOCK",
-    label: "Smart lock",
-    description: "Guests will use a code or app to open a wifi-connected lock.",
-    hasCode: true,
-    codeLabel: "Smart lock / door code",
-    codePlaceholder: "e.g. 1234# or app access link",
-  },
-  {
-    id: "KEYPAD",
-    label: "Keypad",
-    description: "Guests will use the code you provide to open an electronic lock.",
-    hasCode: true,
-    codeLabel: "Keypad / door code",
-    codePlaceholder: "e.g. 4567",
-  },
-  {
-    id: "LOCKBOX",
-    label: "Lockbox",
-    description: "Guests will use a code you provide to open a small safe that has a key inside.",
-    hasCode: true,
-    codeLabel: "Lockbox combination code",
-    codePlaceholder: "e.g. 8842",
-  },
-  {
-    id: "BUILDING_STAFF",
-    label: "Building staff",
-    description: "Someone will be available 24 hours a day to let guests in.",
-    hasCode: false,
-    codeLabel: "",
-    codePlaceholder: "",
-  },
-  {
-    id: "IN_PERSON_GREETING",
-    label: "In-person greeting",
-    description: "Guests will meet you or your co-host to pick up keys.",
-    hasCode: false,
-    codeLabel: "",
-    codePlaceholder: "",
-  },
-  {
-    id: "OTHER",
-    label: "Other",
-    description: "Guests will use a different method not listed here.",
-    hasCode: false,
-    codeLabel: "",
-    codePlaceholder: "",
-  },
-] as const;
+export function getCheckInMethodsData(t: (key: any, ...args: any[]) => string) {
+  return [
+    {
+      id: "SMART_LOCK",
+      label: t("host_method_smart_lock_label") || "Smart lock",
+      description: t("host_method_smart_lock_desc") || "Guests will use a code or app to open a wifi-connected lock.",
+      hasCode: true,
+      codeLabel: t("host_smart_lock_code_label") || "Smart lock / door code",
+      codePlaceholder: t("host_smart_lock_code_placeholder") || "e.g. 1234# or app access link",
+    },
+    {
+      id: "KEYPAD",
+      label: t("host_method_keypad_label") || "Keypad",
+      description: t("host_method_keypad_desc") || "Guests will use the code you provide to open an electronic lock.",
+      hasCode: true,
+      codeLabel: t("host_keypad_code_label") || "Keypad / door code",
+      codePlaceholder: t("host_keypad_code_placeholder") || "e.g. 4567",
+    },
+    {
+      id: "LOCKBOX",
+      label: t("host_method_lockbox_label") || "Lockbox",
+      description: t("host_method_lockbox_desc") || "Guests will use a code you provide to open a small safe that has a key inside.",
+      hasCode: true,
+      codeLabel: t("host_lockbox_code_label") || "Lockbox combination code",
+      codePlaceholder: t("host_lockbox_code_placeholder") || "e.g. 8842",
+    },
+    {
+      id: "BUILDING_STAFF",
+      label: t("host_method_building_staff_label") || "Building staff",
+      description: t("host_method_building_staff_desc") || "Someone will be available 24 hours a day to let guests in.",
+      hasCode: false,
+      codeLabel: "",
+      codePlaceholder: "",
+    },
+    {
+      id: "IN_PERSON_GREETING",
+      label: t("host_method_in_person_greeting_label") || "In-person greeting",
+      description: t("host_method_in_person_greeting_desc") || "Guests will meet you or your co-host to pick up keys.",
+      hasCode: false,
+      codeLabel: "",
+      codePlaceholder: "",
+    },
+    {
+      id: "OTHER",
+      label: t("host_method_other_label") || "Other",
+      description: t("host_method_other_desc") || "Guests will use a different method not listed here.",
+      hasCode: false,
+      codeLabel: "",
+      codePlaceholder: "",
+    },
+  ];
+}
 
 function CheckInMethodIcon({ id }: { id: string }) {
   if (id === "SMART_LOCK") {
@@ -2341,8 +2366,21 @@ function normalizeCheckInMethod(val: string): string {
   return map[val] || val;
 }
 
-function getCheckInMethodLabel(val: string): string {
-  const m = CHECK_IN_METHODS_DATA.find((x) => x.id === normalizeCheckInMethod(val));
+export function getCheckInMethodLabel(val: string, t?: (key: any, ...args: any[]) => string): string {
+  const norm = normalizeCheckInMethod(val);
+  if (t) {
+    const map: Record<string, string> = {
+      SMART_LOCK: t("host_method_smart_lock_label") || "Smart lock",
+      KEYPAD: t("host_method_keypad_label") || "Keypad",
+      LOCKBOX: t("host_method_lockbox_label") || "Lockbox",
+      BUILDING_STAFF: t("host_method_building_staff_label") || "Building staff",
+      IN_PERSON_GREETING: t("host_method_in_person_greeting_label") || "In-person greeting",
+      OTHER: t("host_method_other_label") || "Other",
+    };
+    if (map[norm]) return map[norm];
+  }
+  const defaultList = getCheckInMethodsData((k) => k);
+  const m = defaultList.find((x) => x.id === norm);
   return m?.label || val || "Smart lock";
 }
 
@@ -2374,18 +2412,20 @@ function CheckInMethodView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
   const [isSelectModalOpen, setIsSelectModalOpen] = React.useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
   const [isInstructionModalOpen, setIsInstructionModalOpen] = React.useState(false);
   const [selectedMethodId, setSelectedMethodId] = React.useState<string | null>(null);
   const [draftCode, setDraftCode] = React.useState(doorCode || lockboxCode || "");
 
+  const checkInMethodsData = getCheckInMethodsData(t);
   const normalizedCurrent = normalizeCheckInMethod(checkInMethod);
-  const currentMethodData = CHECK_IN_METHODS_DATA.find((m) => m.id === normalizedCurrent);
+  const currentMethodData = checkInMethodsData.find((m) => m.id === normalizedCurrent);
   const codeValue = normalizedCurrent === "LOCKBOX" ? lockboxCode : doorCode;
 
   const handlePickMethod = (methodId: string) => {
-    const m = CHECK_IN_METHODS_DATA.find((x) => x.id === methodId);
+    const m = checkInMethodsData.find((x) => x.id === methodId);
     setSelectedMethodId(methodId);
     setIsSelectModalOpen(false);
     if (m?.hasCode) {
@@ -2411,14 +2451,14 @@ function CheckInMethodView({
     setIsDetailModalOpen(false);
   };
 
-  const selectedDetailMethod = CHECK_IN_METHODS_DATA.find((m) => m.id === selectedMethodId);
+  const selectedDetailMethod = checkInMethodsData.find((m) => m.id === selectedMethodId);
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("check-in-out")} />
-        <h1>Check-in method</h1>
+        <h1>{t("host_checkin_method") || "Check-in method"}</h1>
       </div>
 
       {/* Card: Selected Method */}
@@ -2429,7 +2469,7 @@ function CheckInMethodView({
               <CheckInMethodIcon id={normalizedCurrent} />
             </div>
             <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
-              {getCheckInMethodLabel(checkInMethod)}
+              {getCheckInMethodLabel(checkInMethod, t)}
             </span>
           </div>
           {/* Pencil edit button */}
@@ -2437,7 +2477,7 @@ function CheckInMethodView({
             type="button"
             onClick={() => setIsSelectModalOpen(true)}
             className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
-            aria-label="Change check-in method"
+            aria-label={t("host_change_checkin_method_aria") || "Change check-in method"}
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -2457,7 +2497,7 @@ function CheckInMethodView({
             className="mt-4 w-full flex items-center justify-between border-t border-zinc-100 dark:border-zinc-700 pt-4 group cursor-pointer"
           >
             <span className={`text-sm font-medium truncate max-w-[80%] ${codeValue ? "text-[#727272] dark:text-zinc-300" : "text-[#727272] dark:text-zinc-500"}`}>
-              {codeValue || "Add access code"}
+              {codeValue || (t("host_add_access_code") || "Add access code")}
             </span>
             <svg className="w-4 h-4 text-[#727272] dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -2468,9 +2508,9 @@ function CheckInMethodView({
 
       {/* Section: Check-in instructions */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">Check-in instructions</h2>
+        <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h2>
         <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-          Help guests have a smooth arrival. Share tips for how to get inside – you can also add photos.
+          {t("host_checkin_instructions_subtext") || "Help guests have a smooth arrival. Share tips for how to get inside – you can also add photos."}
         </p>
 
         {checkInInstructions && (
@@ -2490,7 +2530,7 @@ function CheckInMethodView({
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
               </svg>
-              Shared 48 hours before check-in
+              {t("host_shared_48h_before_checkin") || "Shared 48 hours before check-in"}
             </div>
           </button>
         )}
@@ -2501,7 +2541,7 @@ function CheckInMethodView({
           className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           <span className="text-base font-medium leading-none">+</span>
-          {checkInInstructions ? "Edit instructions" : "Add instructions"}
+          {checkInInstructions ? (t("host_edit_instructions") || "Edit instructions") : (t("host_add_instructions") || "Add instructions")}
         </button>
       </div>
 
@@ -2521,10 +2561,10 @@ function CheckInMethodView({
               </svg>
             </button>
             <div className="mb-6">
-              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Select a check-in method</h3>
+              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_select_checkin_method_title") || "Select a check-in method"}</h3>
             </div>
             <div className="space-y-3">
-              {CHECK_IN_METHODS_DATA.map((method) => {
+              {checkInMethodsData.map((method) => {
                 const isSelected = normalizedCurrent === method.id;
                 return (
                   <button
@@ -2578,10 +2618,10 @@ function CheckInMethodView({
               <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
                 <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {selectedDetailMethod.codeLabel}{" "}
-                  <span className="font-normal text-zinc-400 dark:text-zinc-500">(Confidential)</span>
+                  <span className="font-normal text-zinc-400 dark:text-zinc-500">{t("host_confidential_tag") || "(Confidential)"}</span>
                 </label>
                 <p className="text-xs text-[#1f1f1f] dark:text-zinc-500 leading-relaxed">
-                  This code is only shared with confirmed booked guests 48 hours before check-in.
+                  {t("host_code_confidential_info") || "This code is only shared with confirmed booked guests 48 hours before check-in."}
                 </p>
                 <input
                   type="text"
@@ -2599,7 +2639,7 @@ function CheckInMethodView({
                 onClick={() => setIsDetailModalOpen(false)}
                 className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
               <button
                 type="button"
@@ -2607,7 +2647,7 @@ function CheckInMethodView({
                 onClick={handleSaveDetail}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
             </div>
           </div>
@@ -2631,18 +2671,18 @@ function CheckInMethodView({
               </svg>
             </button>
             <div className="mb-6 space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Check-in instructions</h3>
+              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h3>
               <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-                Help guests have a smooth arrival. Share step-by-step tips to get inside.
+                {t("host_checkin_instructions_modal_desc") || "Help guests have a smooth arrival. Share step-by-step tips to get inside."}
               </p>
             </div>
             <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-              <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Instructions for guests</label>
+              <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_instructions_for_guests_label") || "Instructions for guests"}</label>
               <textarea
                 rows={5}
                 value={checkInInstructions || ""}
                 onChange={(e) => setCheckInInstructions?.(e.target.value)}
-                placeholder="e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."
+                placeholder={t("host_instructions_for_guests_placeholder") || "e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."}
                 className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-normal text-[#727272] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 leading-relaxed resize-none"
               />
               <p className="text-xs text-[#727272] dark:text-zinc-500 flex items-center gap-1.5">
@@ -2650,7 +2690,7 @@ function CheckInMethodView({
                   <circle cx="12" cy="12" r="9" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
                 </svg>
-                Shared 48 hours before check-in
+                {t("host_shared_48h_before_checkin") || "Shared 48 hours before check-in"}
               </p>
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -2660,7 +2700,7 @@ function CheckInMethodView({
                 onClick={() => setIsInstructionModalOpen(false)}
                 className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
               <button
                 type="button"
@@ -2671,7 +2711,7 @@ function CheckInMethodView({
                 }}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
             </div>
           </div>
