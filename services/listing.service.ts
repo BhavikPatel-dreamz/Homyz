@@ -254,10 +254,13 @@ export type PublicSearchFilters = {
   infants?: number;
   pets?: number;
   propertyType?: string;
+  propertyTypes?: string[];
   listingType?: string;
   minPrice?: number;
   maxPrice?: number;
   amenities?: string[];
+  accessibilityFeatures?: string[];
+  languages?: string[];
   bedrooms?: number;
   bathrooms?: number;
   beds?: number;
@@ -360,16 +363,31 @@ async function searchPublicListings(
     baseClauses.push({ guests: { gte: totalGuests } });
   }
 
-  if (filters.propertyType && filters.propertyType.trim()) {
+  if (filters.propertyTypes && filters.propertyTypes.length > 0) {
+    baseClauses.push({
+      propertyType: { in: filters.propertyTypes, mode: "insensitive" },
+    });
+  } else if (filters.propertyType && filters.propertyType.trim()) {
     baseClauses.push({
       propertyType: { equals: filters.propertyType.trim(), mode: "insensitive" },
     });
   }
 
   if (filters.listingType && filters.listingType.trim()) {
-    baseClauses.push({
-      listingType: { equals: filters.listingType.trim(), mode: "insensitive" },
-    });
+    const rawType = filters.listingType.trim().toUpperCase();
+    if (rawType === "ROOM") {
+      baseClauses.push({
+        listingType: { in: ["ROOM", "Private room", "Room", "Shared room"], mode: "insensitive" },
+      });
+    } else if (rawType === "ENTIRE_HOME" || rawType === "ENTIRE_PLACE") {
+      baseClauses.push({
+        listingType: { in: ["ENTIRE_HOME", "ENTIRE_PLACE", "Entire place", "Entire home"], mode: "insensitive" },
+      });
+    } else {
+      baseClauses.push({
+        listingType: { equals: filters.listingType.trim(), mode: "insensitive" },
+      });
+    }
   }
 
   if (typeof filters.minPrice === "number") {
@@ -383,8 +401,37 @@ async function searchPublicListings(
   if (filters.amenities && filters.amenities.length > 0) {
     const canonicalAmenityIds = normalizeAmenities(filters.amenities);
     if (canonicalAmenityIds.length > 0) {
-      baseClauses.push({ amenities: { hasEvery: canonicalAmenityIds } });
+      if (canonicalAmenityIds.includes("self_check_in")) {
+        const otherAmenities = canonicalAmenityIds.filter((id) => id !== "self_check_in");
+        if (otherAmenities.length > 0) {
+          baseClauses.push({ amenities: { hasEvery: otherAmenities } });
+        }
+        baseClauses.push({
+          OR: [
+            { amenities: { has: "self_check_in" } },
+            { checkInMethod: { in: ["SMART_LOCK", "KEYPAD", "LOCKBOX"] } },
+            { highlights: { has: "Self check-in" } },
+          ],
+        });
+      } else {
+        baseClauses.push({ amenities: { hasEvery: canonicalAmenityIds } });
+      }
     }
+  }
+
+  if (filters.accessibilityFeatures && filters.accessibilityFeatures.length > 0) {
+    baseClauses.push({
+      OR: [
+        { accessibilityFeatures: { hasSome: filters.accessibilityFeatures } },
+        { amenities: { hasSome: filters.accessibilityFeatures } },
+      ],
+    });
+  }
+
+  if (filters.languages && filters.languages.length > 0) {
+    baseClauses.push({
+      languages: { hasSome: filters.languages },
+    });
   }
 
   if (typeof filters.bedrooms === "number" && filters.bedrooms > 0) {

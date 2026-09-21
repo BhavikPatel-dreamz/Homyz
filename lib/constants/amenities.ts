@@ -66,6 +66,7 @@ export const CANONICAL_AMENITIES: CanonicalAmenity[] = [
   { id: "washer", label: "Washer", category: "favorites", description: "Washer in building or in unit", icon: "🧺", isPopular: true },
   { id: "dryer", label: "Dryer", category: "essentials", description: "Clothes dryer in building or in unit", icon: "💨", isPopular: true },
   { id: "free_parking", label: "Free parking", category: "favorites", description: "Free parking on premises", icon: "🅿️", isPopular: true },
+  { id: "self_check_in", label: "Self check-in", category: "favorites", description: "Check yourself into the home with a keypad or smart lock", icon: "🔑", isPopular: true },
   { id: "paid_parking", label: "Paid parking", category: "favorites", description: "Paid parking on premises or nearby", icon: "💳", isPopular: true },
   { id: "air_conditioning", label: "Air conditioning", category: "favorites", description: "Central or split air conditioning", icon: "❄️", isPopular: true },
   { id: "heating", label: "Heating", category: "essentials", description: "Central heating or portable heater", icon: "🔥", isPopular: true },
@@ -193,6 +194,15 @@ export const AMENITY_ALIASES: Record<string, string> = {
   // Washer
   "washer": "washer",
   "washer & dryer": "washer",
+  "washing machine": "washer",
+  "washing_machine": "washer",
+
+  // Self Check-in
+  "self check-in": "self_check_in",
+  "self check in": "self_check_in",
+  "self_check_in": "self_check_in",
+  "self-check-in": "self_check_in",
+  "smart lock": "self_check_in",
 
   // Parking
   "free parking": "free_parking",

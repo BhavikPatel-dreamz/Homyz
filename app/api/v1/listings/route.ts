@@ -26,6 +26,16 @@ export const GET = apiHandler(async (req) => {
   const bathrooms = sp.get("bathrooms") ? parseInt(sp.get("bathrooms")!, 10) : undefined;
   const beds = sp.get("beds") ? parseInt(sp.get("beds")!, 10) : undefined;
   const instantBook = sp.get("instantBook") === "true" ? true : undefined;
+  const featured = sp.get("featured") === "true" ? true : undefined;
+  const pets = sp.get("pets") ? parseInt(sp.get("pets")!, 10) : undefined;
+  const accessibilityParam = sp.get("accessibility");
+  const accessibilityFeatures = accessibilityParam
+    ? accessibilityParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
+  const languagesParam = sp.get("languages");
+  const languages = languagesParam
+    ? languagesParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
   const sortBy = (sp.get("sortBy") as import("@/services/listing.service").SortBy) || undefined;
   // Map bounds (supports both neLat/neLng/swLat/swLng and north/east/south/west)
   const rawNorth = sp.get("neLat") || sp.get("north");
@@ -43,7 +53,8 @@ export const GET = apiHandler(async (req) => {
   const hasFilters = Boolean(
     city || guests || propertyType || listingType || minPrice || maxPrice ||
     checkIn || checkOut || amenities || bedrooms || bathrooms || beds ||
-    instantBook || sortBy || mapBounds,
+    instantBook || featured || pets || accessibilityFeatures || languages ||
+    sortBy || mapBounds,
   );
 
   const result = hasFilters
@@ -57,10 +68,14 @@ export const GET = apiHandler(async (req) => {
         checkIn,
         checkOut,
         amenities,
+        accessibilityFeatures,
+        languages,
         bedrooms,
         bathrooms,
         beds,
         instantBook,
+        featured,
+        pets,
         sortBy,
         mapBounds,
         skip,

@@ -38,9 +38,12 @@ interface SearchPageProps {
     infants?: string;
     pets?: string;
     propertyType?: string;
+    listingType?: string;
     minPrice?: string;
     maxPrice?: string;
     amenities?: string;
+    accessibility?: string;
+    languages?: string;
     bedrooms?: string;
     bathrooms?: string;
     beds?: string;
@@ -80,9 +83,12 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const infants = sp.infants ? parseInt(sp.infants, 10) : undefined;
   const pets = sp.pets ? parseInt(sp.pets, 10) : undefined;
   const propertyType = sp.propertyType || undefined;
+  const listingType = sp.listingType || undefined;
   const minPrice = sp.minPrice ? parseInt(sp.minPrice, 10) : undefined;
   const maxPrice = sp.maxPrice ? parseInt(sp.maxPrice, 10) : undefined;
   const amenities = sp.amenities ? sp.amenities.split(",").filter(Boolean) : undefined;
+  const accessibility = sp.accessibility ? sp.accessibility.split(",").filter(Boolean) : undefined;
+  const languages = sp.languages ? sp.languages.split(",").filter(Boolean) : undefined;
   const bedrooms = sp.bedrooms ? parseInt(sp.bedrooms, 10) : undefined;
   const bathrooms = sp.bathrooms ? parseInt(sp.bathrooms, 10) : undefined;
   const beds = sp.beds ? parseInt(sp.beds, 10) : undefined;
@@ -135,9 +141,12 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
       infants,
       pets,
       propertyType,
+      listingType,
       minPrice,
       maxPrice,
       amenities,
+      accessibilityFeatures: accessibility,
+      languages,
       bedrooms,
       bathrooms,
       beds,
@@ -184,9 +193,12 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     infants,
     pets,
     propertyType,
+    listingType,
     minPrice,
     maxPrice,
     amenities,
+    accessibility,
+    languages,
     bedrooms,
     bathrooms,
     beds,

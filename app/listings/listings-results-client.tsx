@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useTransition, useRef, useEffect } from "react";
+import React, { useState, useCallback, useTransition, useRef, useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { formatListingPrice, getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 
@@ -47,9 +47,13 @@ interface ListingsResultsClientProps {
     infants?: number;
     pets?: number;
     propertyType?: string;
+    propertyTypes?: string[];
+    listingType?: string;
     minPrice?: number;
     maxPrice?: number;
     amenities?: string[];
+    accessibility?: string[];
+    languages?: string[];
     bedrooms?: number;
     bathrooms?: number;
     beds?: number;
@@ -85,12 +89,32 @@ const PROPERTY_TYPES = [
 ];
 
 const QUICK_AMENITIES = [
-  { id: "wifi", label: "Wi-Fi" },
+  { id: "wifi", label: "Wifi" },
   { id: "pool", label: "Pool" },
   { id: "air_conditioning", label: "Air conditioning" },
   { id: "kitchen", label: "Kitchen" },
   { id: "free_parking", label: "Free parking" },
+  { id: "self_check_in", label: "Self check-in" },
+  { id: "washer", label: "Washing machine" },
+  { id: "tv", label: "TV" },
   { id: "workspace", label: "Dedicated workspace" },
+];
+
+type QuickFilterOption =
+  | { type: "amenity"; id: string; label: string }
+  | { type: "bathrooms"; count: number; label: string }
+  | { type: "instantBook"; label: string };
+
+const TOP_FILTER_OPTIONS: QuickFilterOption[] = [
+  { type: "amenity", id: "self_check_in", label: "Self check-in" },
+  { type: "amenity", id: "free_parking", label: "Free parking" },
+  { type: "bathrooms", count: 1, label: "1+ bathrooms" },
+  { type: "amenity", id: "air_conditioning", label: "Air conditioning" },
+  { type: "amenity", id: "wifi", label: "Wifi" },
+  { type: "instantBook", label: "Instant Book" },
+  { type: "amenity", id: "washer", label: "Washing machine" },
+  { type: "amenity", id: "pool", label: "Pool" },
+  { type: "amenity", id: "tv", label: "TV" },
 ];
 
 // ─────────────────────────────────────────────
@@ -436,6 +460,9 @@ export function ListingsResultsClient({
   const [draftPropertyType, setDraftPropertyType] = useState<string>(
     currentFilters.propertyType ?? "",
   );
+  const [draftListingType, setDraftListingType] = useState<string>(
+    currentFilters.listingType ?? "",
+  );
   const [draftAmenities, setDraftAmenities] = useState<string[]>(
     currentFilters.amenities ?? [],
   );
@@ -445,19 +472,116 @@ export function ListingsResultsClient({
   const [draftInstantBook, setDraftInstantBook] = useState<boolean>(
     currentFilters.instantBook ?? false,
   );
+  const [draftFeatured, setDraftFeatured] = useState<boolean>(
+    currentFilters.featured ?? false,
+  );
+  const [draftPets, setDraftPets] = useState<boolean>(
+    Boolean(currentFilters.pets && currentFilters.pets > 0),
+  );
+  const [draftStandout, setDraftStandout] = useState<string>("");
+  const [draftAccessibility, setDraftAccessibility] = useState<string[]>([]);
+  const [draftHostLanguages, setDraftHostLanguages] = useState<string[]>([]);
+  const [showAllAmenities, setShowAllAmenities] = useState<boolean>(false);
+  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState<boolean>(false);
+  const [isHostLanguageOpen, setIsHostLanguageOpen] = useState<boolean>(false);
+
+  // Sync draft state when modal opens or URL filters change
+  useEffect(() => {
+    if (isFilterOpen) {
+      setDraftMinPrice(currentFilters.minPrice ? Math.round(currentFilters.minPrice / 100) : 0);
+      setDraftMaxPrice(
+        currentFilters.maxPrice
+          ? Math.round(currentFilters.maxPrice / 100)
+          : priceRange
+          ? Math.round(priceRange.max / 100)
+          : 5000,
+      );
+      setDraftPropertyType(currentFilters.propertyType ?? "");
+      setDraftListingType(currentFilters.listingType ?? "");
+      setDraftAmenities(currentFilters.amenities ?? []);
+      setDraftBedrooms(currentFilters.bedrooms ?? 0);
+      setDraftBathrooms(currentFilters.bathrooms ?? 0);
+      setDraftBeds(currentFilters.beds ?? 0);
+      setDraftInstantBook(currentFilters.instantBook ?? false);
+      setDraftFeatured(currentFilters.featured ?? false);
+      setDraftPets(Boolean(currentFilters.pets && currentFilters.pets > 0));
+      setDraftStandout(currentFilters.featured ? "guest_favourite" : "");
+      setDraftAccessibility(currentFilters.accessibility ?? []);
+      setDraftHostLanguages(currentFilters.languages ?? []);
+    }
+  }, [isFilterOpen, currentFilters, priceRange]);
 
   // Compute active filter count for badge
   const activeFilterCount = [
     currentFilters.minPrice && currentFilters.minPrice > 0,
     currentFilters.maxPrice && currentFilters.maxPrice > 0,
     currentFilters.propertyType,
+    currentFilters.listingType,
     (currentFilters.amenities ?? []).length > 0,
+    (currentFilters.accessibility ?? []).length > 0,
+    (currentFilters.languages ?? []).length > 0,
     currentFilters.bedrooms && currentFilters.bedrooms > 0,
     currentFilters.bathrooms && currentFilters.bathrooms > 0,
     currentFilters.beds && currentFilters.beds > 0,
     currentFilters.instantBook,
     currentFilters.featured,
+    currentFilters.pets && currentFilters.pets > 0,
   ].filter(Boolean).length;
+
+  const activeCurrency = allListings[0]?.country ? getCurrencyForCountry(allListings[0].country) : "SAR";
+  const currencySymbol = getCurrencySymbol(activeCurrency);
+  const sliderMin = 0;
+  const sliderMax = priceRange?.max ? Math.ceil(priceRange.max / 100) : 5000;
+
+  const histogramBars = useMemo(() => {
+    const NUM_BINS = 28;
+    const minB = 0;
+    const maxB = sliderMax > 0 ? sliderMax : 5000;
+    const range = Math.max(100, maxB - minB);
+    const step = range / NUM_BINS;
+
+    const defaultCurve = [
+      8, 12, 18, 26, 40, 56, 72, 88, 100, 92, 82, 74, 68, 58, 48, 40, 32, 26, 22, 18, 15, 12, 10, 8, 6, 5, 4, 3,
+    ];
+
+    const counts = new Array(NUM_BINS).fill(0);
+    let hasActualData = false;
+
+    if (allListings && allListings.length > 0) {
+      allListings.forEach((listing) => {
+        const p = listing.price / 100;
+        if (p >= minB && p <= maxB) {
+          const binIdx = Math.min(NUM_BINS - 1, Math.max(0, Math.floor((p - minB) / step)));
+          counts[binIdx] += 1;
+          hasActualData = true;
+        }
+      });
+    }
+
+    const maxCount = hasActualData ? Math.max(...counts, 1) : 100;
+
+    return Array.from({ length: NUM_BINS }).map((_, i) => {
+      const binStart = minB + i * step;
+      const binEnd = binStart + step;
+      const heightPercent = hasActualData
+        ? Math.max(12, Math.round((counts[i] / maxCount) * 85 + defaultCurve[i] * 0.15))
+        : defaultCurve[i];
+
+      const isSelected =
+        binEnd >= (draftMinPrice || 0) &&
+        binStart <= (draftMaxPrice || maxB);
+
+      return {
+        binStart,
+        binEnd,
+        heightPercent,
+        isSelected,
+      };
+    });
+  }, [allListings, sliderMax, draftMinPrice, draftMaxPrice]);
+
+  const minPercent = Math.min(100, Math.max(0, ((draftMinPrice - sliderMin) / (sliderMax - sliderMin)) * 100));
+  const maxPercent = Math.min(100, Math.max(0, ((draftMaxPrice - sliderMin) / (sliderMax - sliderMin)) * 100));
 
   // ── URL helpers ──────────────────────────────
   const buildUrl = useCallback(
@@ -515,11 +639,15 @@ export function ListingsResultsClient({
         minPrice: draftMinPrice,
         maxPrice: draftMaxPrice,
         propertyType: draftPropertyType,
+        listingType: draftListingType,
         amenities: draftAmenities,
+        accessibility: draftAccessibility,
+        languages: draftHostLanguages,
         bedrooms: draftBedrooms,
         bathrooms: draftBathrooms,
         beds: draftBeds,
         instantBook: draftInstantBook,
+        featured: draftFeatured || Boolean(draftStandout),
       },
       resultCount: total,
     });
@@ -529,11 +657,16 @@ export function ListingsResultsClient({
           minPrice: draftMinPrice > 0 ? draftMinPrice * 100 : null,
           maxPrice: draftMaxPrice > 0 ? draftMaxPrice * 100 : null,
           propertyType: draftPropertyType || null,
+          listingType: draftListingType || null,
           amenities: draftAmenities.length ? draftAmenities.join(",") : null,
+          accessibility: draftAccessibility.length ? draftAccessibility.join(",") : null,
+          languages: draftHostLanguages.length ? draftHostLanguages.join(",") : null,
           bedrooms: draftBedrooms > 0 ? draftBedrooms : null,
           bathrooms: draftBathrooms > 0 ? draftBathrooms : null,
           beds: draftBeds > 0 ? draftBeds : null,
           instantBook: draftInstantBook ? "true" : null,
+          featured: draftFeatured || draftStandout ? "true" : null,
+          pets: draftPets ? 1 : null,
         }),
       );
     });
@@ -544,11 +677,17 @@ export function ListingsResultsClient({
     setDraftMinPrice(0);
     setDraftMaxPrice(priceRange ? Math.round(priceRange.max / 100) : 5000);
     setDraftPropertyType("");
+    setDraftListingType("");
     setDraftAmenities([]);
     setDraftBedrooms(0);
     setDraftBathrooms(0);
     setDraftBeds(0);
     setDraftInstantBook(false);
+    setDraftFeatured(false);
+    setDraftPets(false);
+    setDraftStandout("");
+    setDraftAccessibility([]);
+    setDraftHostLanguages([]);
   };
 
   // Map bounds changed — re-search with bounds
@@ -764,80 +903,114 @@ export function ListingsResultsClient({
       )}
 
       {/* ── Top Control Bar ─────────────── */}
-      <div className="flex items-center gap-2 pb-5 overflow-x-auto no-scrollbar">
-        {/* Sort */}
-        <select
-          value={currentFilters.sortBy ?? "recommended"}
-          onChange={(e) => handleSortChange(e.target.value as SortBy)}
-          className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-900 cursor-pointer shrink-0"
-          aria-label="Sort by"
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        {/* Filters button */}
-        <button
-          type="button"
-          onClick={() => setIsFilterOpen(true)}
-          className="relative flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:border-zinc-400 transition-colors shrink-0"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-3.5 w-3.5"
-          >
-            <path d="M4 6h16M8 12h8M11 18h2" />
-          </svg>
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-
-        {/* Active Featured Chip */}
-        {currentFilters.featured && (
+      <div className="flex items-center justify-between gap-3 pb-5">
+        {/* Left: Scrollable filter pills matching reference design */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 min-w-0">
+          {/* Filters button */}
           <button
             type="button"
-            onClick={() => {
-              startTransition(() => {
-                router.push(buildUrl({ featured: null }));
-              });
-            }}
-            className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs font-semibold px-3.5 py-1.5 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
-            aria-label="Clear featured filter"
+            onClick={() => setIsFilterOpen(true)}
+            className={`relative flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all shrink-0 cursor-pointer ${
+              activeFilterCount > 0
+                ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+            }`}
           >
-            <span>✨ Featured</span>
-            <span className="text-zinc-400 hover:text-white font-bold text-xs ml-0.5">✕</span>
-          </button>
-        )}
-
-        {/* Quick amenity chips */}
-        {QUICK_AMENITIES.map((am) => {
-          const isSelected = (currentFilters.amenities ?? []).includes(am.id);
-          return (
-            <button
-              key={am.id}
-              type="button"
-              aria-pressed={isSelected}
-              onClick={() => handleAmenityChip(am.id)}
-              className={`rounded-full text-xs font-medium px-3.5 py-1.5 transition-all whitespace-nowrap shrink-0 ${
-                isSelected
-                  ? "bg-amber-300 text-amber-950 font-semibold border border-amber-400 shadow-2xs"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-              }`}
+            <svg
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-3.5 h-3.5 shrink-0"
+              aria-hidden="true"
             >
-              {am.label}
+              <path d="M1 3.5a.5.5 0 0 1 .5-.5h2.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H7.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h6.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1h-3.086a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h1.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H6.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5z" />
+            </svg>
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-zinc-900 ml-0.5">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
+          {/* Vertical divider line */}
+          <div className="h-6 w-px bg-zinc-200 shrink-0 mx-1" aria-hidden="true" />
+
+          {/* Active Featured Chip */}
+          {currentFilters.featured && (
+            <button
+              type="button"
+              onClick={() => {
+                startTransition(() => {
+                  router.push(buildUrl({ featured: null }));
+                });
+              }}
+              className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs sm:text-[13px] font-semibold px-3.5 py-2 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
+              aria-label="Clear featured filter"
+            >
+              <span>✨ Featured</span>
+              <span className="text-zinc-400 hover:text-white font-bold text-xs ml-0.5">✕</span>
             </button>
-          );
-        })}
+          )}
+
+          {/* Quick Filter Option Pills */}
+          {TOP_FILTER_OPTIONS.map((opt) => {
+            let isSelected = false;
+            let handleClick = () => {};
+
+            if (opt.type === "amenity") {
+              isSelected = (currentFilters.amenities ?? []).includes(opt.id);
+              handleClick = () => handleAmenityChip(opt.id);
+            } else if (opt.type === "bathrooms") {
+              isSelected =
+                typeof currentFilters.bathrooms === "number" &&
+                currentFilters.bathrooms >= opt.count;
+              handleClick = () => {
+                startTransition(() => {
+                  router.push(buildUrl({ bathrooms: isSelected ? null : opt.count }));
+                });
+              };
+            } else if (opt.type === "instantBook") {
+              isSelected = currentFilters.instantBook === true;
+              handleClick = () => {
+                startTransition(() => {
+                  router.push(buildUrl({ instantBook: isSelected ? null : true }));
+                });
+              };
+            }
+
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={handleClick}
+                className={`rounded-full text-xs sm:text-[13px] px-4 py-2 transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
+                  isSelected
+                    ? "bg-zinc-900 text-white border-zinc-900 font-semibold shadow-xs"
+                    : "bg-white text-zinc-800 border-zinc-200 hover:border-zinc-900 font-medium"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: Sort dropdown */}
+        <div className="shrink-0 pl-1">
+          <select
+            value={currentFilters.sortBy ?? "recommended"}
+            onChange={(e) => handleSortChange(e.target.value as SortBy)}
+            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer shrink-0"
+            aria-label="Sort by"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ── Results Area ────────────────── */}
@@ -1125,162 +1298,533 @@ export function ListingsResultsClient({
           onClick={() => setIsFilterOpen(false)}
         >
           <div
-            className="relative w-full sm:max-w-lg bg-white rounded-t-[28px] sm:rounded-[28px] max-h-[90dvh] overflow-y-auto"
+            className="relative w-full max-w-2xl bg-white rounded-t-[28px] sm:rounded-[28px] max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 sticky top-0 bg-white z-10">
-              <h2 className="text-base font-semibold text-zinc-900">Filters</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 sticky top-0 bg-white z-10 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-zinc-100 transition-colors cursor-pointer text-zinc-700"
                 aria-label="Close filters"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-4 w-4">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
+              <h2 className="text-base font-bold text-zinc-900">Filters</h2>
+              <div className="w-9" aria-hidden="true" />
             </div>
 
-            <div className="px-6 py-5 space-y-6">
-              {/* Price Range */}
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-900 mb-3">Price range (SAR / night)</h3>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <label className="text-xs text-zinc-500 mb-1 block">Min</label>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-7 divide-y divide-zinc-200/80">
+              {/* 1. Recommended for you — hidden */}
+              {/* <div>
+                <h3 className="text-base font-bold text-zinc-900 mb-3">Recommended for you</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <button type="button" onClick={() => { const hasIt = draftAmenities.includes("self_check_in"); setDraftAmenities(hasIt ? draftAmenities.filter((a) => a !== "self_check_in") : [...draftAmenities, "self_check_in"]); }} className={`rounded-2xl border p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${draftAmenities.includes("self_check_in") ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-xl mb-2">🔑</div><span className="text-xs sm:text-sm font-semibold text-zinc-900">Self check-in</span></button>
+                  <button type="button" onClick={() => { const hasIt = draftAmenities.includes("free_parking"); setDraftAmenities(hasIt ? draftAmenities.filter((a) => a !== "free_parking") : [...draftAmenities, "free_parking"]); }} className={`rounded-2xl border p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${draftAmenities.includes("free_parking") ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold mb-2">🅿️</div><span className="text-xs sm:text-sm font-semibold text-zinc-900">Free parking</span></button>
+                  <button type="button" onClick={() => setDraftBathrooms((prev) => (prev >= 1 ? 0 : 1))} className={`rounded-2xl border p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${draftBathrooms >= 1 ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-2">🚽</div><span className="text-xs sm:text-sm font-semibold text-zinc-900">1+ bathrooms</span></button>
+                  <button type="button" onClick={() => { const hasIt = draftAmenities.includes("air_conditioning"); setDraftAmenities(hasIt ? draftAmenities.filter((a) => a !== "air_conditioning") : [...draftAmenities, "air_conditioning"]); }} className={`rounded-2xl border p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${draftAmenities.includes("air_conditioning") ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="w-10 h-10 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center text-xl mb-2">❄️</div><span className="text-xs sm:text-sm font-semibold text-zinc-900">Air conditioning</span></button>
+                </div>
+              </div> */}
+
+              {/* 2. Type of place — hidden */}
+              {/* <div className="pt-6">
+                <h3 className="text-base font-bold text-zinc-900 mb-1">Type of place</h3>
+                <p className="text-xs sm:text-sm text-zinc-500 mb-3.5">Search rooms, entire homes, or any type of place</p>
+                <div className="grid grid-cols-3 border border-zinc-200 rounded-xl p-1 bg-zinc-50">
+                  {[{ id: "", label: "Any type" }, { id: "ROOM", label: "Room" }, { id: "ENTIRE_HOME", label: "Entire home" }].map((item) => { const active = draftListingType === item.id; return (<button key={item.id} type="button" onClick={() => setDraftListingType(item.id)} className={`py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-center cursor-pointer ${active ? "bg-white shadow-xs border border-zinc-200 text-zinc-950" : "text-zinc-600 hover:text-zinc-900"}`}>{item.label}</button>); })}
+                </div>
+              </div> */}
+
+              {/* 3. Price range */}
+              <div className="pt-6">
+                <h3 className="text-base font-bold text-zinc-900 mb-1">Price range</h3>
+                <p className="text-xs sm:text-sm text-zinc-500 mb-4">Trip price, includes all fees.</p>
+
+                {/* Dynamic Price Histogram and Dual Slider */}
+                <div className="relative pt-2 pb-6 px-1">
+                  {/* Histogram bars */}
+                  <div className="h-16 flex items-end gap-[3px] px-2 mb-0">
+                    {histogramBars.map((bar, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 rounded-t-xs transition-colors duration-150 ${
+                          bar.isSelected ? "bg-rose-500" : "bg-zinc-200"
+                        }`}
+                        style={{ height: `${bar.heightPercent}%` }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Dual Slider Track & Range Inputs */}
+                  <div className="relative h-6 flex items-center px-1">
+                    {/* Background Track Line */}
+                    <div className="absolute left-2 right-2 h-1 bg-zinc-200 rounded-full" />
+
+                    {/* Active Track Highlight */}
+                    <div
+                      className="absolute h-1 bg-rose-500 rounded-full pointer-events-none"
+                      style={{
+                        left: `${minPercent}%`,
+                        width: `${Math.max(0, maxPercent - minPercent)}%`,
+                      }}
+                    />
+
+                    {/* Min Range Slider */}
                     <input
-                      type="number"
+                      type="range"
+                      min={sliderMin}
+                      max={sliderMax}
+                      step={10}
                       value={draftMinPrice}
-                      min={0}
-                      onChange={(e) => setDraftMinPrice(Math.max(0, Number(e.target.value)))}
-                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-900"
-                      placeholder="0"
+                      onChange={(e) => {
+                        const val = Math.min(Number(e.target.value), draftMaxPrice - 10);
+                        setDraftMinPrice(Math.max(sliderMin, val));
+                      }}
+                      className="absolute inset-0 w-full h-full appearance-none bg-transparent pointer-events-none cursor-pointer z-10 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-zinc-300 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:hover:scale-105 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-7 [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-zinc-300 [&::-moz-range-thumb]:shadow-md"
+                      aria-label="Minimum price"
                     />
-                  </div>
-                  <span className="text-zinc-400 text-sm mt-4">—</span>
-                  <div className="flex-1">
-                    <label className="text-xs text-zinc-500 mb-1 block">Max</label>
+
+                    {/* Max Range Slider */}
                     <input
-                      type="number"
+                      type="range"
+                      min={sliderMin}
+                      max={sliderMax}
+                      step={10}
                       value={draftMaxPrice}
-                      min={0}
-                      onChange={(e) => setDraftMaxPrice(Math.max(0, Number(e.target.value)))}
-                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-900"
-                      placeholder="5000"
+                      onChange={(e) => {
+                        const val = Math.max(Number(e.target.value), draftMinPrice + 10);
+                        setDraftMaxPrice(Math.min(sliderMax, val));
+                      }}
+                      className="absolute inset-0 w-full h-full appearance-none bg-transparent pointer-events-none cursor-pointer z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-zinc-300 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:hover:scale-105 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-7 [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-zinc-300 [&::-moz-range-thumb]:shadow-md"
+                      aria-label="Maximum price"
                     />
+                  </div>
+                </div>
+
+                {/* Min / Max Editable Inputs */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 rounded-2xl border border-zinc-300 px-3.5 py-2.5 focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
+                    <label className="text-[11px] font-medium text-zinc-500 block">Minimum</label>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-sm font-semibold text-zinc-400">{currencySymbol}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={draftMinPrice || ""}
+                        onChange={(e) => setDraftMinPrice(Math.max(0, Number(e.target.value)))}
+                        placeholder="0"
+                        className="w-full text-sm font-semibold text-zinc-900 outline-none bg-transparent"
+                      />
+                    </div>
+                  </div>
+                  <span className="text-zinc-400 font-bold">—</span>
+                  <div className="flex-1 rounded-2xl border border-zinc-300 px-3.5 py-2.5 focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
+                    <label className="text-[11px] font-medium text-zinc-500 block">Maximum</label>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-sm font-semibold text-zinc-400">{currencySymbol}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={draftMaxPrice || ""}
+                        onChange={(e) => setDraftMaxPrice(Math.max(0, Number(e.target.value)))}
+                        placeholder={String(sliderMax)}
+                        className="w-full text-sm font-semibold text-zinc-900 outline-none bg-transparent"
+                      />
+                      <span className="text-sm font-semibold text-zinc-400">+</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Property type */}
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-900 mb-3">Property type</h3>
-                <div className="flex flex-wrap gap-2">
-                  {PROPERTY_TYPES.map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setDraftPropertyType(draftPropertyType === type ? "" : type)}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
-                        draftPropertyType === type
-                          ? "bg-zinc-900 text-white"
-                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rooms & beds */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900">Rooms & beds</h3>
+              {/* 4. Rooms and beds */}
+              <div className="pt-6 space-y-4">
+                <h3 className="text-base font-bold text-zinc-900">Rooms and beds</h3>
+                
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-700">Bedrooms</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">Bedrooms</span>
                   <Stepper value={draftBedrooms} onChange={setDraftBedrooms} label="bedrooms" />
                 </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-700">Beds</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">Beds</span>
                   <Stepper value={draftBeds} onChange={setDraftBeds} label="beds" />
                 </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-700">Bathrooms</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">Bathrooms</span>
                   <Stepper value={draftBathrooms} onChange={setDraftBathrooms} label="bathrooms" />
                 </div>
               </div>
 
-              {/* Amenities */}
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-900 mb-3">Amenities</h3>
-                <div className="flex flex-wrap gap-2">
-                  {QUICK_AMENITIES.map((am) => {
-                    const active = draftAmenities.includes(am.id);
+              {/* 5. Amenities */}
+              <div className="pt-6 space-y-5">
+                <h3 className="text-base font-bold text-zinc-900">Amenities</h3>
+
+                {/* Popular */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Popular</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "wifi", label: "Wifi", icon: "📶" },
+                      { id: "washer", label: "Washing machine", icon: "🧺" },
+                      { id: "pool", label: "Pool", icon: "🏊" },
+                      { id: "tv", label: "TV", icon: "📺" },
+                      { id: "hair_dryer", label: "Hair dryer", icon: "💇" },
+                      { id: "kitchen", label: "Kitchen", icon: "🍳" },
+                    ].map((am) => {
+                      const active = draftAmenities.includes(am.id);
+                      return (
+                        <button
+                          key={am.id}
+                          type="button"
+                          onClick={() =>
+                            setDraftAmenities(
+                              active
+                                ? draftAmenities.filter((a) => a !== am.id)
+                                : [...draftAmenities, am.id],
+                            )
+                          }
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                            active
+                              ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                              : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                          }`}
+                        >
+                          <span>{am.icon}</span>
+                          <span>{am.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Essentials */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Essentials</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "dryer", label: "Tumble dryer", icon: "💨" },
+                      { id: "air_conditioning", label: "Air conditioning", icon: "❄️" },
+                      { id: "heating", label: "Heating", icon: "🔥" },
+                      { id: "workspace", label: "Dedicated workspace", icon: "💻" },
+                      { id: "iron", label: "Iron", icon: "👔" },
+                    ].map((am) => {
+                      const active = draftAmenities.includes(am.id);
+                      return (
+                        <button
+                          key={am.id}
+                          type="button"
+                          onClick={() =>
+                            setDraftAmenities(
+                              active
+                                ? draftAmenities.filter((a) => a !== am.id)
+                                : [...draftAmenities, am.id],
+                            )
+                          }
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                            active
+                              ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                              : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                          }`}
+                        >
+                          <span>{am.icon}</span>
+                          <span>{am.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Features</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "hot_tub", label: "Hot tub", icon: "🛁" },
+                      { id: "free_parking", label: "Free parking", icon: "🅿️" },
+                      { id: "ev_charger", label: "EV charger", icon: "🔌" },
+                      { id: "gym", label: "Gym", icon: "🏋️" },
+                      { id: "bbq_grill", label: "BBQ grill", icon: "🍖" },
+                      { id: "indoor_fireplace", label: "Indoor fireplace", icon: "🪵" },
+                      ...(showAllAmenities
+                        ? [
+                            { id: "king_bed", label: "King bed", icon: "🛏️" },
+                            { id: "cot", label: "Cot", icon: "👶" },
+                            { id: "breakfast", label: "Breakfast", icon: "☕" },
+                            { id: "smoking_allowed", label: "Smoking allowed", icon: "🚬" },
+                          ]
+                        : []),
+                    ].map((am) => {
+                      const active = draftAmenities.includes(am.id);
+                      return (
+                        <button
+                          key={am.id}
+                          type="button"
+                          onClick={() =>
+                            setDraftAmenities(
+                              active
+                                ? draftAmenities.filter((a) => a !== am.id)
+                                : [...draftAmenities, am.id],
+                            )
+                          }
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                            active
+                              ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                              : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                          }`}
+                        >
+                          <span>{am.icon}</span>
+                          <span>{am.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {showAllAmenities && (
+                  <>
+                    {/* Location */}
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Location</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { id: "beachfront", label: "Beachfront", icon: "🏖️" },
+                          { id: "waterfront", label: "Waterfront", icon: "🌊" },
+                        ].map((am) => {
+                          const active = draftAmenities.includes(am.id);
+                          return (
+                            <button
+                              key={am.id}
+                              type="button"
+                              onClick={() =>
+                                setDraftAmenities(
+                                  active
+                                    ? draftAmenities.filter((a) => a !== am.id)
+                                    : [...draftAmenities, am.id],
+                                )
+                              }
+                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                                active
+                                  ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                              }`}
+                            >
+                              <span>{am.icon}</span>
+                              <span>{am.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Safety */}
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Safety</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { id: "smoke_alarm", label: "Smoke alarm", icon: "🚨" },
+                          { id: "carbon_monoxide_alarm", label: "Carbon monoxide alarm", icon: "⚠️" },
+                        ].map((am) => {
+                          const active = draftAmenities.includes(am.id);
+                          return (
+                            <button
+                              key={am.id}
+                              type="button"
+                              onClick={() =>
+                                setDraftAmenities(
+                                  active
+                                    ? draftAmenities.filter((a) => a !== am.id)
+                                    : [...draftAmenities, am.id],
+                                )
+                              }
+                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                                active
+                                  ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                              }`}
+                            >
+                              <span>{am.icon}</span>
+                              <span>{am.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowAllAmenities((v) => !v)}
+                  className="text-xs sm:text-sm font-semibold text-zinc-900 underline hover:text-zinc-600 transition-colors cursor-pointer"
+                >
+                  {showAllAmenities ? "Show less" : "Show more"}
+                </button>
+              </div>
+
+              {/* 6. Booking options */}
+              <div className="pt-6">
+                <h3 className="text-base font-bold text-zinc-900 mb-3">Booking options</h3>
+                <div className="flex flex-wrap gap-2.5">
+                  {/* Instant Book */}
+                  <button
+                    type="button"
+                    onClick={() => setDraftInstantBook((v) => !v)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                      draftInstantBook
+                        ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                    }`}
+                  >
+                    <span>⚡</span>
+                    <span>Instant Book</span>
+                  </button>
+
+                  {/* Self check-in */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const hasIt = draftAmenities.includes("self_check_in");
+                      setDraftAmenities(hasIt ? draftAmenities.filter((a) => a !== "self_check_in") : [...draftAmenities, "self_check_in"]);
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                      draftAmenities.includes("self_check_in")
+                        ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                    }`}
+                  >
+                    <span>🔑</span>
+                    <span>Self check-in</span>
+                  </button>
+
+                  {/* Allows pets */}
+                  <button
+                    type="button"
+                    onClick={() => setDraftPets((v) => !v)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
+                      draftPets
+                        ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                        : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
+                    }`}
+                  >
+                    <span>🐾</span>
+                    <span>Allows pets</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 7. Standout stays — hidden */}
+              {/* <div className="pt-6">
+                <h3 className="text-base font-bold text-zinc-900 mb-3">Standout stays</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setDraftFeatured((v) => !v)} className={`rounded-2xl border p-4 text-left transition-all cursor-pointer ${draftFeatured ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="flex items-center gap-3"><span className="text-2xl">🏆</span><div><h4 className="text-sm font-bold text-zinc-900">Guest favourite</h4><p className="text-xs text-zinc-500">The most loved homes on Homyz</p></div></div></button>
+                  <button type="button" onClick={() => setDraftStandout((prev) => (prev === "luxe" ? "" : "luxe"))} className={`rounded-2xl border p-4 text-left transition-all cursor-pointer ${draftStandout === "luxe" ? "border-zinc-900 bg-zinc-50/80 ring-2 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400 bg-white"}`}><div className="flex items-center gap-3"><span className="text-2xl">💎</span><div><h4 className="text-sm font-bold text-zinc-900">Luxe</h4><p className="text-xs text-zinc-500">Luxury homes with elevated design</p></div></div></button>
+                </div>
+              </div> */}
+
+              {/* 8. Property type */}
+              <div className="pt-6">
+                <h3 className="text-base font-bold text-zinc-900 mb-3">Property type</h3>
+                <div className="flex flex-wrap gap-2.5">
+                  {[
+                    { id: "Villa", label: "House / Villa", icon: "🏠" },
+                    { id: "Apartment", label: "Flat / Apartment", icon: "🏢" },
+                    { id: "Chalet", label: "Guesthouse / Chalet", icon: "🏡" },
+                    { id: "Hotel", label: "Hotel", icon: "🏨" },
+                    { id: "Studio", label: "Studio", icon: "🛋️" },
+                    { id: "Townhouse", label: "Townhouse", icon: "🏘️" },
+                    { id: "Penthouse", label: "Penthouse", icon: "🏙️" },
+                  ].map((pt) => {
+                    const active = draftPropertyType.toLowerCase() === pt.id.toLowerCase();
                     return (
                       <button
-                        key={am.id}
+                        key={pt.id}
                         type="button"
-                        onClick={() =>
-                          setDraftAmenities(
-                            active
-                              ? draftAmenities.filter((a) => a !== am.id)
-                              : [...draftAmenities, am.id],
-                          )
-                        }
-                        className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                        onClick={() => setDraftPropertyType(active ? "" : pt.id)}
+                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
                           active
-                            ? "bg-amber-300 text-amber-950 border border-amber-400"
-                            : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                            ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
+                            : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
                         }`}
                       >
-                        {am.label}
+                        <span>{pt.icon}</span>
+                        <span>{pt.label}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Instant Book toggle */}
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900">Instant Book</p>
-                  <p className="text-xs text-zinc-500">No approval needed — book immediately</p>
-                </div>
+              {/* 9. Accessibility features — hidden */}
+              {/* <div className="pt-6">
+                ...accessibility content hidden...
+              </div> */}
+
+
+              {/* 10. Host language */}
+              <div className="pt-6">
                 <button
                   type="button"
-                  role="switch"
-                  aria-checked={draftInstantBook}
-                  onClick={() => setDraftInstantBook((v) => !v)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    draftInstantBook ? "bg-zinc-900" : "bg-zinc-200"
-                  }`}
+                  onClick={() => setIsHostLanguageOpen((v) => !v)}
+                  className="w-full flex items-center justify-between text-left cursor-pointer group"
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                      draftInstantBook ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
+                  <h3 className="text-base font-bold text-zinc-900">Host language</h3>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className={`h-5 w-5 text-zinc-500 transition-transform ${isHostLanguageOpen ? "rotate-180" : ""}`}
+                  >
+                    <path d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
+
+                {isHostLanguageOpen && (
+                  <div className="mt-4 grid grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                    {[
+                      "English", "Arabic", "French", "German", "Spanish", "Italian", "Russian",
+                      "Chinese (Simplified)", "Japanese", "Korean", "Hindi", "Turkish", "Portuguese",
+                      "Dutch", "Greek", "Hebrew", "Polish", "Swedish", "Indonesian", "Thai"
+                    ].map((lang) => (
+                      <label key={lang} className="flex items-center gap-3 text-xs sm:text-sm text-zinc-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={draftHostLanguages.includes(lang)}
+                          onChange={() => {
+                            setDraftHostLanguages((prev) =>
+                              prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
+                            );
+                          }}
+                          className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+                        />
+                        <span className="truncate">{lang}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-white border-t border-zinc-100 px-6 py-4 flex items-center justify-between gap-3">
+            <div className="sticky bottom-0 bg-white border-t border-zinc-200 px-6 py-4 flex items-center justify-between gap-4 z-10 shrink-0">
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="text-sm font-semibold text-zinc-700 underline hover:text-zinc-900"
+                className="text-sm font-semibold text-zinc-800 underline hover:text-zinc-950 transition-colors cursor-pointer"
               >
                 Clear all
               </button>
               <button
                 type="button"
                 onClick={handleApplyFilters}
-                className="rounded-full bg-zinc-900 text-white px-7 py-2.5 text-sm font-semibold hover:bg-zinc-800 transition-colors"
+                className="rounded-xl bg-zinc-900 text-white px-7 py-3 text-sm font-semibold hover:bg-zinc-800 transition-all shadow-xs cursor-pointer"
               >
-                Show results
+                Show {total > 0 ? `${total.toLocaleString()} ` : ""}places
               </button>
             </div>
           </div>
