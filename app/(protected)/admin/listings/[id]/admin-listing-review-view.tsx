@@ -31,14 +31,14 @@ export type ListingAuditItem = {
 
 function getStatusLabel(listing: ListingReviewData) {
   if (listing.isPaused) return "Paused";
-  if (listing.published) return "Published";
-  if (listing.status === "ACTIVE" || listing.status === "APPROVED") return "Unpublished (Approved)";
+  if (listing.published) return "Listed";
+  if (listing.status === "ACTIVE" || listing.status === "APPROVED") return "Unlisted (Approved)";
   if (listing.status === "PENDING_REVIEW") return "Pending review";
   if (listing.status === "CHANGES_REQUESTED") return "Changes requested";
   if (listing.status === "REJECTED") return "Rejected";
   if (listing.status === "DRAFT") return "Draft";
   if (listing.status === "IN_PROGRESS") return "In progress";
-  return listing.status ? listing.status.replace(/_/g, " ") : "Unpublished";
+  return listing.status ? listing.status.replace(/_/g, " ") : "Unlisted";
 }
 
 export function AdminListingReviewView({
@@ -173,7 +173,7 @@ export function AdminListingReviewView({
             onClick={() => run("unpublish", () => adminToggleVisibilityAction({ listingId: listing.id, published: false }))}
             className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold disabled:opacity-50"
           >
-            {saving === "unpublish" ? "Unpublishing…" : "Unpublish"}
+            {saving === "Unlisted" ? "Unlisting…" : "Unlisted"}
           </button>
         )}
         {canApprove && (
@@ -183,7 +183,7 @@ export function AdminListingReviewView({
             onClick={() => run("publish", () => adminToggleVisibilityAction({ listingId: listing.id, published: true }))}
             className="rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold disabled:opacity-50"
           >
-            {saving === "publish" ? "Publishing…" : "Publish"}
+            {saving === "Listed" ? "listing…" : "Listed"}
           </button>
         )}
         {canSuspend && (

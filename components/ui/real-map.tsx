@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import { MAP_CONFIG } from "@/components/listings/search-map";
 import { reverseGeocodeLocation } from "@/lib/location/geocoding";
 
 interface LeafletMapInstance {
@@ -232,10 +233,12 @@ export function RealMap({
         zoomControl: false,
       });
 
-      // Tile Layer (OpenStreetMap)
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
+      // Match the listings search map basemap so the host editor and listing pages look consistent.
+      L.tileLayer(MAP_CONFIG.tileUrl, {
+        attribution: MAP_CONFIG.attribution,
+        maxZoom: MAP_CONFIG.maxZoom,
+        minZoom: MAP_CONFIG.minZoom,
+        subdomains: MAP_CONFIG.subdomains,
       }).addTo(map);
 
       // Custom Homyz Yellow Pin Icon
