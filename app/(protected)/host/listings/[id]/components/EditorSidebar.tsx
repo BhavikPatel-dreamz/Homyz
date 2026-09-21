@@ -4,14 +4,17 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap } from "@/components/ui/real-map";
-import { AMENITY_ICON_SOURCES, getAmenityMeta } from "@/lib/constants/amenities";
+import { AMENITY_ICON_SOURCES, getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
 import {
   cancellationPolicyLabel,
+  listingTypeLabel,
   normalizeAccessibilityFeatureDetails,
   normalizeAccessibilityFeatureIds,
+  propertyTypeLabel,
   type AccessibilityFeatureDetail,
 } from "@/lib/constants/listing-enums";
 import {
@@ -75,13 +78,16 @@ function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   );
 }
 
-const ACCESSIBILITY_FEATURE_LABELS: Record<string, string> = {
-  accessible_parking: "Accessible parking spot",
-  lit_path: "Lit path to entrance",
-  step_free_access: "Step-free access",
-  wide_entrance: "Guest entrance wider than 32 in",
-  pool_hoist: "Pool or hot tub hoist",
-  ceiling_hoist: "Ceiling or mobile hoist",
+const ACCESSIBILITY_FEATURE_KEYS: Record<string, keyof typeof import("@/messages/en.json")> = {
+  accessible_parking: "host_acc_disabled_parking_name",
+  disabled_parking: "host_acc_disabled_parking_name",
+  lit_path: "host_acc_lit_path_name",
+  step_free_access: "host_acc_step_free_name",
+  step_free: "host_acc_step_free_name",
+  wide_entrance: "host_acc_wide_entrance_name",
+  entrance_32: "host_acc_wide_entrance_name",
+  pool_hoist: "host_acc_pool_hoist_name",
+  ceiling_hoist: "host_acc_ceiling_hoist_name",
 };
 
 interface EditorSidebarProps {
@@ -177,18 +183,18 @@ function AdminEditorSidebar({
   const statusLabel = listing.published
     ? "Published"
     : listing.status === "PENDING_APPROVAL"
-    ? "Pending Approval"
-    : listing.status === "REJECTED"
-    ? "Action Needed"
-    : "Draft";
+      ? "Pending Approval"
+      : listing.status === "REJECTED"
+        ? "Action Needed"
+        : "Draft";
 
   const statusBg = listing.published
     ? "bg-emerald-500/10 text-emerald-700 border-emerald-200"
     : listing.status === "PENDING_APPROVAL"
-    ? "bg-amber-500/10 text-amber-700 border-amber-200"
-    : listing.status === "REJECTED"
-    ? "bg-rose-500/10 text-rose-700 border-rose-200"
-    : "bg-zinc-500/10 text-zinc-600 border-zinc-200";
+      ? "bg-amber-500/10 text-amber-700 border-amber-200"
+      : listing.status === "REJECTED"
+        ? "bg-rose-500/10 text-rose-700 border-rose-200"
+        : "bg-zinc-500/10 text-zinc-600 border-zinc-200";
 
   return (
     <aside className="admin-editor-sidebar rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] flex flex-col">
@@ -252,19 +258,17 @@ function AdminEditorSidebar({
                   key={id}
                   type="button"
                   onClick={() => setActiveSection(id)}
-                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${
-                    active
-                      ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
-                      : destructive
+                  className={`group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition-all duration-150 ${active
+                    ? "bg-amber-500 text-zinc-950 font-bold shadow-2xs"
+                    : destructive
                       ? "text-rose-600 hover:bg-rose-50/80 hover:text-rose-700"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] hover:translate-x-0.5"
-                  }`}
+                    }`}
                 >
                   <span className="truncate">{label}</span>
                   <svg
-                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${
-                      active ? "opacity-90 text-zinc-950 translate-x-0.5" : "opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5"
-                    }`}
+                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${active ? "opacity-90 text-zinc-950 translate-x-0.5" : "opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5"
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -357,6 +361,7 @@ export function EditorSidebar({
   mobileOpen = false,
   onMobileClose,
 }: EditorSidebarProps) {
+  const { t } = useLanguage();
   const sidebarScrollRef = React.useRef<HTMLDivElement>(null);
   const sidebarScrollTrackRef = React.useRef<HTMLDivElement>(null);
   const sidebarScrollFrameRef = React.useRef<number | null>(null);
@@ -421,8 +426,8 @@ export function EditorSidebar({
   }, [guestSafetyState, listing, safetyDisclosures, safetyEquipment, safetyHazards, smokeAlarm, carbonMonoxideAlarm]);
 
   const activeSafetyItems = React.useMemo(() => {
-    return getActiveSafetyItems(computedSafetyState);
-  }, [computedSafetyState]);
+    return getActiveSafetyItems(computedSafetyState, t);
+  }, [computedSafetyState, t]);
   const selectedAccessibilityFeatures = normalizeAccessibilityFeatureIds(accessibilityFeatures);
   const accessibilityDetailsByFeature = new Map(
     normalizeAccessibilityFeatureDetails(accessibilityDetails).map((detail) => [detail.featureId, detail]),
@@ -433,9 +438,9 @@ export function EditorSidebar({
   const acceptedCoHostCount = coHosts.filter((item) => item.status === "ACCEPTED").length;
   const pendingCoHostCount = coHosts.filter((item) => item.status === "PENDING").length;
   const coHostSummary = acceptedCoHostCount > 0
-    ? `${acceptedCoHostCount} co-host${acceptedCoHostCount === 1 ? "" : "s"}${pendingCoHostCount ? ` · ${pendingCoHostCount} pending` : ""}`
+    ? `${acceptedCoHostCount} ${acceptedCoHostCount === 1 ? (t("host_cohost_singular") || "co-host") : (t("host_cohost_plural") || "co-hosts")}${pendingCoHostCount ? ` · ${pendingCoHostCount} ${t("host_cohost_pending") || "pending"}` : ""}`
     : pendingCoHostCount > 0
-      ? `${pendingCoHostCount} pending invitation${pendingCoHostCount === 1 ? "" : "s"}`
+      ? `${pendingCoHostCount} ${pendingCoHostCount === 1 ? (t("host_cohost_pending_invitation_singular") || "pending invitation") : (t("host_cohost_pending_invitation_plural") || "pending invitations")}`
       : "";
   const extraHouseRules = [
     petsAllowed !== null && petsAllowed !== undefined ? (petsAllowed ? `Pets allowed (up to ${maxPetsCount || 1})` : "No pets") : null,
@@ -491,7 +496,7 @@ export function EditorSidebar({
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between">
             <h2>
-              {editorTab === "preferences" ? "Edit preferences" : "Listing editor"}
+              {editorTab === "preferences" ? t("host_edit_preferences") : t("host_listing_editor")}
             </h2>
             {mobileOpen && (
               <button
@@ -510,32 +515,32 @@ export function EditorSidebar({
             {displayState === "PENDING_APPROVAL" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Pending Admin Approval
+                {t("host_status_pending_admin_approval")}
               </span>
             )}
             {displayState === "REJECTED" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-900 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                Changes Required
+                {t("host_status_changes_required")}
               </span>
             )}
             {displayState === "PUBLISHED" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                Published · Live
+                {t("host_status_published_live")}
               </span>
             )}
             {displayState === "APPROVED" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                {isSaudi ? "Ready to Publish" : "Approved"}
+                {isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved")}
               </span>
             )}
 
             {displayState === "DRAFT" && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-200/80 text-zinc-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                Draft · Incomplete
+                {t("host_status_draft_incomplete")}
               </span>
             )}
           </div>
@@ -555,7 +560,7 @@ export function EditorSidebar({
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
             >
-              Your space
+              {t("host_your_space")}
             </button>
 
             <button
@@ -569,7 +574,7 @@ export function EditorSidebar({
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
             >
-              Arrival guide
+              {t("host_arrival_guide")}
             </button>
           </div>
 
@@ -581,7 +586,7 @@ export function EditorSidebar({
               setActiveSection("listing-status");
             }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
-              ? "bg-[#FEE08B] border-amber-300 shadow-2xs text-zinc-950 dark:bg-amber-400 dark:border-amber-400"
+              ? "bg-[#FEE08B] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
               }`}
           >
@@ -594,7 +599,7 @@ export function EditorSidebar({
           <div
             ref={sidebarScrollRef}
             onScroll={updateSidebarScrollThumb}
-            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "arrival" ? "lg:h-auto" : "lg:h-[1850px]"}`}
+            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "space" ? "lg:h-[1850px]" : "lg:h-auto"}`}
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
@@ -607,19 +612,19 @@ export function EditorSidebar({
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#727272] dark:text-zinc-300 block mb-1">
-                    Listing status
+                  <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
+                    {t("host_sidebar_listing_status")}
                   </span>
                   <span
-                    className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-0.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60"
+                    className={`inline-flex items-center gap-1.5 text-sm font-medium px-2.5 py-0.5 rounded-full border ${displayState === "PUBLISHED" || displayState === "APPROVED"
+                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-500"
                       : displayState === "PENDING_APPROVAL"
-                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60"
+                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border-amber-500"
                         : displayState === "REJECTED"
-                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60"
+                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border-rose-500"
                           : displayState === "READY_TO_SUBMIT"
-                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60"
-                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700"
+                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60 border-indigo-500"
+                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border-zinc-500"
                       }`}
                   >
                     <span
@@ -635,16 +640,16 @@ export function EditorSidebar({
                         }`}
                     />
                     {displayState === "PUBLISHED"
-                      ? "Published · Live"
+                      ? t("host_status_published_live")
                       : displayState === "PENDING_APPROVAL"
-                        ? "Pending Admin Approval"
+                        ? t("host_status_pending_admin_approval")
                         : displayState === "REJECTED"
-                          ? "Changes Required"
+                          ? t("host_status_changes_required")
                           : displayState === "APPROVED"
-                            ? (isSaudi ? "Ready to Publish" : "Approved")
+                            ? (isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved"))
                             : displayState === "READY_TO_SUBMIT"
-                              ? "Ready for review"
-                              : "Draft · Incomplete"}
+                              ? t("host_status_ready_for_review")
+                              : t("host_status_draft_incomplete")}
                   </span>
                 </div>
 
@@ -658,7 +663,7 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Languages
+                      {t("host_sidebar_languages")}
                     </span>
                     <p
                       className="max-w-[15rem] truncate text-sm font-normal text-zinc-500 dark:text-zinc-400"
@@ -674,7 +679,14 @@ export function EditorSidebar({
                       })()}
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 3: Guest requirements */}
@@ -687,13 +699,20 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Guest requirements
+                      {t("host_sidebar_guest_requirements")}
                     </span>
                     <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
-                      {listing?.requireProfilePhoto ? "Profile photo required" : "Profile photo not required"}
+                      {listing?.requireProfilePhoto ? t("host_profile_photo_required") : t("host_profile_photo_not_required")}
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 4: Local laws */}
@@ -712,7 +731,14 @@ export function EditorSidebar({
                       Review your local laws
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 5: Regulations */}
@@ -728,7 +754,14 @@ export function EditorSidebar({
                       Regulations
                     </span>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 6: Taxes */}
@@ -747,7 +780,14 @@ export function EditorSidebar({
                       Learn how taxes work for Hosts
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 7: homyz.org stays */}
@@ -780,7 +820,14 @@ export function EditorSidebar({
                       return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Learn how you can help</p>;
                     })()}
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
 
                 {/* Card 8: Remove listing */}
@@ -802,7 +849,14 @@ export function EditorSidebar({
                       Permanently remove your listing
                     </p>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs font-medium select-none ml-2">›</span>
+                  <Image
+                    src="/images/icons/chevron-down-dark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={9}
+                    className="h-3.5 w-3.5 shrink-0 -rotate-90"
+                  />
                 </div>
               </div>
             ) : editorTab === "space" ? (
@@ -910,7 +964,7 @@ export function EditorSidebar({
                               {editPhotos.length}
                             </span>
                             <span className="text-xs font-normal text-[#1F1F1F] leading-tight mt-0.5">
-                              photos
+                              {t("host_photos_label")}
                             </span>
                           </div>
                         </div>
@@ -927,26 +981,26 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Title
+                    {t("host_title_heading")}
                   </span>
                   <span className="sm:text-xl text-lg font-normal text-[#727272] block truncate">
-                    {editTitle || "Property Name"}
+                    {editTitle || t("host_untitled_listing")}
                   </span>
                 </div>
 
                 {/* 2. Property type */}
                 <div
                   onClick={() => setActiveSection("propertyType")}
-                    className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
                     ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                    Property type
+                    {t("host_property_type_heading")}
                   </span>
                   <span className="text-base font-normal text-[#727272] dark:text-zinc-400 block">
-                    {editListingType} · {editPropertyType}
+                    {listingTypeLabel(editListingType, t)} · {propertyTypeLabel(editPropertyType, t)}
                   </span>
                 </div>
 
@@ -959,12 +1013,12 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Pricing
+                    {t("host_pricing_title")}
                   </span>
                   <div className="text-base text-[#727272] space-y-0.5">
                     {smartPricing ? (
                       <>
-                        <p className="text-base font-normal text-[#727272]">Smart pricing</p>
+                        <p className="text-base font-normal text-[#727272]">{t("host_smart_pricing")}</p>
                         <p className="text-base text-[#727272]">
                           {currency} {smartPricingMinPrice} – {currency} {smartPricingMaxPrice}
                         </p>
@@ -972,8 +1026,8 @@ export function EditorSidebar({
                     ) : (
                       <>
                         <p className="text-base font-normal text-[#727272]">{currency} {editPrice}</p>
-                        <p className="text-base text-[#727272]">{weeklyDiscount}% weekly discount</p>
-                        <p className="text-base text-[#727272]">{monthlyDiscount}% monthly discount</p>
+                        <p className="text-base text-[#727272]">{weeklyDiscount}% {t("host_weekly_discount")}</p>
+                        <p className="text-base text-[#727272]">{monthlyDiscount}% {t("host_monthly_discount")}</p>
                       </>
                     )}
                   </div>
@@ -988,15 +1042,15 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Availability
+                    {t("host_availability_title")}
                   </span>
                   <div className="text-base text-[#727272] space-y-0.5">
                     <p className="text-base font-normal text-[#727272]">
-                      {minNights}-{maxNights} night stays
+                      {minNights}-{maxNights} {t("host_nights")}
                     </p>
-                    <p className="text-base text-[#727272] font-normal">{advanceNotice} notice</p>
+                    <p className="text-base text-[#727272] font-normal">{advanceNotice} {t("host_advance_notice")}</p>
                     <p className="text-base text-[#727272] font-normal">
-                      {allowSameDayRequests ? `Same-day requests until ${sameDayCutoff}` : "Same-day requests unavailable"}
+                      {allowSameDayRequests ? t("host_same_day_requests_until", { time: sameDayCutoff }) : t("host_same_day_unavailable")}
                     </p>
                   </div>
                 </div>
@@ -1010,10 +1064,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Number of guests
+                    {t("host_number_of_guests")}
                   </span>
                     <span className="text-base font-normal text-[#727272] block">
-                    {editGuests} guests
+                    {t("host_max_guests_limit", { count: editGuests })}
                   </span>
                 </div>
 
@@ -1026,10 +1080,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Sleeping arrangements
+                    {t("host_sleeping_arrangements_title")}
                   </span>
                   <span className="text-base font-normal text-[#727272] block">
-                    {editBedrooms || 1} {editBedrooms === 1 ? "bedroom" : "bedrooms"} · {editBeds || 1} {editBeds === 1 ? "bed" : "beds"}
+                    {editBedrooms || 1} {editBedrooms === 1 ? t("host_bedroom_single") : t("host_bedroom_plural")} · {editBeds || 1} {editBeds === 1 ? t("host_bed_single") : t("host_bed_plural")}
                   </span>
                 </div>
 
@@ -1042,10 +1096,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5 dark:text-zinc-100">
-                    Description
+                    {t("host_description_heading")}
                   </span>
                   <p className="text-base font-normal text-[#727272] line-clamp-3 leading-relaxed dark:text-zinc-400">
-                    {editDescription || "No description provided yet."}
+                    {editDescription || t("host_no_description_yet")}
                   </p>
                 </div>
 
@@ -1058,16 +1112,19 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-3">
-                    Amenities
+                    {t("host_amenities_heading")}
                   </span>
                   <div className="space-y-1.5 text-base font-medium text-[#727272]">
                     {editAmenities.length === 0 ? (
-                      <span className="text-base font-medium text-[#727272]">Add amenities</span>
+                      <span className="text-base font-medium text-[#727272]">{t("host_add_amenities_heading")}</span>
                     ) : (
                       <>
                         {editAmenities.slice(0, 3).map((am) => {
                           const meta = getAmenityMeta(am);
                           const iconSource = AMENITY_ICON_SOURCES[meta.id];
+                          const key = getAmenityTranslationKey(meta.id) as keyof typeof import("@/messages/en.json");
+                          const translated = t(key);
+                          const localizedLabel = translated && translated !== key ? translated : meta.label;
                           return (
                             <div key={meta.id || am} className="flex items-center gap-3">
                               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] bg-white">
@@ -1077,13 +1134,13 @@ export function EditorSidebar({
                                   <span className="text-base font-normal text-[#727272]">{meta.icon || "✨"}</span>
                                 )}
                               </span>
-                              <span className="text-base font-normal text-[#727272]">{meta.label}</span>
+                              <span className="text-base font-normal text-[#727272]">{localizedLabel}</span>
                             </div>
                           );
                         })}
                         {editAmenities.length > 3 && (
                           <span className="text-base font-semibold text-zinc-400 block pt-0.5">
-                            +{editAmenities.length - 3} more
+                            +{editAmenities.length - 3} {t("host_more")}
                           </span>
                         )}
                       </>
@@ -1100,7 +1157,7 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
-                    Accessibility features
+                    {t("host_accessibility_features_title")}
                   </span>
                   {confirmedAccessibilityFeatures.length > 0 ? (
                     <div className="space-y-2 pt-1">
@@ -1115,15 +1172,15 @@ export function EditorSidebar({
                               <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-[10px] text-amber-700">!</span>
                             )}
                             <span className="min-w-0 flex-1 truncate font-medium">
-                              {ACCESSIBILITY_FEATURE_LABELS[featureId] ?? featureId.replace(/_/g, " ")}
+                              {ACCESSIBILITY_FEATURE_KEYS[featureId] ? t(ACCESSIBILITY_FEATURE_KEYS[featureId]) : featureId.replace(/_/g, " ")}
                             </span>
-                            <span className="shrink-0 text-[10px] text-zinc-400">{detail?.photos.length ?? 0} photo{detail?.photos.length === 1 ? "" : "s"}</span>
+                            <span className="shrink-0 text-[10px] text-zinc-400">{detail?.photos.length ?? 0} {t("host_photos_label")}</span>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <span className="text-base text-[#727272] font-normal">Add details</span>
+                    <span className="text-base text-[#727272] font-normal">{t("host_add_details")}</span>
                   )}
                 </div>
 
@@ -1135,7 +1192,7 @@ export function EditorSidebar({
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-2">Location</span>
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-2">{t("host_location_label")}</span>
                   <RealMap
                     address={editAddress}
                     city={editCity}
@@ -1149,7 +1206,7 @@ export function EditorSidebar({
                   <span className="text-base font-normal text-[#727272] block truncate">
                     {editAddress
                       ? `${editAddress}, ${editCity}, ${editCountry}`
-                      : "Location name, Postal Code, Country"}
+                      : t("host_location_placeholder")}
                   </span>
                 </div>
 
@@ -1162,7 +1219,7 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-4">
-                    About the host
+                    {t("host_about_the_host")}
                   </span>
 
                   <div className="grid grid-cols-2 gap-3 items-center">
@@ -1172,7 +1229,7 @@ export function EditorSidebar({
                         <img
                           src={listing.host.image}
                           alt="Host profile"
-                            className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
+                          className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
                         />
                       ) : (
                         <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold text-lg shadow-2xs">
@@ -1185,10 +1242,10 @@ export function EditorSidebar({
                         </div>
                       )}
                       <h4 className="text-base font-normal text-[#727272] mt-2 block leading-tight truncate max-w-[120px]">
-                        {listing.host?.name || "Name"}
+                        {listing.host?.name || "Host"}
                       </h4>
                       <span className="text-base text-[#727272] font-normal mt-0.5 block leading-tight">
-                        {listing.host?.isSuperhost ? "Superhost" : (listing.host?.badge || "Superhost")}
+                        {listing.host?.isSuperhost ? t("host_superhost") : (listing.host?.badge || t("host_superhost"))}
                       </span>
                     </div>
 
@@ -1200,7 +1257,7 @@ export function EditorSidebar({
                           {listing.host?.reviewsCount ?? listing.host?.reviewCount ?? "XX"}
                         </span>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
-                          review
+                          {t("host_review_single")}
                         </span>
                       </div>
 
@@ -1215,7 +1272,7 @@ export function EditorSidebar({
                           </span>
                         </div>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
-                          rating
+                          {t("host_rating_label")}
                         </span>
                       </div>
 
@@ -1230,7 +1287,7 @@ export function EditorSidebar({
                             : 3}
                         </span>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
-                          years hosting
+                          {t("host_years_hosting")}
                         </span>
                       </div>
                     </div>
@@ -1248,7 +1305,7 @@ export function EditorSidebar({
                     }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-base font-medium text-[#1F1F1F] block">Co-host</span>
+                    <span className="text-base font-medium text-[#1F1F1F] block">{t("host_cohost_label")}</span>
                     {coHostSummary && (
                       <span className="text-base bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
                         {coHostSummary}
@@ -1264,7 +1321,7 @@ export function EditorSidebar({
                       ))}
                     </div>
                   ) : (
-                    <span className="text-base text-[#727272] font-normal block block">Add details</span>
+                    <span className="text-base text-[#727272] font-normal block">{t("host_add_details")}</span>
                   )}
                 </div>
 
@@ -1277,14 +1334,14 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1f1f1f] block mb-0.5">
-                    Booking settings
+                    {t("host_booking_settings_title")}
                   </span>
                   <p className="text-base text-[#727272] font-normal">
                     {bookingMethod === "first-three"
-                      ? "Approve your first 3 bookings"
+                      ? t("host_approve_first_3")
                       : bookingMethod === "instant"
-                        ? requireGoodTrackRecord ? "Instant Book · track record required" : "Use Instant Book"
-                        : "Approve all bookings"}
+                        ? requireGoodTrackRecord ? t("host_instant_track_record") : t("host_use_instant_book")
+                        : t("host_approve_all")}
                   </p>
                 </div>
 
@@ -1296,21 +1353,21 @@ export function EditorSidebar({
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-3">House rules</span>
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-3">{t("host_house_rules")}</span>
                   <div className="space-y-3 text-base text-[#727272] font-normal">
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="9" />
-                        <polyline points="12 6 12 12 16 14" />
+                        <polyline points="12 6 12 16 14" />
                       </svg>
-                      <span>Check-in after {formatTimeDisplay(checkInStart, "3:00 pm")}</span>
+                      <span>{t("host_checkin_after", { time: formatTimeDisplay(checkInStart, "3:00 pm") })}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="9" />
                         <polyline points="12 6 12 12 16 14" />
                       </svg>
-                      <span>Checkout before {formatTimeDisplay(checkOutTime, "6:00 pm")}</span>
+                      <span>{t("host_checkout_before", { time: formatTimeDisplay(checkOutTime, "6:00 pm") })}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-[#1F1F1F] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
@@ -1320,11 +1377,11 @@ export function EditorSidebar({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75" />
                       </svg>
                       <span>
-                        {maxGuestsCount || editGuests || 1} guest{(maxGuestsCount || editGuests || 1) === 1 ? "" : "s"} maximum
+                        {t("host_max_guests_limit", { count: maxGuestsCount || editGuests || 1 })}
                       </span>
                     </div>
                     {extraHouseRules.length > 0 && (
-                      <p className="pt-1.5 text-base text-[#727272] font-normal hover:text-[#1F1F1F] transition-all duration-300 hover:underline">+{extraHouseRules.length} more</p>
+                      <p className="pt-1.5 text-base text-[#727272] font-normal hover:text-[#1F1F1F] transition-all duration-300 hover:underline">+{extraHouseRules.length} {t("host_more")}</p>
                     )}
                   </div>
                 </div>
@@ -1337,7 +1394,7 @@ export function EditorSidebar({
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">Guest safety</span>
+                  <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">{t("host_guest_safety_title")}</span>
                   {activeSafetyItems.length > 0 ? (
                     <div className="space-y-2 text-base text-[#1F1F1F] font-normal">
                       {activeSafetyItems.slice(0, 3).map((item) => (
@@ -1350,7 +1407,7 @@ export function EditorSidebar({
                       ))}
                       {activeSafetyItems.length > 3 && (
                         <p className="pt-1 text-base text-[#1F1F1F] font-normal">
-                          +{activeSafetyItems.length - 3} more
+                          +{activeSafetyItems.length - 3} {t("host_more")}
                         </p>
                       )}
                     </div>
@@ -1359,13 +1416,13 @@ export function EditorSidebar({
                       <div className="flex items-center gap-2.5">
                         <SafetySidebarIcon type="co" />
                         <span className="text-[#727272] text-base font-medium leading-tight">
-                          Carbon monoxide alarm not reported
+                          {t("host_co_alarm_not_reported")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2.5">
                         <SafetySidebarIcon type="smoke" />
                         <span className="text-[#727272] text-base font-medium leading-tight">
-                          Smoke alarm not reported
+                          {t("host_smoke_alarm_not_reported")}
                         </span>
                       </div>
                     </div>
@@ -1381,14 +1438,14 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-normal text-[#1f1f1f] block mb-1">
-                    Cancellation policy
+                    {t("host_cancellation_policy_title")}
                   </span>
                   <div className="space-y-0.5">
                     <p className="text-base text-zinc-500 font-normal">
-                      {cancellationPolicyLabel(cancellationPolicy)} for short-term stays
+                      {t("host_for_short_term", { policy: cancellationPolicyLabel(cancellationPolicy, t) })}
                     </p>
                     <p className="text-base text-zinc-500 font-normal">
-                      {longTermCancellationPolicy === "STRICT" ? "Strict Long-Term" : "Firm Long-Term"} for long-term stays
+                      {t("host_for_long_term", { policy: longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term") })}
                     </p>
                   </div>
                 </div>
@@ -1402,10 +1459,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                    Custom link
+                    {t("host_custom_link")}
                   </span>
                   <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
-                    {customSlug ? `homyz.com/stay/${customSlug}` : "Add details"}
+                    {customSlug ? `homyz.com/stay/${customSlug}` : t("host_add_details")}
                   </p>
                 </div>
               </div>
@@ -1422,9 +1479,9 @@ export function EditorSidebar({
                     : "border-white bg-white hover:border-white"
                     }`}
                 >
-                  <span className="mb-1 block text-base font-medium text-[#1F1F1F]">Check-in</span>
+                  <span className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_checkin")}</span>
                   <span className="block border-b border-zinc-300 pb-2 text-base text-[#727272]">{checkInStart || "3:00 PM"}</span>
-                  <span className="mt-2 block text-base font-medium text-[#1F1F1F]">Check-out</span>
+                  <span className="mt-2 block text-base font-medium text-[#1F1F1F]">{t("host_checkout")}</span>
                   <span className="block text-base text-[#727272]">{checkOutTime || "12:00 PM"}</span>
                 </button>
 
@@ -1437,7 +1494,7 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Check-in method
+                    {t("host_checkin_method")}
                   </span>
                   <p className="text-base text-[#1F1F1F] font-normal">
                     {({ "SMART_LOCK": "Smart lock", "Smart lock": "Smart lock", "KEYPAD": "Keypad", "Keypad": "Keypad", "LOCKBOX": "Lockbox", "Lockbox": "Lockbox", "BUILDING_STAFF": "Building staff", "Building staff": "Building staff", "IN_PERSON_GREETING": "In-person greeting", "In-person greeting": "In-person greeting", "Host greets in person": "In-person greeting", "OTHER": "Other", "Other": "Other" } as Record<string, string>)[checkInMethod] || checkInMethod || "Smart lock"}
@@ -1453,10 +1510,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Wifi details
+                    {t("host_wifi_details")}
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
-                    {wifiNetwork ? wifiNetwork : "Add details"}
+                    {wifiNetwork ? wifiNetwork : t("host_add_details")}
                   </p>
                 </div>
 
@@ -1469,12 +1526,12 @@ export function EditorSidebar({
                 >
                   <div className="flex items-center justify-between mb-0.5">
                     <span className="text-base font-medium text-[#1F1F1F]">
-                      Directions to property
+                      {t("host_directions")}
                     </span>
-                    
+
                   </div>
                   <p className="text-base text-zinc-500 font-normal truncate">
-                    {directions && directions.trim() ? directions : "Add details"}
+                    {directions && directions.trim() ? directions : t("host_add_details")}
                   </p>
                 </div>
 
@@ -1487,10 +1544,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    House manual
+                    {t("host_house_manual")}
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
-                    {houseManual ? houseManual.slice(0, 30) + "..." : "Add details"}
+                    {houseManual ? houseManual.slice(0, 30) + "..." : t("host_add_details")}
                   </p>
                 </div>
 
@@ -1503,10 +1560,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Parking
+                    {t("host_parking")}
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
-                    {parkingAvailable ? `${parkingType || "Free"} parking` : "No parking specified"}
+                    {parkingAvailable ? `${parkingType || "Free"} parking` : t("host_no_parking_specified")}
                   </p>
                 </div>
 
@@ -1522,10 +1579,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Check-out instructions
+                    {t("host_checkout_instructions")}
                   </span>
                   <p className="text-base text-[#1F1F1F] font-normal truncate">
-                    {checkOutInstructions ? checkOutInstructions : "Add details"}
+                    {checkOutInstructions ? checkOutInstructions : t("host_add_details")}
                   </p>
                 </div>
                 {/* Card 6: Guidebooks */}
@@ -1537,10 +1594,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Guidebooks
+                    {t("host_guidebooks")}
                   </span>
                   <p className="text-base text-zinc-500 font-normal line-clamp-2 leading-relaxed">
-                    Create a guidebook to share your location tips with guests.
+                    {t("host_create_guidebook_desc")}
                   </p>
                 </div>
 
@@ -1555,10 +1612,10 @@ export function EditorSidebar({
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
-                    Interaction preferences
+                    {t("host_interaction_preferences")}
                   </span>
                   <p className="text-base text-zinc-500 font-normal">
-                    Add details
+                    {t("host_add_details")}
                   </p>
                 </div>
               </div>

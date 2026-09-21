@@ -1,5 +1,5 @@
 "use client";
-
+import { BackButton } from "@/components/ui/back-button";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -119,33 +119,13 @@ export function LocalLawsView({
   return (
     <div className="space-y-6 animate-in fade-in max-w-2xl pb-16 font-sans text-zinc-900 dark:text-zinc-100">
       {/* 1. Header & Back Button (Matching reference design) */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveSection("description")}
-          className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white text-sm transition-all cursor-pointer shadow-2xs"
-          aria-label="Back to listing editor"
-        >
-          {/* Arrow Left SVG */}
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            viewBox="0 0 24 24"
-          >
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
-          Local laws
-        </h1>
+      <div className="flex items-center gap-6">
+        <BackButton onClick={() => setActiveSection("arrival-guide")} />
+        <h1> Local laws </h1>
       </div>
 
       {/* 2. Intro Paragraph */}
-      <p className="text-sm text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed pt-0.5 max-w-xl">
+      <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
         Take a moment to review the local laws that apply to your listing. We want to make sure you
         have everything you need to get off to a great start.
       </p>
@@ -165,7 +145,7 @@ export function LocalLawsView({
             setShowResourceDrawer(true);
           }
         }}
-        className="rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 sm:p-4 flex items-center gap-4 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs transition-all cursor-pointer group max-w-xl select-none"
+        className="rounded-lg border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3.5 sm:p-4 flex items-center gap-4 shadow-2xs hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs transition-all cursor-pointer group max-w-xl select-none"
       >
         {/* Thumbnail Image */}
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700">
@@ -199,7 +179,7 @@ export function LocalLawsView({
       </div>
 
       {/* 4. Body Paragraph 1 */}
-      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
+      <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
         Most cities have rules covering home sharing, and the specific codes and ordinances can appear
         in many places (such as zoning, building, licensing or tax codes). In most places, you must
         register, get a permit, or obtain a licence before you list your property or accept guests.
@@ -208,7 +188,7 @@ export function LocalLawsView({
       </p>
 
       {/* 5. Body Paragraph 2 */}
-      <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
+      <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
         Since you are responsible for your own decision to list, you should get comfortable with the
         applicable rules before listing on Homyz. To get you started, we offer some helpful
         resources under &ldquo;Your City Laws&rdquo;.
@@ -243,7 +223,7 @@ export function LocalLawsView({
       </div>
 
       {/* 7. Legal Terms Disclaimer */}
-      <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-xl pt-2 border-t border-zinc-100 dark:border-zinc-800">
+      <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-xl pt-2 border-t border-zinc-100 dark:border-zinc-800">
         By accepting our Terms of Service and listing your space, you certify that you will follow
         applicable laws and regulations.
       </p>
@@ -258,7 +238,7 @@ export function LocalLawsView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] dark:bg-amber-400 dark:hover:bg-amber-500 text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "I understand & acknowledge"}
         </button>
@@ -266,7 +246,7 @@ export function LocalLawsView({
         <button
           type="button"
           onClick={() => setActiveSection("description")}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer border border-[#1f1f1f] hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           Cancel
         </button>
@@ -290,14 +270,14 @@ export function LocalLawsView({
             role="dialog"
             aria-modal="true"
             aria-labelledby="resource-centre-title"
-            className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl animate-in zoom-in-95 duration-200"
+            className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white dark:bg-zinc-900 animate-in zoom-in-95 duration-200"
           >
             {/* Top Bar (Resource Centre & Close Button) */}
             <div className="sticky top-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm z-20 border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+              <div className="flex items-center gap-2 text-[#1f1f1f] dark:text-zinc-200">
                 {/* Book / Resource Icon */}
                 <svg
-                  className="w-4 h-4 text-zinc-800 dark:text-zinc-200"
+                  className="w-6 h-6 text-zinc-800 dark:text-zinc-200"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -308,7 +288,7 @@ export function LocalLawsView({
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                   <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
-                <span>Resource Centre</span>
+                <h2 className="text-xl">Resource Centre</h2>
               </div>
 
               <button
@@ -348,7 +328,6 @@ export function LocalLawsView({
               <div>
                 <h2
                   id="resource-centre-title"
-                  className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100 leading-tight"
                 >
                   {activeArticle.title}
                 </h2>
@@ -462,7 +441,7 @@ export function LocalLawsView({
 
                   {/* Section 1: Visit the Help Centre */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       Visit the Help Centre
                     </h3>
                     <p>
@@ -478,7 +457,7 @@ export function LocalLawsView({
 
                   {/* Section 2: Connect locally */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       Connect locally
                     </h3>
                     <p>
@@ -491,7 +470,7 @@ export function LocalLawsView({
 
                   {/* Section 3: Contact hosts */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       Contact hosts
                     </h3>
                     <p>
@@ -514,7 +493,7 @@ export function LocalLawsView({
 
                   {/* Section 4: Consult a professional */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       Consult a professional
                     </h3>
                     <p>
@@ -525,7 +504,7 @@ export function LocalLawsView({
 
                   {/* Section 5: Learn more with AI */}
                   <div className="space-y-3 pt-2">
-                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       Learn more with AI
                     </h3>
                     <p>

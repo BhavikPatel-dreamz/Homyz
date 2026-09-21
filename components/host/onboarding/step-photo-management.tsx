@@ -5,6 +5,7 @@ import React, { useState, useRef } from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -138,6 +139,7 @@ export function StepPhotoManagement({
     e.preventDefault();
   };
 
+  const { t } = useLanguage();
   const extraPhotos = photos.slice(5);
 
   return (
@@ -157,11 +159,8 @@ export function StepPhotoManagement({
             <div className="flex items-center justify-between w-full mb-8">
               <div>
                 <h1 data-aos="fade-up">
-                  Cool !<br className="sm:hidden block" /> How does this look?
+                  {t("host_photos_review_title")}
                 </h1>
-                {/* <p className="text-xs font-normal text-[#727272] mt-1">
-                  Review your property photos. Click Make cover to change the primary photo, or Replace to swap an image. ({photos.length} photos selected)
-                </p> */}
                 {uploadError && (
                   <p className="text-xs font-semibold text-rose-600 mt-2 bg-rose-50 border border-rose-200 rounded-lg p-2">
                     {uploadError}
@@ -173,7 +172,7 @@ export function StepPhotoManagement({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Uploading photo(s) to secure storage...</span>
+                    <span>{t("host_uploading")}</span>
                   </div>
                 )}
               </div>
@@ -183,7 +182,7 @@ export function StepPhotoManagement({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="sm:w-10 sm:h-10 w-8 h-8 rounded-full border border-[#1f1f1f] hover:border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1F1F1F] flex items-center justify-center hover:text-white text-[#1F1F1F] transition-colors duration-300 shadow-2xs cursor-pointer shrink-0"
-                title="Add more photos"
+                title={t("host_add_photos")}
               >
                 <svg className="sm:w-5 w-4 sm:h-5 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -219,7 +218,7 @@ export function StepPhotoManagement({
                     <>
                       <img src={photos[0]} alt="Cover Photo" className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
                       <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-xs">
-                        Cover photo
+                        {t("host_cover_photo")}
                       </span>
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between p-4">
                         <button
@@ -227,7 +226,7 @@ export function StepPhotoManagement({
                           onClick={() => triggerReplace(0)}
                           className="bg-white/90 text-[#1F1F1F] text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-white transition-colors cursor-pointer"
                         >
-                          Replace
+                          {t("host_replace")}
                         </button>
                         <button
                           type="button"

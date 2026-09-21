@@ -22,6 +22,7 @@ import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { isSaudiArabia } from "@/lib/location/address-countries";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
@@ -78,6 +79,7 @@ function EmptyListingsState({
   onCreate: () => void;
   pending: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <section className="mx-auto flex max-w-xl flex-col items-center rounded-3xl border border-dashed border-zinc-300 bg-[#FAFAF9] px-6 py-12 text-center sm:px-10">
       <span className="grid size-13 place-items-center rounded-2xl bg-[#FCDF9C] text-[#1F1F1F]">
@@ -85,9 +87,9 @@ function EmptyListingsState({
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6M9 10h.01M15 10h.01" />
         </svg>
       </span>
-      <h2 className="mt-5 text-xl font-semibold tracking-[-0.025em] text-[#1F1F1F]">No listings yet</h2>
+      <h2 className="mt-5 text-xl font-semibold tracking-[-0.025em] text-[#1F1F1F]">{t("host_empty_listings_title")}</h2>
       <p className="mt-2 max-w-sm text-sm leading-6 text-[#717171]">
-        Your real listings and the properties you co-host will appear here. Start by creating your first listing.
+        {t("host_empty_listings_desc")}
       </p>
       <button
         type="button"
@@ -95,7 +97,7 @@ function EmptyListingsState({
         disabled={pending}
         className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#FEE08B] px-5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60"
       >
-        Create your first listing
+        {t("host_create_first_listing")}
       </button>
     </section>
   );
@@ -113,6 +115,7 @@ export function HostListingsWorkspace({
   initialSearchQuery?: string;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [showSearch, setShowSearch] = useState(initialShowSearch);
   const [compactGrid, setCompactGrid] = useState(false);
@@ -469,7 +472,7 @@ export function HostListingsWorkspace({
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder=""
-                  aria-label="Search listings"
+                  aria-label={t("host_search_listings_aria")}
                   className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F]"
                 />
               </div>
@@ -481,20 +484,20 @@ export function HostListingsWorkspace({
                 }}
                 className="flex h-11 shrink-0 items-center justify-center rounded-full border border-[#727272] bg-white px-6 font-['Poppins'] text-base font-normal text-[#717171] transition-colors hover:bg-zinc-50 active:scale-95 cursor-pointer"
               >
-                Cancel
+                {t("host_search_cancel")}
               </button>
             </div>
           ) : (
             /* Mobile Title & Action Icons (When search is closed on mobile) */
             <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:hidden">
               <h1 className="min-w-0 text-[22px] leading-[1.15] font-medium tracking-[-0.025em]">
-                Your listing
+                {t("host_listing_title_mobile")}
               </h1>
 
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   type="button"
-                  aria-label="Search listings"
+                  aria-label={t("host_search_listings_aria")}
                   aria-expanded={false}
                   onClick={() => setShowSearch(true)}
                   className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5]"
@@ -506,7 +509,7 @@ export function HostListingsWorkspace({
                 </button>
                 <button
                   type="button"
-                  aria-label="Toggle compact listing layout"
+                  aria-label={t("host_toggle_compact_layout_aria")}
                   aria-pressed={compactGrid}
                   onClick={() => setCompactGrid(!compactGrid)}
                   className={`flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors ${
@@ -518,14 +521,14 @@ export function HostListingsWorkspace({
                     <rect x="4" y="11" width="6" height="10" rx="1" />
                     <rect x="14" y="11" width="6" height="6" rx="1" />
                   </svg>
-                  <span className="sr-only">Toggle compact listing layout</span>
+                  <span className="sr-only">{t("host_toggle_compact_layout_aria")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenCreate}
                   disabled={pending}
                   className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs"
-                  title="Create New Listing"
+                  title={t("host_create_new_listing")}
                 >
                   +
                 </button>
@@ -536,7 +539,7 @@ export function HostListingsWorkspace({
           {/* Desktop Title & Action (Always shown on sm: and up) */}
           <div className="listing-title mb-8 hidden items-center justify-between gap-3 sm:mb-9 sm:flex lg:mb-12">
             <h1>
-              Your listings
+              {t("host_listings_title")}
             </h1>
             <button
               type="button"
@@ -544,7 +547,7 @@ export function HostListingsWorkspace({
               disabled={pending}
               className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs"
             >
-              + Create New Listing
+              {t("host_create_new_listing")}
             </button>
           </div>
 
@@ -552,7 +555,7 @@ export function HostListingsWorkspace({
           {showSearch && (
             <div className="sm:hidden">
               {filteredListings.length === 0 && searchQuery ? (
-                <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
+                <p className="py-10 text-center text-zinc-500">{t("host_no_listings_matching_search")}</p>
               ) : filteredListings.length === 0 ? (
                 <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
               ) : (
@@ -574,11 +577,11 @@ export function HostListingsWorkspace({
                           {coverPhoto ? (
                             <img
                               src={coverPhoto}
-                              alt={item.title || "Listing photo"}
+                              alt={item.title || t("host_no_photo_yet")}
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">No photo yet</div>
+                            <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">{t("host_no_photo_yet")}</div>
                           )}
                           <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
                             <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
@@ -586,12 +589,12 @@ export function HostListingsWorkspace({
                         </div>
                         <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
                           <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
-                            {item.title === "Draft Listing" ? "Untitled draft" : item.title || "Untitled listing"}
+                            {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
                           </h3>
                           <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
                             {item.city || item.country
                               ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
-                              : "Location not added yet"}
+                              : t("host_no_location_yet")}
                           </p>
                         </div>
                       </Link>
@@ -605,7 +608,7 @@ export function HostListingsWorkspace({
           {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
           <div className={showSearch ? "hidden sm:block" : "block"}>
             {filteredListings.length === 0 && searchQuery ? (
-              <p className="py-10 text-center text-zinc-500">No listings match your search.</p>
+              <p className="py-10 text-center text-zinc-500">{t("host_no_listings_matching_search")}</p>
             ) : filteredListings.length === 0 ? (
               <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
             ) : (
@@ -628,17 +631,17 @@ export function HostListingsWorkspace({
                         {coverPhoto ? (
                           <img
                             src={coverPhoto}
-                            alt={item.title || "Listing photo"}
+                            alt={item.title || t("host_no_photo_yet")}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-sm text-[#717171]">No photo yet</div>
+                          <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-sm text-[#717171]">{t("host_no_photo_yet")}</div>
                         )}
 
                         {/* White Pill Badge matching screenshot */}
                         <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-[#FFFFFF99] px-2.5 py-1 text-sm leading-5 text-[#252525]">
                           <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
-                          {isCoHosted ? "Co-host" : isListed ? "listed" : "action required"}
+                          {isCoHosted ? t("host_badge_cohost") : isListed ? t("host_badge_listed") : t("host_badge_action_required")}
                         </div>
 
                         {/* Delete Action Icon Button */}
@@ -650,8 +653,8 @@ export function HostListingsWorkspace({
                               setListingToDelete(item);
                               setShowDeleteModal(true);
                             }}
-                            aria-label="Delete property listing"
-                            title="Delete Property Listing"
+                            aria-label={t("host_delete_property_aria")}
+                            title={t("host_delete_property_aria")}
                             className="absolute z-20 top-3 right-3 max-sm:hidden bg-white hover:border-[#1F1F1F] backdrop-blur-xs rounded-full text-rose-600 transition-all shadow-2xs text-xs flex items-center justify-center w-8 h-8"
                           >
                             <svg
@@ -676,20 +679,20 @@ export function HostListingsWorkspace({
                             }
                             className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
                           >
-                            {item.title === "Draft Listing" ? "Untitled draft" : item.title || "Untitled listing"}
+                            {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
                           </Link>
                         </h3>
                         <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
-                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : "Location not added yet"}
+                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
                         </p>
                         {item.status === "PENDING_REVIEW" && (
                           <p className="mt-1 text-xs font-medium text-amber-700">
-                            {isSaudiArabia(item.country) ? "Ready to publish" : "Submitted for Admin approval"}
+                            {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
                           </p>
                         )}
                         {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
                           <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>
-                            Admin feedback: {adminFeedback}
+                            {t("host_admin_feedback", { feedback: adminFeedback })}
                           </p>
                         )}
                       </div>

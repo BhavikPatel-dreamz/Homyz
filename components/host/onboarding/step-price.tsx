@@ -5,6 +5,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { StepProgressFooter } from "./step-progress-footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepPriceProps {
   price: number;
@@ -25,6 +26,7 @@ export function StepPrice({
   onNext,
   isLoading = false,
 }: StepPriceProps) {
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showMobileBreakdown, setShowMobileBreakdown] = useState(true);
@@ -55,10 +57,10 @@ export function StepPrice({
             <div className="max-w-[530px] mx-auto">
               {/* Main Title & Tip Subtitle */}
               <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
-                Now, set a weekday base price
+                {t("host_price_price_title")}
               </h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
-                TIP: Places like yours in your area typically range from 150 {currencySymbol} to 450 {currencySymbol} per night. You can change this anytime.
+                {t("host_price_tip")}
               </p>
             </div>
 
@@ -101,7 +103,7 @@ export function StepPrice({
                 className="hidden w-full items-center justify-center gap-4 text-base font-normal text-[#1F1F1F] transition-colors hover:text-zinc-800 cursor-pointer select-none sm:flex"
               >
                 <span>
-                  View breakdown
+                  {t("host_view_breakdown")}
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -121,7 +123,7 @@ export function StepPrice({
                   className="flex w-full items-center justify-center gap-4 sm:text-base text-sm font-normal text-[#1F1F1F] sm:hidden"
                 >
                   <span>
-                    View breakdown
+                    {t("host_view_breakdown")}
                   </span>
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -132,16 +134,16 @@ export function StepPrice({
               {/* Full mobile fee breakdown; desktop expands it on demand. */}
               <div className={`${showBreakdown ? "sm:block" : "sm:hidden"} ${showMobileBreakdown ? "block" : "hidden"} rounded-xl border border-[#727272] bg-white px-6 py-4 text-sm text-[#1F1F1F]`}>
                 <div className="flex items-center justify-between">
-                  <span>Weekday base price</span>
+                  <span>{t("host_weekday_base_price")}</span>
                   <span>{currencySymbol}{price.toLocaleString()}</span>
                 </div>
                 <div className="mt-5 flex items-center justify-between">
-                  <span>Guest service fee ({feePercentage}%)</span>
+                  <span>{t("host_guest_service_fee").replace("{fee}", String(feePercentage))}</span>
                   <span className="text-rose-600">−{currencySymbol}{hostServiceFee.toLocaleString()}</span>
                 </div>
                 <div className="my-5 border-t border-[#727272]/60" />
                 <div className="flex items-center justify-between">
-                  <span>You earn</span>
+                  <span>{t("host_you_earn")}</span>
                   <span className="font-medium text-emerald-600">{currencySymbol}{hostEarnings.toLocaleString()}</span>
                 </div>
                 <button
@@ -149,7 +151,7 @@ export function StepPrice({
                   onClick={() => setShowMobileBreakdown(false)}
                   className="mt-4 flex w-full items-center justify-between border-t border-[#727272]/60 pt-3 text-left text-xs text-[#727272] sm:hidden"
                 >
-                  <span>Show less</span>
+                  <span>{t("host_show_less")}</span>
                   <svg className="h-4 w-4 text-[#1F1F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l-6-6-6 6" />
                   </svg>

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor callback and copy surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 import React, { useState } from "react";
 import { isReservedSlug } from "@/lib/utils/slug";
@@ -136,6 +137,7 @@ export function PricingAndBookingViews({
   nonRefundableDiscountPercentage,
   isLoading,
 }: PricingAndBookingViewsProps) {
+  const { t } = useLanguage();
   const [localAvailabilityError, setLocalAvailabilityError] = useState<string | null>(null);
 
   const handleBack = (fallback = "pricing") => {
@@ -155,7 +157,7 @@ export function PricingAndBookingViews({
             <div className="flex items-start gap-6">
               <BackButton onClick={() => setActiveSection("description")} className="mt-2" />
               <div>
-                <h1>Pricing</h1>
+                <h1>{t("host_pricing_title")}</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
               </div>
             </div>
@@ -169,9 +171,9 @@ export function PricingAndBookingViews({
               {/* 1. Base Price Card */}
               <div className="space-y-3">
                 <div className="flex min-[360px]:items-center items-start justify-between min-[360px]:flex-row flex-col min-[360px]:gap-0 gap-3">
-                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? "Smart pricing range" : "Base price"}</span>
+                  <span className="text-base font-normal text-[#1F1F1F]">{smartPricing ? t("host_smart_pricing_range") : t("host_base_price")}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-normal text-[#727272]">Smart pricing</span>
+                    <span className="text-base font-normal text-[#727272]">{t("host_smart_pricing")}</span>
                     <button
                       type="button"
                       aria-label="Toggle smart pricing"
@@ -190,7 +192,7 @@ export function PricingAndBookingViews({
                 {smartPricing ? (
                   <div className="space-y-3 pt-1">
                     <div className="rounded-lg border border-[#727272] bg-white px-4 py-4">
-                      <label className="mb-1 block text-base font-medium text-[#1F1F1F]">Minimum price*</label>
+                      <label className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_min_price")}</label>
                       <div className="flex items-baseline gap-2">
                         <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{currency}</span>
                         <input
@@ -204,7 +206,7 @@ export function PricingAndBookingViews({
                     </div>
 
                     <div className="rounded-lg border border-[#727272] bg-white px-4 py-4">
-                      <label className="mb-1 block text-base font-medium text-[#1F1F1F]">Maximum price</label>
+                      <label className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_max_price")}</label>
                       <div className="flex items-baseline gap-2">
                         <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{currency}</span>
                         <input
@@ -236,15 +238,15 @@ export function PricingAndBookingViews({
                   {/* 2. Weekend adjustment */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="block text-base font-normal text-[#1F1F1F]">Custom weekend price</label>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_custom_weekend_price")}</label>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg border border-[#727272] bg-white px-4 py-2 sm:min-h-[68px] min-h-[58px]">
+                    <div className="flex items-center gap-2 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2 sm:min-h-[68px] min-h-[58px]">
                       <div className="flex items-center justify-between w-full gap-3">
                         <div className="flex items-center justify-between w-full gap-2 shrink-0">
 
                           <div className="min-w-0 text-left">
-                            <span className="sm:text-[32px] text-[24px] font-medium text-[#1f1f1f]">{weekendPremium || "XX"}</span>
+                            <span className="sm:text-[32px] text-[24px] font-medium text-[#1f1f1f] dark:text-zinc-100">{weekendPremium || "XX"}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <button
@@ -272,12 +274,12 @@ export function PricingAndBookingViews({
 
                   {/* 3. Discounts section */}
                   <div className="space-y-2 pt-1">
-                    <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Discounts</label>
+                    <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts")}</label>
 
                     {/* Weekly discount card */}
                     <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
                       <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        Weekly <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">— For 7+ nights</span>
+                        {t("host_discount_weekly")} <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">{t("host_discount_for_7_plus_nights")}</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
@@ -301,7 +303,7 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
-                          weekly average is {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
+                          {t("host_weekly_average_prefix")} {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
                         </span>
                       </div>
                     </div>
@@ -309,7 +311,7 @@ export function PricingAndBookingViews({
                     {/* Monthly discount card */}
                     <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
                       <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        Monthly <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">— For 28+ nights</span>
+                        {t("host_discount_monthly")} <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">{t("host_discount_for_28_plus_nights")}</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
@@ -333,7 +335,7 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
-                          monthly average is {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
+                          {t("host_monthly_average_prefix")} {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
                         </span>
                       </div>
                     </div>
@@ -380,7 +382,7 @@ export function PricingAndBookingViews({
               {/* 4. Calendar notice card */}
               <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
                 <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} className="dark:invert" />
-                <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">Find more discounts and fees in the calendar</span>
+                <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">{t("host_calendar_notice")}</span>
               </div>
 
               {/* Save Button */}
@@ -391,7 +393,7 @@ export function PricingAndBookingViews({
                   onClick={() => handleSaveSection("pricing")}
                   className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#F3F4F5] dark:hover:bg-amber-300 text-[#1F1F1F] dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
                 >
-                  {isSaving ? "Saving..." : "Save"}
+                  {isSaving ? t("host_saving") : t("host_save")}
                 </button>
               </div>
             </div>
@@ -409,9 +411,9 @@ export function PricingAndBookingViews({
             <div className="flex items-start gap-6">
               <BackButton onClick={() => handleBack("pricing")} className="mt-2" />
               <div>
-                <h1>Availability</h1>
+                <h1>{t("host_availability_title")}</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                  *These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button>
+                  {t("host_availability_subtitle")} <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_learn_more")}</button>
                 </p>
               </div>
             </div>
@@ -437,9 +439,9 @@ export function PricingAndBookingViews({
                 <div>
                   <div>
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-base font-normal text-[#1F1F1F]">Trip length</h3>
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
-                        {minNights}–{maxNights} nights
+                      <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_trip_length")}</h3>
+                      <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                        {minNights}–{maxNights} {t("host_nights_suffix")}
                       </span>
                     </div>
                   </div>
@@ -448,7 +450,7 @@ export function PricingAndBookingViews({
                 <div className="space-y-2">
                   {/* Minimum nights box */}
                   <div className="space-y-1">
-                    <div className="relative rounded-lg border border-[#727272] bg-white sm:px-4 px-3 sm:py-4 py-3 flex items-center justify-between focus-within:border-[#1F1F1F] sm:min-h-[68px] min-h-[60px]">
+                    <div className="relative rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 sm:px-4 px-3 sm:py-4 py-3 flex items-center justify-between focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-500 sm:min-h-[68px] min-h-[60px]">
                       <input
                         type="number"
                         min={1}
@@ -459,17 +461,17 @@ export function PricingAndBookingViews({
                           setMinNights(isNaN(val) ? 0 : val);
                           setLocalAvailabilityError(null);
                         }}
-                        aria-label="Minimum nights"
-                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        aria-label={t("host_minimum_nights")}
+                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-sm text-right text-[#727272]">
-                        <span className="text-center block">Minimum<br />nights</span></span>
+                      <span className="text-sm text-right text-[#727272] dark:text-zinc-400">
+                        <span className="text-center block">{t("host_minimum_nights")}</span></span>
                     </div>
                   </div>
 
                   {/* Maximum nights box */}
                   <div className="space-y-1">
-                    <div className="relative rounded-lg border border-[#727272] bg-white sm:px-4 px-3 sm:py-4 py-3 flex items-center justify-between focus-within:border-[#1F1F1F] sm:min-h-[68px] min-h-[60px]">
+                    <div className="relative rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 sm:px-4 px-3 sm:py-4 py-3 flex items-center justify-between focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-500 sm:min-h-[68px] min-h-[60px]">
                       <input
                         type="number"
                         min={1}
@@ -480,10 +482,10 @@ export function PricingAndBookingViews({
                           setMaxNights(isNaN(val) ? 0 : val);
                           setLocalAvailabilityError(null);
                         }}
-                        aria-label="Maximum nights"
-                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        aria-label={t("host_maximum_nights")}
+                        className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-sm text-right text-[#727272]"><span className="text-center block">Maximum<br />nights</span></span>
+                      <span className="text-sm text-right text-[#727272] dark:text-zinc-400"><span className="text-center block">{t("host_maximum_nights")}</span></span>
                     </div>
                   </div>
                 </div>
@@ -492,135 +494,30 @@ export function PricingAndBookingViews({
               {/* 2. Advance notice */}
               <div className="space-y-2">
                 <div>
-                  <h3 className="text-base font-normal text-[#1F1F1F]">Advance notice</h3>
-                  <p className="mt-1 text-xs text-[#1F1F1F] opacity-50">
-                    *How much notice do you need between a guest's booking and their arrival?
+                  <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_advance_notice")}</h3>
+                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                    {t("host_advance_notice_desc")}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <select value={advanceNotice} onChange={(e) => { setAdvanceNotice?.(e.target.value); setLocalAvailabilityError(null); }} className="w-full appearance-none rounded-lg border border-[#1f1f1f] bg-white sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] outline-none focus:border-[#1F1F1F] mb-0 min-h-[56px] min-h-[48px]">
-                    <option value="Same day">Same day</option><option value="At least 1 day">At least 1 day</option><option value="At least 2 days">At least 2 days</option><option value="At least 3 days">At least 3 days</option><option value="At least 7 days">At least 7 days</option>
+                  <select value={advanceNotice} onChange={(e) => { setAdvanceNotice?.(e.target.value); setLocalAvailabilityError(null); }} className="w-full appearance-none rounded-lg border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 mb-0 min-h-[56px]">
+                    <option value="Same day">{t("host_notice_same_day")}</option>
+                    <option value="At least 1 day">{t("host_notice_at_least_1_day")}</option>
+                    <option value="At least 2 days">{t("host_notice_at_least_2_days")}</option>
+                    <option value="At least 3 days">{t("host_notice_at_least_3_days")}</option>
+                    <option value="At least 7 days">{t("host_notice_at_least_7_days")}</option>
                   </select>
-                  {/* Option 1: Same day */}
-                  <div
-                    onClick={() => {
-                      setAdvanceNotice?.("Same day");
-                      setLocalAvailabilityError(null);
-                    }}
-                    className={`hidden ${advanceNotice === "Same day"
-                      ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
-                      : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="advanceNoticeOption"
-                      checked={advanceNotice === "Same day"}
-                      onChange={() => {
-                        setAdvanceNotice?.("Same day");
-                        setLocalAvailabilityError(null);
-                      }}
-                      className="mt-0.5 w-4 h-4 text-zinc-900 accent-zinc-900 cursor-pointer"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-semibold text-[#1F1F1F] block">Same day</span>
-                      <span className="mt-1 text-xs text-[#1F1F1F] opacity-50">
-                        Guests can book for arrival today before your cutoff time.
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Option 2: 1 day */}
-                  <div
-                    onClick={() => {
-                      setAdvanceNotice?.("At least 1 day");
-                      setLocalAvailabilityError(null);
-                    }}
-                    className={`hidden ${advanceNotice === "At least 1 day"
-                      ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
-                      : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="advanceNoticeOption"
-                      checked={advanceNotice === "At least 1 day"}
-                      onChange={() => {
-                        setAdvanceNotice?.("At least 1 day");
-                        setLocalAvailabilityError(null);
-                      }}
-                      className="mt-0.5 w-4 h-4 text-zinc-900 accent-zinc-900 cursor-pointer"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-semibold text-[#1F1F1F] block">1 day</span>
-                      <span className="text-[11px] text-zinc-500 block mt-0.5">
-                        Guests must book at least 1 day before arrival.
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Option 3: Custom */}
-                  <div
-                    onClick={() => {
-                      if (advanceNotice === "Same day" || advanceNotice === "At least 1 day") {
-                        setAdvanceNotice?.("At least 2 days");
-                      }
-                      setLocalAvailabilityError(null);
-                    }}
-                    className={`hidden ${advanceNotice !== "Same day" && advanceNotice !== "At least 1 day"
-                      ? "border-zinc-900 bg-zinc-50/70 ring-1 ring-zinc-900 shadow-2xs"
-                      : "border-zinc-200 bg-white hover:border-zinc-300"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="advanceNoticeOption"
-                      checked={advanceNotice !== "Same day" && advanceNotice !== "At least 1 day"}
-                      onChange={() => {
-                        if (advanceNotice === "Same day" || advanceNotice === "At least 1 day") {
-                          setAdvanceNotice?.("At least 2 days");
-                        }
-                        setLocalAvailabilityError(null);
-                      }}
-                      className="mt-0.5 w-4 h-4 text-zinc-900 accent-zinc-900 cursor-pointer"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-semibold text-[#1F1F1F] block">Custom</span>
-                      <span className="text-[11px] text-zinc-500 block mt-0.5">
-                        Choose a custom notice period (2 to 7 days).
-                      </span>
-                      {advanceNotice !== "Same day" && advanceNotice !== "At least 1 day" && (
-                        <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                          <label className="text-[11px] font-medium text-zinc-600 block mb-1">
-                            Notice required before arrival
-                          </label>
-                          <select
-                            value={advanceNotice}
-                            onChange={(e) => {
-                              setAdvanceNotice?.(e.target.value);
-                              setLocalAvailabilityError(null);
-                            }}
-                            className="w-full appearance-none rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 pr-8 text-xs text-zinc-900 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs cursor-pointer"
-                          >
-                            <option value="At least 2 days">At least 2 days</option>
-                            <option value="At least 3 days">At least 3 days</option>
-                            <option value="At least 7 days">At least 7 days</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
 
               {allowSameDayRequests && (
                 <div className="space-y-1">
-                  <label htmlFor="same-day-cutoff" className="block text-sm font-medium text-[#1F1F1F]">
-                    Same-day cutoff time
+                  <label htmlFor="same-day-cutoff" className="block text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
+                    {t("host_same_day_cutoff")}
                   </label>
-                  <p className="mt-1 text-xs text-[#1F1F1F] opacity-50">
-                    Guests can book on the same day as check-in until this time.
+                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                    {t("host_same_day_cutoff_desc")}
                   </p>
                   <select
                     id="same-day-cutoff"
@@ -629,11 +526,11 @@ export function PricingAndBookingViews({
                       setSameDayCutoff?.(e.target.value);
                       setLocalAvailabilityError(null);
                     }}
-                    className="w-full appearance-none rounded-lg border border-[#1f1f1f] bg-white sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] outline-none focus:border-[#1F1F1F] cursor-pointer mb-0 min-h-[56px] min-h-[48px]"
+                    className="w-full appearance-none rounded-lg border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 sm:px-4 px-3 sm:py-4 py-3 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 cursor-pointer mb-0 min-h-[56px]"
                   >
-                    <option value="12:00 AM">12:00 AM (Midnight)</option>
+                    <option value="12:00 AM">12:00 AM</option>
                     <option value="6:00 AM">6:00 AM</option>
-                    <option value="12:00 PM">12:00 PM (Noon)</option>
+                    <option value="12:00 PM">12:00 PM</option>
                     <option value="3:00 PM">3:00 PM</option>
                     <option value="6:00 PM">6:00 PM</option>
                     <option value="9:00 PM">9:00 PM</option>
@@ -645,11 +542,11 @@ export function PricingAndBookingViews({
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <h3 className="text-base font-normal text-[#1F1F1F]">
-                      Allow requests for the same day
+                    <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
+                      {t("host_allow_same_day_requests")}
                     </h3>
-                    <p className="mt-1 text-xs text-[#1F1F1F] opacity-50">
-                      You&apos;ll review and approve each reservation request.
+                    <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                      {t("host_allow_same_day_requests_desc")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -657,23 +554,21 @@ export function PricingAndBookingViews({
                       type="button"
                       role="switch"
                       aria-checked={allowSameDayRequests}
-                      aria-label="Toggle same-day requests"
+                      aria-label={t("host_allow_same_day_requests")}
                       onClick={() => {
                         setAllowSameDayRequests?.(!allowSameDayRequests);
                         setLocalAvailabilityError(null);
                       }}
-                      className={`relative inline-flex h-4.75 w-10.75 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowSameDayRequests ? "bg-[#DF4557]" : "bg-zinc-300"
+                      className={`relative inline-flex h-4.75 w-10.75 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowSameDayRequests ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-700"
                         }`}
                     >
                       <span
-                        className={`pointer-events-none absolute top-0.25 inline-block size-3.75 transform rounded-full bg-white transition duration-200 ease-in-out ${allowSameDayRequests ? "translate-x-6" : "translate-x-0.5"
+                        className={`pointer-events-none absolute top-0.25 inline-block size-3.75 transform rounded-full bg-white dark:bg-zinc-950 transition duration-200 ease-in-out ${allowSameDayRequests ? "translate-x-6" : "translate-x-0.5"
                           }`}
                       />
                     </button>
                   </div>
                 </div>
-
-
               </div>
 
               {/* Save Button */}
@@ -683,16 +578,16 @@ export function PricingAndBookingViews({
                   disabled={isSaving}
                   onClick={() => {
                     if (!minNights || minNights < 1) {
-                      setLocalAvailabilityError("Minimum stay must be at least 1 night.");
+                      setLocalAvailabilityError(t("host_err_min_nights"));
                       return;
                     }
                     if (!maxNights || maxNights < 1) {
-                      setLocalAvailabilityError("Maximum stay must be at least 1 night.");
+                      setLocalAvailabilityError(t("host_err_max_nights"));
                       return;
                     }
                     if (maxNights < minNights) {
                       setLocalAvailabilityError(
-                        `Maximum stay (${maxNights} nights) cannot be less than minimum stay (${minNights} nights).`
+                        `${t("host_maximum_nights")} (${maxNights}) < ${t("host_minimum_nights")} (${minNights}).`
                       );
                       return;
                     }
@@ -701,7 +596,7 @@ export function PricingAndBookingViews({
                   }}
                   className="rounded-full bg-[#FCDF9C] hover:bg-[#EFCF76] text-[#1F1F1F] font-medium text-sm px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
                 >
-                  {isSaving ? "Saving…" : "Save"}
+                  {isSaving ? t("host_saving") : t("host_save")}
                 </button>
               </div>
             </div>
@@ -719,50 +614,50 @@ export function PricingAndBookingViews({
         <div className="xl:max-w-[608px] md:max-w-[80%] space-y-4 pb-10 font-sans animate-in fade-in">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => handleBack("pricing")} />
-            <h1>Booking settings</h1>
+            <h1>{t("host_booking_settings_title")}</h1>
           </div>
 
           {isLoading ? (
             <BookingSettingsSkeleton />
           ) : (
             <div className="flex flex-col gap-3 md:mt-12 mt-6">
-              <section className={`rounded-lg border bg-white sm:px-6 px-4 sm:py-5 py-4 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-[#1f1f1f]" : "border-[#727272] hover:border-[#1f1f1f]"}`}>
+              <section className={`rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-[#1f1f1f] dark:border-zinc-500" : "border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f]"}`}>
                 <button type="button" disabled={isSaving} onClick={() => {
                   if (_bookingMethod === "first-three") return;
                   if (_bookingMethod === "instant") requestInstantBookOff("first-three");
                   else void saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord });
                 }} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
                   <div>
-                    <h2 className="text-base font-medium text-[#1f1f1f]">Approve your first 3 bookings</h2>
-                    <p className="mt-0.5 text-sm font-medium text-emerald-600">{Math.min(approvedBookingCount, 3)} of 3 approved</p>
-                    <p className="mt-1 text-sm text-[#727272]">Review your first three requests. After three confirmed bookings, new guests can book automatically.</p>
+                    <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_approve_first_three")}</h2>
+                    <p className="mt-0.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">{Math.min(approvedBookingCount, 3)} {t("host_of_three_approved")}</p>
+                    <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">{t("host_first_three_desc")}</p>
                   </div>
-                  <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5" /></svg>
+                  <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800 dark:text-zinc-200" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5" /></svg>
                 </button>
               </section>
 
-              <section className={`rounded-lg border bg-white sm:px-6 px-4 sm:py-5 py-4 transition-colors ${_bookingMethod === "instant" ? "border-[#1f1f1f]" : "border-[#727272]"}`}>
+              <section className={`rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 transition-colors ${_bookingMethod === "instant" ? "border-[#1f1f1f] dark:border-zinc-500" : "border-[#727272] dark:border-zinc-700"}`}>
                 <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
                   <div>
-                    <h2 className="text-base font-medium text-[#1f1f1f]">Use Instant Book</h2>
-                    <p className="mt-0.5 text-sm text-[#727272]">Let guests book automatically, which can help you get more bookings.</p>
+                    <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_use_instant_book")}</h2>
+                    <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_instant_book_desc")}</p>
                   </div>
-                  <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
+                  <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900 dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
                 </button>
 
-                <div className="my-5 border-t border-zinc-200" />
+                <div className="my-5 border-t border-zinc-200 dark:border-zinc-700" />
                 <div className="space-y-5">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <h3 className="text-base font-medium text-[#1f1f1f]">Require a good track record</h3>
-                      <p className="mt-0.5 text-sm text-[#727272]">Only allow guests with a previous completed, confirmed stay on Homyz.</p>
+                      <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_require_good_track_record")}</h3>
+                      <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_track_record_desc")}</p>
                     </div>
-                    <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label="Require a good track record" disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#DF4557]" : "bg-zinc-300"}`}>
-                      <span className={`block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5.5" : "translate-x-0.5"}`} />
+                    <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label={t("host_require_good_track_record")} disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-700"}`}>
+                      <span className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-950 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5.5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                   <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
-                    <div><h3 className="text-base font-medium text-[#1f1f1f]">Add a custom message</h3><p className="mt-0.5 text-sm leading-5 text-[#727272]">{hasCustomBookingMessage ? "Custom message added for guests." : "Guests must read this before booking."}</p></div>
+                    <div><h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_add_custom_message")}</h3><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-zinc-400">{hasCustomBookingMessage ? t("host_custom_message_added") : t("host_custom_message_must_read")}</p></div>
                     <Image
                       src="/images/icons/chevron-down-dark.svg"
                       alt=""
@@ -779,14 +674,14 @@ export function PricingAndBookingViews({
                 if (_bookingMethod === "approve") return;
                 if (_bookingMethod === "instant") requestInstantBookOff("approve");
                 else void saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord });
-              }} className={`flex w-full items-center justify-between gap-5 rounded-lg border bg-white sm:px-6 px-4 sm:py-5 py-4 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900" : "border-[#727272] hover:border-zinc-400"}`}>
-                <div><h2 className="text-base font-medium text-[#1f1f1f]">Approve all bookings</h2><p className="mt-0.5 text-sm leading-5 text-[#727272]">Always review reservation requests.</p></div>
-                <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
+              }} className={`flex w-full items-center justify-between gap-5 rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900 dark:border-zinc-100" : "border-[#727272] dark:border-zinc-700 hover:border-zinc-400"}`}>
+                <div><h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_approve_all_bookings")}</h2><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_approve_all_desc")}</p></div>
+                <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900 dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
               </button>
               {isSaving && (
-                <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-[#727272]">
-                  <span aria-hidden="true" className="size-4 animate-spin rounded-full border border-zinc-300 border-t-zinc-900" />
-                  Saving booking preference…
+                <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-[#727272] dark:text-zinc-400">
+                  <span aria-hidden="true" className="size-4 animate-spin rounded-full border border-zinc-300 border-t-zinc-900 dark:border-t-zinc-100" />
+                  {t("host_saving")}
                 </div>
               )}
             </div>
@@ -829,7 +724,7 @@ export function PricingAndBookingViews({
             <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
               {/* Counter text */}
               <span className="text-base font-medium text-[#727272] dark:text-zinc-300 tracking-tight">
-                {Math.max(0, 100 - (customSlug?.length || 0))}/100 characters available
+                {Math.max(0, 100 - (customSlug?.length || 0))}/100 {t("host_characters_available")}
               </span>
 
               {/* homyz/stay/ slug input field */}
@@ -850,19 +745,19 @@ export function PricingAndBookingViews({
               {/* Validation feedback */}
               <div className="text-base text-center min-h-[20px]">
                 {tooShort && (
-                  <span className="text-red-500 dark:text-red-400 font-medium">Link must be at least 3 characters.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">{t("host_link_min_3_chars")}</span>
                 )}
                 {reserved && (
-                  <span className="text-red-500 dark:text-red-400 font-medium">This link is a reserved system route.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">{t("host_link_reserved_route")}</span>
                 )}
                 {invalidChars && !tooShort && (
-                  <span className="text-red-500 dark:text-red-400 font-medium">Use lowercase letters, numbers, and single hyphens.</span>
+                  <span className="text-red-500 dark:text-red-400 font-medium">{t("host_link_invalid_chars")}</span>
                 )}
                 {hasInput && isSlugValid && !tooShort && (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Valid link: homyz.com/stay/{trimmedSlug}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">{t("host_valid_link")}: homyz.com/stay/{trimmedSlug}</span>
                 )}
                 {!hasInput && (
-                  <span className="text-[#727272] dark:text-zinc-500 font-normal">Create a memorable web address for your listing.</span>
+                  <span className="text-[#727272] dark:text-zinc-500 font-normal">{t("host_custom_link_desc")}</span>
                 )}
               </div>
 
@@ -873,7 +768,7 @@ export function PricingAndBookingViews({
                 onClick={() => handleSaveSection("custom-link")}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? t("host_saving") : t("host_save")}
               </button>
             </div>
           </div>

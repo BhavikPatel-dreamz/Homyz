@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 import React, { useState } from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 
 export interface DiscountOption {
@@ -28,31 +29,32 @@ export function StepDiscounts({
   onNext,
   isLoading = false,
 }: StepDiscountsProps) {
+  const { t } = useLanguage();
   const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
   const discounts: DiscountOption[] = [
     {
       id: "new_listing",
-      title: "New listing promotion",
-      description: "Offer 20% off your first 3 bookings to get reservations faster and build initial reviews.",
+      title: t("host_discount_new_listing_title"),
+      description: t("host_discount_new_listing_desc"),
       percentage: 20,
     },
     {
       id: "last_minute",
-      title: "Last-minute discount",
-      description: "Offer 15% off for stays booked within 2 days of arrival to fill unbooked calendar days.",
+      title: t("host_discount_last_minute_title"),
+      description: t("host_discount_last_minute_desc"),
       percentage: 15,
     },
     {
       id: "weekly",
-      title: "Weekly discount",
-      description: "Offer 10% off for stays of 7 nights or longer to attract extended guests.",
+      title: t("host_discount_weekly_title"),
+      description: t("host_discount_weekly_desc"),
       percentage: 10,
     },
     {
       id: "monthly",
-      title: "Monthly discount",
-      description: "Offer 25% off for stays of 28 nights or longer for stable, long-term occupancy.",
+      title: t("host_discount_monthly_title"),
+      description: t("host_discount_monthly_desc"),
       percentage: 25,
     },
   ];
@@ -70,10 +72,10 @@ export function StepDiscounts({
             {/* Main Title & Tip Subtitle */}
             <div className="title-section">
               <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
-                Add discounts
+                {t("host_discounts_title")}
               </h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
-                Help your place stand out to get booked faster and earn your first reviews.
+                {t("host_discounts_subtitle")}
               </p>
             </div>
 
@@ -119,19 +121,19 @@ export function StepDiscounts({
             {/* Footnote Notice & Read more Toggle */}
             <div className="mt-4 w-full">
               <p>
-                Only one promotional or length-of-stay discount applies per booking.{" "}
+                {t("host_discount_footnote")}{" "}
                 <button
                   type="button"
                   onClick={() => setShowExplanation(!showExplanation)}
                   className="underline text-[#1F1F1F] hover:text-[#727272] cursor-pointer font-normal"
                 >
-                  {showExplanation ? "Hide details" : "Read more"}
+                  {showExplanation ? t("host_hide_details") : t("host_read_more")}
                 </button>
               </p>
 
               {showExplanation && (
                 <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
-                  <p className="font-semibold text-zinc-800 mb-1">How discounts work on Homyz:</p>
+                  <p className="font-semibold text-zinc-800 mb-1">{t("host_discounts_how_it_works")}</p>
                   <ul className="list-disc pl-4 space-y-1">
                     <li>If multiple discounts apply to the same dates, the highest qualifying single discount will be granted to the guest.</li>
                     <li>Length-of-stay discounts (weekly or monthly) take priority over the new listing promotion once your first 3 bookings are completed.</li>

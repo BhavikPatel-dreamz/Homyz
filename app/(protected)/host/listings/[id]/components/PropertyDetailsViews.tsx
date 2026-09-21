@@ -5,7 +5,8 @@ import { BackButton } from "@/components/ui/back-button";
 import Image from "next/image";
 
 import React from "react";
-import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId } from "@/lib/constants/amenities";
+import { useLanguage } from "@/lib/i18n/language-context";
+import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import {
   normalizeAccessibilityFeature,
   normalizeMostLikeSelection,
@@ -31,6 +32,20 @@ export interface RoomData {
   name: string;
   type: "BEDROOM" | "LIVING_ROOM" | "OTHER";
   beds: BedItem[];
+}
+
+function getBedTypeLabel(type: string, t: (key: any, ...args: any[]) => string): string {
+  const key = `host_bed_${type.toLowerCase()}`;
+  const translated = t(key);
+  if (translated && translated !== key) return translated;
+  return type.toLowerCase().replace(/_/g, " ") + " bed";
+}
+
+function getRoomTypeLabel(type: string, t: (key: any, ...args: any[]) => string): string {
+  const key = `host_room_type_${type.toLowerCase()}`;
+  const translated = t(key);
+  if (translated && translated !== key) return translated;
+  return type.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface PropertyDetailsViewsProps {
@@ -188,6 +203,7 @@ export function PropertyDetailsViews({
   expandedAccessibility = "disabled_parking",
   setExpandedAccessibility,
 }: PropertyDetailsViewsProps) {
+  const { t } = useLanguage();
   const handleBack = (fallback = "propertyType") => {
     setActiveSection(fallback as any);
   };
@@ -363,11 +379,11 @@ export function PropertyDetailsViews({
             <div className="flex items-start gap-6">
               <BackButton onClick={() => setActiveSection("title")} className="mt-2" />
               <div>
-                <h1>Description</h1>
+                <h1>{t("host_description_heading")}</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-                  *These settings apply to all nights, unless you customize them by date.{" "}
+                  {t("host_availability_subtitle")}{" "}
                   <a href="#" onClick={(e) => e.preventDefault()} className="underline cursor-pointer text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-100 dark:hover:text-amber-400">
-                    Learn more
+                    {t("host_learn_more")}
                   </a>
                 </p>
               </div>
@@ -386,15 +402,15 @@ export function PropertyDetailsViews({
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
                 >
                   <div className="space-y-0.5">
-                    <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Listing description</h3>
+                    <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listing_description_title")}</h3>
                     <span className="text-base text-[#727272] font-normal block dark:text-zinc-400">
-                      {editDescription ? `${500 - editDescription.length}/500 available` : "295/500 available"}
+                      {Math.max(0, 500 - (editDescription?.length || 0))}/500 {t("host_available")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Image
                       src="/images/icons/chevron-down-dark.svg"
-                      alt={openDescAccordion === "description" ? "Collapse" : "Expand"}
+                      alt={openDescAccordion === "description" ? t("host_collapse") : t("host_expand")}
                       width={16}
                       height={16}
                       className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "description" ? "rotate-180" : "rotate-[270deg]"}`}
@@ -409,7 +425,7 @@ export function PropertyDetailsViews({
                         rows={5}
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
-                        placeholder="Describe your space, ambiance, surroundings, and amenities..."
+                        placeholder={t("host_description_placeholder")}
                         className="w-full text-base text-[#727272] outline-none bg-transparent leading-relaxed resize-none p-4 sm:p-5 font-normal dark:text-zinc-200 dark:placeholder-zinc-500"
                       />
                     </div>
@@ -419,7 +435,7 @@ export function PropertyDetailsViews({
                       onClick={() => handleSaveSection("description")}
                       className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving ? t("host_saving") : t("host_save")}
                     </button>
                   </div>
                 )}
@@ -432,14 +448,14 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Your property</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_your_property_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
-                      {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : "Add details"}
+                      {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
                   </div>
                   <Image
                     src="/images/icons/chevron-down-dark.svg"
-                    alt={openDescAccordion === "property" ? "Collapse" : "Expand"}
+                    alt={openDescAccordion === "property" ? t("host_collapse") : t("host_expand")}
                     width={16}
                     height={16}
                     className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "property" ? "rotate-180" : "rotate-[270deg]"}`}
@@ -452,7 +468,7 @@ export function PropertyDetailsViews({
                       rows={4}
                       value={editPropertyDetails}
                       onChange={(e) => setEditPropertyDetails(e.target.value)}
-                      placeholder="Tell guests more about the property itself."
+                      placeholder={t("host_property_details_placeholder")}
                       className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
@@ -461,7 +477,7 @@ export function PropertyDetailsViews({
                       onClick={() => handleSaveSection("description", "property")}
                       className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving ? t("host_saving") : t("host_save")}
                     </button>
                   </div>
                 )}
@@ -474,14 +490,14 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Guest access</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_access_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
-                      {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : "Add details"}
+                      {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
                   </div>
                   <Image
                     src="/images/icons/chevron-down-dark.svg"
-                    alt={openDescAccordion === "access" ? "Collapse" : "Expand"}
+                    alt={openDescAccordion === "access" ? t("host_collapse") : t("host_expand")}
                     width={16}
                     height={16}
                     className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "access" ? "rotate-180" : "rotate-[270deg]"}`}
@@ -494,7 +510,7 @@ export function PropertyDetailsViews({
                       rows={4}
                       value={editAccessDetails}
                       onChange={(e) => setEditAccessDetails(e.target.value)}
-                      placeholder="Explain which spaces guests can use."
+                      placeholder={t("host_guest_access_placeholder")}
                       className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
@@ -503,7 +519,7 @@ export function PropertyDetailsViews({
                       onClick={() => handleSaveSection("description", "access")}
                       className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving ? t("host_saving") : t("host_save")}
                     </button>
                   </div>
                 )}
@@ -516,14 +532,14 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Interaction with guests</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_interaction_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
-                      {interactionDetails ? interactionDetails.slice(0, 40) + "..." : "Add details"}
+                      {interactionDetails ? interactionDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
                   </div>
                   <Image
                     src="/images/icons/chevron-down-dark.svg"
-                    alt={openDescAccordion === "interaction" ? "Collapse" : "Expand"}
+                    alt={openDescAccordion === "interaction" ? t("host_collapse") : t("host_expand")}
                     width={16}
                     height={16}
                     className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "interaction" ? "rotate-180" : "rotate-[270deg]"}`}
@@ -536,7 +552,7 @@ export function PropertyDetailsViews({
                       rows={4}
                       value={interactionDetails}
                       onChange={(e) => setInteractionDetails?.(e.target.value)}
-                      placeholder="Let guests know how much interaction they can expect."
+                      placeholder={t("host_guest_interaction_placeholder")}
                       className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
@@ -545,7 +561,7 @@ export function PropertyDetailsViews({
                       onClick={() => handleSaveSection("description", "interaction")}
                       className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving ? t("host_saving") : t("host_save")}
                     </button>
                   </div>
                 )}
@@ -558,14 +574,14 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">Other details to note</h4>
+                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_other_details_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-zinc-400">
-                      {otherDetails ? otherDetails.slice(0, 40) + "..." : "Add details"}
+                      {otherDetails ? otherDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
                   </div>
                   <Image
                     src="/images/icons/chevron-down-dark.svg"
-                    alt={openDescAccordion === "other" ? "Collapse" : "Expand"}
+                    alt={openDescAccordion === "other" ? t("host_collapse") : t("host_expand")}
                     width={16}
                     height={16}
                     className={`size-4 object-contain transition-transform duration-200 ease-out dark:invert ${openDescAccordion === "other" ? "rotate-180" : "rotate-[270deg]"}`}
@@ -578,7 +594,7 @@ export function PropertyDetailsViews({
                       rows={4}
                       value={otherDetails}
                       onChange={(e) => setOtherDetails?.(e.target.value)}
-                      placeholder="Share anything else guests should know before booking."
+                      placeholder={t("host_other_details_placeholder")}
                       className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px] dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:focus:border-zinc-400 dark:placeholder-zinc-500"
                     />
                     <button
@@ -587,7 +603,7 @@ export function PropertyDetailsViews({
                       onClick={() => handleSaveSection("description", "other")}
                       className="rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving ? t("host_saving") : t("host_save")}
                     </button>
                   </div>
                 )}
@@ -604,7 +620,7 @@ export function PropertyDetailsViews({
         <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10">
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
-            <h1 className="min-w-0">Listing title</h1>
+            <h1 className="min-w-0">{t("host_listing_title")}</h1>
           </div>
 
           {isLoading ? (
@@ -615,11 +631,11 @@ export function PropertyDetailsViews({
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="e.g. Modern Villa in Downtown"
+                placeholder={t("host_title_placeholder")}
                 className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3.5 text-md font-normal text-[#727272] outline-none focus:border-[#1F1F1F] transition-colors shadow-2xs min-h-[56px]"
               />
               <div className="flex justify-between items-center text-xs text-[#727272] mb-0">
-                <span>50 characters maximum</span>
+                <span>{t("host_title_max_chars")}</span>
                 <span>{editTitle.length}/50</span>
               </div>
 
@@ -629,7 +645,7 @@ export function PropertyDetailsViews({
                 onClick={() => handleSaveSection("title")}
                 className="mt-12 whitespace-nowrap rounded-full bg-[#FCDF9C] px-6 py-3 text-sm font-medium text-[#1F1F1F] transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
               >
-                {isSaving ? "Saving..." : "Save Title"}
+                {isSaving ? t("host_saving") : t("host_save_title")}
               </button>
             </div>
           )}
@@ -644,7 +660,7 @@ export function PropertyDetailsViews({
           {/* Back button & Section Header */}
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
-            <h1>Property type</h1>
+            <h1>{t("host_property_type_heading")}</h1>
           </div>
 
           {isLoading ? (
@@ -654,19 +670,19 @@ export function PropertyDetailsViews({
               <div className="max-w-none space-y-5 lg:max-w-[491px]">
                 {/* 1. Which is most like your place? */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Which is most like your place?</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_which_is_most_like")}</label>
                   <div className="relative">
                     <select
                       value={whichIsMostLike}
                       onChange={(e) => setWhichIsMostLike(e.target.value)}
                       className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
-                      <option value="APARTMENT">Apartment</option>
-                      <option value="HOUSE">House</option>
-                      <option value="SECONDARY_UNIT">Secondary unit</option>
-                      <option value="UNIQUE_SPACE">Unique space</option>
-                      <option value="BED_AND_BREAKFAST">Bed & breakfast</option>
-                      <option value="BOUTIQUE_HOTEL">Boutique hotel</option>
+                      <option value="APARTMENT">{t("host_category_apartment")}</option>
+                      <option value="HOUSE">{t("host_category_house")}</option>
+                      <option value="SECONDARY_UNIT">{t("host_type_secondary_unit")}</option>
+                      <option value="UNIQUE_SPACE">{t("host_type_unique_space")}</option>
+                      <option value="BED_AND_BREAKFAST">{t("host_type_bed_and_breakfast")}</option>
+                      <option value="BOUTIQUE_HOTEL">{t("host_type_boutique_hotel")}</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -678,7 +694,7 @@ export function PropertyDetailsViews({
 
                 {/* 2. Property type */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Property type</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_property_type_heading")}</label>
                   <div className="relative">
                     <select
                       value={editPropertyType}
@@ -688,16 +704,16 @@ export function PropertyDetailsViews({
                       }}
                       className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
-                      <option value="APARTMENT">Apartment</option>
-                      <option value="HOUSE">House</option>
-                      <option value="VILLA">Villa</option>
-                      <option value="CABIN">Cabin</option>
-                      <option value="COTTAGE">Cottage</option>
-                      <option value="STUDIO">Studio</option>
-                      <option value="LOFT">Loft</option>
-                      <option value="PENTHOUSE">Penthouse</option>
-                      <option value="TOWNHOUSE">Townhouse</option>
-                      <option value="GUEST_HOUSE">Guest house</option>
+                      <option value="APARTMENT">{t("host_category_apartment")}</option>
+                      <option value="HOUSE">{t("host_category_house")}</option>
+                      <option value="VILLA">{t("host_category_villa")}</option>
+                      <option value="CABIN">{t("host_type_cabin")}</option>
+                      <option value="COTTAGE">{t("host_type_cottage")}</option>
+                      <option value="STUDIO">{t("host_type_studio")}</option>
+                      <option value="LOFT">{t("host_type_loft")}</option>
+                      <option value="PENTHOUSE">{t("host_type_penthouse")}</option>
+                      <option value="TOWNHOUSE">{t("host_type_townhouse")}</option>
+                      <option value="GUEST_HOUSE">{t("host_category_guest_house")}</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -706,22 +722,22 @@ export function PropertyDetailsViews({
                     </div>
                   </div>
                   <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal pt-0.5">
-                    A rental place with a multi-unit residential building or complex.
+                    {t("host_apartment_desc")}
                   </p>
                 </div>
 
                 {/* 3. Listing type */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Listing type</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_place_type_entire_title")}</label>
                   <div className="relative">
                     <select
                       value={editListingType}
                       onChange={(e) => setEditListingType(e.target.value)}
                       className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
-                      <option value="ENTIRE_PLACE">Entire place</option>
-                      <option value="ROOM">Private room</option>
-                      <option value="SHARED_ROOM">Shared room</option>
+                      <option value="ENTIRE_PLACE">{t("host_place_type_entire_title")}</option>
+                      <option value="ROOM">{t("host_type_private_room")}</option>
+                      <option value="SHARED_ROOM">{t("host_place_type_shared_title")}</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500 dark:text-zinc-300">
                       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -730,7 +746,7 @@ export function PropertyDetailsViews({
                     </div>
                   </div>
                   <p className="text-xs text-[#727272] dark:text-zinc-400 font-normal pt-0.5 leading-relaxed">
-                    Guests have the whole place to themselves. This usually includes a bedroom, a bathroom and a kitchen.
+                    {t("host_entire_place_desc")}
                   </p>
                 </div>
 
@@ -739,7 +755,7 @@ export function PropertyDetailsViews({
                   <>
                     {/* 4. How many floors are in the building */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">How many floors are in the building</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_how_many_floors")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
@@ -761,7 +777,7 @@ export function PropertyDetailsViews({
 
                     {/* 5. Which floor is the listing on? */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Which floor is the listing on?</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_which_floor")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
@@ -784,8 +800,8 @@ export function PropertyDetailsViews({
                     {/* Elevator Available */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Elevator available</label>
-                        <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">Is there an elevator to access this floor?</p>
+                        <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_elevator_available")}</label>
+                        <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{t("host_elevator_desc")}</p>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
@@ -816,7 +832,7 @@ export function PropertyDetailsViews({
                     {/* Standalone House / Villa fields */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
                       <div className="space-y-0.5">
-                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">How many floors are in the building?</p>
+                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">{t("host_how_many_floors")}</p>
                       </div>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
@@ -839,7 +855,7 @@ export function PropertyDetailsViews({
 
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
                       <div className="space-y-0.5">
-                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">Guests have their own private exterior door or gate</p>
+                        <p className="text-base text-[#1F1F1F] dark:text-zinc-100 font-normal">{t("host_private_exterior_door")}</p>
                       </div>
                       <div className="flex items-center gap-3 min-w-[86px]">
                         <button
@@ -869,14 +885,14 @@ export function PropertyDetailsViews({
 
                 {/* 6. Year built */}
                 <div className="w-full space-y-2 sm:w-[13.5rem]">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Year built</label>
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_year_built")}</label>
                   <div className="relative">
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
                       className="h-14 w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-[#727272] dark:text-zinc-100 font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-9 text-base"
                     >
-                      <option value="">Select year (optional)</option>
+                      <option value="">{t("host_select_year_optional")}</option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
                         <option key={yr} value={yr}>{yr}</option>
                       ))}
@@ -893,7 +909,7 @@ export function PropertyDetailsViews({
                 <div className="space-y-2">
                   <div className="grid max-w-md grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-4">
                     <div className="space-y-2">
-                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Property size</label>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_property_size")}</label>
                       <input
                         type="number"
                         value={propertySize}
@@ -905,7 +921,7 @@ export function PropertyDetailsViews({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Unit</label>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_unit")}</label>
                       <div className="relative">
                         <select
                           value={propertySizeUnit}
@@ -924,7 +940,7 @@ export function PropertyDetailsViews({
                     </div>
                   </div>
                   <p className="pt-0.5 text-xs font-normal text-[#727272] dark:text-zinc-400">
-                    The amount of indoor space that&apos;s available to guests.
+                    {t("host_property_size_desc")}
                   </p>
                 </div>
               </div>
@@ -932,14 +948,14 @@ export function PropertyDetailsViews({
               {/* 8. Category Information */}
               <div className="grid grid-cols-1 gap-6 pt-8 sm:grid-cols-[minmax(0,1fr)_20.25rem] sm:items-end">
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-medium text-[#1F1F1F] dark:text-zinc-100">Your category</h3>
+                  <h3 className="text-2xl font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_your_category")}</h3>
                   <p className="text-base font-normal leading-relaxed text-[#727272] dark:text-zinc-400 mb-0">
-                    Categorizing your place accurately helps guests find the exact space type they need. Your listing is classified based on your property type and amenities.
+                    {t("host_your_category_desc")}
                   </p>
                   <button type="button" className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100 underline underline-offset-2 hover:text-[#727272] dark:hover:text-amber-400 transition-all duration-300">Learn more</button>
                 </div>
                 <div className="flex min-h-12 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 px-5 text-base font-normal text-[#1F1F1F] dark:text-zinc-200 sm:min-h-[140px] sm:rounded-[24px]">
-                  *Your listing isn&apos;t part of a part yet.
+                  {t("host_not_part_of_part")}
                 </div>
               </div>
 
@@ -951,7 +967,7 @@ export function PropertyDetailsViews({
                   onClick={() => handleSaveSection("propertyType")}
                   className="w-full rounded-full border border-transparent bg-[#FCDF9C] dark:bg-amber-400 dark:text-zinc-950 px-4 py-2.25 text-lg font-medium text-[#1F1F1F] transition-all duration-300 cursor-pointer hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 sm:w-auto sm:py-2.5 sm:text-base min-w-[136px]"
                 >
-                  {isSaving ? "Saving..." : "Save"}
+                  {isSaving ? t("host_saving_btn") : t("host_save_btn")}
                 </button>
               </div>
             </div>
@@ -969,9 +985,9 @@ export function PropertyDetailsViews({
             <div className="flex items-start gap-6 max-w-[491px]">
               <BackButton onClick={() => setActiveSection("propertyType")} className="mt-2" />
               <div className="space-y-1.5">
-                <h1>{activeSection === "guests" ? "Number of guests" : "Sleeping arrangements"}</h1>
+                <h1>{activeSection === "guests" ? t("host_number_of_guests") : t("host_sleeping_arrangements_title")}</h1>
                 <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                  {activeSection === "guests" ? "How many guests can fit comfortably in your space?" : "Configure bedroom sleeping arrangements and bathroom breakdown."}
+                  {activeSection === "guests" ? t("host_how_many_guests_question") : t("host_sleeping_arrangements_subtitle")}
                 </p>
               </div>
             </div>
@@ -990,14 +1006,14 @@ export function PropertyDetailsViews({
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
                   {activeSection === "guests" && (
                     <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272] dark:text-zinc-300">
-                      How many guests can fit comfortably in your space?
+                      {t("host_how_many_guests_question")}
                     </p>
                   )}
                   <div className={`flex items-center ${activeSection === "guests" ? "gap-12" : "justify-between"}`}>
                     {activeSection !== "guests" && (
                       <div>
-                        <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Maximum guests</h3>
-                        <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total number of guests allowed to stay</p>
+                        <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_maximum_guests")}</h3>
+                        <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">{t("host_max_guests_desc")}</p>
                       </div>
                     )}
                     <div className="flex items-center gap-2">
@@ -1046,8 +1062,8 @@ export function PropertyDetailsViews({
                   {activeSection !== "guests" && <div className="flex flex-col gap-3 border-t border-[#DDDDDE] dark:border-zinc-700 pt-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">Bedrooms</span>
-                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total bedroom spaces</span>
+                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_bedrooms")}</span>
+                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">{t("host_bedrooms_desc")}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -1070,8 +1086,8 @@ export function PropertyDetailsViews({
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">Beds</span>
-                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Total beds available</span>
+                        <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">{t("host_beds")}</span>
+                        <span className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">{t("host_beds_desc")}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -1099,8 +1115,8 @@ export function PropertyDetailsViews({
               {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
                 <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-6">
                   <div>
-                    <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Room-by-room sleeping arrangements</h3>
-                    <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Specify beds for each bedroom or common space</p>
+                    <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_room_by_room_arrangements")}</h3>
+                    <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">{t("host_room_by_room_desc")}</p>
                   </div>
                   <button
                     type="button"
@@ -1108,7 +1124,7 @@ export function PropertyDetailsViews({
                       const roomIndex = (rooms || []).length + 1;
                       const newRoom: RoomData = {
                         id: `room_${Date.now()}`,
-                        name: `Bedroom ${roomIndex}`,
+                        name: `${t("host_bedroom_name_prefix")} ${roomIndex}`,
                         type: "BEDROOM",
                         beds: [{ type: "QUEEN", count: 1 }],
                       };
@@ -1119,20 +1135,20 @@ export function PropertyDetailsViews({
                       setEditBeds(Math.max(1, totalBeds));
                     }}
                     className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 px-4 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-950 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer transition-colors whitespace-nowrap">
-                    + Add room
+                    {t("host_add_room")}
                   </button>
                 </div>
 
                 {/* Render Rooms List */}
                 {(!rooms || rooms.length === 0) ? (
                   <div className="rounded-md border border-dashed border-[#DDDDDE] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-center space-y-2">
-                    <p className="text-[14px] text-[#727272] dark:text-zinc-400">No rooms configured yet.</p>
+                    <p className="text-[14px] text-[#727272] dark:text-zinc-400">{t("host_no_rooms_yet")}</p>
                     <button
                       type="button"
                       onClick={() => {
                         const defaultRoom: RoomData = {
                           id: "room_1",
-                          name: "Bedroom 1",
+                          name: `${t("host_bedroom_name_prefix")} 1`,
                           type: "BEDROOM",
                           beds: [{ type: "QUEEN", count: 1 }],
                         };
@@ -1140,7 +1156,7 @@ export function PropertyDetailsViews({
                       }}
                       className="text-xs font-semibold text-amber-700 dark:text-amber-400 underline cursor-pointer"
                     >
-                      Add Bedroom 1
+                      {t("host_add_bedroom_1")}
                     </button>
                   </div>
                 ) : (
@@ -1161,7 +1177,7 @@ export function PropertyDetailsViews({
                               className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 bg-transparent border-b border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:border-[#1F1F1F] dark:focus:border-zinc-400 outline-none px-1 py-0.5"
                             />
                             <span className="text-[14px] font-normal bg-zinc-100 dark:bg-zinc-700 text-[#727272] dark:text-zinc-300 px-2 py-0.5 rounded-full">
-                              {room.type}
+                              {getRoomTypeLabel(room.type, t)}
                             </span>
                           </div>
                           <button
@@ -1174,7 +1190,7 @@ export function PropertyDetailsViews({
                               setEditBeds(Math.max(1, totalBeds));
                             }}
                             className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition-colors p-1"
-                            title="Remove room"
+                            title={t("host_remove_room")}
                           >
                             ✕
                           </button>
@@ -1184,8 +1200,8 @@ export function PropertyDetailsViews({
                         <div className="space-y-2 pt-1">
                           {room.beds.map((bed, bedIdx) => (
                             <div key={bedIdx} className="flex items-center justify-between text-base py-2 border-b border-[#DDDDDE] dark:border-zinc-700 last:border-0">
-                              <span className="text-[#1F1F1F] dark:text-zinc-100 font-normal capitalize">
-                                {bed.type.toLowerCase().replace(/_/g, " ")} bed
+                              <span className="text-[#1F1F1F] dark:text-zinc-100 font-normal">
+                                {getBedTypeLabel(bed.type, t)}
                               </span>
                               <div className="flex items-center gap-2">
                                 <button
@@ -1245,16 +1261,16 @@ export function PropertyDetailsViews({
                               }}
                               className="text-[14px] font-normal text-[#727272] dark:text-zinc-200 bg-white dark:bg-zinc-800 border border-[#DDDDDE] dark:border-zinc-700 rounded-md px-3 py-2 outline-none cursor-pointer"
                             >
-                              <option value="">+ Add bed type...</option>
-                              <option value="KING">King bed</option>
-                              <option value="QUEEN">Queen bed</option>
-                              <option value="DOUBLE">Double bed</option>
-                              <option value="SINGLE">Single bed</option>
-                              <option value="TWIN">Twin bed</option>
-                              <option value="SOFA_BED">Sofa bed</option>
-                              <option value="BUNK_BED">Bunk bed</option>
-                              <option value="CRIB">Crib</option>
-                              <option value="FLOOR_MATTRESS">Floor mattress</option>
+                              <option value="">{t("host_add_bed_type")}</option>
+                              <option value="KING">{t("host_bed_king")}</option>
+                              <option value="QUEEN">{t("host_bed_queen")}</option>
+                              <option value="DOUBLE">{t("host_bed_double")}</option>
+                              <option value="SINGLE">{t("host_bed_single")}</option>
+                              <option value="TWIN">{t("host_bed_twin")}</option>
+                              <option value="SOFA_BED">{t("host_bed_sofa_bed")}</option>
+                              <option value="BUNK_BED">{t("host_bed_bunk_bed")}</option>
+                              <option value="CRIB">{t("host_bed_crib")}</option>
+                              <option value="FLOOR_MATTRESS">{t("host_bed_floor_mattress")}</option>
                             </select>
                           </div>
                         </div>
@@ -1267,15 +1283,15 @@ export function PropertyDetailsViews({
               {/* Section 3: Bathroom Breakdown */}
               {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Bathroom breakdown</h3>
-                  <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">Specify full and half bathrooms available to guests</p>
+                  <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_bathroom_breakdown")}</h3>
+                  <p className="text-[14px] font-normal text-[#727272] dark:text-zinc-400">{t("host_bathroom_breakdown_desc")}</p>
                 </div>
 
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Full bathrooms</span>
-                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Includes shower/bathtub, sink, and toilet</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_full_bathrooms")}</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">{t("host_full_bathrooms_desc")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1306,8 +1322,8 @@ export function PropertyDetailsViews({
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-700">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Half bathrooms</span>
-                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Includes sink and toilet only (no bath or shower)</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_half_bathrooms")}</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">{t("host_half_bathrooms_desc")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -1338,8 +1354,8 @@ export function PropertyDetailsViews({
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-700">
                     <div>
-                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">Bathroom privacy</span>
-                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">Are the bathrooms private or shared with host/others?</span>
+                      <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_bathroom_privacy")}</span>
+                      <span className="sm:text-sm text-xs text-[#727272] dark:text-zinc-400 leading-tight">{t("host_bathroom_privacy_desc")}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -1353,7 +1369,7 @@ export function PropertyDetailsViews({
                           : "bg-[#F3F4F5] dark:bg-zinc-800 border border-transparent dark:border-zinc-700 text-[#1f1f1f] dark:text-zinc-100 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700"
                           }`}
                       >
-                        Private
+                        {t("host_bathroom_private")}
                       </button>
                       <button
                         type="button"
@@ -1366,7 +1382,7 @@ export function PropertyDetailsViews({
                           : "bg-[#F3F4F5] dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 text-[#1f1f1f] dark:text-zinc-100 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700"
                           }`}
                       >
-                        Shared
+                        {t("host_bathroom_shared")}
                       </button>
                     </div>
                   </div>
@@ -1381,7 +1397,7 @@ export function PropertyDetailsViews({
                   onClick={() => handleSaveSection("guests")}
                   className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
                 >
-                  {isSaving ? "Saving..." : "Save"}
+                  {isSaving ? t("host_saving") : t("host_save")}
                 </button>
               </div>
             </div>
@@ -1393,22 +1409,34 @@ export function PropertyDetailsViews({
       {/* VIEW 5: AMENITIES */}
       {/* --------------------------------------------------------- */}
       {(activeSection === "amenities" || activeSection === "add-amenities") && (() => {
+        const getAmenityLabel = (id: string, fallback: string) => {
+          const key = getAmenityTranslationKey(id) as keyof typeof import("@/messages/en.json");
+          const translated = t(key);
+          return translated && translated !== key ? translated : fallback;
+        };
+
+        const getAmenityDescription = (id: string, fallbackDesc?: string) => {
+          const key = `host_amenity_desc_${id}` as keyof typeof import("@/messages/en.json");
+          const translated = t(key);
+          return translated && translated !== key ? translated : (fallbackDesc || "");
+        };
+
         const AMENITY_FILTER_CATEGORIES = [
-          { id: "all", label: "All" },
-          { id: "favorites", label: "Basics" },
-          { id: "bathroom", label: "Bathroom" },
-          { id: "bedroom_laundry", label: "Bedroom and laundry" },
-          { id: "entertainment", label: "Entertainment" },
-          { id: "family", label: "Family" },
-          { id: "climate", label: "Heating and cooling" },
-          { id: "safety", label: "Home safety" },
-          { id: "internet_workspace", label: "Internet and office" },
-          { id: "kitchen_dining", label: "Kitchen and dining" },
-          { id: "location_features", label: "Location features" },
-          { id: "outdoor", label: "Outdoor" },
-          { id: "parking_facilities", label: "Parking and facilities" },
-          { id: "services", label: "Services" },
-        ] as const;
+          { id: "all", label: t("host_amenity_cat_all") },
+          { id: "favorites", label: t("host_amenity_cat_favorites") },
+          { id: "bathroom", label: t("host_amenity_cat_bathroom") },
+          { id: "bedroom_laundry", label: t("host_amenity_cat_bedroom_laundry") },
+          { id: "entertainment", label: t("host_amenity_cat_entertainment") },
+          { id: "family", label: t("host_amenity_cat_family") },
+          { id: "climate", label: t("host_amenity_cat_climate") },
+          { id: "safety", label: t("host_amenity_cat_safety") },
+          { id: "internet_workspace", label: t("host_amenity_cat_internet_workspace") },
+          { id: "kitchen_dining", label: t("host_amenity_cat_kitchen_dining") },
+          { id: "location_features", label: t("host_amenity_cat_location_features") },
+          { id: "outdoor", label: t("host_amenity_cat_outdoor") },
+          { id: "parking_facilities", label: t("host_amenity_cat_parking_facilities") },
+          { id: "services", label: t("host_amenity_cat_services") },
+        ];
 
         const normalizedSelectedIds = new Set(
           editAmenities.map((a) => normalizeAmenityId(a)).filter(Boolean)
@@ -1438,9 +1466,13 @@ export function PropertyDetailsViews({
           }
           if (!amenitySearch.trim()) return true;
           const q = amenitySearch.toLowerCase().trim();
+          const localizedName = getAmenityLabel(item.id, item.label);
+          const localizedDesc = getAmenityDescription(item.id, item.description);
           return (
             item.label.toLowerCase().includes(q) ||
+            localizedName.toLowerCase().includes(q) ||
             (item.description && item.description.toLowerCase().includes(q)) ||
+            (localizedDesc && localizedDesc.toLowerCase().includes(q)) ||
             item.id.toLowerCase().includes(q)
           );
         });
@@ -1468,10 +1500,10 @@ export function PropertyDetailsViews({
                   }} />
                   <div className="space-y-1">
                     <h1>
-                      {activeSection === "add-amenities" ? "Add amenities" : "Amenities"}
+                      {activeSection === "add-amenities" ? t("host_add_amenities_heading") : t("host_amenities_heading")}
                     </h1>
                     <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                      You&apos;ve added these to your listing so far.
+                      {activeSection === "add-amenities" ? t("host_amenities_subtitle") : t("host_amenities_added_so_far")}
                     </p>
                   </div>
                 </div>
@@ -1508,13 +1540,13 @@ export function PropertyDetailsViews({
                       className="mr-2 size-6 object-contain transition-[filter] group-hover:brightness-0 group-hover:invert dark:invert"
                     />
                   )}
-                  {activeSection === "add-amenities" || isEditingAmenityList ? (isSaving ? "Saving..." : "Done") : "Edit"}
+                  {activeSection === "add-amenities" || isEditingAmenityList ? (isSaving ? t("host_saving") : t("host_done")) : t("host_edit")}
                 </button>
                 {activeSection === "amenities" && !isEditingAmenityList && <button
                   type="button"
                   onClick={() => setActiveSection("add-amenities")}
                   className="size-12 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 dark:border dark:border-zinc-700 flex items-center justify-center text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-2xl font-normal cursor-pointer transition-all"
-                  aria-label="Add amenities"
+                  aria-label={t("host_add_amenities_heading")}
                 >
                   +
                 </button>}
@@ -1532,7 +1564,7 @@ export function PropertyDetailsViews({
                     type="text"
                     value={amenitySearch}
                     onChange={(e) => setAmenitySearch(e.target.value)}
-                    placeholder="Search amenities (e.g. Wifi, Pool, Kitchen)..."
+                    placeholder={t("host_search_amenities_placeholder")}
                     className="w-full rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 focus:border-[#1F1F1F] dark:focus:border-amber-400 focus:outline-none text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-zinc-500 transition-all"
                   />
                   {amenitySearch && (
@@ -1572,7 +1604,7 @@ export function PropertyDetailsViews({
                   >
                     {filteredCatalog.length === 0 ? (
                       <div className="py-12 text-center text-zinc-400 dark:text-zinc-500 text-xs">
-                        No amenities found matching "{amenitySearch}".
+                        {t("host_no_amenities_matching")}
                       </div>
                     ) : (
                       filteredCatalog.map((item) => {
@@ -1594,18 +1626,18 @@ export function PropertyDetailsViews({
                               </div>
                               <div className="min-w-0">
                                 <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 block">
-                                  {item.label}
+                                  {getAmenityLabel(item.id, item.label)}
                                 </span>
                               </div>
                             </div>
 
                             {isSelected ? (
                               <div className="size-8 rounded-full bg-[#FCDF9C] dark:bg-amber-400 flex items-center justify-center text-[#1F1F1F] dark:text-zinc-950 font-normal text-base shrink-0">
-                                <Image src="/images/icons/right-mark.svg" alt="Selected" width={11} height={10} className="size-2.5 object-contain dark:invert-0" />
+                                <Image src="/images/icons/right-mark.svg" alt={t("host_selected")} width={11} height={10} className="size-2.5 object-contain dark:invert-0" />
                               </div>
                             ) : (
                               <div className="size-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 text-base font-normal transition-all shrink-0">
-                                <Image src="/images/icons/add-icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                                <Image src="/images/icons/add-Icon.svg" alt={t("host_add")} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                               </div>
                             )}
                           </div>
@@ -1630,20 +1662,21 @@ export function PropertyDetailsViews({
                 {editAmenities.length === 0 ? (
                   <div className="p-8 text-center rounded-md border border-dashed border-[#DDDDDE] dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 space-y-3">
                     <p className="text-[14px] text-[#727272] dark:text-zinc-400 font-normal">
-                      No amenities added yet. Tell guests what makes your place special!
+                      {t("host_no_amenities_added_yet")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setActiveSection("add-amenities")}
                       className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                     >
-                      + Add amenities
+                      {t("host_add_amenities_btn")}
                     </button>
                   </div>
                 ) : (
                   <div className="divide-y divide-[#DDDDDE] dark:divide-zinc-800">
                     {editAmenities.map((am) => {
                       const meta = getAmenityMeta(am);
+                      const localizedLabel = getAmenityLabel(meta.id, meta.label);
                       const iconSource = AMENITY_ICON_SOURCES[meta.id];
                       return (
                         <div key={am} className="py-3 flex items-start sm:gap-6 gap-4">
@@ -1652,9 +1685,9 @@ export function PropertyDetailsViews({
                               type="button"
                               onClick={() => toggleAmenity(am)}
                               className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#F3F4F5] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
-                              aria-label={`Remove ${meta.label}`}
+                              aria-label={t("host_remove_amenity", { name: localizedLabel })}
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt={`Remove ${meta.label}`} width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                             </button>
                           ) : (
                             <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
@@ -1667,13 +1700,13 @@ export function PropertyDetailsViews({
                           )}
                           <div className="flex-1 min-w-0 space-y-0.5">
                             <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">
-                              {meta.label}
+                              {localizedLabel}
                             </h4>
-                            {meta.description && (
+                            {getAmenityDescription(meta.id, meta.description) ? (
                               <p className="sm:text-base text-sm text-[#727272] dark:text-zinc-400 font-normal leading-5">
-                                {meta.description}
+                                {getAmenityDescription(meta.id, meta.description)}
                               </p>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -1696,7 +1729,7 @@ export function PropertyDetailsViews({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <BackButton onClick={() => setActiveSection("description")} />
-              <h1>Accessibility features</h1>
+              <h1>{t("host_acc_features_heading")}</h1>
             </div>
 
           </div>
@@ -1729,39 +1762,39 @@ export function PropertyDetailsViews({
                 {[
                   {
                     id: "disabled_parking",
-                    name: "Disabled parking spot",
+                    name: t("host_acc_disabled_parking_name"),
                     icon: "♿",
-                    desc: "Dedicated accessible parking spot with ample space near the entrance."
+                    desc: t("host_acc_disabled_parking_desc")
                   },
                   {
                     id: "lit_path",
-                    name: "Lit path to the guest entrance",
+                    name: t("host_acc_lit_path_name"),
                     icon: "💡",
-                    desc: "Path from entrance to listing is well-lit for safety."
+                    desc: t("host_acc_lit_path_desc")
                   },
                   {
                     id: "step_free",
-                    name: "Step-free access",
+                    name: t("host_acc_step_free_name"),
                     icon: "🪜",
-                    desc: "No steps, stairs, or curbs required to enter the property."
+                    desc: t("host_acc_step_free_desc")
                   },
                   {
                     id: "entrance_32",
-                    name: "Guest entrance wider than 32 inches",
+                    name: t("host_acc_wide_entrance_name"),
                     icon: "↔️",
-                    desc: "Entrance doorway clearance is at least 32 inches wide."
+                    desc: t("host_acc_wide_entrance_desc")
                   },
                   {
                     id: "pool_hoist",
-                    name: "Swimming pool or hot tub hoist",
+                    name: t("host_acc_pool_hoist_name"),
                     icon: "🏊",
-                    desc: "Pool or hot tub is equipped with a mechanical lift."
+                    desc: t("host_acc_pool_hoist_desc")
                   },
                   {
                     id: "ceiling_hoist",
-                    name: "Ceiling or mobile hoist",
+                    name: t("host_acc_ceiling_hoist_name"),
                     icon: "🏗️",
-                    desc: "Equipped with a mobile or ceiling lift device."
+                    desc: t("host_acc_ceiling_hoist_desc")
                   }
                 ].map((feature) => {
                   const featureId = normalizeAccessibilityFeature(feature.id);
@@ -1791,7 +1824,7 @@ export function PropertyDetailsViews({
                             </div>
                             <div className="space-y-1">
                               <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
-                              <p className="text-base text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+                              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
                                 {feature.desc}
                               </p>
                             </div>
@@ -1803,13 +1836,13 @@ export function PropertyDetailsViews({
                             onClick={() => collapseAccessibilityFeature(feature.id)}
                             className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                           >
-                            <Image src="/images/icons/minus-icon.svg" alt="Collapse" width={12} height={12} className="size-3 object-contain dark:invert" />
+                            <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={12} height={12} className="size-3 object-contain dark:invert" />
                           </button>
                         </div>
 
                         {/* Examples Gallery Grid */}
                         <div className="space-y-2 pt-1">
-                          <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">Examples:</span>
+                          <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">{t("host_acc_examples")}</span>
                           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
                             <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                               {/* Photo 1 */}
@@ -1844,7 +1877,7 @@ export function PropertyDetailsViews({
                               }`}>
                               {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                             </div>
-                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>I don't have this feature</span>
+                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
                           </div>
 
                           {/* Option 2: I have this feature */}
@@ -1867,7 +1900,7 @@ export function PropertyDetailsViews({
                               }`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                             </div>
-                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>I have this feature</span>
+                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
                           </div>
                         </div>
 
@@ -1875,8 +1908,8 @@ export function PropertyDetailsViews({
                           <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3.5 space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div>
-                                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Photos of this feature</h4>
-                                <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">Add at least one photo to verify this accessibility feature.</p>
+                                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_acc_photos_heading")}</h4>
+                                <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">{t("host_acc_photos_subtitle")}</p>
                               </div>
                               <button
                                 type="button"
@@ -1890,7 +1923,7 @@ export function PropertyDetailsViews({
                                 }}
                                 className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60"
                               >
-                                {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? "Uploading…" : "+ Add photos"}
+                                {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? t("host_acc_uploading_photo") : t("host_acc_add_photos_btn")}
                               </button>
                             </div>
 
@@ -1898,10 +1931,10 @@ export function PropertyDetailsViews({
                               <div className="grid grid-cols-3 gap-2">
                                 {featurePhotos.map((photo) => (
                                   <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                                    <img src={photo} alt={`${feature.name} evidence`} className="h-full w-full object-cover" />
+                                    <img src={photo} alt={t("host_acc_photo_evidence_alt", { name: feature.name })} className="h-full w-full object-cover" />
                                     <button
                                       type="button"
-                                      aria-label={`Remove ${feature.name} photo`}
+                                      aria-label={t("host_acc_remove_photo", { name: feature.name })}
                                       onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
                                       className="absolute right-1 top-1 rounded-full bg-white/95 dark:bg-zinc-900/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
                                     >
@@ -1911,7 +1944,7 @@ export function PropertyDetailsViews({
                                 ))}
                               </div>
                             ) : (
-                              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/40 dark:border dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">A photo is required before this feature can be saved.</p>
+                              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/40 dark:border dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">{t("host_acc_photo_required_warning")}</p>
                             )}
                           </div>
                         )}
@@ -1940,7 +1973,7 @@ export function PropertyDetailsViews({
                         onClick={() => expandAccessibilityFeature(feature.id)}
                         className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-[#1f1f1f] dark:group-hover:bg-zinc-700 text-lg font-normal transition-all cursor-pointer group duration-300"
                       >
-                        <Image src="/images/icons/add-icon.svg" alt="Add" width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert" />
+                        <Image src="/images/icons/add-icon.svg" alt={t("host_acc_add_alt")} width={14} height={14} className="size-3.5 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert" />
                       </button>
                     </div>
                   );
@@ -1955,7 +1988,7 @@ export function PropertyDetailsViews({
                   onClick={() => handleSaveSection("accessibility")}
                   className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-amber-300 text-[#1f1f1f] dark:text-zinc-950 hover:text-white dark:hover:text-zinc-950 font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
                 >
-                  {uploadingAccessibilityPhoto ? "Uploading..." : isSaving ? "Saving..." : "Save"}
+                  {uploadingAccessibilityPhoto ? t("host_acc_uploading") : isSaving ? t("host_saving") : t("host_acc_save")}
                 </button>
               </div>
             </>

@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import {
   LISTING_REMOVAL_SURVEY,
@@ -21,6 +22,7 @@ export function RemoveListingModal({
   listingId,
   listingTitle,
 }: RemoveListingModalProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
 

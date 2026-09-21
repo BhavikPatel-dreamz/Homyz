@@ -5,6 +5,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { StepProgressFooter } from "./step-progress-footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepWeekendPriceProps {
   weekdayPrice: number;
@@ -27,6 +28,7 @@ export function StepWeekendPrice({
   onNext,
   isLoading = false,
 }: StepWeekendPriceProps) {
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -64,9 +66,9 @@ export function StepWeekendPrice({
           <div className="mx-auto my-auto flex w-full max-w-[620px] flex-col items-start text-center">
             {/* Main Title & Subtitle */}
             <div className="mx-auto max-w-[530px]">
-              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">Set a weekend price</h1>
+              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">{t("host_weekend_price_title")}</h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
-                TIP: Weekend rates typically apply to Thursday and Friday nights in Saudi Arabia / Middle East.
+                {t("host_weekend_price_tip")}
               </p>
             </div>
 
@@ -109,7 +111,7 @@ export function StepWeekendPrice({
                 className="mb-5 flex w-full items-center justify-center gap-4 text-base font-normal text-[#1F1F1F] transition-colors hover:text-zinc-800 cursor-pointer select-none"
               >
                 <span>
-                  View breakdown
+                  {t("host_view_breakdown")}
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${showBreakdown ? "rotate-180" : ""}`}
@@ -125,17 +127,17 @@ export function StepWeekendPrice({
               {showBreakdown && (
                 <div className="mb-1 w-full rounded-xl border border-[#727272] bg-white px-6 py-4 text-left text-sm text-[#1F1F1F] animate-in fade-in duration-150">
                   <div className="flex items-center justify-between">
-                    <span>Base price</span>
+                    <span>{t("host_base_price")}</span>
                     <span>{currencySymbol}{activeWeekendPrice.toLocaleString()}</span>
                   </div>
                   <div className="mt-5 flex items-center justify-between">
-                    <span>Guest service fee ({feePercentage}%)</span>
+                    <span>{t("host_guest_service_fee").replace("{fee}", String(feePercentage))}</span>
                     <span className="text-rose-600">−{currencySymbol}{hostServiceFee.toLocaleString()}</span>
                   </div>
                   <div className="my-5 border-t border-[#727272]/60" />
 
                   <div className="flex items-center justify-between">
-                    <span>You earn</span>
+                    <span>{t("host_you_earn")}</span>
                     <span className="font-medium text-emerald-600">{currencySymbol}{hostEarnings.toLocaleString()}</span>
                   </div>
                 </div>
@@ -143,7 +145,7 @@ export function StepWeekendPrice({
 
               {!showBreakdown && (
                 <div className="flex w-full flex-col items-start border-t border-zinc-200/80 pt-4">
-                  <label className="mb-3 text-xs font-normal text-[#1F1F1F]">Weekend premium</label>
+                  <label className="mb-3 text-xs font-normal text-[#1F1F1F]">{t("host_weekend_premium")}</label>
                   <div className="relative flex w-full items-center">
                     <input
                       type="range"
@@ -156,7 +158,7 @@ export function StepWeekendPrice({
                       className="h-1.5 w-full cursor-pointer appearance-none rounded-lg outline-none transition-all [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:shadow-md"
                     />
                   </div>
-                  <span className="mt-2.5 text-xs font-normal text-[#1F1F1F]">Try 5%</span>
+                  <span className="mt-2.5 text-xs font-normal text-[#1F1F1F]">{t("host_try_5_percent")}</span>
                 </div>
               )}
             </div>

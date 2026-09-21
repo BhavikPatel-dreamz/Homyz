@@ -4,6 +4,7 @@ import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 
 interface StepDescriptionProps {
@@ -21,6 +22,7 @@ export function StepDescription({
   onNext,
   isLoading = false,
 }: StepDescriptionProps) {
+  const { t } = useLanguage();
   const maxChars = 500;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -39,8 +41,8 @@ export function StepDescription({
 
       <div className="max-w-187 mx-auto w-full flex flex-col items-start">
         <OnboardingStepHeading
-          title="Create your description"
-          description="Tell us what makes your place special."
+          title={t("host_description_title")}
+          description={t("host_description_subtitle")}
           titleClassName="sm:mb-3 mb-10"
           descriptionClassName="sm:mb-10 mb-6"
         />
@@ -49,7 +51,7 @@ export function StepDescription({
         <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-2xl bg-[#F3F4F5] border border-white rounded-xl px-3 sm:py-6 py-3 flex flex-col shadow-[0px_2px_4px_rgba(0,0,0,0.25)]">
           <div className="flex sm:flex-col flex-row sm:items-start items-center sm:justify-start justify-between">
             <label htmlFor="property-description" className="text-lg font-medium text-[#1F1F1F] mb-2">
-              Your description
+              {t("host_your_description")}
             </label>
             <span className="text-xs font-semibold text-zinc-400 mb-3">
               {description.length}/{maxChars}

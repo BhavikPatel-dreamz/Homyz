@@ -1,6 +1,7 @@
 "use client";
 import { Container } from "@/components/ui";
 import React from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
@@ -12,6 +13,8 @@ interface StepIntroProps {
 }
 
 export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps) {
+  const { t } = useLanguage();
+
   return (
     <main className="step-intro min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
@@ -25,15 +28,14 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
             <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
               <div className="mb-5">
                 <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
-                  Step 1
+                  {t("host_step_1")}
                 </span>
               </div>
               <h1>
-                Tell us about <br className="sm:block hidden" />
-                your place
+                {t("host_tell_us_about_your_place")}
               </h1>
               <p className="text-base font-normal text-[#727272] leading-relaxed mt-5">
-                In this step, we&apos;ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
+                {t("host_tell_us_about_your_place_desc")}
               </p>
             </div>
 
@@ -90,7 +92,7 @@ export function StepIntro({ onBack, onNext, isLoading = false }: StepIntroProps)
             <OnboardingPrimaryButton
               onClick={onNext}
               isLoading={isLoading}
-              label="Next"
+              label={t("host_next")}
             />
           </div>
         </div>

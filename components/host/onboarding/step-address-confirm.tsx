@@ -9,6 +9,7 @@ import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepAddressConfirmProps {
   country: string;
@@ -61,6 +62,7 @@ export function StepAddressConfirm({
 }: StepAddressConfirmProps) {
 
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleBack = () => {
     if (!isLoading) {
@@ -79,10 +81,10 @@ export function StepAddressConfirm({
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
             <h1 className="mb-2">
-              Confirm your address
+              {t("host_address_confirm_title")}
             </h1>
             <p className="sm:mb-8.75 mb-8">
-              Your address is only shared with guests after they’ve made a reservation.
+              {t("host_pin_confirm_desc")}
             </p>
 
             {/* Address Form Inputs Stack */}
@@ -94,7 +96,7 @@ export function StepAddressConfirm({
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full px-4 pt-7 pb-2 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-medium text-[#1F1F1F] bg-white appearance-none cursor-pointer"
                 >
-                  <option value="" disabled>Select a country or region</option>
+                  <option value="" disabled>{t("host_select_country")}</option>
                   {country && !ADDRESS_COUNTRIES.some((item) => item.value === country) && (
                     <option value={country}>{country}</option>
                   )}
@@ -103,7 +105,7 @@ export function StepAddressConfirm({
                   ))}
                 </select>
                 <span className="absolute top-1.5 left-4 text-base font-normal text-[#727272] pointer-events-none">
-                  Country / region
+                  {t("host_country_region")}
                 </span>
                 <svg className="w-5 h-5 text-zinc-600 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -113,7 +115,7 @@ export function StepAddressConfirm({
               {/* Short address */}
               <input
                 type="text"
-                placeholder="Short address (if applicable)"
+                placeholder={t("host_short_address")}
                 value={shortAddress}
                 onChange={(e) => setShortAddress(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -122,7 +124,7 @@ export function StepAddressConfirm({
               {/* Apt, floor, bldg */}
               <input
                 type="text"
-                placeholder="Apt, floor, bldg (if applicable)"
+                placeholder={t("host_apt_floor_bldg")}
                 value={aptFloorBldg}
                 onChange={(e) => setAptFloorBldg(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -131,7 +133,7 @@ export function StepAddressConfirm({
               {/* Street address */}
               <input
                 type="text"
-                placeholder="Street address"
+                placeholder={t("host_street_address")}
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -140,7 +142,7 @@ export function StepAddressConfirm({
               {/* District */}
               <input
                 type="text"
-                placeholder="District (if applicable)"
+                placeholder={t("host_district")}
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -149,7 +151,7 @@ export function StepAddressConfirm({
               {/* Postal code */}
               <input
                 type="text"
-                placeholder="Postal code"
+                placeholder={t("host_postal_code")}
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -158,7 +160,7 @@ export function StepAddressConfirm({
               {/* City / Town */}
               <input
                 type="text"
-                placeholder="City / Town"
+                placeholder={t("host_city_town")}
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
@@ -171,7 +173,7 @@ export function StepAddressConfirm({
                 <div className="w-full my-6">
                   <div className="flex items-center justify-between gap-4 mb-2">
                     <h3 className="text-lg font-medium text-[#1F1F1F]">
-                      Show your specific location
+                      {t("host_show_specific_location")}
                     </h3>
                     <button
                       type="button"
@@ -186,10 +188,10 @@ export function StepAddressConfirm({
                     </button>
                   </div>
                   <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
-                    Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
+                    {t("host_show_specific_location_desc")}
                   </p>
                   <button type="button" className="underline text-[#1F1F1F] text-sm font-medium mt-1 inline-block hover:opacity-80">
-                    Learn more
+                    {t("host_learn_more")}
                   </button>
                 </div>
 

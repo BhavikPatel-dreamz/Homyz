@@ -5,6 +5,7 @@ import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingCounterRow } from "./onboarding-counter-row";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 
 interface StepBasicsCountersProps {
@@ -34,11 +35,13 @@ export function StepBasicsCounters({
   onNext,
   isLoading = false,
 }: StepBasicsCountersProps) {
+  const { t } = useLanguage();
+
   const counters = [
-    { label: "Guests", value: guests, minimum: 1, onChange: setGuests },
-    { label: "Bedrooms", value: bedrooms, minimum: 0, onChange: setBedrooms },
-    { label: "Beds", value: beds, minimum: 1, onChange: setBeds },
-    { label: "Bathrooms", value: bathrooms, minimum: 1, onChange: setBathrooms, valueClassName: "font-medium" },
+    { label: t("host_basics_guests"), value: guests, minimum: 1, onChange: setGuests },
+    { label: t("host_basics_bedrooms"), value: bedrooms, minimum: 0, onChange: setBedrooms },
+    { label: t("host_basics_beds"), value: beds, minimum: 1, onChange: setBeds },
+    { label: t("host_basics_bathrooms"), value: bathrooms, minimum: 1, onChange: setBathrooms, valueClassName: "font-medium" },
   ];
 
   return (
@@ -51,8 +54,8 @@ export function StepBasicsCounters({
           <div className="max-w-[748px] mx-auto w-full flex flex-col items-start sm:my-auto">
             {/* Header & Subtitle */}
             <OnboardingStepHeading
-              title="Share some basics about your place"
-              description="You’ll add more details later, like bed types."
+              title={t("host_basics_title")}
+              description={t("host_basics_subtitle")}
               titleClassName="mb-5"
               descriptionClassName="sm:mb-10 mb-8"
             />

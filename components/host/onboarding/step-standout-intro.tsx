@@ -6,6 +6,7 @@ import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import Image from "next/image";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepStandoutIntroProps {
   onBack: () => void;
@@ -14,6 +15,7 @@ interface StepStandoutIntroProps {
 }
 
 export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepStandoutIntroProps) {
+  const { t } = useLanguage();
 
   return (
     <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
@@ -28,15 +30,14 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
             <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
               <div className="mb-5">
                 <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
-                  Step 2
+                  {t("host_step_2")}
                 </span>
               </div>
               <h1>
-                Make your place <br />
-                to stand out
+                {t("host_standout_title")}
               </h1>
               <p className="text-base font-normal text-[#727272] leading-relaxed mt-5">
-                In this step, you&apos;ll add amenities your place offers, upload 5 or more high-quality photos, and give your listing a title and description.
+                {t("host_standout_desc")}
               </p>
             </div>
 
@@ -62,7 +63,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
             <OnboardingPrimaryButton
               onClick={onNext}
               isLoading={isLoading}
-              label="Next"
+              label={t("host_next")}
             />
           </div>
         </div>
