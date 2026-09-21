@@ -278,6 +278,141 @@ function runTests() {
   assert(MESSAGES.de.host_nav_filters === "Filter", "DE host_nav_filters");
   assert(MESSAGES.hi.host_nav_filters === "फ़िल्टर", "HI host_nav_filters");
 
+  // 4v. Check-in and check-out times translations
+  assert(MESSAGES.en.host_checkin_checkout_times_title === "Check-in and check-out times", "EN host_checkin_checkout_times_title");
+  assert(MESSAGES.ar.host_checkin_checkout_times_title === "أوقات تسجيل الوصول والمغادرة", "AR host_checkin_checkout_times_title");
+  assert(MESSAGES.es.host_checkin_checkout_times_title === "Horarios de llegada y salida", "ES host_checkin_checkout_times_title");
+  assert(MESSAGES.fr.host_checkin_checkout_times_title === "Heures d'arrivée et de départ", "FR host_checkin_checkout_times_title");
+  assert(MESSAGES.de.host_checkin_checkout_times_title === "Check-in- und Check-out-Zeiten", "DE host_checkin_checkout_times_title");
+  assert(MESSAGES.hi.host_checkin_checkout_times_title === "चेक-इन और चेक-आउट का समय", "HI host_checkin_checkout_times_title");
+
+  assert(MESSAGES.en.host_start_time === "Start time", "EN host_start_time");
+  assert(MESSAGES.ar.host_start_time === "وقت البدء", "AR host_start_time");
+  assert(MESSAGES.es.host_start_time === "Hora de inicio", "ES host_start_time");
+  assert(MESSAGES.fr.host_start_time === "Heure de début", "FR host_start_time");
+  assert(MESSAGES.de.host_start_time === "Startzeit", "DE host_start_time");
+  assert(MESSAGES.hi.host_start_time === "शुरू होने का समय", "HI host_start_time");
+
+  // 4w. Check-in method translations
+  assert(MESSAGES.en.host_method_smart_lock_label === "Smart lock", "EN host_method_smart_lock_label");
+  assert(MESSAGES.ar.host_method_smart_lock_label === "قفل ذكي", "AR host_method_smart_lock_label");
+  assert(MESSAGES.es.host_method_smart_lock_label === "Cerradura inteligente", "ES host_method_smart_lock_label");
+  assert(MESSAGES.fr.host_method_smart_lock_label === "Serrure connectée", "FR host_method_smart_lock_label");
+  assert(MESSAGES.de.host_method_smart_lock_label === "Smart Lock", "DE host_method_smart_lock_label");
+  assert(MESSAGES.hi.host_method_smart_lock_label === "स्मार्ट लॉक", "HI host_method_smart_lock_label");
+
+  assert(MESSAGES.en.host_select_checkin_method_title === "Select a check-in method", "EN host_select_checkin_method_title");
+  assert(MESSAGES.ar.host_select_checkin_method_title === "حدد طريقة تسجيل الوصول", "AR host_select_checkin_method_title");
+  assert(MESSAGES.es.host_select_checkin_method_title === "Selecciona un método de llegada", "ES host_select_checkin_method_title");
+  assert(MESSAGES.fr.host_select_checkin_method_title === "Sélectionnez un mode d'arrivée", "FR host_select_checkin_method_title");
+  assert(MESSAGES.de.host_select_checkin_method_title === "Wählen Sie eine Check-in-Methode", "DE host_select_checkin_method_title");
+  assert(MESSAGES.hi.host_select_checkin_method_title === "चेक-इन का एक तरीका चुनें", "HI host_select_checkin_method_title");
+
+  // 4x. Wifi details translations
+  assert(MESSAGES.en.host_wifi_network_name === "Wifi network name", "EN host_wifi_network_name");
+  assert(MESSAGES.ar.host_wifi_network_name === "اسم شبكة الواي فاي", "AR host_wifi_network_name");
+  assert(MESSAGES.es.host_wifi_network_name === "Nombre de la red wifi", "ES host_wifi_network_name");
+  assert(MESSAGES.fr.host_wifi_network_name === "Nom du réseau Wifi", "FR host_wifi_network_name");
+  assert(MESSAGES.de.host_wifi_network_name === "WLAN-Netzwerkname", "DE host_wifi_network_name");
+  assert(MESSAGES.hi.host_wifi_network_name === "वाई-फाई नेटवर्क नाम", "HI host_wifi_network_name");
+
+  assert(MESSAGES.en.host_wifi_password === "Wifi password", "EN host_wifi_password");
+  assert(MESSAGES.ar.host_wifi_password === "كلمة مرور الواي فاي", "AR host_wifi_password");
+  assert(MESSAGES.es.host_wifi_password === "Contraseña del wifi", "ES host_wifi_password");
+  assert(MESSAGES.fr.host_wifi_password === "Mot de passe Wifi", "FR host_wifi_password");
+  assert(MESSAGES.de.host_wifi_password === "WLAN-Passwort", "DE host_wifi_password");
+  assert(MESSAGES.hi.host_wifi_password === "वाई-फाई पासवर्ड", "HI host_wifi_password");
+
+  // 4y. Directions page translations
+  assert(MESSAGES.en.host_directions_to_property_title === "Directions to property", "EN host_directions_to_property_title");
+  assert(MESSAGES.ar.host_directions_to_property_title === "الاتجاهات إلى مكان الإقامة", "AR host_directions_to_property_title");
+  assert(MESSAGES.es.host_directions_to_property_title === "Indicaciones para llegar a la propiedad", "ES host_directions_to_property_title");
+  assert(MESSAGES.fr.host_directions_to_property_title === "Itinéraire jusqu'au logement", "FR host_directions_to_property_title");
+  assert(MESSAGES.de.host_directions_to_property_title === "Wegbeschreibung zur Unterkunft", "DE host_directions_to_property_title");
+  assert(MESSAGES.hi.host_directions_to_property_title === "संपत्ति के लिए दिशा-निर्देश", "HI host_directions_to_property_title");
+
+  assert(MESSAGES.en.host_recommended_arrival_details === "Recommended arrival details to include:", "EN host_recommended_arrival_details");
+  assert(MESSAGES.ar.host_recommended_arrival_details === "تفاصيل الوصول الموصى بتضمينها:", "AR host_recommended_arrival_details");
+  assert(MESSAGES.es.host_recommended_arrival_details === "Detalles de llegada recomendados para incluir:", "ES host_recommended_arrival_details");
+  assert(MESSAGES.fr.host_recommended_arrival_details === "Détails d'arrivée recommandés à inclure :", "FR host_recommended_arrival_details");
+  assert(MESSAGES.de.host_recommended_arrival_details === "Empfohlene Ankunftsdetails:", "DE host_recommended_arrival_details");
+  assert(MESSAGES.hi.host_recommended_arrival_details === "शामिल करने के लिए अनुशंसित आगमन विवरण:", "HI host_recommended_arrival_details");
+
+  // 4z. House manual translations
+  assert(MESSAGES.en.host_house_manual === "House manual", "EN host_house_manual");
+  assert(MESSAGES.ar.host_house_manual === "دليل المنزل", "AR host_house_manual");
+  assert(MESSAGES.es.host_house_manual === "Manual de la casa", "ES host_house_manual");
+  assert(MESSAGES.fr.host_house_manual === "Manuel de la maison", "FR host_house_manual");
+  assert(MESSAGES.de.host_house_manual === "Handbuch des Hauses", "DE host_house_manual");
+  assert(MESSAGES.hi.host_house_manual === "हाउस मैनुअल", "HI host_house_manual");
+
+  assert(MESSAGES.en.host_house_manual_desc === "Share details about AC controls, appliances, trash disposal, or parking spots.", "EN host_house_manual_desc");
+  assert(MESSAGES.ar.host_house_manual_desc === "مشاركة التفاصيل حول مفاتيح التكييف، الأجهزة، التخلص من النفايات، أو أماكن إيقاف السيارات.", "AR host_house_manual_desc");
+  assert(MESSAGES.es.host_house_manual_desc === "Comparta detalles sobre los controles del aire acondicionado, electrodomésticos, eliminación de basura o lugares de estacionamiento.", "ES host_house_manual_desc");
+  assert(MESSAGES.fr.host_house_manual_desc === "Partagez des détails sur les commandes de climatisation, les appareils ménagers, l'élimination des déchets ou les places de stationnement.", "FR host_house_manual_desc");
+  assert(MESSAGES.de.host_house_manual_desc === "Teilen Sie Details zu Klimaanlagen, Geräten, Müllentsorgung oder Parkplätzen mit.", "DE host_house_manual_desc");
+  assert(MESSAGES.hi.host_house_manual_desc === "एसी नियंत्रण, उपकरण, कचरा निपटान, या पार्किंग स्थल के बारे में विवरण साझा करें।", "HI host_house_manual_desc");
+
+  // 5a. Parking page translations
+  assert(MESSAGES.en.host_parking_instructions_and_details === "Parking instructions & details", "EN host_parking_instructions_and_details");
+  assert(MESSAGES.ar.host_parking_instructions_and_details === "تعليمات وتفاصيل موقف السيارات", "AR host_parking_instructions_and_details");
+  assert(MESSAGES.es.host_parking_instructions_and_details === "Instrucciones y detalles del estacionamiento", "ES host_parking_instructions_and_details");
+  assert(MESSAGES.fr.host_parking_instructions_and_details === "Consignes et détails de stationnement", "FR host_parking_instructions_and_details");
+  assert(MESSAGES.de.host_parking_instructions_and_details === "Parkplatzanweisungen & Details", "DE host_parking_instructions_and_details");
+  assert(MESSAGES.hi.host_parking_instructions_and_details === "पार्किंग निर्देश और विवरण", "HI host_parking_instructions_and_details");
+
+  assert(MESSAGES.en.host_parking_available_premises === "Parking available on premises", "EN host_parking_available_premises");
+  assert(MESSAGES.ar.host_parking_available_premises === "يتوفر موقف سيارات في مكان الإقامة", "AR host_parking_available_premises");
+  assert(MESSAGES.es.host_parking_available_premises === "Estacionamiento disponible en las instalaciones", "ES host_parking_available_premises");
+  assert(MESSAGES.fr.host_parking_available_premises === "Parking disponible sur place", "FR host_parking_available_premises");
+  assert(MESSAGES.de.host_parking_available_premises === "Parkplatz auf dem Grundstück verfügbar", "DE host_parking_available_premises");
+  assert(MESSAGES.hi.host_parking_available_premises === "परिसर में पार्किंग उपलब्ध है", "HI host_parking_available_premises");
+
+  // 5b. Checkout instructions page translations
+  assert(MESSAGES.en.host_checkout_instructions_page_title === "Check-out instructions", "EN host_checkout_instructions_page_title");
+  assert(MESSAGES.ar.host_checkout_instructions_page_title === "تعليمات مغادرة مكان الإقامة", "AR host_checkout_instructions_page_title");
+  assert(MESSAGES.es.host_checkout_instructions_page_title === "Instrucciones de salida", "ES host_checkout_instructions_page_title");
+  assert(MESSAGES.fr.host_checkout_instructions_page_title === "Consignes de départ", "FR host_checkout_instructions_page_title");
+  assert(MESSAGES.de.host_checkout_instructions_page_title === "Check-out-Anweisungen", "DE host_checkout_instructions_page_title");
+  assert(MESSAGES.hi.host_checkout_instructions_page_title === "चेक-आउट निर्देश", "HI host_checkout_instructions_page_title");
+
+  assert(MESSAGES.en.host_no_checkout_instructions_yet === "No check-out instructions yet", "EN host_no_checkout_instructions_yet");
+  assert(MESSAGES.ar.host_no_checkout_instructions_yet === "لا توجد تعليمات للمغادرة بعد", "AR host_no_checkout_instructions_yet");
+  assert(MESSAGES.es.host_no_checkout_instructions_yet === "Aún no hay instrucciones de salida", "ES host_no_checkout_instructions_yet");
+  assert(MESSAGES.fr.host_no_checkout_instructions_yet === "Pas encore de consignes de départ", "FR host_no_checkout_instructions_yet");
+  assert(MESSAGES.de.host_no_checkout_instructions_yet === "Noch keine Check-out-Anweisungen", "DE host_no_checkout_instructions_yet");
+  assert(MESSAGES.hi.host_no_checkout_instructions_yet === "अभी तक कोई चेक-आउट निर्देश नहीं", "HI host_no_checkout_instructions_yet");
+
+  // 5c. Guidebooks page translations
+  assert(MESSAGES.en.host_guidebooks_subtext === "Share your favorite places and local tips with guests.", "EN host_guidebooks_subtext");
+  assert(MESSAGES.ar.host_guidebooks_subtext === "شارك أماكنك المفضلة والنصائح المحلية مع الضيوف.", "AR host_guidebooks_subtext");
+  assert(MESSAGES.es.host_guidebooks_subtext === "Comparte tus lugares favoritos y consejos locales con los huéspedes.", "ES host_guidebooks_subtext");
+  assert(MESSAGES.fr.host_guidebooks_subtext === "Partagez vos lieux préférés et vos conseils locaux avec vos voyageurs.", "FR host_guidebooks_subtext");
+  assert(MESSAGES.de.host_guidebooks_subtext === "Teilen Sie Ihre Lieblingsorte und lokalen Tipps mit den Gästen.", "DE host_guidebooks_subtext");
+  assert(MESSAGES.hi.host_guidebooks_subtext === "अपने पसंदीदा स्थान और स्थानीय सुझाव मेहमानों के साथ साझा करें।", "HI host_guidebooks_subtext");
+
+  assert(MESSAGES.en.host_interactive_map === "Interactive Map", "EN host_interactive_map");
+  assert(MESSAGES.ar.host_interactive_map === "خريطة تفاعلية", "AR host_interactive_map");
+  assert(MESSAGES.es.host_interactive_map === "Mapa interactivo", "ES host_interactive_map");
+  assert(MESSAGES.fr.host_interactive_map === "Carte interactive", "FR host_interactive_map");
+  assert(MESSAGES.de.host_interactive_map === "Interaktive Karte", "DE host_interactive_map");
+  assert(MESSAGES.hi.host_interactive_map === "इंटरैक्टिव मानचित्र", "HI host_interactive_map");
+
+  // 5d. Interaction preferences page translations
+  assert(MESSAGES.en.host_interaction_preferences_subtext === "Set expectations before guests arrive.", "EN host_interaction_preferences_subtext");
+  assert(MESSAGES.ar.host_interaction_preferences_subtext === "ضع التوقعات قبل وصول الضيوف.", "AR host_interaction_preferences_subtext");
+  assert(MESSAGES.es.host_interaction_preferences_subtext === "Establece expectativas antes de que lleguen los huéspedes.", "ES host_interaction_preferences_subtext");
+  assert(MESSAGES.fr.host_interaction_preferences_subtext === "Définissez les attentes avant l'arrivée des voyageurs.", "FR host_interaction_preferences_subtext");
+  assert(MESSAGES.de.host_interaction_preferences_subtext === "Legen Sie vor der Ankunft der Gäste Erwartungen fest.", "DE host_interaction_preferences_subtext");
+  assert(MESSAGES.hi.host_interaction_preferences_subtext === "मेहमानों के आने से पहले अपेक्षाएं निर्धारित करें।", "HI host_interaction_preferences_subtext");
+
+  assert(MESSAGES.en.host_interaction_option_0 === "I won't be available in person, and prefer communicating through the app.", "EN host_interaction_option_0");
+  assert(MESSAGES.ar.host_interaction_option_0 === "لن أكون متاحًا شخصيًا، وأفضل التواصل عبر التطبيق.", "AR host_interaction_option_0");
+  assert(MESSAGES.es.host_interaction_option_0 === "No estaré disponible en persona y prefiero comunicarme a través de la aplicación.", "ES host_interaction_option_0");
+  assert(MESSAGES.fr.host_interaction_option_0 === "Je ne serai pas disponible en personne et préfère communiquer via l'application.", "FR host_interaction_option_0");
+  assert(MESSAGES.de.host_interaction_option_0 === "Ich bin nicht persönlich verfügbar und bevorzuge die Kommunikation über die App.", "DE host_interaction_option_0");
+  assert(MESSAGES.hi.host_interaction_option_0 === "मैं व्यक्तिगत रूप से उपलब्ध नहीं रहूंगा, और ऐप के माध्यम से संवाद करना पसंद करूंगा।", "HI host_interaction_option_0");
+
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }
 
