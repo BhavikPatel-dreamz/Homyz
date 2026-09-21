@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Container } from "../ui";
 import Image from "next/image";
 import styles from "./host-mobile-nav.module.css";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HostSubNavProps {
   activeTab?: "today" | "calendar" | "listing" | "messages";
@@ -134,6 +135,7 @@ export function HostSubNav({
   showRightActions = true,
 }: HostSubNavProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   let activeTab = explicitActiveTab;
   if (!activeTab) {
@@ -148,21 +150,21 @@ export function HostSubNav({
   const tabs = [
     {
       id: "today",
-      label: "Today",
+      label: t("host_nav_today"),
       href: "/host/today",
       icon: <TodayNavIcon />,
       minWidthClass: "w-[92px] shrink-0",
     },
     {
       id: "calendar",
-      label: "Calendar",
+      label: t("host_nav_calendar"),
       href: "/host/calendar",
       icon: <CalendarNavIcon />,
       minWidthClass: "w-[110px] shrink-0",
     },
     {
       id: "listing",
-      label: "Listing",
+      label: t("host_nav_listing"),
       href: listingHref,
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +178,7 @@ export function HostSubNav({
     },
     {
       id: "messages",
-      label: "Messages",
+      label: t("host_nav_messages"),
       href: "/host/messages",
       icon: <MessagesNavIcon />,
       minWidthClass: "w-[118px] shrink-0",
@@ -270,7 +272,7 @@ export function HostSubNav({
                 >
                   <MenuNavIcon className="shrink-0" />
                   <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100">
-                    Menu
+                    {t("host_nav_menu")}
                   </span>
                 </button>
 
@@ -292,7 +294,7 @@ export function HostSubNav({
                         : "font-normal text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
                     }`}
                   >
-                    Filters
+                    {t("host_nav_filters")}
                   </span>
                 </button>
               </div>

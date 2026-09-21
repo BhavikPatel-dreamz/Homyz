@@ -4,6 +4,7 @@ import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepTitleProps {
   title: string;
@@ -20,6 +21,7 @@ export function StepTitle({
   onNext,
   isLoading = false,
 }: StepTitleProps) {
+  const { t } = useLanguage();
   const maxChars = 50;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -38,8 +40,8 @@ export function StepTitle({
 
       <div className="max-w-187 mx-auto w-full flex flex-col items-start">
         <OnboardingStepHeading
-          title="Now, it’s time to give your house a title"
-          description="Short title work best. Have fun with it - you can always change it later"
+          title={t("host_title_step_title")}
+          description={t("host_title_step_subtitle")}
           titleClassName="sm:mb-5 mb-3"
           descriptionClassName="sm:mb-10 mb-8"
         />
@@ -48,7 +50,7 @@ export function StepTitle({
         <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-2xl bg-[#F3F4F5] border border-white rounded-xl px-3 sm:py-6 py-3 flex flex-col shadow-[0px_2px_4px_rgba(0,0,0,0.25)]">
           <div className="flex sm:flex-col flex-row sm:items-start items-center sm:justify-start justify-between">
             <label htmlFor="property-title" className="text-lg font-medium text-[#1F1F1F] mb-2">
-              Your title
+              {t("host_your_title")}
             </label>
             <span className="text-xs font-normal text-[#727272] mb-1">
               {title.length}/{maxChars}

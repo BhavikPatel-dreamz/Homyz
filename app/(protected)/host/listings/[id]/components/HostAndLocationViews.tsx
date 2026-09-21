@@ -4,6 +4,7 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -180,6 +181,7 @@ export function HostAndLocationViews(props: Props) {
   return null;
 }
 function LocationContextEditor(props: Props) {
+  const { t } = useLanguage();
   const toggleFeature = (id: string) =>
     props.setLocationFeatures(
       props.locationFeatures.includes(id)
@@ -194,15 +196,14 @@ function LocationContextEditor(props: Props) {
   return (
     <section className="max-w-xl space-y-5 pb-10">
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Location features</h2>
+        <h2 className="text-sm font-semibold">{t("host_location_features_card_title") || "Location features"}</h2>
         <p className="text-xs text-zinc-500">
-          Choose up to three location advantages. Beach access is managed as an
-          amenity.
+          {t("host_location_features_card_desc") || "Choose up to three location advantages. Beach access is managed as an amenity."}
         </p>
         {LOCATION_FEATURES.map(([id, label]) => (
           <FeatureToggle
             key={id}
-            label={label}
+            label={t(`host_loc_feature_${id}`) || label}
             checked={props.locationFeatures.includes(id)}
             onChange={() => toggleFeature(id)}
           />
@@ -213,10 +214,9 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Neighborhood</h2>
+        <h2 className="text-sm font-semibold">{t("host_location_neighborhood_card_title") || "Neighborhood"}</h2>
         <p className="text-xs text-zinc-500">
-          Tell guests what they can expect from the neighborhood and what is
-          nearby.
+          {t("host_location_neighborhood_desc") || "Tell guests what they can expect from the neighborhood and what is nearby."}
         </p>
         <textarea
           value={props.neighborhoodDescription}
@@ -224,7 +224,7 @@ function LocationContextEditor(props: Props) {
           onChange={(event) =>
             props.setNeighborhoodDescription(event.target.value)
           }
-          placeholder="Describe the area, attractions, and local conveniences."
+          placeholder={t("host_location_neighborhood_placeholder") || "Describe the area, attractions, and local conveniences."}
           className="input min-h-28"
         />
         <SaveButton
@@ -233,12 +233,12 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Getting around</h2>
+        <h2 className="text-sm font-semibold">{t("host_location_getting_around_card_title") || "Getting around"}</h2>
         <textarea
           value={props.gettingAround}
           maxLength={2000}
           onChange={(event) => props.setGettingAround(event.target.value)}
-          placeholder="Share transit, parking, walking, rideshare, or nearby stations."
+          placeholder={t("host_location_getting_around_placeholder") || "Share transit, parking, walking, rideshare, or nearby stations."}
           className="input min-h-28"
         />
         <SaveButton
@@ -247,12 +247,12 @@ function LocationContextEditor(props: Props) {
         />
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-sm font-semibold">Scenic views</h2>
+        <h2 className="text-sm font-semibold">{t("host_location_scenic_card_title") || "Scenic views"}</h2>
         <div className="grid grid-cols-2 gap-3">
           {SCENIC_VIEWS.map(([id, label]) => (
             <FeatureToggle
               key={id}
-              label={label}
+              label={t(`host_scenic_${id}`) || label}
               checked={Boolean(props.scenicViews[id])}
               onChange={() => toggleView(id)}
             />
@@ -267,6 +267,7 @@ function LocationContextEditor(props: Props) {
   );
 }
 function LocationView(props: Props) {
+  const { t } = useLanguage();
   const {
     editAddress,
     setEditAddress,
@@ -378,11 +379,11 @@ function LocationView(props: Props) {
 
   const handleSave = () => {
     if (!editAddress.trim() && !editCity.trim()) {
-      setValidationError("Please enter an address or city for this listing.");
+      setValidationError(t("host_location_error_address_or_city") || "Please enter an address or city for this listing.");
       return;
     }
     if (latitude === null || longitude === null || isNaN(latitude) || isNaN(longitude)) {
-      setValidationError("Please choose a location on the map or search an address.");
+      setValidationError(t("host_location_error_choose_map") || "Please choose a location on the map or search an address.");
       return;
     }
     setValidationError(null);
@@ -393,7 +394,7 @@ function LocationView(props: Props) {
     <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
         <BackButton onClick={onBack} className="mt-1" />
-        <h1>Location</h1>
+        <h1>{t("host_location_title") || "Location"}</h1>
         <button
           type="button"
           onClick={onBack}
@@ -431,7 +432,7 @@ function LocationView(props: Props) {
             </div>
 
             {locationIsResolving && (
-              <p className="text-xs text-amber-700 dark:text-amber-400 animate-pulse">Finding this address on the map…</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 animate-pulse">{t("host_location_finding_address") || "Finding this address on the map…"}</p>
             )}
 
             {(locationResolutionError || validationError) && (
@@ -446,8 +447,8 @@ function LocationView(props: Props) {
 
           {/* 3. Address Details Accordion */}
           <Card
-            title="Address"
-            summary={[editAddress, editCity, editPostalCode, editCountry].filter(Boolean).join(", ") || "Add location, Post Code, Country"}
+            title={t("host_location_address_card_title") || "Address"}
+            summary={[editAddress, editCity, editPostalCode, editCountry].filter(Boolean).join(", ") || (t("host_location_add_location_placeholder") || "Add location, Post Code, Country")}
             open={open === "address"}
             onToggle={() => setOpen(open === "address" ? "" : "address")}
           >
@@ -457,11 +458,11 @@ function LocationView(props: Props) {
                 onChange={setSearchQuery}
                 onSelect={handleAutocompleteSelect}
                 onClear={handleClearSearch}
-                placeholder="Search by street, building, city, or postal code..."
+                placeholder={t("host_location_search_placeholder") || "Search by street, building, city, or postal code..."}
               />
               <div>
                 <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                  Street address
+                  {t("host_location_street_address_label") || "Street address"}
                 </label>
                 <input
                   value={editAddress}
@@ -469,19 +470,19 @@ function LocationView(props: Props) {
                     setEditAddress(e.target.value);
                     setValidationError(null);
                   }}
-                  placeholder="Street and house or building number"
+                  placeholder={t("host_location_street_address_placeholder") || "Street and house or building number"}
                   className="input"
                 />
               </div>
 
               <div>
                 <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                  Apt, suite, unit (optional)
+                  {t("host_location_apt_label") || "Apt, suite, unit (optional)"}
                 </label>
                 <input
                   value={editApartment}
                   onChange={(e) => setEditApartment?.(e.target.value)}
-                  placeholder="Apartment, unit, or suite number"
+                  placeholder={t("host_location_apt_placeholder") || "Apartment, unit, or suite number"}
                   className="input"
                 />
               </div>
@@ -489,18 +490,18 @@ function LocationView(props: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                    District / Neighborhood
+                    {t("host_location_district_label") || "District / Neighborhood"}
                   </label>
                   <input
                     value={editDistrict}
                     onChange={(e) => setEditDistrict(e.target.value)}
-                    placeholder="District or neighborhood"
+                    placeholder={t("host_location_district_placeholder") || "District or neighborhood"}
                     className="input"
                   />
                 </div>
                 <div>
                   <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                    City
+                    {t("host_location_city_label") || "City"}
                   </label>
                   <input
                     value={editCity}
@@ -508,7 +509,7 @@ function LocationView(props: Props) {
                       setEditCity(e.target.value);
                       setValidationError(null);
                     }}
-                    placeholder="City"
+                    placeholder={t("host_location_city_placeholder") || "City"}
                     className="input"
                   />
                 </div>
@@ -517,23 +518,23 @@ function LocationView(props: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                    Postal code
+                    {t("host_location_postal_code_label") || "Postal code"}
                   </label>
                   <input
                     value={editPostalCode}
                     onChange={(e) => setEditPostalCode(e.target.value)}
-                    placeholder="Postal code"
+                    placeholder={t("host_location_postal_code_placeholder") || "Postal code"}
                     className="input"
                   />
                 </div>
                 <div>
                   <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200 block mb-1">
-                    Country
+                    {t("host_location_country_label") || "Country"}
                   </label>
                   <input
                     value={editCountry}
                     onChange={(e) => setEditCountry(e.target.value)}
-                    placeholder="Country"
+                    placeholder={t("host_location_country_placeholder") || "Country"}
                     className="input"
                   />
                 </div>
@@ -547,17 +548,17 @@ function LocationView(props: Props) {
 
           {/* 4. Location Sharing */}
           <Card
-            title="Location sharing"
-            summary="Show listing’s specific location"
+            title={t("host_location_sharing_card_title") || "Location sharing"}
+            summary={t("host_location_sharing_summary") || "Show listing’s specific location"}
             open={open === "sharing"}
             onToggle={() => setOpen(open === "sharing" ? "" : "sharing")}
             mutedWhenOpen
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Show you specific location</p>
+                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_location_show_specific_title") || "Show you specific location"}</p>
                 <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                  Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed.
+                  {t("host_location_show_specific_desc") || "Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed."}
                 </p>
               </div>
               <Toggle
@@ -568,9 +569,9 @@ function LocationView(props: Props) {
             </div>
             <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] dark:border-zinc-700 pt-4">
               <div>
-                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Address privacy for cancellation</p>
+                <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_location_address_privacy_title") || "Address privacy for cancellation"}</p>
                 <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                  Keep your full address private until a reservation is confirmed, even when a guest cancels.
+                  {t("host_location_address_privacy_desc") || "Keep your full address private until a reservation is confirmed, even when a guest cancels."}
                 </p>
               </div>
               <Toggle
@@ -585,22 +586,22 @@ function LocationView(props: Props) {
                 onClick={handleSave}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving…" : "Save"}
+                {isSaving ? (t("host_location_saving_button") || "Saving…") : (t("host_location_save_button") || "Save")}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_location_cancel_button") || "Cancel"}
               </button>
             </div>
           </Card>
 
           {/* 5. Location Features */}
           <Card
-            title="Location features"
-            summary={locationFeatures.length > 0 ? `${locationFeatures.length} selected` : "Add details"}
+            title={t("host_location_features_card_title") || "Location features"}
+            summary={locationFeatures.length > 0 ? `${locationFeatures.length} ${t("host_location_features_selected") || "selected"}` : (t("host_location_features_add_details") || "Add details")}
             open={open === "features"}
             onToggle={() => setOpen(open === "features" ? "" : "features")}
             mutedWhenOpen
@@ -610,8 +611,8 @@ function LocationView(props: Props) {
                 <div key={id} className="py-2.5 sm:py-3">
                   <div className="flex items-start justify-between gap-4 border-b border-[#D7D7D7] dark:border-zinc-700 pb-3.5">
                     <div className="min-w-0 flex-1">
-                      <div className="text-base font-normal leading-6 text-[#1F1F1F] dark:text-zinc-100">{label}</div>
-                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272] dark:text-zinc-400">Highlight this feature for prospective guests</div>
+                      <div className="text-base font-normal leading-6 text-[#1F1F1F] dark:text-zinc-100">{t(`host_loc_feature_${id}`) || label}</div>
+                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272] dark:text-zinc-400">{t("host_location_features_item_hint") || "Highlight this feature for prospective guests"}</div>
                     </div>
                     <Toggle
                       checked={locationFeatures.includes(id)}
@@ -634,22 +635,22 @@ function LocationView(props: Props) {
                 disabled={isSaving}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving…" : "Save"}
+                {isSaving ? (t("host_location_saving_button") || "Saving…") : (t("host_location_save_button") || "Save")}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_location_cancel_button") || "Cancel"}
               </button>
             </div>
           </Card>
 
           {/* 6. Neighborhood Description */}
           <Card
-            title="Neighborhood description"
-            summary="Add details"
+            title={t("host_location_neighborhood_desc_title") || "Neighborhood description"}
+            summary={t("host_location_features_add_details") || "Add details"}
             open={open === "neighborhood"}
             onToggle={() => setOpen(open === "neighborhood" ? "" : "neighborhood")}
           >
@@ -657,7 +658,7 @@ function LocationView(props: Props) {
               value={neighborhoodDescription}
               maxLength={2000}
               onChange={(e) => setNeighborhoodDescription(e.target.value)}
-              placeholder="Describe the area, attractions, and local conveniences."
+              placeholder={t("host_location_neighborhood_placeholder") || "Describe the area, attractions, and local conveniences."}
               className="input min-h-28"
             />
             <p className="text-right text-xs text-zinc-400">
@@ -668,8 +669,8 @@ function LocationView(props: Props) {
 
           {/* 7. Getting Around */}
           <Card
-            title="Getting around"
-            summary="Add details"
+            title={t("host_location_getting_around_card_title") || "Getting around"}
+            summary={t("host_location_features_add_details") || "Add details"}
             open={open === "getting-around"}
             onToggle={() => setOpen(open === "getting-around" ? "" : "getting-around")}
           >
@@ -677,7 +678,7 @@ function LocationView(props: Props) {
               value={gettingAround}
               maxLength={2000}
               onChange={(e) => setGettingAround(e.target.value)}
-              placeholder="Share transit, parking, walking, rideshare, or nearby stations."
+              placeholder={t("host_location_getting_around_placeholder") || "Share transit, parking, walking, rideshare, or nearby stations."}
               className="input min-h-28"
             />
             <p className="text-right text-xs text-zinc-400">
@@ -688,8 +689,8 @@ function LocationView(props: Props) {
 
           {/* 8. Scenic Views */}
           <Card
-            title="Scenic views"
-            summary="Add details"
+            title={t("host_location_scenic_card_title") || "Scenic views"}
+            summary={t("host_location_features_add_details") || "Add details"}
             open={open === "views"}
             onToggle={() => setOpen(open === "views" ? "" : "views")}
           >
@@ -697,7 +698,7 @@ function LocationView(props: Props) {
               {SCENIC_VIEWS.map(([id, label]) => (
                 <FeatureToggle
                   key={id}
-                  label={label}
+                  label={t(`host_scenic_${id}`) || label}
                   checked={Boolean(scenicViews[id])}
                   onChange={() =>
                     setScenicViews({ ...scenicViews, [id]: !scenicViews[id] })
@@ -712,14 +713,14 @@ function LocationView(props: Props) {
                 disabled={isSaving}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving…" : "Save"}
+                {isSaving ? (t("host_location_saving_button") || "Saving…") : (t("host_location_save_button") || "Save")}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen("")}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_location_cancel_button") || "Cancel"}
               </button>
             </div>
           </Card>
@@ -789,6 +790,7 @@ function SaveButton({
   saving: boolean;
   onSave: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <button
       type="button"
@@ -796,7 +798,7 @@ function SaveButton({
       onClick={onSave}
       className="cursor-pointer rounded-full border border-[#FCDF9C] bg-[#FCDF9C] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 px-5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors duration-300 hover:border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 disabled:opacity-60"
     >
-      {saving ? "Saving…" : "Save"}
+      {saving ? (t("host_location_saving_button") || "Saving…") : (t("host_location_save_button") || "Save")}
     </button>
   );
 }
@@ -838,6 +840,7 @@ function AboutHostView(props: Props) {
 }
 function CoHostView(props: Props) {
   const { listingId, coHosts, setCoHosts, onBack } = props;
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+39");
@@ -876,11 +879,11 @@ function CoHostView(props: Props) {
   }, [open, saving]);
   const invite = async () => {
     if (!hasEmail && !hasPhone) {
-      setInviteError("Enter a phone number or an email address.");
+      setInviteError(t("host_cohost_error_enter_contact") || "Enter a phone number or an email address.");
       return;
     }
     if (hasEmail && hasPhone) {
-      setInviteError("Use either a phone number or an email address, not both.");
+      setInviteError(t("host_cohost_error_both_contact") || "Use either a phone number or an email address, not both.");
       return;
     }
     setSaving(true);
@@ -894,13 +897,13 @@ function CoHostView(props: Props) {
       setPhoneNumber("");
       setMessage(
         hasEmail
-          ? "Invitation email queued. Ask your co-host to check their inbox and spam folder."
-          : "Text invitation sent.",
+          ? (t("host_cohost_invite_queued_email") || "Invitation email queued. Ask your co-host to check their inbox and spam folder.")
+          : (t("host_cohost_invite_sent_text") || "Text invitation sent."),
       );
     } else setInviteError(result.fieldErrors?.email || result.fieldErrors?.phone || result.error);
   };
   const revoke = async (id: string) => {
-    if (!window.confirm("Remove this co-host or cancel this invitation?"))
+    if (!window.confirm(t("host_cohost_confirm_revoke") || "Remove this co-host or cancel this invitation?"))
       return;
     const result = await revokeListingCoHostAction(listingId, id);
     if (result.ok)
@@ -918,9 +921,9 @@ function CoHostView(props: Props) {
         <BackButton onClick={onBack} className="mt-2" />
         <div className="flex w-full justify-between">
           <div className="flex flex-col items-start">
-            <h1>Co-hosts</h1>
+            <h1>{t("host_cohost_title") || "Co-hosts"}</h1>
             <p className="mt-1 text-sm font-normal text-[#727272]">
-              Accepted co-hosts are active, pending invitations are not.
+              {t("host_cohost_subtitle") || "Accepted co-hosts are active, pending invitations are not."}
             </p>
           </div>
           <div>
@@ -929,7 +932,7 @@ function CoHostView(props: Props) {
               onClick={openModal}
               className="rounded-full bg-[#FEE08B] px-5 py-2.5 text-sm font-medium transition-colors text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 duration-300"
             >
-              Invite co-host
+              {t("host_cohost_invite_button") || "Invite co-host"}
             </button>
           </div>
         </div>
@@ -942,7 +945,7 @@ function CoHostView(props: Props) {
           {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
           {active.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
-              No co-hosts or pending invitations.
+              {t("host_cohost_empty_state") || "No co-hosts or pending invitations."}
             </p>
           ) : (
             <div className="space-y-3">
@@ -957,8 +960,10 @@ function CoHostView(props: Props) {
                     </p>
                     <p className="mt-0.5 text-xs text-zinc-500">
                       {item.status === "PENDING"
-                        ? `Invitation pending${item.email ? " · sent by email" : " · sent by text"}`
-                        : "Accepted co-host"}
+                        ? (item.email
+                          ? (t("host_cohost_status_pending_email") || "Invitation pending · sent by email")
+                          : (t("host_cohost_status_pending_text") || "Invitation pending · sent by text"))
+                        : (t("host_cohost_status_accepted") || "Accepted co-host")}
                     </p>
                   </div>
                   <button
@@ -966,7 +971,7 @@ function CoHostView(props: Props) {
                     onClick={() => revoke(item.id)}
                     className="text-xs font-semibold underline"
                   >
-                    {item.status === "PENDING" ? "Cancel" : "Remove"}
+                    {item.status === "PENDING" ? (t("host_cohost_cancel_button") || "Cancel") : (t("host_cohost_remove_button") || "Remove")}
                   </button>
                 </div>
               ))}
@@ -985,14 +990,14 @@ function CoHostView(props: Props) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-medium" id={titleId}>Add your co-host&apos;s info</h3>
+                <h3 className="text-2xl font-medium" id={titleId}>{t("host_cohost_modal_title") || "Add your co-host's info"}</h3>
                 <p id={descriptionId} className="mt-1.5 text-[14px] leading-5 text-[#717171]">
-                  We&apos;ll text or email them the invite
+                  {t("host_cohost_modal_subtitle") || "We'll text or email them the invite"}
                 </p>
               </div>
               <button
                 type="button"
-                aria-label="Close invite co-host dialog"
+                aria-label={t("host_cohost_modal_close_aria") || "Close invite co-host dialog"}
                 onClick={closeModal}
                 disabled={saving}
                 className="-mr-1 -mt-1 grid size-8 shrink-0 place-items-center rounded-full text-[26px] font-light leading-none transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-40"
@@ -1010,12 +1015,12 @@ function CoHostView(props: Props) {
             >
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
                 <label className="block min-w-0 text-sm font-medium leading-5">
-                  Country code <span aria-hidden="true">*</span>
+                  {t("host_cohost_label_country_code") || "Country code"} <span aria-hidden="true">*</span>
                   <span className="relative mt-1.5 block">
                     <select
                       value={countryCode}
                       onChange={(event) => setCountryCode(event.target.value)}
-                      aria-label="Country code"
+                      aria-label={t("host_cohost_label_country_code") || "Country code"}
                       className="h-11 w-full appearance-none rounded-lg border border-[#b0b0b0] bg-white px-2.5 pr-7 text-sm text-[#1f1f1f] outline-none transition focus:border-zinc-900 font-normal"
                     >
                       {COUNTRY_CODES.map((country, index) => (
@@ -1028,7 +1033,7 @@ function CoHostView(props: Props) {
                   </span>
                 </label>
                 <label className="block min-w-0 text-sm font-medium leading-5">
-                  Phone number <span aria-hidden="true">*</span>
+                  {t("host_cohost_label_phone_number") || "Phone number"} <span aria-hidden="true">*</span>
                   <input
                     autoFocus
                     type="tel"
@@ -1047,12 +1052,12 @@ function CoHostView(props: Props) {
 
               <div className="my-5 flex items-center gap-3" aria-hidden="true">
                 <span className="h-px flex-1 bg-[#dedede]" />
-                <span className="text-[13px] text-[#555]">or</span>
+                <span className="text-[13px] text-[#555]">{t("host_cohost_or_divider") || "or"}</span>
                 <span className="h-px flex-1 bg-[#dedede]" />
               </div>
 
               <label className="block text-sm font-medium leading-5">
-                Email
+                {t("host_cohost_label_email") || "Email"}
                 <input
                   type="email"
                   value={email}
@@ -1075,14 +1080,14 @@ function CoHostView(props: Props) {
                   disabled={saving}
                   className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
-                  Cancel
+                  {t("host_cohost_modal_cancel_button") || "Cancel"}
                 </button>
                 <button
                   type="submit"
                   disabled={saving || (!hasEmail && !hasPhone) || (hasEmail && hasPhone)}
                   className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
-                  {saving ? "Sending…" : "Next"}
+                  {saving ? (t("host_cohost_modal_sending_button") || "Sending…") : (t("host_cohost_modal_next_button") || "Next")}
                 </button>
               </div>
             </form>

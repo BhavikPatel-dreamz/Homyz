@@ -5,6 +5,7 @@ import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HouseHighlightOption {
   id: string;
@@ -36,6 +37,7 @@ export function StepHighlights({
   onNext,
   isLoading = false,
 }: StepHighlightsProps) {
+  const { t } = useLanguage();
   const highlightOptions: HouseHighlightOption[] = [
     {
       id: "Peaceful",
@@ -93,6 +95,19 @@ export function StepHighlights({
     },
   ];
 
+  const getHighlightLabel = (id: string, fallback: string) => {
+    const map: Record<string, keyof typeof import("@/messages/en.json")> = {
+      Peaceful: "host_highlights_peaceful",
+      Unique: "host_highlights_unique",
+      "Family-friendly": "host_highlights_family",
+      Stylish: "host_highlights_stylish",
+      Central: "host_highlights_central",
+      Spacious: "host_highlights_spacious",
+    };
+    const key = map[id];
+    return key ? t(key) : fallback;
+  };
+
   return (
     <OnboardingStepLayout
       isLoading={isLoading}
@@ -102,8 +117,8 @@ export function StepHighlights({
           <div className="max-w-187 mx-auto w-full flex flex-col items-start">
             {/* Main Title & Subtitle */}
             <OnboardingStepHeading
-              title="Let’s describe your house"
-              description="Choose up to 3 highlights. We’ll use these to help guests understand your place."
+              title={t("host_highlights_title")}
+              description={t("host_highlights_subtitle")}
               titleClassName="sm:mb-5 mb-3"
               descriptionClassName="text-base font-normal text-[#727272] sm:mb-10 mb-6"
             />
@@ -135,7 +150,7 @@ export function StepHighlights({
                         className="h-6 w-6 object-contain"
                       />
                     </div>
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{getHighlightLabel(item.id, item.label)}</span>
                   </button>
                 );
               })}

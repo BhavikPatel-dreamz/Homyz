@@ -3,6 +3,7 @@
 import React from "react";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepProgressFooterProps {
   currentStep: number;
@@ -10,7 +11,7 @@ interface StepProgressFooterProps {
   onBack: () => void;
   onNext: () => void;
   isLoading?: boolean;
-  nextLabel?: string;
+  nextLabel?: React.ReactNode;
   disableNext?: boolean;
 }
 
@@ -20,9 +21,12 @@ export function StepProgressFooter({
   onBack,
   onNext,
   isLoading = false,
-  nextLabel = "Next",
+  nextLabel,
   disableNext = false,
 }: StepProgressFooterProps) {
+  const { t } = useLanguage();
+  const displayNextLabel = nextLabel ?? t("host_next");
+
   return (
     <div className="sm:mt-18 mt-auto pt-8">
       {/* Action Buttons */}
@@ -35,8 +39,8 @@ export function StepProgressFooter({
           onClick={onNext}
           disabled={disableNext}
           isLoading={isLoading}
-          loadingLabel="Saving..."
-          label={nextLabel}
+          loadingLabel={t("host_saving")}
+          label={displayNextLabel}
         />
 
       </div>

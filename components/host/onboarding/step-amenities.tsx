@@ -2,12 +2,13 @@
 
 import React from "react";
 
-import { normalizeAmenityId } from "@/lib/constants/amenities";
+import { normalizeAmenityId, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { OnboardingAmenitySection } from "./onboarding-amenity-section";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 
 interface AmenityOption {
@@ -55,6 +56,7 @@ export function StepAmenities({
   onNext,
   isLoading = false,
 }: StepAmenitiesProps) {
+  const { t } = useLanguage();
 
   const favoriteAmenities: AmenityOption[] = [
     {
@@ -265,6 +267,15 @@ export function StepAmenities({
     },
   ];
 
+  const getAmenityLabel = (id: string, fallback: string) => {
+    const key = getAmenityTranslationKey(id) as keyof typeof import("@/messages/en.json");
+    const translated = t(key);
+    return translated && translated !== key ? translated : fallback;
+  };
+
+  const translateItems = (items: AmenityOption[]): AmenityOption[] =>
+    items.map((item) => ({ ...item, label: getAmenityLabel(item.id, item.label) }));
+
   const normalizedSelected = selectedAmenities.map(normalizeAmenityId);
 
   return (
@@ -277,16 +288,16 @@ export function StepAmenities({
           <div className="max-w-[748px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Header & Subtitle */}
             <OnboardingStepHeading
-              title="Tell guests what your place has to offer"
-              description="You can add more amenities after you publish your listing."
+              title={t("host_amenities_title")}
+              description={t("host_amenities_subtitle")}
               titleClassName="mb-2"
               descriptionClassName="sm:mb-10 mb-8"
             />
 
             <div className="flex flex-col sm:gap-12 gap-8 w-full">
-              <OnboardingAmenitySection title="What about these quest favorites?" items={favoriteAmenities} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={200} />
-              <OnboardingAmenitySection title="Do you have any standout amenities?" items={standoutAmenities} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={300} />
-              <OnboardingAmenitySection title="Do you have any of these safety items?" items={safetyItems} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={400} />
+              <OnboardingAmenitySection title={t("host_amenities_favorites_title")} items={translateItems(favoriteAmenities)} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={200} />
+              <OnboardingAmenitySection title={t("host_amenities_standout_title")} items={translateItems(standoutAmenities)} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={300} />
+              <OnboardingAmenitySection title={t("host_amenities_safety_title")} items={translateItems(safetyItems)} selectedIds={normalizedSelected} iconPaths={amenityIconPaths} onToggle={onToggleAmenity} animationDelay={400} />
             </div>
           </div>
 
@@ -299,7 +310,7 @@ export function StepAmenities({
             <OnboardingPrimaryButton
               onClick={onNext}
               isLoading={isLoading}
-              label="Next"
+              label={t("host_next")}
             />
           </div>
     </OnboardingStepLayout>

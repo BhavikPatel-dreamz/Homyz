@@ -25,6 +25,7 @@ import { ListingStatusView, computeMissingRequirements, getListingDisplayState }
 import { AdminListingReviewView, type ListingAuditItem } from "@/app/(protected)/admin/listings/[id]/admin-listing-review-view";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import type { OrgStaysConfig } from "./components/AirbnbOrgStaysView";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { SectionKey, sectionToSlug, slugToSection, type HostListingData } from "./section-helpers";
 import {
   type GuestSafetyState,
@@ -166,6 +167,7 @@ export function HostListingEditorClient({
   initialAuditLogTotal?: number;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [listing, setListing] = useState<HostListingData>(initialListing);
   const [activeSection, setActiveSectionState] = useState<SectionKey>(initialSection || "propertyType");
   const [editorTab, setEditorTab] = useState<"space" | "arrival" | "preferences">(
@@ -2047,6 +2049,7 @@ export function HostListingEditorClient({
       )}
 
       {/* --------------------------------------------------------- */}
+      {/* --------------------------------------------------------- */}
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}
       {/* --------------------------------------------------------- */}
       {isTurnOffInstantBookModalOpen && (
@@ -2065,10 +2068,10 @@ export function HostListingEditorClient({
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
-                Turn off Instant Book?
+                {t("host_booking_turn_off_instant_title") || "Turn off Instant Book?"}
               </h3>
               <p className="text-sm text-zinc-500 font-normal">
-                Your setting will not change until you confirm.
+                {t("host_booking_turn_off_instant_subtitle") || "Your setting will not change until you confirm."}
               </p>
             </div>
 
@@ -2084,9 +2087,9 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Guests may experience slower confirmation</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_1_title") || "Guests may experience slower confirmation"}</h4>
                   <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                    Guests will wait for your approval instead of receiving an immediate booking confirmation.
+                    {t("host_booking_consideration_1_desc") || "Guests will wait for your approval instead of receiving an immediate booking confirmation."}
                   </p>
                 </div>
               </div>
@@ -2099,9 +2102,9 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Review every booking request</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_2_title") || "Review every booking request"}</h4>
                   <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                    All booking requests will need your review before they are confirmed.
+                    {t("host_booking_consideration_2_desc") || "All booking requests will need your review before they are confirmed."}
                   </p>
                 </div>
               </div>
@@ -2114,9 +2117,9 @@ export function HostListingEditorClient({
                   </svg>
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="font-medium text-base text-[#1F1F1F]">Respond within 24 hours</h4>
+                  <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_3_title") || "Respond within 24 hours"}</h4>
                   <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                    Unanswered requests expire automatically after 24 hours and affect your host response rate.
+                    {t("host_booking_consideration_3_desc") || "Unanswered requests expire automatically after 24 hours and affect your host response rate."}
                   </p>
                 </div>
               </div>
@@ -2132,7 +2135,7 @@ export function HostListingEditorClient({
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_booking_modal_cancel_button") || "Cancel"}
               </button>
 
               <button
@@ -2145,7 +2148,7 @@ export function HostListingEditorClient({
                 }}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Turn Instant Book off
+                {t("host_booking_turn_instant_off_confirm") || "Turn Instant Book off"}
               </button>
             </div>
           </div>
@@ -2168,9 +2171,9 @@ export function HostListingEditorClient({
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] mb-1">Add a custom message</h3>
+              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] mb-1">{t("host_booking_custom_message_title") || "Add a custom message"}</h3>
               <p className="text-sm text-[#727272] font-normal">
-                This note appears to guests before they reserve. Do not include access codes or other private arrival information.
+                {t("host_booking_custom_message_subtitle") || "This note appears to guests before they reserve. Do not include access codes or other private arrival information."}
               </p>
             </div>
 
@@ -2179,7 +2182,7 @@ export function HostListingEditorClient({
               value={customBookingMessageDraft}
               onChange={(e) => setCustomBookingMessageDraft(e.target.value)}
               disabled={isSaving}
-              placeholder="Write a custom message for your guests..."
+              placeholder={t("host_booking_custom_message_placeholder") || "Write a custom message for your guests..."}
               maxLength={1000}
               className="w-full rounded-lg border border-zinc-300 bg-white p-4 text-xs text-zinc-800 font-medium outline-none focus:border-zinc-900 transition-colors shadow-2xs placeholder:text-zinc-300"
             />
@@ -2193,7 +2196,7 @@ export function HostListingEditorClient({
                 }}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_booking_custom_message_cancel") || "Cancel"}
               </button>
               <button
                 type="button"
@@ -2210,7 +2213,7 @@ export function HostListingEditorClient({
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving && <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-zinc-600/35 border-t-zinc-950" />}
-                {isSaving ? "Saving..." : "Save Message"}
+                {isSaving ? (t("host_booking_custom_message_saving") || "Saving...") : (t("host_booking_custom_message_save") || "Save Message")}
               </button>
             </div>
           </div>
@@ -2232,9 +2235,9 @@ export function HostListingEditorClient({
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Additional house rules</h3>
+              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_house_rules_modal_title")}</h3>
               <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
-                Share any specific requirements or guidelines guests must follow.
+                {t("host_additional_house_rules_modal_desc")}
               </p>
             </div>
 
@@ -2242,7 +2245,7 @@ export function HostListingEditorClient({
               rows={5}
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
-              placeholder="e.g. Please remove shoes inside, no loud music after 10 PM..."
+              placeholder={t("host_additional_house_rules_placeholder")}
               className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
             />
 
@@ -2252,7 +2255,7 @@ export function HostListingEditorClient({
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_additional_house_rules_cancel")}
               </button>
               <button
                 type="button"
@@ -2263,7 +2266,7 @@ export function HostListingEditorClient({
                 }}
                 className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                {isSaving ? "Saving..." : "Save Rules"}
+                {isSaving ? t("host_saving") : t("host_additional_house_rules_save")}
               </button>
             </div>
           </div>

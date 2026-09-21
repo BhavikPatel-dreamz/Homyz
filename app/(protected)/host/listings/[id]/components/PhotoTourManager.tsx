@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   PHOTO_TOUR_CATEGORIES,
   PHOTO_TOUR_CATEGORY_GROUPS,
@@ -98,6 +99,7 @@ export function PhotoTourManager({
   isSaving,
   isLoading,
 }: PhotoTourManagerProps) {
+  const { t } = useLanguage();
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const roomTypeScrollerRef = useRef<HTMLDivElement>(null);
@@ -264,7 +266,7 @@ export function PhotoTourManager({
               className="size-3.5 accent-zinc-900 dark:accent-amber-400"
             />
           </label>
-          {index === 0 && <span className="absolute bottom-3 left-3 rounded-full bg-zinc-900 dark:bg-amber-400 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-950 shadow-sm">Cover photo</span>}
+          {index === 0 && <span className="absolute bottom-3 left-3 rounded-full bg-zinc-900 dark:bg-amber-400 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-950 shadow-sm">{t("host_cover_photo")}</span>}
           <span className="absolute right-3 top-3 rounded-full bg-white/95 dark:bg-zinc-800/95 px-2 py-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm">#{index + 1}</span>
         </div>
 
@@ -277,11 +279,11 @@ export function PhotoTourManager({
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-zinc-100 dark:border-zinc-700 pt-2.5">
             <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
-              {index === 0 ? "Cover" : "Make cover"}
+              {index === 0 ? t("host_cover_photo") : t("host_make_cover")}
             </button>
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:opacity-40">Replace</button>
-              <button type="button" onClick={() => removePhoto(index)} disabled={controlsDisabled} className="text-xs font-semibold text-rose-700 dark:text-rose-400 transition hover:text-rose-900 dark:hover:text-rose-300 disabled:opacity-40">Delete</button>
+              <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:opacity-40">{t("host_replace_photo")}</button>
+              <button type="button" onClick={() => removePhoto(index)} disabled={controlsDisabled} className="text-xs font-semibold text-rose-700 dark:text-rose-400 transition hover:text-rose-900 dark:hover:text-rose-300 disabled:opacity-40">{t("host_remove_photo")}</button>
             </div>
           </div>
         </div>
@@ -297,16 +299,16 @@ export function PhotoTourManager({
       <header className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">Your space</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-3xl">Build your photo tour</h1>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{t("host_your_space")}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-3xl">{t("host_photo_tour")}</h1>
             <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">Help guests understand your place at a glance. Assign each existing or new gallery photo to a room—your original image files and gallery order stay exactly the same.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-900 dark:border-zinc-600 bg-zinc-900 dark:bg-zinc-700 px-4 text-sm font-semibold text-white transition hover:bg-zinc-700 dark:hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60">
-              Add photos
+              {t("host_add_photos")}
             </button>
             <button type="button" disabled={controlsDisabled} onClick={onSave} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#FEE08B] dark:bg-amber-400 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-[#fbd46a] dark:hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
-              {isSaving ? "Saving…" : "Save changes"}
+              {isSaving ? t("host_saving_btn") : t("host_save_btn")}
             </button>
           </div>
         </div>

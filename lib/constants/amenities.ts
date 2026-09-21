@@ -372,3 +372,16 @@ export function getAmenityMeta(idOrLabel: string): CanonicalAmenity {
     description: "Amenity available on premises",
   };
 }
+
+/**
+ * Returns the translation key for any canonical amenity ID.
+ */
+export function getAmenityTranslationKey(id: string): string {
+  const customKeys: Record<string, string> = {
+    outdoor_dining_area: "host_amenity_outdoor_dining",
+    indoor_fireplace: "host_amenity_fireplace",
+    first_aid_kit: "host_amenity_first_aid",
+  };
+  return customKeys[id] || `host_amenity_${id}`;
+}
+

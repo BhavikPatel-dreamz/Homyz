@@ -3,6 +3,7 @@
 
 import React, { useState } from "react";
 import { BackButton } from "@/components/ui/back-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import {
   GuestSafetyState,
@@ -55,11 +56,12 @@ function AllowDenyButtons({
   onChange: (value: boolean) => void;
   label: string;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="flex shrink-0 items-center gap-2" aria-label={label}>
       <button
         type="button"
-        aria-label={`No for ${label}`}
+        aria-label={t("host_safety_allow_deny_no").replace("{label}", label)}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === false
@@ -73,7 +75,7 @@ function AllowDenyButtons({
       </button>
       <button
         type="button"
-        aria-label={`Yes for ${label}`}
+        aria-label={t("host_safety_allow_deny_yes").replace("{label}", label)}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === true
@@ -99,6 +101,7 @@ export function GuestsSafetyView({
   setGuestSafetyState,
   onSaveSafety,
 }: GuestsSafetyViewProps) {
+  const { t } = useLanguage();
   const [isConsiderationsOpen, setIsConsiderationsOpen] = useState(false);
   const [isDevicesOpen, setIsDevicesOpen] = useState(false);
   const [isPropertyInfoOpen, setIsPropertyInfoOpen] = useState(false);
@@ -199,7 +202,7 @@ export function GuestsSafetyView({
   // Summary subtitles on main page
   const getConsiderationsSummary = () => {
     const c = guestSafetyState?.considerations;
-    if (!c) return "Add details";
+    if (!c) return t("host_safety_add_details");
     let count = 0;
     if (c.unsuitableChildren) count++;
     if (c.unsuitableInfants) count++;
@@ -209,25 +212,25 @@ export function GuestsSafetyView({
     if (c.heightsNoRails) count++;
     if (c.dangerousAnimals) count++;
     if (c.specialConsiderations) count++;
-    return count > 0 ? `${count} reported` : "Add details";
+    return count > 0 ? t("host_safety_reported_count").replace("{count}", String(count)) : t("host_safety_add_details");
   };
 
   const getDevicesSummary = () => {
     const d = guestSafetyState?.devices;
-    if (!d) return "Add details";
+    if (!d) return t("host_safety_add_details");
     const items: string[] = [];
-    if (d.smokeAlarm) items.push("Smoke alarm");
-    if (d.carbonMonoxideAlarm) items.push("CO alarm");
-    if (d.noiseMonitor) items.push("Noise monitor");
-    if (d.securityCamera) items.push("Camera");
-    if (items.length === 1 && d.smokeAlarm) return "Smoke alarm";
+    if (d.smokeAlarm) items.push(t("host_safety_smoke_alarm_short"));
+    if (d.carbonMonoxideAlarm) items.push(t("host_safety_co_alarm_short"));
+    if (d.noiseMonitor) items.push(t("host_safety_noise_monitor_short"));
+    if (d.securityCamera) items.push(t("host_safety_camera_short"));
+    if (items.length === 1 && d.smokeAlarm) return t("host_safety_smoke_alarm_short");
     if (items.length > 0) return items.slice(0, 2).join(", ") + (items.length > 2 ? ` +${items.length - 2}` : "");
-    return "Add details";
+    return t("host_safety_add_details");
   };
 
   const getPropertyInfoSummary = () => {
     const p = guestSafetyState?.propertyInfo;
-    if (!p) return "Add details";
+    if (!p) return t("host_safety_add_details");
     let count = 0;
     if (p.climbStairs) count++;
     if (p.potentialNoise) count++;
@@ -236,7 +239,7 @@ export function GuestsSafetyView({
     if (p.sharedSpaces) count++;
     if (p.limitedAmenities) count++;
     if (p.weapons) count++;
-    return count > 0 ? `${count} items added` : "Add details";
+    return count > 0 ? t("host_safety_items_added_count").replace("{count}", String(count)) : t("host_safety_add_details");
   };
 
   // Save handler for current modal
@@ -246,38 +249,38 @@ export function GuestsSafetyView({
     if (category === "devices") {
       const d = draftState.devices;
       if (d.securityCamera === true && !(d.securityCameraDetails || "").trim()) {
-        errors.securityCameraDetails = "Please describe exterior camera locations and whether they are active during stays.";
+        errors.securityCameraDetails = t("host_safety_security_camera_error");
       }
       if (d.noiseMonitor === true && !(d.noiseMonitorDetails || "").trim()) {
-        errors.noiseMonitorDetails = "Please describe where noise decibel monitors are located.";
+        errors.noiseMonitorDetails = t("host_safety_noise_monitor_error");
       }
     } else if (category === "propertyInfo") {
       const p = draftState.propertyInfo;
       if (p.climbStairs === true && !(p.climbStairsDetails || "").trim()) {
-        errors.climbStairsDetails = "Please describe the stairs (e.g. flights, handrails, or elevator access).";
+        errors.climbStairsDetails = t("host_safety_climb_stairs_error");
       }
       if (p.potentialNoise === true && !(p.potentialNoiseDetails || "").trim()) {
-        errors.potentialNoiseDetails = "Please describe potential noise and when it occurs.";
+        errors.potentialNoiseDetails = t("host_safety_potential_noise_error");
       }
       if (p.petsLiveOnProperty === true && !(p.petsLiveOnPropertyDetails || "").trim()) {
-        errors.petsLiveOnPropertyDetails = "Please describe which pets live at the property.";
+        errors.petsLiveOnPropertyDetails = t("host_safety_pets_live_error");
       }
       if (p.noParking === true && !(p.noParkingDetails || "").trim()) {
-        errors.noParkingDetails = "Please describe nearby parking options for guests.";
+        errors.noParkingDetails = t("host_safety_no_parking_error");
       }
       if (p.sharedSpaces === true && !(p.sharedSpacesDetails || "").trim()) {
-        errors.sharedSpacesDetails = "Please describe which spaces are shared and with whom.";
+        errors.sharedSpacesDetails = t("host_safety_shared_spaces_error");
       }
       if (p.limitedAmenities === true && !(p.limitedAmenitiesDetails || "").trim()) {
-        errors.limitedAmenitiesDetails = "Please describe which essential amenities are not provided.";
+        errors.limitedAmenitiesDetails = t("host_safety_limited_amenities_error");
       }
       if (p.weapons === true && !(p.weaponsDetails || "").trim()) {
-        errors.weaponsDetails = "Please describe how weapons are stored and secured.";
+        errors.weaponsDetails = t("host_safety_weapons_error");
       }
     } else if (category === "considerations") {
       const c = draftState.considerations;
       if (c.specialConsiderations === true && !(c.specialConsiderationsDetails || "").trim()) {
-        errors.specialConsiderationsDetails = "Please describe the special safety considerations.";
+        errors.specialConsiderationsDetails = t("host_safety_special_considerations_error");
       }
     }
 
@@ -319,9 +322,9 @@ export function GuestsSafetyView({
               className="mt-2"
             />
             <div>
-              <h1 className="mb-2">Guest safety</h1>
+              <h1 className="mb-2">{t("host_guest_safety_title")}</h1>
               <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                The safety details you share will appear on your listing, along with information like your House Rules.
+                {t("host_guest_safety_desc")}
               </p>
             </div>
           </div>
@@ -339,7 +342,7 @@ export function GuestsSafetyView({
             >
               <div className="space-y-0.5">
                 <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
-                  Safety considerations
+                  {t("host_safety_considerations")}
                 </h4>
                 <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getConsiderationsSummary()}</p>
               </div>
@@ -355,7 +358,7 @@ export function GuestsSafetyView({
             >
               <div className="space-y-0.5">
                 <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
-                  Safety devices
+                  {t("host_safety_devices")}
                 </h4>
                 <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getDevicesSummary()}</p>
               </div>
@@ -371,7 +374,7 @@ export function GuestsSafetyView({
             >
               <div className="space-y-0.5">
                 <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
-                  Property info
+                  {t("host_property_info")}
                 </h4>
                 <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getPropertyInfoSummary()}</p>
               </div>
@@ -392,9 +395,9 @@ export function GuestsSafetyView({
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety considerations</h3>
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_considerations_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
-                  Select any specific considerations guests should know about.
+                  {t("host_safety_considerations_modal_desc")}
                 </p>
               </div>
               <button
@@ -413,17 +416,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Not a good fit for children 2–12
+                      {t("host_safety_unsuitable_children_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      This property has features that may not be safe for kids.
+                      {t("host_safety_unsuitable_children_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("children")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -437,14 +440,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.unsuitableChildren === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableChildrenDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableChildrenDetails", e.target.value)}
-                      placeholder="Describe any child safety considerations or hazards..."
+                      placeholder={t("host_safety_unsuitable_children_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -457,17 +460,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Not a good fit for infants under 2
+                      {t("host_safety_unsuitable_infants_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      This property has features that may not be safe for babies or toddlers this age.
+                      {t("host_safety_unsuitable_infants_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("infants")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -481,14 +484,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.unsuitableInfants === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableInfantsDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableInfantsDetails", e.target.value)}
-                      placeholder="Describe any infant safety considerations or hazards..."
+                      placeholder={t("host_safety_unsuitable_infants_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -501,10 +504,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Pool or hot tub doesn&apos;t have a gate or lock
+                      {t("host_safety_pool_no_gate_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests have access to an unsecured swimming pool or hot tub. Check your local laws for specific requirements.
+                      {t("host_safety_pool_no_gate_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -518,14 +521,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.poolNoGate === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.poolNoGateDetails || ""}
                       onChange={(e) => updateConsideration("poolNoGateDetails", e.target.value)}
-                      placeholder="Describe pool or hot tub access and safety features..."
+                      placeholder={t("host_safety_pool_no_gate_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -538,10 +541,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Nearby water, like a lake or river
+                      {t("host_safety_nearby_water_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests have unrestricted access to a body of water, like an ocean, pond, creek or wetlands, directly on or next to the property.
+                      {t("host_safety_nearby_water_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -555,14 +558,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.nearbyWater === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.nearbyWaterDetails || ""}
                       onChange={(e) => updateConsideration("nearbyWaterDetails", e.target.value)}
-                      placeholder="Describe proximity to water and any barriers or safety guidance..."
+                      placeholder={t("host_safety_nearby_water_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -575,10 +578,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Climbing or play structure(s) on the property
+                      {t("host_safety_climbing_structure_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests will have access to structures like a playset, slide, swings or climbing ropes.
+                      {t("host_safety_climbing_structure_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -592,14 +595,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.climbingStructure === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.climbingStructureDetails || ""}
                       onChange={(e) => updateConsideration("climbingStructureDetails", e.target.value)}
-                      placeholder="Describe the play or climbing structures on the property..."
+                      placeholder={t("host_safety_climbing_structure_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -612,10 +615,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      There are heights without rails or protection
+                      {t("host_safety_heights_no_rails_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests have access to an area higher than 30 inches (76 centimetres), such as a balcony, roof, terrace or cliff, that doesn&apos;t have a rail or other protection.
+                      {t("host_safety_heights_no_rails_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -629,14 +632,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.heightsNoRails === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.heightsNoRailsDetails || ""}
                       onChange={(e) => updateConsideration("heightsNoRailsDetails", e.target.value)}
-                      placeholder="Describe the elevated areas without rails..."
+                      placeholder={t("host_safety_heights_no_rails_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -649,17 +652,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Potentially dangerous animal(s) on the property
+                      {t("host_safety_dangerous_animals_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests and their pets will be around animals, like a horse, puma or farm animal, that could cause harm.
+                      {t("host_safety_dangerous_animals_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("animals")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -673,14 +676,14 @@ export function GuestsSafetyView({
                 {draftState.considerations.dangerousAnimals === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.dangerousAnimalsDetails || ""}
                       onChange={(e) => updateConsideration("dangerousAnimalsDetails", e.target.value)}
-                      placeholder="Describe any animals that guests may encounter..."
+                      placeholder={t("host_safety_dangerous_animals_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -693,17 +696,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Other safety or regulatory notes
+                      {t("host_safety_special_considerations_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Add any other safety concern or regulatory information guests should know before booking.
+                      {t("host_safety_special_considerations_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("special")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -718,7 +721,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Add other safety or regulatory notes *
+                        {t("host_safety_special_considerations_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
                     </div>
@@ -735,7 +738,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Construction work is scheduled nearby weekdays from 8 AM–5 PM; an unpaved entrance may be slippery when wet."
+                      placeholder={t("host_safety_special_considerations_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.specialConsiderationsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -757,7 +760,7 @@ export function GuestsSafetyView({
                 onClick={closeModal}
                 className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_house_rules_cancel")}
               </button>
               <button
                 type="button"
@@ -771,7 +774,7 @@ export function GuestsSafetyView({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 )}
-                {saving ? "Saving..." : "Save"}
+                {saving ? t("host_saving") : t("host_save")}
               </button>
             </div>
           </div>
@@ -787,9 +790,9 @@ export function GuestsSafetyView({
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Safety devices</h3>
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_devices_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
-                  Disclose safety devices and alarms installed at your space.
+                  {t("host_safety_devices_modal_desc")}
                 </p>
               </div>
               <button
@@ -808,20 +811,20 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Exterior security camera present
+                      {t("host_safety_security_camera_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      This property has one or more exterior cameras that record or transmit video, images or audio. You must disclose them if they&apos;re turned off.
+                      {t("host_safety_security_camera_desc")}
                     </p>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
-                      Note: Security cameras that monitor indoor spaces or outdoor areas where greater privacy is expected, such as a shower, are not allowed.
+                      {t("host_safety_security_camera_note")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("camera")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -836,7 +839,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Where are the exterior cameras located and will they be on or off during stays? *
+                        {t("host_safety_security_camera_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.securityCameraDetails || "").length}/500</span>
                     </div>
@@ -853,7 +856,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Ring doorbell camera on front entrance and floodlight camera over driveway, active 24/7."
+                      placeholder={t("host_safety_security_camera_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.securityCameraDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -872,17 +875,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Noise decibel monitor present
+                      {t("host_safety_noise_monitor_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      This property has one or more devices that can assess sound level but don&apos;t record audio.
+                      {t("host_safety_noise_monitor_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("noise")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -897,7 +900,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Where are the noise decibel monitors located? *
+                        {t("host_safety_noise_monitor_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
                     </div>
@@ -914,7 +917,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Minut sensor in the living room."
+                      placeholder={t("host_safety_noise_monitor_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noiseMonitorDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -933,17 +936,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Carbon monoxide alarm
+                      {t("host_safety_carbon_monoxide_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      A device that alerts if it detects unsafe levels of carbon monoxide (Check your local laws, which may require a working carbon monoxide detector in your listing).
+                      {t("host_safety_carbon_monoxide_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("co")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -957,14 +960,14 @@ export function GuestsSafetyView({
                 {draftState.devices.carbonMonoxideAlarm === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_optional")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.carbonMonoxideAlarmDetails || ""}
                       onChange={(e) => updateDevice("carbonMonoxideAlarmDetails", e.target.value)}
-                      placeholder="Add details about carbon monoxide alarm location (optional)"
+                      placeholder={t("host_safety_carbon_monoxide_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -977,17 +980,17 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Smoke alarm
+                      {t("host_safety_smoke_alarm_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      A device that alerts when it detects smoke (Check your local laws, which may require a working smoke detector in your listing).
+                      {t("host_safety_smoke_alarm_desc")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("smoke")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -1001,14 +1004,14 @@ export function GuestsSafetyView({
                 {draftState.devices.smokeAlarm === true && (
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Add details (optional)</label>
+                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_optional")}</label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.smokeAlarmDetails || ""}
                       onChange={(e) => updateDevice("smokeAlarmDetails", e.target.value)}
-                      placeholder="Add details about smoke alarm location (optional)"
+                      placeholder={t("host_safety_smoke_alarm_placeholder")}
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
@@ -1022,15 +1025,15 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_house_rules_cancel")}
               </button>
               <button
                 type="button"
                 disabled={saving}
                 onClick={() => handleSaveModal("devices")}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {saving && (
                   <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
@@ -1038,7 +1041,7 @@ export function GuestsSafetyView({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 )}
-                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
+                {saving ? t("host_saving") : t("host_save")}
               </button>
             </div>
           </div>
@@ -1054,9 +1057,9 @@ export function GuestsSafetyView({
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">Property info</h3>
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_property_info_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
-                  Select any specific characteristics about your space.
+                  {t("host_property_info_modal_desc")}
                 </p>
               </div>
               <button
@@ -1075,10 +1078,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Guests must climb stairs
+                      {t("host_safety_climb_stairs_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests can expect to walk up and down stairs during their stay.
+                      {t("host_safety_climb_stairs_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1093,7 +1096,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe the stairs (e.g. number of flights, handrails, or elevator access) *
+                        {t("host_safety_climb_stairs_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
                     </div>
@@ -1110,7 +1113,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., 2 flights of outdoor steps to front door, handrail provided on right."
+                      placeholder={t("host_safety_climb_stairs_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.climbStairsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1129,10 +1132,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Construction or other potential noise during stays
+                      {t("host_safety_potential_noise_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests should expect to hear some noise during their stay. For example, traffic, construction or nearby businesses.
+                      {t("host_safety_potential_noise_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1147,7 +1150,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe the noise and when guests might hear it *
+                        {t("host_safety_potential_noise_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
                     </div>
@@ -1164,7 +1167,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Light street traffic during morning commute hours."
+                      placeholder={t("host_safety_potential_noise_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.potentialNoiseDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1183,10 +1186,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Pet(s) live at the property
+                      {t("host_safety_pets_live_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests may meet or interact with pets during their stay.
+                      {t("host_safety_pets_live_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1201,7 +1204,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe what pets live on the property and where they stay *
+                        {t("host_safety_pets_live_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
                     </div>
@@ -1218,7 +1221,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Friendly golden retriever stays in the fenced backyard area."
+                      placeholder={t("host_safety_pets_live_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.petsLiveOnPropertyDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1237,10 +1240,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      No parking on the property
+                      {t("host_safety_no_parking_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      This property doesn&apos;t have dedicated parking spots for guests.
+                      {t("host_safety_no_parking_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1255,7 +1258,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe nearby parking options *
+                        {t("host_safety_no_parking_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
                     </div>
@@ -1272,7 +1275,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Free street parking available on 4th Ave, paid garage 2 blocks away."
+                      placeholder={t("host_safety_no_parking_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noParkingDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1291,10 +1294,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Property has shared spaces
+                      {t("host_safety_shared_spaces_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Guests should expect to share spaces, such as a kitchen, bathroom or patio, with other people during their stay.
+                      {t("host_safety_shared_spaces_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1309,7 +1312,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe which spaces are shared and with whom *
+                        {t("host_safety_shared_spaces_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
                     </div>
@@ -1326,7 +1329,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Shared kitchen and patio with other guests."
+                      placeholder={t("host_safety_shared_spaces_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.sharedSpacesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1345,10 +1348,10 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Limited essential amenities
+                      {t("host_safety_limited_amenities_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      Some common essentials are not included on this property. For example, wifi, running water, indoor shower.
+                      {t("host_safety_limited_amenities_desc")}
                     </p>
                   </div>
                   <AllowDenyButtons
@@ -1363,7 +1366,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        List the essential amenities that are not included *
+                        {t("host_safety_limited_amenities_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
                     </div>
@@ -1380,7 +1383,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Off-grid cabin: no wifi, rainwater shower only."
+                      placeholder={t("host_safety_limited_amenities_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.limitedAmenitiesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1399,20 +1402,20 @@ export function GuestsSafetyView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      Weapon(s) on the property
+                      {t("host_safety_weapons_title")}
                     </span>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
-                      There&apos;s at least one weapon stored on this property. Check your local laws for specific requirements.
+                      {t("host_safety_weapons_desc")}
                     </p>
                     <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
-                      Reminder: Airbnb requires all weapons to be properly stored and secured.
+                      {t("host_safety_weapons_note")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("weapons")}
                       className="text-sm font-medium underline text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-zinc-300 inline-block cursor-pointer pt-0.5"
                     >
-                      Learn more
+                      {t("host_safety_learn_more")}
                     </button>
                   </div>
                   <AllowDenyButtons
@@ -1427,7 +1430,7 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                        Describe how weapons are stored and secured *
+                        {t("host_safety_weapons_label")}
                       </label>
                       <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
                     </div>
@@ -1444,7 +1447,7 @@ export function GuestsSafetyView({
                           });
                         }
                       }}
-                      placeholder="e.g., Hunting rifle kept unloaded inside locked biometric safe."
+                      placeholder={t("host_safety_weapons_placeholder")}
                       className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.weaponsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
@@ -1464,15 +1467,15 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
-                Cancel
+                {t("host_house_rules_cancel")}
               </button>
               <button
                 type="button"
                 disabled={saving}
                 onClick={() => handleSaveModal("propertyInfo")}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {saving && (
                   <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
@@ -1480,7 +1483,7 @@ export function GuestsSafetyView({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 )}
-                <span className="!text-white dark:!text-zinc-900">{saving ? "Saving..." : "Save"}</span>
+                {saving ? t("host_saving") : t("host_save")}
               </button>
             </div>
           </div>
@@ -1502,66 +1505,66 @@ export function GuestsSafetyView({
             </button>
 
             <h3 className="font-semibold text-lg text-[#1F1F1F] dark:text-zinc-100">
-              {learnMoreTopic === "camera" && "Security cameras and recording devices"}
-              {learnMoreTopic === "noise" && "Noise decibel monitors"}
-              {learnMoreTopic === "co" && "Carbon monoxide alarms"}
-              {learnMoreTopic === "smoke" && "Smoke alarms"}
-              {learnMoreTopic === "weapons" && "Weapons on property policy"}
-              {learnMoreTopic === "children" && "Children safety policy"}
-              {learnMoreTopic === "infants" && "Infant suitability policy"}
-              {learnMoreTopic === "animals" && "Dangerous animals guidance"}
-              {learnMoreTopic === "special" && "Special considerations"}
+              {learnMoreTopic === "camera" && t("host_safety_learn_camera_title")}
+              {learnMoreTopic === "noise" && t("host_safety_learn_noise_title")}
+              {learnMoreTopic === "co" && t("host_safety_learn_co_title")}
+              {learnMoreTopic === "smoke" && t("host_safety_learn_smoke_title")}
+              {learnMoreTopic === "weapons" && t("host_safety_learn_weapons_title")}
+              {learnMoreTopic === "children" && t("host_safety_learn_children_title")}
+              {learnMoreTopic === "infants" && t("host_safety_learn_infants_title")}
+              {learnMoreTopic === "animals" && t("host_safety_learn_animals_title")}
+              {learnMoreTopic === "special" && t("host_safety_learn_special_title")}
             </h3>
 
             <div className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed space-y-3">
               {learnMoreTopic === "camera" && (
                 <>
                   <p>
-                    Hosts are required to disclose any exterior security cameras, doorbell cameras, or recording devices. You must describe their location and whether they are powered on during stays.
+                    {t("host_safety_learn_camera_p1")}
                   </p>
                   <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    Cameras in private spaces (such as bedrooms, bathrooms, or indoor areas) are strictly prohibited.
+                    {t("host_safety_learn_camera_p2")}
                   </p>
                 </>
               )}
               {learnMoreTopic === "noise" && (
                 <p>
-                  Noise decibel monitors allow hosts to measure sound levels without recording or transmitting audio conversations. Hosts must disclose all devices to guests before booking.
+                  {t("host_safety_learn_noise_p")}
                 </p>
               )}
               {learnMoreTopic === "co" && (
                 <p>
-                  Carbon monoxide detectors protect guests against odorless, toxic gases. Many jurisdictions require working carbon monoxide detectors in rental homes with fuel-burning appliances or attached garages.
+                  {t("host_safety_learn_co_p")}
                 </p>
               )}
               {learnMoreTopic === "smoke" && (
                 <p>
-                  Working smoke detectors are a crucial safety feature. Check local regulations for requirements on smoke alarm placement and battery testing.
+                  {t("host_safety_learn_smoke_p")}
                 </p>
               )}
               {learnMoreTopic === "weapons" && (
                 <p>
-                  All weapons, firearms, and ammunition must be securely locked in a safe or secured cabinet that guests cannot access without host authorization.
+                  {t("host_safety_learn_weapons_p")}
                 </p>
               )}
               {learnMoreTopic === "children" && (
                 <p>
-                  If your space has steep drops, unprotected stairs, fragile heirlooms, or open balconies, indicate that it may not be suitable for young children.
+                  {t("host_safety_learn_children_p")}
                 </p>
               )}
               {learnMoreTopic === "infants" && (
                 <p>
-                  Indicate if your listing lacks infant-proofing, child gates, or has hazardous hazards that pose risks for babies under 2 years old.
+                  {t("host_safety_learn_infants_p")}
                 </p>
               )}
               {learnMoreTopic === "animals" && (
                 <p>
-                  Disclose if farm animals, aggressive watchdogs, horses, or wildlife that could potentially injure guests or their pets are present on the grounds.
+                  {t("host_safety_learn_animals_p")}
                 </p>
               )}
               {learnMoreTopic === "special" && (
                 <p>
-                  Share any unique property conditions that guests need to be aware of to ensure a safe and comfortable stay.
+                  {t("host_safety_learn_special_p")}
                 </p>
               )}
             </div>
@@ -1572,7 +1575,7 @@ export function GuestsSafetyView({
                 onClick={() => setLearnMoreTopic(null)}
                 className="rounded-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs px-6 py-2 transition-all cursor-pointer"
               >
-                Close
+                {t("host_safety_close")}
               </button>
             </div>
           </div>

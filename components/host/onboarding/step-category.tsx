@@ -5,6 +5,7 @@ import { PropertyCategory } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepCategoryProps {
   categories: PropertyCategory[];
@@ -15,6 +16,25 @@ interface StepCategoryProps {
   isLoading?: boolean;
 }
 
+const CATEGORY_TRANSLATION_MAP: Record<string, keyof typeof import("@/messages/en.json")> = {
+  House: "host_category_house",
+  Apartment: "host_category_apartment",
+  Barn: "host_category_barn",
+  "Bed & breakfast": "host_category_bed_and_breakfast",
+  Boat: "host_category_boat",
+  Cabin: "host_category_cabin",
+  "Camper / RV": "host_category_camper_rv",
+  Castle: "host_category_castle",
+  Container: "host_category_container",
+  "Cycladic home": "host_category_cycladic_home",
+  Dome: "host_category_dome",
+  "Earth home": "host_category_earth_home",
+  Farm: "host_category_farm",
+  "Guest house": "host_category_guest_house",
+  Hotel: "host_category_hotel",
+  Houseboat: "host_category_houseboat",
+};
+
 export function StepCategory({
   categories,
   selectedCategory,
@@ -23,6 +43,12 @@ export function StepCategory({
   onNext,
   isLoading = false,
 }: StepCategoryProps) {
+  const { t } = useLanguage();
+
+  const getCategoryLabel = (id: string, fallback: string) => {
+    const key = CATEGORY_TRANSLATION_MAP[id];
+    return key ? t(key) : fallback;
+  };
 
   return (
     <OnboardingStepLayout
@@ -32,8 +58,8 @@ export function StepCategory({
     >
           <div className="max-w-187 mx-auto w-full flex flex-col items-start text-left my-auto">
             <OnboardingStepHeading
-              title={<>Which of these best<br className="sm:block hidden" /> describes your place</>}
-              description="Choose the property type that best reflects the style and layout of your accommodation."
+              title={t("host_category_title")}
+              description={t("host_category_desc")}
               descriptionClassName="sm:mt-5 mt-3 max-w-122.75"
             />
 
@@ -55,7 +81,7 @@ export function StepCategory({
                     >
                       {cat.icon}
                     </div>
-                    <span>{cat.label}</span>
+                    <span>{getCategoryLabel(cat.id, cat.label)}</span>
                   </button>
                 );
               })}

@@ -7,6 +7,7 @@ import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import Image from "next/image";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -124,6 +125,8 @@ export function StepPhotos({
     setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
   };
 
+  const { t } = useLanguage();
+
   return (
     <main className="step-photos min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
@@ -136,19 +139,19 @@ export function StepPhotos({
             {/* Main Title & Subtitle */}
             {photos.length === 0 ? (
               <>
-                <h1 data-aos="fade-up" className="mb-5">Add some photos of your house</h1>
+                <h1 data-aos="fade-up" className="mb-5">{t("host_photos_title")}</h1>
                 <p data-aos="fade-up" data-aos-delay="100" className="sm:text-base text-sm font-normal text-[#727272] mb-10">
-                  You’ll need 5 photos to get started. You can add more or make changes later.
+                  {t("host_photos_subtitle")}
                 </p>
               </>
             ) : (
               <div className="mb-7 flex w-full items-start justify-between gap-4">
-                <h1>Cool! How does this look?</h1>
+                <h1>{t("host_photos_review_title")}</h1>
                 {/* Plus (+) Button to Add More Photos */}
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(true)}
-                  aria-label="Add more photos"
+                  aria-label={t("host_add_photos")}
                   className="sm:w-10 sm:h-10 w-8 h-8 rounded-full border border-[#1f1f1f] hover:border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1F1F1F] flex items-center justify-center hover:text-white text-[#1F1F1F] transition-colors duration-300 shadow-2xs cursor-pointer shrink-0"
                 >
                   <svg className="sm:w-5 w-4 sm:h-5 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
@@ -182,7 +185,7 @@ export function StepPhotos({
                   onClick={() => setIsModalOpen(true)}
                   className="rounded-full border border-transparent bg-[#FCDF9C] px-5 py-2.75 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-13 lg:min-h-0 lg:flex-none lg:px-6"
                 >
-                  Add photos
+                  {t("host_add_photos")}
                 </button>
               </div>
             ) : (
@@ -229,8 +232,8 @@ export function StepPhotos({
                 {/* Modal Header Title */}
                 <h2 className="text-xl font-medium text-[#1F1F1F] mb-6 mt-6">
                   {filePreviews.length === 0
-                    ? "You can upload best 5 images of your place"
-                    : "Choose at least 5 photos"}
+                    ? t("host_photos_modal_title1")
+                    : t("host_photos_modal_title2")}
                 </h2>
 
                 {uploadError && (
@@ -252,7 +255,7 @@ export function StepPhotos({
                       <div className="w-16 h-16 rounded-full bg-[#FCDF9C] flex items-center justify-center mb-3 text-[#1F1F1F] shadow-2xs border border-[#1F1F1F]">
                         <Image src="/images/icons/upload-icon.svg" alt="upload-icon.svg" width={24} height={24} />
                       </div>
-                      <span className="text-base font-normal text-black">Drop files here</span>
+                      <span className="text-base font-normal text-black">{t("host_drop_files_here")}</span>
                     </div>
                   ) : (
                     /* Photo Grid Previews State inside Modal */
@@ -298,7 +301,7 @@ export function StepPhotos({
                     onClick={() => setIsModalOpen(false)}
                     className="w-full mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 py-2.25 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-14 min-h-12 lg:flex-none lg:px-6"
                   >
-                    Cancel
+                    {t("host_cancel")}
                   </button>
                 ) : (
                   <button
@@ -307,7 +310,7 @@ export function StepPhotos({
                     disabled={isUploading}
                     className="w-full mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 py-2.25 text-base font-medium text-[#1F1F1F] transition-colors delay-100 duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-14 min-h-12 lg:flex-none lg:px-6"
                   >
-                    {isUploading ? "Uploading..." : "Upload"}
+                    {isUploading ? t("host_uploading") : t("host_upload")}
                   </button>
                 )}
               </div>
@@ -324,7 +327,7 @@ export function StepPhotos({
               onClick={onNext}
               disabled={isUploading}
               isLoading={isLoading}
-              label="Next"
+              label={t("host_next")}
             />
           </div>
         </div>

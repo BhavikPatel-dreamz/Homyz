@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { BackButton } from "@/components/ui/back-button";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   submitListingForReviewAction,
   resubmitListingForReviewAction,
@@ -162,6 +163,7 @@ export function ListingStatusView({
   isSaving = false,
   handleSaveSection,
 }: ListingStatusViewProps) {
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
   const [formattedDate, setFormattedDate] = useState<string | null>(null);
@@ -212,18 +214,18 @@ export function ListingStatusView({
   // Stepper definition: Saudi listings skip Admin Review & Approval
   const steps = isSaudi
     ? [
-        { id: "created", label: "Listing Created" },
-        { id: "completed", label: "Details Completed" },
-        { id: "ready", label: "Ready to Publish" },
-        { id: "published", label: "Published" },
+        { id: "created", label: t("host_step_listing_created") },
+        { id: "completed", label: t("host_step_details_completed") },
+        { id: "ready", label: t("host_status_ready_to_publish") },
+        { id: "published", label: t("host_status_published_live") },
       ]
     : [
-        { id: "created", label: "Listing Created" },
-        { id: "completed", label: "Details Completed" },
-        { id: "submitted", label: "Submitted" },
-        { id: "review", label: "Admin Review" },
-        { id: "approved", label: "Approved" },
-        { id: "published", label: "Published" },
+        { id: "created", label: t("host_step_listing_created") },
+        { id: "completed", label: t("host_step_details_completed") },
+        { id: "submitted", label: t("host_step_submitted") },
+        { id: "review", label: t("host_step_admin_review") },
+        { id: "approved", label: t("host_status_approved") },
+        { id: "published", label: t("host_status_published_live") },
       ];
 
   const getStepStatus = (stepId: string): "completed" | "current" | "upcoming" | "warning" => {
@@ -384,22 +386,22 @@ export function ListingStatusView({
       {/* Header & Back Navigation */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("propertyType")} />
-        <h1>Listing status</h1>
+        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_status_view_title")}</h1>
       </div>
 
       {/* Visual Approval Progress Timeline */}
       <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-sm font-normal text-[#727272] dark:text-zinc-400">Listing journey</p>
-            <p className="mt-0.5 text-base font-medium text-zinc-900 dark:text-zinc-100">Approval &amp; publishing progress</p>
+            <p className="text-sm font-normal text-[#727272] dark:text-zinc-400">{t("host_status_journey")}</p>
+            <p className="mt-0.5 text-base font-medium text-zinc-900 dark:text-zinc-100">{t("host_status_approval_progress")}</p>
           </div>
           <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
             displayState === "PUBLISHED" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300" :
             displayState === "REJECTED" ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300" :
             "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
           }`}>
-            {displayState === "PUBLISHED" ? "Live" : displayState === "REJECTED" ? "Action needed" : "In progress"}
+            {displayState === "PUBLISHED" ? t("host_status_live") : displayState === "REJECTED" ? t("host_status_action_needed") : t("host_status_in_progress")}
           </span>
         </div>
         <div className="overflow-x-auto px-5 py-6 sm:px-6">
@@ -425,7 +427,7 @@ export function ListingStatusView({
                   }`}>
                     {step.label}
                   </span>
-                  {isCurrent && <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">Current step</span>}
+                  {isCurrent && <span className="mt-1 text-[10px] font-medium text-amber-700 dark:text-amber-400">{t("host_step_current")}</span>}
                 </div>
               );
             })}
@@ -444,25 +446,25 @@ export function ListingStatusView({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
               <h2 className="font-semibold text-amber-950 dark:text-amber-200 text-base">
-                Admin approval required
+                {t("host_admin_approval_required")}
               </h2>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 uppercase">
-              Under Review
+              {t("host_under_review")}
             </span>
           </div>
           <p className="text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
-            Your listing has been submitted for review. Our team will review the property details before it becomes publicly available.
+            {t("host_submitted_review_desc")}
           </p>
           <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
             <span className="text-sm">🔒</span>
             <span className="leading-relaxed">
-              <strong>Do not show the listing as fully published until the admin has actually approved it.</strong> The &quot;Listed&quot; option below is temporarily disabled until administrative review is complete.
+              <strong>Do not show the listing as fully published until the admin has actually approved it.</strong> {t("host_listed_option_disabled")}
             </span>
           </div>
           {formattedDate && (
             <p className="text-[11px] text-amber-800 dark:text-amber-400 pt-1">
-              Submitted for review on: <span className="font-semibold">{formattedDate}</span>
+              {t("host_submitted_on")} <span className="font-semibold">{formattedDate}</span>
             </p>
           )}
         </div>
@@ -475,15 +477,15 @@ export function ListingStatusView({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
               <h2 className="font-semibold text-rose-950 dark:text-rose-200 text-base">
-                Changes Required
+                {t("host_status_changes_required")}
               </h2>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 uppercase">
-              Action Needed
+              {t("host_status_action_needed")}
             </span>
           </div>
           <p className="text-xs text-rose-900 dark:text-rose-300 leading-relaxed">
-            The admin reviewed your listing and requested modifications before it can be approved:
+            {t("host_rejected_admin_desc")}
           </p>
           <div className="p-3.5 rounded-xl bg-white/95 dark:bg-zinc-900/80 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200 font-medium leading-relaxed">
             {listing?.rejectionReason || listing?.requestedChanges || "Please review your listing details and resubmit."}
@@ -495,14 +497,14 @@ export function ListingStatusView({
               onClick={handleResubmitForReview}
               className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-6 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
             >
-              {isSubmitting ? "Resubmitting..." : "Resubmit for Approval"}
+              {isSubmitting ? t("host_resubmitting") : t("host_resubmit_approval")}
             </button>
             <button
               type="button"
               onClick={() => setActiveSection("description")}
               className="rounded-full bg-white dark:bg-zinc-800 border border-rose-300 dark:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-900 dark:text-rose-200 font-semibold text-xs px-5 py-2.5 shadow-2xs transition-all cursor-pointer"
             >
-              Edit Listing Details
+              {t("host_edit_listing_details")}
             </button>
           </div>
         </div>
@@ -515,17 +517,17 @@ export function ListingStatusView({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
               <h2 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">
-                Complete your listing
+                {t("host_complete_your_listing")}
               </h2>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 uppercase">
-              Draft
+              {t("host_draft_badge")}
             </span>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
             {isSaudi
-              ? "Complete all required sections below to publish your property live on Homyz. Admin approval is not required for Saudi listings."
-              : "Admin approval is required before your listing can be published. Please complete all required sections below to submit your property for review."}
+              ? t("host_saudi_draft_desc")
+              : t("host_regular_draft_desc")}
           </p>
           <div className="space-y-2 pt-1">
             {missing.map((req) => (
@@ -542,7 +544,7 @@ export function ListingStatusView({
                   onClick={() => setActiveSection(req.section)}
                   className="text-xs font-semibold text-indigo-600 dark:text-amber-400 hover:text-indigo-800 dark:hover:text-amber-300 hover:underline cursor-pointer shrink-0 ml-3"
                 >
-                  Complete →
+                  {t("host_complete_btn")}
                 </button>
               </div>
             ))}
@@ -556,18 +558,18 @@ export function ListingStatusView({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <h2 className="font-medium text-emerald-950 dark:text-emerald-200 text-base">
-                {isSaudi ? "Ready to Publish" : "Listing Approved"}
+              <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
+                {isSaudi ? t("host_status_ready_to_publish") : t("host_listing_approved")}
               </h2>
             </div>
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
-              {isSaudi ? "Ready" : "Approved"}
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
+              {isSaudi ? t("host_ready_badge") : t("host_status_approved")}
             </span>
           </div>
           <p className="text-sm text-emerald-900 dark:text-emerald-300 leading-relaxed">
             {isSaudi
-              ? "No admin approval is required for Saudi listings. Your listing is complete and ready to publish."
-              : "Your listing has been approved. Select Listed below and save to publish it to guests."}
+              ? t("host_saudi_approved_desc")
+              : t("host_approved_desc")}
           </p>
         </div>
       )}
@@ -579,15 +581,15 @@ export function ListingStatusView({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
               <h2 className="font-semibold text-emerald-950 dark:text-emerald-200 text-base">
-                Your Listing is Live
+                {t("host_listing_is_live")}
               </h2>
             </div>
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
-              Live on Marketplace
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
+              {t("host_live_on_marketplace")}
             </span>
           </div>
           <p className="text-xs text-emerald-900 dark:text-emerald-300 leading-relaxed">
-            Guests can now find and book your property in search results. If you need to temporarily hide it, select &quot;Unlisted&quot; below and save.
+            {t("host_live_desc")}
           </p>
         </div>
       )}
@@ -635,31 +637,31 @@ export function ListingStatusView({
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Listed</h3>
+            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listed_title")}</h3>
             {!isApproved ? (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                {isSaudi ? "Incomplete" : "Locked"}
+                {isSaudi ? t("host_incomplete") : t("host_locked")}
               </span>
             ) : effectiveStatus === "listed" ? (
               <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Active
+                {t("host_active")}
               </span>
             ) : null}
           </div>
           <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-            Guests can find your listing in search results and book available dates.
+            {t("host_listed_card_desc")}
           </p>
           {!isApproved && (
             <div className="pt-1 text-[10px] font-medium text-amber-800 dark:text-amber-400 flex items-center gap-1">
               <span>●</span>
               <span>
                 {isSaudi
-                  ? "Complete all required sections before publishing"
-                  : "Requires Admin Approval before publishing"}
+                  ? t("host_complete_before_publishing")
+                  : t("host_requires_admin_approval")}
               </span>
             </div>
           )}
@@ -675,16 +677,16 @@ export function ListingStatusView({
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">Unlisted</h3>
+            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_unlisted_title")}</h3>
             {effectiveStatus === "unlisted" && (
               <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
-                {!isApproved ? (isSaudi ? "Draft (Incomplete)" : "Unlisted (Awaiting Approval)") : "Hidden"}
+                {!isApproved ? (isSaudi ? t("host_unlisted_draft") : t("host_unlisted_awaiting")) : t("host_hidden")}
               </span>
             )}
           </div>
           <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-            Your listing is hidden from search results and guests cannot book dates.
+            {t("host_unlisted_card_desc")}
           </p>
         </div>
       </div>
@@ -704,12 +706,12 @@ export function ListingStatusView({
           }`}
         >
           {isSaving
-            ? "Saving..."
+            ? t("host_saving_btn")
             : !isApproved
             ? isSaudi
-              ? "Save (Complete required sections)"
-              : "Save (Disabled: Admin approval required)"
-            : "Save"}
+              ? `${t("host_save_btn")} (${t("host_complete_before_publishing")})`
+              : `${t("host_save_btn")} (${t("host_requires_admin_approval")})`
+            : t("host_save_btn")}
         </button>
 
         <button
@@ -717,7 +719,7 @@ export function ListingStatusView({
           onClick={() => setActiveSection("arrival-guide")}
           className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-5 py-2 shadow-2xs transition-all cursor-pointer  duration-300"
         >
-          Cancel
+          {t("host_cancel_btn")}
         </button>
       </div>
     </div>

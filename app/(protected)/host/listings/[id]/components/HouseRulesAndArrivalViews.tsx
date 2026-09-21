@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- legacy editor callback surface; narrowed incrementally outside E4. */
 
 import { BackButton } from "@/components/ui/back-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { CloseIcon } from "@/components/ui/close-icon";
 import Image from "next/image";
 import {
@@ -272,6 +273,7 @@ export function HouseRulesAndArrivalViews({
   setGuestInteractionPreference,
   isLoading,
 }: HouseRulesAndArrivalViewsProps) {
+  const { t } = useLanguage();
   const [isCheckInOutModalOpen, setIsCheckInOutModalOpen] = React.useState(false);
 
 
@@ -291,9 +293,9 @@ export function HouseRulesAndArrivalViews({
             <div className="flex items-center gap-6">
               <BackButton onClick={() => setActiveSection("description")} />
               <div>
-                <h1>House rules</h1>
+                <h1>{t("host_house_rules")}</h1>
                 <p className="text-sm text-[#727272]">
-                  Guests are expected to follow your rules and may be removed from Airbnb if they don&apos;t.
+                  {t("host_house_rules_desc") || "Guests are expected to follow your rules and may be removed from Homyz if they don't."}
                 </p>
               </div>
             </div>
@@ -309,15 +311,15 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Pets allowed</span>
+                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
                       <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed max-w-md">
-                        You can refuse pets, but must reasonably accommodate service animals.{" "}
+                        {t("host_pets_allowed_desc") || "You can refuse pets, but must reasonably accommodate service animals."}{" "}
                         <a
                           href="#service-animals"
                           onClick={(e) => e.preventDefault()}
                           className="underline font-semibold text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
                         >
-                          Learn more
+                          {t("host_learn_more") || "Learn more"}
                         </a>
                       </p>
                     </div>
@@ -332,28 +334,28 @@ export function HouseRulesAndArrivalViews({
                   {petsAllowed === true && (
                     <div className="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700 p-4 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Maximum number of pets allowed</span>
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{t("host_max_pets_allowed") || "Maximum number of pets allowed"}</span>
                         <div className="flex items-center gap-3 shrink-0">
                           <button
                             type="button"
-                            aria-label="Decrease maximum pets"
+                            aria-label={t("host_decrease_max_pets_aria") || "Decrease maximum pets"}
                             disabled={(maxPetsCount || 1) <= 1}
                             onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
                             className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
-                            <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum pets" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                            <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_pets_aria") || "Decrease maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                           <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 min-w-[20px] text-center">
                             {maxPetsCount || 1}
                           </span>
                           <button
                             type="button"
-                            aria-label="Increase maximum pets"
+                            aria-label={t("host_increase_max_pets_aria") || "Increase maximum pets"}
                             disabled={(maxPetsCount || 1) >= 10}
                             onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
                             className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
-                            <Image src="/images/icons/add-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                            <Image src="/images/icons/add-icon.svg" alt={t("host_increase_max_pets_aria") || "Increase maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                         </div>
                       </div>
@@ -366,7 +368,7 @@ export function HouseRulesAndArrivalViews({
                             onChange={(e) => setDogsAllowed?.(e.target.checked)}
                             className="rounded text-amber-500 accent-zinc-900"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Dogs allowed</span>
+                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_dogs_allowed") || "Dogs allowed"}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -375,33 +377,33 @@ export function HouseRulesAndArrivalViews({
                             onChange={(e) => setCatsAllowed?.(e.target.checked)}
                             className="rounded text-amber-500 accent-zinc-900"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Cats allowed</span>
+                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_cats_allowed") || "Cats allowed"}</span>
                         </label>
                       </div>
 
                       <div className="space-y-3 pt-1">
                         <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                          Pet fee per stay (optional, SAR)
+                          {t("host_pet_fee_label") || "Pet fee per stay (optional, SAR)"}
                         </label>
                         <input
                           type="number"
                           min={0}
                           value={petFee ?? ""}
                           onChange={(e) => setPetFee?.(e.target.value)}
-                          placeholder="e.g. 50"
+                          placeholder={t("host_pet_fee_placeholder") || "e.g. 50"}
                           className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-medium"
                         />
                       </div>
 
                       <div className="space-y-3">
                         <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                          Pet restrictions or guidelines
+                          {t("host_pet_restrictions_label") || "Pet restrictions or guidelines"}
                         </label>
                         <input
                           type="text"
                           value={petRestrictions || ""}
                           onChange={(e) => setPetRestrictions?.(e.target.value)}
-                          placeholder="e.g. Under 20kg only, house-trained, please bring own bed"
+                          placeholder={t("host_pet_restrictions_placeholder") || "e.g. Under 20kg only, house-trained, please bring own bed"}
                           className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-medium"
                         />
                       </div>
@@ -412,7 +414,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 2: Events allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Events allowed</span>
+                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="events"
@@ -424,7 +426,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Smoking, vaping, e-cigarettes allowed</span>
+                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="smoking"
@@ -437,7 +439,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">Quiet hours</span>
+                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
                     </div>
                     <AllowDenyButtons
                       label="quiet hours"
@@ -450,7 +452,7 @@ export function HouseRulesAndArrivalViews({
                   {quietHours === true && (
                     <div className="rounded-2xl border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-800 grid grid-cols-2 overflow-hidden shadow-2xs">
                       <div className="p-3 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">Start time</span>
+                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{t("host_quiet_hours_start_time") || "Start time"}</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
                           <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursStart, "11:00 pm")}
@@ -460,7 +462,7 @@ export function HouseRulesAndArrivalViews({
                           </svg>
                         </div>
                         <select
-                          aria-label="Quiet hours start time"
+                          aria-label={t("host_quiet_hours_start_time") || "Quiet hours start time"}
                           value={formatTimeDisplay(quietHoursStart, "11:00 pm")}
                           onChange={(e) => setQuietHoursStart?.(e.target.value)}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -472,7 +474,7 @@ export function HouseRulesAndArrivalViews({
                       </div>
 
                       <div className="p-3 border-l border-zinc-400 dark:border-zinc-700 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">End time</span>
+                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{t("host_quiet_hours_end_time") || "End time"}</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
                           <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursEnd, "7:00 am")}
@@ -482,7 +484,7 @@ export function HouseRulesAndArrivalViews({
                           </svg>
                         </div>
                         <select
-                          aria-label="Quiet hours end time"
+                          aria-label={t("host_quiet_hours_end_time") || "Quiet hours end time"}
                           value={formatTimeDisplay(quietHoursEnd, "7:00 am")}
                           onChange={(e) => setQuietHoursEnd?.(e.target.value)}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -499,7 +501,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 5: Commercial photography and filming allowed */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Commercial photography and filming allowed</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="commercial photography and filming"
@@ -511,27 +513,27 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 6: Number of guests */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Number of guests</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_number_of_guests") || "Number of guests"}</span>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <button
                       type="button"
-                      aria-label="Decrease maximum guests"
+                      aria-label={t("host_decrease_max_guests_aria") || "Decrease maximum guests"}
                       disabled={maxGuestsCount <= 1}
                       onClick={() => setMaxGuestsCount(Math.max(1, maxGuestsCount - 1))}
                       className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <Image src="/images/icons/minus-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_guests_aria") || "Decrease maximum guests"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                     <span className="min-w-5 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{maxGuestsCount}</span>
                     <button
                       type="button"
-                      aria-label="Increase maximum guests"
+                      aria-label={t("host_increase_max_guests_aria") || "Increase maximum guests"}
                       disabled={maxGuestsCount >= 50}
                       onClick={() => setMaxGuestsCount(Math.min(50, maxGuestsCount + 1))}
                       className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium text-zinc-600 dark:text-zinc-100 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <Image src="/images/icons/add-icon.svg" alt="Decrease maximum guests" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/add-icon.svg" alt={t("host_increase_max_guests_aria") || "Increase maximum guests"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
@@ -543,12 +545,12 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Check-in and checkout times</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
-                      Arrive between {formatTimeDisplay(checkInStart, "3:00 pm")} and {checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}
+                      {t("host_arrive_between", { start: formatTimeDisplay(checkInStart, "3:00 pm"), end: checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : (t("host_flexible") || "Flexible") }) || `Arrive between ${formatTimeDisplay(checkInStart, "3:00 pm")} and ${checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}`}
                     </p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
-                      Leave before {formatTimeDisplay(checkOutTime, "6:00 pm")}
+                      {t("host_leave_before", { time: formatTimeDisplay(checkOutTime, "6:00 pm") }) || `Leave before ${formatTimeDisplay(checkOutTime, "6:00 pm")}`}
                     </p>
                   </div>
                   <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -563,9 +565,9 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5 max-w-md">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">Additional rules</span>
+                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_rules_title") || "Additional rules"}</span>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal line-clamp-2">
-                      {additionalHouseRules?.trim() || "Add rules"}
+                      {additionalHouseRules?.trim() || (t("host_add_rules_placeholder") || "Add rules")}
                     </p>
                   </div>
                   <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -582,14 +584,14 @@ export function HouseRulesAndArrivalViews({
                   onClick={() => handleSaveSection("house-rules")}
                   className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
-                  {isSaving ? "Saving..." : "Save"}
+                  {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveSection("description")}
                   className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
-                  Cancel
+                  {t("host_house_rules_cancel") || "Cancel"}
                 </button>
               </div>
             </>
@@ -610,20 +612,20 @@ export function HouseRulesAndArrivalViews({
 
                 <div className="space-y-1">
                   <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
-                    Check-in and checkout times
+                    {t("host_check_in_out_times_title") || "Check-in and checkout times"}
                   </h3>
                   <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
-                    Set arrival windows and checkout times for your guests.
+                    {t("host_check_in_out_times_desc") || "Set arrival windows and checkout times for your guests."}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   {/* Check-in window */}
                   <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
-                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">Check-in window</label>
+                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_check_in_window_label") || "Check-in window"}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">Start time</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_check_in_start_time") || "Start time"}</span>
                         <div className="relative">
                           <select
                             value={formatTimeDisplay(checkInStart, "3:00 pm")}
@@ -640,14 +642,14 @@ export function HouseRulesAndArrivalViews({
                         </div>
                       </div>
                       <div>
-                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">End time</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_check_in_end_time") || "End time"}</span>
                         <div className="relative">
                           <select
                             value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
                             onChange={(e) => setCheckInEnd(e.target.value)}
                             className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                           >
-                            <option value="Flexible">Flexible</option>
+                            <option value="Flexible">{t("host_flexible") || "Flexible"}</option>
                             {ALL_HOURS_OPTIONS.map((t) => (
                               <option key={t} value={t}>{t}</option>
                             ))}
@@ -662,9 +664,9 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Checkout time */}
                   <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
-                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">Checkout time</label>
+                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_checkout_time_label") || "Checkout time"}</label>
                     <div>
-                      <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">Guests must leave before</span>
+                      <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_guests_must_leave_before") || "Guests must leave before"}</span>
                       <div className="relative">
                         <select
                           value={formatTimeDisplay(checkOutTime, "11:00 am")}
@@ -690,7 +692,7 @@ export function HouseRulesAndArrivalViews({
                     onClick={() => setIsCheckInOutModalOpen(false)}
                     className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                   >
-                    Cancel
+                    {t("host_house_rules_cancel") || "Cancel"}
                   </button>
                   <button
                     type="button"
@@ -701,7 +703,7 @@ export function HouseRulesAndArrivalViews({
                     }}
                     className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                   >
-                    {isSaving ? "Saving..." : "Save Times"}
+                    {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_times") || "Save Times")}
                   </button>
                 </div>
               </div>

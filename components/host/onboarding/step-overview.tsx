@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
@@ -13,39 +14,31 @@ interface StepOverviewProps {
   isLoading?: boolean;
 }
 
-interface Step {
-  number: number;
-  title: string;
-  description: string;
-}
-
-const STEPS: Step[] = [
-  {
-    number: 1,
-    title: "Tell us about your place",
-    description:
-      "Share some basic info, like where it is and how many guests can stay.",
-  },
-  {
-    number: 2,
-    title: "Make it stand out",
-    description:
-      "Add 5 or more photos plus a title and description and we’ll help you out.",
-  },
-  {
-    number: 3,
-    title: "Finish and publish",
-    description:
-      "Choose a starting price, verify a few details, then publish your listing.",
-  },
-];
-
 export function StepOverview({
   onGetStarted,
   onBack,
   isLoading = false,
 }: StepOverviewProps) {
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const STEPS = [
+    {
+      number: 1,
+      title: t("host_overview_step1_title"),
+      description: t("host_overview_step1_desc"),
+    },
+    {
+      number: 2,
+      title: t("host_overview_step2_title"),
+      description: t("host_overview_step2_desc"),
+    },
+    {
+      number: 3,
+      title: t("host_overview_step3_title"),
+      description: t("host_overview_step3_desc"),
+    },
+  ];
 
   const handleBack = () => {
     if (isLoading) return;
@@ -69,17 +62,7 @@ export function StepOverview({
             {/* Heading */}
             <div className="mb-10 flex flex-col justify-center sm:mb-24 lg:col-span-4 lg:mb-0 lg:pr-8">
               <h1 data-aos="fade-up" data-aos-duration="700">
-                <span className="lg:hidden">
-                  It&rsquo;s easy to get started on
-                  <br />
-                  <span className="text-[#E6A838]">Homyz</span>
-                </span>
-
-                <span className="hidden lg:inline">
-                  It&rsquo;s easy to <br />
-                  get started <br />
-                  on <span className="text-[#E6A838]">Homyz</span>
-                </span>
+                <span>{t("host_overview_easy_started")}</span>
               </h1>
             </div>
 
@@ -141,7 +124,7 @@ export function StepOverview({
             <OnboardingPrimaryButton
               onClick={onGetStarted}
               isLoading={isLoading}
-              label="Get started"
+              label={t("host_get_started")}
             />
           </div>
         </div>

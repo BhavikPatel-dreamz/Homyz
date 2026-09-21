@@ -6,6 +6,7 @@ import Image from "next/image";
 import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepFinishIntroProps {
   onBack: () => void;
@@ -14,6 +15,8 @@ interface StepFinishIntroProps {
 }
 
 export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinishIntroProps) {
+  const { t } = useLanguage();
+
   return (
     <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
@@ -25,12 +28,12 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
             <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
               <div className="mb-5">
                 <span className="inline-flex items-center rounded-full border border-[#1F1F1F] bg-white px-6 py-2.5 text-base font-medium text-[#1F1F1F]">
-                  Step 3
+                  {t("host_step_3")}
                 </span>
               </div>
-              <h1>Finish up and publish</h1>
+              <h1>{t("host_finish_intro_title")}</h1>
               <p className="mt-5 text-base font-normal leading-relaxed text-[#727272]">
-                Finally, you&apos;ll choose your weekday base price, weekend pricing, early bird or length-of-stay discounts, and review important safety details.
+                {t("host_finish_intro_desc")}
               </p>
             </div>
 
@@ -45,7 +48,7 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
 
           <div className="mx-auto mt-auto flex w-full max-w-7xl items-center justify-end pt-8 sm:mt-8 sm:pt-0">
             <OnboardingBackButton onClick={onBack} disabled={isLoading} />
-            <OnboardingPrimaryButton onClick={onNext} isLoading={isLoading} label="Next" />
+            <OnboardingPrimaryButton onClick={onNext} isLoading={isLoading} label={t("host_next")} />
           </div>
         </div>
       </Container>

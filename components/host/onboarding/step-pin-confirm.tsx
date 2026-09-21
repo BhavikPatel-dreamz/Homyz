@@ -6,6 +6,7 @@ import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface StepPinConfirmProps {
   streetAddress: string;
@@ -40,6 +41,7 @@ export function StepPinConfirm({
   onConfirm,
   isLoading = false,
 }: StepPinConfirmProps) {
+  const { t } = useLanguage();
   const formattedStreet = [streetAddress, aptFloorBldg].filter(Boolean).join(", ");
   const formattedRegion = [district, city, postalCode, country].filter(Boolean).join(", ");
 
@@ -58,10 +60,10 @@ export function StepPinConfirm({
           <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
             {/* Title & Subtitle */}
             <h1 className="mb-2">
-              Is the pin in the right spot?
+              {t("host_pin_confirm_title")}
             </h1>
             <p className="sm:mb-6 mb-4">
-              Your address is only shared with guests after they’ve made a reservation.
+              {t("host_pin_confirm_desc")}
             </p>
 
             {/* Address Summary Bar with Edit button */}
@@ -75,10 +77,10 @@ export function StepPinConfirm({
                 </div>
                 <div className="text-left min-w-0">
                   <p className="text-sm font-semibold text-[#1F1F1F] truncate">
-                    {formattedStreet || "Street address"}
+                    {formattedStreet || t("host_street_address")}
                   </p>
                   <p className="text-xs text-zinc-500 truncate">
-                    {formattedRegion || "City, Country"}
+                    {formattedRegion || `${city}, ${country}`}
                   </p>
                 </div>
               </div>
@@ -87,12 +89,12 @@ export function StepPinConfirm({
                 onClick={onEditAddress}
                 className="shrink-0 text-xs font-semibold text-zinc-900 underline hover:text-zinc-600 px-3 py-1.5 rounded-lg hover:bg-zinc-200/60 transition-colors cursor-pointer"
               >
-                Edit address
+                {t("host_edit_address")}
               </button>
             </div>
 
             <p className="text-xs text-zinc-500 mb-2 flex items-center gap-1.5">
-              <span>💡</span> Drag the pin or click on the map to place it in the exact right spot.
+              <span>💡</span> {t("host_drag_pin_hint")}
             </p>
 
             {/* Interactive Leaflet Map with Draggable Marker */}
@@ -114,7 +116,7 @@ export function StepPinConfirm({
             <div className="w-full mb-6">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <h3 className="text-lg font-medium text-[#1F1F1F]">
-                  Show your specific location
+                  {t("host_show_specific_location")}
                 </h3>
                 <button
                   type="button"
@@ -133,7 +135,7 @@ export function StepPinConfirm({
                 </button>
               </div>
               <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
-                Show an approximate location to prospective guests while browsing, or display your exact pin. Your full address is only released once a booking is confirmed.
+                {t("host_show_specific_location_desc")}
               </p>
             </div>
           </div>

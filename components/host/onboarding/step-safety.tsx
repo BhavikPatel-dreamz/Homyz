@@ -4,6 +4,7 @@ import React from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 
 export interface SafetyOption {
@@ -26,18 +27,20 @@ export function StepSafety({
   onNext,
   isLoading = false,
 }: StepSafetyProps) {
+  const { t } = useLanguage();
+
   const safetyItems: SafetyOption[] = [
     {
       id: "SECURITY_CAMERA",
-      label: "Exterior security camera present",
+      label: t("host_safety_camera"),
     },
     {
       id: "NOISE_MONITOR",
-      label: "Noise decibel monitor present",
+      label: t("host_safety_noise"),
     },
     {
       id: "WEAPONS",
-      label: "Weapon(s) on the property",
+      label: t("host_safety_weapons"),
     },
   ];
 
@@ -51,8 +54,8 @@ export function StepSafety({
           <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Heading & Subtitle */}
             <OnboardingStepHeading
-              title="Share safety details"
-              description="Does your place have any of these?"
+              title={t("host_safety_title")}
+              description={t("host_safety_subtitle")}
               titleClassName="sm:mb-5 mb-3"
               descriptionClassName="sm:mb-10 mb-6"
             />
@@ -92,7 +95,7 @@ export function StepSafety({
 
             {/* Paragraph Notice */}
             <p className="sm:mt-12 mt-6">
-              Safety disclosures help guests make informed booking decisions. Your exact property location remains private until a reservation is confirmed.
+              {t("host_safety_notice")}
             </p>
           </div>
 
@@ -102,7 +105,7 @@ export function StepSafety({
             onBack={onBack}
             onNext={onNext}
             isLoading={isLoading}
-            nextLabel="Save"
+            nextLabel={t("host_save")}
           />
     </OnboardingStepLayout>
   );

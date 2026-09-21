@@ -136,8 +136,19 @@ export function canonicalPropertyType(value: string | undefined | null): string 
   return canonicalizeEnum(value, PROPERTY_TYPE_ALIASES, "APARTMENT");
 }
 
-export function propertyTypeLabel(value: string | undefined | null): string {
+export function propertyTypeLabel(value: string | undefined | null, t?: (key: any, ...args: any[]) => string): string {
   const canonical = canonicalPropertyType(value);
+  if (t) {
+    const keysToTry: string[] = [
+      `host_property_type_${canonical.toLowerCase()}`,
+      `host_category_${canonical.toLowerCase()}`,
+      `host_type_${canonical.toLowerCase()}`,
+    ];
+    for (const k of keysToTry) {
+      const translated = t(k);
+      if (translated && translated !== k) return translated;
+    }
+  }
   return PROPERTY_TYPE_LABELS[canonical] ?? canonical.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
@@ -163,8 +174,22 @@ export function canonicalListingType(value: string | undefined | null): string {
   return canonicalizeEnum(value, LISTING_TYPE_ALIASES, "ENTIRE_PLACE");
 }
 
-export function listingTypeLabel(value: string | undefined | null): string {
+export function listingTypeLabel(value: string | undefined | null, t?: (key: any, ...args: any[]) => string): string {
   const canonical = canonicalListingType(value);
+  if (t) {
+    const keysToTry: string[] = [`host_listing_type_${canonical.toLowerCase()}`];
+    if (canonical === "ENTIRE_PLACE") {
+      keysToTry.push("host_place_type_entire_title");
+    } else if (canonical === "ROOM") {
+      keysToTry.push("host_type_private_room", "host_listing_type_private_room");
+    } else if (canonical === "SHARED_ROOM") {
+      keysToTry.push("host_place_type_shared_title");
+    }
+    for (const k of keysToTry) {
+      const translated = t(k);
+      if (translated && translated !== k) return translated;
+    }
+  }
   return LISTING_TYPE_LABELS[canonical] ?? canonical.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
@@ -172,8 +197,13 @@ export function canonicalCancellationPolicy(value: string | undefined | null): s
   return canonicalizeEnum(value, CANCELLATION_POLICY_ALIASES, "FLEXIBLE");
 }
 
-export function cancellationPolicyLabel(value: string | undefined | null): string {
+export function cancellationPolicyLabel(value: string | undefined | null, t?: (key: any, ...args: any[]) => string): string {
   const canonical = canonicalCancellationPolicy(value);
+  if (t) {
+    const key = `host_cancellation_policy_${canonical.toLowerCase()}`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
+  }
   return CANCELLATION_POLICY_LABELS[canonical] ?? canonical.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 

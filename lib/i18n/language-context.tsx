@@ -94,23 +94,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     fallback?: string
   ): string => {
     try {
-      if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
-        return translator(key, valuesOrFallback as any);
+      const res = typeof valuesOrFallback === "object" && valuesOrFallback !== null
+        ? translator(key, valuesOrFallback as any)
+        : translator(key);
+      if (res && res !== key) {
+        return res;
       }
-      return translator(key);
-    } catch {
-      let text =
-        messages[key] ||
-        MESSAGES.en[key] ||
-        (typeof valuesOrFallback === "string" ? valuesOrFallback : fallback) ||
-        key;
-      if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
-        Object.entries(valuesOrFallback).forEach(([k, v]) => {
-          text = text.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
-        });
-      }
-      return text;
+    } catch {}
+
+    let text =
+      messages[key] ||
+      MESSAGES.en[key] ||
+      (typeof valuesOrFallback === "string" ? valuesOrFallback : fallback) ||
+      key;
+    if (typeof valuesOrFallback === "object" && valuesOrFallback !== null) {
+      Object.entries(valuesOrFallback).forEach(([k, v]) => {
+        text = text.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+      });
     }
+    return text;
   };
 
   const dir = "ltr";

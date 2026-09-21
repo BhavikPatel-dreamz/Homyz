@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { LoadingIcon } from "@/components/ui/loading-icon";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export type OnboardingPrimaryButtonProps = Omit<ComponentProps<"button">, "children" | "type" | "disabled"> & {
   label: ReactNode;
@@ -11,11 +12,13 @@ export type OnboardingPrimaryButtonProps = Omit<ComponentProps<"button">, "child
 export function OnboardingPrimaryButton({
   label,
   isLoading = false,
-  loadingLabel = "Loading...",
+  loadingLabel,
   disabled = false,
   className = "",
   ...props
 }: OnboardingPrimaryButtonProps) {
+  const { t } = useLanguage();
+  const displayLoadingLabel = loadingLabel ?? t("host_loading");
   return (
     <button
       {...props}
@@ -26,7 +29,7 @@ export function OnboardingPrimaryButton({
       {isLoading ? (
         <>
           <LoadingIcon className="mr-2 size-4 shrink-0 animate-spin" />
-          <span>{loadingLabel}</span>
+          <span>{displayLoadingLabel}</span>
         </>
       ) : label}
     </button>

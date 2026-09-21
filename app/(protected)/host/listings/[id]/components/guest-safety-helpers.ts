@@ -312,66 +312,71 @@ export interface ActiveSafetyItem {
   iconType: SafetyIconType;
 }
 
-export function getActiveSafetyItems(state?: GuestSafetyState | null): ActiveSafetyItem[] {
+export function getActiveSafetyItems(
+  state?: GuestSafetyState | null,
+  t?: (key: any) => string
+): ActiveSafetyItem[] {
   const sanitized = sanitizeGuestSafetyState(state);
   const items: ActiveSafetyItem[] = [];
 
+  const tr = (key: string, fallback: string) => (t ? t(key as any) : fallback);
+
   if (sanitized.devices.carbonMonoxideAlarm === true) {
-    items.push({ id: "co", label: "Carbon monoxide alarm installed", iconType: "co" });
+    items.push({ id: "co", label: tr("host_safety_co_installed", "Carbon monoxide alarm installed"), iconType: "co" });
   }
   if (sanitized.devices.smokeAlarm === true) {
-    items.push({ id: "smoke", label: "Smoke alarm installed", iconType: "smoke" });
+    items.push({ id: "smoke", label: tr("host_safety_smoke_installed", "Smoke alarm installed"), iconType: "smoke" });
   }
   if (sanitized.devices.noiseMonitor === true) {
-    items.push({ id: "noise", label: "Noise decibel monitor present", iconType: "noise" });
+    items.push({ id: "noise", label: tr("host_safety_noise_present", "Noise decibel monitor present"), iconType: "noise" });
   }
   if (sanitized.devices.securityCamera === true) {
-    items.push({ id: "camera", label: "Exterior security camera present", iconType: "camera" });
+    items.push({ id: "camera", label: tr("host_safety_camera_present", "Exterior security camera present"), iconType: "camera" });
   }
   if (sanitized.propertyInfo.climbStairs === true) {
-    items.push({ id: "stairs", label: "Guests must climb stairs", iconType: "stairs" });
+    items.push({ id: "stairs", label: tr("host_safety_must_climb_stairs", "Guests must climb stairs"), iconType: "stairs" });
   }
   if (sanitized.propertyInfo.potentialNoise === true) {
-    items.push({ id: "potNoise", label: "Construction or other potential noise during stays", iconType: "noise" });
+    items.push({ id: "potNoise", label: tr("host_safety_potential_noise_short", "Construction or other potential noise during stays"), iconType: "noise" });
   }
   if (sanitized.propertyInfo.petsLiveOnProperty === true) {
-    items.push({ id: "pets", label: "Pet(s) live at the property", iconType: "shield" });
+    items.push({ id: "pets", label: tr("host_safety_pets_live_short", "Pet(s) live at the property"), iconType: "shield" });
   }
   if (sanitized.propertyInfo.noParking === true) {
-    items.push({ id: "parking", label: "No parking on the property", iconType: "shield" });
+    items.push({ id: "parking", label: tr("host_safety_no_parking_short", "No parking on the property"), iconType: "shield" });
   }
   if (sanitized.propertyInfo.sharedSpaces === true) {
-    items.push({ id: "shared", label: "Property has shared spaces", iconType: "shield" });
+    items.push({ id: "shared", label: tr("host_safety_shared_spaces_short", "Property has shared spaces"), iconType: "shield" });
   }
   if (sanitized.propertyInfo.limitedAmenities === true) {
-    items.push({ id: "amenities", label: "Limited essential amenities", iconType: "shield" });
+    items.push({ id: "amenities", label: tr("host_safety_limited_amenities_short", "Limited essential amenities"), iconType: "shield" });
   }
   if (sanitized.propertyInfo.weapons === true) {
-    items.push({ id: "weapons", label: "Weapon(s) on the property", iconType: "shield" });
+    items.push({ id: "weapons", label: tr("host_safety_weapons_short", "Weapon(s) on the property"), iconType: "shield" });
   }
   if (sanitized.considerations.unsuitableChildren === true) {
-    items.push({ id: "children", label: "Not a good fit for children 2–12", iconType: "shield" });
+    items.push({ id: "children", label: tr("host_safety_unsuitable_children_short", "Not a good fit for children 2–12"), iconType: "shield" });
   }
   if (sanitized.considerations.unsuitableInfants === true) {
-    items.push({ id: "infants", label: "Not a good fit for infants under 2", iconType: "shield" });
+    items.push({ id: "infants", label: tr("host_safety_unsuitable_infants_short", "Not a good fit for infants under 2"), iconType: "shield" });
   }
   if (sanitized.considerations.poolNoGate === true) {
-    items.push({ id: "pool", label: "Pool or hot tub doesn't have a gate or lock", iconType: "shield" });
+    items.push({ id: "pool", label: tr("host_safety_pool_no_gate_short", "Pool or hot tub doesn't have a gate or lock"), iconType: "shield" });
   }
   if (sanitized.considerations.nearbyWater === true) {
-    items.push({ id: "water", label: "Nearby water, like a lake or river", iconType: "shield" });
+    items.push({ id: "water", label: tr("host_safety_nearby_water_short", "Nearby water, like a lake or river"), iconType: "shield" });
   }
   if (sanitized.considerations.climbingStructure === true) {
-    items.push({ id: "climb", label: "Climbing or play structure(s)", iconType: "shield" });
+    items.push({ id: "climb", label: tr("host_safety_climbing_structure_short", "Climbing or play structure(s)"), iconType: "shield" });
   }
   if (sanitized.considerations.heightsNoRails === true) {
-    items.push({ id: "heights", label: "Heights without rails or protection", iconType: "shield" });
+    items.push({ id: "heights", label: tr("host_safety_heights_no_rails_short", "Heights without rails or protection"), iconType: "shield" });
   }
   if (sanitized.considerations.dangerousAnimals === true) {
-    items.push({ id: "animals", label: "Potentially dangerous animal(s)", iconType: "shield" });
+    items.push({ id: "animals", label: tr("host_safety_dangerous_animals_short", "Potentially dangerous animal(s)"), iconType: "shield" });
   }
   if (sanitized.considerations.specialConsiderations === true) {
-    items.push({ id: "special", label: "Other safety or regulatory notes", iconType: "shield" });
+    items.push({ id: "special", label: tr("host_safety_special_notes_short", "Other safety or regulatory notes"), iconType: "shield" });
   }
 
   return items;

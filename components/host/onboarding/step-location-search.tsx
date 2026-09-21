@@ -6,6 +6,7 @@ import { LocationCoords } from "./types";
 import { StepProgressFooter } from "./step-progress-footer";
 import { Container } from "@/components/ui";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface NominatimSuggestion {
   place_id?: number | string;
@@ -120,6 +121,8 @@ export function StepLocationSearch({
     setSuggestions([]);
   };
 
+  const { t } = useLanguage();
+
   return (
     <main className="pb-8 sm:pt-12 lg:pt-25 lg:pb-16">
       <Container>
@@ -127,10 +130,10 @@ export function StepLocationSearch({
           <OnboardingMobileCloseButton disabled={isLoading} />
           <div className="max-w-124.25 mx-auto w-full flex flex-col items-start text-left my-auto">
             <h1 data-aos="fade-up" className="mb-4">
-              Where’s your place located?
+              {t("host_location_title")}
             </h1>
             <p data-aos="fade-up" data-aos-delay="100" className="mb-8">
-              Your address is only shared with guests after they have made a confirmed reservation.
+              {t("host_pin_confirm_desc")}
             </p>
 
             <div data-aos="fade-up" data-aos-delay="200" className="relative w-full max-w-xl">
@@ -150,7 +153,7 @@ export function StepLocationSearch({
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
-                    placeholder="Add your location"
+                    placeholder={t("host_search_location_placeholder")}
                     value={searchQuery}
                     onChange={(e) => handleInputChange(e.target.value)}
                     role="combobox"
