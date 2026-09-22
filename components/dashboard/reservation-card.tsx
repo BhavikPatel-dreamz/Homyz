@@ -46,7 +46,7 @@ export function ReservationCard({
   const title = data.propertyName || "Property name";
   const content = (
     <>
-      <span className="relative block aspect-[288/256] w-full overflow-hidden rounded-[24px] border border-[#727272] bg-[#F5F3EE]">
+      <span className="relative block aspect-[288/256] w-full overflow-hidden xl:rounded-3xl rounded-lg border border-[#727272] bg-[#F5F3EE]">
         {data.propertyImage && failedImage !== data.propertyImage ? (
           // Listing photos may use custom storage domains.
           // eslint-disable-next-line @next/next/no-img-element
@@ -63,7 +63,7 @@ export function ReservationCard({
           </span>
         )}
       </span>
-      <span className="mt-6 block break-words text-base font-semibold leading-7 text-[#1F1F1F]">
+      <span className="xl:mt-6 mt-3 block break-words lg:text-base text-sm font-semibold xl:leading-7 leading-normal text-[#1F1F1F]">
         {title}
       </span>
       <span className="mt-2 block text-sm font-normal leading-6 text-[#727272]">

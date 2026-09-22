@@ -179,7 +179,7 @@ export function ProfileClient({
   const years = initialStats.yearsOnHomyz || (initial.createdAt ? Math.max(1, new Date().getFullYear() - new Date(initial.createdAt).getFullYear()) : 4);
 
   return (
-    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-10 lg:pb-28 lg:pt-[88px]">
+    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-5 lg:pb-28 xl:pt-[88px]">
         <div className="mb-5 flex items-center justify-between lg:hidden">
           <button
             type="button"

@@ -46,11 +46,11 @@ export function InviteEarnView({ user }: { user?: { name?: string | null; id?: s
       </div>
 
       {/* Shareable Link Hero Card */}
-      <div className="relative mb-8 rounded-3xl border border-[#E5E5E5] bg-gradient-to-br from-[#FFF8E8] via-white to-[#FDF4D8] p-6 shadow-xs sm:p-8">
+      <div className="relative mb-8 lg:rounded-3xl rounded-lg border border-[#E5E5E5] bg-gradient-to-br from-[#FFF8E8] via-white to-[#FDF4D8] p-6 shadow-xs sm:p-8">
         <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
           Your Exclusive Invite Link
         </span>
-        <div className="mt-3 flex flex-col sm:flex-row items-stretch gap-3">
+        <div className="mt-3 flex flex-col xl:flex-row items-stretch gap-3">
           <div className="flex flex-1 items-center justify-between rounded-2xl border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#1F1F1F]">
             <span className="truncate font-mono text-xs sm:text-sm text-[#1F1F1F] select-all">
               {referralLink}
