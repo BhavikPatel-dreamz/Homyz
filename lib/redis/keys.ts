@@ -30,7 +30,7 @@ export const CACHE_KEYS = {
   /** Version-tagged public listings search */
   LISTINGS_PUBLIC_VER: () => `${NS}:listings:published:ver`,
   LISTINGS_SEARCH: (ver: number, filterHash: string, skip: number, take: number) =>
-    `${NS}:listings:search:v${ver}:${filterHash}:s${skip}:t${take}`,
+    `${NS}:listings:search:card:v1:v${ver}:${filterHash}:s${skip}:t${take}`,
 
   /** Version-tagged public homepage discovery data. */
   HOMEPAGE_DISCOVERY: (ver: number, city: string) =>

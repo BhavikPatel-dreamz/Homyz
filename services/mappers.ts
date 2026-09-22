@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
-import type { Booking, Listing, User } from "@/generated/prisma/client";
+import type { Booking, Listing, Prisma, User } from "@/generated/prisma/client";
 
 // DTO mappers. The ONLY shape of a user/listing/booking that leaves the service
 // layer. `passwordHash` (and any future secret column) is never included here,
@@ -299,6 +299,74 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
   };
 }
 export type PublicListingDTO = ReturnType<typeof toPublicListingDTO>;
+
+// Search and catalogue cards do not need a listing's long-form description,
+// availability configuration, or other structured content. Keep this selection
+// deliberately narrow: it is used for every paginated discovery response.
+export const publicListingCardSelect = {
+  id: true,
+  title: true,
+  price: true,
+  propertyType: true,
+  listingType: true,
+  city: true,
+  country: true,
+  latitude: true,
+  longitude: true,
+  showExactLocation: true,
+  guests: true,
+  bedrooms: true,
+  beds: true,
+  bathrooms: true,
+  photos: true,
+  isFeatured: true,
+  petsAllowed: true,
+  discounts: true,
+  customSlug: true,
+} satisfies Prisma.ListingSelect;
+
+type PublicListingCardRecord = Prisma.ListingGetPayload<{
+  select: typeof publicListingCardSelect;
+}>;
+
+/** Lightweight, privacy-safe DTO for discovery cards and map markers. */
+export function toPublicListingCardDTO(l: PublicListingCardRecord) {
+  const showExact = Boolean(l.showExactLocation);
+  return {
+    id: l.id,
+    title: l.title,
+    price: l.price,
+    propertyType: l.propertyType,
+    listingType: l.listingType,
+    city: l.city,
+    country: l.country,
+    latitude:
+      l.latitude !== null
+        ? showExact
+          ? l.latitude
+          : Math.round(l.latitude * 100) / 100
+        : null,
+    longitude:
+      l.longitude !== null
+        ? showExact
+          ? l.longitude
+          : Math.round(l.longitude * 100) / 100
+        : null,
+    guests: l.guests,
+    bedrooms: l.bedrooms,
+    beds: l.beds,
+    bathrooms: l.bathrooms,
+    photos: l.photos,
+    isFeatured: l.isFeatured,
+    petsAllowed: l.petsAllowed,
+    discounts: l.discounts,
+    customSlug: l.customSlug,
+    rating: null as number | null,
+    reviewsCount: 0,
+    distanceKm: null as number | null,
+  };
+}
+export type PublicListingCardDTO = ReturnType<typeof toPublicListingCardDTO>;
 
 export function toOwnerListingDTO(l: Listing) {
   return toListingDTO(l);

@@ -8,7 +8,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingSearchBar } from "@/components/listings/listing-search-bar";
 import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
-import type { PublicListingDTO } from "@/services/mappers";
+import type { PublicListingCardDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
 import { formatListingPrice, getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
@@ -26,7 +26,7 @@ const SearchMap = dynamic(
 // Types
 // ─────────────────────────────────────────────
 interface ListingsResultsClientProps {
-  listings: PublicListingDTO[];
+  listings: PublicListingCardDTO[];
   total: number;
   page: number;
   totalPages: number;
@@ -142,7 +142,7 @@ function SelectedPreviewCard({
   listing,
   onClose,
 }: {
-  listing: PublicListingDTO;
+  listing: PublicListingCardDTO;
   onClose: () => void;
 }) {
   const currency = getCurrencyForCountry(listing.country);
@@ -795,7 +795,7 @@ export function ListingsResultsClient({
       });
       if (res.ok) {
         const data = await res.json();
-        const newItems: PublicListingDTO[] = data.items ?? data.data ?? [];
+        const newItems: PublicListingCardDTO[] = data.items ?? data.data ?? [];
         setAllListings((prev) => [...prev, ...newItems]);
         setCurrentPage(nextPage);
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;

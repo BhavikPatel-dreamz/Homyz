@@ -105,6 +105,9 @@ export const GET = apiHandler(async (req) => {
         sortBy,
         mapBounds,
         countOnly,
+        // This endpoint exposes pagination only; slider bounds are produced by
+        // the server-rendered listings page, so skip the extra aggregate here.
+        includePriceRange: false,
         skip,
         take,
       })

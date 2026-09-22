@@ -15,10 +15,12 @@ import { Prisma } from "@/generated/prisma/client";
 import { auditService } from "./audit.service";
 import {
   reviveListingDTO,
-  revivePublicListingDTO,
+  publicListingCardSelect,
+  toPublicListingCardDTO,
   toListingDTO,
   toPublicListingDTO,
   type ListingDTO,
+  type PublicListingCardDTO,
   type PublicListingDTO,
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
@@ -190,7 +192,7 @@ async function queryList(opts: {
   skip: number;
   take: number;
   publishedOnly?: boolean;
-}): Promise<{ items: PublicListingDTO[]; total: number }> {
+}): Promise<{ items: PublicListingCardDTO[]; total: number }> {
   const where = opts.publishedOnly === false
     ? {}
     : { published: true, status: ListingStatus.ACTIVE, isPaused: false, deletedAt: null };
@@ -200,10 +202,11 @@ async function queryList(opts: {
       skip: opts.skip,
       take: opts.take,
       orderBy: { createdAt: "desc" },
+      select: publicListingCardSelect,
     }),
     prisma.listing.count({ where }),
   ]);
-  return { items: items.map(toPublicListingDTO), total };
+  return { items: items.map(toPublicListingCardDTO), total };
 }
 
 // Public catalogue — published & active listings only by default.
@@ -211,7 +214,7 @@ async function list(opts: {
   skip: number;
   take: number;
   publishedOnly?: boolean;
-}): Promise<{ items: PublicListingDTO[]; total: number }> {
+}): Promise<{ items: PublicListingCardDTO[]; total: number }> {
   const isPublicView = opts.publishedOnly !== false;
   if (!isPublicView || opts.skip > MAX_CACHED_LIST_SKIP) {
     return queryList(opts);
@@ -223,7 +226,7 @@ async function list(opts: {
     {
       ttl: LISTINGS_LIST_TTL,
       revive: (cached) => ({
-        items: cached.items.map(revivePublicListingDTO),
+        items: cached.items,
         total: cached.total,
       }),
     },
@@ -281,12 +284,14 @@ export type PublicSearchFilters = {
   limit?: number;
   /** Lightweight result-count request used while a filter draft is being edited. */
   countOnly?: boolean;
+  /** The server-rendered listings page needs slider bounds; paginated API calls do not. */
+  includePriceRange?: boolean;
   skip?: number;
   take?: number;
 };
 
 export interface PublicSearchResult {
-  items: PublicListingDTO[];
+  items: PublicListingCardDTO[];
   total: number;
   page?: number;
   totalPages?: number;
@@ -617,6 +622,7 @@ async function searchPublicListings(
   const take = filters.take ?? filters.limit ?? 20;
   const page = filters.page ?? 1;
   const skip = filters.skip ?? (page - 1) * take;
+  const includePriceRange = filters.includePriceRange !== false;
 
   if (filters.countOnly) {
     const total = await prisma.listing.count({ where });
@@ -659,17 +665,18 @@ async function searchPublicListings(
       instantBook: filters.instantBook ?? false,
       featured: filters.featured ?? false,
       sortBy: filters.sortBy ?? "recommended",
+      includePriceRange,
       mapBounds: filters.mapBounds
         ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
         : "",
       skip,
       take,
     });
-    const cacheKey = `homyz:listings:search:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+    const cacheKey = `homyz:listings:search:card:v1:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
     type CachePayload = {
-      items: PublicListingDTO[];
+      items: PublicListingCardDTO[];
       total: number;
-      priceRange: { min: number; max: number };
+      priceRange?: { min: number; max: number };
       appliedRadiusKm: number;
       originalRadiusKm: number;
       isRadiusExpanded: boolean;
@@ -682,15 +689,19 @@ async function searchPublicListings(
     }
 
     const [items, total, priceAgg] = await Promise.all([
-      prisma.listing.findMany({ where, skip, take, orderBy }),
+      prisma.listing.findMany({ where, skip, take, orderBy, select: publicListingCardSelect }),
       prisma.listing.count({ where }),
-      prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } }),
+      includePriceRange
+        ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
+        : Promise.resolve(null),
     ]);
-    const priceRange = { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 };
-    let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
+    const priceRange = priceAgg
+      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
+      : undefined;
+    let mappedItems: PublicListingCardDTO[] = items.map(toPublicListingCardDTO);
 
     if (effectiveLat !== undefined && effectiveLng !== undefined) {
-      mappedItems = mappedItems.map((dto: PublicListingDTO): PublicListingDTO => {
+      mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
         if (dto.latitude != null && dto.longitude != null) {
           const dist = calculateDistance(filters.lat! ?? effectiveLat!, filters.lng! ?? effectiveLng!, dto.latitude, dto.longitude);
           return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
@@ -698,7 +709,7 @@ async function searchPublicListings(
         return dto;
       });
       if (!filters.sortBy || filters.sortBy === "recommended") {
-        mappedItems.sort((a: PublicListingDTO, b: PublicListingDTO) => {
+        mappedItems.sort((a: PublicListingCardDTO, b: PublicListingCardDTO) => {
           if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
           if (a.distanceKm != null) return -1;
           if (b.distanceKm != null) return 1;
@@ -723,13 +734,15 @@ async function searchPublicListings(
 
   // Live path (availability check active)
   const [items, total, priceAgg] = await Promise.all([
-    prisma.listing.findMany({ where, skip, take, orderBy }),
+    prisma.listing.findMany({ where, skip, take, orderBy, select: publicListingCardSelect }),
     prisma.listing.count({ where }),
-    prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } }),
+    includePriceRange
+      ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
+      : Promise.resolve(null),
   ]);
-  let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
+  let mappedItems: PublicListingCardDTO[] = items.map(toPublicListingCardDTO);
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
-    mappedItems = mappedItems.map((dto: PublicListingDTO): PublicListingDTO => {
+    mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
       if (dto.latitude != null && dto.longitude != null) {
         const dist = calculateDistance(effectiveLat!, effectiveLng!, dto.latitude, dto.longitude);
         return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
@@ -737,7 +750,7 @@ async function searchPublicListings(
       return dto;
     });
     if (!filters.sortBy || filters.sortBy === "recommended") {
-      mappedItems.sort((a: PublicListingDTO, b: PublicListingDTO) => {
+      mappedItems.sort((a: PublicListingCardDTO, b: PublicListingCardDTO) => {
         if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
         if (a.distanceKm != null) return -1;
         if (b.distanceKm != null) return 1;
@@ -749,7 +762,9 @@ async function searchPublicListings(
   return {
     items: mappedItems,
     total,
-    priceRange: { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 },
+    priceRange: priceAgg
+      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
+      : undefined,
     page,
     totalPages: Math.ceil(total / take),
     appliedRadiusKm: appliedRadius,
