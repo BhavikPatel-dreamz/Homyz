@@ -15,6 +15,18 @@ async function getFavoriteListingIds(userId: string, listingIds: string[]): Prom
   }
 }
 
+async function listUserFavoriteListingIds(userId: string): Promise<string[]> {
+  try {
+    const favorites = await prisma.listingFavorite.findMany({
+      where: { userId },
+      select: { listingId: true },
+    });
+    return favorites.map((f: { listingId: string }) => f.listingId);
+  } catch (err) {
+    return [];
+  }
+}
+
 async function ensureListingFavoriteTable(): Promise<void> {
   try {
     await prisma.$executeRawUnsafe(`
@@ -77,5 +89,10 @@ async function removeFavorite(userId: string, listingId: string): Promise<void> 
   }
 }
 
-export const favoriteService = { getFavoriteListingIds, saveFavorite, removeFavorite };
+export const favoriteService = {
+  getFavoriteListingIds,
+  listUserFavoriteListingIds,
+  saveFavorite,
+  removeFavorite,
+};
 

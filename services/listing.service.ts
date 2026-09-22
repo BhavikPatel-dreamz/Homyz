@@ -13,6 +13,7 @@ import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/gener
 import { Prisma } from "@/generated/prisma/client";
 
 import { auditService } from "./audit.service";
+import { qualificationService } from "./qualification.service";
 import {
   reviveListingDTO,
   publicListingCardSelect,
@@ -125,6 +126,30 @@ function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
     stampsVisible: profile.stampsVisible !== false,
     ...(profile.stampsVisible !== false ? { selectedStamps: list(profile.selectedStamps).slice(0, 10) } : {}),
   };
+}
+
+function getSystemManagedHostMetric(
+  profile: unknown,
+  keys: string[],
+): number | null {
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return null;
+  const source = profile as Record<string, unknown>;
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  }
+  return null;
+}
+
+function getSystemManagedReviewCount(profile: unknown): number {
+  const value = getSystemManagedHostMetric(profile, ["reviewCount", "reviewsCount"]);
+  return value === null ? 0 : Math.max(0, Math.trunc(value));
+}
+
+function hasVerifiedSuperhostFlag(profile: unknown): boolean {
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return false;
+  const source = profile as Record<string, unknown>;
+  return source.isSuperhost === true || source.superhost === true;
 }
 
 function getPublishReadiness(listing: {
@@ -775,6 +800,101 @@ async function searchPublicListings(
   };
 }
 
+type PublicListingDetail = PublicListingDTO & {
+  isGuestFavorite: boolean;
+  host?: {
+    name: string | null;
+    image: string | null;
+    createdAt: Date;
+    publicProfile: Record<string, unknown> | null;
+    isSuperhost: boolean;
+  };
+};
+
+async function getPublicListingDetail(
+  where: Prisma.ListingWhereUniqueInput,
+): Promise<PublicListingDetail> {
+  const listing = await prisma.listing.findUnique({
+    where,
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          createdAt: true,
+          publicProfile: true,
+        },
+      },
+      _count: {
+        select: {
+          bookings: {
+            where: { status: BookingStatus.CONFIRMED },
+          },
+        },
+      },
+    },
+  });
+
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  const rating = getSystemManagedHostMetric(listing.host?.publicProfile, ["rating"]);
+  const reviewsCount = getSystemManagedReviewCount(listing.host?.publicProfile);
+  const isGuestFavorite = qualificationService.isGuestFavorite({
+    isFeatured: listing.isFeatured,
+    rating,
+    reviewCount: reviewsCount,
+    confirmedBookingCount: listing._count.bookings,
+    status: listing.status,
+    published: listing.published,
+  });
+
+  let isSuperhost = false;
+  if (listing.host) {
+    if (hasVerifiedSuperhostFlag(listing.host.publicProfile)) {
+      isSuperhost = true;
+    } else {
+      // One aggregate query replaces loading every booking for this host.
+      const hostBookingGroups: Array<{ status: BookingStatus; _count: { _all: number } }> = await prisma.booking.groupBy({
+        by: ["status"],
+        where: {
+          listing: { hostId: listing.host.id },
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] },
+        },
+        _count: { _all: true },
+      });
+      const bookingSummary = {
+        confirmed: hostBookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
+        cancelled: hostBookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
+      };
+      isSuperhost = qualificationService.isSuperhost({
+        createdAt: listing.host.createdAt,
+        publicProfile: listing.host.publicProfile as Record<string, unknown> | null,
+        bookingSummary,
+      });
+    }
+  }
+
+  const publicDTO = toPublicListingDTO(listing);
+  return {
+    ...publicDTO,
+    rating,
+    reviewsCount,
+    isGuestFavorite,
+    host: listing.host
+      ? {
+          name: listing.host.name,
+          image: listing.host.image,
+          createdAt: listing.host.createdAt,
+          publicProfile: toPublicHostProfile(listing.host.publicProfile),
+          isSuperhost,
+        }
+      : undefined,
+  };
+}
+
 async function getPublicListingById(id: string): Promise<
   PublicListingDTO & {
     host?: {
@@ -782,79 +902,21 @@ async function getPublicListingById(id: string): Promise<
       image: string | null;
       createdAt: Date;
       publicProfile: Record<string, unknown> | null;
+      isSuperhost: boolean;
     };
+    isGuestFavorite: boolean;
   }
 > {
-  const listing = await prisma.listing.findUnique({
-    where: { id },
-    include: {
-      host: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          createdAt: true,
-          publicProfile: true,
-        },
-      },
-    },
-  });
-
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
-    throw AppError.notFound("Listing is not available or does not exist");
-  }
-
-  const publicDTO = toPublicListingDTO(listing);
-  return {
-    ...publicDTO,
-    host: listing.host
-      ? {
-          name: listing.host.name,
-          image: listing.host.image,
-          createdAt: listing.host.createdAt,
-          publicProfile: toPublicHostProfile(listing.host.publicProfile),
-        }
-      : undefined,
-  };
+  return getPublicListingDetail({ id });
 }
 
-async function getPublicListingBySlug(slug: string) {
+async function getPublicListingBySlug(slug: string): Promise<PublicListingDetail> {
   const normalized = normalizeSlug(slug);
   if (!normalized) {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  const listing = await prisma.listing.findUnique({
-    where: { customSlug: normalized },
-    include: {
-      host: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          createdAt: true,
-          publicProfile: true,
-        },
-      },
-    },
-  });
-
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
-    throw AppError.notFound("Listing is not available or does not exist");
-  }
-
-  const publicDTO = toPublicListingDTO(listing);
-  return {
-    ...publicDTO,
-    host: listing.host
-      ? {
-          name: listing.host.name,
-          image: listing.host.image,
-          createdAt: listing.host.createdAt,
-          publicProfile: toPublicHostProfile(listing.host.publicProfile),
-        }
-      : undefined,
-  };
+  return getPublicListingDetail({ customSlug: normalized });
 }
 
 async function getById(id: string): Promise<ListingDTO> {

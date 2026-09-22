@@ -7,11 +7,13 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import ListingGallery from "@/components/listings/listing-gallery";
 import { RealMap } from "@/components/ui/real-map";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
+import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 
 interface PublicListingDetailClientProps {
@@ -21,7 +23,9 @@ interface PublicListingDetailClientProps {
       image?: string | null;
       createdAt?: Date | string;
       publicProfile?: Record<string, unknown> | null;
+      isSuperhost?: boolean;
     } | null;
+    isGuestFavorite?: boolean;
   };
   guidebooks?: Array<{
     id: string;
@@ -47,7 +51,6 @@ export function PublicListingDetailClient({
   const router = useRouter();
 
   // Modal States
-  const [isAllPhotosOpen, setIsAllPhotosOpen] = useState(false);
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
@@ -85,10 +88,21 @@ export function PublicListingDetailClient({
   const amenitiesSet = new Set(Array.isArray(listing.amenities) ? listing.amenities : []);
 
   // Format price
-  const basePriceSAR = Math.round(listing.price / 100);
-  const locationString = listing.city
-    ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
-    : listing.country || "Saudi Arabia";
+  const displayPrice = typeof listing.price === "number"
+    ? formatListingPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
+    : null;
+  const locationString = [listing.city, listing.country]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .join(", ");
+  const rating = typeof listing.rating === "number" && Number.isFinite(listing.rating) && listing.rating > 0
+    ? listing.rating
+    : null;
+  const reviewsCount = typeof listing.reviewsCount === "number" && Number.isFinite(listing.reviewsCount)
+    ? Math.max(0, Math.trunc(listing.reviewsCount))
+    : 0;
+  const formattedRating = rating === null
+    ? null
+    : new Intl.NumberFormat("en", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(rating);
   const publicCoordinates =
     typeof listing.latitude === "number" && Number.isFinite(listing.latitude) &&
     typeof listing.longitude === "number" && Number.isFinite(listing.longitude)
@@ -246,69 +260,59 @@ export function PublicListingDetailClient({
       <main className="w-full flex-1 pb-24 pt-6">
         <Container>
           {/* Header Section */}
-          <div className="space-y-1.5 pb-5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+          <div className="space-y-2.5 pb-5">
+            <h1 className="max-w-5xl break-words text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl">
               {listing.title}
             </h1>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600">
-              <div className="flex items-center gap-2">
-                <span>📍 {locationString}</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-zinc-700 sm:text-sm">
+              {locationString && (
+                <span className="inline-flex items-center gap-1.5">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 shrink-0 text-zinc-500">
+                    <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                  <span>{locationString}</span>
+                </span>
+              )}
+              {formattedRating ? (
+                <span className="inline-flex items-center gap-1.5" aria-label={`${formattedRating} out of 5 from ${reviewsCount.toLocaleString()} ${reviewsCount === 1 ? "review" : "reviews"}`}>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-zinc-900 text-zinc-900"><path d="m12 2.5 2.95 5.98 6.6.96-4.78 4.66 1.13 6.57L12 17.57l-5.9 3.1 1.13-6.57-4.78-4.66 6.6-.96L12 2.5Z" /></svg>
+                  <span className="font-semibold text-zinc-900">{formattedRating}</span>
+                  <span className="text-zinc-500">· {reviewsCount > 0 ? `${reviewsCount.toLocaleString()} ${reviewsCount === 1 ? "review" : "reviews"}` : "No reviews yet"}</span>
+                </span>
+              ) : reviewsCount > 0 ? (
+                <span className="text-zinc-600">{reviewsCount.toLocaleString()} {reviewsCount === 1 ? "review" : "reviews"}</span>
+              ) : (
+                <span className="font-medium text-zinc-600">New</span>
+              )}
+            </div>
+            {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
+              <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
+                {listing.isGuestFavorite && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-950">
+                    <span aria-hidden="true">✦</span> Guest favourite
+                  </span>
+                )}
+                {listing.host?.isSuperhost && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-950">
+                    <span aria-hidden="true">★</span> Superhost
+                  </span>
+                )}
                 {listing.isFeatured && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700">
                     Featured stay
                   </span>
                 )}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Photo Gallery (5-Photo Mosaic / Responsive Grid) */}
-          <div className="relative mb-10 overflow-hidden rounded-3xl border border-zinc-200">
-            {photos.length === 0 ? (
-              <div className="aspect-[21/9] w-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400">
-                <span className="text-4xl mb-2">🏡</span>
-                <span className="text-xs font-medium">No property photos uploaded</span>
-              </div>
-            ) : photos.length === 1 ? (
-              <div className="aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden">
-                <img src={photos[0]} alt="Property cover" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 aspect-[4/3] sm:aspect-[21/9]">
-                {/* Main Large Cover (Left 2 cols) */}
-                <div className="md:col-span-2 relative h-full overflow-hidden bg-zinc-100">
-                  <img
-                    src={photos[0]}
-                    alt="Main photo"
-                    className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
-                    onClick={() => setIsAllPhotosOpen(true)}
-                  />
-                </div>
-                {/* Right 4-Grid Preview */}
-                <div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2 h-full">
-                  {photos.slice(1, 5).map((photo: string, index: number) => (
-                    <div
-                      key={index}
-                      className="relative h-full overflow-hidden bg-zinc-100 cursor-pointer hover:opacity-95 transition-opacity"
-                      onClick={() => setIsAllPhotosOpen(true)}
-                    >
-                      <img src={photo} alt={`Photo ${index + 2}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {photos.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setIsAllPhotosOpen(true)}
-                className="absolute right-4 bottom-4 rounded-full bg-white/90 backdrop-blur-md px-4 py-2 text-xs font-semibold text-zinc-800 shadow-md hover:bg-white transition-all cursor-pointer border border-zinc-200 flex items-center gap-1.5"
-              >
-                <span>Show all photos</span>
-                <span className="text-zinc-500 font-normal">({photos.length})</span>
-              </button>
-            )}
+          {/* Photo Gallery (ListingGallery component) */}
+          <div>
+            {/* ListingGallery handles thumbnails, lightbox, lazy loading, and fallbacks */}
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <ListingGallery photos={photos} listingTitle={listing.title} />
           </div>
 
           {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
@@ -512,7 +516,7 @@ export function PublicListingDetailClient({
                   })()}
                 </div>
                 <p className="text-xs text-zinc-500 font-normal">
-                  {locationString}
+                  {locationString || "Location details are not available for this listing."}
                   {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
                 </p>
                 {publicCoordinates ? (
@@ -520,7 +524,7 @@ export function PublicListingDetailClient({
                     <RealMap
                       lat={publicCoordinates.latitude}
                       lng={publicCoordinates.longitude}
-                      address={locationString}
+                      address={locationString || listing.title}
                       showExactLocation={listing.showExactLocation ?? false}
                     />
                   </div>
@@ -599,7 +603,7 @@ export function PublicListingDetailClient({
                   <>
                     <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                       <div>
-                        <span className="text-2xl font-bold text-zinc-900">SAR {basePriceSAR}</span>
+                        <span className="text-2xl font-bold text-zinc-900">{displayPrice ?? "Price unavailable"}</span>
                         <span className="text-xs text-zinc-500 font-normal"> / night</span>
                       </div>
                       <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
@@ -623,7 +627,7 @@ export function PublicListingDetailClient({
                         </div>
                         <div className="p-3 space-y-1">
                           <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Checkout
+                            Check-out
                           </label>
                           <input
                             type="date"
@@ -681,14 +685,14 @@ export function PublicListingDetailClient({
                       </div>
                     )}
 
-                    {quote && !isQuoteLoading && (
-                      <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
+                        {quote && !isQuoteLoading && (
+                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
                         <div className="flex items-center justify-between text-zinc-600">
                           <span>
-                            SAR {Math.round(quote.baseNightlyPrice / 100)} × {quote.nights}{" "}
+                            {formatListingPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
                             {quote.nights === 1 ? "night" : "nights"}
                           </span>
-                          <span>SAR {Math.round(quote.nightlySubtotal / 100)}</span>
+                          <span>{formatListingPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                         </div>
 
                         {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
@@ -707,14 +711,14 @@ export function PublicListingDetailClient({
                         {quote.cleaningFee > 0 && (
                           <div className="flex items-center justify-between text-zinc-600">
                             <span>Cleaning fee</span>
-                            <span>SAR {Math.round(quote.cleaningFee / 100)}</span>
+                            <span>{formatListingPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
 
                         {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                           <div className="flex items-center justify-between text-zinc-600">
                             <span>Extra guest fee</span>
-                            <span>SAR {Math.round(quote.extraGuestFee / 100)}</span>
+                            <span>{formatListingPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
 
@@ -743,30 +747,30 @@ export function PublicListingDetailClient({
                           <>
                             <div className="flex items-center justify-between text-zinc-600">
                               <span>Total before taxes</span>
-                              <span>SAR {Math.round(((quote.nightlySubtotal - quote.discountAmount) + quote.cleaningFee + (quote.extraGuestFee || 0) + (quote.hostServiceFee || 0)) / 100)}</span>
+                              <span>{formatListingPrice(((quote.nightlySubtotal - quote.discountAmount) + quote.cleaningFee + (quote.extraGuestFee || 0) + (quote.hostServiceFee || 0)), listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
 
                             <div className="pt-2 border-t border-zinc-100 space-y-1.5">
-                              <div className="flex items-center justify-between text-zinc-600">
-                                <span className="flex items-center gap-1.5 font-medium">
-                                  Taxes & fees
-                                  {quote.taxes.some((t: any) => t.isExempt) && (
-                                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
-                                      Exemption applied
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="font-medium">SAR {Math.round((quote.taxTotal || 0) / 100)}</span>
-                              </div>
+                                <div className="flex items-center justify-between text-zinc-600">
+                                  <span className="flex items-center gap-1.5 font-medium">
+                                    Taxes & fees
+                                    {quote.taxes.some((tax) => tax.isExempt) && (
+                                      <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
+                                        Exemption applied
+                                      </span>
+                                    )}
+                                  </span>
+                                  <span className="font-medium">{formatListingPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                </div>
                               <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-[11px] text-zinc-500">
-                                {quote.taxes.map((t: any, idx: number) => (
+                                {quote.taxes.map((tax, idx) => (
                                   <div key={idx} className="flex items-center justify-between">
                                     <span>
-                                      {t.taxName}
-                                      {t.rate ? ` (${t.rate}%)` : ""}
-                                      {t.isExempt ? ` • ${t.exemptionReason || "Exempt"}` : ""}
+                                      {tax.taxName}
+                                      {tax.rate ? ` (${tax.rate}%)` : ""}
+                                      {tax.isExempt ? ` • ${tax.exemptionReason || "Exempt"}` : ""}
                                     </span>
-                                    <span>{t.isExempt ? "SAR 0" : `SAR ${Math.round(t.taxAmount / 100)}`}</span>
+                                      <span>{tax.isExempt ? formatListingPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatListingPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                 ))}
                               </div>
@@ -774,13 +778,13 @@ export function PublicListingDetailClient({
 
                             <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                               <span>Total</span>
-                              <span>SAR {Math.round((quote.guestTotal ?? quote.totalPrice) / 100)}</span>
+                              <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
                           </>
                         ) : (
                           <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                             <span>Total</span>
-                            <span>SAR {Math.round((quote.guestTotal ?? quote.totalPrice) / 100)}</span>
+                            <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
                       </div>
@@ -811,30 +815,7 @@ export function PublicListingDetailClient({
         </Container>
       </main>
 
-      {/* ALL PHOTOS MODAL */}
-      {isAllPhotosOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/90 flex flex-col p-4 sm:p-8 overflow-y-auto">
-          <div className="max-w-4xl mx-auto w-full space-y-6">
-            <div className="flex items-center justify-between text-white sticky top-0 bg-black/60 backdrop-blur-md py-3 px-2 z-10">
-              <span className="font-semibold text-sm">Photos ({photos.length})</span>
-              <button
-                type="button"
-                onClick={() => setIsAllPhotosOpen(false)}
-                className="text-white hover:text-zinc-300 font-bold text-lg cursor-pointer px-3 py-1"
-              >
-                ✕ Close
-              </button>
-            </div>
-            <div className="space-y-4">
-              {photos.map((p: string, i: number) => (
-                <div key={i} className="rounded-2xl overflow-hidden bg-zinc-900">
-                  <img src={p} alt={`Photo ${i + 1}`} className="w-full h-auto object-contain max-h-[85vh] mx-auto" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
+      {/* ListingGallery provides an integrated lightbox/modal */}
 
       {/* ALL AMENITIES MODAL */}
       {isAllAmenitiesOpen && (

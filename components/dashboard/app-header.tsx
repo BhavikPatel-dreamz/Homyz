@@ -91,6 +91,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
     { href: "/host/today", label: "Today", requireHost: true },
     { href: "/host/calendar", label: "Calendar", requireHost: true },
     { href: "/host/listings", label: "Your listings", requireHost: true },
+    { href: "/wishlists", label: "Wishlist" },
     { href: "/host/onboarding", label: "Become a Host / Application" },
     { href: "/admin", label: "Admin", requireAdmin: true },
   ];

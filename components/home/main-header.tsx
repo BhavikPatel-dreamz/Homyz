@@ -134,6 +134,13 @@ export function MainHeader() {
                   >
                     Host Workspace
                   </Link>
+                  <Link
+                    href="/wishlists"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition"
+                  >
+                    Wishlist
+                  </Link>
                 </div>
               ) : (
                 <div className="space-y-1">

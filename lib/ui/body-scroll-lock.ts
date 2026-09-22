@@ -31,7 +31,13 @@ export function lockBodyScroll(): () => void {
       }
       if (htmlOverflow) html.style.setProperty("overflow", htmlOverflow, htmlPriority);
       else html.style.removeProperty("overflow");
-      window.scrollTo({ left: x, top: y, behavior: "instant" });
+      // Use standard behavior when restoring scroll position.
+      try {
+        window.scrollTo({ left: x, top: y, behavior: "auto" });
+      } catch {
+        // Fallback for older browsers
+        window.scrollTo(x, y);
+      }
     };
   }
   lockCount += 1;
