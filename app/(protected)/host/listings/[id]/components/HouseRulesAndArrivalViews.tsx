@@ -1677,6 +1677,7 @@ function LanguagesView({
   selectedLanguageIds: string[];
   setSelectedLanguageIds?: (value: string[]) => void;
 }) {
+  const { t } = useLanguage();
   const [isAdding, setIsAdding] = React.useState(false);
   const [searchLang, setSearchLang] = React.useState("");
 
@@ -1694,17 +1695,17 @@ function LanguagesView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1>Languages</h1>
+        <h1>{t("host_languages_title") || "Languages"}</h1>
       </div>
 
       <p className="text-base font-normal leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px] pt-1">
-        Select the languages you and your co-hosts can speak with guests during their stay or via messaging.
+        {t("host_languages_subtext") || "Select the languages you and your co-hosts can speak with guests during their stay or via messaging."}
       </p>
 
       {/* List of currently selected languages */}
       <div className="flex flex-wrap gap-2 pt-2">
         {selectedLanguageIds.length === 0 && (
-          <p className="text-base text-[#727272] dark:text-zinc-400">No languages selected yet.</p>
+          <p className="text-base text-[#727272] dark:text-zinc-400">{t("host_no_languages_selected_yet") || "No languages selected yet."}</p>
         )}
         {selectedLanguageIds.map((languageId) => {
           const languageName = getLanguageDisplayNames([languageId])[0] ?? languageId;
@@ -1735,8 +1736,8 @@ function LanguagesView({
         <div className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 space-y-4 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Select languages</h3>
-              <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">{LANGUAGE_OPTIONS.length} languages available</p>
+              <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_select_languages_heading") || "Select languages"}</h3>
+              <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">{t("host_languages_available_count", { count: LANGUAGE_OPTIONS.length }) || `${LANGUAGE_OPTIONS.length} languages available`}</p>
             </div>
             <button
               type="button"
@@ -1751,7 +1752,7 @@ function LanguagesView({
             type="text"
             value={searchLang}
             onChange={(e) => setSearchLang(e.target.value)}
-            placeholder="Search language..."
+            placeholder={t("host_search_language_placeholder") || "Search language..."}
             className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
           />
 
@@ -1799,7 +1800,7 @@ function LanguagesView({
               }}
               className="px-5 py-2 rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-xs font-semibold text-zinc-950 shadow-2xs cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSaving ? "Saving..." : "Save languages"}
+              {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_languages") || "Save languages")}
             </button>
           </div>
         </div>
@@ -1813,7 +1814,7 @@ function LanguagesView({
           className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
           <span className="text-sm font-semibold">+</span>
-          Add a language
+          {t("host_add_a_language") || "Add a language"}
         </button>
         <button
           type="button"
@@ -1821,7 +1822,7 @@ function LanguagesView({
           onClick={() => void handleSaveSection("language")}
           className="inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-[#1f1f1f] hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
-          {isSaving ? "Saving..." : "Save changes"}
+          {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_changes") || "Save changes")}
         </button>
       </div>
     </div>
@@ -1846,20 +1847,22 @@ function GuestRequirementsView({
   setRequireProfilePhoto?: (value: boolean) => void;
   onCancel?: (targetSection: SectionKey) => void;
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-7 animate-in fade-in max-w-xl pb-10 font-sans">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1>Guest requirements</h1>
+        <h1>{t("host_guest_requirements_title") || "Guest requirements"}</h1>
       </div>
 
       {/* Toggle Row: Require a profile photo */}
       <div className="flex items-start justify-between gap-6 pt-1">
         <div className="space-y-1 max-w-md">
-          <h3 className="text-[#1F1F1F] font-medium">Require a profile photo</h3>
+          <h3 className="text-[#1F1F1F] font-medium">{t("host_require_profile_photo_title") || "Require a profile photo"}</h3>
           <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
-            Ask guests to upload a confirmed profile photo before booking your place.
+            {t("host_require_profile_photo_desc") || "Ask guests to upload a confirmed profile photo before booking your place."}
           </p>
         </div>
 
@@ -1869,7 +1872,7 @@ function GuestRequirementsView({
           onClick={() => setRequireProfilePhoto?.(!requireProfilePhoto)}
           role="switch"
           aria-checked={requireProfilePhoto}
-          aria-label="Require a profile photo"
+          aria-label={t("host_require_profile_photo_title") || "Require a profile photo"}
           className={`w-12 h-6.5 rounded-full shrink-0 p-0.5 transition-colors duration-200 cursor-pointer ${requireProfilePhoto ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-200 dark:bg-zinc-700"
             }`}
         >
@@ -1883,20 +1886,20 @@ function GuestRequirementsView({
       {/* Bulleted Requirements Section */}
       <div className="space-y-2.5 pt-1">
         <h3 className="text-[#1F1F1F] font-medium">
-          All Homyz guests are requires to:
+          {t("host_all_guests_required_to_title") || "All Homyz guests are required to:"}
         </h3>
         <ul className="space-y-2 text-xs text-zinc-500 dark:text-zinc-400 font-normal">
           <li className="flex items-start gap-2">
             <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
-            <span className="text-sm">Provide a confirmed email address and phone number</span>
+            <span className="text-sm">{t("host_guest_req_bullet_1") || "Provide a confirmed email address and phone number"}</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
-            <span className="text-sm">Provide payment information</span>
+            <span className="text-sm">{t("host_guest_req_bullet_2") || "Provide payment information"}</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
-            <span className="text-sm">Agree to your house rules</span>
+            <span className="text-sm">{t("host_guest_req_bullet_3") || "Agree to your house rules"}</span>
           </li>
         </ul>
       </div>
@@ -1909,7 +1912,7 @@ function GuestRequirementsView({
           onClick={() => void handleSaveSection("guest-requirements")}
           className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all duration-300 cursor-pointer disabled:opacity-50"
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
         </button>
 
         <button
@@ -1923,7 +1926,7 @@ function GuestRequirementsView({
           }}
           className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-medium text-sm px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          Cancel
+          {t("host_cancel") || "Cancel"}
         </button>
       </div>
     </div>
@@ -2738,6 +2741,7 @@ function RegulationsView({
   handleSaveSection: (key: any) => void;
   onDirtyChange?: (isDirty: boolean) => void;
 }) {
+  const { t } = useLanguage();
   const [showDetails, setShowDetails] = React.useState(false);
   const [isEditingReg, setIsEditingReg] = React.useState(false);
   const [regNumber, setRegNumber] = React.useState("XXXXXXXX");
@@ -2768,52 +2772,52 @@ function RegulationsView({
             {/* Section 1: You're all set! */}
             <div className="space-y-2">
               <h1>
-                You&apos;re all set!
+                {t("host_regulations_all_set_title")}
               </h1>
-              <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
-                Your official municipal hosting permit has been recorded and verified.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+                {t("host_regulations_all_set_desc")}
               </p>
               <button
                 type="button"
                 onClick={() => setIsEditingReg(!isEditingReg)}
-                className="text-xs font-semibold text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600 transition-colors pt-1 block cursor-pointer"
+                className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-200 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors pt-1 block cursor-pointer"
               >
-                {isEditingReg ? "Done editing" : "Edit registration details"}
+                {isEditingReg ? t("host_regulations_done_editing") : t("host_regulations_edit_details")}
               </button>
             </div>
 
             {/* Section 2: Registration details */}
             <div className="space-y-4 pt-3">
-              <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F]">
-                Registration details
+              <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+                {t("host_regulations_details_heading")}
               </h2>
-              <p className="text-xs text-zinc-500 font-normal leading-relaxed max-w-md">
-                Keep your official tourism permit number and registered address up to date.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+                {t("host_regulations_details_sub")}
               </p>
 
               {/* Editable or Static Registration Fields */}
               {isEditingReg ? (
-                <div className="space-y-3 pt-2 max-w-md bg-zinc-50 p-4 rounded-2xl border border-zinc-200">
+                <div className="space-y-3 pt-2 max-w-md bg-zinc-50 dark:bg-zinc-800 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-700">
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
-                      Registration Number
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                      {t("host_regulations_label_reg_number")}
                     </label>
                     <input
                       type="text"
                       value={regNumber}
                       onChange={(e) => setRegNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-[#1F1F1F] focus:outline-none focus:border-zinc-500 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white dark:bg-zinc-900"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
-                      Address & Country
+                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                      {t("host_regulations_label_address_country")}
                     </label>
                     <input
                       type="text"
                       value={regAddress}
                       onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-xs font-semibold text-[#1F1F1F] focus:outline-none focus:border-zinc-500 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white dark:bg-zinc-900"
                     />
                   </div>
                   <button
@@ -2824,31 +2828,31 @@ function RegulationsView({
                     }}
                     className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                   >
-                    Save Registration
+                    {t("host_regulations_save_btn")}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3 pt-1">
                   <div>
                     <p className="text-xs text-zinc-400 font-normal">XXXXXXXX</p>
-                    <p className="text-xs font-semibold text-[#1F1F1F]">{regNumber}</p>
+                    <p className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
                     <p className="text-xs text-zinc-400 font-normal">Address, Country</p>
-                    <p className="text-xs font-semibold text-[#1F1F1F]">{regAddress}</p>
+                    <p className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>
               )}
 
               {/* Bottom Paragraph with Customer Support Link */}
-              <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-2 max-w-md">
-                If your permit details change or you need assistance with registration, please contact our{" "}
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed pt-2 max-w-md">
+                {t("host_regulations_support_text")}{" "}
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
-                  className="underline text-[#1F1F1F] font-semibold hover:text-zinc-600 transition-colors"
+                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
                 >
-                  customer support team
+                  {t("host_regulations_support_link")}
                 </a>
               </p>
             </div>
@@ -2926,19 +2930,19 @@ function RegulationsView({
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1>Regulations</h1>
+        <h1>{t("host_regulations_heading")}</h1>
       </div>
 
       {/* Top Description Paragraph */}
-      <p className="text-sm text-[#727272] font-normal leading-relaxed pt-1 max-w-lg">
-        Local tourism regulations require short-term rental hosts to display a valid municipal permit number.
+      <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed pt-1 max-w-lg">
+        {t("host_regulations_desc")}
       </p>
 
       {/* Registration Status Block */}
       <div className="space-y-3 pt-2">
-        <h3 className="text-base font-medium text-[#1F1F1F]">Your registration is complete</h3>
-        <p className="text-sm text-[#727272] font-normal leading-relaxed max-w-lg">
-          You&apos;re all set! Your registration number is xxxxxxxx and is visible to guests on your listing.
+        <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_regulations_status_complete")}</h3>
+        <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-lg">
+          {t("host_regulations_all_set_summary", { regNumber: regNumber })}
         </p>
       </div>
 
@@ -2949,7 +2953,7 @@ function RegulationsView({
           onClick={() => setShowDetails(true)}
           className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer"
         >
-          View
+          {t("host_regulations_view_btn")}
         </button>
       </div>
     </div>

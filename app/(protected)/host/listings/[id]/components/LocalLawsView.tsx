@@ -3,6 +3,7 @@ import { BackButton } from "@/components/ui/back-button";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { SectionKey } from "../section-helpers";
 
 interface LocalLawsViewProps {
@@ -27,55 +28,13 @@ interface ArticleContent {
   summary: string;
 }
 
-const ARTICLES: Record<ArticleId, ArticleContent> = {
-  "hosting-regulations": {
-    id: "hosting-regulations",
-    title: "Learn about hosting regulations",
-    subtitle: "Research local laws, taxes and permits.",
-    readTime: "3 min read",
-    date: "22 Apr 2026",
-    author: "Homyz",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80",
-    summary: "Before you start hosting, it's important to understand how short-term rentals are regulated in your area.",
-  },
-  "disruptive-events": {
-    id: "disruptive-events",
-    title: "Major Disruptive Events Policy",
-    subtitle: "Find out how Homyz handles unforeseen cancellations.",
-    readTime: "4 min read",
-    date: "15 Mar 2026",
-    author: "Homyz Legal",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
-    summary: "Clear guidelines on cancellations during natural disasters, government travel restrictions, and declared emergencies.",
-  },
-  "aircover": {
-    id: "aircover",
-    title: "How Protection for Hosts works",
-    subtitle: "Top-to-bottom protection for every stay.",
-    readTime: "3 min read",
-    date: "10 Feb 2026",
-    author: "Homyz Support",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-    summary: "Comprehensive host damage protection and liability insurance included with every booking.",
-  },
-  "safety-guidelines": {
-    id: "safety-guidelines",
-    title: "Safety guidelines for hosts",
-    subtitle: "Follow these responsible safety practices for peace of mind.",
-    readTime: "5 min read",
-    date: "5 Jan 2026",
-    author: "Homyz Trust & Safety",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
-    summary: "Practical safety checklist including smoke alarms, carbon monoxide detectors, emergency plans, and first-aid provisions.",
-  },
-};
-
 export function LocalLawsView({
   setActiveSection,
   isSaving,
   handleSaveSection,
   listingCity,
 }: LocalLawsViewProps) {
+  const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(false);
   const [showResourceDrawer, setShowResourceDrawer] = useState(false);
   const [activeArticleId, setActiveArticleId] = useState<ArticleId>("hosting-regulations");
@@ -84,7 +43,51 @@ export function LocalLawsView({
   const [showAiPromptHelper, setShowAiPromptHelper] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
 
-  const cityDisplay = listingCity?.trim() || "your city";
+  const cityDisplay = listingCity?.trim() || t("host_local_laws_your_city");
+
+  const ARTICLES: Record<ArticleId, ArticleContent> = {
+    "hosting-regulations": {
+      id: "hosting-regulations",
+      title: t("host_local_laws_art1_title"),
+      subtitle: t("host_local_laws_art1_subtitle"),
+      readTime: t("host_local_laws_read_time_3min"),
+      date: t("host_local_laws_art1_date"),
+      author: t("host_local_laws_art1_author"),
+      image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80",
+      summary: t("host_local_laws_art1_summary"),
+    },
+    "disruptive-events": {
+      id: "disruptive-events",
+      title: t("host_local_laws_art2_title"),
+      subtitle: t("host_local_laws_art2_subtitle"),
+      readTime: t("host_local_laws_read_time_4min"),
+      date: t("host_local_laws_art2_date"),
+      author: t("host_local_laws_art2_author"),
+      image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+      summary: t("host_local_laws_art2_summary"),
+    },
+    "aircover": {
+      id: "aircover",
+      title: t("host_local_laws_art3_title"),
+      subtitle: t("host_local_laws_art3_subtitle"),
+      readTime: t("host_local_laws_read_time_3min"),
+      date: t("host_local_laws_art3_date"),
+      author: t("host_local_laws_art3_author"),
+      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      summary: t("host_local_laws_art3_summary"),
+    },
+    "safety-guidelines": {
+      id: "safety-guidelines",
+      title: t("host_local_laws_art4_title"),
+      subtitle: t("host_local_laws_art4_subtitle"),
+      readTime: t("host_local_laws_read_time_5min"),
+      date: t("host_local_laws_art4_date"),
+      author: t("host_local_laws_art4_author"),
+      image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
+      summary: t("host_local_laws_art4_summary"),
+    },
+  };
+
   const activeArticle = ARTICLES[activeArticleId];
 
   // Close drawer on ESC key
@@ -106,7 +109,7 @@ export function LocalLawsView({
     }
   };
 
-  const aiPromptText = `What are the current short-term rental permits, zoning ordinances, registration requirements, and transient occupancy taxes for hosting a residential property in ${cityDisplay}? Please provide official government sources and municipal codes.`;
+  const aiPromptText = t("host_local_laws_ai_prompt_template", { city: cityDisplay });
 
   const handleCopyAiPrompt = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -118,16 +121,15 @@ export function LocalLawsView({
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-2xl pb-16 font-sans text-zinc-900 dark:text-zinc-100">
-      {/* 1. Header & Back Button (Matching reference design) */}
+      {/* 1. Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
-        <h1> Local laws </h1>
+        <h1>{t("host_local_laws_heading")}</h1>
       </div>
 
       {/* 2. Intro Paragraph */}
       <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
-        Take a moment to review the local laws that apply to your listing. We want to make sure you
-        have everything you need to get off to a great start.
+        {t("host_local_laws_intro")}
       </p>
 
       {/* 3. Regulation Article Card Link (Interactive Trigger) */}
@@ -151,7 +153,7 @@ export function LocalLawsView({
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 relative bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700">
           <Image
             src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=300&q=80"
-            alt="Hosting regulations"
+            alt={t("host_local_laws_hosting_regulations_alt")}
             fill
             sizes="80px"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -160,9 +162,11 @@ export function LocalLawsView({
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-1">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal block">3 min read</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal block">
+            {t("host_local_laws_read_time_3min")}
+          </span>
           <h2 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] dark:text-zinc-100 flex items-center gap-1.5 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-            Learn about hosting regulations
+            {t("host_local_laws_learn_regulations_title")}
             <svg
               className="w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform group-hover:translate-x-0.5"
               fill="none"
@@ -180,18 +184,12 @@ export function LocalLawsView({
 
       {/* 4. Body Paragraph 1 */}
       <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
-        Most cities have rules covering home sharing, and the specific codes and ordinances can appear
-        in many places (such as zoning, building, licensing or tax codes). In most places, you must
-        register, get a permit, or obtain a licence before you list your property or accept guests.
-        You may also be responsible for collecting and remitting certain taxes. In some places,
-        short-term rentals could be prohibited altogether.
+        {t("host_local_laws_body_p1")}
       </p>
 
       {/* 5. Body Paragraph 2 */}
       <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
-        Since you are responsible for your own decision to list, you should get comfortable with the
-        applicable rules before listing on Homyz. To get you started, we offer some helpful
-        resources under &ldquo;Your City Laws&rdquo;.
+        {t("host_local_laws_body_p2")}
       </p>
 
       {/* 6. Documented Action & Text Link Triggers */}
@@ -205,7 +203,7 @@ export function LocalLawsView({
             }}
             className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-zinc-400 underline underline-offset-3 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
           >
-            What hosting regulations apply to you?
+            {t("host_local_laws_link_regulations_apply")}
           </button>
         </div>
         <div>
@@ -217,15 +215,14 @@ export function LocalLawsView({
             }}
             className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-zinc-400 underline underline-offset-3 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
           >
-            Learn more about responsible hosting
+            {t("host_local_laws_link_responsible_hosting")}
           </button>
         </div>
       </div>
 
       {/* 7. Legal Terms Disclaimer */}
       <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-xl pt-2 border-t border-zinc-100 dark:border-zinc-800">
-        By accepting our Terms of Service and listing your space, you certify that you will follow
-        applicable laws and regulations.
+        {t("host_local_laws_legal_disclaimer")}
       </p>
 
       {/* 8. Save & Acknowledge Actions */}
@@ -240,7 +237,7 @@ export function LocalLawsView({
           }}
           className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "I understand & acknowledge"}
+          {isSaving ? t("host_saving") : isSaved ? t("host_saved") : t("host_local_laws_acknowledge_btn")}
         </button>
 
         <button
@@ -248,7 +245,7 @@ export function LocalLawsView({
           onClick={() => setActiveSection("description")}
           className="inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all cursor-pointer border border-[#1f1f1f] hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
         >
-          Cancel
+          {t("host_cancel")}
         </button>
       </div>
 
@@ -288,14 +285,14 @@ export function LocalLawsView({
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                   <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
-                <h2 className="text-xl">Resource Centre</h2>
+                <h2 className="text-xl">{t("host_local_laws_resource_centre")}</h2>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowResourceDrawer(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                aria-label="Close Resource Centre"
+                aria-label={t("host_local_laws_close_resource_centre")}
               >
                 <svg
                   className="w-4 h-4"
@@ -320,22 +317,20 @@ export function LocalLawsView({
                   onClick={() => setActiveArticleId("hosting-regulations")}
                   className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1 cursor-pointer mb-2"
                 >
-                  ← Back to hosting regulations
+                  {t("host_local_laws_back_to_hosting_regulations")}
                 </button>
               )}
 
               {/* Title & Subtitle */}
               <div>
-                <h2
-                  id="resource-centre-title"
-                >
+                <h2 id="resource-centre-title">
                   {activeArticle.title}
                 </h2>
                 <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 font-normal mt-1.5 leading-snug">
                   {activeArticle.subtitle}
                 </p>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500 font-normal mt-2">
-                  By {activeArticle.author} on {activeArticle.date}
+                  {t("host_local_laws_by_author_date", { author: activeArticle.author, date: activeArticle.date })}
                 </p>
               </div>
 
@@ -345,7 +340,8 @@ export function LocalLawsView({
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  title="Copy link"
+                  title={t("host_local_laws_copy_link")}
+                  aria-label={t("host_local_laws_copy_link")}
                   className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer relative"
                 >
                   {copiedLink ? (
@@ -377,7 +373,7 @@ export function LocalLawsView({
                 </button>
                 {copiedLink && (
                   <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in">
-                    Link copied!
+                    {t("host_local_laws_link_copied")}
                   </span>
                 )}
 
@@ -387,7 +383,7 @@ export function LocalLawsView({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                  aria-label="Share on X"
+                  aria-label={t("host_local_laws_share_on_x")}
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -400,7 +396,7 @@ export function LocalLawsView({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                  aria-label="Share on Facebook"
+                  aria-label={t("host_local_laws_share_on_facebook")}
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -423,124 +419,93 @@ export function LocalLawsView({
               {/* Article Content based on Active Article */}
               {activeArticleId === "hosting-regulations" && (
                 <div className="space-y-6 text-sm sm:text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  <p>
-                    Before you start hosting, it&apos;s important to understand how short-term rentals
-                    are regulated in your area. Local rules might affect whether you can host, what
-                    type of permit you need and which taxes apply.
-                  </p>
-
-                  <p>
-                    For example, there may be registration requirements and zoning rules that limit
-                    how you can use your space, or taxes such as occupancy tax or value-added tax.
-                  </p>
-
-                  <p>
-                    While Homyz can&apos;t provide legal or tax advice, we can help you find useful
-                    information to get started.
-                  </p>
+                  <p>{t("host_local_laws_art1_p1")}</p>
+                  <p>{t("host_local_laws_art1_p2")}</p>
+                  <p>{t("host_local_laws_art1_p3")}</p>
 
                   {/* Section 1: Visit the Help Centre */}
                   <div className="space-y-2 pt-2">
                     <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Visit the Help Centre
+                      {t("host_local_laws_art1_sec1_title")}
                     </h3>
                     <p>
-                      Homyz&apos;s Help Centre has{" "}
+                      {t("host_local_laws_art1_sec1_text1")}{" "}
                       <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
-                        regional information
+                        {t("host_local_laws_art1_sec1_link")}
                       </span>{" "}
-                      about laws, regulations, taxes, best practices and other considerations for
-                      hosts. These guides are a starting point for understanding requirements in your
-                      country, state, county or city.
+                      {t("host_local_laws_art1_sec1_text2")}
                     </p>
                   </div>
 
                   {/* Section 2: Connect locally */}
                   <div className="space-y-2 pt-2">
                     <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Connect locally
+                      {t("host_local_laws_art1_sec2_title")}
                     </h3>
-                    <p>
-                      Many local governments publish short-term rental policies on their official
-                      websites. If you can&apos;t find the information online, try emailing or calling
-                      them directly. If you&apos;re a tenant, review your lease and check with your
-                      landlord.
-                    </p>
+                    <p>{t("host_local_laws_art1_sec2_text")}</p>
                   </div>
 
                   {/* Section 3: Contact hosts */}
                   <div className="space-y-2 pt-2">
                     <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Contact hosts
+                      {t("host_local_laws_art1_sec3_title")}
                     </h3>
                     <p>
-                      Join a local{" "}
+                      {t("host_local_laws_art1_sec3_text1")}{" "}
                       <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
-                        Host Club
+                        {t("host_local_laws_art1_sec3_link1")}
                       </span>{" "}
-                      or visit the global{" "}
+                      {t("host_local_laws_art1_sec3_text2")}{" "}
                       <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
-                        Community Centre
+                        {t("host_local_laws_art1_sec3_link2")}
                       </span>{" "}
-                      to connect with experienced hosts who&apos;ve navigated local rules and
-                      regulations. Most hosts are not licensed tax or legal advisers; it&apos;s a good
-                      idea to verify any information you receive.
+                      {t("host_local_laws_art1_sec3_text3")}
                     </p>
                     <p className="text-zinc-600 dark:text-zinc-400">
-                      A co-host could also help with licensing and permits.
+                      {t("host_local_laws_art1_sec3_text4")}
                     </p>
                   </div>
 
                   {/* Section 4: Consult a professional */}
                   <div className="space-y-2 pt-2">
                     <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Consult a professional
+                      {t("host_local_laws_art1_sec4_title")}
                     </h3>
-                    <p>
-                      Local lawyers or tax professionals can provide advice about the specific rules
-                      in your area; they can help you stay in compliance as you prepare to host.
-                    </p>
+                    <p>{t("host_local_laws_art1_sec4_text")}</p>
                   </div>
 
                   {/* Section 5: Learn more with AI */}
                   <div className="space-y-3 pt-2">
                     <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Learn more with AI
+                      {t("host_local_laws_art1_sec5_title")}
                     </h3>
-                    <p>
-                      You can use AI tools to help identify regulations that may affect short-term
-                      rentals in your area. Keep these tips in mind for getting useful results:
-                    </p>
+                    <p>{t("host_local_laws_art1_sec5_intro")}</p>
                     <ul className="space-y-3 pl-1">
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
                           <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
-                            Be specific about your location.
+                            {t("host_local_laws_art1_sec5_tip1_bold")}
                           </strong>{" "}
-                          For example, if you want to host in {cityDisplay}, use the &ldquo;City of{" "}
-                          {cityDisplay}&rdquo; in your queries. Otherwise, you might get results for the
-                          wider regional district, which has different rules.
+                          {t("host_local_laws_art1_sec5_tip1_text", { city: cityDisplay })}
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
                           <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
-                            Read official sources.
+                            {t("host_local_laws_art1_sec5_tip2_bold")}
                           </strong>{" "}
-                          The most accurate information typically comes from government websites.
-                          Local regulations change, so make sure you&apos;re seeing the latest.
+                          {t("host_local_laws_art1_sec5_tip2_text")}
                         </div>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
                           <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
-                            Look at multiple levels.
+                            {t("host_local_laws_art1_sec5_tip3_bold")}
                           </strong>{" "}
-                          Short-term rentals may be affected by neighbourhood, city, county, state,
-                          province, territory or country rules. Be sure to review all that apply.
+                          {t("host_local_laws_art1_sec5_tip3_text")}
                         </div>
                       </li>
                     </ul>
@@ -552,7 +517,7 @@ export function LocalLawsView({
                         onClick={() => setShowAiPromptHelper(!showAiPromptHelper)}
                         className="rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-semibold text-xs px-5 py-2.5 transition-colors cursor-pointer shadow-2xs"
                       >
-                        {showAiPromptHelper ? "Hide prompt" : "Get started"}
+                        {showAiPromptHelper ? t("host_local_laws_hide_prompt") : t("host_local_laws_get_started")}
                       </button>
                     </div>
 
@@ -561,15 +526,15 @@ export function LocalLawsView({
                       <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-3 animate-in fade-in">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                            <span className="text-amber-500">✨</span> Suggested AI Prompt for{" "}
-                            {cityDisplay}
+                            <span className="text-amber-500">✨</span>{" "}
+                            {t("host_local_laws_suggested_ai_prompt", { city: cityDisplay })}
                           </span>
                           <button
                             type="button"
                             onClick={handleCopyAiPrompt}
                             className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 cursor-pointer"
                           >
-                            {copiedPrompt ? "Copied!" : "Copy prompt"}
+                            {copiedPrompt ? t("host_local_laws_copied") : t("host_local_laws_copy_prompt")}
                           </button>
                         </div>
                         <p className="text-xs text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-700 font-mono leading-relaxed">
@@ -584,18 +549,14 @@ export function LocalLawsView({
               {/* Alternative Content for Disruptive Events */}
               {activeArticleId === "disruptive-events" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  <p>
-                    Homyz&apos;s Major Disruptive Events Policy outlines circumstances where hosts or
-                    guests may cancel eligible reservations with refunds, such as natural disasters,
-                    declared health emergencies, and government-mandated travel restrictions.
-                  </p>
+                  <p>{t("host_local_laws_art2_p1")}</p>
                   <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
-                    What qualifies as a disruptive event
+                    {t("host_local_laws_art2_heading")}
                   </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
-                    <li>Severe weather events making safe travel impossible</li>
-                    <li>Official evacuation orders or emergency declarations</li>
-                    <li>Widespread outages of critical public infrastructure</li>
+                    <li>{t("host_local_laws_art2_item1")}</li>
+                    <li>{t("host_local_laws_art2_item2")}</li>
+                    <li>{t("host_local_laws_art2_item3")}</li>
                   </ul>
                 </div>
               )}
@@ -603,15 +564,14 @@ export function LocalLawsView({
               {/* Alternative Content for AirCover / Host Protection */}
               {activeArticleId === "aircover" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  <p>
-                    Every Homyz host receives comprehensive protection whenever they welcome guests.
-                    This includes damage protection, liability insurance, and 24-hour safety support.
-                  </p>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">Protection Highlights</h3>
+                  <p>{t("host_local_laws_art3_p1")}</p>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
+                    {t("host_local_laws_art3_heading")}
+                  </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
-                    <li>Up to SAR 3,000,000 in host damage protection</li>
-                    <li>SAR 1,000,000 liability insurance</li>
-                    <li>Pet damage, art, and deep cleaning protection</li>
+                    <li>{t("host_local_laws_art3_item1")}</li>
+                    <li>{t("host_local_laws_art3_item2")}</li>
+                    <li>{t("host_local_laws_art3_item3")}</li>
                   </ul>
                 </div>
               )}
@@ -619,16 +579,14 @@ export function LocalLawsView({
               {/* Alternative Content for Safety Guidelines */}
               {activeArticleId === "safety-guidelines" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  <p>
-                    Keeping guests safe is the cornerstone of great hosting. Ensure your space has
-                    tested working smoke and carbon monoxide alarms, an accessible first-aid kit,
-                    and a clear emergency evacuation map.
-                  </p>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">Safety Essentials</h3>
+                  <p>{t("host_local_laws_art4_p1")}</p>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
+                    {t("host_local_laws_art4_heading")}
+                  </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
-                    <li>Install interconnected smoke detectors in every bedroom</li>
-                    <li>Maintain a serviced fire extinguisher in the kitchen</li>
-                    <li>Clearly display local emergency telephone numbers</li>
+                    <li>{t("host_local_laws_art4_item1")}</li>
+                    <li>{t("host_local_laws_art4_item2")}</li>
+                    <li>{t("host_local_laws_art4_item3")}</li>
                   </ul>
                 </div>
               )}
@@ -636,7 +594,7 @@ export function LocalLawsView({
               {/* Footnote & Timestamp */}
               <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
                 <p className="text-xs italic text-zinc-400 dark:text-zinc-500">
-                  Information contained in this article may have changed since publication.
+                  {t("host_local_laws_footnote")}
                 </p>
 
                 {/* Author badge & Helpful Feedback */}
@@ -657,16 +615,18 @@ export function LocalLawsView({
                   <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                     {feedbackGiven ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in">
-                        Thank you for your feedback!
+                        {t("host_local_laws_feedback_thanks")}
                       </span>
                     ) : (
                       <>
-                        <span className="text-zinc-500 dark:text-zinc-400">Was this helpful?</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">
+                          {t("host_local_laws_was_this_helpful")}
+                        </span>
                         <button
                           type="button"
                           onClick={() => setFeedbackGiven("up")}
                           className="w-7 h-7 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 cursor-pointer"
-                          aria-label="Thumbs up"
+                          aria-label={t("host_local_laws_thumbs_up")}
                         >
                           👍
                         </button>
@@ -674,7 +634,7 @@ export function LocalLawsView({
                           type="button"
                           onClick={() => setFeedbackGiven("down")}
                           className="w-7 h-7 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 cursor-pointer"
-                          aria-label="Thumbs down"
+                          aria-label={t("host_local_laws_thumbs_down")}
                         >
                           👎
                         </button>
@@ -686,7 +646,9 @@ export function LocalLawsView({
 
               {/* "You might also like" Section (Matching reference footer) */}
               <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
-                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">You might also like</h4>
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {t("host_local_laws_you_might_also_like")}
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Card 1 */}
                   <div
@@ -703,14 +665,14 @@ export function LocalLawsView({
                     }`}
                   >
                     <div className="w-full h-16 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center text-white font-bold text-xs mb-2">
-                      Policy
+                      {t("host_local_laws_policy_badge")}
                     </div>
                     <div>
                       <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
-                        Major Disruptive Events Policy
+                        {t("host_local_laws_art2_title")}
                       </h5>
                       <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
-                        Find out how Homyz handles unforeseen cancellations.
+                        {t("host_local_laws_art2_subtitle")}
                       </p>
                     </div>
                   </div>
@@ -732,7 +694,7 @@ export function LocalLawsView({
                     <div className="w-full h-16 rounded-lg overflow-hidden relative mb-2">
                       <Image
                         src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=300&q=80"
-                        alt="Protection for Hosts"
+                        alt={t("host_local_laws_art3_title")}
                         fill
                         sizes="160px"
                         className="object-cover"
@@ -740,10 +702,10 @@ export function LocalLawsView({
                     </div>
                     <div>
                       <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
-                        How Protection for Hosts works
+                        {t("host_local_laws_art3_title")}
                       </h5>
                       <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
-                        Top-to-bottom protection on damage and liability.
+                        {t("host_local_laws_art3_card_sub")}
                       </p>
                     </div>
                   </div>
@@ -765,7 +727,7 @@ export function LocalLawsView({
                     <div className="w-full h-16 rounded-lg overflow-hidden relative mb-2">
                       <Image
                         src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80"
-                        alt="Safety guidelines"
+                        alt={t("host_local_laws_art4_title")}
                         fill
                         sizes="160px"
                         className="object-cover"
@@ -773,10 +735,10 @@ export function LocalLawsView({
                     </div>
                     <div>
                       <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
-                        Safety guidelines for hosts
+                        {t("host_local_laws_art4_title")}
                       </h5>
                       <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
-                        Follow these responsible safety practices.
+                        {t("host_local_laws_art4_card_sub")}
                       </p>
                     </div>
                   </div>

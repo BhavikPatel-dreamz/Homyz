@@ -1892,12 +1892,12 @@ export function HostListingEditorClient({
                     🏠
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[#1F1F1F]">Remove listing</h2>
-                    <p className="text-xs text-zinc-500">Permanently remove your listing from Homyz.</p>
+                    <h2 className="text-base font-semibold text-[#1F1F1F]">{t("host_remove_listing_card_title") || "Remove listing"}</h2>
+                    <p className="text-xs text-zinc-500">{t("host_remove_listing_card_sub") || "Permanently remove your listing from Homyz."}</p>
                   </div>
                 </div>
                 <p className="text-zinc-600 leading-relaxed">
-                  If you no longer wish to host or need to remove <strong>{listing.title}</strong>, please complete our quick removal survey to permanently remove your listing.
+                  {t("host_remove_listing_card_body_prefix") || "If you no longer wish to host or need to remove "}<strong>{listing.title}</strong>{t("host_remove_listing_card_body_suffix") || ", please complete our quick removal survey to permanently remove your listing."}
                 </p>
                 <div className="pt-2 flex justify-end">
                   <button
@@ -1905,7 +1905,7 @@ export function HostListingEditorClient({
                     onClick={() => setIsRemoveListingModalOpen(true)}
                     className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-2.5 text-xs transition-all shadow-2xs cursor-pointer"
                   >
-                    Remove listing
+                    {t("host_remove_listing_btn") || "Remove listing"}
                   </button>
                 </div>
               </div>

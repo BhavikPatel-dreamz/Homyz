@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface OrgStaysConfig {
   enabled: boolean;
@@ -11,8 +12,8 @@ export interface OrgStaysConfig {
 
 interface AirbnbOrgStaysViewProps {
   listingId: string;
-  discounts?: any;
-  setActiveSection: (section: any) => void;
+  discounts?: Record<string, unknown> | null;
+  setActiveSection: (section: string) => void;
   onSave?: (config: OrgStaysConfig) => Promise<void>;
   isSaving?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
@@ -26,9 +27,11 @@ export function AirbnbOrgStaysView({
   isSaving = false,
   onDirtyChange,
 }: AirbnbOrgStaysViewProps) {
+  const { t } = useLanguage();
+
   // Extract initial values from listing discounts if present
   const initialConfig: OrgStaysConfig = React.useMemo(() => {
-    const org = discounts?.orgStays;
+    const org = discounts?.orgStays as Record<string, unknown> | undefined;
     if (org && typeof org === "object") {
       return {
         enabled: Boolean(org.enabled),
@@ -53,16 +56,18 @@ export function AirbnbOrgStaysView({
   const [isEnabled, setIsEnabled] = useState(initialConfig.enabled);
   const [discountType, setDiscountType] = useState<"FREE" | "DISCOUNT">(initialConfig.discountType);
   const [discountPercentage, setDiscountPercentage] = useState(initialConfig.discountPercentage);
+  const [prevConfig, setPrevConfig] = useState(initialConfig);
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Refresh local controls after the server-confirmed listing data changes.
-  useEffect(() => {
+  // Sync local state during render when server-confirmed listing data changes
+  if (prevConfig !== initialConfig) {
+    setPrevConfig(initialConfig);
     setIsEnabled(initialConfig.enabled);
     setDiscountType(initialConfig.discountType);
     setDiscountPercentage(initialConfig.discountPercentage);
-  }, [initialConfig]);
+  }
 
   // Track if host has unsaved modifications
   const isDirty =
@@ -105,7 +110,7 @@ export function AirbnbOrgStaysView({
       setTimeout(() => setIsSavedSuccess(false), 3000);
     } catch (e) {
       console.error("Failed to save homyz.org stays preferences:", e);
-      setSaveError(e instanceof Error ? e.message : "Unable to save preferences. Please try again.");
+      setSaveError(e instanceof Error ? e.message : (t("host_org_stays_save_error") || "Unable to save preferences. Please try again."));
     }
   };
 
@@ -114,21 +119,24 @@ export function AirbnbOrgStaysView({
       {/* 1. Page Title */}
       <div className="mb-6">
         <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight text-[#222222] dark:text-zinc-100 leading-tight">
-          Homyz.com Stays
+          {t("host_org_stays_title") || "Homyz.com Stays"}
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal mt-1">
-          Homyz.org stays
+          {t("host_org_stays_subtitle") || "Homyz.org stays"}
         </p>
       </div>
 
       {/* 1b. Informational Guidance Notice */}
       <div className="mb-6 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 space-y-2 text-sm sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
         <p>
-          This setting controls your listing&apos;s participation in Homyz.com emergency and humanitarian stays.
-          When enabled, verified guests and vetted relief organizations can request temporary housing at your property for free or at a discount.
+          {t("host_org_stays_notice_p1") || "This setting controls your listing's participation in Homyz.com emergency and humanitarian stays. When enabled, verified guests and vetted relief organizations can request temporary housing at your property for free or at a discount."}
         </p>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Turning this setting <strong className="text-zinc-700 dark:text-zinc-200">OFF</strong> pauses your listing&apos;s enrollment in the program and may affect the listing&apos;s booking flow or available platform services for emergency relief stays. Regular guest bookings remain unaffected.
+          {t("host_org_stays_notice_p2_part1") || "Turning this setting "}
+          <strong className="text-zinc-700 dark:text-zinc-200">
+            {isEnabled ? (t("host_org_stays_on_upper") || "ON") : (t("host_org_stays_off_upper") || "OFF")}
+          </strong>
+          {t("host_org_stays_notice_p2_part2") || " pauses your listing's enrollment in the program and may affect the listing's booking flow or available platform services for emergency relief stays. Regular guest bookings remain unaffected."}
         </p>
       </div>
 
@@ -137,7 +145,7 @@ export function AirbnbOrgStaysView({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-lg sm:text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-tight leading-none">
-              Homyz.com Stays
+              {t("host_org_stays_brand_title") || "Homyz.com Stays"}
             </h2>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold tracking-wide transition-colors ${isEnabled
@@ -149,23 +157,23 @@ export function AirbnbOrgStaysView({
             </span>
           </div>
           <p className="text-sm text-[#E01563] dark:text-rose-400 font-semibold tracking-tight pt-0.5">
-            Homyz.org
+            {t("host_org_stays_brand_sub") || "Homyz.org"}
           </p>
           <p className="text-sm text-[#717171] dark:text-zinc-400 font-normal leading-normal">
-            Available for Homyz.org guests for free or at a discount
+            {t("host_org_stays_brand_desc") || "Available for Homyz.org guests for free or at a discount"}
           </p>
         </div>
 
         {/* Pill Toggle Switch */}
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 select-none">
-            {isEnabled ? "ON" : "OFF"}
+            {isEnabled ? (t("host_org_stays_on_upper") || "ON") : (t("host_org_stays_off_upper") || "OFF")}
           </span>
           <button
             type="button"
             role="switch"
             aria-checked={isEnabled}
-            aria-label="Homyz.com Stays ON / OFF"
+            aria-label={t("host_org_stays_switch_aria") || "Homyz.com Stays ON / OFF"}
             onClick={handleToggle}
             className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${isEnabled ? "bg-[#222222] dark:bg-amber-400" : "bg-[#B0B0B0] dark:bg-zinc-700"
               }`}
@@ -182,7 +190,7 @@ export function AirbnbOrgStaysView({
       {isEnabled && (
         <div className="my-6 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tracking-wide uppercase">
-            How would you like to participate?
+            {t("host_org_stays_participate_heading") || "How would you like to participate?"}
           </p>
 
           <div className="space-y-3">
@@ -202,10 +210,10 @@ export function AirbnbOrgStaysView({
               />
               <div className="text-sm">
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">
-                  Host for free (100% discount)
+                  {t("host_org_stays_option_free_title") || "Host for free (100% discount)"}
                 </span>
                 <span className="text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed block mt-0.5">
-                  Offer free emergency stays to people evacuating disasters or refugees. You will receive $0 for the stay.
+                  {t("host_org_stays_option_free_desc") || "Offer free emergency stays to people evacuating disasters or refugees. You will receive $0 for the stay."}
                 </span>
               </div>
             </label>
@@ -226,16 +234,16 @@ export function AirbnbOrgStaysView({
               />
               <div className="text-sm flex-1">
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">
-                  Host at a discount
+                  {t("host_org_stays_option_discount_title") || "Host at a discount"}
                 </span>
                 <span className="text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed block mt-0.5">
-                  Offer a discount off your standard nightly rate for verified homyz.org bookings.
+                  {t("host_org_stays_option_discount_desc") || "Offer a discount off your standard nightly rate for verified homyz.org bookings."}
                 </span>
 
                 {discountType === "DISCOUNT" && (
                   <div className="mt-3.5 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center gap-2">
                     <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium mr-1">
-                      Discount percentage:
+                      {t("host_org_stays_discount_pct_label") || "Discount percentage:"}
                     </span>
                     {[20, 30, 50].map((pct) => (
                       <button
@@ -250,7 +258,7 @@ export function AirbnbOrgStaysView({
                             : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                           }`}
                       >
-                        {pct}% off
+                        {t("host_org_stays_pct_off", { pct: String(pct) }) || `${pct}% off`}
                       </button>
                     ))}
                     <div className="flex items-center gap-1.5 ml-auto">
@@ -275,32 +283,32 @@ export function AirbnbOrgStaysView({
       {/* 3. "How homyz.org stays work" Section */}
       <div className="mt-10 pt-2 space-y-4">
         <h3 className="text-base sm:text-lg font-semibold text-[#222222] dark:text-zinc-100 tracking-tight">
-          How homyz.org stays work
+          {t("host_org_stays_how_it_works_heading") || "How homyz.org stays work"}
         </h3>
 
         <ul className="space-y-4 text-sm text-[#222222] dark:text-zinc-200 font-normal leading-relaxed list-none pl-0">
           <li className="flex items-start gap-2.5">
             <span className="text-zinc-800 dark:text-zinc-300 text-base leading-none select-none mt-1">•</span>
             <span>
-              When hosting for free or at a discount, you review each request before accepting, and declining a request won&apos;t affect your Superhost status.
+              {t("host_org_stays_bullet1") || "When hosting for free or at a discount, you review each request before accepting, and declining a request won't affect your Superhost status."}
             </span>
           </li>
           <li className="flex items-start gap-2.5">
             <span className="text-zinc-800 dark:text-zinc-300 text-base leading-none select-none mt-1">•</span>
             <span>
-              homyz.org or its partner checks guests&apos; eligibility.
+              {t("host_org_stays_bullet2") || "homyz.org or its partner checks guests' eligibility."}
             </span>
           </li>
           <li className="flex items-start gap-2.5">
             <span className="text-zinc-800 dark:text-zinc-300 text-base leading-none select-none mt-1">•</span>
             <span>
-              homyz.org&apos;s partners may send requests on behalf of their clients.
+              {t("host_org_stays_bullet3") || "homyz.org's partners may send requests on behalf of their clients."}
             </span>
           </li>
           <li className="flex items-start gap-2.5">
             <span className="text-zinc-800 dark:text-zinc-300 text-base leading-none select-none mt-1">•</span>
             <span>
-              Stays can vary in length from a few days to a few weeks.
+              {t("host_org_stays_bullet4") || "Stays can vary in length from a few days to a few weeks."}
             </span>
           </li>
         </ul>
@@ -310,10 +318,10 @@ export function AirbnbOrgStaysView({
           <button
             type="button"
             onClick={() => setIsLearnMoreOpen(true)}
-            aria-label="Learn more about homyz.org"
+            aria-label={t("host_org_stays_learn_more_aria") || "Learn more about homyz.org"}
             className="text-sm sm:text-sm font-normal text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:underline cursor-pointer inline-flex items-center gap-1"
           >
-            <span>Learn More</span>
+            <span>{t("host_org_stays_learn_more") || "Learn More"}</span>{/* <span>Learn More</span> */}
             <span className="font-normal">&gt;</span>
           </button>
         </div>
@@ -327,7 +335,7 @@ export function AirbnbOrgStaysView({
           onClick={handleSave}
           className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] dark:bg-amber-400 dark:hover:bg-amber-500 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed text-zinc-950 font-semibold text-sm px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          {isSaving ? "Saving..." : isSavedSuccess ? "Saved" : "Save"}
+          {isSaving ? (t("host_saving") || "Saving...") : isSavedSuccess ? (t("host_saved") || "Saved") : (t("host_save") || "Save")}
         </button>
 
         <button
@@ -336,7 +344,7 @@ export function AirbnbOrgStaysView({
           onClick={handleCancel}
           className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          Cancel
+          {t("host_cancel") || "Cancel"}
         </button>
 
         {isSavedSuccess && (
@@ -344,7 +352,7 @@ export function AirbnbOrgStaysView({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Saved successfully
+            {t("host_org_stays_saved_success") || "Saved successfully"}
           </span>
         )}
         {saveError && <p role="alert" className="text-sm font-medium text-rose-600 dark:text-rose-400">{saveError}</p>}
@@ -374,16 +382,18 @@ export function AirbnbOrgStaysView({
             <div className="sticky top-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm z-20 border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-[#E01563] dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
-                  Resource Centre
+                  {t("host_org_stays_resource_centre") || "Resource Centre"}
                 </span>
                 <span className="text-sm text-zinc-400">·</span>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">3 min read</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+                  {t("host_org_stays_read_time") || "3 min read"}
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsLearnMoreOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                aria-label="Close"
+                aria-label={t("host_close") || "Close"}
               >
                 <svg
                   className="w-4 h-4"
@@ -403,10 +413,10 @@ export function AirbnbOrgStaysView({
             <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1 text-zinc-800 dark:text-zinc-200 text-sm leading-relaxed">
               <div>
                 <h2 id="learn-more-org-title" className="text-xl sm:text-2xl font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">
-                  About homyz.org and emergency stays
+                  {t("host_org_stays_modal_title") || "About homyz.org and emergency stays"}
                 </h2>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1.5">
-                  How our community opens its doors to people in times of crisis.
+                  {t("host_org_stays_modal_subtitle") || "How our community opens its doors to people in times of crisis."}
                 </p>
               </div>
 
@@ -414,10 +424,10 @@ export function AirbnbOrgStaysView({
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
                 <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
                   <span className="text-[#E01563] dark:text-rose-400 text-base">❤️</span>
-                  <h4>What is homyz.org?</h4>
+                  <h4>{t("host_org_stays_card1_title") || "What is homyz.org?"}</h4>
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  homyz.org is an independent nonprofit organization that connects people in crisis with temporary emergency housing provided by hosts and funded by donors.
+                  {t("host_org_stays_card1_desc") || "homyz.org is an independent nonprofit organization that connects people in crisis with temporary emergency housing provided by hosts and funded by donors."}
                 </p>
               </div>
 
@@ -425,10 +435,10 @@ export function AirbnbOrgStaysView({
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
                 <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
                   <span className="text-indigo-600 dark:text-indigo-400 text-base">👥</span>
-                  <h4>Who stays with homyz.org?</h4>
+                  <h4>{t("host_org_stays_card2_title") || "Who stays with homyz.org?"}</h4>
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  Guests include individuals and families evacuated due to major natural disasters (wildfires, floods, earthquakes) or humanitarian crises (refugees and asylum seekers), as well as relief workers assisting on the ground.
+                  {t("host_org_stays_card2_desc") || "Guests include individuals and families evacuated due to major natural disasters (wildfires, floods, earthquakes) or humanitarian crises (refugees and asylum seekers), as well as relief workers assisting on the ground."}
                 </p>
               </div>
 
@@ -436,10 +446,10 @@ export function AirbnbOrgStaysView({
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
                 <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
                   <span className="text-emerald-600 dark:text-emerald-400 text-base">🏛️</span>
-                  <h4>Vetted humanitarian partners</h4>
+                  <h4>{t("host_org_stays_card3_title") || "Vetted humanitarian partners"}</h4>
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  homyz.org works with established humanitarian organizations such as the International Rescue Committee (IRC), CORE, and GlobalGiving. These organizations assess guest eligibility and frequently manage reservations on behalf of their clients.
+                  {t("host_org_stays_card3_desc") || "homyz.org works with established humanitarian organizations such as the International Rescue Committee (IRC), CORE, and GlobalGiving. These organizations assess guest eligibility and frequently manage reservations on behalf of their clients."}
                 </p>
               </div>
 
@@ -447,10 +457,10 @@ export function AirbnbOrgStaysView({
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
                 <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
                   <span className="text-amber-600 dark:text-amber-400 text-base">🛡️</span>
-                  <h4>Host Protection for emergency stays</h4>
+                  <h4>{t("host_org_stays_card4_title") || "Host Protection for emergency stays"}</h4>
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  Every homyz.org stay includes comprehensive Host damage protection up to $1,000,000 USD and liability insurance, giving you total peace of mind whenever you host.
+                  {t("host_org_stays_card4_desc") || "Every homyz.org stay includes comprehensive Host damage protection up to $1,000,000 USD and liability insurance, giving you total peace of mind whenever you host."}
                 </p>
               </div>
 
@@ -458,10 +468,10 @@ export function AirbnbOrgStaysView({
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 space-y-2">
                 <div className="flex items-center gap-2 text-zinc-950 dark:text-zinc-100 font-semibold text-sm">
                   <span className="text-blue-600 dark:text-blue-400 text-base">ℹ️</span>
-                  <h4>Full control over every request</h4>
+                  <h4>{t("host_org_stays_card5_title") || "Full control over every request"}</h4>
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                  You are always in control. You review each homyz.org stay request individually before accepting. If you are unable to accommodate a request, declining will never affect your Superhost status or search performance.
+                  {t("host_org_stays_card5_desc") || "You are always in control. You review each homyz.org stay request individually before accepting. If you are unable to accommodate a request, declining will never affect your Superhost status or search performance."}
                 </p>
               </div>
 
@@ -473,7 +483,7 @@ export function AirbnbOrgStaysView({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-[#E01563] dark:text-rose-400 hover:underline"
                 >
-                  <span>Visit official homyz.org website</span>
+                  <span>{t("host_org_stays_visit_website") || "Visit official homyz.org website"}</span>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
@@ -488,7 +498,7 @@ export function AirbnbOrgStaysView({
                 onClick={() => setIsLearnMoreOpen(false)}
                 className="px-6 py-2.5 rounded-full bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-sm font-semibold cursor-pointer transition-colors shadow-2xs"
               >
-                Done
+                {t("header_done") || "Done"}
               </button>
             </div>
           </section>
