@@ -571,7 +571,8 @@ export function HostListingEditorClient({
     Boolean(wifiNetwork && wifiNetwork.trim().length > 0),
     Boolean(houseManual && houseManual.trim().length > 0),
     Boolean(checkOutInstructions && checkOutInstructions.trim().length > 0),
-    Boolean((initialGuidebooks?.length ?? 0) > 0),
+    // TEMPORARILY DISABLED: guidebooks are off while the feature is paused.
+    // Boolean((initialGuidebooks?.length ?? 0) > 0),
     Boolean(editGuestInteraction && editGuestInteraction.trim().length > 0),
   ].filter(Boolean).length;
 
@@ -1982,7 +1983,7 @@ export function HostListingEditorClient({
           checkOutInstructions={checkOutInstructions}
           directions={directions}
           guestInteractionPreference={editGuestInteraction}
-          guidebooksCount={initialGuidebooks?.length ?? 0}
+          guidebooksCount={0}
           editBedrooms={editBedrooms}
           editBeds={editBeds}
           parkingAvailable={parkingAvailable}

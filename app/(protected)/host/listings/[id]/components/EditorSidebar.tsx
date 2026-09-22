@@ -467,7 +467,8 @@ export function EditorSidebar({
   const hasWifi = Boolean(wifiNetwork && wifiNetwork.trim().length > 0);
   const hasHouseManual = Boolean(houseManual && houseManual.trim().length > 0);
   const hasCheckoutInstructions = Boolean(checkOutInstructions && checkOutInstructions.trim().length > 0);
-  const hasGuidebooks = Boolean(guidebooksCount && guidebooksCount > 0);
+  // TEMPORARILY DISABLED: guidebooks are off while the feature is paused.
+  const hasGuidebooks = false;
   const hasInteractionPref = Boolean(guestInteractionPreference && guestInteractionPreference.trim().length > 0);
 
   const arrivalGuideCompletedCount = [

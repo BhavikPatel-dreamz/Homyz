@@ -22,6 +22,7 @@ import {
   type PublicListingDTO,
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
+import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
@@ -278,6 +279,8 @@ export type PublicSearchFilters = {
   page?: number;
   /** Alias for take */
   limit?: number;
+  /** Lightweight result-count request used while a filter draft is being edited. */
+  countOnly?: boolean;
   skip?: number;
   take?: number;
 };
@@ -293,6 +296,21 @@ export interface PublicSearchResult {
   isRadiusExpanded?: boolean;
   locationContextName?: string;
   targetCoords?: { lat: number; lng: number };
+}
+
+/** Accept ISO IDs as well as legacy display names from older shared URLs. */
+function normalizeSearchLanguages(languages: string[] | undefined): string[] {
+  if (!languages?.length) return [];
+  const lookup = new Map<string, string>();
+  for (const language of LANGUAGE_OPTIONS) {
+    lookup.set(language.id.toLowerCase(), language.id);
+    lookup.set(language.name.toLowerCase(), language.id);
+    if (language.nativeName) lookup.set(language.nativeName.toLowerCase(), language.id);
+  }
+  return [...new Set(languages.map((value) => {
+    const trimmed = value.trim();
+    return lookup.get(trimmed.toLowerCase()) ?? trimmed;
+  }).filter(Boolean))];
 }
 
 function getGeoBoundsClause(lat: number, lng: number, radiusKm: number): Prisma.ListingWhereInput {
@@ -390,13 +408,18 @@ async function searchPublicListings(
     }
   }
 
+  // Keep price conditions separate. The filter UI needs an absolute range for
+  // the current search context, rather than a range narrowed by a previously
+  // applied price filter (otherwise its slider can never be expanded again).
+  const priceClauses: Prisma.ListingWhereInput[] = [];
   if (typeof filters.minPrice === "number") {
-    baseClauses.push({ price: { gte: filters.minPrice } });
+    priceClauses.push({ price: { gte: filters.minPrice } });
   }
 
   if (typeof filters.maxPrice === "number") {
-    baseClauses.push({ price: { lte: filters.maxPrice } });
+    priceClauses.push({ price: { lte: filters.maxPrice } });
   }
+  baseClauses.push(...priceClauses);
 
   if (filters.amenities && filters.amenities.length > 0) {
     const canonicalAmenityIds = normalizeAmenities(filters.amenities);
@@ -428,9 +451,23 @@ async function searchPublicListings(
     });
   }
 
-  if (filters.languages && filters.languages.length > 0) {
+  const languageIds = normalizeSearchLanguages(filters.languages);
+  if (languageIds.length > 0) {
+    // Hosts can set languages in either the listing's arrival-guide editor or
+    // their shared “About your host” profile. Treat either source as a match.
+    const hostProfileLanguageClauses: Prisma.ListingWhereInput[] = languageIds.map((languageId) => ({
+      host: {
+        publicProfile: {
+          path: ["languages"],
+          array_contains: [languageId],
+        },
+      },
+    }));
     baseClauses.push({
-      languages: { hasSome: filters.languages },
+      OR: [
+        { languages: { hasSome: languageIds } },
+        ...hostProfileLanguageClauses,
+      ],
     });
   }
 
@@ -551,6 +588,11 @@ async function searchPublicListings(
   }
 
   const where: Prisma.ListingWhereInput = { AND: andClauses };
+  const availablePriceWhere: Prisma.ListingWhereInput = {
+    AND: priceClauses.length
+      ? andClauses.filter((clause) => !priceClauses.includes(clause))
+      : andClauses,
+  };
 
   // Sort order
   let orderBy: Prisma.ListingOrderByWithRelationInput[] = [
@@ -576,6 +618,21 @@ async function searchPublicListings(
   const page = filters.page ?? 1;
   const skip = filters.skip ?? (page - 1) * take;
 
+  if (filters.countOnly) {
+    const total = await prisma.listing.count({ where });
+    return {
+      items: [],
+      total,
+      page,
+      totalPages: Math.ceil(total / take),
+      appliedRadiusKm: appliedRadius,
+      originalRadiusKm: initialRadius,
+      isRadiusExpanded,
+      locationContextName: effectivePlaceName || filters.city || undefined,
+      targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
+    };
+  }
+
   const hasDateFilter = Boolean(filters.checkIn && filters.checkOut);
 
   if (!hasDateFilter) {
@@ -589,10 +646,13 @@ async function searchPublicListings(
       guests: totalGuests,
       pets: filters.pets ?? 0,
       propertyType: filters.propertyType ?? "",
+      propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
       listingType: filters.listingType ?? "",
       minPrice: filters.minPrice ?? 0,
       maxPrice: filters.maxPrice ?? 0,
       amenities: (filters.amenities ?? []).slice().sort().join(","),
+      accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
+      languages: languageIds.slice().sort().join(","),
       bedrooms: filters.bedrooms ?? 0,
       bathrooms: filters.bathrooms ?? 0,
       beds: filters.beds ?? 0,
@@ -624,7 +684,7 @@ async function searchPublicListings(
     const [items, total, priceAgg] = await Promise.all([
       prisma.listing.findMany({ where, skip, take, orderBy }),
       prisma.listing.count({ where }),
-      prisma.listing.aggregate({ where, _min: { price: true }, _max: { price: true } }),
+      prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } }),
     ]);
     const priceRange = { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 };
     let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
@@ -665,7 +725,7 @@ async function searchPublicListings(
   const [items, total, priceAgg] = await Promise.all([
     prisma.listing.findMany({ where, skip, take, orderBy }),
     prisma.listing.count({ where }),
-    prisma.listing.aggregate({ where, _min: { price: true }, _max: { price: true } }),
+    prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } }),
   ]);
   let mappedItems: PublicListingDTO[] = items.map(toPublicListingDTO);
   if (effectiveLat !== undefined && effectiveLng !== undefined) {

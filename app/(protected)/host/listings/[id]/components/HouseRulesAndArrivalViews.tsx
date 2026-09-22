@@ -14,7 +14,8 @@ import {
 
 import React from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { GuidebooksManager } from "./GuidebooksManager";
+// TEMPORARILY DISABLED: guidebook manager is hidden until the feature is stable.
+// import { GuidebooksManager } from "./GuidebooksManager";
 import { LocalLawsView } from "./LocalLawsView";
 import { TaxesManager } from "./TaxesManager";
 import { AirbnbOrgStaysView } from "./AirbnbOrgStaysView";
@@ -1029,8 +1030,9 @@ export function HouseRulesAndArrivalViews({
         )}
 
       {/* --------------------------------------------------------- */}
-      {/* VIEW: GUIDEBOOKS (Matches Figma Screenshot 100%) */}
+      {/* VIEW: GUIDEBOOKS (TEMPORARILY DISABLED) */}
       {/* --------------------------------------------------------- */}
+      {/*
       {(activeSection === "guidebooks" || activeSection === "guidebook") && (
         <GuidebooksManager
           listingId={listingId || ""}
@@ -1042,6 +1044,7 @@ export function HouseRulesAndArrivalViews({
           initialGuidebooks={initialGuidebooks}
         />
       )}
+      */}
 
       {/* --------------------------------------------------------- */}
       {/* VIEW: INTERACTION PREFERENCES (Matches Figma 100%) */}

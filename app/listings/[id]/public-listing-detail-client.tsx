@@ -536,7 +536,8 @@ export function PublicListingDetailClient({
                   {listing.views && listing.views.length > 0 && <div><h4 className="font-semibold text-zinc-900">Views</h4><p className="mt-1 capitalize">{listing.views.map((view) => view.replace(/_/g, " ")).join(" · ")}</p></div>}
                 </div>}
 
-                {guidebooks.length > 0 && (
+                {/* TEMPORARILY DISABLED: local guidebook cards are hidden while the feature is paused. */}
+                {/* {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-zinc-900">Local Host Guidebook</h4>
@@ -569,7 +570,7 @@ export function PublicListingDetailClient({
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 

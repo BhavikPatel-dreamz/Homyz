@@ -2,7 +2,6 @@ import { notFound, forbidden } from "next/navigation";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient } from "../host-listing-editor-client";
-import { guidebookService } from "@/services/guidebook.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 import { listingService } from "@/services/listing.service";
 import { slugToSection, serializeListingForEditor } from "../section-helpers";
@@ -48,13 +47,9 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
     nonRefundableDiscountPercentage,
   });
 
+  // TEMPORARILY DISABLED: guidebook feature is being held back until the UI/data flow is stable.
   // Prefetch guidebooks associated with this listing to avoid an extra client fetch
-  let initialGuidebooks: any[] = [];
-  try {
-    initialGuidebooks = await guidebookService.getGuidebooksForListing(listingId);
-  } catch (err) {
-    initialGuidebooks = [];
-  }
+  const initialGuidebooks: any[] = [];
 
   return (
     <HostListingEditorClient

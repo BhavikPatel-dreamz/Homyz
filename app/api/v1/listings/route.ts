@@ -10,10 +10,25 @@ import { Role } from "@/generated/prisma/enums";
 export const GET = apiHandler(async (req) => {
   const sp = req.nextUrl.searchParams;
   const { page, limit, skip, take } = parsePagination(sp);
+  const countOnly = sp.get("countOnly") === "true";
 
   const city = sp.get("city") || sp.get("destination") || undefined;
+  const destination = sp.get("destination") || undefined;
+  const placeName = sp.get("placeName") || destination || city || undefined;
+  const lat = sp.get("lat") ? parseFloat(sp.get("lat")!) : undefined;
+  const lng = sp.get("lng") ? parseFloat(sp.get("lng")!) : undefined;
+  const radiusKm = sp.get("radius") ? parseFloat(sp.get("radius")!) : undefined;
+  const placeId = sp.get("placeId") || undefined;
+  const locationType = sp.get("locationType") || undefined;
   const guests = sp.get("guests") ? parseInt(sp.get("guests")!, 10) : undefined;
+  const adults = sp.get("adults") ? parseInt(sp.get("adults")!, 10) : undefined;
+  const children = sp.get("children") ? parseInt(sp.get("children")!, 10) : undefined;
+  const infants = sp.get("infants") ? parseInt(sp.get("infants")!, 10) : undefined;
   const propertyType = sp.get("propertyType") || undefined;
+  const propertyTypesParam = sp.get("propertyTypes");
+  const propertyTypes = propertyTypesParam
+    ? propertyTypesParam.split(",").map((value) => value.trim()).filter(Boolean)
+    : undefined;
   const listingType = sp.get("listingType") || undefined;
   const minPrice = sp.get("minPrice") ? parseInt(sp.get("minPrice")!, 10) : undefined;
   const maxPrice = sp.get("maxPrice") ? parseInt(sp.get("maxPrice")!, 10) : undefined;
@@ -51,7 +66,7 @@ export const GET = apiHandler(async (req) => {
     : undefined;
 
   const hasFilters = Boolean(
-    city || guests || propertyType || listingType || minPrice || maxPrice ||
+    countOnly || city || destination || placeName || lat !== undefined || lng !== undefined || guests || adults || children || infants || propertyType || propertyTypes?.length || listingType || minPrice || maxPrice ||
     checkIn || checkOut || amenities || bedrooms || bathrooms || beds ||
     instantBook || featured || pets || accessibilityFeatures || languages ||
     sortBy || mapBounds,
@@ -60,8 +75,19 @@ export const GET = apiHandler(async (req) => {
   const result = hasFilters
     ? await listingService.searchPublicListings({
         city,
+        destination,
+        placeName,
+        lat: Number.isFinite(lat) ? lat : undefined,
+        lng: Number.isFinite(lng) ? lng : undefined,
+        radiusKm: Number.isFinite(radiusKm) ? radiusKm : undefined,
+        placeId,
+        locationType,
         guests,
+        adults,
+        children,
+        infants,
         propertyType,
+        propertyTypes,
         listingType,
         minPrice,
         maxPrice,
@@ -78,6 +104,7 @@ export const GET = apiHandler(async (req) => {
         pets,
         sortBy,
         mapBounds,
+        countOnly,
         skip,
         take,
       })

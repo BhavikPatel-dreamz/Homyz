@@ -38,6 +38,7 @@ interface SearchPageProps {
     infants?: string;
     pets?: string;
     propertyType?: string;
+    propertyTypes?: string;
     listingType?: string;
     minPrice?: string;
     maxPrice?: string;
@@ -83,6 +84,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const infants = sp.infants ? parseInt(sp.infants, 10) : undefined;
   const pets = sp.pets ? parseInt(sp.pets, 10) : undefined;
   const propertyType = sp.propertyType || undefined;
+  const propertyTypes = sp.propertyTypes ? sp.propertyTypes.split(",").filter(Boolean) : undefined;
   const listingType = sp.listingType || undefined;
   const minPrice = sp.minPrice ? parseInt(sp.minPrice, 10) : undefined;
   const maxPrice = sp.maxPrice ? parseInt(sp.maxPrice, 10) : undefined;
@@ -141,6 +143,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
       infants,
       pets,
       propertyType,
+      propertyTypes,
       listingType,
       minPrice,
       maxPrice,
@@ -193,6 +196,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     infants,
     pets,
     propertyType,
+    propertyTypes,
     listingType,
     minPrice,
     maxPrice,
