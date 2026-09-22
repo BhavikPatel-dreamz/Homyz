@@ -1645,7 +1645,7 @@ export function PropertyDetailsViews({
                               </div>
                             ) : (
                               <div className="size-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 text-base font-normal transition-all shrink-0">
-                                <Image src="/images/icons/add-Icon.svg" alt={t("host_add")} width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                                <Image src="/images/icons/add-icon.svg" alt={t("host_add")} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                               </div>
                             )}
                           </div>

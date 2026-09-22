@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import useWishlist from "@/hooks/useWishlist";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
@@ -19,9 +21,9 @@ interface DiscountsJson {
   last_minute?: DiscountEntry;
   [key: string]: DiscountEntry | undefined;
 }
-
 function getDiscountPct(entry?: DiscountEntry): number | null {
   if (!entry || typeof entry === "boolean") return null;
+
   if (
     typeof entry === "object" &&
     entry.discountType === "DISCOUNT" &&
@@ -94,6 +96,8 @@ export interface ListingCardProps {
   checkIn?: string;
   /** Optional check-out date from search filters */
   checkOut?: string;
+  /** Choose which favorite control to render: heart (toggle) or remove (cross) */
+  favoriteVariant?: "heart" | "remove";
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -106,10 +110,12 @@ export function ListingCard({
   priority = false,
   checkIn,
   checkOut,
+  favoriteVariant = "heart",
 }: ListingCardProps) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
+  const wishlist = useWishlist();
 
   // Sync if parent passes a new initial state (e.g., after server re-render)
   useEffect(() => {
@@ -127,6 +133,14 @@ export function ListingCard({
     window.addEventListener("homyz:favorite-changed", onFavoriteChanged);
     return () => window.removeEventListener("homyz:favorite-changed", onFavoriteChanged);
   }, [listing.id]);
+
+  // Sync with centralized wishlist when loaded
+  useEffect(() => {
+    if (!wishlist) return;
+    if (!wishlist.loading) {
+      setIsFavorite(wishlist.has(listing.id));
+    }
+  }, [wishlist, listing.id, wishlist?.loading]);
 
   // ── Multi-Photo Carousel State ─────────────────────────────────────────────
   const rawPhotos = Array.isArray(listing.photos)
@@ -277,7 +291,7 @@ export function ListingCard({
       if (isFavoriting) return;
 
       const next = !isFavorite;
-      setIsFavorite(next); // optimistic
+      setIsFavorite(next); // optimistic local update
       setIsFavoriting(true);
 
       trackListingEvent({
@@ -286,42 +300,38 @@ export function ListingCard({
       });
 
       try {
-        const res = await fetch(`/api/v1/favorites/${listing.id}`, {
-          method: next ? "POST" : "DELETE",
-          credentials: "same-origin",
-        });
-
-        if (res.status === 401) {
-          // Not authenticated — revert and redirect to login, preserving return URL
-          setIsFavorite(!next);
-          const returnUrl =
-            typeof window !== "undefined"
-              ? window.location.pathname + window.location.search
-              : targetHref;
-          router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
-          return;
-        }
-
-        if (!res.ok) {
-          setIsFavorite(!next); // revert on any other error
-          return;
-        }
-
-        // Broadcast to sync any other instances of the same card on page
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(
-            new CustomEvent("homyz:favorite-changed", {
-              detail: { listingId: listing.id, isFavorite: next },
-            }),
-          );
+        if (next) {
+          await wishlist.add(listing.id);
+        } else {
+          await wishlist.remove(listing.id);
         }
       } catch {
-        setIsFavorite(!next); // revert on network error
+        setIsFavorite(!next);
       } finally {
         setIsFavoriting(false);
       }
     },
-    [listing.id, isFavorite, isFavoriting, targetHref, router],
+    [listing.id, isFavorite, isFavoriting, wishlist],
+  );
+
+  const handleRemoveOnly = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isFavoriting) return;
+
+      setIsFavoriting(true);
+      setIsFavorite(false);
+
+      try {
+        await wishlist.remove(listing.id);
+      } catch {
+        setIsFavorite(true);
+      } finally {
+        setIsFavoriting(false);
+      }
+    },
+    [listing.id, isFavoriting, wishlist],
   );
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -387,46 +397,23 @@ export function ListingCard({
           </span>
         ) : null}
 
-        {/* ── Favorite Heart Button (Top Right) ── */}
+        {/* ── Favorite Button (Top Right) ── */}
         {showFavorite && (
-          <button
-            type="button"
-            aria-label={
-              isFavorite
-                ? `Remove ${listing.title || "property"} from favorites`
-                : `Save ${listing.title || "property"} to favorites`
-            }
-            aria-pressed={isFavorite}
-            onClick={toggleFavorite}
-            disabled={isFavoriting}
-            className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full text-white transition-transform hover:scale-110 active:scale-90 cursor-pointer disabled:opacity-60 focus:outline-hidden"
-          >
-            {isFavorite ? (
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="#f43f5e"
-                stroke="#f43f5e"
-                strokeWidth="1.5"
-                className="h-6 w-6 drop-shadow-md"
-              >
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          (favoriteVariant === "remove") ? (
+            <button
+              type="button"
+              aria-label="Remove from wishlist"
+              onClick={handleRemoveOnly}
+              disabled={isFavoriting}
+              className={`absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-xs text-[#1f1f1f] transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs disabled:opacity-60`}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" strokeWidth="1.6" className="h-5 w-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
               </svg>
-            ) : (
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="rgba(0, 0, 0, 0.25)"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 drop-shadow-md"
-              >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-            )}
-          </button>
+            </button>
+          ) : (
+            <WishlistButton listingId={listing.id} />
+          )
         )}
 
         {/* ── Prev / Next Navigation Arrows ── */}

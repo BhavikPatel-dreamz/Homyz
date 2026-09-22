@@ -1535,6 +1535,8 @@ export function HostListingEditorClient({
                 onSave={() => handleSaveSection("photos")}
                 isSaving={isSaving}
                 isLoading={isLoading}
+                onBack={() => setActiveSection("sleeping-arrangements")}
+                setActiveSection={setActiveSection}
               />
             )}
 

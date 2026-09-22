@@ -1,6 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
 import type { Booking, Listing, Prisma, User } from "@/generated/prisma/client";
 
+function getPublicCoordinates(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+  showExactLocation: boolean,
+): { latitude: number | null; longitude: number | null } {
+  // A public DTO must never turn an invalid stored value into a map pin. When
+  // a host has opted out of sharing an exact location, only the coarse grid
+  // point is sent to the browser; the underlying coordinates stay in the DB.
+  if (
+    typeof latitude !== "number" || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+    typeof longitude !== "number" || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 ||
+    (latitude === 0 && longitude === 0)
+  ) {
+    return { latitude: null, longitude: null };
+  }
+
+  return showExactLocation
+    ? { latitude, longitude }
+    : {
+        // Two decimal places is approximately a 1.1 km grid. This is the
+        // value used for both the marker and external map URL, never the raw
+        // listing coordinate.
+        latitude: Math.round(latitude * 100) / 100,
+        longitude: Math.round(longitude * 100) / 100,
+      };
+}
+
 // DTO mappers. The ONLY shape of a user/listing/booking that leaves the service
 // layer. `passwordHash` (and any future secret column) is never included here,
 // so it can never appear in an API response or Server Action result.
@@ -171,6 +198,7 @@ export type ListingDTO = ReturnType<typeof toListingDTO>;
  */
 export function toPublicListingDTO(l: Listing | ListingDTO) {
   const showExact = Boolean(l.showExactLocation);
+  const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
   return {
     id: l.id,
     title: l.title,
@@ -200,19 +228,8 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     district: l.district,
     postalCode: showExact ? l.postalCode : null,
     country: l.country,
-    // Jitter/round coordinates to 2 decimal places (~1.1km) when exact location is disabled
-    latitude:
-      l.latitude !== null && l.latitude !== undefined
-        ? showExact
-          ? l.latitude
-          : Math.round(l.latitude * 100) / 100
-        : null,
-    longitude:
-      l.longitude !== null && l.longitude !== undefined
-        ? showExact
-          ? l.longitude
-          : Math.round(l.longitude * 100) / 100
-        : null,
+    latitude: publicCoordinates.latitude,
+    longitude: publicCoordinates.longitude,
     showExactLocation: showExact,
     guests: l.guests,
     bedrooms: l.bedrooms,
@@ -332,6 +349,7 @@ type PublicListingCardRecord = Prisma.ListingGetPayload<{
 /** Lightweight, privacy-safe DTO for discovery cards and map markers. */
 export function toPublicListingCardDTO(l: PublicListingCardRecord) {
   const showExact = Boolean(l.showExactLocation);
+  const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
   return {
     id: l.id,
     title: l.title,
@@ -340,18 +358,8 @@ export function toPublicListingCardDTO(l: PublicListingCardRecord) {
     listingType: l.listingType,
     city: l.city,
     country: l.country,
-    latitude:
-      l.latitude !== null
-        ? showExact
-          ? l.latitude
-          : Math.round(l.latitude * 100) / 100
-        : null,
-    longitude:
-      l.longitude !== null
-        ? showExact
-          ? l.longitude
-          : Math.round(l.longitude * 100) / 100
-        : null,
+    latitude: publicCoordinates.latitude,
+    longitude: publicCoordinates.longitude,
     guests: l.guests,
     bedrooms: l.bedrooms,
     beds: l.beds,

@@ -11,6 +11,8 @@ export interface GuestFavoriteListingInput {
   reviewCount?: number | null;
   reviewsCount?: number | null;
   bookings?: Array<{ status: string }>;
+  /** Aggregate alternative to loading a listing's booking rows. */
+  confirmedBookingCount?: number;
   status?: string;
   published?: boolean;
 }
@@ -21,6 +23,8 @@ export interface SuperhostHostInput {
   createdAt?: Date | string | null;
   publicProfile?: Record<string, unknown> | null;
   bookings?: Array<{ status: string }>;
+  /** Aggregate alternative to loading every booking belonging to a host. */
+  bookingSummary?: { confirmed: number; cancelled: number };
   listings?: Array<{ id: string; isFeatured?: boolean }>;
 }
 
@@ -71,9 +75,11 @@ export function isGuestFavorite(
   const rawRating = property.rating != null ? Number(property.rating) : null;
   const rating = rawRating !== null && !isNaN(rawRating) && rawRating > 0 ? rawRating : null;
   const reviews = Number(property.reviewCount ?? property.reviewsCount ?? 0) || 0;
-  const confirmedBookings = (property.bookings || []).filter(
-    (b) => b.status === "CONFIRMED" || b.status === "COMPLETED",
-  ).length;
+  const confirmedBookings = typeof property.confirmedBookingCount === "number"
+    ? Math.max(0, property.confirmedBookingCount)
+    : (property.bookings || []).filter(
+      (b) => b.status === "CONFIRMED" || b.status === "COMPLETED",
+    ).length;
 
   // 1. High rating track
   if (
@@ -115,8 +121,12 @@ export function isSuperhost(
   const rating = rawRating !== null && !isNaN(rawRating) && rawRating > 0 ? rawRating : null;
 
   const allBookings = host.bookings || [];
-  const confirmed = allBookings.filter((b) => b.status === "CONFIRMED" || b.status === "COMPLETED").length;
-  const cancelled = allBookings.filter((b) => b.status === "CANCELLED").length;
+  const confirmed = host.bookingSummary
+    ? Math.max(0, host.bookingSummary.confirmed)
+    : allBookings.filter((b) => b.status === "CONFIRMED" || b.status === "COMPLETED").length;
+  const cancelled = host.bookingSummary
+    ? Math.max(0, host.bookingSummary.cancelled)
+    : allBookings.filter((b) => b.status === "CANCELLED").length;
   const total = confirmed + cancelled;
 
   // Check tenure
@@ -151,4 +161,3 @@ export const qualificationService = {
   isSuperhost,
   DEFAULT_QUALIFICATION_CONFIG,
 };
-

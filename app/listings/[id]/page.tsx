@@ -1,11 +1,9 @@
-import React from "react";
+import React, { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listingService } from "@/services/listing.service";
 import { guidebookService } from "@/services/guidebook.service";
 import { PublicListingDetailClient } from "./public-listing-detail-client";
-
-export const dynamic = "force-dynamic";
 
 interface ListingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -25,30 +23,40 @@ interface ListingDetailPageProps {
  * "seed-search-test-100-v1-015". We attempt an id-based lookup first; if that
  * 404s we fall back to a slug-based lookup before giving up.
  */
-async function resolveListing(idOrSlug: string) {
+const resolveListing = cache(async (idOrSlug: string) => {
   try {
     return await listingService.getPublicListingById(idOrSlug);
-  } catch {
+  } catch (error: unknown) {
+    const status = error && typeof error === "object" && "status" in error
+      ? (error as { status?: number }).status
+      : undefined;
+    if (status !== 404) throw error;
     // Not found by id — try treating the segment as a customSlug
     return await listingService.getPublicListingBySlug(idOrSlug);
   }
-}
+});
 
 export async function generateMetadata({ params }: ListingDetailPageProps): Promise<Metadata> {
   const { id } = await params;
   try {
     const listing = await resolveListing(id);
-    const locationStr = listing.city
-      ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
-      : "Saudi Arabia";
+    const locationStr = [listing.city, listing.country]
+      .filter((value): value is string => Boolean(value?.trim()))
+      .join(", ");
+    const title = locationStr
+      ? `${listing.title} — Stay in ${locationStr} | Homyz`
+      : `${listing.title} | Homyz`;
+    const fallbackDescription = locationStr
+      ? `Book ${listing.title} on Homyz. Real vacation rental in ${locationStr}.`
+      : `Book ${listing.title} on Homyz.`;
 
     return {
-      title: `${listing.title} — Stay in ${locationStr} | Homyz`,
+      title,
       description: listing.description
         ? listing.description.slice(0, 160)
-        : `Book ${listing.title} on Homyz. Real vacation rental in ${locationStr}.`,
+        : fallbackDescription,
       openGraph: {
-        title: `${listing.title} — ${locationStr}`,
+        title: locationStr ? `${listing.title} — ${locationStr}` : listing.title,
         description: listing.description ? listing.description.slice(0, 160) : undefined,
         images: Array.isArray(listing.photos) && listing.photos.length > 0 ? [listing.photos[0]] : [],
       },
@@ -71,7 +79,7 @@ export default async function PublicListingPage({ params, searchParams }: Listin
   const searchGuests = sp.guests ? parseInt(sp.guests, 10) : undefined;
 
   let listing: Awaited<ReturnType<typeof resolveListing>> | null = null;
-  let guidebooks: any[] = [];
+  let guidebooks: Awaited<ReturnType<typeof guidebookService.getGuidebooksForListing>> = [];
 
   try {
     listing = await resolveListing(id);
@@ -91,12 +99,14 @@ export default async function PublicListingPage({ params, searchParams }: Listin
   }
 
   return (
-    <PublicListingDetailClient
-      listing={listing}
-      guidebooks={guidebooks}
-      searchCheckIn={searchCheckIn}
-      searchCheckOut={searchCheckOut}
-      searchGuests={searchGuests}
-    />
+    <div suppressHydrationWarning={process.env.NODE_ENV === "development"}>
+      <PublicListingDetailClient
+        listing={listing}
+        guidebooks={guidebooks}
+        searchCheckIn={searchCheckIn}
+        searchCheckOut={searchCheckOut}
+        searchGuests={searchGuests}
+      />
+    </div>
   );
 }
