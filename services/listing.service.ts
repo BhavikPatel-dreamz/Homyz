@@ -840,12 +840,16 @@ async function getPublicListingDetail(
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  const rating = getSystemManagedHostMetric(listing.host?.publicProfile, ["rating"]);
-  const reviewsCount = getSystemManagedReviewCount(listing.host?.publicProfile);
+  // The current schema has no property-review relation. These are host profile
+  // metrics used only for the host-qualification calculation below; returning
+  // them as listing reviews would falsely attribute one host's score to every
+  // property they manage.
+  const hostRating = getSystemManagedHostMetric(listing.host?.publicProfile, ["rating"]);
+  const hostReviewCount = getSystemManagedReviewCount(listing.host?.publicProfile);
   const isGuestFavorite = qualificationService.isGuestFavorite({
     isFeatured: listing.isFeatured,
-    rating,
-    reviewCount: reviewsCount,
+    rating: hostRating,
+    reviewCount: hostReviewCount,
     confirmedBookingCount: listing._count.bookings,
     status: listing.status,
     published: listing.published,
@@ -880,8 +884,6 @@ async function getPublicListingDetail(
   const publicDTO = toPublicListingDTO(listing);
   return {
     ...publicDTO,
-    rating,
-    reviewsCount,
     isGuestFavorite,
     host: listing.host
       ? {

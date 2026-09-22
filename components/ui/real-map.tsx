@@ -45,6 +45,11 @@ interface RealMapProps {
   /** Keep a previously saved pin until the host deliberately changes address text. */
   preferInitialCoordinates?: boolean;
   showExactLocation?: boolean;
+  /** Enables pin dragging, click-to-move, and address geocoding for host tools. */
+  allowLocationEditing?: boolean;
+  /** Defers the Leaflet bundle until this map reaches the viewport. */
+  lazyLoad?: boolean;
+  ariaLabel?: string;
   onLocationChange?: (lat: number, lng: number, details?: LocationDetails) => void;
   onLocationError?: (message: string) => void;
   className?: string;
@@ -58,6 +63,9 @@ export function RealMap({
   lng: initialLng,
   preferInitialCoordinates = false,
   showExactLocation = true,
+  allowLocationEditing = true,
+  lazyLoad = false,
+  ariaLabel = "Property location map",
   onLocationChange,
   onLocationError,
   className = "h-[220px] w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-xs relative",
@@ -68,6 +76,8 @@ export function RealMap({
   const circleRef = useRef<LeafletCircleInstance | null>(null);
   const isInternalUpdateRef = useRef(false);
   const didRunForwardGeocodeRef = useRef(false);
+  const [shouldLoadMap, setShouldLoadMap] = useState(!lazyLoad);
+  const [mapLoadError, setMapLoadError] = useState(false);
 
   // Default to Riyadh coordinates (24.7136, 46.6753) if not provided
   const [coords, setCoords] = useState<{ lat: number; lng: number }>({
@@ -79,6 +89,31 @@ export function RealMap({
   const reverseDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const reverseCacheRef = useRef<Map<string, LocationDetails | null>>(new Map());
   const reverseRequestIdRef = useRef(0);
+
+  // The public listing page keeps this heavy dependency below the fold. Host
+  // editor maps opt out so their editable pin remains immediately available.
+  useEffect(() => {
+    if (!lazyLoad) {
+      setShouldLoadMap(true);
+      return;
+    }
+    const element = mapContainerRef.current;
+    if (!element || typeof IntersectionObserver === "undefined") {
+      setShouldLoadMap(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setShouldLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "240px 0px" },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [lazyLoad]);
 
   // Synchronize internal coords when parent lat/lng props change from outside (e.g. autocomplete selection)
   useEffect(() => {
@@ -157,7 +192,7 @@ export function RealMap({
       return;
     }
 
-    if (!address && !city) return;
+    if (!allowLocationEditing || (!address && !city)) return;
 
     // A saved coordinate is authoritative on first render. This prevents an
     // automatic forward-geocode of the displayed address from overwriting it.
@@ -201,11 +236,11 @@ export function RealMap({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [address, city, country, initialLat, initialLng, onLocationError, preferInitialCoordinates]);
+  }, [address, allowLocationEditing, city, country, initialLat, initialLng, onLocationError, preferInitialCoordinates]);
 
   // Load Leaflet CSS and Initialize Map
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!shouldLoadMap || !mapContainerRef.current) return;
 
     // Load Leaflet CSS dynamically if not already loaded
     if (!document.getElementById("leaflet-css")) {
@@ -252,7 +287,7 @@ export function RealMap({
       // Marker
       const marker = L.marker([coords.lat, coords.lng], {
         icon: customPinIcon,
-        draggable: true,
+        draggable: allowLocationEditing,
       }).addTo(map);
 
       // Radial Glow Area Circle (Matching Homyz location sharing design)
@@ -260,7 +295,7 @@ export function RealMap({
         color: "#FEE08B",
         fillColor: "#FEE08B",
         fillOpacity: showExactLocation ? 0.25 : 0.4,
-        radius: showExactLocation ? 180 : 450,
+        radius: showExactLocation ? 180 : 1_000,
         weight: 1.5,
       }).addTo(map);
 
@@ -269,16 +304,20 @@ export function RealMap({
       mapInstanceRef.current = map;
 
       // Click on map to reposition marker and update inputs dynamically
-      map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
-        const { lat: clickLat, lng: clickLng } = e.latlng;
-        handlePositionChange(clickLat, clickLng);
-      });
+      if (allowLocationEditing) {
+        map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
+          const { lat: clickLat, lng: clickLng } = e.latlng;
+          handlePositionChange(clickLat, clickLng);
+        });
 
-      // Drag marker to reposition and update inputs dynamically
-      marker.on("dragend", () => {
-        const position = marker.getLatLng();
-        handlePositionChange(position.lat, position.lng);
-      });
+        // Drag marker to reposition and update inputs dynamically
+        marker.on("dragend", () => {
+          const position = marker.getLatLng();
+          handlePositionChange(position.lat, position.lng);
+        });
+      }
+    }).catch(() => {
+      if (isMounted) setMapLoadError(true);
     });
 
     return () => {
@@ -288,7 +327,7 @@ export function RealMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [handlePositionChange]); // Run once on mount
+  }, [allowLocationEditing, handlePositionChange, shouldLoadMap]);
 
   // Update map center & marker when coords or showExactLocation changes
   useEffect(() => {
@@ -299,7 +338,7 @@ export function RealMap({
 
     if (circleRef.current) {
       circleRef.current.setLatLng([coords.lat, coords.lng]);
-      circleRef.current.setRadius(showExactLocation ? 180 : 450);
+      circleRef.current.setRadius(showExactLocation ? 180 : 1_000);
       circleRef.current.setStyle({ fillOpacity: showExactLocation ? 0.25 : 0.4 });
     }
   }, [coords, showExactLocation]);
@@ -318,7 +357,19 @@ export function RealMap({
 
   return (
     <div className={className}>
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
+      <div ref={mapContainerRef} className="w-full h-full z-0" role="img" aria-label={ariaLabel} aria-busy={!shouldLoadMap} />
+
+      {!shouldLoadMap && !mapLoadError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 text-xs text-zinc-500">
+          Loading map…
+        </div>
+      )}
+
+      {mapLoadError && (
+        <div role="status" className="absolute inset-0 flex items-center justify-center bg-zinc-100 px-4 text-center text-xs text-zinc-600">
+          Map details are temporarily unavailable.
+        </div>
+      )}
 
       {/* Geocoding Loading Indicator */}
       {isLoadingGeocode && (
@@ -329,7 +380,7 @@ export function RealMap({
       )}
 
       {/* Zoom Controls Overlay (Top Right - Matches Figma Layout) */}
-      <div className="absolute top-3 right-3 flex flex-col gap-3 items-center text-xs font-semibold text-zinc-800 dark:text-zinc-100 z-10">
+      {!mapLoadError && shouldLoadMap && <div className="absolute top-3 right-3 flex flex-col gap-3 items-center text-xs font-semibold text-zinc-800 dark:text-zinc-100 z-10">
         <button
           type="button"
           onClick={handleZoomIn}
@@ -346,7 +397,7 @@ export function RealMap({
         >
           <Image src="/images/icons/minus-icon.svg" alt="Zoom out" width={14} height={14} className="size-3.5 object-contain dark:invert" />
         </button>
-      </div>
+      </div>}
     </div>
   );
 }

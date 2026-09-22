@@ -18,6 +18,7 @@ import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/li
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 import { calculateBookingPrice, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
+import { getCurrencyForCountry } from "@/lib/currency";
 
 export type BookingQuote = {
   listingId: string;
@@ -187,6 +188,28 @@ export async function getBookingQuote(opts: {
     throw AppError.badRequest(`Property accommodates a maximum of ${baseGuests} guests`);
   }
 
+  // Quotes are used to decide whether Reserve is enabled, so they must use the
+  // same availability rules as final booking creation. The transaction in
+  // create() rechecks this again to close the select-to-reserve race window.
+  const overlappingBooking = await prisma.booking.findFirst({
+    where: {
+      listingId: listing.id,
+      status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+      startDate: { lt: cOut },
+      endDate: { gt: cIn },
+    },
+    select: { id: true },
+  });
+  if (overlappingBooking) throw AppError.conflict("The selected dates are not available");
+
+  const blockedDates = new Set(Array.isArray(listing.blockedDates) ? listing.blockedDates : []);
+  for (let date = new Date(cIn); date < cOut; date.setDate(date.getDate() + 1)) {
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    if (blockedDates.has(dateKey)) {
+      throw AppError.conflict(`The date ${dateKey} is not available for booking`);
+    }
+  }
+
   const requestedPets = opts.pets ?? 0;
   if (requestedPets > 0) {
     if (listing.petsAllowed === false) {
@@ -267,7 +290,7 @@ export async function getBookingQuote(opts: {
     taxRules: resolved.systemRules,
     hostTaxes,
     nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
-    currency: "SAR",
+    currency: getCurrencyForCountry(listing.country),
   });
 
   const subtotal = pricing.accommodationSubtotal + pricing.cleaningFee + pricing.extraGuestFee + pricing.petFee;

@@ -39,7 +39,7 @@ export default function WishlistList({ items }: { items: FavoriteItem[] }) {
           <div className="text-zinc-500">You have no saved properties yet.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {localItems.filter((it) => it.listing).map((item) => (
+            {localItems.filter((it): it is FavoriteItem & { listing: ListingSummary } => Boolean(it.listing)).map((item) => (
               <div key={item.listingId || item.id}>
                 <ListingCard listing={item.listing} initialFavorite={true} showFavorite={true} favoriteVariant="remove" />
               </div>

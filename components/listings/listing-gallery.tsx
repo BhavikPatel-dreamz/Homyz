@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 
@@ -10,54 +10,81 @@ type Props = {
 };
 
 export function ListingGallery({ photos, listingTitle }: Props) {
+  // Listing.photos is an ordered array: the host editor keeps index 0 as the
+  // cover photo. Remove invalid/duplicate URLs without changing that order.
+  const galleryPhotos = useMemo(
+    () => Array.from(new Set(photos.filter((photo): photo is string => typeof photo === "string" && photo.trim().length > 0))),
+    [photos],
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [failed, setFailed] = useState<Record<number, boolean>>({});
-  const photosRef = useRef(photos);
+  const photosRef = useRef(galleryPhotos);
+  const touchStartX = useRef<number | null>(null);
 
   // Reset selection when photos list changes (navigating properties)
   useEffect(() => {
-    if (photosRef.current !== photos) {
+    if (photosRef.current !== galleryPhotos) {
       setSelectedIndex(0);
       setLightboxOpen(false);
       setFailed({});
-      photosRef.current = photos;
+      photosRef.current = galleryPhotos;
     }
-  }, [photos]);
+  }, [galleryPhotos]);
 
   // Preload adjacent images for smooth navigation
   useEffect(() => {
-    if (!photos || photos.length === 0) return;
-    const next = photos[selectedIndex + 1];
-    const prev = photos[selectedIndex - 1];
+    if (galleryPhotos.length === 0) return;
+    const next = galleryPhotos[selectedIndex + 1];
+    const prev = galleryPhotos[selectedIndex - 1];
     [prev, next].forEach((src) => {
       if (!src) return;
       const img = new window.Image();
       img.src = src;
     });
-  }, [selectedIndex, photos]);
+  }, [selectedIndex, galleryPhotos]);
 
   // keyboard handling for lightbox
   useEffect(() => {
     if (!lightboxOpen) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxOpen(false);
-      if (e.key === "ArrowRight") setSelectedIndex((s) => Math.min(photos.length - 1, s + 1));
-      if (e.key === "ArrowLeft") setSelectedIndex((s) => Math.max(0, s - 1));
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setSelectedIndex((s) => Math.min(galleryPhotos.length - 1, s + 1));
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setSelectedIndex((s) => Math.max(0, s - 1));
+      }
     };
     window.addEventListener("keydown", handler);
     return () => {
       window.removeEventListener("keydown", handler);
     };
-  }, [lightboxOpen, photos.length]);
+  }, [lightboxOpen, galleryPhotos.length]);
 
-  const total = photos.length;
+  const total = galleryPhotos.length;
+  const canGoPrevious = selectedIndex > 0;
+  const canGoNext = selectedIndex < total - 1;
+
+  const goToPrevious = () => setSelectedIndex((index) => Math.max(0, index - 1));
+  const goToNext = () => setSelectedIndex((index) => Math.min(total - 1, index + 1));
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLButtonElement>) => {
+    if (touchStartX.current === null) return;
+    const delta = event.changedTouches[0]?.clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 40) return;
+    if (delta > 0) goToPrevious();
+    else goToNext();
+  };
 
   const handleImgError = (index: number) => {
     setFailed((p) => ({ ...p, [index]: true }));
   };
 
-  const renderFallback = (index: number) => (
+  const renderFallback = () => (
     <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
       <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="18" height="14" rx="2" />
@@ -79,17 +106,20 @@ export function ListingGallery({ photos, listingTitle }: Props) {
 
   return (
     <div className="relative mb-10 overflow-hidden rounded-3xl border border-zinc-200">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 aspect-[4/3] sm:aspect-[21/9]">
-        <div className="md:col-span-2 relative h-full overflow-hidden bg-zinc-100">
+      <div className="grid grid-cols-1 gap-2 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
+        <div className={`${total > 1 ? "md:col-span-2" : "md:col-span-4"} relative h-full overflow-hidden bg-zinc-100`}>
           {!failed[selectedIndex] ? (
             <button
+              type="button"
               aria-label={`Open photo ${selectedIndex + 1} of ${total}`}
               onClick={() => setLightboxOpen(true)}
+              onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
+              onTouchEnd={handleTouchEnd}
               className="w-full h-full p-0 m-0 block"
             >
               <div className="relative w-full h-[100%] min-h-[220px]">
                 <Image
-                  src={photos[selectedIndex]}
+                  src={galleryPhotos[selectedIndex]}
                   alt={listingTitle ? `${listingTitle} — Photo ${selectedIndex + 1}` : `Photo ${selectedIndex + 1}`}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   fill
@@ -100,16 +130,17 @@ export function ListingGallery({ photos, listingTitle }: Props) {
               </div>
             </button>
           ) : (
-            renderFallback(selectedIndex)
+            renderFallback()
           )}
         </div>
 
-        <div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2 h-full">
-          {photos.slice(0, 4).map((photo, i) => {
-            const index = i; // full index
+        {total > 1 && <div className="relative hidden h-full grid-cols-2 gap-2 md:col-span-2 md:grid">
+          {galleryPhotos.slice(1, 5).map((photo, i) => {
+            const index = i + 1;
             const isActive = index === selectedIndex;
             return (
               <button
+                type="button"
                 key={index}
                 onClick={() => setSelectedIndex(index)}
                 aria-label={`Select photo ${index + 1}`}
@@ -126,18 +157,24 @@ export function ListingGallery({ photos, listingTitle }: Props) {
                     onError={() => handleImgError(index)}
                   />
                 ) : (
-                  renderFallback(index)
+                  renderFallback()
                 )}
               </button>
             );
           })}
-        </div>
+          {total > 5 && (
+            <button type="button" onClick={() => setLightboxOpen(true)} className="absolute bottom-4 right-4 z-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white">
+              Show all {total} photos
+            </button>
+          )}
+        </div>}
       </div>
 
       {/* Thumbnails on mobile below main image */}
       <div className="md:hidden mt-2 flex gap-2 overflow-x-auto pb-1">
-        {photos.map((p, i) => (
+        {galleryPhotos.map((p, i) => (
           <button
+            type="button"
             key={i}
             onClick={() => setSelectedIndex(i)}
             aria-label={`Select photo ${i + 1}`}
@@ -167,13 +204,13 @@ export function ListingGallery({ photos, listingTitle }: Props) {
       </div>
 
       {lightboxOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/90 overflow-y-auto p-4">
+        <ModalOverlay role="dialog" aria-modal="true" aria-label={`${listingTitle || "Property"} photo gallery`} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4">
           <div className="max-w-5xl w-full mx-auto my-8">
             <div className="flex items-center justify-between text-white sticky top-0 bg-black/60 backdrop-blur-md py-3 px-2 z-10">
               <span className="font-semibold text-sm">{selectedIndex + 1} / {total}</span>
               <div className="flex items-center gap-2">
-                <button aria-label="Previous" onClick={() => setSelectedIndex((s) => Math.max(0, s - 1))} className="px-3 py-2">←</button>
-                <button aria-label="Next" onClick={() => setSelectedIndex((s) => Math.min(total - 1, s + 1))} className="px-3 py-2">→</button>
+                <button type="button" aria-label="Previous photo" disabled={!canGoPrevious} onClick={goToPrevious} className="px-3 py-2 disabled:opacity-35">←</button>
+                <button type="button" aria-label="Next photo" disabled={!canGoNext} onClick={goToNext} className="px-3 py-2 disabled:opacity-35">→</button>
                 <button aria-label="Close gallery" onClick={() => setLightboxOpen(false)} className="px-3 py-2">✕</button>
               </div>
             </div>
@@ -183,7 +220,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
                 {!failed[selectedIndex] ? (
                   <div className="relative w-full h-[70vh]">
                     <Image
-                      src={photos[selectedIndex]}
+                      src={galleryPhotos[selectedIndex]}
                       alt={listingTitle ? `${listingTitle} — Photo ${selectedIndex + 1}` : `Photo ${selectedIndex + 1}`}
                       fill
                       style={{ objectFit: "contain" }}
@@ -192,14 +229,14 @@ export function ListingGallery({ photos, listingTitle }: Props) {
                     />
                   </div>
                 ) : (
-                  renderFallback(selectedIndex)
+                  renderFallback()
                 )}
               </div>
 
               {/* Lightbox thumbnails */}
               <div className="mt-4 flex gap-2 overflow-x-auto pt-2">
-                {photos.map((pp, ii) => (
-                  <button key={ii} onClick={() => setSelectedIndex(ii)} className={`relative shrink-0 w-20 h-12 rounded overflow-hidden border ${ii === selectedIndex ? "ring-2 ring-amber-400" : "border-zinc-200"}`} aria-label={`Lightbox select ${ii + 1}`}>
+                {galleryPhotos.map((pp, ii) => (
+                  <button type="button" key={ii} onClick={() => setSelectedIndex(ii)} className={`relative shrink-0 w-20 h-12 rounded overflow-hidden border ${ii === selectedIndex ? "ring-2 ring-amber-400" : "border-zinc-200"}`} aria-label={`Lightbox select ${ii + 1}`}>
                     {!failed[ii] ? (
                       <Image src={pp} alt={`Photo ${ii + 1}`} fill style={{ objectFit: "cover" }} sizes="80px" loading="lazy" onError={() => handleImgError(ii)} />
                     ) : (
