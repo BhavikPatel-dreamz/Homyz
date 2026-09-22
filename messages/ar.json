@@ -1835,5 +1835,21 @@
   "host_remove_survey_opt_guests_unfair_reviews": "ترك الضيوف تقييمات غير عادلة.",
   "host_remove_survey_opt_another_reason_guests": "سبب آخر",
   "host_remove_survey_cat_duplicate_listing": "هذا مكان إقامة مكرر.",
-  "host_remove_survey_opt_is_duplicate": "هذا مكان إقامة مكرر."
+  "host_remove_survey_opt_is_duplicate": "هذا مكان إقامة مكرر.",
+  "header_profile": "الملف الشخصي",
+  "header_trips": "الرحلات",
+  "header_messages": "الرسائل",
+  "header_notifications": "الإشعارات",
+  "header_account_settings": "إعدادات الحساب",
+  "header_today": "اليوم",
+  "header_calendar": "التقويم",
+  "header_your_listings": "إعلاناتك",
+  "header_become_a_host_app": "كن مضيفًا / تقديم طلب",
+  "header_admin": "الإدارة",
+  "header_become_a_host_subtitle": "من السهل البدء في الاستضافة وكسب دخل إضافي.",
+  "header_profile_settings": "إعدادات الملف الشخصي",
+  "header_host_workspace": "مساحة عمل المضيف",
+  "header_homyz_your_home": "أدرج بيتك على Homyz",
+  "header_log_in": "تسجيل الدخول",
+  "header_sign_up": "إنشاء حساب"
 }

@@ -1835,5 +1835,21 @@
   "host_remove_survey_opt_guests_unfair_reviews": "Les voyageurs ont laissé des commentaires injustes.",
   "host_remove_survey_opt_another_reason_guests": "Autre raison",
   "host_remove_survey_cat_duplicate_listing": "Il s'agit d'un doublon.",
-  "host_remove_survey_opt_is_duplicate": "Il s'agit d'un doublon."
+  "host_remove_survey_opt_is_duplicate": "Il s'agit d'un doublon.",
+  "header_profile": "Profil",
+  "header_trips": "Voyages",
+  "header_messages": "Messages",
+  "header_notifications": "Notifications",
+  "header_account_settings": "Paramètres du compte",
+  "header_today": "Aujourd'hui",
+  "header_calendar": "Calendrier",
+  "header_your_listings": "Vos annonces",
+  "header_become_a_host_app": "Devenir hôte / Candidature",
+  "header_admin": "Administration",
+  "header_become_a_host_subtitle": "Il est facile de commencer à accueillir des voyageurs et de générer des revenus.",
+  "header_profile_settings": "Paramètres du profil",
+  "header_host_workspace": "Espace hôte",
+  "header_homyz_your_home": "Homyz votre logement",
+  "header_log_in": "Se connecter",
+  "header_sign_up": "S'inscrire"
 }

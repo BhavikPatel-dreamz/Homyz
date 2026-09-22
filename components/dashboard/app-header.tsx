@@ -82,17 +82,17 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   };
 
   const navItems = [
-    { href: "/profile", label: "Profile" },
-    { href: "/bookings", label: "Trips" },
-    { href: "/host/messages", label: "Messages" },
-    { href: "/profile/tab/notifications", label: "Notifications" },
-    { href: "/profile-management", label: "Account settings" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/host/today", label: "Today", requireHost: true },
-    { href: "/host/calendar", label: "Calendar", requireHost: true },
-    { href: "/host/listings", label: "Your listings", requireHost: true },
-    { href: "/host/onboarding", label: "Become a Host / Application" },
-    { href: "/admin", label: "Admin", requireAdmin: true },
+    { href: "/profile", label: t("header_profile") || "Profile" },
+    { href: "/bookings", label: t("header_trips") || "Trips" },
+    { href: "/host/messages", label: t("header_messages") || "Messages" },
+    { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications" },
+    { href: "/profile-management", label: t("header_account_settings") || "Account settings" },
+    { href: "/dashboard", label: t("header_dashboard") || "Dashboard" },
+    { href: "/host/today", label: t("header_today") || "Today", requireHost: true },
+    { href: "/host/calendar", label: t("header_calendar") || "Calendar", requireHost: true },
+    { href: "/host/listings", label: t("header_your_listings") || "Your listings", requireHost: true },
+    { href: "/host/onboarding", label: t("header_become_a_host_app") || "Become a Host / Application" },
+    { href: "/admin", label: t("header_admin") || "Admin", requireAdmin: true },
   ];
 
   return (
@@ -163,24 +163,24 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 disabled={isConvertingRole}
                 className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
-                {isConvertingRole ? "Loading..." : "Become a host"}
+                {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
                 className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
-                Become a host
+                {t("header_become_a_host") || "Become a host"}
               </Link>
             )}
 
             {isHostRoute ? (
               <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
-                Switch to traveling
+                {t("header_switch_traveling") || "Switch to traveling"}
               </Link>
             ) : role === "HOST" ? (
               <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
-                Switch to hosting
+                {t("header_switch_hosting") || "Switch to hosting"}
               </Link>
             ) : null}
 
@@ -258,7 +258,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                     >
                       <div className="pr-2">
                         <p className="text-sm font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">{t("header_become_a_host")}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">It&apos;s easy to start hosting and earn extra income.</p>
+                        <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{t("header_become_a_host_subtitle") || "It's easy to start hosting and earn extra income."}</p>
                       </div>
                       {/* Host Illustration matching Screenshot 3 */}
                       <div className="w-12 h-14 flex items-center justify-center shrink-0">
@@ -329,7 +329,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         disabled={isConvertingRole}
                         className="w-full flex items-center px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl text-amber-900 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer lg:hidden mb-1"
                       >
-                        {isConvertingRole ? "Loading..." : t("header_become_a_host")}
+                        {isConvertingRole ? (t("host_loading") || "Loading...") : t("header_become_a_host")}
                       </button>
                       {navItems.map((item) => {
                         if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;

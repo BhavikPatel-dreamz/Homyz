@@ -1835,5 +1835,21 @@
   "host_remove_survey_opt_guests_unfair_reviews": "Gäste haben ungerechte Bewertungen hinterlassen.",
   "host_remove_survey_opt_another_reason_guests": "Ein anderer Grund",
   "host_remove_survey_cat_duplicate_listing": "Dies ist ein doppeltes Inserat.",
-  "host_remove_survey_opt_is_duplicate": "Dies ist ein doppeltes Inserat."
+  "host_remove_survey_opt_is_duplicate": "Dies ist ein doppeltes Inserat.",
+  "header_profile": "Profil",
+  "header_trips": "Reisen",
+  "header_messages": "Nachrichten",
+  "header_notifications": "Benachrichtigungen",
+  "header_account_settings": "Kontoeinstellungen",
+  "header_today": "Heute",
+  "header_calendar": "Kalender",
+  "header_your_listings": "Ihre Inserate",
+  "header_become_a_host_app": "Gastgeber werden / Bewerbung",
+  "header_admin": "Admin",
+  "header_become_a_host_subtitle": "Es ist einfach, als Gastgeber anzufangen und ein Zusatzeinkommen zu erzielen.",
+  "header_profile_settings": "Profileinstellungen",
+  "header_host_workspace": "Gastgeber-Bereich",
+  "header_homyz_your_home": "Homyz für Ihr Zuhause",
+  "header_log_in": "Anmelden",
+  "header_sign_up": "Registrieren"
 }
