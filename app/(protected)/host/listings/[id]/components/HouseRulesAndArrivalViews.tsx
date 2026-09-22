@@ -1737,12 +1737,12 @@ function LanguagesView({
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_select_languages_heading") || "Select languages"}</h3>
-              <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">{t("host_languages_available_count", { count: LANGUAGE_OPTIONS.length }) || `${LANGUAGE_OPTIONS.length} languages available`}</p>
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_languages_available_count", { count: LANGUAGE_OPTIONS.length }) || `${LANGUAGE_OPTIONS.length} languages available`}</p>
             </div>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="text-zinc-400 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-semibold text-xs cursor-pointer"
+              className="text-zinc-400 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-medium text-base cursor-pointer"
             >
               ✕
             </button>
@@ -1753,10 +1753,10 @@ function LanguagesView({
             value={searchLang}
             onChange={(e) => setSearchLang(e.target.value)}
             placeholder={t("host_search_language_placeholder") || "Search language..."}
-            className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
+            className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
           />
 
-          <div className="max-h-80 overflow-y-auto space-y-1 custom-scrollbar pr-1" role="listbox" aria-multiselectable="true">
+          <div className="modal-content-scrollbar max-h-80 overflow-y-auto space-y-1 pr-1" role="listbox" aria-multiselectable="true">
             {filteredLanguages.map((lang) => {
               const isSelected = selectedLanguageIds.includes(lang.id);
               return (
@@ -1773,7 +1773,7 @@ function LanguagesView({
                       setSelectedLanguageIds([...selectedLanguageIds, lang.id]);
                     }
                   }}
-                  className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-xs font-semibold transition-colors ${isSelected ? "border-amber-300 dark:border-amber-500/80 bg-[#FEF9EC] dark:bg-amber-950/40 text-zinc-950 dark:text-zinc-100" : "border-transparent text-zinc-700 dark:text-zinc-300 hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/60"
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-sm font-medium transition-colors ${isSelected ? "border-amber-300 dark:border-amber-500/80 bg-[#FEF9EC] dark:bg-amber-950/40 text-zinc-950 dark:text-zinc-100" : "border-transparent text-zinc-700 dark:text-zinc-300 hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/60"
                     }`}
                 >
                   <span>
@@ -1782,8 +1782,15 @@ function LanguagesView({
                       <span className="mt-0.5 block text-[11px] font-normal text-zinc-500 dark:text-zinc-400">{lang.nativeName}</span>
                     )}
                   </span>
-                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] ${isSelected ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950" : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-transparent"}`}>
-                    ✓
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-[#1f1f1f] bg-[#FCDF9C] dark:border-amber-400 dark:bg-amber-400" : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"}`}>
+                    <Image
+                      src="/images/icons/right-mark.svg"
+                      alt=""
+                      aria-hidden="true"
+                      width={8}
+                      height={8}
+                      className={`size-[11px] ${isSelected ? "" : "opacity-0"}`}
+                    />
                   </span>
                 </button>
               );
@@ -1798,7 +1805,7 @@ function LanguagesView({
                 void handleSaveSection("language");
                 setIsAdding(false);
               }}
-              className="px-5 py-2 rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-xs font-semibold text-zinc-950 shadow-2xs cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
             >
               {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_languages") || "Save languages")}
             </button>
@@ -2774,13 +2781,13 @@ function RegulationsView({
               <h1>
                 {t("host_regulations_all_set_title")}
               </h1>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
                 {t("host_regulations_all_set_desc")}
               </p>
               <button
                 type="button"
                 onClick={() => setIsEditingReg(!isEditingReg)}
-                className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-200 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors pt-1 block cursor-pointer"
+                className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors pt-1 block cursor-pointer"
               >
                 {isEditingReg ? t("host_regulations_done_editing") : t("host_regulations_edit_details")}
               </button>
@@ -2791,33 +2798,33 @@ function RegulationsView({
               <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_regulations_details_heading")}
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
                 {t("host_regulations_details_sub")}
               </p>
 
               {/* Editable or Static Registration Fields */}
               {isEditingReg ? (
-                <div className="space-y-3 pt-2 max-w-md bg-zinc-50 dark:bg-zinc-800 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-700">
+                <div className="space-y-4 pt-4 max-w-md bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg border border-[#727272] dark:border-zinc-700">
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block mb-1">
                       {t("host_regulations_label_reg_number")}
                     </label>
                     <input
                       type="text"
                       value={regNumber}
                       onChange={(e) => setRegNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white dark:bg-zinc-900"
+                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block mb-1">
                       {t("host_regulations_label_address_country")}
                     </label>
                     <input
                       type="text"
                       value={regAddress}
                       onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white dark:bg-zinc-900"
+                      className="w-full px-3 py-2 rounded-lg border border-[#727272] dark:border-zinc-600 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-500 bg-white sm:min-h-[56px] min-h-[45px] dark:bg-zinc-900"
                     />
                   </div>
                   <button
@@ -2826,7 +2833,7 @@ function RegulationsView({
                       handleSaveSection("regulations");
                       setIsEditingReg(false);
                     }}
-                    className="rounded-full bg-[#FEE08B] hover:bg-[#FDD017] text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 min-w-25"
                   >
                     {t("host_regulations_save_btn")}
                   </button>
@@ -2834,23 +2841,23 @@ function RegulationsView({
               ) : (
                 <div className="space-y-3 pt-1">
                   <div>
-                    <p className="text-xs text-zinc-400 font-normal">XXXXXXXX</p>
-                    <p className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
+                    <p className="text-sm text-[#727272] font-normal">XXXXXXXX</p>
+                    <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-400 font-normal">Address, Country</p>
-                    <p className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
+                      <p className="text-sm text-[#727272] font-normal">Address, Country</p>
+                    <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>
               )}
 
               {/* Bottom Paragraph with Customer Support Link */}
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed pt-2 max-w-md">
+              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed pt-2 max-w-md">
                 {t("host_regulations_support_text")}{" "}
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
-                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
+                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-[#727272] dark:hover:text-zinc-400 transition-colors"
                 >
                   {t("host_regulations_support_link")}
                 </a>

@@ -655,11 +655,11 @@ export function HostListingsWorkspace({
                             }}
                             aria-label={t("host_delete_property_aria")}
                             title={t("host_delete_property_aria")}
-                            className="absolute z-20 top-3 right-3 max-sm:hidden bg-white hover:border-[#1F1F1F] backdrop-blur-xs rounded-full text-rose-600 transition-all shadow-2xs text-xs flex items-center justify-center w-8 h-8"
+                            className="absolute z-20 top-3 right-3 flex size-8 items-center justify-center rounded-full bg-white text-xs text-rose-600 shadow-2xs backdrop-blur-xs transition-colors duration-200 ease-out hover:bg-rose-600 hover:text-white max-sm:hidden"
                           >
                             <svg
                               aria-hidden="true"
-                              className="h-4 w-4"
+                              className="size-4 transition-colors duration-200 ease-out"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"

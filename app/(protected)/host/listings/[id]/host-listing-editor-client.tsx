@@ -2013,24 +2013,35 @@ export function HostListingEditorClient({
             role="dialog"
             aria-modal="true"
             aria-labelledby="unsaved-preferences-title"
-            className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl sm:p-7"
+            className="relative w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl sm:p-7"
           >
+            <button
+              type="button"
+              aria-label="Close unsaved changes dialog"
+              onClick={() => {
+                pendingNavigationRef.current = null;
+                setIsUnsavedChangesDialogOpen(false);
+              }}
+              className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 cursor-pointer"
+            >
+              <CloseIcon className="size-4" />
+            </button>
             <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
               You have unsaved changes
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               Your changes haven&apos;t been saved. Are you sure you want to leave?
             </p>
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => {
                   pendingNavigationRef.current = null;
                   setIsUnsavedChangesDialogOpen(false);
                 }}
-                className="w-full sm:w-auto rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-xs font-medium text-[#1f1f1f] dark:text-zinc-200 transition-colors hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 cursor-pointer"
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-zinc-300 bg-white px-3.5 text-xs font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
               >
-                Stay and continue editing
+                Keep editing
               </button>
               <button
                 type="button"
@@ -2040,9 +2051,9 @@ export function HostListingEditorClient({
                   setIsUnsavedChangesDialogOpen(false);
                   pendingNavigation?.();
                 }}
-                className="w-full sm:w-auto rounded-full !bg-zinc-950 dark:!bg-zinc-100 px-5 py-2.5 text-xs font-medium !text-white hover:!text-[#1f1f1f] dark:!text-zinc-950 transition-colors hover:!bg-white dark:hover:!bg-zinc-200 cursor-pointer border border-[#1f1f1f]"
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-zinc-950 bg-zinc-950 px-3.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200 cursor-pointer"
               >
-                Discard changes and leave
+                Discard & leave
               </button>
             </div>
           </section>

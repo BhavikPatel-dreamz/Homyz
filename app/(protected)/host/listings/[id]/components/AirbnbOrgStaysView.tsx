@@ -314,7 +314,7 @@ export function AirbnbOrgStaysView({
         </ul>
 
         {/* 4. Documented "Learn More" Actions */}
-        <div className="pt-2 flex flex-wrap items-center gap-4">
+        <div className="py-2 flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={() => setIsLearnMoreOpen(true)}
@@ -333,7 +333,7 @@ export function AirbnbOrgStaysView({
           type="button"
           disabled={!isDirty || isSaving}
           onClick={handleSave}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] dark:bg-amber-400 dark:hover:bg-amber-500 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed text-zinc-950 font-semibold text-sm px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 min-w-25"
         >
           {isSaving ? (t("host_saving") || "Saving...") : isSavedSuccess ? (t("host_saved") || "Saved") : (t("host_save") || "Save")}
         </button>
@@ -342,7 +342,7 @@ export function AirbnbOrgStaysView({
           type="button"
           disabled={isSaving}
           onClick={handleCancel}
-          className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-white dark:bg-zinc-800 border border-[#1f1f1f] dark:border-zinc-700 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 shadow-2xs transition-all duration-300 cursor-pointer"
         >
           {t("host_cancel") || "Cancel"}
         </button>

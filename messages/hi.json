@@ -1835,5 +1835,21 @@
   "host_remove_survey_opt_guests_unfair_reviews": "मेहमानों ने अनुचित समीक्षाएं छोड़ीं।",
   "host_remove_survey_opt_another_reason_guests": "एक अन्य कारण",
   "host_remove_survey_cat_duplicate_listing": "यह एक डुप्लिकेट लिस्टिंग है।",
-  "host_remove_survey_opt_is_duplicate": "यह एक डुप्लिकेट लिस्टिंग है।"
+  "host_remove_survey_opt_is_duplicate": "यह एक डुप्लिकेट लिस्टिंग है।",
+  "header_profile": "प्रोफ़ाइल",
+  "header_trips": "यात्राएं",
+  "header_messages": "संदेश",
+  "header_notifications": "सूचनाएं",
+  "header_account_settings": "खाता सेटिंग्स",
+  "header_today": "आज",
+  "header_calendar": "कैलेंडर",
+  "header_your_listings": "आपकी लिस्टिंग",
+  "header_become_a_host_app": "होस्ट बनें / आवेदन",
+  "header_admin": "एडमिन",
+  "header_become_a_host_subtitle": "होस्टिंग शुरू करना और अतिरिक्त आय अर्जित करना आसान है।",
+  "header_profile_settings": "प्रोफ़ाइल सेटिंग्स",
+  "header_host_workspace": "होस्ट कार्यक्षेत्र",
+  "header_homyz_your_home": "अपने घर को Homyz पर दर्ज करें",
+  "header_log_in": "लॉग इन करें",
+  "header_sign_up": "साइन अप करें"
 }

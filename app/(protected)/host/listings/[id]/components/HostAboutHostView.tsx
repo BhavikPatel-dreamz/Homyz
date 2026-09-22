@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BackButton } from "@/components/ui/back-button";
@@ -483,7 +482,7 @@ export function HostAboutHostView({
         {feedback && (
           <div
             role="alert"
-            className={`flex items-center justify-between gap-3 rounded-xl p-4 text-sm font-medium transition-all ${feedback.type === "success"
+            className={`flex items-center justify-between gap-3 rounded-lg p-4 text-sm font-normal transition-all ${feedback.type === "success"
               ? "border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300"
               : "border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50 text-red-800 dark:text-red-300"
               }`}
@@ -529,9 +528,16 @@ export function HostAboutHostView({
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="absolute -bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2.75 text-base font-normal text-[#1f1f1f] dark:text-zinc-950 transition-all hover:bg-[#1f1f1f] dark:hover:bg-amber-300 group disabled:opacity-60 duration-300 hover:text-white dark:hover:text-zinc-950 hover:border-[#1f1f1f] dark:hover:border-amber-300"
+                className="absolute -bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2.75 text-base font-normal text-[#1f1f1f] dark:text-zinc-950 transition-colors duration-150 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 group hover:text-white dark:hover:text-zinc-950 hover:border-[#1f1f1f] dark:hover:border-amber-300"
               >
-                <Image src="/images/icons/camera.svg" alt="" width={24} height={17} className="max-w-6 object-contain group-hover:transform-filter group-hover:brightness-0 group-hover:invert dark:invert transition-all duration-300" />
+                <span
+                  aria-hidden="true"
+                  className="size-6 shrink-0 bg-[#1f1f1f] transition-colors duration-150 group-hover:bg-white dark:bg-zinc-950 dark:group-hover:bg-zinc-950"
+                  style={{
+                    mask: "url('/images/icons/camera.svg') center / contain no-repeat",
+                    WebkitMask: "url('/images/icons/camera.svg') center / contain no-repeat",
+                  }}
+                />
                 {uploadingImage ? (t("host_about_uploading_photo") || "Uploading…") : (t("host_about_edit_photo") || "Edit")}
               </button>
               <input

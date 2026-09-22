@@ -1835,5 +1835,21 @@
   "host_remove_survey_opt_guests_unfair_reviews": "Guests left unfair reviews.",
   "host_remove_survey_opt_another_reason_guests": "Another reason",
   "host_remove_survey_cat_duplicate_listing": "This is a duplicate listing.",
-  "host_remove_survey_opt_is_duplicate": "This is a duplicate listing."
+  "host_remove_survey_opt_is_duplicate": "This is a duplicate listing.",
+  "header_profile": "Profile",
+  "header_trips": "Trips",
+  "header_messages": "Messages",
+  "header_notifications": "Notifications",
+  "header_account_settings": "Account settings",
+  "header_today": "Today",
+  "header_calendar": "Calendar",
+  "header_your_listings": "Your listings",
+  "header_become_a_host_app": "Become a Host / Application",
+  "header_admin": "Admin",
+  "header_become_a_host_subtitle": "It's easy to start hosting and earn extra income.",
+  "header_profile_settings": "Profile Settings",
+  "header_host_workspace": "Host Workspace",
+  "header_homyz_your_home": "Homyz your home",
+  "header_log_in": "Log in",
+  "header_sign_up": "Sign up"
 }

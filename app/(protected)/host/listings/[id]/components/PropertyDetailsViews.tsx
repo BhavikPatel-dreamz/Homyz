@@ -1811,34 +1811,39 @@ export function PropertyDetailsViews({
                       /* Expanded Grey Container Card matching Figma Screenshot 1 */
                       <div
                         key={feature.id}
-                        className={`overflow-hidden rounded-2xl space-y-4 transition-[max-height,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
-                          ? "pointer-events-none max-h-0 -translate-y-1 border-transparent bg-transparent p-0 opacity-0"
-                          : "max-h-[1600px] translate-y-0 border border-[#1f1f1f] dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/90 p-5 opacity-100 shadow-2xs"
+                        className={`grid overflow-hidden rounded-2xl transition-[grid-template-rows,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
+                          ? "pointer-events-none grid-rows-[0fr] -translate-y-1 border-transparent bg-transparent p-0 opacity-0"
+                          : "grid-rows-[1fr] translate-y-0 border border-[#1f1f1f] dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/90 p-5 opacity-100 shadow-2xs"
                           }`}
                       >
-                        {/* Top Row: Icon, Title, Description, Minus Button */}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3.5">
-                            <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
-                              {feature.icon}
-                            </div>
-                            <div className="space-y-1">
-                              <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
-                              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
-                                {feature.desc}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Minus Button to Collapse */}
-                          <button
-                            type="button"
+                        <div className="min-h-0 overflow-hidden space-y-4">
+                          {/* Top Row: the feature heading and minus button both collapse the card. */}
+                          <div
                             onClick={() => collapseAccessibilityFeature(feature.id)}
-                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                            className="flex cursor-pointer items-start justify-between gap-4"
                           >
-                            <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={12} height={12} className="size-3 object-contain dark:invert" />
-                          </button>
-                        </div>
+                            <div className="flex flex-1 items-start gap-3.5">
+                              <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
+                                {feature.icon}
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
+                                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+                                  {feature.desc}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                collapseAccessibilityFeature(feature.id);
+                              }}
+                              className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                            >
+                              <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={12} height={12} className="size-3 object-contain dark:invert" />
+                            </button>
+                          </div>
 
                         {/* Examples Gallery Grid */}
                         <div className="space-y-2 pt-1">
@@ -1948,6 +1953,7 @@ export function PropertyDetailsViews({
                             )}
                           </div>
                         )}
+                        </div>
                       </div>
                     );
                   }

@@ -5,14 +5,15 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function MainHeader() {
   const { data: session } = useSession();
   const user = session?.user;
+  const { selectedLangLabel, setLanguage, t } = useLanguage();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("English (US)");
   const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -71,14 +72,14 @@ export function MainHeader() {
               className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
               href="/host/onboarding"
             >
-              Become a host
+              {t("header_become_a_host") || "Become a host"}
             </Link>
           )}
 
           {/* Language button */}
           <button
             type="button"
-            aria-label="Select Language"
+            aria-label={t("header_language") || "Select Language"}
             onClick={() => setLangModalOpen(true)}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition cursor-pointer"
           >
@@ -118,21 +119,21 @@ export function MainHeader() {
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
-                    Dashboard
+                    {t("header_dashboard") || "Dashboard"}
                   </Link>
                   <Link
                     href="/profile"
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
-                    Profile Settings
+                    {t("header_profile_settings") || "Profile Settings"}
                   </Link>
                   <Link
                     href="/host/listings"
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
-                    Host Workspace
+                    {t("header_host_workspace") || "Host Workspace"}
                   </Link>
                   <Link
                     href="/wishlists"
@@ -149,14 +150,14 @@ export function MainHeader() {
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-gray-50 rounded-xl transition"
                   >
-                    Log in
+                    {t("header_log_in") || "Log in"}
                   </Link>
                   <Link
                     href="/login?mode=signup"
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
-                    Sign up
+                    {t("header_sign_up") || "Sign up"}
                   </Link>
                   <div className="my-1 border-t border-gray-100" />
                   <Link
@@ -164,7 +165,7 @@ export function MainHeader() {
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
-                    Homyz your home
+                    {t("header_homyz_your_home") || "Homyz your home"}
                   </Link>
                 </div>
               )}
@@ -178,7 +179,7 @@ export function MainHeader() {
         <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 text-gray-900 relative">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-              <h3 className="text-base font-semibold text-gray-900">Language &amp; Region</h3>
+              <h3 className="text-base font-semibold text-gray-900">{t("header_languages_currency") || "Language & Region"}</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}
@@ -191,17 +192,17 @@ export function MainHeader() {
             <div className="space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                  Select Language
+                  {t("header_language") || "Select Language"}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Italiano"].map(
+                  {["English (US)", "English (UK)", "Español", "Français", "Deutsch", "Hindi", "العربية"].map(
                     (lang) => (
                       <button
                         key={lang}
                         type="button"
-                        onClick={() => setSelectedLang(lang)}
+                        onClick={() => setLanguage(lang)}
                         className={`p-2.5 rounded-xl border text-xs font-medium text-left transition cursor-pointer ${
-                          selectedLang === lang
+                          selectedLangLabel === lang
                             ? "border-amber-400 bg-amber-50 text-amber-950 font-semibold"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                         }`}
@@ -215,7 +216,7 @@ export function MainHeader() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                  Select Currency
+                  {t("header_currency") || "Select Currency"}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map(
@@ -244,7 +245,7 @@ export function MainHeader() {
                 onClick={() => setLangModalOpen(false)}
                 className="rounded-full bg-gray-900 hover:bg-gray-800 text-white font-medium text-xs px-6 py-2.5 transition cursor-pointer"
               >
-                Save Preferences
+                {t("header_done") || "Save Preferences"}
               </button>
             </div>
           </div>

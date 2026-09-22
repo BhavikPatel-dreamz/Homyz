@@ -614,45 +614,47 @@ export function EditorSidebar({
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
-                  <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                    {t("host_sidebar_listing_status")}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1.5 text-sm font-medium px-2.5 py-0.5 rounded-full border ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-500"
-                      : displayState === "PENDING_APPROVAL"
-                        ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border-amber-500"
-                        : displayState === "REJECTED"
-                          ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border-rose-500"
-                          : displayState === "READY_TO_SUBMIT"
-                            ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60 border-indigo-500"
-                            : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border-zinc-500"
-                      }`}
-                  >
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
+                      {t("host_sidebar_listing_status")}
+                    </span>
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                        ? "bg-emerald-500"
+                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${displayState === "PUBLISHED" || displayState === "APPROVED"
+                        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-500"
                         : displayState === "PENDING_APPROVAL"
-                          ? "bg-amber-500 animate-pulse"
+                          ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border-amber-500"
                           : displayState === "REJECTED"
-                            ? "bg-rose-500"
+                            ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border-rose-500"
                             : displayState === "READY_TO_SUBMIT"
-                              ? "bg-indigo-500"
-                              : "bg-zinc-400"
+                              ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60 border-indigo-500"
+                              : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border-zinc-500"
                         }`}
-                    />
-                    {displayState === "PUBLISHED"
-                      ? t("host_status_published_live")
-                      : displayState === "PENDING_APPROVAL"
-                        ? t("host_status_pending_admin_approval")
-                        : displayState === "REJECTED"
-                          ? t("host_status_changes_required")
-                          : displayState === "APPROVED"
-                            ? (isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved"))
-                            : displayState === "READY_TO_SUBMIT"
-                              ? t("host_status_ready_for_review")
-                              : t("host_status_draft_incomplete")}
-                  </span>
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
+                          ? "bg-emerald-500"
+                          : displayState === "PENDING_APPROVAL"
+                            ? "bg-amber-500 animate-pulse"
+                            : displayState === "REJECTED"
+                              ? "bg-rose-500"
+                              : displayState === "READY_TO_SUBMIT"
+                                ? "bg-indigo-500"
+                                : "bg-zinc-400"
+                          }`}
+                      />
+                      {displayState === "PUBLISHED"
+                        ? t("host_status_published_live")
+                        : displayState === "PENDING_APPROVAL"
+                          ? t("host_status_pending_admin_approval")
+                          : displayState === "REJECTED"
+                            ? t("host_status_changes_required")
+                            : displayState === "APPROVED"
+                              ? (isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved"))
+                              : displayState === "READY_TO_SUBMIT"
+                                ? t("host_status_ready_for_review")
+                                : t("host_status_draft_incomplete")}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Card 2: Languages */}
@@ -1071,7 +1073,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                     {t("host_number_of_guests")}
                   </span>
-                    <span className="text-base font-normal text-[#727272] block">
+                  <span className="text-base font-normal text-[#727272] block">
                     {t("host_max_guests_limit", { count: editGuests })}
                   </span>
                 </div>

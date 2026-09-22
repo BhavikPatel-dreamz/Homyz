@@ -278,11 +278,11 @@ export function PhotoTourManager({
             <RoomSelect id={`photo-room-${index}`} value={roomType} disabled={controlsDisabled} onChange={(nextRoom) => changeRoom(photo, nextRoom)} />
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-zinc-100 dark:border-zinc-700 pt-2.5">
-            <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="text-base font-medium text-[#1f1f1f] dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
               {index === 0 ? t("host_cover_photo") : t("host_make_cover")}
             </button>
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:opacity-40">{t("host_replace_photo")}</button>
+              <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="text-base font-medium text-[#1f1f1f] dark:text-zinc-300 transition hover:text-black dark:hover:text-white disabled:opacity-40">{t("host_replace_photo")}</button>
               <button type="button" onClick={() => removePhoto(index)} disabled={controlsDisabled} className="text-xs font-semibold text-rose-700 dark:text-rose-400 transition hover:text-rose-900 dark:hover:text-rose-300 disabled:opacity-40">{t("host_remove_photo")}</button>
             </div>
           </div>
@@ -296,36 +296,40 @@ export function PhotoTourManager({
       <input ref={addInput} className="hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple onChange={(event) => { const files = Array.from(event.target.files || []); event.target.value = ""; void uploadFiles(files); }} />
       <input ref={replaceInput} className="hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void replace(file); }} />
 
-      <header className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm">
+      <header className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{t("host_your_space")}</p>
+            <p className="mb-2 text-sm font-semibold text-[#727272] dark:text-zinc-400">{t("host_your_space")}</p>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-3xl">{t("host_photo_tour")}</h1>
-            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">Help guests understand your place at a glance. Assign each existing or new gallery photo to a room—your original image files and gallery order stay exactly the same.</p>
+            <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-zinc-300">Help guests understand your place at a glance. Assign each existing or new gallery photo to a room—your original image files and gallery order stay exactly the same.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-900 dark:border-zinc-600 bg-zinc-900 dark:bg-zinc-700 px-4 text-sm font-semibold text-white transition hover:bg-zinc-700 dark:hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#1f1f1f] dark:border-zinc-600 bg-[#1f1f1f] dark:bg-zinc-700 px-4 text-sm font-normal text-white hover:text-[#1f1f1f] transition duration-300 hover:bg-white dark:hover:bg-zinc-600 disabled:cursor-not-allowed disabled:opacity-60">
               {t("host_add_photos")}
             </button>
-            <button type="button" disabled={controlsDisabled} onClick={onSave} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#FEE08B] dark:bg-amber-400 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-[#fbd46a] dark:hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="button" disabled={controlsDisabled} onClick={onSave} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#FCDF9C] dark:bg-amber-400 px-4 text-sm font-normal text-[#1f1f1f] transition duration-300 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60 min-w-20">
               {isSaving ? t("host_saving_btn") : t("host_save_btn")}
             </button>
           </div>
         </div>
         <div className="grid divide-y border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 sm:grid-cols-3 sm:divide-x sm:divide-zinc-200 dark:sm:divide-zinc-700 sm:divide-y-0">
-          <div className="px-5 py-3.5"><p className="text-xs text-zinc-500 dark:text-zinc-400">Gallery photos</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{photos.length}<span className="ml-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">photos</span></p></div>
-          <div className="px-5 py-3.5"><p className="text-xs text-zinc-500 dark:text-zinc-400">Organized by room</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{assignedCount}<span className="ml-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">assigned</span></p></div>
-          <div className="px-5 py-3.5"><p className="text-xs text-zinc-500 dark:text-zinc-400">Still to organize</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{unassignedCount}<span className="ml-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">unassigned</span></p></div>
+          <div className="px-5 py-3.5"><p className="text-sm text-[#1f1f1f] dark:text-zinc-400 font-medium">Gallery photos</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{photos.length}<span className="ml-1 text-sm font-medium text-[#727272] dark:text-zinc-400">photos</span></p></div>
+          <div className="px-5 py-3.5"><p className="text-sm text-[#1f1f1f] dark:text-zinc-400 font-medium">Organized by room</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{assignedCount}<span className="ml-1 text-sm font-medium text-[#727272] dark:text-zinc-400">assigned</span></p></div>
+          <div className="px-5 py-3.5"><p className="text-sm text-[#1f1f1f] dark:text-zinc-400 font-medium">Still to organize</p><p className="mt-0.5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">{unassignedCount}<span className="ml-1 text-sm font-medium text-[#727272] dark:text-zinc-400">unassigned</span></p></div>
         </div>
         <div className="border-t border-zinc-200 dark:border-zinc-700 px-5 py-4 sm:px-7">
           <div className="mb-2.5 flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Photo types available to assign</p>
+            <p className="text-base font-medium text-[#1f1f1f] dark:text-zinc-300">Photo types available to assign</p>
             <div className="flex items-center gap-1.5">
               <button type="button" aria-label="Scroll room types left" onClick={() => scrollRoomTypes("left")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100">
-                ←
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+                </svg>
               </button>
               <button type="button" aria-label="Scroll room types right" onClick={() => scrollRoomTypes("right")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100">
-                →
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+                </svg>
               </button>
             </div>
           </div>
@@ -340,7 +344,7 @@ export function PhotoTourManager({
       </header>
 
       {photoMinimumRemaining > 0 && (
-        <p className="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-950 dark:text-amber-200">Add {photoMinimumRemaining} more {photoMinimumRemaining === 1 ? "photo" : "photos"} to meet the 5-photo listing minimum.</p>
+        <p className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-950 dark:text-amber-200">Add {photoMinimumRemaining} more {photoMinimumRemaining === 1 ? "photo" : "photos"} to meet the 5-photo listing minimum.</p>
       )}
       {error && <p role="alert" className="rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">{error} Choose the photo again to retry.</p>}
       {uploading && <p className="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">Uploading securely. Your photo tour will stay open while the upload finishes.</p>}
@@ -365,7 +369,7 @@ export function PhotoTourManager({
               <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Add a room or space</h2>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">Search and assign your selected photos to the right area.</p>
             </div>
-            <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full border border-zinc-200 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600">Close</button>
+            <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full border border-zinc-200 dark:border-zinc-700 px-2.5 py-1 text-base font-medium text-[#1f1f1f] dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600">Close</button>
           </div>
           <input
             value={roomSearch}
@@ -413,7 +417,7 @@ export function PhotoTourManager({
               .map((photo, index) => ({ photo, index }))
               .filter(({ photo }) => (roomByUrl.get(photo) ?? null) === roomType);
             return (
-              <section key={roomType ?? "UNASSIGNED"} className="rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-4 shadow-sm sm:p-5">
+              <section key={roomType ?? "UNASSIGNED"} className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-4 shadow-sm sm:p-5">
                 <div className="mb-4 flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-start gap-3">
                     <span className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${accent}`}>{label.slice(0, 1)}</span>
@@ -429,13 +433,13 @@ export function PhotoTourManager({
                     {roomPhotos.map(({ photo, index }) => renderPhoto(photo, index))}
                   </div>
                 ) : (
-                  <div className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-center text-sm text-zinc-500 dark:text-zinc-400">No photos assigned here yet.</div>
+                  <div className="flex min-h-28 items-center justify-center rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-center text-sm text-zinc-500 dark:text-zinc-400">No photos assigned here yet.</div>
                 )}
               </section>
             );
           })}
 
-          <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-200 transition hover:border-zinc-900 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 disabled:cursor-not-allowed disabled:opacity-60">
+          <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-lg border border-dashed border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold text-zinc-700 dark:text-zinc-200 transition hover:border-zinc-900 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 disabled:cursor-not-allowed disabled:opacity-60">
             <span className="mb-2 flex size-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700 text-xl text-zinc-900 dark:text-zinc-100">+</span>
             Add more photos
             <span className="mt-1 text-xs font-normal text-zinc-500 dark:text-zinc-400">JPEG, PNG, WebP, or AVIF · up to 10 MB each</span>

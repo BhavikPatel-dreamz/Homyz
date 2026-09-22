@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import { toast } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/i18n/language-context";
@@ -420,10 +421,19 @@ export function ListingStatusView({
                     isWarning ? "border-rose-500 bg-rose-500 text-white" :
                     "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
                   }`}>
-                    {isComplete ? "✓" : isWarning ? "!" : idx + 1}
+                    {isComplete ? (
+                      <Image
+                        src="/images/icons/right-mark.svg"
+                        alt=""
+                        aria-hidden="true"
+                        width={11}
+                        height={11}
+                        className="brightness-0 invert"
+                      />
+                    ) : isWarning ? "!" : idx + 1}
                   </span>
-                  <span className={`mt-3 max-w-[108px] text-xs font-medium ${
-                    isComplete ? "text-emerald-800 dark:text-emerald-400" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-zinc-400 dark:text-zinc-500"
+                  <span className={`mt-3 max-w-[108px] text-xs font-normal ${
+                    isComplete ? "text-[#1f1f1f]" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-zinc-400 dark:text-zinc-500"
                   }`}>
                     {step.label}
                   </span>
@@ -512,11 +522,11 @@ export function ListingStatusView({
 
       {/* 3. STATE: DRAFT (Incomplete Details) */}
       {displayState === "DRAFT" && !justSubmitted && (
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/60 p-5 space-y-3 shadow-2xs animate-in fade-in">
+        <div className="rounded-lg border border-[#72727] dark:border-zinc-700 bg-white dark:bg-zinc-800/60 p-5 space-y-3 shadow-2xs animate-in fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#727272] dark:bg-zinc-500" />
+              <h2 className="font-semibold text-[#1f1f1f] dark:text-zinc-100 text-base">
                 {t("host_complete_your_listing")}
               </h2>
             </div>
@@ -524,7 +534,7 @@ export function ListingStatusView({
               {t("host_draft_badge")}
             </span>
           </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
             {isSaudi
               ? t("host_saudi_draft_desc")
               : t("host_regular_draft_desc")}
@@ -533,16 +543,16 @@ export function ListingStatusView({
             {missing.map((req) => (
               <div
                 key={req.key}
-                className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs"
+                className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 text-sm"
               >
                 <div>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">{req.label}</span>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">{req.description}</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{req.description}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setActiveSection(req.section)}
-                  className="text-xs font-semibold text-indigo-600 dark:text-amber-400 hover:text-indigo-800 dark:hover:text-amber-300 hover:underline cursor-pointer shrink-0 ml-3"
+                  className="text-sm font-semibold text-[#1f1f1f] dark:text-amber-400 hover:text-[#727272] dark:hover:text-amber-300 hover:underline cursor-pointer shrink-0 ml-3 transition-all duration-300"
                 >
                   {t("host_complete_btn")}
                 </button>
@@ -584,11 +594,11 @@ export function ListingStatusView({
                 {t("host_listing_is_live")}
               </h2>
             </div>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 uppercase">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200 uppercase">
               {t("host_live_on_marketplace")}
             </span>
           </div>
-          <p className="text-xs text-emerald-900 dark:text-emerald-300 leading-relaxed">
+          <p className="text-sm text-[#1f1f1f] dark:text-emerald-300 leading-relaxed">
             {t("host_live_desc")}
           </p>
         </div>
