@@ -564,7 +564,7 @@ input[type="number"] {
 /* Compact modal scrollbar with equal clearance from both panel edges. */
 .modal-content-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #d1d1d1 transparent;
+  scrollbar-color: #d1d1d1 #f3f4f5;
   scrollbar-gutter: stable;
 }
 

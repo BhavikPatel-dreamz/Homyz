@@ -95,51 +95,55 @@ export function RemoveListingModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden font-sans animate-in fade-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800">
-        {/* Top Bar with Close Button */}
-        <div className="px-6 pt-5 pb-2 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300 text-xs transition-colors cursor-pointer"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
+    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-xs">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={step === 1 ? "remove-listing-survey-title" : "remove-listing-confirm-title"}
+        className="relative flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 dark:border-zinc-800 dark:bg-zinc-900"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+          aria-label="Close remove listing dialog"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        </button>
 
         {/* STEP 1: Survey Accordions (Matches Airbnb Screenshot 100%) */}
         {step === 1 && (
           <>
             {/* Modal Heading */}
-            <div className="px-6 pb-4">
-              <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">
+            <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
+              <h2 id="remove-listing-survey-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                 Let us know why you&apos;ve changed your mind about hosting
               </h2>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">Choose all that apply</p>
+              <p className="mt-2 text-base leading-6 text-[#727272] dark:text-zinc-400">Choose all that apply.</p>
             </div>
 
             {/* Scrollable Accordion List */}
-            <div className="flex-1 overflow-y-auto px-6 divide-y divide-zinc-100 dark:divide-zinc-800 space-y-1">
+            <div className="flex-1 overflow-y-auto px-6 sm:px-8 divide-y divide-zinc-100 dark:divide-zinc-800">
               {LISTING_REMOVAL_SURVEY.map((category) => {
                 const isExpanded = expandedCategory === category.id;
 
                 return (
-                  <div key={category.id} className="pt-3 pb-3">
+                  <div key={category.id} className="py-1">
                     {/* Accordion Header */}
                     <button
                       type="button"
                       onClick={() => toggleCategoryAccordion(category.id)}
-                      className="w-full flex items-center justify-between text-left py-1 group cursor-pointer"
+                      className="group flex w-full items-center justify-between rounded-xl px-1 py-3 text-left transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-zinc-800/60 dark:focus-visible:ring-zinc-100/20"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
                           {category.title}
                         </span>
                         {/* show badge if any selected and category is collapsed */}
                         {selectedReasonIds.length > 0 && !isExpanded && category.options.some((option) => selectedReasonIds.includes(option.id)) && (
-                          <span className="w-5 h-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 text-[10px] font-bold flex items-center justify-center">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-950">
                             {category.options.filter((option) => selectedReasonIds.includes(option.id)).length}
                           </span>
                         )}
@@ -159,19 +163,21 @@ export function RemoveListingModal({
 
                     {/* Accordion Content */}
                     {isExpanded && (
-                      <div className="mt-3 space-y-2.5 pl-0.5 animate-in fade-in duration-150">
+                      <div className="mt-1 space-y-1.5 px-1 pb-3 animate-in fade-in duration-150">
                         {category.options.map((option) => {
                           const isSelected = selectedReasonIds.includes(option.id);
 
                           return (
                             <div key={option.id} className="space-y-2">
-                              <label
-                                onClick={() => toggleOption(option.id, option.label)}
-                                className="flex items-center gap-3 py-1 cursor-pointer group"
-                              >
-                                {/* Round Radio matching single selection */}
+                              <label className="group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => toggleOption(option.id, option.label)}
+                                  className="peer sr-only"
+                                />
                                 <div
-                                  className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+                                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all ${
                                     isSelected
                                       ? "border-zinc-950 dark:border-zinc-100 bg-zinc-950 dark:bg-zinc-100"
                                       : "border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-400 dark:group-hover:border-zinc-500 bg-white dark:bg-zinc-800"
@@ -182,20 +188,20 @@ export function RemoveListingModal({
                                   )}
                                 </div>
 
-                                <span className="text-xs text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 font-normal leading-tight">
+                                <span className="text-sm leading-5 text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">
                                   {option.label}
                                 </span>
                               </label>
 
                               {/* Expandable "Another reason" details text input; required when selected */}
                               {isSelected && option.label === "Another reason" && (
-                                <div className="pl-7 pr-1 pt-1 pb-1 animate-in fade-in duration-150">
+                                <div className="animate-in fade-in pb-1 pl-9 pr-1 pt-1 duration-150">
                                   <textarea
                                     rows={2}
                                     placeholder="Please tell us more"
                                     value={customFeedback}
                                     onChange={(e) => setCustomFeedback(e.target.value)}
-                                    className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 p-2.5 text-xs text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:bg-white dark:focus:bg-zinc-800 focus:border-zinc-400 dark:focus:border-zinc-500 resize-none transition-all shadow-2xs"
+                                    className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800 shadow-2xs outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:bg-zinc-800 dark:focus:ring-zinc-100/10"
                                   />
                                 </div>
                               )}
@@ -210,11 +216,11 @@ export function RemoveListingModal({
             </div>
 
             {/* Footer */}
-            <div className="border-t border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between bg-white dark:bg-zinc-900 shrink-0">
+            <div className="flex shrink-0 items-center justify-between border-t border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900 sm:px-8">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-h-11 rounded-full border border-[#1f1f1f] bg-white px-7 py-2.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
                 Cancel
               </button>
@@ -225,10 +231,10 @@ export function RemoveListingModal({
                   selectedReasonIds.length === 0 || (hasAnotherReason && customFeedback.trim().length === 0)
                 }
                 onClick={() => setStep(2)}
-                className={`rounded-full px-6 py-2.5 text-xs font-semibold transition-all shadow-2xs ${
+                className={`min-h-11 rounded-full bg-[#FEE08B]  px-8 py-2.5 text-sm font-medium text-[#1f1f1f] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FEE08B] focus-visible:ring-offset-2 dark:bg-[#FEE08B] dark:text-[#1f1f1f] dark:focus-visible:ring-offset-zinc-900 ${
                   selectedReasonIds.length > 0 && !(hasAnotherReason && customFeedback.trim().length === 0)
-                    ? "bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 cursor-pointer"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                  ? "cursor-pointer hover:bg-[#1f1f1f]"
+                    : "cursor-not-allowed text-[#1f1f1f]/45"
                 }`}
               >
                 Next
@@ -240,25 +246,25 @@ export function RemoveListingModal({
         {/* STEP 2: Final Confirmation & Database Submission */}
         {step === 2 && (
           <>
-            <div className="px-6 pb-2">
-              <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] dark:text-zinc-100">
+            <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
+              <h2 id="remove-listing-confirm-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                 Permanently remove this listing?
               </h2>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+              <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-zinc-400">
                 You are removing <strong className="text-[#1f1f1f] dark:text-zinc-100">{listingTitle}</strong> from Homyz.
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-3 space-y-4 text-xs font-sans">
+            <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5 text-sm leading-6 sm:px-8">
               {errorMessage && (
-                <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs font-medium">
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-medium text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
                   {errorMessage}
                 </div>
               )}
 
               {/* Warning Box */}
               <div className="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/30 p-4 space-y-2">
-                <div className="font-semibold text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-rose-800 dark:text-rose-300">
                   <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -271,14 +277,14 @@ export function RemoveListingModal({
 
               {/* Selected Feedback Summary */}
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <div className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Your Feedback Summary ({totalSelectedCount} reasons)
                 </div>
-                <ul className="space-y-1 text-zinc-700 dark:text-zinc-300 list-disc pl-4 text-[11px]">
+                <ul className="list-disc space-y-1 pl-4 text-sm text-zinc-700 dark:text-zinc-300">
                   {selectedReasonLabels.map((label) => <li key={label}>{label}</li>)}
                 </ul>
                 {customFeedback && (
-                  <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-600 dark:text-zinc-400 italic">
+                  <div className="border-t border-zinc-200 pt-2 text-sm italic text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
                     &ldquo;{customFeedback}&rdquo;
                   </div>
                 )}
@@ -286,22 +292,22 @@ export function RemoveListingModal({
             </div>
 
             {/* Footer */}
-            <div className="border-t border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between bg-white dark:bg-zinc-900 shrink-0">
+            <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between sm:px-8">
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => setStep(1)}
-                className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white underline underline-offset-4 cursor-pointer"
+                className="self-start px-2 py-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-300 dark:hover:text-white dark:focus-visible:ring-zinc-100"
               >
                 Back
               </button>
 
-              <div className="flex items-center gap-3">
+              <div className="flex w-full flex-col-reverse gap-3 sm:w-auto sm:flex-row">
                 <button
                   type="button"
                   disabled={isPending}
                   onClick={onClose}
-                  className="rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
+                  className="min-h-11 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 >
                   Keep listing
                 </button>
@@ -309,7 +315,7 @@ export function RemoveListingModal({
                   type="button"
                   disabled={isPending}
                   onClick={handleConfirmRemoval}
-                  className="rounded-full bg-rose-600 dark:bg-rose-700 hover:bg-rose-700 dark:hover:bg-rose-600 text-white font-semibold text-xs px-6 py-2.5 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+                  className="min-h-11 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600 dark:focus-visible:ring-rose-400 dark:focus-visible:ring-offset-zinc-900"
                 >
                   {isPending ? "Removing..." : "Permanently remove listing"}
                 </button>
@@ -317,7 +323,7 @@ export function RemoveListingModal({
             </div>
           </>
         )}
-      </div>
+      </section>
     </ModalOverlay>
   );
 }

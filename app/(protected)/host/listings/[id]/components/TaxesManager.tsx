@@ -825,7 +825,7 @@ export function TaxesManager({
                     placeholder="Tax registration number"
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
-                    className={`mt-2 w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !registrationNumber.trim()
+                    className={`mt-2 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !registrationNumber.trim()
                         ? "border-[#C13515] ring-1 ring-[#C13515]"
                         : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                       }`}
