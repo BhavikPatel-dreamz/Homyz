@@ -720,7 +720,7 @@ export function PricingAndBookingViews({
         return isLoading ? (
           <CustomLinkSkeleton />
         ) : (
-          <div className="animate-in fade-in max-w-xl min-h-[420px] flex flex-col items-center justify-center font-sans">
+          <div className="animate-in fade-in max-w-xl min-h-[420px] mx-auto flex flex-col items-center justify-center font-sans">
             <div className="flex flex-col items-center justify-center space-y-6 w-full py-12">
               {/* Counter text */}
               <span className="text-base font-medium text-[#727272] dark:text-zinc-300 tracking-tight">
