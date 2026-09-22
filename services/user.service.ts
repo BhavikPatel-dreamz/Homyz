@@ -1,7 +1,7 @@
 import { AppError } from "@/lib/api/errors";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/prisma";
-import { deleteCache, getOrSetCache } from "@/lib/redis/cache";
+import { deleteCache, getOrSetCache, incrCounter } from "@/lib/redis/cache";
 import { invalidateUserCache } from "@/lib/redis/invalidation";
 import { keys } from "@/lib/redis/keys";
 import type {
@@ -141,7 +141,13 @@ async function updateHostPublicProfile(userId: string, input: UpdateHostPublicPr
     where: { id: userId },
     data: { publicProfile: nextProfile },
   });
-  await deleteCache(keys.userProfile(userId));
+  await Promise.all([
+    deleteCache(keys.userProfile(userId)),
+    // Public listing search also reads host-profile languages. Bump its
+    // version whenever those languages change so filter counts/results do not
+    // wait for the previous cache entry to expire.
+    input.languages !== undefined ? incrCounter(keys.listingsPublicVersion()) : Promise.resolve(),
+  ]);
   return toPublicUser(user);
 }
 

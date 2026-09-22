@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import type { PublicListingDTO } from "@/services/mappers";
+import type { PublicListingCardDTO } from "@/services/mappers";
 import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
 
 // ─── Minimal Leaflet Type Stubs (SSR-safe) ────────────────────────────────────
@@ -91,7 +91,7 @@ export { CartoTileLayer } from "./carto-tile-layer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ListingForMap = Pick<
-  PublicListingDTO,
+  PublicListingCardDTO,
   "id" | "title" | "price" | "city" | "country" | "latitude" | "longitude"
 >;
 

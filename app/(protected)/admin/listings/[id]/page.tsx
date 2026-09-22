@@ -6,7 +6,6 @@ import { Role } from "@/generated/prisma/enums";
 import { HostListingEditorClient, type HostListingData } from "@/app/(protected)/host/listings/[id]/host-listing-editor-client";
 import { slugToSection, serializeListingForEditor } from "@/app/(protected)/host/listings/[id]/section-helpers";
 import { listingService } from "@/services/listing.service";
-import { guidebookService } from "@/services/guidebook.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 
 interface PageProps {
@@ -46,22 +45,8 @@ export default async function AdminListingDetailPage({ params, searchParams }: P
     approvedBy,
   });
 
-  let initialGuidebooks: any[] = [];
-  try {
-    initialGuidebooks = await guidebookService.getGuidebooksForListing(listingId);
-  } catch {
-    initialGuidebooks = (listing.guidebookListings || []).map((link: any) => ({
-      ...link.guidebook,
-      createdAt: link.guidebook?.createdAt ? new Date(link.guidebook.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: link.guidebook?.updatedAt ? new Date(link.guidebook.updatedAt).toISOString() : new Date().toISOString(),
-      listings: (link.guidebook?.listings || []).map((association: any) => ({
-        id: association.listing?.id,
-        title: association.listing?.title,
-        city: association.listing?.city,
-        coverPhoto: association.listing?.photos?.[0] ?? null,
-      })),
-    }));
-  }
+  // TEMPORARILY DISABLED: guidebooks are intentionally off in admin until the feature is ready.
+  const initialGuidebooks: any[] = [];
 
   return (
     <HostListingEditorClient

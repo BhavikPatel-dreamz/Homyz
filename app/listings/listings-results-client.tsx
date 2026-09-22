@@ -8,12 +8,13 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingSearchBar } from "@/components/listings/listing-search-bar";
 import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
-import type { PublicListingDTO } from "@/services/mappers";
+import type { PublicListingCardDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
 import { formatListingPrice, getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
+import { ListingFilterModal, type ListingFilterValues } from "@/components/listings/listing-filter-modal";
 
 // Lazy-load the map (Leaflet is heavy & client-only)
 const SearchMap = dynamic(
@@ -25,7 +26,7 @@ const SearchMap = dynamic(
 // Types
 // ─────────────────────────────────────────────
 interface ListingsResultsClientProps {
-  listings: PublicListingDTO[];
+  listings: PublicListingCardDTO[];
   total: number;
   page: number;
   totalPages: number;
@@ -141,7 +142,7 @@ function SelectedPreviewCard({
   listing,
   onClose,
 }: {
-  listing: PublicListingDTO;
+  listing: PublicListingCardDTO;
   onClose: () => void;
 }) {
   const currency = getCurrencyForCountry(listing.country);
@@ -512,10 +513,12 @@ export function ListingsResultsClient({
   }, [isFilterOpen, currentFilters, priceRange]);
 
   // Compute active filter count for badge
+  const availableMinPrice = priceRange?.min ?? 0;
+  const availableMaxPrice = priceRange?.max ?? 0;
   const activeFilterCount = [
-    currentFilters.minPrice && currentFilters.minPrice > 0,
-    currentFilters.maxPrice && currentFilters.maxPrice > 0,
-    currentFilters.propertyType,
+    typeof currentFilters.minPrice === "number" && currentFilters.minPrice > availableMinPrice,
+    typeof currentFilters.maxPrice === "number" && availableMaxPrice > 0 && currentFilters.maxPrice < availableMaxPrice,
+    currentFilters.propertyType || (currentFilters.propertyTypes ?? []).length > 0,
     currentFilters.listingType,
     (currentFilters.amenities ?? []).length > 0,
     (currentFilters.accessibility ?? []).length > 0,
@@ -690,6 +693,38 @@ export function ListingsResultsClient({
     setDraftHostLanguages([]);
   };
 
+  const handleNewFilterApply = (filters: ListingFilterValues) => {
+    const selectedMinPrice = filters.minPrice ?? Math.round(availableMinPrice / 100);
+    const selectedMaxPrice = filters.maxPrice ?? Math.round(availableMaxPrice / 100);
+    const absoluteMinPrice = Math.round(availableMinPrice / 100);
+    const absoluteMaxPrice = Math.round(availableMaxPrice / 100);
+    setIsFilterOpen(false);
+    trackListingEvent({
+      eventType: "listing_filter_applied",
+      filterKey: "filter_modal",
+      metadata: filters,
+      resultCount: total,
+    });
+    startTransition(() => {
+      router.push(buildUrl({
+        minPrice: selectedMinPrice > absoluteMinPrice ? selectedMinPrice * 100 : null,
+        maxPrice: absoluteMaxPrice > 0 && selectedMaxPrice < absoluteMaxPrice ? selectedMaxPrice * 100 : null,
+        propertyType: null,
+        propertyTypes: filters.propertyTypes.length ? filters.propertyTypes.join(",") : null,
+        listingType: filters.listingType || null,
+        amenities: filters.amenities.length ? filters.amenities.join(",") : null,
+        accessibility: filters.accessibility.length ? filters.accessibility.join(",") : null,
+        languages: filters.languages.length ? filters.languages.join(",") : null,
+        bedrooms: filters.bedrooms || null,
+        bathrooms: filters.bathrooms || null,
+        beds: filters.beds || null,
+        instantBook: filters.instantBook ? "true" : null,
+        featured: filters.featured ? "true" : null,
+        pets: filters.pets ? 1 : null,
+      }));
+    });
+  };
+
   // Map bounds changed — re-search with bounds
   const handleBoundsChange = useCallback(
     (bounds: { neLat: number; neLng: number; swLat: number; swLng: number }) => {
@@ -760,7 +795,7 @@ export function ListingsResultsClient({
       });
       if (res.ok) {
         const data = await res.json();
-        const newItems: PublicListingDTO[] = data.items ?? data.data ?? [];
+        const newItems: PublicListingCardDTO[] = data.items ?? data.data ?? [];
         setAllListings((prev) => [...prev, ...newItems]);
         setCurrentPage(nextPage);
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;
@@ -1292,7 +1327,7 @@ export function ListingsResultsClient({
       </button>
 
       {/* ── Filter Panel Modal ───────────── */}
-      {isFilterOpen && (
+      {false && isFilterOpen && (
         <ModalOverlay
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4"
           onClick={() => setIsFilterOpen(false)}
@@ -1830,7 +1865,31 @@ export function ListingsResultsClient({
           </div>
         </ModalOverlay>
       )}
+      {isFilterOpen && <ListingFilterModal
+        open={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApply={handleNewFilterApply}
+        initialFilters={{
+          minPrice: currentFilters.minPrice ? Math.round(currentFilters.minPrice / 100) : Math.round(availableMinPrice / 100),
+          maxPrice: currentFilters.maxPrice ? Math.round(currentFilters.maxPrice / 100) : Math.round(availableMaxPrice / 100),
+          propertyTypes: currentFilters.propertyTypes ?? (currentFilters.propertyType ? [currentFilters.propertyType] : []),
+          listingType: currentFilters.listingType === "ROOM" ? "ROOM" : currentFilters.listingType ? "ENTIRE_PLACE" : "",
+          amenities: currentFilters.amenities ?? [],
+          accessibility: currentFilters.accessibility ?? [],
+          languages: currentFilters.languages ?? [],
+          bedrooms: currentFilters.bedrooms ?? 0,
+          beds: currentFilters.beds ?? 0,
+          bathrooms: currentFilters.bathrooms ?? 0,
+          instantBook: currentFilters.instantBook ?? false,
+          featured: currentFilters.featured ?? false,
+          pets: Boolean(currentFilters.pets && currentFilters.pets > 0),
+        }}
+        availablePriceRange={priceRange}
+        currencySymbol={currencySymbol}
+        baseSearchParams={searchParams.toString()}
+        currentTotal={total}
+        isApplying={isPending}
+      />}
     </>
   );
 }
-

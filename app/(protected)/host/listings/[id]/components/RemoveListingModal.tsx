@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import {
   LISTING_REMOVAL_SURVEY,
@@ -81,15 +81,19 @@ export function RemoveListingModal({
           customFeedback: customFeedback.trim() || undefined,
         });
 
-        if ((res as any)?.error) {
-          throw new Error((res as any).error);
+        if ((res as Record<string, unknown>)?.error) {
+          throw new Error(String((res as Record<string, unknown>).error));
         }
 
         // Successfully removed! Redirect to host listings dashboard
         onClose();
         router.push("/host/listings");
-      } catch (err: any) {
-        setErrorMessage(err.message || "Failed to remove listing. Please try again.");
+      } catch (err: unknown) {
+        setErrorMessage(
+          err instanceof Error
+            ? err.message
+            : (t("host_remove_error") || "Failed to remove listing. Please try again.")
+        );
       }
     });
   };
@@ -106,7 +110,7 @@ export function RemoveListingModal({
           type="button"
           onClick={onClose}
           className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
-          aria-label="Close remove listing dialog"
+          aria-label={t("host_close") || "Close"}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
             <path d="M6 6l12 12M18 6 6 18" />
@@ -119,15 +123,19 @@ export function RemoveListingModal({
             {/* Modal Heading */}
             <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
               <h2 id="remove-listing-survey-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
-                Let us know why you&apos;ve changed your mind about hosting
+                {t("host_remove_survey_heading") || "Let us know why you've changed your mind about hosting"}
               </h2>
-              <p className="mt-2 text-base leading-6 text-[#727272] dark:text-zinc-400">Choose all that apply.</p>
+              <p className="mt-2 text-base leading-6 text-[#727272] dark:text-zinc-400">
+                {t("host_remove_survey_subtext") || "Choose all that apply."}
+              </p>
             </div>
 
             {/* Scrollable Accordion List */}
             <div className="flex-1 overflow-y-auto px-6 sm:px-8 divide-y divide-zinc-100 dark:divide-zinc-800">
               {LISTING_REMOVAL_SURVEY.map((category) => {
                 const isExpanded = expandedCategory === category.id;
+                const categoryTitleKey = `host_remove_survey_cat_${category.id}` as TranslationKey;
+                const translatedCategoryTitle = t(categoryTitleKey) || category.title;
 
                 return (
                   <div key={category.id} className="py-1">
@@ -139,7 +147,7 @@ export function RemoveListingModal({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
-                          {category.title}
+                          {translatedCategoryTitle}
                         </span>
                         {/* show badge if any selected and category is collapsed */}
                         {selectedReasonIds.length > 0 && !isExpanded && category.options.some((option) => selectedReasonIds.includes(option.id)) && (
@@ -166,6 +174,8 @@ export function RemoveListingModal({
                       <div className="mt-1 space-y-1.5 px-1 pb-3 animate-in fade-in duration-150">
                         {category.options.map((option) => {
                           const isSelected = selectedReasonIds.includes(option.id);
+                          const optionLabelKey = `host_remove_survey_opt_${option.id}` as TranslationKey;
+                          const translatedOptionLabel = t(optionLabelKey) || option.label;
 
                           return (
                             <div key={option.id} className="space-y-2">
@@ -189,7 +199,7 @@ export function RemoveListingModal({
                                 </div>
 
                                 <span className="text-sm leading-5 text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">
-                                  {option.label}
+                                  {translatedOptionLabel}
                                 </span>
                               </label>
 
@@ -198,7 +208,7 @@ export function RemoveListingModal({
                                 <div className="animate-in fade-in pb-1 pl-9 pr-1 pt-1 duration-150">
                                   <textarea
                                     rows={2}
-                                    placeholder="Please tell us more"
+                                    placeholder={t("host_remove_survey_tell_us_more") || "Please tell us more"}
                                     value={customFeedback}
                                     onChange={(e) => setCustomFeedback(e.target.value)}
                                     className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800 shadow-2xs outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:bg-zinc-800 dark:focus:ring-zinc-100/10"
@@ -222,7 +232,7 @@ export function RemoveListingModal({
                 onClick={onClose}
                 className="min-h-11 rounded-full border border-[#1f1f1f] bg-white px-7 py-2.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
-                Cancel
+                {t("host_cancel") || "Cancel"}
               </button>
 
               <button
@@ -237,7 +247,7 @@ export function RemoveListingModal({
                     : "cursor-not-allowed text-[#1f1f1f]/45"
                 }`}
               >
-                Next
+                {t("host_next") || "Next"}
               </button>
             </div>
           </>
@@ -248,10 +258,12 @@ export function RemoveListingModal({
           <>
             <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
               <h2 id="remove-listing-confirm-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
-                Permanently remove this listing?
+                {t("host_remove_confirm_heading") || "Permanently remove this listing?"}
               </h2>
               <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-zinc-400">
-                You are removing <strong className="text-[#1f1f1f] dark:text-zinc-100">{listingTitle}</strong> from Homyz.
+                {t("host_remove_confirm_subtext_prefix") || "You are removing "}
+                <strong className="text-[#1f1f1f] dark:text-zinc-100">{listingTitle}</strong>
+                {t("host_remove_confirm_subtext_suffix") || " from Homyz."}
               </p>
             </div>
 
@@ -268,17 +280,17 @@ export function RemoveListingModal({
                   <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  This action is permanent
+                  {t("host_remove_warning_title") || "This action is permanent"}
                 </div>
                 <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Your listing will be immediately removed from public search. Your photos, descriptions, and settings will no longer be available.
+                  {t("host_remove_warning_body") || "Your listing will be immediately removed from public search. Your photos, descriptions, and settings will no longer be available."}
                 </p>
               </div>
 
               {/* Selected Feedback Summary */}
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-2">
                 <div className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Your Feedback Summary ({totalSelectedCount} reasons)
+                  {t("host_remove_summary_title", { count: String(totalSelectedCount) }) || `Your Feedback Summary (${totalSelectedCount} reasons)`}
                 </div>
                 <ul className="list-disc space-y-1 pl-4 text-sm text-zinc-700 dark:text-zinc-300">
                   {selectedReasonLabels.map((label) => <li key={label}>{label}</li>)}
@@ -299,7 +311,7 @@ export function RemoveListingModal({
                 onClick={() => setStep(1)}
                 className="self-start px-2 py-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-300 dark:hover:text-white dark:focus-visible:ring-zinc-100"
               >
-                Back
+                {t("host_back") || "Back"}
               </button>
 
               <div className="flex w-full flex-col-reverse gap-3 sm:w-auto sm:flex-row">
@@ -309,7 +321,7 @@ export function RemoveListingModal({
                   onClick={onClose}
                   className="min-h-11 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 >
-                  Keep listing
+                  {t("host_remove_keep_listing") || "Keep listing"}
                 </button>
                 <button
                   type="button"
@@ -317,7 +329,9 @@ export function RemoveListingModal({
                   onClick={handleConfirmRemoval}
                   className="min-h-11 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600 dark:focus-visible:ring-rose-400 dark:focus-visible:ring-offset-zinc-900"
                 >
-                  {isPending ? "Removing..." : "Permanently remove listing"}
+                  {isPending
+                    ? (t("host_remove_confirm_removing") || "Removing...")
+                    : (t("host_remove_confirm_btn") || "Permanently remove listing")}
                 </button>
               </div>
             </div>
