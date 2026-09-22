@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import type {
   ListingTaxDTO,
   TaxJurisdictionDTO,
@@ -14,21 +15,11 @@ import type {
   TaxableComponent,
 } from "@/lib/tax/types";
 
-const TAXABLE_BASE_OPTIONS: { value: TaxableComponent; label: string }[] = [
-  { value: "BASE_PRICE", label: "Base price" },
-  { value: "MANAGEMENT_FEE", label: "Management fee" },
-  { value: "COMMUNITY_FEE", label: "Community fee" },
-  { value: "LINEN_FEE", label: "Linen fee" },
-  { value: "RESORT_FEE", label: "Resort fee" },
-  { value: "CLEANING_FEE", label: "Cleaning fee" },
-  { value: "PET_FEE", label: "Pet fee" },
-];
-
 interface TaxesManagerProps {
   listingId: string;
   listingCity?: string | null;
   listingCountry?: string | null;
-  setActiveSection: (s: any) => void;
+  setActiveSection: (s: string) => void;
   onDirtyChange?: (isDirty: boolean) => void;
 }
 
@@ -63,18 +54,19 @@ function sameTaxForm(left: TaxFormSnapshot, right: TaxFormSnapshot) {
 
 export function TaxesManager({
   listingId,
-  listingCity,
+  listingCity: _listingCity,
   listingCountry,
   setActiveSection,
   onDirtyChange,
 }: TaxesManagerProps) {
-  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
+  const [_isLoading, setIsLoading] = useState(true);
 
   // Overview data
   const [jurisdiction, setJurisdiction] = useState<TaxJurisdictionDTO | null>(null);
   const [systemRules, setSystemRules] = useState<TaxRuleDTO[]>([]);
   const [hostTaxes, setHostTaxes] = useState<ListingTaxDTO[]>([]);
-  const [registrations, setRegistrations] = useState<TaxRegistrationDTO[]>([]);
+  const [_registrations, setRegistrations] = useState<TaxRegistrationDTO[]>([]);
 
   // "Add a tax" modal state
   const [isAddTaxModalOpen, setIsAddTaxModalOpen] = useState(false);
@@ -105,6 +97,16 @@ export function TaxesManager({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [viewingRegistration, setViewingRegistration] = useState<TaxRegistrationDTO | null>(null);
   const [viewingInvoiceModal, setViewingInvoiceModal] = useState<boolean>(false);
+
+  const TAXABLE_BASE_OPTIONS: { value: TaxableComponent; label: string }[] = [
+    { value: "BASE_PRICE", label: t("host_tax_base_price") },
+    { value: "MANAGEMENT_FEE", label: t("host_tax_management_fee") },
+    { value: "COMMUNITY_FEE", label: t("host_tax_community_fee") },
+    { value: "LINEN_FEE", label: t("host_tax_linen_fee") },
+    { value: "RESORT_FEE", label: t("host_tax_resort_fee") },
+    { value: "CLEANING_FEE", label: t("host_tax_cleaning_fee") },
+    { value: "PET_FEE", label: t("host_tax_pet_fee") },
+  ];
 
   const currentForm: TaxFormSnapshot = {
     taxName,
@@ -138,10 +140,7 @@ export function TaxesManager({
   // Load listing taxes overview
   const loadOverview = async () => {
     if (!listingId) return;
-    setIsLoading(true);
     try {
-      // Always request a fresh overview. The tax POST/PATCH has just changed
-      // server state and a cached GET would leave the added tax off this list.
       const res = await fetch(`/api/v1/listings/${listingId}/taxes`, {
         cache: "no-store",
       });
@@ -154,21 +153,51 @@ export function TaxesManager({
       setSystemRules(data.systemRules || []);
       setHostTaxes(data.hostTaxes || []);
       setRegistrations(data.registrations || []);
-
-      // If registrations exist and input is empty, prefill with first registration
-      if (data.registrations && data.registrations.length > 0 && !registrationNumber) {
-        setRegistrationNumber(data.registrations[0].registrationNumber);
-      }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching tax overview:", err);
-      showError(err.message || "Could not load tax overview");
+      showError(err instanceof Error ? err.message : "Could not load tax overview");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadOverview();
+    let ignore = false;
+    async function fetchInitialData() {
+      if (!listingId) return;
+      try {
+        const res = await fetch(`/api/v1/listings/${listingId}/taxes`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (ignore) return;
+        if (!res.ok || json.error) {
+          throw new Error(json.error?.message || "Failed to load tax settings");
+        }
+        const data = json.data;
+        setJurisdiction(data.jurisdiction || null);
+        setSystemRules(data.systemRules || []);
+        setHostTaxes(data.hostTaxes || []);
+        setRegistrations(data.registrations || []);
+
+        if (data.registrations && data.registrations.length > 0) {
+          setRegistrationNumber((prev) => prev || data.registrations[0].registrationNumber);
+        }
+      } catch (err: unknown) {
+        if (!ignore) {
+          console.error("Error fetching tax overview:", err);
+          showError(err instanceof Error ? err.message : "Could not load tax overview");
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+    fetchInitialData();
+    return () => {
+      ignore = true;
+    };
   }, [listingId]);
 
   // Open "Add a tax" modal
@@ -202,8 +231,8 @@ export function TaxesManager({
   // Open "Edit tax" modal
   const handleEditTax = (tax: ListingTaxDTO) => {
     setEditingTax(tax);
-    setTaxName(tax.customName || formatTaxTypeName(tax.taxType));
-    const methodStr = formatCalculationMethod(tax.calculationMethod);
+    setTaxName(tax.customName || formatTaxTypeName(tax.taxType, t));
+    const methodStr = formatCalculationMethod(tax.calculationMethod, t);
     setTaxType(methodStr);
     const isPct = tax.calculationMethod === "PERCENTAGE";
     setRateMode(isPct ? "Percentage" : "Fixed");
@@ -221,7 +250,7 @@ export function TaxesManager({
     setTermsAgreed(true);
     setFormSubmitted(false);
     setSavedForm({
-      taxName: tax.customName || formatTaxTypeName(tax.taxType),
+      taxName: tax.customName || formatTaxTypeName(tax.taxType, t),
       taxType: methodStr,
       rateMode: isPct ? "Percentage" : "Fixed",
       taxRate: isPct ? String(tax.rate ?? "") : String((tax.amount ?? 0) / 100),
@@ -247,7 +276,7 @@ export function TaxesManager({
   // Synchronize rateMode based on TaxType selection
   const handleTaxTypeChange = (selected: string) => {
     setTaxType(selected);
-    if (selected === "Percentage per booking") {
+    if (selected === t("host_tax_type_percentage_per_booking")) {
       setRateMode("Percentage");
     } else if (selected) {
       setRateMode("Fixed");
@@ -274,46 +303,43 @@ export function TaxesManager({
       !taxRate ||
       !registrationNumber ||
       !termsAgreed ||
-      (taxType === "Percentage per booking" && taxableComponents.length === 0)
+      (taxType === t("host_tax_type_percentage_per_booking") && taxableComponents.length === 0)
     ) {
       return;
     }
 
     const numericRate = parseFloat(taxRate);
     if (isNaN(numericRate) || numericRate <= 0) {
-      showError("Please enter a valid numeric tax rate or amount");
+      showError(t("host_taxes_error_invalid_rate"));
       return;
     }
 
     const normalizedRegistrationNumber = registrationNumber.trim();
     if (!/^[A-Za-z0-9\-\s]{4,50}$/.test(normalizedRegistrationNumber)) {
-      showError("Enter a valid tax registration number (at least 4 letters or numbers)");
+      showError(t("host_taxes_error_invalid_reg"));
       return;
     }
 
     const mappedTaxType: TaxType = mapNameToTaxType(taxName);
-    const mappedCalcMethod: TaxCalculationMethod = mapTypeToCalcMethod(taxType);
+    const mappedCalcMethod: TaxCalculationMethod = mapTypeToCalcMethod(taxType, t);
     const isPlatformManaged = systemRules.some(
       (rule) => rule.taxType === mappedTaxType && rule.isActive,
     );
     if (isPlatformManaged) {
-      showError("Homyz already collects and submits this tax for your listing location.");
+      showError(t("host_taxes_error_platform_managed"));
       return;
     }
 
     setIsSaving(true);
 
     try {
-      // Map UI values to API schemas.
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         listingId,
         taxType: mappedTaxType,
         customName: taxName,
         calculationMethod: mappedCalcMethod,
         rate: mappedCalcMethod === "PERCENTAGE" ? numericRate : null,
         amount: mappedCalcMethod !== "PERCENTAGE" ? Math.round(numericRate * 100) : null,
-        // Taxable-base checkboxes only affect a percentage calculation. Fixed
-        // taxes have no percentage base, so keep their stored value neutral.
         taxableComponents:
           mappedCalcMethod === "PERCENTAGE" ? taxableComponents : ["BASE_PRICE"],
         remittanceResponsibility: "HOST",
@@ -322,14 +348,9 @@ export function TaxesManager({
           : null,
         partialStayExemptionNights: partialStayExemption ? parseInt(partialStayExemption, 10) : null,
         fullStayExemptionNights: fullStayExemption ? parseInt(fullStayExemption, 10) : null,
-        // Retain compatibility with bookings that currently use this field to
-        // determine a full-stay exemption.
         longStayExemptionNights: fullStayExemption ? parseInt(fullStayExemption, 10) : null,
       };
 
-      // The registration field is required by this form. Save it first and
-      // inspect its API response instead of treating a failed request as a
-      // successful tax save. The endpoint is an upsert, so retrying is safe.
       const registrationRes = await fetch(`/api/v1/taxes/registrations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -360,14 +381,14 @@ export function TaxesManager({
         throw new Error(json.error?.message || "Failed to save tax");
       }
 
-      showSuccess(editingTax ? "Tax updated successfully" : "Tax added successfully");
+      showSuccess(editingTax ? t("host_taxes_updated_success") : t("host_taxes_added_success"));
       setIsAddTaxModalOpen(false);
       setEditingTax(null);
       setSavedForm(null);
       await loadOverview();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Save tax error:", err);
-      showError(err.message || "Failed to save tax");
+      showError(err instanceof Error ? err.message : "Failed to save tax");
     } finally {
       setIsSaving(false);
     }
@@ -384,12 +405,12 @@ export function TaxesManager({
       if (!res.ok || json.error) {
         throw new Error(json.error?.message || "Failed to delete tax");
       }
-      showSuccess("Tax removed successfully");
+      showSuccess(t("host_taxes_deleted_success"));
       setIsDeleteModalOpen(false);
       setDeletingTaxId(null);
       await loadOverview();
-    } catch (err: any) {
-      showError(err.message || "Failed to delete tax");
+    } catch (err: unknown) {
+      showError(err instanceof Error ? err.message : "Failed to delete tax");
     }
   };
 
@@ -406,7 +427,6 @@ export function TaxesManager({
       });
     }
 
-    // High fidelity fallback matching screenshot reference
     const country = (listingCountry || "").toLowerCase();
     if (country.includes("saudi") || country === "sa") {
       return [{ id: "sa-vat", label: "Standard Rate - VAT (SA)" }];
@@ -418,7 +438,6 @@ export function TaxesManager({
       return [{ id: "gb-vat", label: "Standard Rate - VAT (GB)" }];
     }
 
-    // Default reference items (matching India / screenshot)
     return [
       { id: "cgst", label: "Standard Rate - CGST (In - Gujarat (in-gj))" },
       { id: "sgst", label: "Standard Rate - SGST (In - Gujarat (in-gj))" },
@@ -429,7 +448,7 @@ export function TaxesManager({
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200 lg:max-w-[calc(100%-75px)]">
-      {/* Main Section Content (Renders in Main Column alongside EditorSidebar) */}
+      {/* Main Section Content */}
       <div className="space-y-6">
         {/* Back Button & Title */}
         <div className="flex items-start gap-6">
@@ -439,26 +458,24 @@ export function TaxesManager({
             aria-label="Back to listing editor"
           />
           <div>
-            <h1>
-              Taxes
-            </h1>
+            <h1>{t("host_taxes_heading")}</h1>
             <p className="text-sm sm:text-base text-[#727272] dark:text-zinc-400 mt-1.5 leading-relaxed">
-              Homyz automatically submits some taxes, and you can add other taxes you need to submit.
+              {t("host_taxes_subtitle")}
             </p>
           </div>
         </div>
 
         {/* CARD 1: Taxes Homyz Submits */}
         <div className="border border-[#DDDDDD] dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-zinc-900 shadow-2xs">
-          <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">Taxes Homyz submits</h2>
+          <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_taxes_homyz_submits_heading")}</h2>
           <p className="text-sm text-[#727272] dark:text-zinc-400 mt-1 leading-relaxed">
-            We&apos;ll collect these taxes from guests on your behalf and submit payment to the designated tax authority.{" "}
+            {t("host_taxes_homyz_submits_desc")}{" "}
             <button
               type="button"
               onClick={() => setLearnMoreTopic("platform_taxes")}
               className="underline font-normal text-zinc-900 dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
             >
-              Learn more
+              {t("host_learn_more")}
             </button>
           </p>
 
@@ -482,15 +499,15 @@ export function TaxesManager({
 
         {/* CARD 2: Add taxes you'll submit */}
         <div className="border border-[#DDDDDD] dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-zinc-900 shadow-2xs">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Add taxes you&apos;ll submit</h2>
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">{t("host_taxes_add_taxes_heading")}</h2>
           <p className="text-sm text-[#727272] dark:text-zinc-400 mt-1 leading-relaxed">
-            We&apos;ll collect these taxes from guests on your behalf and pass the funds on to you. You must submit payment to the correct tax authority.{" "}
+            {t("host_taxes_add_taxes_desc")}{" "}
             <button
               type="button"
               onClick={() => setLearnMoreTopic("host_taxes")}
               className="underline font-normal text-zinc-900 dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
             >
-              Learn more
+              {t("host_learn_more")}
             </button>
           </p>
 
@@ -504,15 +521,15 @@ export function TaxesManager({
                 >
                   <div>
                     <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                      {tax.customName || formatTaxTypeName(tax.taxType)}
+                      {tax.customName || formatTaxTypeName(tax.taxType, t)}
                     </div>
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                       {tax.calculationMethod === "PERCENTAGE"
-                        ? `${tax.rate}% per booking`
-                        : `${((tax.amount || 0) / 100).toFixed(2)} ${jurisdiction?.currency || "SAR"} (${tax.calculationMethod.toLowerCase().replace(/_/g, " ")})`}
+                        ? `${tax.rate}% ${t("host_tax_type_percentage_per_booking").toLowerCase()}`
+                        : `${((tax.amount || 0) / 100).toFixed(2)} ${jurisdiction?.currency || "SAR"} (${formatCalculationMethod(tax.calculationMethod, t).toLowerCase()})`}
                       {tax.longStayExemptionNights && (
                         <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px]">
-                          Exempt after {tax.longStayExemptionNights} nights
+                          {t("host_taxes_exempt_after_nights", { count: tax.longStayExemptionNights })}
                         </span>
                       )}
                     </div>
@@ -523,7 +540,7 @@ export function TaxesManager({
                       onClick={() => handleEditTax(tax)}
                       className="px-2.5 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:underline cursor-pointer"
                     >
-                      Edit
+                      {t("host_edit")}
                     </button>
                     <button
                       type="button"
@@ -533,7 +550,7 @@ export function TaxesManager({
                       }}
                       className="px-2 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 hover:underline cursor-pointer"
                     >
-                      Delete
+                      {t("host_delete")}
                     </button>
                   </div>
                 </div>
@@ -546,7 +563,7 @@ export function TaxesManager({
             onClick={handleOpenAddTax}
             className="mt-4 px-4 py-2 inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
           >
-            Add a tax
+            {t("host_taxes_add_a_tax_btn")}
           </button>
         </div>
       </div>
@@ -566,16 +583,16 @@ export function TaxesManager({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="tax-modal-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
-                    {editingTax ? "Edit tax" : "Add a tax"}
+                    {editingTax ? t("host_taxes_edit_tax") : t("host_taxes_add_a_tax")}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-zinc-400">
-                    You can add one or more taxes to apply to your listing.{" "}
+                    {t("host_taxes_modal_intro")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("add_tax")}
                       className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
-                      Learn more
+                      {t("host_learn_more")}
                     </button>
                   </p>
                 </div>
@@ -595,7 +612,7 @@ export function TaxesManager({
                 {/* 1. Tax name */}
                 <div>
                   <label htmlFor="tax-name-select" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Tax name
+                    {t("host_taxes_name_label")}
                   </label>
                   <div className="relative">
                     <select
@@ -607,18 +624,18 @@ export function TaxesManager({
                           : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                         }`}
                     >
-                      <option value="">Select</option>
-                      <option value="Hotel tax">Hotel tax</option>
-                      <option value="Lodging tax">Lodging tax</option>
-                      <option value="Room tax">Room tax</option>
-                      <option value="Tourist tax">Tourist tax</option>
-                      <option value="Transient Occupancy Tax">Transient Occupancy Tax</option>
-                      <option value="Sales tax">Sales tax</option>
-                      <option value="VAT/GST">VAT/GST</option>
-                      <option value="Tourism Assessment/Fee">Tourism Assessment/Fee</option>
-                      <option value="Amusement tax">Amusement tax</option>
-                      <option value="City tax">City tax</option>
-                      <option value="Other local tax">Other local tax</option>
+                      <option value="">{t("host_select")}</option>
+                      <option value="Hotel tax">{t("host_tax_name_hotel")}</option>
+                      <option value="Lodging tax">{t("host_tax_name_lodging")}</option>
+                      <option value="Room tax">{t("host_tax_name_room")}</option>
+                      <option value="Tourist tax">{t("host_tax_name_tourist")}</option>
+                      <option value="Transient Occupancy Tax">{t("host_tax_name_tot")}</option>
+                      <option value="Sales tax">{t("host_tax_name_sales")}</option>
+                      <option value="VAT/GST">{t("host_tax_name_vat_gst")}</option>
+                      <option value="Tourism Assessment/Fee">{t("host_tax_name_tourism_fee")}</option>
+                      <option value="Amusement tax">{t("host_tax_name_amusement")}</option>
+                      <option value="City tax">{t("host_tax_name_city")}</option>
+                      <option value="Other local tax">{t("host_tax_name_other")}</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500 dark:text-zinc-400">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -631,7 +648,7 @@ export function TaxesManager({
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      Required
+                      {t("host_required")}
                     </p>
                   )}
                 </div>
@@ -639,7 +656,7 @@ export function TaxesManager({
                 {/* 2. Tax type */}
                 <div>
                   <label htmlFor="tax-type-select" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Tax type
+                    {t("host_taxes_type_label")}
                   </label>
                   <div className="relative">
                     <select
@@ -651,12 +668,12 @@ export function TaxesManager({
                           : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                         }`}
                     >
-                      <option value="">Select</option>
-                      <option value="Per guest">Per guest</option>
-                      <option value="Per guest, per night">Per guest, per night</option>
-                      <option value="Per night">Per night</option>
-                      <option value="Percentage per booking">Percentage per booking</option>
-                      <option value="Per booking">Per booking</option>
+                      <option value="">{t("host_select")}</option>
+                      <option value={t("host_tax_type_per_guest")}>{t("host_tax_type_per_guest")}</option>
+                      <option value={t("host_tax_type_per_guest_per_night")}>{t("host_tax_type_per_guest_per_night")}</option>
+                      <option value={t("host_tax_type_per_night")}>{t("host_tax_type_per_night")}</option>
+                      <option value={t("host_tax_type_percentage_per_booking")}>{t("host_tax_type_percentage_per_booking")}</option>
+                      <option value={t("host_tax_type_per_booking")}>{t("host_tax_type_per_booking")}</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500 dark:text-zinc-400">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -669,15 +686,15 @@ export function TaxesManager({
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      Required
+                      {t("host_required")}
                     </p>
                   )}
                 </div>
 
-                {/* 3. Tax rate (Stacked box exactly like screenshot) */}
+                {/* 3. Tax rate */}
                 <div>
                   <label htmlFor="tax-rate-input" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Tax rate
+                    {t("host_taxes_rate_label")}
                   </label>
                   <div
                     className={`overflow-hidden rounded-lg border dark:border-zinc-700 ${formSubmitted && (!taxRate || parseFloat(taxRate) <= 0)
@@ -685,14 +702,12 @@ export function TaxesManager({
                         : "border-[#B0B0B0]"
                       }`}
                   >
-                    {/* Top sub-segment */}
                     <div className="bg-[#F7F7F7] dark:bg-zinc-800 border-b border-[#E5E5E5] dark:border-zinc-700 px-3.5 py-2">
-                      <span className="block text-xs leading-none text-zinc-500 dark:text-zinc-400">Select</span>
+                      <span className="block text-xs leading-none text-zinc-500 dark:text-zinc-400">{t("host_select")}</span>
                       <span className="text-sm font-medium leading-tight text-zinc-800 dark:text-zinc-200">
                         {rateMode}
                       </span>
                     </div>
-                    {/* Bottom input */}
                     <div className="p-1 bg-white dark:bg-zinc-900">
                       <input
                         id="tax-rate-input"
@@ -711,15 +726,15 @@ export function TaxesManager({
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      Required
+                      {t("host_required")}
                     </p>
                   )}
                 </div>
 
                 {/* Taxable base applies only to percentage calculations. */}
-                {taxType === "Percentage per booking" && (
+                {taxType === t("host_tax_type_percentage_per_booking") && (
                   <fieldset>
-                    <legend className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Taxable base</legend>
+                    <legend className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_taxable_base_label")}</legend>
                     <div className="space-y-2">
                       {TAXABLE_BASE_OPTIONS.map((option) => (
                         <label key={option.value} className="flex items-center justify-between gap-3 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer">
@@ -734,7 +749,7 @@ export function TaxesManager({
                       ))}
                     </div>
                     {formSubmitted && taxableComponents.length === 0 && (
-                      <p className="text-[11px] text-[#C13515] font-medium mt-1.5">Select at least one taxable base.</p>
+                      <p className="text-[11px] text-[#C13515] font-medium mt-1.5">{t("host_taxes_taxable_base_error")}</p>
                     )}
                   </fieldset>
                 )}
@@ -742,17 +757,17 @@ export function TaxesManager({
                 {/* 5. Maximum cap */}
                 <div>
                   <label htmlFor="tax-maximum-cap" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Maximum cap per person per night
+                    {t("host_taxes_max_cap_label")}
                   </label>
                   <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                    Optional. Set a per-person, per-night maximum if applicable.
+                    {t("host_taxes_max_cap_desc")}
                   </p>
                   <input
                     id="tax-maximum-cap"
                     type="number"
                     min="0"
                     step="0.01"
-                    placeholder="Optional"
+                    placeholder={t("host_optional")}
                     value={maximumAmountPerPersonPerNight}
                     onChange={(e) => setMaximumAmountPerPersonPerNight(e.target.value)}
                     className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
@@ -762,23 +777,23 @@ export function TaxesManager({
                 {/* 6. Partial-stay exemption */}
                 <div>
                   <label htmlFor="partial-stay-exemption-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Partial-stay exemption
+                    {t("host_taxes_partial_exemption_label")}
                   </label>
                   <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                    If local laws exempt taxes after a certain number of nights, select that number of nights.{" "}
+                    {t("host_taxes_partial_exemption_desc")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("partial_stay")}
                       className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
-                      Learn more
+                      {t("host_learn_more")}
                     </button>
                   </p>
                   <input
                     id="partial-stay-exemption-input"
                     type="number"
                     min="1"
-                    placeholder="Optional"
+                    placeholder={t("host_optional")}
                     value={partialStayExemption}
                     onChange={(e) => setPartialStayExemption(e.target.value)}
                     className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
@@ -788,23 +803,23 @@ export function TaxesManager({
                 {/* 7. Full-stay exemption */}
                 <div>
                   <label htmlFor="full-stay-exemption-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Full-stay exemption
+                    {t("host_taxes_full_exemption_label")}
                   </label>
                   <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                    If local laws exempt taxes for the entire stay after a certain number of nights, select that number of nights.{" "}
+                    {t("host_taxes_full_exemption_desc")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("full_stay")}
                       className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
-                      Learn more
+                      {t("host_learn_more")}
                     </button>
                   </p>
                   <input
                     id="full-stay-exemption-input"
                     type="number"
                     min="1"
-                    placeholder="Optional"
+                    placeholder={t("host_optional")}
                     value={fullStayExemption}
                     onChange={(e) => setFullStayExemption(e.target.value)}
                     className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
@@ -814,15 +829,15 @@ export function TaxesManager({
                 {/* 8. Accommodation tax registration number */}
                 <div>
                   <label htmlFor="tax-reg-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Accommodation tax registration number
+                    {t("host_taxes_reg_number_label")}
                   </label>
                   <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
-                    This number is on your tax regulation documents.
+                    {t("host_taxes_reg_number_desc")}
                   </p>
                   <input
                     id="tax-reg-input"
                     type="text"
-                    placeholder="Tax registration number"
+                    placeholder={t("host_taxes_reg_number_placeholder")}
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
                     className={`mt-2 w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !registrationNumber.trim()
@@ -830,13 +845,13 @@ export function TaxesManager({
                         : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                       }`}
                   />
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">Required</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">{t("host_required")}</p>
                 </div>
 
                 {/* 9. Terms for adding taxes */}
                 <div>
                   <span className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Terms for adding taxes
+                    {t("host_taxes_terms_label")}
                   </span>
                   <div className="flex items-start gap-3">
                     <input
@@ -850,7 +865,7 @@ export function TaxesManager({
                       htmlFor="terms-checkbox"
                       className="text-sm leading-5 text-[#727272] dark:text-zinc-400 cursor-pointer"
                     >
-                      I confirm the tax information is correct and will remit any tax collected on my bookings to the appropriate tax authorities. I grant Homyz permission to disclose tax-related and transaction information (such as name, listing address, tax amount and registration number) to the relevant tax authorities.
+                      {t("host_taxes_terms_checkbox_text")}
                     </label>
                   </div>
                   {formSubmitted && !termsAgreed && (
@@ -858,7 +873,7 @@ export function TaxesManager({
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
-                      You must agree to the terms to add taxes
+                      {t("host_taxes_terms_error")}
                     </p>
                   )}
                 </div>
@@ -872,15 +887,15 @@ export function TaxesManager({
                 onClick={handleCancel}
                 className="inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all cursor-pointer border border-[#1f1f1f] hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
               >
-                Cancel
+                {t("host_cancel")}
               </button>
               <button
                 type="button"
                 onClick={() => handleSave()}
                 disabled={isSaving}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C]  hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-6 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-6 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? t("host_saving") : t("host_save")}
               </button>
             </div>
           </section>
@@ -895,11 +910,11 @@ export function TaxesManager({
           <section role="dialog" aria-modal="true" aria-labelledby="tax-learn-more-title" className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 pb-4 pt-6 dark:border-zinc-800">
               <h3 id="tax-learn-more-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                {learnMoreTopic === "platform_taxes" && "Taxes Homyz Submits"}
-                {learnMoreTopic === "host_taxes" && "Taxes You Collect & Remit"}
-                {learnMoreTopic === "add_tax" && "About Custom Listing Taxes"}
-                {learnMoreTopic === "partial_stay" && "Partial-Stay Tax Exemptions"}
-                {learnMoreTopic === "full_stay" && "Full-Stay Tax Exemptions"}
+                {learnMoreTopic === "platform_taxes" && t("host_taxes_learn_platform_title")}
+                {learnMoreTopic === "host_taxes" && t("host_taxes_learn_host_title")}
+                {learnMoreTopic === "add_tax" && t("host_taxes_learn_add_title")}
+                {learnMoreTopic === "partial_stay" && t("host_taxes_learn_partial_title")}
+                {learnMoreTopic === "full_stay" && t("host_taxes_learn_full_title")}
               </h3>
               <button
                 type="button"
@@ -916,49 +931,31 @@ export function TaxesManager({
             <div className="flex-1 overflow-y-auto space-y-4 px-6 py-5 text-sm leading-6 text-[#727272] dark:text-zinc-300">
               {learnMoreTopic === "platform_taxes" && (
                 <>
-                  <p>
-                    In many jurisdictions, Homyz has agreements with state, provincial, or local tax authorities to automatically collect and remit occupancy, tourist, or value-added taxes on behalf of hosts.
-                  </p>
-                  <p>
-                    These taxes are collected directly from guests during checkout and remitted by Homyz to the designated government authority. You don&apos;t need to take any action for these taxes.
-                  </p>
+                  <p>{t("host_taxes_learn_platform_p1")}</p>
+                  <p>{t("host_taxes_learn_platform_p2")}</p>
                 </>
               )}
               {learnMoreTopic === "host_taxes" && (
                 <>
-                  <p>
-                    If your local municipality or regional authority requires you as an independent host to collect occupancy or tourist tax that Homyz does not collect on your behalf, you can add that tax here.
-                  </p>
-                  <p>
-                    Homyz will itemize and collect this tax from guests during booking, and pass the exact tax funds to you in your payout. You are legally responsible for submitting those tax proceeds directly to your tax authority.
-                  </p>
+                  <p>{t("host_taxes_learn_host_p1")}</p>
+                  <p>{t("host_taxes_learn_host_p2")}</p>
                 </>
               )}
               {learnMoreTopic === "add_tax" && (
                 <>
-                  <p>
-                    You can add one or more custom taxes to apply to bookings of this property. Configure the calculation method (percentage or fixed amount), enter your valid local accommodation tax registration number, and agree to the remittance terms.
-                  </p>
+                  <p>{t("host_taxes_learn_add_p1")}</p>
                 </>
               )}
               {learnMoreTopic === "partial_stay" && (
                 <>
-                  <p>
-                    Certain municipal laws specify that taxes only apply for a maximum number of nights (e.g. only the first 28 or 30 nights are taxable). Any subsequent nights beyond that threshold become exempt from tax.
-                  </p>
-                  <p>
-                    Enter the threshold number of nights to enable partial-stay exemptions.
-                  </p>
+                  <p>{t("host_taxes_learn_partial_p1")}</p>
+                  <p>{t("host_taxes_learn_partial_p2")}</p>
                 </>
               )}
               {learnMoreTopic === "full_stay" && (
                 <>
-                  <p>
-                    In some jurisdictions, if a guest books an extended stay exceeding a certain length (for example, 30+ consecutive nights), the reservation qualifies as a residential tenancy and becomes 100% exempt from occupancy tax for the entire stay.
-                  </p>
-                  <p>
-                    Enter the minimum stay length threshold to automatically waive the tax for qualifying reservations.
-                  </p>
+                  <p>{t("host_taxes_learn_full_p1")}</p>
+                  <p>{t("host_taxes_learn_full_p2")}</p>
                 </>
               )}
             </div>
@@ -969,7 +966,7 @@ export function TaxesManager({
                 onClick={() => setLearnMoreTopic(null)}
                 className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
-                Got it
+                {t("host_got_it")}
               </button>
             </div>
           </section>
@@ -982,9 +979,9 @@ export function TaxesManager({
       {isDeleteModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-tax-title" className="w-full max-w-sm rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
-            <h3 id="delete-tax-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Delete this tax?</h3>
+            <h3 id="delete-tax-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_delete_modal_title")}</h3>
             <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-zinc-400">
-              Are you sure you want to remove this tax? Future bookings will no longer collect this amount from guests.
+              {t("host_taxes_delete_modal_desc")}
             </p>
             <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
@@ -995,14 +992,14 @@ export function TaxesManager({
                 }}
                 className="min-h-11 rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
-                Cancel
+                {t("host_cancel")}
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteTax}
                 className="min-h-11 rounded-full bg-rose-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 dark:hover:bg-rose-500 dark:focus-visible:ring-rose-400 dark:focus-visible:ring-offset-zinc-900"
               >
-                Delete
+                {t("host_delete")}
               </button>
             </div>
           </section>
@@ -1016,7 +1013,7 @@ export function TaxesManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="registration-details-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
-              <h3 id="registration-details-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Tax Registration Details</h3>
+              <h3 id="registration-details-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_reg_details_title")}</h3>
               <button
                 type="button"
                 onClick={() => setViewingRegistration(null)}
@@ -1030,10 +1027,10 @@ export function TaxesManager({
             </div>
             <div className="space-y-3 py-5 text-sm leading-6 text-[#727272] dark:text-zinc-300">
               <div>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">Tax Type:</span> {viewingRegistration.taxType}
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_type_label")}:</span> {viewingRegistration.taxType}
               </div>
               <div>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">Registration Number:</span> {viewingRegistration.registrationNumber}
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_reg_number_label")}:</span> {viewingRegistration.registrationNumber}
               </div>
               <div>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">Status:</span> {viewingRegistration.status}
@@ -1045,7 +1042,7 @@ export function TaxesManager({
                 onClick={() => setViewingRegistration(null)}
                 className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
-                Close
+                {t("host_close")}
               </button>
             </div>
           </section>
@@ -1059,7 +1056,7 @@ export function TaxesManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="tax-statement-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
-              <h3 id="tax-statement-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Tax Statement & Regulatory Info</h3>
+              <h3 id="tax-statement-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_statement_title")}</h3>
               <button
                 type="button"
                 onClick={() => setViewingInvoiceModal(false)}
@@ -1073,7 +1070,7 @@ export function TaxesManager({
             </div>
             <div className="space-y-3 py-5 text-sm leading-6 text-[#727272] dark:text-zinc-300">
               <p>
-                All tax records for this listing are stored securely in accordance with local taxation authorities and compliance standards.
+                {t("host_taxes_statement_desc")}
               </p>
             </div>
             <div className="flex justify-end border-t border-zinc-100 pt-4 dark:border-zinc-800">
@@ -1082,7 +1079,7 @@ export function TaxesManager({
                 onClick={() => setViewingInvoiceModal(false)}
                 className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
-                Close
+                {t("host_close")}
               </button>
             </div>
           </section>
@@ -1108,49 +1105,49 @@ function mapNameToTaxType(name: string): TaxType {
   return "OTHER";
 }
 
-function mapTypeToCalcMethod(typeStr: string): TaxCalculationMethod {
-  if (typeStr === "Percentage per booking") return "PERCENTAGE";
-  if (typeStr === "Per guest" || typeStr === "Flat amount per guest") return "AMOUNT_PER_GUEST";
-  if (typeStr === "Per night" || typeStr === "Flat amount per night") return "AMOUNT_PER_NIGHT";
-  if (typeStr === "Per guest, per night" || typeStr === "Flat amount per guest per night") return "AMOUNT_PER_GUEST_PER_NIGHT";
-  if (typeStr === "Per booking" || typeStr === "Flat amount per booking") return "FLAT_PER_BOOKING";
+function mapTypeToCalcMethod(typeStr: string, t?: (key: TranslationKey) => string): TaxCalculationMethod {
+  if (typeStr === "Percentage per booking" || (t && typeStr === t("host_tax_type_percentage_per_booking"))) return "PERCENTAGE";
+  if (typeStr === "Per guest" || typeStr === "Flat amount per guest" || (t && typeStr === t("host_tax_type_per_guest"))) return "AMOUNT_PER_GUEST";
+  if (typeStr === "Per night" || typeStr === "Flat amount per night" || (t && typeStr === t("host_tax_type_per_night"))) return "AMOUNT_PER_NIGHT";
+  if (typeStr === "Per guest, per night" || typeStr === "Flat amount per guest per night" || (t && typeStr === t("host_tax_type_per_guest_per_night"))) return "AMOUNT_PER_GUEST_PER_NIGHT";
+  if (typeStr === "Per booking" || typeStr === "Flat amount per booking" || (t && typeStr === t("host_tax_type_per_booking"))) return "FLAT_PER_BOOKING";
   return "PERCENTAGE";
 }
 
-function formatCalculationMethod(method: TaxCalculationMethod): string {
+function formatCalculationMethod(method: TaxCalculationMethod, t: (key: TranslationKey) => string): string {
   switch (method) {
     case "PERCENTAGE":
-      return "Percentage per booking";
+      return t("host_tax_type_percentage_per_booking");
     case "AMOUNT_PER_GUEST":
-      return "Per guest";
+      return t("host_tax_type_per_guest");
     case "AMOUNT_PER_NIGHT":
-      return "Per night";
+      return t("host_tax_type_per_night");
     case "AMOUNT_PER_GUEST_PER_NIGHT":
-      return "Per guest, per night";
+      return t("host_tax_type_per_guest_per_night");
     case "FLAT_PER_BOOKING":
-      return "Per booking";
+      return t("host_tax_type_per_booking");
     default:
-      return "Percentage per booking";
+      return t("host_tax_type_percentage_per_booking");
   }
 }
 
-function formatTaxTypeName(taxType: TaxType): string {
+function formatTaxTypeName(taxType: TaxType, t: (key: TranslationKey) => string): string {
   switch (taxType) {
     case "OCCUPANCY_TAX":
-      return "Transient Occupancy Tax";
+      return t("host_tax_name_tot");
     case "TOURIST_TAX":
-      return "Tourist tax";
+      return t("host_tax_name_tourist");
     case "CITY_TAX":
-      return "City tax";
+      return t("host_tax_name_city");
     case "LODGING_TAX":
-      return "Lodging tax";
+      return t("host_tax_name_lodging");
     case "SALES_TAX":
-      return "Sales tax";
+      return t("host_tax_name_sales");
     case "VAT":
-      return "VAT/GST";
+      return t("host_tax_name_vat_gst");
     case "GST":
-      return "Goods and services tax (GST)";
+      return t("host_tax_name_vat_gst");
     default:
-      return "Other local tax";
+      return t("host_tax_name_other");
   }
 }

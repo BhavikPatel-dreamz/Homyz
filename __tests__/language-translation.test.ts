@@ -413,6 +413,36 @@ function runTests() {
   assert(MESSAGES.de.host_interaction_option_0 === "Ich bin nicht persönlich verfügbar und bevorzuge die Kommunikation über die App.", "DE host_interaction_option_0");
   assert(MESSAGES.hi.host_interaction_option_0 === "मैं व्यक्तिगत रूप से उपलब्ध नहीं रहूंगा, और ऐप के माध्यम से संवाद करना पसंद करूंगा।", "HI host_interaction_option_0");
 
+  // 5e. Languages section page translations
+  assert(MESSAGES.en.host_languages_title === "Languages", "EN host_languages_title");
+  assert(MESSAGES.ar.host_languages_title === "اللغات", "AR host_languages_title");
+  assert(MESSAGES.es.host_languages_title === "Idiomas", "ES host_languages_title");
+  assert(MESSAGES.fr.host_languages_title === "Langues", "FR host_languages_title");
+  assert(MESSAGES.de.host_languages_title === "Sprachen", "DE host_languages_title");
+  assert(MESSAGES.hi.host_languages_title === "भाषाएं", "HI host_languages_title");
+
+  assert(MESSAGES.en.host_no_languages_selected_yet === "No languages selected yet.", "EN host_no_languages_selected_yet");
+  assert(MESSAGES.ar.host_no_languages_selected_yet === "لم يتم تحديد أي لغات بعد.", "AR host_no_languages_selected_yet");
+  assert(MESSAGES.es.host_no_languages_selected_yet === "Aún no se han seleccionado idiomas.", "ES host_no_languages_selected_yet");
+  assert(MESSAGES.fr.host_no_languages_selected_yet === "Aucune langue sélectionnée pour le moment.", "FR host_no_languages_selected_yet");
+  assert(MESSAGES.de.host_no_languages_selected_yet === "Noch keine Sprachen ausgewählt.", "DE host_no_languages_selected_yet");
+  assert(MESSAGES.hi.host_no_languages_selected_yet === "अभी तक कोई भाषा नहीं चुनी गई है।", "HI host_no_languages_selected_yet");
+
+  // 5f. Guest requirements page translations
+  assert(MESSAGES.en.host_guest_requirements_title === "Guest requirements", "EN host_guest_requirements_title");
+  assert(MESSAGES.ar.host_guest_requirements_title === "متطلبات الضيوف", "AR host_guest_requirements_title");
+  assert(MESSAGES.es.host_guest_requirements_title === "Requisitos de los huéspedes", "ES host_guest_requirements_title");
+  assert(MESSAGES.fr.host_guest_requirements_title === "Exigences pour les voyageurs", "FR host_guest_requirements_title");
+  assert(MESSAGES.de.host_guest_requirements_title === "Gästeanforderungen", "DE host_guest_requirements_title");
+  assert(MESSAGES.hi.host_guest_requirements_title === "अतिथि आवश्यकताएं", "HI host_guest_requirements_title");
+
+  assert(MESSAGES.en.host_require_profile_photo_title === "Require a profile photo", "EN host_require_profile_photo_title");
+  assert(MESSAGES.ar.host_require_profile_photo_title === "اشتراط صورة شخصية", "AR host_require_profile_photo_title");
+  assert(MESSAGES.es.host_require_profile_photo_title === "Exigir una foto de perfil", "ES host_require_profile_photo_title");
+  assert(MESSAGES.fr.host_require_profile_photo_title === "Exiger une photo de profil", "FR host_require_profile_photo_title");
+  assert(MESSAGES.de.host_require_profile_photo_title === "Profilfoto anfordern", "DE host_require_profile_photo_title");
+  assert(MESSAGES.hi.host_require_profile_photo_title === "प्रोफ़ाइल फ़ोटो आवश्यक करें", "HI host_require_profile_photo_title");
+
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }
 

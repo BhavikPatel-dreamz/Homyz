@@ -727,10 +727,10 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Local laws
+                      {t("host_sidebar_local_laws")}
                     </span>
                     <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
-                      Review your local laws
+                      {t("host_sidebar_local_laws_desc")}
                     </p>
                   </div>
                   <Image
@@ -753,8 +753,11 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Regulations
+                      {t("host_sidebar_regulations")}
                     </span>
+                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                      {t("host_sidebar_regulations_desc")}
+                    </p>
                   </div>
                   <Image
                     src="/images/icons/chevron-down-dark.svg"
@@ -776,10 +779,10 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Taxes
+                      {t("host_sidebar_taxes")}
                     </span>
                     <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
-                      Learn how taxes work for Hosts
+                      {t("host_sidebar_taxes_desc")}
                     </p>
                   </div>
                   <Image
@@ -805,7 +808,7 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      homyz.org stays
+                      {t("host_sidebar_homyz_org_stays")}
                     </span>
                     {(() => {
                       const org = listing?.discounts?.orgStays;
@@ -819,7 +822,7 @@ export function EditorSidebar({
                         }
                         return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Available for homyz.org guests</p>;
                       }
-                      return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Learn how you can help</p>;
+                      return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">{t("host_sidebar_homyz_org_stays_desc") || "Learn how you can help"}</p>;
                     })()}
                   </div>
                   <Image
@@ -845,10 +848,10 @@ export function EditorSidebar({
                 >
                   <div>
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
-                      Remove listing
+                      {t("host_sidebar_remove_listing")}
                     </span>
                     <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
-                      Permanently remove your listing
+                      {t("host_sidebar_remove_listing_desc")}
                     </p>
                   </div>
                   <Image
