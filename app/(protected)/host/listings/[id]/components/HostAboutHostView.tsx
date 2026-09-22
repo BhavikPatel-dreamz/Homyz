@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
+import { CloseIcon } from "@/components/ui/close-icon";
 import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
@@ -110,6 +112,11 @@ export function HostAboutHostView({
   const aboutHostScrollTrackRef = useRef<HTMLDivElement>(null);
   const aboutHostScrollFrameRef = useRef<number | null>(null);
   const [aboutHostScrollThumb, setAboutHostScrollThumb] = useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isAboutHostScrollbarDragging, onThumbPointerDown: onAboutHostThumbPointerDown, scrollByPage: scrollAboutHostByPage } = useScrollbarDrag(
+    aboutHostScrollRef,
+    aboutHostScrollTrackRef,
+    aboutHostScrollThumb.height,
+  );
 
   // Baseline persisted state
   const rawProfile = useMemo(() => hostProfile.publicProfile ?? {}, [hostProfile.publicProfile]);
@@ -406,10 +413,12 @@ export function HostAboutHostView({
 
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
       const trackHeight = aboutHostScrollTrackRef.current?.clientHeight || element.clientHeight;
-      const height = hasOverflow ? Math.min(60, trackHeight) : 0;
-      const maxTop = Math.max(0, trackHeight - height);
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
       const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
-      const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
 
       setAboutHostScrollThumb((current) => (
         current.height === height && current.top === top && current.visible === hasOverflow
@@ -528,11 +537,11 @@ export function HostAboutHostView({
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="absolute -bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2.75 text-base font-normal text-[#1f1f1f] dark:text-zinc-950 transition-colors duration-150 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 group hover:text-white dark:hover:text-zinc-950 hover:border-[#1f1f1f] dark:hover:border-amber-300"
+                className="absolute -bottom-6 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2.75 text-base font-normal text-[#1f1f1f] dark:text-zinc-950 transition-all duration-150 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 group hover:text-white dark:hover:text-zinc-950 hover:border-[#1f1f1f] dark:hover:border-amber-300"
               >
                 <span
                   aria-hidden="true"
-                  className="size-6 shrink-0 bg-[#1f1f1f] transition-colors duration-150 group-hover:bg-white dark:bg-zinc-950 dark:group-hover:bg-zinc-950"
+                  className="size-6 shrink-0 bg-[#1f1f1f] transition-all duration-150 group-hover:bg-white dark:bg-zinc-950 dark:group-hover:bg-zinc-950"
                   style={{
                     mask: "url('/images/icons/camera.svg') center / contain no-repeat",
                     WebkitMask: "url('/images/icons/camera.svg') center / contain no-repeat",
@@ -583,7 +592,7 @@ export function HostAboutHostView({
         </section>
 
         {/* 2. About Me / Biography Card */}
-        <section className="rounded-xl border border-white dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800/90 p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6">
+        <section className="rounded-xl border border-white dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800/90 p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6 mt-15">
           <div className="border-b border-[#727272] dark:border-zinc-700 pb-4">
             <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_section_about_me") || "About me"}</h2>
             <p className="mt-0.5 text-sm font-normal text-[#727272] dark:text-zinc-400">
@@ -607,7 +616,7 @@ export function HostAboutHostView({
                 value={biography}
                 onChange={(e) => setBiography(e.target.value)}
                 placeholder={t("host_about_bio_headline_placeholder") || "e.g., Architect & design enthusiast welcoming travelers to Milan"}
-                className="mt-1.5 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="mt-1.5 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -662,7 +671,7 @@ export function HostAboutHostView({
                 value={homeUnique}
                 onChange={(e) => setHomeUnique(e.target.value)}
                 placeholder={t("host_about_prompt_home_unique_placeholder") || "e.g., Restored mid-century flat with floor-to-ceiling windows and sun terrace"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -686,7 +695,7 @@ export function HostAboutHostView({
                 value={guestsShouldKnow}
                 onChange={(e) => setGuestsShouldKnow(e.target.value)}
                 placeholder={t("host_about_prompt_guests_should_know_placeholder") || "e.g., Always reachable via the app for insider tips, but I respect your complete privacy"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -710,7 +719,7 @@ export function HostAboutHostView({
                 value={education}
                 onChange={(e) => setEducation(e.target.value)}
                 placeholder={t("host_about_prompt_education_placeholder") || "e.g., Studied Architecture at Politecnico di Milano"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -734,7 +743,7 @@ export function HostAboutHostView({
                 value={perfectGuest}
                 onChange={(e) => setPerfectGuest(e.target.value)}
                 placeholder={t("host_about_prompt_perfect_guest_placeholder") || "e.g., Respectful travelers, culture seekers, and remote creatives"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
           </div>
@@ -794,7 +803,7 @@ export function HostAboutHostView({
                       setIsLanguageDropdownOpen(true);
                     }}
                     placeholder={t("host_about_languages_search_placeholder") || "Search and add a language (e.g., English, French, Spanish)..."}
-                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
                   />
                   {languageSearch && (
                     <button
@@ -809,7 +818,7 @@ export function HostAboutHostView({
                 <button
                   type="button"
                   onClick={() => setIsLanguageDropdownOpen((prev) => !prev)}
-                  className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base font-medium text-[#1f1f1f] dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 sm:w-auto sm:min-h-[60px] min-h-[56px]"
+                  className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base font-medium text-[#1f1f1f] dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 sm:w-auto sm:min-h-[56px] min-h-[45px]"
                 >
                   {isLanguageDropdownOpen ? (t("host_about_close_button") || "Close") : (t("host_about_browse_all_button") || "Browse all")}
                 </button>
@@ -897,7 +906,7 @@ export function HostAboutHostView({
                   }
                 }}
                 placeholder={t("host_about_hobbies_input_placeholder") || "Add a hobby or obsession (e.g., Trail running, Baking sourdough, Vinyl records)..."}
-                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
               <button
                 type="button"
@@ -1003,7 +1012,15 @@ export function HostAboutHostView({
         {/* Modal Overlay for Travel Stamps Selector */}
         {isStampEditorOpen && (
           <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs w-full h-full">
-            <div className="max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto overscroll-contain rounded-xl bg-white dark:bg-zinc-900 p-4 shadow-2xl ring-1 ring-zinc-200 dark:ring-zinc-700 sm:p-6">
+            <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto overscroll-contain rounded-xl bg-white dark:bg-zinc-900 p-4 pr-14 shadow-2xl ring-1 ring-zinc-200 dark:ring-zinc-700 sm:p-6 sm:pr-16">
+              <button
+                type="button"
+                onClick={() => setIsStampEditorOpen(false)}
+                className="absolute right-3 top-5 inline-flex size-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-white text-zinc-600 shadow-sm transition-all hover:scale-105 hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:ring-zinc-100 sm:right-4 sm:top-4"
+                aria-label="Close travel stamp editor"
+              >
+                <CloseIcon className="size-4" />
+              </button>
               <WhereIveBeenSelector
                 initialSelectedStamps={selectedStamps}
                 initialStampsVisible={stampsVisible}
@@ -1082,7 +1099,7 @@ export function HostAboutHostView({
                   }
                 }}
                 placeholder={t("host_about_interests_input_placeholder") || "Add a custom interest (e.g., Ceramic art, Cycling, Modern literature)..."}
-                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[60px] min-h-[56px]"
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
               <button
                 type="button"
@@ -1144,11 +1161,18 @@ export function HostAboutHostView({
         </div>
       </div>
       {aboutHostScrollThumb.visible && (
-        <div ref={aboutHostScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
+        <div ref={aboutHostScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
+          <button type="button" aria-label="Scroll about host up" onClick={() => scrollAboutHostByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+            <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+          </button>
           <div
-            className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white dark:border-zinc-700 bg-[#DDDDDE] dark:bg-zinc-600 shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
+            onPointerDown={onAboutHostThumbPointerDown}
+            className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform dark:border-zinc-700 dark:bg-zinc-600 ${isAboutHostScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
             style={{ height: `${aboutHostScrollThumb.height}px`, transform: `translate3d(0, ${aboutHostScrollThumb.top}px, 0)` }}
           />
+          <button type="button" aria-label="Scroll about host down" onClick={() => scrollAboutHostByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+            <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+          </button>
         </div>
       )}
     </div>

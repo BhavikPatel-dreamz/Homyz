@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor integration */
 
 import { BackButton } from "@/components/ui/back-button";
+import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import Image from "next/image";
 
 import React from "react";
@@ -218,6 +219,11 @@ export function PropertyDetailsViews({
   const amenitiesScrollTrackRef = React.useRef<HTMLDivElement>(null);
   const amenitiesScrollFrameRef = React.useRef<number | null>(null);
   const [amenitiesScrollThumb, setAmenitiesScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isAmenitiesScrollbarDragging, onThumbPointerDown: onAmenitiesThumbPointerDown, scrollByPage: scrollAmenitiesByPage } = useScrollbarDrag(
+    amenitiesScrollRef,
+    amenitiesScrollTrackRef,
+    amenitiesScrollThumb.height,
+  );
   const accessibilityPhotoInput = React.useRef<HTMLInputElement>(null);
   const [accessibilityPhotoFeatureId, setAccessibilityPhotoFeatureId] = React.useState<string | null>(null);
   const [uploadingAccessibilityPhoto, setUploadingAccessibilityPhoto] = React.useState(false);
@@ -269,12 +275,14 @@ export function PropertyDetailsViews({
 
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
       const trackHeight = amenitiesScrollTrackRef.current?.clientHeight || element.clientHeight;
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
       // Preserve the compact Figma thumb while mapping its travel exactly to
       // the content scroll range.
-      const height = hasOverflow ? Math.min(60, trackHeight) : 0;
-      const maxTop = Math.max(0, trackHeight - height);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
       const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
-      const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
 
       setAmenitiesScrollThumb((current) => (
         current.height === height && current.top === top && current.visible === hasOverflow
@@ -1646,11 +1654,18 @@ export function PropertyDetailsViews({
                     )}
                   </div>
                   {amenitiesScrollThumb.visible && (
-                    <div ref={amenitiesScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
+                    <div ref={amenitiesScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
+                      <button type="button" aria-label="Scroll amenities up" onClick={() => scrollAmenitiesByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+                        <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+                      </button>
                       <div
-                        className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white dark:border-zinc-700 bg-[#DDDDDE] dark:bg-zinc-600 shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
+                        onPointerDown={onAmenitiesThumbPointerDown}
+                        className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform dark:border-zinc-700 dark:bg-zinc-600 ${isAmenitiesScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
                         style={{ height: `${amenitiesScrollThumb.height}px`, transform: `translate3d(0, ${amenitiesScrollThumb.top}px, 0)` }}
                       />
+                      <button type="button" aria-label="Scroll amenities down" onClick={() => scrollAmenitiesByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+                        <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+                      </button>
                     </div>
                   )}
                 </div>
