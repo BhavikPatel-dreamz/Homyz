@@ -17,6 +17,7 @@ import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/clien
 import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -156,10 +157,12 @@ function ListingAvailabilityCalendar({
   error,
   checkIn,
   checkOut,
-  onDateChange,
-  onSelectionError,
+  onDateRangeChange,
+  onClearDates,
+  onErrorMessage,
   locationName,
   minimumNights,
+  maximumNights,
 }: {
   month: Date;
   onMonthChange: (month: Date) => void;
@@ -168,10 +171,12 @@ function ListingAvailabilityCalendar({
   error: string | null;
   checkIn: string;
   checkOut: string;
-  onDateChange: (checkIn: string, checkOut: string) => void;
-  onSelectionError: (message: string | null) => void;
+  onDateRangeChange: (checkIn: string, checkOut: string) => void;
+  onClearDates: () => void;
+  onErrorMessage?: (message: string | null) => void;
   locationName: string;
   minimumNights: number;
+  maximumNights?: number;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -181,10 +186,14 @@ function ListingAvailabilityCalendar({
   const displayedMonths = [firstDay, new Date(month.getFullYear(), month.getMonth() + 1, 1)];
   const formattedStayDates = checkIn && checkOut
     ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
-    : "Choose a check-in and check-out date";
+    : checkIn
+      ? `Check-in: ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – Select checkout`
+      : "Select check-in date";
   const nights = checkIn && checkOut
     ? Math.max(0, calendarNights(checkIn, checkOut))
     : 0;
+
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
 
   const chooseDate = (key: string) => {
     const selectedDate = new Date(`${key}T00:00:00`);
@@ -192,24 +201,31 @@ function ListingAvailabilityCalendar({
 
     if (!checkIn || checkOut || key <= checkIn) {
       if (isUnavailableDate(selectedDate, ranges)) {
-        onSelectionError("That check-in date is unavailable. Please choose another date.");
+        onErrorMessage?.("That check-in date is unavailable. Please choose another date.");
         return;
       }
-      onSelectionError(null);
-      onDateChange(key, "");
+      onErrorMessage?.(null);
+      onDateRangeChange(key, "");
       return;
     }
 
-    if (key < addCalendarDays(checkIn, minimumNights)) {
-      onSelectionError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+    // Check-in exists and user is picking check-out date
+    const calculatedNights = calendarNights(checkIn, key);
+    if (calculatedNights < minimumNights) {
+      onErrorMessage?.(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (maximumNights && calculatedNights > maximumNights) {
+      onErrorMessage?.(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
       return;
     }
     if (overlapsBookedRange(checkIn, key, ranges)) {
-      onSelectionError("Those dates include an unavailable night. Please choose different dates.");
+      onErrorMessage?.("Those dates include an unavailable night. Please choose different dates.");
       return;
     }
-    onSelectionError(null);
-    onDateChange(checkIn, key);
+
+    onErrorMessage?.(null);
+    onDateRangeChange(checkIn, key);
   };
 
   const renderMonth = (calendarMonth: Date) => {
@@ -223,19 +239,20 @@ function ListingAvailabilityCalendar({
         <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-zinc-400">
           {weekdays.map((day) => <span key={day} aria-hidden="true">{day.slice(0, 1)}</span>)}
         </div>
-        <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability`}>
+        <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability calendar`}>
           {Array.from({ length: monthFirstDay.getDay() }, (_, index) => <span key={`empty-${index}`} aria-hidden="true" className="aspect-square" />)}
           {Array.from({ length: daysInMonth }, (_, index) => {
             const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index + 1);
             const key = dateKey(date);
             const past = date < today;
             const unavailable = isUnavailableDate(date, ranges);
-            const isCheckoutCandidate = Boolean(checkIn && !checkOut && key >= addCalendarDays(checkIn, minimumNights) && !overlapsBookedRange(checkIn, key, ranges));
-            const disabled = past || (unavailable && !isCheckoutCandidate) || Boolean(checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights));
             const isStart = key === checkIn;
             const isEnd = key === checkOut;
-            const isInRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
-            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights) ? "minimum stay not met" : isInRange ? "selected stay" : "available";
+            const isInConfirmedRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
+            const isInHoverRange = Boolean(checkIn && !checkOut && hoverDate && key > checkIn && key <= hoverDate && !overlapsBookedRange(checkIn, hoverDate, ranges));
+            const isInRange = isInConfirmedRange || isInHoverRange;
+            const disabled = past || (unavailable && !isStart && !isEnd);
+            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
 
             return (
               <div key={key} className={`relative flex aspect-square items-center justify-center ${isInRange ? "bg-amber-100" : ""}`}>
@@ -243,6 +260,14 @@ function ListingAvailabilityCalendar({
                   type="button"
                   disabled={disabled || isLoading}
                   onClick={() => chooseDate(key)}
+                  onMouseEnter={() => {
+                    if (checkIn && !checkOut && key > checkIn) {
+                      setHoverDate(key);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (hoverDate) setHoverDate(null);
+                  }}
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
@@ -253,7 +278,7 @@ function ListingAvailabilityCalendar({
                         ? "rounded-none bg-amber-100 text-zinc-900 hover:bg-amber-200"
                         : past || unavailable
                           ? "cursor-not-allowed text-zinc-300 line-through"
-                          : "text-zinc-700 hover:bg-zinc-100"
+                          : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
                   } disabled:opacity-70`}
                 >
                   {index + 1}
@@ -270,29 +295,45 @@ function ListingAvailabilityCalendar({
     <section className="border-b border-zinc-200/80 pb-7" aria-labelledby="availability-heading">
       <div className="mb-4">
         <h3 id="availability-heading" className="text-lg font-semibold tracking-tight text-zinc-900">
-          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select your dates in ${locationName}`}
+          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select dates in ${locationName}`}
         </h3>
         <p className="mt-1 text-xs text-zinc-500" aria-live="polite">{formattedStayDates}</p>
       </div>
       {error ? (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <span>{error}</span>
-          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2">Try again</button>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2 cursor-pointer">Try again</button>
         </div>
       ) : (
         <div className="rounded-2xl bg-zinc-100 p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
             <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
-              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">‹</button>
+              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">‹</button>
               <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6">
                 {displayedMonths.map(renderMonth)}
               </div>
-              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">›</button>
+              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">›</button>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-[11px] text-zinc-500">
-            <span aria-live="polite">{isLoading ? "Updating availability…" : "Select check-in, then check-out"}</span>
-            <button type="button" onClick={() => { onSelectionError(null); onDateChange("", ""); }} disabled={!checkIn && !checkOut} className="underline decoration-zinc-400 underline-offset-2 hover:text-zinc-900 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-0">Clear dates</button>
+            <span aria-live="polite">
+              {isLoading
+                ? "Updating availability…"
+                : !checkIn
+                  ? "Select check-in date"
+                  : !checkOut
+                    ? `Minimum stay: ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}. Select checkout date.`
+                    : `${nights} ${nights === 1 ? "night" : "nights"} selected`}
+            </span>
+            {(checkIn || checkOut) && (
+              <button
+                type="button"
+                onClick={onClearDates}
+                className="font-medium underline decoration-zinc-400 underline-offset-2 hover:text-zinc-900 cursor-pointer"
+              >
+                Clear dates
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -311,16 +352,24 @@ export function PublicListingDetailClient({
   const wishlist = useWishlist();
   void guidebooks; // The section is intentionally paused; retain the existing server contract.
 
-  // Modal States
+  // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
 
-  // Booking Widget State — pre-filled from search URL params: useState(searchCheckIn) and useState(searchCheckOut)
+  const maximumGuests = Math.max(1, listing.guests || 1);
+  const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
+  const allowsPets = listing.petsAllowed !== false;
+
+  // Booking Widget State — pre-filled from search URL params
   const [checkIn, setCheckIn] = useState(isDateKey(searchCheckIn) ? searchCheckIn : "");
   const [checkOut, setCheckOut] = useState(isDateKey(searchCheckOut) ? searchCheckOut : "");
-  const [guestsCount, setGuestsCount] = useState(searchGuests ?? 1);
+  const [adultsCount, setAdultsCount] = useState(() => Math.min(maximumGuests, Math.max(1, searchGuests ?? 1)));
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [infantsCount, setInfantsCount] = useState(0);
+  const [petsCount, setPetsCount] = useState(0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
@@ -341,23 +390,101 @@ export function PublicListingDetailClient({
   const amenityCloseRef = useRef<HTMLButtonElement>(null);
   const normalizedDescription = listing.description?.trim() ?? "";
 
+  const totalCapacityGuests = adultsCount + childrenCount;
+  const canAddCapacityGuest = totalCapacityGuests < maximumGuests;
+
+  const guestSummaryLabel = useMemo(() => {
+    if (childrenCount > 0) {
+      const adultPart = `${adultsCount} ${adultsCount === 1 ? "adult" : "adults"}`;
+      const childPart = `${childrenCount} ${childrenCount === 1 ? "child" : "children"}`;
+      return `${adultPart}, ${childPart}`;
+    }
+    return `${adultsCount} ${adultsCount === 1 ? "guest" : "guests"}`;
+  }, [adultsCount, childrenCount]);
+
+  // Telemetry: track listing_page_view once on mount
+  const hasTrackedViewRef = useRef(false);
+  const hasTrackedAvailabilityViewRef = useRef(false);
+  const hasTrackedHouseRulesViewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current || !listing?.id) return;
+    hasTrackedViewRef.current = true;
+    trackListingEvent({
+      eventType: "listing_page_view",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      guestCount: totalCapacityGuests,
+      checkIn: checkIn || null,
+      checkOut: checkOut || null,
+      metadata: {
+        propertyType: listing.propertyType,
+        listingType: listing.listingType,
+        instantBook: listing.instantBook,
+        isGuestFavorite: listing.isGuestFavorite,
+      },
+    });
+  }, [listing, totalCapacityGuests, checkIn, checkOut]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined" || !listing?.id) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target.id === "availability-heading" && !hasTrackedAvailabilityViewRef.current) {
+              hasTrackedAvailabilityViewRef.current = true;
+              trackListingEvent({
+                eventType: "availability_section_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            } else if (entry.target.id === "things-to-know-heading" && !hasTrackedHouseRulesViewRef.current) {
+              hasTrackedHouseRulesViewRef.current = true;
+              trackListingEvent({
+                eventType: "house_rules_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+
+    const availEl = document.getElementById("availability-heading");
+    const rulesEl = document.getElementById("things-to-know-heading");
+    if (availEl) observer.observe(availEl);
+    if (rulesEl) observer.observe(rulesEl);
+
+    return () => observer.disconnect();
+  }, [listing.id, listing.city, listing.country]);
+
   // A client component may be preserved while the route segment changes. Reset
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
-    const maximumGuests = Math.max(1, listing.guests || 1);
     const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
     const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn) ? searchCheckOut : "";
     const nextGuests = Math.min(Math.max(1, searchGuests ?? 1), maximumGuests);
     const timer = window.setTimeout(() => {
       setCheckIn(nextCheckIn);
       setCheckOut(nextCheckOut);
-      setGuestsCount(nextGuests);
+      setAdultsCount(nextGuests);
+      setChildrenCount(0);
+      setInfantsCount(0);
+      setPetsCount(0);
       setIsNonRefundable(false);
       setQuote(null);
       setQuoteError(null);
       setBookingSuccess(false);
       setHostImageFailed(false);
       setIsDescriptionModalOpen(false);
+      setIsDescriptionExpanded(false);
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
@@ -367,7 +494,7 @@ export function PublicListingDetailClient({
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, listing.guests, searchCheckIn, searchCheckOut, searchGuests]);
+  }, [listing.id, maximumGuests, searchCheckIn, searchCheckOut, searchGuests]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -405,9 +532,11 @@ export function PublicListingDetailClient({
     else url.searchParams.delete("checkOut");
     url.searchParams.delete("startDate");
     url.searchParams.delete("endDate");
-    url.searchParams.set("guests", String(guestsCount));
+    url.searchParams.set("guests", String(totalCapacityGuests));
+    if (petsCount > 0) url.searchParams.set("pets", String(petsCount));
+    else url.searchParams.delete("pets");
     window.history.replaceState(window.history.state, "", url);
-  }, [checkIn, checkOut, guestsCount]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount]);
 
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
@@ -509,7 +638,6 @@ export function PublicListingDetailClient({
     ? formatListingPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
     : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
-  const maximumGuests = Math.max(1, listing.guests || 1);
   const minimumNights = Math.max(1, listing.minNights || 1);
   const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
   const today = dateKey(new Date());
@@ -609,7 +737,7 @@ export function PublicListingDetailClient({
       return () => window.clearTimeout(timer);
     }
 
-    if (guestsCount < 1 || guestsCount > maximumGuests) {
+    if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(`This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
@@ -639,7 +767,7 @@ export function PublicListingDetailClient({
       setQuoteError(null);
 
       fetch(
-        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&nonRefundable=${isNonRefundable}`,
+        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${totalCapacityGuests}&pets=${petsCount}&nonRefundable=${isNonRefundable}`,
         { signal: controller.signal, cache: "no-store" },
       )
         .then(async (res) => ({ ok: res.ok, data: await res.json() }))
@@ -651,6 +779,23 @@ export function PublicListingDetailClient({
           }
           setQuote(data.data);
           setQuoteError(null);
+          trackListingEvent({
+            eventType: "quote_calculated",
+            propertyId: listing.id,
+            city: listing.city,
+            country: listing.country,
+            checkIn,
+            checkOut,
+            guestCount: totalCapacityGuests,
+            metadata: {
+              nights: data.data.nights,
+              totalPrice: data.data.guestTotal ?? data.data.totalPrice,
+              cleaningFee: data.data.cleaningFee,
+              extraGuestFee: data.data.extraGuestFee,
+              appliedDiscount: data.data.appliedDiscount?.name,
+              nonRefundable: isNonRefundable,
+            },
+          });
         })
         .catch((error: unknown) => {
           if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
@@ -666,12 +811,12 @@ export function PublicListingDetailClient({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, guestsCount, isNonRefundable, listing.id, maximumGuests]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
-  const isGuestSelectionValid = Number.isInteger(guestsCount) && guestsCount >= 1 && guestsCount <= maximumGuests;
+  const isGuestSelectionValid = Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests;
   const hasValidQuote = Boolean(
     isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
   );
@@ -681,6 +826,12 @@ export function PublicListingDetailClient({
     setCheckOut("");
     setQuote(null);
     setQuoteError(null);
+    trackListingEvent({
+      eventType: "dates_cleared",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
   };
 
   const updateCheckIn = (nextCheckIn: string) => {
@@ -690,11 +841,23 @@ export function PublicListingDetailClient({
     }
     if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
       setQuoteError("That check-in date is unavailable. Please choose another date.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { date: nextCheckIn, type: "checkIn_unavailable" },
+      });
       return;
     }
     setQuote(null);
     setQuoteError(null);
     setCheckIn(nextCheckIn);
+    trackListingEvent({
+      eventType: "checkin_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn: nextCheckIn,
+    });
     const nextNights = checkOut && isDateKey(checkOut) ? calendarNights(nextCheckIn, checkOut) : 0;
     if (checkOut && (checkOut <= nextCheckIn || nextNights < minimumNights || nextNights > maximumNights || overlapsBookedRange(nextCheckIn, checkOut, bookedDateRanges))) {
       setCheckOut("");
@@ -714,6 +877,11 @@ export function PublicListingDetailClient({
     const nights = calendarNights(checkIn, nextCheckOut);
     if (nights < minimumNights) {
       setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { minimumNights, nightsRequested: nights },
+      });
       return;
     }
     if (nights > maximumNights) {
@@ -724,21 +892,90 @@ export function PublicListingDetailClient({
       setCheckOut("");
       setQuote(null);
       setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { checkIn, checkOut: nextCheckOut, type: "stay_overlaps_booked" },
+      });
       return;
     }
     setQuote(null);
     setQuoteError(null);
     setCheckOut(nextCheckOut);
+    trackListingEvent({
+      eventType: "checkout_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut: nextCheckOut,
+    });
   };
 
-  const updateGuestCount = (nextGuests: number) => {
-    const safeGuests = Math.min(maximumGuests, Math.max(1, nextGuests));
+  const updateAdults = (delta: number) => {
+    const next = adultsCount + delta;
+    if (next < 1) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
     setQuote(null);
     setQuoteError(null);
-    setGuestsCount(safeGuests);
+    setAdultsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: next + childrenCount,
+      metadata: { category: "adults", adults: next, children: childrenCount, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateChildren = (delta: number) => {
+    const next = childrenCount + delta;
+    if (next < 0) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
+    setQuote(null);
+    setQuoteError(null);
+    setChildrenCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: adultsCount + next,
+      metadata: { category: "children", adults: adultsCount, children: next, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateInfants = (delta: number) => {
+    const next = infantsCount + delta;
+    if (next < 0 || next > 5) return;
+    setInfantsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "infants", adults: adultsCount, children: childrenCount, infants: next, pets: petsCount },
+    });
+  };
+
+  const updatePets = (delta: number) => {
+    const next = petsCount + delta;
+    if (next < 0 || next > maxPetsAllowed) return;
+    setQuote(null);
+    setQuoteError(null);
+    setPetsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "pets", adults: adultsCount, children: childrenCount, infants: infantsCount, pets: next },
+    });
   };
 
   const handleShare = async () => {
+    trackListingEvent({
+      eventType: "share_clicked",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
+
     const shareData = {
       title: listing.title,
       text: locationString ? `${listing.title} in ${locationString}` : listing.title,
@@ -757,6 +994,12 @@ export function PublicListingDetailClient({
   };
 
   const handleSave = async () => {
+    const nextSaved = !wishlist.has(listing.id);
+    trackListingEvent({
+      eventType: "wishlist_toggled",
+      propertyId: listing.id,
+      metadata: { saved: nextSaved },
+    });
     if (wishlist.has(listing.id)) await wishlist.remove(listing.id);
     else await wishlist.add(listing.id);
   };
@@ -765,42 +1008,82 @@ export function PublicListingDetailClient({
   const handleReserve = () => {
     if (!checkIn || !checkOut) {
       setQuoteError("Please choose check-in and check-out dates to continue.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_dates" },
+      });
       return;
     }
 
     if (!isDateKey(checkIn) || !isDateKey(checkOut)) {
       setQuoteError("Please enter valid check-in and check-out dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "invalid_date_format" },
+      });
       return;
     }
 
     if (checkIn < today) {
       setQuoteError("Check-in date cannot be in the past.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkin_in_past" },
+      });
       return;
     }
 
     if (checkOut <= checkIn) {
       setQuoteError("Checkout must be after check-in.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkout_before_checkin" },
+      });
       return;
     }
 
     const nights = calendarNights(checkIn, checkOut);
     if (nights < minimumNights) {
       setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "minimum_nights_not_met", minimumNights, nights },
+      });
       return;
     }
 
     if (nights > maximumNights) {
       setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "maximum_nights_exceeded", maximumNights, nights },
+      });
       return;
     }
 
     if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
       setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "dates_unavailable" },
+      });
       return;
     }
 
-    if (!isGuestSelectionValid || guestsCount > maximumGuests) {
+    if (!isGuestSelectionValid || totalCapacityGuests > maximumGuests) {
       setQuoteError(`This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "max_guests_exceeded", totalCapacityGuests, maximumGuests },
+      });
       return;
     }
 
@@ -814,14 +1097,50 @@ export function PublicListingDetailClient({
 
     if (!hasValidQuote || !quote) {
       setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_valid_quote" },
+      });
       return;
     }
+
+    trackListingEvent({
+      eventType: "reserve_clicked",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut,
+      guestCount: totalCapacityGuests,
+      metadata: {
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        isNonRefundable,
+      },
+    });
+
+    trackListingEvent({
+      eventType: "booking_flow_started",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut,
+      guestCount: totalCapacityGuests,
+    });
 
     const queryParams = new URLSearchParams({
       checkIn,
       checkOut,
-      guests: String(guestsCount || 1),
+      guests: String(totalCapacityGuests),
+      adults: String(adultsCount),
+      children: String(childrenCount),
     });
+    if (infantsCount > 0) queryParams.set("infants", String(infantsCount));
+    if (petsCount > 0) queryParams.set("pets", String(petsCount));
     if (isNonRefundable) {
       queryParams.set("nonRefundable", "true");
     }
@@ -833,7 +1152,7 @@ export function PublicListingDetailClient({
     <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 pb-20 pt-5 sm:pt-7">
+      <main className="w-full flex-1 pb-32 sm:pb-36 lg:pb-20 pt-5 sm:pt-7">
         <Container>
           <div className="mx-auto max-w-[1180px]">
           {/* Header Section */}
@@ -876,9 +1195,6 @@ export function PublicListingDetailClient({
 
           {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
           <div>
-            {/* ListingGallery handles Show all photos, lightbox, thumbnails, and fallbacks */}
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore */}
             <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} />
           </div>
 
@@ -912,20 +1228,66 @@ export function PublicListingDetailClient({
               {/* Property Summary & Host */}
               <section className="mt-7 flex items-center gap-3.5 border-b border-zinc-200/80 pb-6">
                 <div className="min-w-0 space-y-1">
-                  <h2 className="text-sm font-semibold text-zinc-900">Hosted by {listing.host?.name || "Homyz host"}</h2>
+                  <h2 className="text-sm font-semibold text-zinc-900">
+                    {hostProfileHref ? (
+                      <Link
+                        href={hostProfileHref}
+                        onClick={() => {
+                          trackListingEvent({
+                            eventType: "host_profile_clicked",
+                            propertyId: listing.id,
+                            metadata: { hostId: listing.host?.id, source: "summary_title" },
+                          });
+                        }}
+                        className="hover:underline underline-offset-2"
+                      >
+                        Hosted by {listing.host?.name || "Homyz host"}
+                      </Link>
+                    ) : (
+                      `Hosted by ${listing.host?.name || "Homyz host"}`
+                    )}
+                  </h2>
                   <p className="text-[11px] text-zinc-500">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
                 </div>
-                {listing.host?.image && !hostImageFailed ? (
-                  <img
-                    src={listing.host.image}
-                    alt={listing.host.name || "Host"}
-                    onError={() => setHostImageFailed(true)}
-                    className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
-                  />
+                {hostProfileHref ? (
+                  <Link
+                    href={hostProfileHref}
+                    aria-label={`View ${listing.host?.name || "host"}'s profile`}
+                    onClick={() => {
+                      trackListingEvent({
+                        eventType: "host_profile_clicked",
+                        propertyId: listing.id,
+                        metadata: { hostId: listing.host?.id, source: "summary_avatar" },
+                      });
+                    }}
+                    className="order-first block rounded-full transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                  >
+                    {listing.host?.image && !hostImageFailed ? (
+                      <img
+                        src={listing.host.image}
+                        alt={listing.host.name || "Host"}
+                        onError={() => setHostImageFailed(true)}
+                        className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                      />
+                    ) : (
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                        {(listing.host?.name || "H")[0].toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
                 ) : (
-                  <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
-                    {(listing.host?.name || "H")[0].toUpperCase()}
-                  </div>
+                  listing.host?.image && !hostImageFailed ? (
+                    <img
+                      src={listing.host.image}
+                      alt={listing.host.name || "Host"}
+                      onError={() => setHostImageFailed(true)}
+                      className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                    />
+                  ) : (
+                    <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                      {(listing.host?.name || "H")[0].toUpperCase()}
+                    </div>
+                  )
                 )}
               </section>
 
@@ -946,50 +1308,42 @@ export function PublicListingDetailClient({
                 <section className="mt-6 border-b border-zinc-200/80 pb-6">
                   <h3 className="text-[15px] font-semibold text-zinc-900">About this place</h3>
                   <p
-                    className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-[11px] leading-[15px] text-zinc-600"
+                    className={`mt-2.5 whitespace-pre-line break-words text-[11px] leading-[15px] text-zinc-600 ${
+                      isDescriptionExpanded ? "" : "line-clamp-4"
+                    }`}
                   >
                     {normalizedDescription}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setIsDescriptionModalOpen(true)}
-                    aria-haspopup="dialog"
-                    className="mt-4 rounded-full border border-zinc-300 bg-white px-5 py-2 text-[11px] font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-                  >
-                    Show more
-                  </button>
+                  {isDescriptionExpanded && aboutLocationDetails.length > 0 && (
+                    <div className="mt-4 space-y-3 pt-3 border-t border-zinc-100">
+                      {aboutLocationDetails.map((detail) => (
+                        <div key={detail.heading}>
+                          <h4 className="text-xs font-semibold text-zinc-900">{detail.heading}</h4>
+                          <p className="mt-0.5 whitespace-pre-line text-[11px] leading-[15px] text-zinc-600">{detail.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(normalizedDescription.length > 200 || aboutLocationDetails.length > 0) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !isDescriptionExpanded;
+                        setIsDescriptionExpanded(next);
+                        trackListingEvent({
+                          eventType: next ? "description_expanded" : "description_collapsed",
+                          propertyId: listing.id,
+                        });
+                      }}
+                      className="mt-4 rounded-full border border-zinc-300 bg-white px-5 py-2 text-[11px] font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 cursor-pointer"
+                    >
+                      {isDescriptionExpanded ? "Show less" : "Show more"}
+                    </button>
+                  )}
                 </section>
               )}
 
               <div className="mt-8 flex flex-col gap-8">
-              {/* Sleeping arrangements are intentionally hidden on this page.
-              {rooms.length > 0 && (
-                <div className="space-y-4 pb-6 border-b border-zinc-200/80">
-                  <h3 className="text-base font-bold text-zinc-900">{"Where you'll sleep"}</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {rooms.map((room) => (
-                      <div key={room.id} className="rounded-2xl border border-zinc-200 p-4 space-y-2 bg-zinc-50/50">
-                        <span className="text-xl block">🛏️</span>
-                        <h4 className="text-xs font-semibold text-zinc-900">{room.name}</h4>
-                        <div className="space-y-0.5 text-[11px] text-zinc-500">
-                          {Array.isArray(room.beds) && room.beds.length > 0 ? (
-                            room.beds.map((b: { count: number; type: string }, bi: number) => (
-                              <p key={bi}>
-                                {b.count} {b.type.replace(/_/g, " ").toLowerCase()}{" "}
-                                {b.count === 1 ? "bed" : "beds"}
-                              </p>
-                            ))
-                          ) : (
-                            <p>1 queen bed</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              */}
-
               {/* Amenities Grid */}
               <div className="space-y-4 pb-6 border-b border-zinc-200/80">
                 <h3 className="text-base font-bold text-zinc-900">What this place offers</h3>
@@ -1008,7 +1362,14 @@ export function PublicListingDetailClient({
                   {categorizedAmenities.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => setIsAllAmenitiesOpen(true)}
+                    onClick={() => {
+                      setIsAllAmenitiesOpen(true);
+                      trackListingEvent({
+                        eventType: "amenities_opened",
+                        propertyId: listing.id,
+                        metadata: { totalAmenities: categorizedAmenities.length },
+                      });
+                    }}
                     className="rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-xs font-semibold px-5 py-2.5 transition-all cursor-pointer shadow-2xs mt-2"
                   >
                     Show all {categorizedAmenities.length} amenities
@@ -1023,7 +1384,18 @@ export function PublicListingDetailClient({
                   <div className="grid gap-7 md:grid-cols-[300px_minmax(0,1fr)] md:gap-12">
                     <div>
                       {hostProfileHref ? (
-                        <Link href={hostProfileHref} aria-label={`View ${listing.host.name || "host"}'s profile`} className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900">
+                        <Link
+                          href={hostProfileHref}
+                          aria-label={`View ${listing.host.name || "host"}'s profile`}
+                          onClick={() => {
+                            trackListingEvent({
+                              eventType: "host_profile_clicked",
+                              propertyId: listing.id,
+                              metadata: { hostId: listing.host?.id },
+                            });
+                          }}
+                          className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
+                        >
                           <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostSince={hostSince} hostTenure={hostTenure} />
                         </Link>
                       ) : (
@@ -1047,7 +1419,21 @@ export function PublicListingDetailClient({
                         {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-sm text-zinc-600"><span aria-hidden="true">★</span> Superhost</p>}
                       </div>}
 
-                      {hostProfileHref && <Link href={hostProfileHref} className="mt-6 inline-flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">View profile</Link>}
+                      {hostProfileHref && (
+                        <Link
+                          href={hostProfileHref}
+                          onClick={() => {
+                            trackListingEvent({
+                              eventType: "host_profile_clicked",
+                              propertyId: listing.id,
+                              metadata: { hostId: listing.host?.id },
+                            });
+                          }}
+                          className="mt-6 inline-flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                        >
+                          View profile
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -1060,21 +1446,21 @@ export function PublicListingDetailClient({
                   ranges={bookedDateRanges}
                   isLoading={isAvailabilityLoading}
                   error={availabilityError}
-                checkIn={checkIn}
-                checkOut={checkOut}
-                locationName={listing.city || listing.title || "this property"}
-                minimumNights={minimumNights}
-                onDateChange={(nextCheckIn, nextCheckOut) => {
-                  if (!nextCheckIn && !nextCheckOut) {
-                    clearBookingDates();
-                    return;
-                  }
-                  setQuote(null);
-                  setQuoteError(null);
-                  setCheckIn(nextCheckIn);
-                  setCheckOut(nextCheckOut);
-                }}
-                  onSelectionError={setQuoteError}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  locationName={listing.city || listing.title || "this property"}
+                  minimumNights={minimumNights}
+                  maximumNights={maximumNights}
+                  onDateRangeChange={(nextCheckIn, nextCheckOut) => {
+                    if (nextCheckIn && !nextCheckOut) {
+                      updateCheckIn(nextCheckIn);
+                    } else if (nextCheckIn && nextCheckOut) {
+                      setCheckIn(nextCheckIn);
+                      updateCheckOut(nextCheckOut);
+                    }
+                  }}
+                  onClearDates={clearBookingDates}
+                  onErrorMessage={setQuoteError}
                 />
               </div>
 
@@ -1277,22 +1663,67 @@ export function PublicListingDetailClient({
                           type="button"
                           aria-expanded={isGuestSelectorOpen}
                           aria-controls="guest-selector"
-                          onClick={() => setIsGuestSelectorOpen((open) => !open)}
+                          onClick={() => {
+                            const nextOpen = !isGuestSelectorOpen;
+                            setIsGuestSelectorOpen(nextOpen);
+                            if (nextOpen) {
+                              trackListingEvent({
+                                eventType: "guest_selector_opened",
+                                propertyId: listing.id,
+                                guestCount: totalCapacityGuests,
+                              });
+                            }
+                          }}
                           className="flex w-full items-center justify-between text-left text-xs font-medium text-zinc-900"
                         >
-                          <span>{guestsCount} {guestsCount === 1 ? "guest" : "guests"}</span>
+                          <span>{guestSummaryLabel}</span>
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-4 transition-transform ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                         </button>
                         {isGuestSelectorOpen && (
-                          <div id="guest-selector" className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3" aria-label="Guest selection">
+                          <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50/90 p-3.5 text-xs" aria-label="Guest selection">
+                            {/* Adults */}
                             <div className="flex items-center justify-between gap-3">
-                              <div><p className="text-xs font-semibold text-zinc-900">Guests</p><p className="mt-0.5 text-[10px] text-zinc-500">This property allows up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p></div>
+                              <div>
+                                <p className="font-semibold text-zinc-900">Adults</p>
+                                <p className="text-[10px] text-zinc-500">Age 13+</p>
+                              </div>
                               <div className="flex items-center gap-2">
-                                <button type="button" onClick={() => updateGuestCount(guestsCount - 1)} disabled={guestsCount <= 1} aria-label="Remove one guest" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
-                                <span className="min-w-4 text-center text-xs font-semibold text-zinc-900" aria-live="polite">{guestsCount}</span>
-                                <button type="button" onClick={() => updateGuestCount(guestsCount + 1)} disabled={guestsCount >= maximumGuests} aria-label="Add one guest" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{adultsCount}</span>
+                                <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                               </div>
                             </div>
+
+                            {/* Children */}
+                            <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                              <div>
+                                <p className="font-semibold text-zinc-900">Children</p>
+                                <p className="text-[10px] text-zinc-500">Ages 2–12</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{childrenCount}</span>
+                                <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                              </div>
+                            </div>
+
+
+
+                            <div className="border-t border-zinc-200/80 pt-2 text-[10px] text-zinc-500">
+                              {totalCapacityGuests >= maximumGuests ? (
+                                <p className="font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
+                              ) : (
+                                <p>This property accommodates up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setIsGuestSelectorOpen(false)}
+                              className="w-full rounded-lg bg-zinc-200/70 py-1.5 text-center text-xs font-semibold text-zinc-800 hover:bg-zinc-300/80 cursor-pointer"
+                            >
+                              Done
+                            </button>
                           </div>
                         )}
                       </div>
@@ -1532,6 +1963,66 @@ export function PublicListingDetailClient({
           </div>
         </ModalOverlay>
       )}
+
+      {/* Mobile Sticky Booking Bar (Visible below lg breakpoint where desktop card is not sticky) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1 truncate">
+              <span className="text-base font-bold text-zinc-900 sm:text-lg">
+                {quote?.guestTotal || quote?.totalPrice
+                  ? formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
+                  : displayPrice ?? "Price unavailable"}
+              </span>
+              <span className="text-xs font-normal text-zinc-500">
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : "/ night"}
+              </span>
+            </div>
+            <div className="truncate text-xs font-medium text-zinc-600">
+              {checkIn && checkOut
+                ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
+                : "Choose your dates"}
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            {!checkIn || !checkOut ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const calendarEl = document.getElementById("availability-heading");
+                  if (calendarEl) {
+                    calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }}
+                className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-zinc-900 shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+              >
+                Check availability
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isBookingSubmitting || !hasValidQuote}
+                onClick={handleReserve}
+                className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${
+                  hasValidQuote && !isBookingSubmitting
+                    ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+                    : "border border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                }`}
+                aria-disabled={!hasValidQuote || isBookingSubmitting}
+              >
+                {isBookingSubmitting
+                  ? "Confirming..."
+                  : isQuoteLoading
+                  ? "Checking..."
+                  : listing.instantBook
+                  ? "Reserve"
+                  : "Request to book"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <Footer />
     </div>

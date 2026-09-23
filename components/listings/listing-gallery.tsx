@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 type Props = {
   photos: string[];
@@ -18,6 +19,22 @@ export function ListingGallery({ photos, listingTitle }: Props) {
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const handleOpenLightbox = useCallback(() => {
+    setLightboxOpen(true);
+    trackListingEvent({
+      eventType: "gallery_opened",
+      metadata: { totalPhotos: galleryPhotos.length, initialIndex: selectedIndex },
+    });
+  }, [galleryPhotos.length, selectedIndex]);
+
+  const handleSelectPhoto = useCallback((index: number) => {
+    setSelectedIndex(index);
+    trackListingEvent({
+      eventType: "gallery_photo_changed",
+      metadata: { selectedIndex: index, totalPhotos: galleryPhotos.length },
+    });
+  }, [galleryPhotos.length]);
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const photosRef = useRef(galleryPhotos);
   const touchStartX = useRef<number | null>(null);
@@ -112,7 +129,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
             <button
               type="button"
               aria-label={`Open photo ${selectedIndex + 1} of ${total}`}
-              onClick={() => setLightboxOpen(true)}
+              onClick={handleOpenLightbox}
               onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
               onTouchEnd={handleTouchEnd}
               className="w-full h-full p-0 m-0 block"
@@ -142,7 +159,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
               <button
                 type="button"
                 key={index}
-                onClick={() => setSelectedIndex(index)}
+                onClick={() => handleSelectPhoto(index)}
                 aria-label={`Select photo ${index + 1}`}
                 className={`relative h-full overflow-hidden bg-zinc-100 cursor-pointer hover:opacity-95 transition-opacity ${isActive ? "ring-2 ring-amber-400" : ""}`}
               >
@@ -163,7 +180,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
             );
           })}
           {total > 5 && (
-            <button type="button" onClick={() => setLightboxOpen(true)} className="absolute bottom-4 right-4 z-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white">
+            <button type="button" onClick={handleOpenLightbox} className="absolute bottom-4 right-4 z-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white">
               Show all {total} photos
             </button>
           )}
@@ -176,7 +193,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
           <button
             type="button"
             key={i}
-            onClick={() => setSelectedIndex(i)}
+            onClick={() => handleSelectPhoto(i)}
             aria-label={`Select photo ${i + 1}`}
             className={`relative shrink-0 w-20 h-12 rounded overflow-hidden border ${i === selectedIndex ? "ring-2 ring-amber-400" : "border-zinc-200"}`}
           >
@@ -200,7 +217,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
       {/* Counter & Open */}
       <div className="absolute right-4 bottom-4 rounded-full bg-white/90 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-md hover:bg-white transition-all cursor-pointer border border-zinc-200 flex items-center gap-2">
         <span>{selectedIndex + 1} / {total}</span>
-        <button type="button" onClick={() => setLightboxOpen(true)} className="text-xs font-medium text-zinc-700 underline">Open</button>
+        <button type="button" onClick={handleOpenLightbox} className="text-xs font-medium text-zinc-700 underline">Open</button>
       </div>
 
       {lightboxOpen && (
