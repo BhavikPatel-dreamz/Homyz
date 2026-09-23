@@ -517,7 +517,7 @@ export function CancellationPolicyView({
         <ModalOverlay className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100">
+              <h3 className="text-[20px] font-normal text-[#1f1f1f] dark:text-zinc-100">
                 {t("host_cancellation_detail_popover_title", { title: infoModalTopic.title })}
               </h3>
               <button
@@ -551,7 +551,7 @@ export function CancellationPolicyView({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100">
+              <h3 className="text-[20px] font-normal text-[#1f1f1f] dark:text-zinc-100">
                 {t("host_non_refundable_option_title")}
               </h3>
               <button
@@ -596,7 +596,7 @@ export function CancellationPolicyView({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100">
+              <h3 className="text-[20px] font-normal text-[#1f1f1f] dark:text-zinc-100">
                 {t("host_help_centre_modal_title")}
               </h3>
               <button

@@ -898,7 +898,7 @@ export function ListingsResultsClient({
 
       {/* ── Mobile Map on Top (Phase 5: Section 2 & 3) ── */}
       {!isDesktop && mobileViewMode === "combined" && (
-        <div className="block lg:hidden w-full h-[270px] sm:h-[320px] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs relative mb-4">
+        <div className="block lg:hidden w-full h-[442px] sm:h-[320px] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs relative mb-4">
           <SearchMap
             listings={allListings}
             highlightedId={effectiveHighlightedId}
@@ -1051,7 +1051,7 @@ export function ListingsResultsClient({
       {/* ── Results Area ────────────────── */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: listings list */}
-        <div className={`w-full min-w-0 ${showMap ? "lg:w-[56%] xl:w-[58%]" : "w-full"}`}>
+        <div className={`w-full min-w-0 ${showMap ? "lg:w-[56%] xl:w-[50%]" : "w-full"}`}>
           {isPending ? (
             <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
               {Array.from({ length: 6 }).map((_, i) => (
@@ -1129,7 +1129,7 @@ export function ListingsResultsClient({
               <div
                 className={`grid gap-5 ${
                   showMap
-                    ? "grid-cols-1 sm:grid-cols-3"
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
                 }`}
               >
@@ -1144,7 +1144,7 @@ export function ListingsResultsClient({
                     onMouseEnter={() => setHoveredPropertyId(item.id)}
                     onMouseLeave={() => setHoveredPropertyId(null)}
                     onClick={() => setSelectedPropertyId(item.id)}
-                    className={`transition-all duration-200 rounded-[24px] ${
+                    className={`transition-all duration-200 rounded-[20px] ${
                       selectedPropertyId === item.id
                         ? "ring-2 ring-zinc-950 shadow-lg"
                         : ""
@@ -1157,6 +1157,7 @@ export function ListingsResultsClient({
                       priority={index < (isDesktop ? 4 : 2)}
                       checkIn={currentFilters.checkIn}
                       checkOut={currentFilters.checkOut}
+                      variant="search-grid"
                     />
                   </div>
                 ))}
@@ -1179,7 +1180,7 @@ export function ListingsResultsClient({
 
         {/* Right: sticky map (desktop) */}
         {isDesktop && showMap && (
-          <div className="hidden lg:block w-full lg:w-[44%] xl:w-[42%] shrink-0 sticky top-[84px] h-[calc(100vh-104px)] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-10 isolate relative">
+          <div className="hidden lg:block w-full lg:w-[44%] xl:w-[50%] shrink-0 sticky top-[84px] h-[calc(100vh-104px)] rounded-[20px] overflow-hidden border border-[#1f1f1f] z-10 isolate">
             <SearchMap
               listings={allListings}
               highlightedId={effectiveHighlightedId}

@@ -217,7 +217,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 py-8">
+      <main className="w-full flex-1 lg:py-20 py-10">
         <Container>          
 
           {/* Interactive client section (<ListingCard /> rendered in grid) */}
