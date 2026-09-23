@@ -101,6 +101,25 @@ export function parseRequiredAdvanceDays(notice: string | null | undefined): num
   }
 }
 
+/**
+ * Booking dates are calendar days, never instants. Zod parses an ISO date as
+ * UTC, so rebuild it from UTC components before using local date arithmetic.
+ * This prevents a browser/server timezone from turning Oct 10 into Oct 9.
+ */
+function toCalendarDate(value: Date | string): Date {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return parsed;
+  return new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+}
+
+function calendarDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 export async function getBookingQuote(opts: {
   listingId: string;
   checkIn: Date | string;
@@ -118,14 +137,14 @@ export async function getBookingQuote(opts: {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  const cIn = new Date(opts.checkIn);
-  const cOut = new Date(opts.checkOut);
+  const cIn = toCalendarDate(opts.checkIn);
+  const cOut = toCalendarDate(opts.checkOut);
 
   if (isNaN(cIn.getTime()) || isNaN(cOut.getTime())) {
     throw AppError.badRequest("Invalid check-in or check-out date");
   }
 
-  // Normalize to UTC start of day for deterministic night calculations
+  // Normalize to the local start of the requested calendar day.
   cIn.setHours(0, 0, 0, 0);
   cOut.setHours(0, 0, 0, 0);
 
@@ -183,8 +202,7 @@ export async function getBookingQuote(opts: {
 
   const requestedGuests = opts.guests ?? 1;
   const baseGuests = listing.guests || 1;
-  const extraGuestFeeRate = (listing as any).extraGuestFee ?? 0;
-  if (requestedGuests > baseGuests && extraGuestFeeRate <= 0) {
+  if (requestedGuests > baseGuests) {
     throw AppError.badRequest(`Property accommodates a maximum of ${baseGuests} guests`);
   }
 
@@ -275,8 +293,10 @@ export async function getBookingQuote(opts: {
 
   const usesManualAdjustments = listing.smartPricing !== true;
   const pricing = await calculateBookingPrice({
-    checkIn: cIn,
-    checkOut: cOut,
+    // Pricing consumes date-only strings so it keeps the guest's selected
+    // calendar day intact in every server timezone.
+    checkIn: calendarDateKey(cIn),
+    checkOut: calendarDateKey(cOut),
     weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
     weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
     customPrices: (listing as any).customPrices as Record<string, number> | null,
@@ -287,6 +307,7 @@ export async function getBookingQuote(opts: {
     pets: requestedPets,
     petFee: listing.petFee,
     discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
+    includeNewListingPromotion: false,
     taxRules: resolved.systemRules,
     hostTaxes,
     nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
@@ -297,8 +318,8 @@ export async function getBookingQuote(opts: {
 
   return {
     listingId: listing.id,
-    checkIn: cIn.toISOString(),
-    checkOut: cOut.toISOString(),
+    checkIn: calendarDateKey(cIn),
+    checkOut: calendarDateKey(cOut),
     nights: pricing.nights,
     weekdayNights: pricing.weekdayNights,
     weekendNights: pricing.weekendNights,
@@ -388,6 +409,8 @@ async function create(
     pets: input.pets,
     nonRefundable: input.nonRefundable ?? false,
   });
+  const bookingCheckIn = toCalendarDate(input.startDate);
+  const bookingCheckOut = toCalendarDate(input.endDate);
 
   // Check against listing.blockedDates
   if (Array.isArray(listing.blockedDates) && listing.blockedDates.length > 0) {
@@ -402,7 +425,7 @@ async function create(
   const booking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Serialize booking attempts per listing so concurrent overlap checks cannot both win.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.listingId}))`;
-    const conflict = await tx.booking.findFirst({ where: { listingId: input.listingId, status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] }, startDate: { lt: input.endDate }, endDate: { gt: input.startDate } } });
+    const conflict = await tx.booking.findFirst({ where: { listingId: input.listingId, status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] }, startDate: { lt: bookingCheckOut }, endDate: { gt: bookingCheckIn } } });
     if (conflict) throw AppError.conflict("The selected dates are no longer available");
 
     const approvedBookings = bookingApprovalMode === "FIRST_THREE"
@@ -414,8 +437,8 @@ async function create(
     const createdBooking = await tx.booking.create({ data: {
       userId: actor.id,
       listingId: input.listingId,
-      startDate: input.startDate,
-      endDate: input.endDate,
+      startDate: bookingCheckIn,
+      endDate: bookingCheckOut,
       guests: quote.guests,
       totalPrice: quote.guestTotal,
       nightlyPrice: quote.baseNightlyPrice,

@@ -1957,5 +1957,7 @@
   "host_room_cat_LAUNDRY": "Lavandería",
   "host_room_cat_VIEW": "Vistas",
   "host_room_cat_PARKING": "Aparcamiento",
-  "host_room_cat_OTHER": "Otro"
+  "host_room_cat_OTHER": "Otro",
+  "host_scroll_photo_tour_up": "Desplazar el recorrido fotográfico hacia arriba",
+  "host_scroll_photo_tour_down": "Desplazar el recorrido fotográfico hacia abajo"
 }

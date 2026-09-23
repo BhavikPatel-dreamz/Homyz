@@ -1957,5 +1957,7 @@
   "host_room_cat_LAUNDRY": "المغسلة",
   "host_room_cat_VIEW": "الإطلالة",
   "host_room_cat_PARKING": "موقف السيارات",
-  "host_room_cat_OTHER": "آخر"
+  "host_room_cat_OTHER": "آخر",
+  "host_scroll_photo_tour_up": "تمرير جولة الصور للأعلى",
+  "host_scroll_photo_tour_down": "تمرير جولة الصور للأسفل"
 }

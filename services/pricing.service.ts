@@ -31,6 +31,8 @@ export interface BookingPricingParams {
   petFee?: number | null; // cents flat or per pet
   discounts?: Record<string, unknown> | null;
   isNewListing?: boolean;
+  /** Reservation quotes can opt out of the marketing-only new-listing promo. */
+  includeNewListingPromotion?: boolean;
   bookingCreatedAt?: Date | string;
   hostServiceFeePercentage?: number; // optional override; defaults to DB setting
   taxRules?: TaxRuleDTO[];
@@ -168,6 +170,8 @@ export function resolveSingleDiscount(opts: {
   checkIn: Date;
   discounts?: Record<string, unknown> | null;
   isNewListing?: boolean;
+  /** Reservation quotes can opt out of the marketing-only new-listing promo. */
+  includeNewListingPromotion?: boolean;
   bookingCreatedAt?: Date;
 }): AppliedDiscount | null {
   if (opts.staySubtotal <= 0 || opts.nights < 1) return null;
@@ -248,7 +252,7 @@ export function resolveSingleDiscount(opts: {
   // 4. New Listing Promotion (20% for first bookings or flagged) - Priority 4
   const isNewListingFlag = opts.isNewListing || rawDiscounts.new_listing === true ||
     (typeof rawDiscounts.new_listing === "object" && rawDiscounts.new_listing !== null && (rawDiscounts.new_listing as any).enabled !== false);
-  if (isNewListingFlag) {
+  if (opts.includeNewListingPromotion !== false && isNewListingFlag) {
     const pct = parseDiscountEntry(rawDiscounts.new_listing, 20);
     if (pct !== null) {
       candidates.push({
@@ -396,6 +400,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     checkIn: cIn,
     discounts: params.discounts,
     isNewListing: params.isNewListing,
+    includeNewListingPromotion: params.includeNewListingPromotion,
     bookingCreatedAt: params.bookingCreatedAt ? new Date(params.bookingCreatedAt) : undefined,
   });
 

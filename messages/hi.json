@@ -1957,5 +1957,7 @@
   "host_room_cat_LAUNDRY": "लॉन्ड्री",
   "host_room_cat_VIEW": "दृश्य",
   "host_room_cat_PARKING": "पार्किंग",
-  "host_room_cat_OTHER": "अन्य"
+  "host_room_cat_OTHER": "अन्य",
+  "host_scroll_photo_tour_up": "फ़ोटो टूर ऊपर स्क्रॉल करें",
+  "host_scroll_photo_tour_down": "फ़ोटो टूर नीचे स्क्रॉल करें"
 }

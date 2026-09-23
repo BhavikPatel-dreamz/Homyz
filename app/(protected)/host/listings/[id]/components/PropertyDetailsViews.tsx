@@ -132,11 +132,13 @@ interface PropertyDetailsViewsProps {
   setAccessibilityDetails?: (val: AccessibilityFeatureDetail[]) => void;
   expandedAccessibility?: string | null;
   setExpandedAccessibility?: (val: string | null) => void;
+  presentation?: "host" | "admin";
 }
 
 const MAX_GUEST_CAPACITY = 50;
 
 export function PropertyDetailsViews({
+  presentation = "host",
   activeSection,
   setActiveSection,
   feedbackMsg,
@@ -1608,7 +1610,7 @@ export function PropertyDetailsViews({
                   <div
                     ref={amenitiesScrollRef}
                     onScroll={updateAmenitiesScrollThumb}
-                    className="custom-scrollbar lg:h-[1850px] divide-y divide-[#DDDDDE] dark:divide-zinc-800 overflow-x-hidden overflow-y-auto pt-6 pr-1 lg:pr-[85px]"
+                    className={`custom-scrollbar divide-y divide-[#DDDDDE] dark:divide-zinc-800 overflow-x-hidden pt-6 pr-1 lg:pr-[85px] ${presentation === "admin" ? "" : "lg:h-[1850px] overflow-y-auto"}`}
                   >
                     {filteredCatalog.length === 0 ? (
                       <div className="py-12 text-center text-zinc-400 dark:text-zinc-500 text-xs">
