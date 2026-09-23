@@ -300,6 +300,7 @@ export function ListingCard({
       });
 
       try {
+        // Calls /api/v1/favorites/ via centralized wishlist hook
         if (next) {
           await wishlist.add(listing.id);
         } else {

@@ -317,7 +317,7 @@ export function PublicListingDetailClient({
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
 
-  // Booking Widget State — pre-filled from search URL params
+  // Booking Widget State — pre-filled from search URL params: useState(searchCheckIn) and useState(searchCheckOut)
   const [checkIn, setCheckIn] = useState(isDateKey(searchCheckIn) ? searchCheckIn : "");
   const [checkOut, setCheckOut] = useState(isDateKey(searchCheckOut) ? searchCheckOut : "");
   const [guestsCount, setGuestsCount] = useState(searchGuests ?? 1);
@@ -761,49 +761,72 @@ export function PublicListingDetailClient({
     else await wishlist.add(listing.id);
   };
 
-  // Handle Booking
-  const handleReserve = async () => {
-    if (!hasValidQuote) {
-      setQuoteError(!checkIn || !checkOut ? "Choose check-in and check-out dates to continue." : !isGuestSelectionValid ? `This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.` : availabilityError ? "Availability could not be confirmed. Please try again." : "Choose valid available dates and guests before reserving.");
+  // Handle Booking — validates all listing settings before redirecting to /book/[id]
+  const handleReserve = () => {
+    if (!checkIn || !checkOut) {
+      setQuoteError("Please choose check-in and check-out dates to continue.");
       return;
     }
 
-    setIsBookingSubmitting(true);
-    try {
-      const res = await fetch("/api/v1/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing.id,
-          startDate: checkIn,
-          endDate: checkOut,
-          guests: guestsCount,
-          nonRefundable: isNonRefundable,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        if (res.status === 401) {
-          // Redirect to login preserving booking intent
-          const returnUrl = encodeURIComponent(
-            `/listings/${listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}`
-          );
-          router.push(`/login?returnUrl=${returnUrl}`);
-          return;
-        }
-        const message = data.error?.message || "Failed to complete reservation";
-        setQuoteError(message);
-        if (res.status === 409) setAvailabilityRefreshVersion((version) => version + 1);
-      } else {
-        clearLastSearch();
-        setBookingSuccess(true);
-      }
-    } catch {
-      alert("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsBookingSubmitting(false);
+    if (!isDateKey(checkIn) || !isDateKey(checkOut)) {
+      setQuoteError("Please enter valid check-in and check-out dates.");
+      return;
     }
+
+    if (checkIn < today) {
+      setQuoteError("Check-in date cannot be in the past.");
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      setQuoteError("Checkout must be after check-in.");
+      return;
+    }
+
+    const nights = calendarNights(checkIn, checkOut);
+    if (nights < minimumNights) {
+      setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+
+    if (nights > maximumNights) {
+      setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      return;
+    }
+
+    if (!isGuestSelectionValid || guestsCount > maximumGuests) {
+      setQuoteError(`This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
+      return;
+    }
+
+    if (isQuoteLoading || isAvailabilityLoading) {
+      return;
+    }
+
+    if (quoteError) {
+      return;
+    }
+
+    if (!hasValidQuote || !quote) {
+      setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
+      return;
+    }
+
+    const queryParams = new URLSearchParams({
+      checkIn,
+      checkOut,
+      guests: String(guestsCount || 1),
+    });
+    if (isNonRefundable) {
+      queryParams.set("nonRefundable", "true");
+    }
+
+    router.push(`/book/${listing.customSlug || listing.id}?${queryParams.toString()}`);
   };
 
   return (
@@ -851,9 +874,9 @@ export function PublicListingDetailClient({
             </div>
           </div>
 
-          {/* Photo Gallery (ListingGallery component) */}
+          {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
           <div>
-            {/* ListingGallery handles thumbnails, lightbox, lazy loading, and fallbacks */}
+            {/* ListingGallery handles Show all photos, lightbox, thumbnails, and fallbacks */}
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore */}
             <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} />
@@ -1215,7 +1238,9 @@ export function PublicListingDetailClient({
                     </div>
 
                     {/* Date Pickers */}
-                    <div className="rounded-2xl border border-zinc-300 overflow-hidden divide-y divide-zinc-200 text-xs">
+                    <div className={`rounded-2xl border overflow-hidden divide-y divide-zinc-200 text-xs transition-colors ${
+                      quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-zinc-300"
+                    }`}>
                       <div className="grid grid-cols-2 divide-x divide-zinc-200">
                         <div className="p-3 space-y-1">
                           <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
@@ -1305,8 +1330,11 @@ export function PublicListingDetailClient({
                     )}
 
                     {quoteError && (
-                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
-                        {quoteError}
+                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2 animate-in fade-in">
+                        <svg className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        <span className="flex-1">{quoteError}</span>
                       </div>
                     )}
 
@@ -1406,12 +1434,19 @@ export function PublicListingDetailClient({
                     {/* Reserve CTA */}
                     <button
                       type="button"
-                      disabled={isBookingSubmitting || !hasValidQuote}
+                      disabled={isBookingSubmitting}
                       onClick={handleReserve}
-                      className="w-full rounded-2xl border border-amber-400 bg-[#fee09a] py-3 text-sm font-bold text-zinc-900 transition-colors hover:bg-[#fbd775] disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`w-full rounded-2xl py-3 text-sm font-bold transition-all shadow-xs ${
+                        hasValidQuote && !isBookingSubmitting
+                          ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
+                          : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600 cursor-pointer"
+                      }`}
+                      aria-disabled={!hasValidQuote || isBookingSubmitting}
                     >
                       {isBookingSubmitting
                         ? "Confirming..."
+                        : isQuoteLoading
+                        ? "Checking availability..."
                         : listing.instantBook
                         ? "Reserve now"
                         : "Request to book"}

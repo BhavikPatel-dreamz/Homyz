@@ -81,7 +81,16 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
     }
   };
 
-  const navItems = [
+  type NavItem = {
+    href: string;
+    label: string;
+    requireHost?: boolean;
+    requireAdmin?: boolean;
+    separatorBefore?: boolean;
+    icon?: string;
+  };
+
+  const navItems: NavItem[] = [
     { href: "/profile", label: t("header_profile") || "Profile" },
     { href: "/bookings", label: t("header_trips") || "Trips" },
     { href: "/host/messages", label: t("header_messages") || "Messages" },
@@ -347,9 +356,11 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                                 : "text-zinc-800 hover:bg-zinc-50"
                                 }`}
                             >
-                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
-                                <Image src={item.icon} alt="" width={20} height={20} className="size-5 object-contain" />
-                              </span>
+                              {item.icon && (
+                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                                  <Image src={item.icon} alt="" width={20} height={20} className="size-5 object-contain" />
+                                </span>
+                              )}
                               {item.label}
                             </Link>
                           </React.Fragment>

@@ -543,7 +543,7 @@ async function listPendingForHost(actor: AuthUser): Promise<HostPendingBooking[]
     },
     orderBy: [{ startDate: "asc" }, { createdAt: "asc" }],
   });
-  return bookings.map((booking) => ({ ...booking, guest: booking.user }));
+  return bookings.map((booking: any) => ({ ...booking, guest: booking.user }));
 }
 
 /** Confirms every active pending booking belonging to the authenticated host. */
@@ -559,10 +559,10 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
   if (pendingBookings.length === 0) return { approved: 0 };
 
   const result = await prisma.booking.updateMany({
-    where: { id: { in: pendingBookings.map((booking) => booking.id) }, status: BookingStatus.PENDING },
+    where: { id: { in: pendingBookings.map((b: { id: string }) => b.id) }, status: BookingStatus.PENDING },
     data: { status: BookingStatus.CONFIRMED },
   });
-  await Promise.all(pendingBookings.map((booking) => invalidateBookingCache(booking.id, booking.userId, actor.id)));
+  await Promise.all(pendingBookings.map((b: { id: string; userId: string }) => invalidateBookingCache(b.id, b.userId, actor.id)));
   return { approved: result.count };
 }
 
