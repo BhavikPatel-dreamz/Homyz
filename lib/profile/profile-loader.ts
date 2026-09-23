@@ -1,6 +1,7 @@
 import { requirePageUser } from "@/lib/permissions/page-guards";
 import { userService } from "@/services/user.service";
 import { bookingService } from "@/services/booking.service";
+import { reviewService } from "@/services/review.service";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { prisma } from "@/lib/db/prisma";
@@ -11,6 +12,29 @@ export type FavoriteItem = {
   listingId: string;
   createdAt: string;
   listing: PublicListingDTO | any;
+};
+
+export type GuestAuthoredReviewDTO = {
+  id: string;
+  listingId: string;
+  bookingId: string | null;
+  rating: number;
+  comment: string;
+  topics: string[];
+  createdAt: string;
+  listing?: {
+    id: string;
+    title: string;
+    photos: string[];
+    city: string | null;
+    country: string | null;
+    customSlug: string | null;
+  } | null;
+  booking?: {
+    id: string;
+    startDate: string;
+    endDate: string;
+  } | null;
 };
 
 export async function loadProfilePageData() {
@@ -50,12 +74,20 @@ export async function loadProfilePageData() {
     console.error("Failed to load user favorites:", err);
   }
 
+  let initialReviews: GuestAuthoredReviewDTO[] = [];
+  try {
+    initialReviews = await reviewService.getGuestReviews(actor.id);
+  } catch (err) {
+    console.error("Failed to load user reviews:", err);
+  }
+
   return {
     user,
     tripPhotos,
     stats,
     initialReservations,
     initialFavorites,
+    initialReviews,
   };
 }
 

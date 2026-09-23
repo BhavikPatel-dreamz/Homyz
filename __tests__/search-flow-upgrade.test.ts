@@ -117,7 +117,7 @@ const searchMapCode = fs.readFileSync(searchMapPath, "utf-8");
 
 assert(searchMapCode.includes("leaflet"), "SearchMap must use Leaflet for dynamic mapping");
 assert(searchMapCode.includes("onBoundsChange"), "SearchMap must provide onBoundsChange callback");
-assert(searchMapCode.includes("SAR"), "SearchMap markers must display SAR price badges");
+assert(searchMapCode.includes("useCurrency") && searchMapCode.includes("formatPrice"), "SearchMap markers must use the selected display currency");
 console.log("✓ Search map component verified!");
 
 // --- [7] ListingCard Favorites Wiring Audit ---
@@ -150,4 +150,3 @@ console.log("✓ Property detail date prefill verified!");
 console.log("\n==================================================================");
 console.log("   ALL SEARCH FLOW TESTS PASSED (8/8)                             ");
 console.log("==================================================================\n");
-

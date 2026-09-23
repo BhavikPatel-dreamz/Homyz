@@ -177,8 +177,8 @@ async function runPropertyCardAudit() {
     "PropertyCard must format price with '/ night'"
   );
   assert(
-    propertyCardCode.includes("formatListingPrice"),
-    "PropertyCard must use formatListingPrice with dynamic currency"
+    propertyCardCode.includes("useCurrency") && propertyCardCode.includes("formatPrice"),
+    "PropertyCard must use the shared selected currency"
   );
   console.log("  ✓ Price per night support verified with dynamic currency (e.g. SAR, ₹, $)");
 
@@ -238,4 +238,3 @@ runPropertyCardAudit()
     console.error("Test execution failed:", err);
     process.exit(1);
   });
-

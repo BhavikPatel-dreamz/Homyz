@@ -88,6 +88,9 @@ async function updateProfile(
     if (pub.stampsVisible === undefined) {
       pub.stampsVisible = true;
     }
+    if (typeof pub.bio === "string") {
+      pub.bio = pub.bio.trim().slice(0, 500) || null;
+    }
     data.publicProfile = pub as Prisma.InputJsonValue;
   }
 

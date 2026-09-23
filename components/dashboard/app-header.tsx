@@ -11,6 +11,7 @@ import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 
 const BecomeHostModal = dynamic(
@@ -35,7 +36,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
+  const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -569,7 +570,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_currency")}</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
+                  {DISPLAY_CURRENCIES.map((curr) => (
                     <button
                       key={curr}
                       type="button"

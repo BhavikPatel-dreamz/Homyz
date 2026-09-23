@@ -26,6 +26,7 @@ export default async function ProfilePage({
       initialStats={data.stats}
       initialReservations={data.initialReservations}
       initialFavorites={data.initialFavorites}
+      initialReviews={data.initialReviews}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}

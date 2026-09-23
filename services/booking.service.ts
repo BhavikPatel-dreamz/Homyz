@@ -638,6 +638,63 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
   return toBookingDTO(cancelled);
 }
 
+async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<BookingDTO> {
+  const cancelled = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const booking = await tx.booking.findUnique({
+      where: { id },
+      include: { listing: true },
+    });
+    if (!booking) throw AppError.notFound("Booking not found");
+    assertOwnership(actor, booking.userId);
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw AppError.conflict("This reservation has already been cancelled.");
+    }
+
+    const now = new Date();
+    if (new Date(booking.startDate) <= now) {
+      throw AppError.badRequest("Reservations cannot be cancelled after the check-in date.");
+    }
+
+    const originalSnapshot =
+      booking.priceBreakdown &&
+      typeof booking.priceBreakdown === "object" &&
+      !Array.isArray(booking.priceBreakdown)
+        ? (booking.priceBreakdown as Record<string, unknown>)
+        : {};
+    const payoutBreakdown =
+      originalSnapshot.payoutBreakdown &&
+      typeof originalSnapshot.payoutBreakdown === "object"
+        ? (originalSnapshot.payoutBreakdown as Record<string, unknown>)
+        : {};
+    const hostPayoutRetained =
+      typeof payoutBreakdown.netHostPayout === "number"
+        ? payoutBreakdown.netHostPayout
+        : 0;
+
+    const priceBreakdown = {
+      ...originalSnapshot,
+      cancellation: {
+        cancelledAt: now.toISOString(),
+        cancelledBy: "GUEST",
+        isNonRefundable: Boolean(booking.isNonRefundable),
+        policy: booking.cancellationPolicy || "FLEXIBLE",
+        guestRefundAmount: booking.isNonRefundable ? 0 : (booking.totalPrice ?? 0),
+        hostPayoutRetained: booking.isNonRefundable ? hostPayoutRetained : 0,
+      },
+    } as Prisma.InputJsonValue;
+
+    const updated = await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CANCELLED, priceBreakdown },
+    });
+    return { ...updated, listing: booking.listing };
+  });
+
+  await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+  return toBookingDTO(cancelled);
+}
+
 async function listForAdminDashboard() {
   const [bookings, totalCount, stats] = await Promise.all([
     prisma.booking.findMany({
@@ -674,5 +731,6 @@ export const bookingService = {
   getQuote: getBookingQuote,
   getBookingQuote,
   cancelNonRefundableByGuest,
+  cancelBookingByGuest,
   listForAdminDashboard,
 };

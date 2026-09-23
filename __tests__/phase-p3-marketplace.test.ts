@@ -248,7 +248,7 @@ async function runPhaseP3Tests() {
 
   assert(cardSrc.includes("href={`/listings/${listing.id}`}"), "ListingCard links to /listings/${listing.id}");
   assert(cardSrc.includes("typeof listing.rating === \"number\" && listing.rating > 0"), "ListingCard hides rating if not genuine");
-  assert(cardSrc.includes("SAR {formattedPrice}"), "ListingCard renders price in SAR");
+  assert(cardSrc.includes("useCurrency") && cardSrc.includes("formatPrice"), "ListingCard renders prices in the selected currency");
   assert(!cardSrc.includes("4.8 ★"), "ListingCard contains zero manufactured fake ratings");
 
   // ─────────────────────────────────────────────────────────────

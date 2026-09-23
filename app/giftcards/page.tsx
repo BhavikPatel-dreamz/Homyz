@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui/container";
+import { CurrencyPrice } from "@/components/ui/currency-price";
 
 export const metadata = {
   title: "Gift Cards - Homyz",
@@ -36,7 +37,7 @@ export default function GiftCardsPage() {
                     type="button"
                     className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-bold text-zinc-900 hover:bg-amber-100/70 transition-colors shadow-2xs"
                   >
-                    SAR {amount.toLocaleString()}
+                    <CurrencyPrice amountMinorUnits={amount * 100} sourceCurrency="SAR" />
                   </button>
                 ))}
               </div>
@@ -59,4 +60,3 @@ export default function GiftCardsPage() {
     </div>
   );
 }
-

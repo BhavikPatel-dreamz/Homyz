@@ -10,6 +10,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatAddressCountry } from "@/lib/location/address-countries";
+import { getCurrencyForCountry } from "@/lib/currency";
 
 import { PropertyCategory, PlaceTypeOption, LocationCoords, LocationDetails } from "./onboarding/types";
 import { StepOverview } from "./onboarding/step-overview";
@@ -218,8 +219,9 @@ export function NewListingGetStarted({
   const [beds, setBeds] = useState<number>(1);
   const [bathrooms, setBathrooms] = useState<number>(1);
 
-  // Listing prices are stored and settled in Saudi riyals throughout Homyz.
-  const currencySymbol = "SAR";
+  // Price input stays in the listing's source currency; traveller displays use
+  // the header preference through the shared currency provider.
+  const currencySymbol = getCurrencyForCountry(country);
 
   // Sync state step with URL search parameters
   const updateUrlForStep = useCallback((stepIdx: number, activeDraftId?: string | null, view?: "form" | "pin") => {

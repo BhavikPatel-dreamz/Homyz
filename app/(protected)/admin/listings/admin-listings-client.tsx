@@ -4,7 +4,8 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { formatSarFromHalalas } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { toast } from "@/components/ui/toast";
 import {
@@ -114,6 +115,7 @@ export function AdminListingsClient({
   initialPage?: number;
   initialPageSize?: number;
 }) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -678,7 +680,7 @@ export function AdminListingsClient({
       `"${l.id}"`,
       `"${l.title.replace(/"/g, '""')}"`,
       `"${l.host.name || ""}"`,
-      `"${formatSarFromHalalas(l.price)}"`,
+      `"${formatPrice(l.price, getCurrencyForCountry(l.country))}"`,
       `"${l.published ? "Published" : l.status}"`,
       `"${l.isFeatured ? "Yes" : "No"}"`,
       `"${l.isPaused ? "Yes" : "No"}"`,
@@ -949,7 +951,7 @@ export function AdminListingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono text-xs">
-                        {formatSarFromHalalas(item.price)}
+                        {formatPrice(item.price, getCurrencyForCountry(item.country))}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -1055,7 +1057,7 @@ export function AdminListingsClient({
               </div>
 
               <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)] font-mono font-semibold">
-                <span>{formatSarFromHalalas(item.price)} / night</span>
+                <span>{formatPrice(item.price, getCurrencyForCountry(item.country))} / night</span>
                 <Link
                   href={`/admin/listings/${item.id}`}
                   onClick={(e) => e.stopPropagation()}
@@ -1212,7 +1214,7 @@ export function AdminListingsClient({
                     <p><strong className="text-muted-foreground">Property Type:</strong> {selectedListing.propertyType} ({selectedListing.listingType})</p>
                     <p><strong className="text-muted-foreground">Capacity:</strong> {selectedListing.guests} Guests • {selectedListing.bedrooms} Bed • {selectedListing.bathrooms} Bath</p>
                     <p><strong className="text-muted-foreground">Photos Uploaded:</strong> {selectedListing.photos.length} photos ({selectedListing.photos.length >= 5 ? "✓ Meets minimum" : "⚠️ Needs 5 photos"})</p>
-                    <p><strong className="text-muted-foreground">Pricing:</strong> {formatSarFromHalalas(selectedListing.price)} / night</p>
+                    <p><strong className="text-muted-foreground">Pricing:</strong> {formatPrice(selectedListing.price, getCurrencyForCountry(selectedListing.country))} / night</p>
                   </div>
                 </div>
               </div>
@@ -1648,7 +1650,7 @@ export function AdminListingsClient({
               <div className="space-y-4 animate-in fade-in text-xs">
                 <div className="grid gap-3 sm:grid-cols-4">
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Nightly Price (SAR) *</label>
+                    <label className="block font-semibold text-muted-foreground">Nightly Price ({getCurrencyForCountry(selectedListing.country)}) *</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1660,7 +1662,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Weekend Price (SAR)</label>
+                    <label className="block font-semibold text-muted-foreground">Weekend Price ({getCurrencyForCountry(selectedListing.country)})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1672,7 +1674,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Cleaning Fee (SAR)</label>
+                    <label className="block font-semibold text-muted-foreground">Cleaning Fee ({getCurrencyForCountry(selectedListing.country)})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1684,7 +1686,7 @@ export function AdminListingsClient({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground">Security Deposit (SAR)</label>
+                    <label className="block font-semibold text-muted-foreground">Security Deposit ({getCurrencyForCountry(selectedListing.country)})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1723,7 +1725,7 @@ export function AdminListingsClient({
                   </div>
                   <div className="flex items-center justify-between text-xs border-t border-[var(--border-subtle)] pt-1">
                     <span>Valid Nightly Rate & Location:</span>
-                    <span className="font-semibold text-emerald-600">✓ PASSED (SAR {editPrice}/night, {selectedListing.city})</span>
+                    <span className="font-semibold text-emerald-600">✓ PASSED ({getCurrencyForCountry(selectedListing.country)} {editPrice}/night, {selectedListing.city})</span>
                   </div>
                 </div>
 

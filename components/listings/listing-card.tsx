@@ -5,7 +5,8 @@ import useWishlist from "@/hooks/useWishlist";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
@@ -112,6 +113,7 @@ export function ListingCard({
   checkOut,
   favoriteVariant = "heart",
 }: ListingCardProps) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
@@ -207,9 +209,9 @@ export function ListingCard({
   const activePct = weeklyPct ?? monthlyPct ?? null;
   const discountedPrice = activePct != null ? basePrice * (1 - activePct / 100) : null;
 
-  const formattedBasePrice = formatListingPrice(basePrice, currency);
+  const formattedBasePrice = formatPrice(basePrice, currency);
   const formattedDiscountedPrice =
-    discountedPrice != null ? formatListingPrice(discountedPrice, currency) : null;
+    discountedPrice != null ? formatPrice(discountedPrice, currency) : null;
 
   const discountLabel =
     weeklyPct != null ? "Weekly discount" : monthlyPct != null ? "Monthly discount" : null;

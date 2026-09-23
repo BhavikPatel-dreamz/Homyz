@@ -11,6 +11,7 @@ import { Container } from "@/components/ui/container";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { PublicListingDTO } from "@/services/mappers";
 import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 
 interface BookingCheckoutClientProps {
   listing: PublicListingDTO & {
@@ -101,6 +102,7 @@ export function BookingCheckoutClient({
   initialPets = 0,
   initialNonRefundable = false,
 }: BookingCheckoutClientProps) {
+  const { currency: displayCurrency, formatPrice } = useCurrency();
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -156,15 +158,11 @@ export function BookingCheckoutClient({
   const [quoteError, setQuoteError] = useState<string | null>(null);
 
   const currencyCode = getCurrencyForCountry(listing.country);
-  const currencySymbol = currencyCode === "SAR" ? "SR" : currencyCode;
+  const currencySymbol = displayCurrency;
 
   // Format currency helpers
   const formatMoney = (minorAmount: number, withDecimals = false) => {
-    const value = minorAmount / 100;
-    return `${currencySymbol} ${value.toLocaleString("en-US", {
-      minimumFractionDigits: withDecimals ? 2 : 0,
-      maximumFractionDigits: 2,
-    })}`;
+    return formatPrice(minorAmount, currencyCode, withDecimals ? 2 : 0);
   };
 
   // Fetch Authoritative Live Quote whenever dates or guests change
@@ -1371,4 +1369,3 @@ export function BookingCheckoutClient({
     </div>
   );
 }
-

@@ -14,7 +14,8 @@ import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/ame
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
@@ -348,6 +349,7 @@ export function PublicListingDetailClient({
   searchCheckOut,
   searchGuests,
 }: PublicListingDetailClientProps) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const wishlist = useWishlist();
   void guidebooks; // The section is intentionally paused; retain the existing server contract.
@@ -635,7 +637,7 @@ export function PublicListingDetailClient({
 
   // Format price
   const displayPrice = typeof listing.price === "number"
-    ? formatListingPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
+    ? formatPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
     : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
   const minimumNights = Math.max(1, listing.minNights || 1);
@@ -1773,10 +1775,10 @@ export function PublicListingDetailClient({
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
                         <div className="flex items-center justify-between text-zinc-600">
                           <span>
-                            {formatListingPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
+                            {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
                             {quote.nights === 1 ? "night" : "nights"}
                           </span>
-                          <span>{formatListingPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                          <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                         </div>
 
                         {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
@@ -1788,35 +1790,35 @@ export function PublicListingDetailClient({
                         {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
                           <div className="flex items-center justify-between text-zinc-500 text-[11px]">
                             <span>Includes {quote.weekendNights} weekend nights</span>
-                            <span>{formatListingPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
+                            <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                           </div>
                         )}
 
                         {quote.cleaningFee > 0 && (
                           <div className="flex items-center justify-between text-zinc-600">
                             <span>Cleaning fee</span>
-                            <span>{formatListingPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                            <span>{formatPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
 
                         {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                           <div className="flex items-center justify-between text-zinc-600">
                             <span>Extra guest fee</span>
-                            <span>{formatListingPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                            <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
 
                         {quote.appliedDiscount && (
                           <div className="flex items-center justify-between text-emerald-700 font-medium">
                             <span>{quote.appliedDiscount.name}</span>
-                            <span>−{formatListingPrice(quote.appliedDiscount.amount, currencyCode)}</span>
+                            <span>−{formatPrice(quote.appliedDiscount.amount, currencyCode)}</span>
                           </div>
                         )}
 
                         {quote.nonRefundableDiscount && (
                           <div className="flex items-center justify-between text-emerald-700 font-medium">
                             <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
-                            <span>−{formatListingPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                            <span>−{formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
                           </div>
                         )}
 
@@ -1832,7 +1834,7 @@ export function PublicListingDetailClient({
                                       </span>
                                     )}
                                   </span>
-                                  <span className="font-medium">{formatListingPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-[11px] text-zinc-500">
                                 {quote.taxes.map((tax, idx) => (
@@ -1842,7 +1844,7 @@ export function PublicListingDetailClient({
                                       {tax.rate ? ` (${tax.rate}%)` : ""}
                                       {tax.isExempt ? ` • ${tax.exemptionReason || "Exempt"}` : ""}
                                     </span>
-                                      <span>{tax.isExempt ? formatListingPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatListingPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                      <span>{tax.isExempt ? formatPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                 ))}
                               </div>
@@ -1850,13 +1852,13 @@ export function PublicListingDetailClient({
 
                             <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                               <span>Total</span>
-                              <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
                           </>
                         ) : (
                           <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                             <span>Total</span>
-                            <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                            <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                           </div>
                         )}
                       </div>
@@ -1971,7 +1973,7 @@ export function PublicListingDetailClient({
             <div className="flex items-baseline gap-1 truncate">
               <span className="text-base font-bold text-zinc-900 sm:text-lg">
                 {quote?.guestTotal || quote?.totalPrice
-                  ? formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
+                  ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-zinc-500">

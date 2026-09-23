@@ -29,6 +29,8 @@ export function toReservationCardData(booking: BookingDTO, guestName: string): R
 
   return {
     id: booking.id,
+    listingId: booking.listingId,
+    listingSlug: listing?.customSlug || null,
     propertyName: listing?.title || "Property stay",
     location: location || "Location unavailable",
     propertyImage: listing?.photos[0] || null,
@@ -41,5 +43,10 @@ export function toReservationCardData(booking: BookingDTO, guestName: string): R
     checkOutTime: listing?.checkOutTime || undefined,
     actionType: getActionType(booking.startDate, booking.endDate),
     isToday: isStayToday(booking.startDate, booking.endDate),
+    cancellationPolicy: booking.cancellationPolicy,
+    isNonRefundable: Boolean(booking.isNonRefundable),
+    totalPrice: booking.totalPrice,
+    currency: booking.currency,
+    createdAt: booking.createdAt,
   };
 }

@@ -62,7 +62,7 @@ export function CreateListingForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="price" className={labelClass}>
-          Price per night (SAR, in halalas)
+          Price per night (minor currency units)
         </label>
         <input
           id="price"

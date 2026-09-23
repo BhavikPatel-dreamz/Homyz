@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { AdminPagination } from "./admin-pagination";
 import type { GuestAnalyticsData, GuestTableItem } from "@/services/admin.service";
-import { formatSarFromHalalas } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 
 export interface GuestDashboardProps {
   analytics: GuestAnalyticsData;
@@ -41,6 +41,7 @@ export function GuestManagementDashboard({
   initialPage = 1,
   initialPageSize = 10,
 }: GuestDashboardProps) {
+  const { currency, formatPrice } = useCurrency();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -229,7 +230,7 @@ export function GuestManagementDashboard({
   // Export CSV
   const exportCSV = () => {
     if (filteredGuests.length === 0) return;
-    const headers = ["ID", "Name", "Email", "Phone", "Status", "Bookings", "Total Spending (SAR)", "Joined Date"];
+    const headers = ["ID", "Name", "Email", "Phone", "Status", "Bookings", `Total Spending (${currency})`, "Joined Date"];
     const rows = filteredGuests.map((g) => [
       g.id,
       `"${(g.name || "Unnamed Guest").replace(/"/g, '""')}"`,
@@ -237,7 +238,7 @@ export function GuestManagementDashboard({
       `"${(g.phone || "").replace(/"/g, '""')}"`,
       g.status,
       g.bookingsCount,
-      (g.totalSpending / 100).toFixed(2),
+      `"${formatPrice(g.totalSpending, "SAR", 2)}"`,
       new Date(g.createdAt).toISOString().split("T")[0],
     ]);
     const csvContent =
@@ -356,7 +357,7 @@ export function GuestManagementDashboard({
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 text-left shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Spending</p>
           <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">
-            {formatSarFromHalalas(guestMetrics.totalSpending, 0)}
+            {formatPrice(guestMetrics.totalSpending, "SAR")}
           </p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">Confirmed booking charges</p>
         </div>
@@ -516,7 +517,7 @@ export function GuestManagementDashboard({
 
                     {/* Total Spending */}
                     <td className="py-3.5 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
-                      {formatSarFromHalalas(guest.totalSpending)}
+                      {formatPrice(guest.totalSpending, "SAR", 2)}
                     </td>
 
                     {/* Joined Date */}
@@ -589,7 +590,7 @@ export function GuestManagementDashboard({
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] text-[11px] block">Spending</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatSarFromHalalas(guest.totalSpending)}</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatPrice(guest.totalSpending, "SAR", 2)}</span>
                 </div>
                 <div>
                   <span className="text-[var(--muted-foreground)] text-[11px] block">Joined</span>

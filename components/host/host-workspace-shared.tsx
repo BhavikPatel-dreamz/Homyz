@@ -4,6 +4,8 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
 import type { ListingDTO } from "@/services/mappers";
+import { useCurrency } from "@/lib/currency-context";
+import { getCurrencyForCountry } from "@/lib/currency";
 
 export type HostReservation = {
   id: string;
@@ -21,8 +23,6 @@ export type HostWorkspaceProps = {
 };
 export const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-export const money = (price: number) =>
-  `SAR ${new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(price / 100)}`;
 export const shortDate = (date: string) =>
   new Date(date).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -167,6 +167,8 @@ export function ReservationDetails({
   onClose: () => void;
   onMoney: () => void;
 }) {
+  const { currency, formatPrice } = useCurrency();
+  const sourceCurrency = getCurrencyForCountry(listing.country);
   const start = new Date(booking.startDate);
   const end = new Date(booking.endDate);
   const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
@@ -299,26 +301,26 @@ export function ReservationDetails({
           <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">{money(nightlyRate)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{money(roomFee)}</dd>
+              <dt className="text-zinc-500 dark:text-zinc-400">{formatPrice(nightlyRate, sourceCurrency, 2)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
+              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{money(cleaningFee)}</dd>
+              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{money(hostServiceFee)}</dd>
+              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
             </div>
             {taxes > 0 && (
               <div className="flex justify-between">
                 <dt className="text-zinc-500 dark:text-zinc-400">Taxes</dt>
-                <dd className="text-zinc-800 dark:text-zinc-200">{money(taxes)}</dd>
+                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(taxes, sourceCurrency, 2)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900 dark:text-zinc-100">Total (SAR)</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{money(guestTotal)}</dd>
+              <dt className="text-zinc-900 dark:text-zinc-100">Total ({currency})</dt>
+              <dd className="text-zinc-900 dark:text-zinc-100">{formatPrice(guestTotal, sourceCurrency, 2)}</dd>
             </div>
           </dl>
         </div>
@@ -329,21 +331,21 @@ export function ReservationDetails({
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
               <dt className="text-zinc-500 dark:text-zinc-400">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{money(roomFee)}</dd>
+              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
             {cleaningFee > 0 && (
               <div className="flex justify-between">
                 <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
-                <dd className="text-zinc-800 dark:text-zinc-200">{money(cleaningFee)}</dd>
+                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
               </div>
             )}
             <div className="flex justify-between">
               <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-rose-600 dark:text-rose-400">- {money(hostServiceFee)}</dd>
+              <dd className="text-rose-600 dark:text-rose-400">- {formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900 dark:text-zinc-100">Total payout (SAR)</dt>
-              <dd className="text-emerald-700 dark:text-emerald-400">{money(hostPayout)}</dd>
+              <dt className="text-zinc-900 dark:text-zinc-100">Total payout ({currency})</dt>
+              <dd className="text-emerald-700 dark:text-emerald-400">{formatPrice(hostPayout, sourceCurrency, 2)}</dd>
             </div>
           </dl>
         </div>

@@ -23,6 +23,7 @@ import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { getCurrencyForCountry } from "@/lib/currency";
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
@@ -1116,7 +1117,7 @@ export function HostListingsWorkspace({
                     <h4 className="font-semibold text-muted-foreground mb-3">Pricing & Fees</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate (SAR) *</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ({getCurrencyForCountry(formData.country)}) *</label>
                         <input
                           type="number"
                           min={1}
@@ -1127,7 +1128,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Weekend Rate (SAR)</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Weekend Rate ({getCurrencyForCountry(formData.country)})</label>
                         <input
                           type="number"
                           min={0}
@@ -1137,7 +1138,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cleaning Fee (SAR)</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cleaning Fee ({getCurrencyForCountry(formData.country)})</label>
                         <input
                           type="number"
                           min={0}

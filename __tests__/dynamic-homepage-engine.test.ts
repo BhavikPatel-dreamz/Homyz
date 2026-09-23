@@ -159,7 +159,7 @@ async function runTestSuite() {
   const propertyCardCode = fs.readFileSync(propertyCardPath, "utf-8");
   assert(propertyCardCode.includes("alternativeDates"), "PropertyCard must support alternativeDates prop");
   assert(propertyCardCode.includes("guest_favorite"), "PropertyCard must support guest_favorite badge");
-  assert(propertyCardCode.includes("formatListingPrice"), "PropertyCard must use formatListingPrice");
+  assert(propertyCardCode.includes("useCurrency") && propertyCardCode.includes("formatPrice"), "PropertyCard must use the selected display currency");
   console.log("  ✓ Reusable PropertyCard verified with alternativeDates, guest_favorite, and dynamic currency");
 
   const homeViewPath = path.resolve(__dirname, "../components/home/home-view.tsx");
@@ -347,4 +347,3 @@ runTestSuite()
     console.error("Test execution failed:", err);
     process.exit(1);
   });
-

@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { requirePageUser } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { reviewService } from "@/services/review.service";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { CurrencyPrice } from "@/components/ui/currency-price";
+import { toReservationCardData } from "@/lib/profile/reservation-data";
+import { BookingDetailsActions } from "@/components/bookings/booking-details-actions";
 
 function formatDate(value: Date | string): string {
   const date = new Date(value);
@@ -51,6 +54,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
   const total = booking.totalPrice ?? amount(snapshot.guestTotal) ?? amount(snapshot.totalPrice) ?? Math.max(0, nightlySubtotal - discountAmount + cleaningFee + taxTotal);
   const location = [listing?.city, listing?.country].filter((value): value is string => Boolean(value?.trim())).join(", ");
   const bookingCode = booking.id.slice(-8).toUpperCase();
+  const reservationData = toReservationCardData(booking, user.name || user.email || "Guest");
 
   return (
     <div className="mx-auto w-full max-w-5xl pb-12 text-[#1F1F1F]">
@@ -90,17 +94,19 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
               <div><dt className="text-sm text-zinc-500">Cancellation policy</dt><dd className="mt-1 font-medium">{booking.isNonRefundable ? "Non-refundable" : booking.cancellationPolicy || "Policy details unavailable"}</dd></div>
             </dl>
           </section>
+
+          <BookingDetailsActions booking={reservationData} />
         </div>
 
         <aside className="h-fit rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm lg:sticky lg:top-28" aria-labelledby="price-heading">
           {listing?.photos[0] && <img src={listing.photos[0]} alt={listing.title} className="mb-5 aspect-[16/9] w-full rounded-2xl object-cover" />}
           <h2 id="price-heading" className="text-lg font-semibold">Price details</h2>
           <dl className="mt-5 space-y-3 text-sm text-zinc-700">
-            <div className="flex justify-between gap-4"><dt>{formatListingPrice(booking.nightlyPrice || listing?.price || 0, currency)} × {nights} {nights === 1 ? "night" : "nights"}</dt><dd>{formatListingPrice(nightlySubtotal, currency)}</dd></div>
-            {discountAmount > 0 && <div className="flex justify-between gap-4 text-emerald-700"><dt>Discount</dt><dd>-{formatListingPrice(discountAmount, currency)}</dd></div>}
-            {cleaningFee > 0 && <div className="flex justify-between gap-4"><dt>Cleaning fee</dt><dd>{formatListingPrice(cleaningFee, currency)}</dd></div>}
-            {taxTotal > 0 && <div className="flex justify-between gap-4"><dt>Taxes</dt><dd>{formatListingPrice(taxTotal, currency)}</dd></div>}
-            <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-zinc-900"><dt>Total paid</dt><dd>{formatListingPrice(total, currency)}</dd></div>
+            <div className="flex justify-between gap-4"><dt><CurrencyPrice amountMinorUnits={booking.nightlyPrice || listing?.price || 0} sourceCurrency={currency} /> × {nights} {nights === 1 ? "night" : "nights"}</dt><dd><CurrencyPrice amountMinorUnits={nightlySubtotal} sourceCurrency={currency} /></dd></div>
+            {discountAmount > 0 && <div className="flex justify-between gap-4 text-emerald-700"><dt>Discount</dt><dd>-<CurrencyPrice amountMinorUnits={discountAmount} sourceCurrency={currency} /></dd></div>}
+            {cleaningFee > 0 && <div className="flex justify-between gap-4"><dt>Cleaning fee</dt><dd><CurrencyPrice amountMinorUnits={cleaningFee} sourceCurrency={currency} /></dd></div>}
+            {taxTotal > 0 && <div className="flex justify-between gap-4"><dt>Taxes</dt><dd><CurrencyPrice amountMinorUnits={taxTotal} sourceCurrency={currency} /></dd></div>}
+            <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-zinc-900"><dt>Total paid</dt><dd><CurrencyPrice amountMinorUnits={total} sourceCurrency={currency} /></dd></div>
           </dl>
           {canReview ? <Link href={`/bookings/${booking.id}/review`} className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">Write a review</Link> : hasReview ? <p className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-800">Review submitted</p> : <div className="mt-6"><button type="button" disabled aria-disabled="true" className="inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-xl bg-zinc-200 px-5 text-sm font-semibold text-zinc-500">Write a review</button><p className="mt-2 text-center text-xs leading-5 text-zinc-500">{reviewUnavailableMessage}</p></div>}
         </aside>

@@ -4,7 +4,8 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { userService } from "@/services/user.service";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { CurrencyPrice } from "@/components/ui/currency-price";
 
 function relativeDate(date: Date): string {
   const days = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
@@ -94,7 +95,7 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
                   </div>
                   <p className="mt-2 truncate text-xs font-semibold text-zinc-900">{listing.title}</p>
                   <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-zinc-500">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
-                  <p className="mt-1 text-[11px] text-zinc-700">{formatListingPrice(listing.price, getCurrencyForCountry(listing.country))} / night</p>
+                  <p className="mt-1 text-[11px] text-zinc-700"><CurrencyPrice amountMinorUnits={listing.price} sourceCurrency={getCurrencyForCountry(listing.country)} /> / night</p>
                 </Link>)}
               </div>
             </section>}

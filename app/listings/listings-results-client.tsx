@@ -11,7 +11,8 @@ import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
-import { formatListingPrice, getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
+import { getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 import { ListingFilterModal, type ListingFilterValues } from "@/components/listings/listing-filter-modal";
@@ -145,8 +146,9 @@ function SelectedPreviewCard({
   listing: PublicListingCardDTO;
   onClose: () => void;
 }) {
+  const { formatPrice } = useCurrency();
   const currency = getCurrencyForCountry(listing.country);
-  const formattedPrice = formatListingPrice(listing.price, currency);
+  const formattedPrice = formatPrice(listing.price, currency);
 
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
@@ -248,6 +250,7 @@ export function ListingsResultsClient({
   hasError = false,
   source,
 }: ListingsResultsClientProps) {
+  const { currency: selectedCurrency } = useCurrency();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -531,8 +534,7 @@ export function ListingsResultsClient({
     currentFilters.pets && currentFilters.pets > 0,
   ].filter(Boolean).length;
 
-  const activeCurrency = allListings[0]?.country ? getCurrencyForCountry(allListings[0].country) : "SAR";
-  const currencySymbol = getCurrencySymbol(activeCurrency);
+  const currencySymbol = getCurrencySymbol(selectedCurrency);
   const sliderMin = 0;
   const sliderMax = priceRange?.max ? Math.ceil(priceRange.max / 100) : 5000;
 
