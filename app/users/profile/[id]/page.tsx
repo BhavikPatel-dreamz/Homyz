@@ -30,7 +30,7 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
   const hostBio = typeof profileData.bio === "string" ? profileData.bio.trim() : "";
   const work = typeof profileData.myWork === "string" ? profileData.myWork.trim() : "";
   const languages = Array.isArray(profileData.languages)
-    ? profileData.languages.filter((value): value is string => typeof value === "string" && value.trim())
+    ? profileData.languages.filter((value): value is string => typeof value === "string" && Boolean(value.trim()))
     : typeof profileData.languages === "string" && profileData.languages.trim() ? [profileData.languages.trim()] : [];
 
   return (
@@ -49,7 +49,7 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
                     <div aria-hidden="true" className="flex size-20 items-center justify-center rounded-full bg-amber-100 text-2xl font-semibold text-amber-900">{hostName[0]?.toUpperCase()}</div>
                   )}
                   <div className="min-w-0 flex-1 divide-y divide-zinc-200">
-                    {stats.reviewCount > 0 && <div className="pb-2 text-[10px] text-zinc-500"><span className="block text-base font-semibold leading-5 text-zinc-900">{stats.reviewCount}</span>{stats.reviewCount === 1 ? "Review" : "Reviews"}</div>}
+                    {stats.reviewCount > 0 ? <div className="pb-2 text-[10px] text-zinc-500"><span className="block text-base font-semibold leading-5 text-zinc-900">{stats.reviewCount}</span>{stats.reviewCount === 1 ? "Review" : "Reviews"}</div> : <div className="pb-2 text-[10px] text-zinc-500"><span className="block text-base font-semibold leading-5 text-zinc-900">New</span>Host</div>}
                     {stats.averageRating !== null && <div className="py-2 text-[10px] text-zinc-500"><span className="flex items-center gap-1 text-base font-semibold leading-5 text-zinc-900">{stats.averageRating.toFixed(2)} <span aria-hidden="true" className="text-amber-500">★</span></span>Rating</div>}
                     <div className={`${stats.reviewCount > 0 || stats.averageRating !== null ? "pt-2" : ""} text-[10px] text-zinc-500`}><span className="block text-base font-semibold leading-5 text-zinc-900">{yearsOnHomyz(host.createdAt)}</span>on Homyz</div>
                   </div>
@@ -68,19 +68,22 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
               </div>
             </section>
 
-            {reviews.length > 0 && <section className="border-b border-zinc-200 py-9" aria-labelledby="host-reviews-heading">
+            <section className="border-b border-zinc-200 py-9" aria-labelledby="host-reviews-heading">
               <h2 id="host-reviews-heading" className="text-lg font-semibold">{hostName}&apos;s reviews</h2>
-              <div className="mt-6 grid gap-5 md:grid-cols-3">
-                {reviews.map((review) => <article key={review.id} className="min-w-0 border-zinc-200 md:border-r md:pr-5 last:border-r-0">
-                  <div className="flex items-center gap-2.5">
-                    {review.author.image ? <img src={review.author.image} alt="" loading="lazy" className="size-9 rounded-full object-cover" /> : <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">{(review.author.name || "G")[0]?.toUpperCase()}</span>}
-                    <div><p className="text-xs font-semibold text-zinc-900">{review.author.name || "Guest"}</p><p className="text-[10px] text-zinc-500">{relativeDate(review.createdAt)}</p></div>
-                  </div>
-                  <p className="mt-3 text-xs text-zinc-800"><span aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}<span className="text-zinc-300">{"★".repeat(5 - review.rating)}</span></span></p>
-                  <p className="mt-2 line-clamp-3 text-sm leading-5 text-zinc-700">{review.comment}</p>
-                </article>)}
-              </div>
-            </section>}
+              {reviews.length > 0 ? <>
+                <div className="mt-6 grid gap-5 md:grid-cols-3">
+                  {reviews.map((review) => <article key={review.id} className="min-w-0 border-zinc-200 md:border-r md:pr-5 last:border-r-0">
+                    <div className="flex items-center gap-2.5">
+                      {review.author.image ? <img src={review.author.image} alt="" loading="lazy" className="size-9 rounded-full object-cover" /> : <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">{(review.author.name || "G")[0]?.toUpperCase()}</span>}
+                      <div><p className="text-xs font-semibold text-zinc-900">{review.author.name || "Guest"}</p><p className="text-[10px] text-zinc-500">{relativeDate(review.createdAt)}</p></div>
+                    </div>
+                    <p className="mt-3 text-xs text-zinc-800"><span aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}<span className="text-zinc-300">{"★".repeat(5 - review.rating)}</span></span></p>
+                    <p className="mt-2 line-clamp-3 text-sm leading-5 text-zinc-700">{review.comment}</p>
+                  </article>)}
+                </div>
+                {stats.reviewCount > reviews.length && <Link href={`/users/profile/${host.id}/reviews`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-zinc-100 px-5 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">Show more reviews</Link>}
+              </> : <p className="mt-4 text-sm text-zinc-600">No published reviews yet.</p>}
+            </section>
 
             {listings.length > 0 && <section className="py-9" aria-labelledby="host-listings-heading">
               <h2 id="host-listings-heading" className="text-lg font-semibold">{hostName}&apos;s listings</h2>

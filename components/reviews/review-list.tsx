@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.service";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ReviewCard } from "./review-card";
 
 interface ReviewListProps {
@@ -50,6 +51,8 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isReviewInfoOpen, setIsReviewInfoOpen] = useState(false);
+  const reviewInfoCloseRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => { callbackRef.current = onStatsChange; }, [onStatsChange]);
 
@@ -70,6 +73,17 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
     fetchStats();
     return () => { ignore = true; };
   }, [listingId]);
+
+  useEffect(() => {
+    if (!isReviewInfoOpen) return;
+
+    reviewInfoCloseRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsReviewInfoOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [isReviewInfoOpen]);
 
   useEffect(() => {
     let ignore = false;
@@ -152,10 +166,50 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-5">
           {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-zinc-400 px-5 py-2.5 text-sm font-semibold transition-colors hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? "Loading…" : `Show all ${stats.totalCount} reviews`}</button> : null}
-          <span className="text-xs text-zinc-600 underline underline-offset-4">How reviews work</span>
+          <button
+            type="button"
+            onClick={() => setIsReviewInfoOpen(true)}
+            className="text-xs text-zinc-600 underline underline-offset-4 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
+          >
+            How reviews work
+          </button>
         </div>
         {error && reviews.length > 0 ? <p className="mt-4 text-sm text-amber-800">{error}</p> : null}
       </div>
+
+      {isReviewInfoOpen && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-info-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/35 p-4 backdrop-blur-xs"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsReviewInfoOpen(false);
+          }}
+        >
+          <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-[360px] flex-col rounded-[26px] bg-white px-4 py-5 shadow-2xl sm:max-w-[430px] sm:px-6 sm:py-7">
+            <div className="flex items-start justify-between gap-4">
+              <h3 id="review-info-modal-title" className="pt-0.5 text-lg font-semibold tracking-tight text-zinc-900">How reviews work</h3>
+              <button
+                ref={reviewInfoCloseRef}
+                type="button"
+                onClick={() => setIsReviewInfoOpen(false)}
+                aria-label="Close review information"
+                className="-mr-1 -mt-1 flex size-8 shrink-0 items-center justify-center rounded-full text-xl font-light leading-none text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4 overflow-y-auto pr-1 text-[13px] leading-[1.45] text-zinc-800">
+              <p>Reviews from past guests help our community learn more about each home. By default, reviews are sorted by relevance. Relevance is based on recency, length and information that you provided to us, such as your booking search, your country and your language preferences.</p>
+              <p>Only the guest who made the reservation can leave a review, and Homyz only moderates reviews flagged for not following our policies.</p>
+              <p>To be eligible for a percentile ranking or guest favourite label, listings need at least 5 reviews in the last 4 years. Criteria are subject to change.</p>
+              <a href="/help" className="inline-block font-medium underline underline-offset-2 hover:text-zinc-950">Learn more in our Help Centre</a>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
     </section>
   );
 }

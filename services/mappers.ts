@@ -413,10 +413,15 @@ export function toBookingDTO(
     listing: b.listing
       ? {
           id: b.listing.id,
+          customSlug: b.listing.customSlug,
           title: b.listing.title,
           photos: b.listing.photos,
           description: b.listing.description,
           price: b.listing.price,
+          city: b.listing.city,
+          country: b.listing.country,
+          checkInStart: b.listing.checkInStart,
+          checkOutTime: b.listing.checkOutTime,
         }
       : null,
     user: b.user

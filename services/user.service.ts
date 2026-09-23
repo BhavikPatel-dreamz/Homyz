@@ -11,6 +11,7 @@ import type {
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+import type { Prisma } from "@/generated/prisma/client";
 import { BookingStatus, ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 
@@ -70,7 +71,7 @@ async function updateProfile(
     image?: string;
     phone?: string;
     phoneVerified?: Date | null;
-    publicProfile?: any;
+    publicProfile?: Prisma.InputJsonValue;
   } = {};
   if (input.name) data.name = input.name;
   if (input.image) data.image = input.image;
@@ -87,7 +88,7 @@ async function updateProfile(
     if (pub.stampsVisible === undefined) {
       pub.stampsVisible = true;
     }
-    data.publicProfile = pub;
+    data.publicProfile = pub as Prisma.InputJsonValue;
   }
 
   try {
@@ -240,17 +241,51 @@ async function deleteTripPhoto(userId: string, photoId: string) {
 }
 
 async function getUserStats(userId: string) {
-  const tripsCount = await prisma.booking.count({ where: { userId } });
-  const photosCount = await prisma.tripPhoto.count({ where: { userId } });
+  const [tripsCount, photosCount, reviewsCount] = await Promise.all([
+    prisma.booking.count({ where: { userId } }),
+    prisma.tripPhoto.count({ where: { userId } }),
+    prisma.review.count({ where: { authorId: userId, status: ReviewStatus.PUBLISHED } }),
+  ]);
   return {
     trips: Math.max(tripsCount, photosCount),
     likes: 0,
-    reviews: 0,
+    reviews: reviewsCount,
   };
 }
 
+export type PublicHostProfile = {
+  host: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    createdAt: Date;
+    publicProfile: Record<string, unknown>;
+    isSuperhost: boolean;
+  };
+  stats: { reviewCount: number; averageRating: number | null; listingCount: number };
+  reviews: Array<{
+    id: string;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+    author: { name: string | null; image: string | null };
+    listing: { title: string };
+  }>;
+  listings: Array<{
+    id: string;
+    customSlug: string | null;
+    title: string;
+    photos: string[];
+    city: string | null;
+    country: string | null;
+    listingType: string | null;
+    price: number;
+  }>;
+};
+
 /** Public, privacy-safe data for the dedicated host profile page. */
-async function getPublicHostProfile(userId: string) {
+async function getPublicHostProfile(userId: string, options: { reviewLimit?: number } = {}): Promise<PublicHostProfile> {
+  const reviewLimit = Math.min(100, Math.max(1, options.reviewLimit ?? 3));
   const host = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, name: true, image: true, createdAt: true, publicProfile: true },
@@ -285,7 +320,7 @@ async function getPublicHostProfile(userId: string) {
       where: { status: ReviewStatus.PUBLISHED, comment: { not: "" }, listing: publicListingWhere },
       select: { id: true, rating: true, comment: true, createdAt: true, author: { select: { name: true, image: true } }, listing: { select: { title: true } } },
       orderBy: { createdAt: "desc" },
-      take: 3,
+      take: reviewLimit,
     }),
     prisma.booking.groupBy({
       by: ["status"],
@@ -294,8 +329,8 @@ async function getPublicHostProfile(userId: string) {
     }),
   ]);
   const bookingSummary = {
-    confirmed: bookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
-    cancelled: bookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
+    confirmed: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
+    cancelled: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
   };
 
   return {

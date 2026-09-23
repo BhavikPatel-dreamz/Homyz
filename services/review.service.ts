@@ -74,6 +74,14 @@ function categoryData(categoryRatings?: ReviewCategoryRatings) {
 
 /** Database operations for the public, property-specific review experience. */
 export const reviewService = {
+  async hasReviewForBooking(bookingId: string): Promise<boolean> {
+    const review = await prisma.review.findUnique({
+      where: { bookingId },
+      select: { id: true },
+    });
+    return Boolean(review);
+  },
+
   async getListingReviews(
     listingId: string,
     page = 1,

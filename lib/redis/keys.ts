@@ -37,8 +37,8 @@ export const CACHE_KEYS = {
     `${NS}:home:discovery:v${ver}:city:${city}`,
 
   /** Bookings */
-  BOOKING: (bookingId: string) => `${NS}:booking:${bookingId}`,
-  BOOKINGS_USER: (userId: string, page: number = 1) => `${NS}:bookings:user:${userId}:p${page}`,
+  BOOKING: (bookingId: string) => `${NS}:booking:${bookingId}:v2`,
+  BOOKINGS_USER: (userId: string, skip: number = 0, take: number = 20) => `${NS}:bookings:user:${userId}:s${skip}:t${take}`,
   BOOKINGS_HOST: (hostId: string, page: number = 1) => `${NS}:bookings:host:${hostId}:p${page}`,
 
   /** Admin & Host Dashboards */

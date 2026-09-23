@@ -2,6 +2,7 @@ import { requirePageUser } from "@/lib/permissions/page-guards";
 import { userService } from "@/services/user.service";
 import { bookingService } from "@/services/booking.service";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { toReservationCardData } from "@/lib/profile/reservation-data";
 
 export async function loadProfilePageData() {
   const actor = await requirePageUser();
@@ -13,23 +14,10 @@ export async function loadProfilePageData() {
   try {
     const { items } = await bookingService.listForUser(actor, {
       skip: 0,
-      take: 50,
+      take: 100,
     });
 
-    initialReservations = items.map((b) => ({
-      id: b.id,
-      propertyName: b.listing?.title || "Luxury Villa Stay",
-      location: "Malibu Beach, CA",
-      propertyImage: null,
-      startDate: b.startDate,
-      endDate: b.endDate,
-      guestName: actor.name || actor.email || "Guest",
-      guestCount: 2,
-      status: b.status,
-      checkInTime: "3:00 PM",
-      actionType: "check_in",
-      isToday: false,
-    }));
+    initialReservations = items.map((booking) => toReservationCardData(booking, actor.name || actor.email || "Guest"));
   } catch (err) {
     console.error("Failed to load user reservations:", err);
   }
@@ -41,4 +29,3 @@ export async function loadProfilePageData() {
     initialReservations,
   };
 }
-

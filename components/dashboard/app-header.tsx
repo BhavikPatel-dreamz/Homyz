@@ -82,19 +82,19 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   };
 
   const navItems = [
-    { href: "/wishlists", label: "Wishlist", icon: "/images/icons/wishlist.svg" },
-    { href: "/bookings", label: t("header_trips") || "Trips", icon: "/images/icons/trip.svg" },
-    { href: "/host/messages", label: t("header_messages") || "Messages", icon: "/images/icons/messages.svg" },
-    { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
-    { href: "/profile-management", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg", separatorBefore: true },
-    { href: "/help", label: t("header_help_centre") || "Help centre", icon: "/images/icons/help.svg" },
-    { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg", separatorBefore: true },
-    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/grid-Icon.svg" },
-    { href: "/host/today", label: t("header_today") || "Today", icon: "/images/icons/today-icon.svg", requireHost: true },
-    { href: "/host/calendar", label: t("header_calendar") || "Calendar", icon: "/images/icons/calendar-date.svg", requireHost: true },
-    { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg", requireHost: true },
-    { href: "/host/onboarding", label: t("header_become_a_host_app") || "Become a Host / Application", icon: "/images/icons/house.svg" },
-    { href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/setting.svg", requireAdmin: true },
+    { href: "/profile", label: t("header_profile") || "Profile" },
+    { href: "/bookings", label: t("header_trips") || "Trips" },
+    { href: "/host/messages", label: t("header_messages") || "Messages" },
+    { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications" },
+    { href: "/profile-management", label: t("header_account_settings") || "Account settings" },
+    { href: "/dashboard", label: t("header_dashboard") || "Dashboard" },
+    { href: "/host/bookings", label: "Booking requests", requireHost: true },
+    { href: "/host/today", label: t("header_today") || "Today", requireHost: true },
+    { href: "/wishlists", label: "Wishlist" },
+    { href: "/host/calendar", label: t("header_calendar") || "Calendar", requireHost: true },
+    { href: "/host/listings", label: t("header_your_listings") || "Your listings", requireHost: true },
+    { href: "/host/onboarding", label: t("header_become_a_host_app") || "Become a Host / Application" },
+    { href: "/admin", label: t("header_admin") || "Admin", requireAdmin: true },
   ];
 
   return (
