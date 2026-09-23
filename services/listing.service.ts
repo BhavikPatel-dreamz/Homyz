@@ -21,8 +21,10 @@ import {
   toListingDTO,
   toPublicListingDTO,
   type ListingDTO,
+  type PublicListingCardRecord,
   type PublicListingCardDTO,
   type PublicListingDTO,
+  type ListingReviewSummary,
 } from "./mappers";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
@@ -128,28 +130,29 @@ function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
   };
 }
 
-function getSystemManagedHostMetric(
-  profile: unknown,
-  keys: string[],
-): number | null {
-  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return null;
-  const source = profile as Record<string, unknown>;
-  for (const key of keys) {
-    const value = source[key];
-    if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
-  }
-  return null;
-}
-
-function getSystemManagedReviewCount(profile: unknown): number {
-  const value = getSystemManagedHostMetric(profile, ["reviewCount", "reviewsCount"]);
-  return value === null ? 0 : Math.max(0, Math.trunc(value));
-}
-
 function hasVerifiedSuperhostFlag(profile: unknown): boolean {
   if (!profile || typeof profile !== "object" || Array.isArray(profile)) return false;
   const source = profile as Record<string, unknown>;
   return source.isSuperhost === true || source.superhost === true;
+}
+
+function roundRating(value: number | null): number | null {
+  return value === null ? null : Math.round(value * 100) / 100;
+}
+
+async function mapCardsWithReviewSummaries(items: PublicListingCardRecord[]): Promise<PublicListingCardDTO[]> {
+  if (!items.length) return [];
+  const summaries = await prisma.review.groupBy({
+    by: ["listingId"],
+    where: { listingId: { in: items.map((item) => item.id) }, status: "PUBLISHED" },
+    _avg: { rating: true },
+    _count: { _all: true },
+  }) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
+  const byListingId = new Map<string, ListingReviewSummary>(summaries.map((summary) => [summary.listingId, {
+    averageRating: roundRating(summary._avg.rating),
+    totalCount: summary._count._all,
+  }]));
+  return items.map((item) => toPublicListingCardDTO({ ...item, reviewSummary: byListingId.get(item.id) }));
 }
 
 function getPublishReadiness(listing: {
@@ -231,7 +234,7 @@ async function queryList(opts: {
     }),
     prisma.listing.count({ where }),
   ]);
-  return { items: items.map(toPublicListingCardDTO), total };
+  return { items: await mapCardsWithReviewSummaries(items), total };
 }
 
 // Public catalogue — published & active listings only by default.
@@ -723,7 +726,7 @@ async function searchPublicListings(
     const priceRange = priceAgg
       ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
       : undefined;
-    let mappedItems: PublicListingCardDTO[] = items.map(toPublicListingCardDTO);
+    let mappedItems: PublicListingCardDTO[] = await mapCardsWithReviewSummaries(items);
 
     if (effectiveLat !== undefined && effectiveLng !== undefined) {
       mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
@@ -765,7 +768,7 @@ async function searchPublicListings(
       ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
       : Promise.resolve(null),
   ]);
-  let mappedItems: PublicListingCardDTO[] = items.map(toPublicListingCardDTO);
+  let mappedItems: PublicListingCardDTO[] = await mapCardsWithReviewSummaries(items);
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
       if (dto.latitude != null && dto.longitude != null) {
@@ -803,6 +806,7 @@ async function searchPublicListings(
 type PublicListingDetail = PublicListingDTO & {
   isGuestFavorite: boolean;
   host?: {
+    id: string;
     name: string | null;
     image: string | null;
     createdAt: Date;
@@ -840,16 +844,19 @@ async function getPublicListingDetail(
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  // The current schema has no property-review relation. These are host profile
-  // metrics used only for the host-qualification calculation below; returning
-  // them as listing reviews would falsely attribute one host's score to every
-  // property they manage.
-  const hostRating = getSystemManagedHostMetric(listing.host?.publicProfile, ["rating"]);
-  const hostReviewCount = getSystemManagedReviewCount(listing.host?.publicProfile);
+  // Property reviews are the single source of truth for property ratings and
+  // qualifications. Host profile data is deliberately not substituted here.
+  const reviewSummary = await prisma.review.aggregate({
+    where: { listingId: listing.id, status: "PUBLISHED" },
+    _avg: { rating: true },
+    _count: { _all: true },
+  });
+  const propertyRating = roundRating(reviewSummary._avg.rating);
+  const propertyReviewCount = reviewSummary._count._all;
   const isGuestFavorite = qualificationService.isGuestFavorite({
     isFeatured: listing.isFeatured,
-    rating: hostRating,
-    reviewCount: hostReviewCount,
+    rating: propertyRating,
+    reviewCount: propertyReviewCount,
     confirmedBookingCount: listing._count.bookings,
     status: listing.status,
     published: listing.published,
@@ -884,9 +891,12 @@ async function getPublicListingDetail(
   const publicDTO = toPublicListingDTO(listing);
   return {
     ...publicDTO,
+    rating: propertyRating,
+    reviewsCount: propertyReviewCount,
     isGuestFavorite,
     host: listing.host
       ? {
+          id: listing.host.id,
           name: listing.host.name,
           image: listing.host.image,
           createdAt: listing.host.createdAt,
@@ -900,6 +910,7 @@ async function getPublicListingDetail(
 async function getPublicListingById(id: string): Promise<
   PublicListingDTO & {
     host?: {
+      id: string;
       name: string | null;
       image: string | null;
       createdAt: Date;

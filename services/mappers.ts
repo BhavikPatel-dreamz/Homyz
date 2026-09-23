@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
-import type { Booking, Listing, Prisma, User } from "@/generated/prisma/client";
+import type { Booking, Listing, Prisma, User, Review } from "@/generated/prisma/client";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -342,12 +342,17 @@ export const publicListingCardSelect = {
   customSlug: true,
 } satisfies Prisma.ListingSelect;
 
-type PublicListingCardRecord = Prisma.ListingGetPayload<{
+export type PublicListingCardRecord = Prisma.ListingGetPayload<{
   select: typeof publicListingCardSelect;
 }>;
 
+export type ListingReviewSummary = {
+  averageRating: number | null;
+  totalCount: number;
+};
+
 /** Lightweight, privacy-safe DTO for discovery cards and map markers. */
-export function toPublicListingCardDTO(l: PublicListingCardRecord) {
+export function toPublicListingCardDTO(l: PublicListingCardRecord & { reviewSummary?: ListingReviewSummary }) {
   const showExact = Boolean(l.showExactLocation);
   const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
   return {
@@ -369,8 +374,8 @@ export function toPublicListingCardDTO(l: PublicListingCardRecord) {
     petsAllowed: l.petsAllowed,
     discounts: l.discounts,
     customSlug: l.customSlug,
-    rating: null as number | null,
-    reviewsCount: 0,
+    rating: l.reviewSummary?.averageRating ?? null,
+    reviewsCount: l.reviewSummary?.totalCount ?? 0,
     distanceKm: null as number | null,
   };
 }
@@ -467,5 +472,78 @@ export function reviveBookingDTO(b: BookingDTO): BookingDTO {
     startDate: new Date(b.startDate),
     endDate: new Date(b.endDate),
     createdAt: new Date(b.createdAt),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Review DTOs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function toReviewDTO(
+  r: Review & { author?: User | null },
+) {
+  return {
+    id: r.id,
+    listingId: r.listingId,
+    bookingId: r.bookingId,
+    authorId: r.authorId,
+    rating: r.rating,
+    cleanlinessRating: r.cleanlinessRating,
+    accuracyRating: r.accuracyRating,
+    checkInRating: r.checkInRating,
+    communicationRating: r.communicationRating,
+    locationRating: r.locationRating,
+    valueRating: r.valueRating,
+    comment: r.comment,
+    topics: r.topics,
+    status: r.status,
+    moderatedAt: r.moderatedAt,
+    moderatedById: r.moderatedById,
+    rejectionReason: r.rejectionReason,
+    author: r.author ? toPublicUser(r.author) : null,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+  };
+}
+export type ReviewDTO = ReturnType<typeof toReviewDTO>;
+
+/**
+ * Public review DTO for guest-facing API.
+ * Only includes published reviews with public reviewer data.
+ * Never includes moderation fields, rejection reasons, or non-public statuses.
+ */
+export function toPublicReviewDTO(
+  r: Review & { author?: Pick<User, "id" | "name" | "image"> | null },
+) {
+  return {
+    id: r.id,
+    listingId: r.listingId,
+    rating: r.rating,
+    comment: r.comment,
+    topics: r.topics,
+    author: r.author ? {
+      id: r.author.id,
+      name: r.author.name,
+      image: r.author.image,
+    } : null,
+    createdAt: r.createdAt,
+  };
+}
+export type PublicReviewDTO = ReturnType<typeof toPublicReviewDTO>;
+
+export function reviveReviewDTO(r: ReviewDTO): ReviewDTO {
+  return {
+    ...r,
+    moderatedAt: r.moderatedAt ? new Date(r.moderatedAt) : null,
+    createdAt: new Date(r.createdAt),
+    updatedAt: new Date(r.updatedAt),
+    author: r.author ? revivePublicUser(r.author) : null,
+  };
+}
+
+export function revivePublicReviewDTO(r: PublicReviewDTO): PublicReviewDTO {
+  return {
+    ...r,
+    createdAt: new Date(r.createdAt),
   };
 }

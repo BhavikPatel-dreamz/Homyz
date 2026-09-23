@@ -14,8 +14,8 @@ export const GET = apiHandler(
     today.setHours(0, 0, 0, 0);
     const startParam = req.nextUrl.searchParams.get("start");
     const endParam = req.nextUrl.searchParams.get("end");
-    const requestedStart = startParam && /^\d{4}-\d{2}-\d{2}$/.test(startParam) ? new Date(`${startParam}T00:00:00`) : today;
-    const requestedEnd = endParam && /^\d{4}-\d{2}-\d{2}$/.test(endParam) ? new Date(`${endParam}T00:00:00`) : null;
+    const requestedStart = parseCalendarDate(startParam) ?? today;
+    const requestedEnd = parseCalendarDate(endParam);
     const rangeStart = Number.isNaN(requestedStart.getTime()) ? today : requestedStart;
     const rangeEnd = requestedEnd && requestedEnd > rangeStart ? requestedEnd : null;
 
@@ -34,8 +34,8 @@ export const GET = apiHandler(
     ]);
 
     const bookingRanges = bookings.map((b: { startDate: Date; endDate: Date }) => ({
-      start: b.startDate.toISOString().split("T")[0],
-      end: b.endDate.toISOString().split("T")[0],
+      start: dateKeyForRange(b.startDate),
+      end: dateKeyForRange(b.endDate),
     }));
     // A blocked calendar day is an unavailable one-night range. It remains
     // intentionally compact and private: no booking or guest details leave
@@ -43,11 +43,12 @@ export const GET = apiHandler(
     const blockedRanges = (listing?.blockedDates ?? []).filter((date: string) => (
       date >= dateKeyForRange(rangeStart) && (!rangeEnd || date < dateKeyForRange(rangeEnd))
     )).map((date: string) => {
-      const start = new Date(`${date}T00:00:00Z`);
+      const start = parseCalendarDate(date);
+      if (!start) return null;
       const end = new Date(start);
-      end.setUTCDate(end.getUTCDate() + 1);
-      return { start: date, end: end.toISOString().split("T")[0] };
-    });
+      end.setDate(end.getDate() + 1);
+      return { start: date, end: dateKeyForRange(end) };
+    }).filter((range: { start: string; end: string } | null): range is { start: string; end: string } => range !== null);
     const ranges = [...bookingRanges, ...blockedRanges];
 
     return ok({ ranges });
@@ -56,4 +57,11 @@ export const GET = apiHandler(
 
 function dateKeyForRange(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseCalendarDate(value: string | null): Date | null {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) || dateKeyForRange(date) !== value ? null : date;
 }

@@ -9,18 +9,19 @@ import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { RealMap } from "@/components/ui/real-map";
+import { ReviewList } from "@/components/reviews";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
 import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
-import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
     host?: {
+      id: string;
       name?: string | null;
       image?: string | null;
       createdAt?: Date | string;
@@ -47,6 +48,28 @@ interface PublicListingDetailClientProps {
 }
 
 type BookedDateRange = { start: string; end: string };
+type TrustHighlightIconName = "award" | "sparkle" | "calendar" | "pricing";
+
+function TrustHighlightIcon({ name }: { name: TrustHighlightIconName }) {
+  const common = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.45,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  if (name === "award") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="M8.5 3.5h7l1.2 4.2 3.3 2.8-2 3.9.2 4.7-4.3 1.6L12 23l-1.9-2.6-4.3-1.6.2-4.7-2-3.9 3.3-2.8 1.2-4.2Z" /><path d="M9.5 12h5M12 9.5V14.5" /></svg>;
+  }
+  if (name === "calendar") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><rect x="3.5" y="5.5" width="17" height="15" rx="2" /><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17M8 14h3M8 17h5" /></svg>;
+  }
+  if (name === "pricing") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="M12 3.5v17M16 7.5c-.8-1-2.2-1.6-4-1.6-2.3 0-3.8 1.1-3.8 2.8 0 1.9 1.7 2.5 3.8 3 2.1.5 3.8 1.1 3.8 3 0 1.8-1.5 3-4 3-1.9 0-3.5-.7-4.4-1.9" /></svg>;
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="m12 3 1.3 4.2L17.5 8.5l-4.2 1.3L12 14l-1.3-4.2-4.2-1.3 4.2-1.3L12 3Z" /><path d="m18.5 14 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3Z" /></svg>;
+}
 
 function overlapsBookedRange(checkIn: string, checkOut: string, ranges: BookedDateRange[]): boolean {
   return ranges.some((range) => checkIn < range.end && checkOut > range.start);
@@ -54,6 +77,22 @@ function overlapsBookedRange(checkIn: string, checkOut: string, ranges: BookedDa
 
 function dateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function isDateKey(value: string | undefined): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(date.getTime()) && dateKey(date) === value;
+}
+
+function addCalendarDays(value: string, days: number): string {
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return dateKey(date);
+}
+
+function calendarNights(checkIn: string, checkOut: string): number {
+  return Math.round((new Date(`${checkOut}T00:00:00`).getTime() - new Date(`${checkIn}T00:00:00`).getTime()) / 86_400_000);
 }
 
 function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
@@ -73,6 +112,42 @@ function AmenityRow({ amenity }: { amenity: { id: string; icon?: string; label: 
   );
 }
 
+function HostIdentityCard({
+  host,
+  imageFailed,
+  onImageError,
+  hostSince,
+  hostTenure,
+}: {
+  host: { name?: string | null; image?: string | null; isSuperhost?: boolean };
+  imageFailed: boolean;
+  onImageError: () => void;
+  hostSince: string | null;
+  hostTenure: string | null;
+}) {
+  return (
+    <div className="min-h-[214px] rounded-[25px] border border-zinc-300 bg-white px-5 py-5 shadow-[0_2px_5px_rgba(0,0,0,0.09)] transition-shadow hover:shadow-[0_5px_14px_rgba(0,0,0,0.11)]">
+      <div className="flex items-start gap-4">
+        {host.image && !imageFailed ? (
+          <img src={host.image} alt={`${host.name || "Host"}'s profile photo`} loading="lazy" decoding="async" onError={onImageError} className="size-20 shrink-0 rounded-full border border-zinc-200 object-cover" />
+        ) : (
+          <div aria-hidden="true" className="flex size-20 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">
+            {(host.name || "H")[0]?.toUpperCase()}
+          </div>
+        )}
+        {(hostSince || hostTenure) && <div className="min-w-0 flex-1 divide-y divide-zinc-200">
+          {hostSince && <div className="pb-3 text-[11px] text-zinc-500"><span className="block text-sm font-semibold leading-4 text-zinc-900">Joined</span>{hostSince}</div>}
+          {hostTenure && <div className="pt-3 text-[11px] text-zinc-500"><span className="block text-lg font-semibold leading-5 text-zinc-900">{hostTenure}</span>on Homyz</div>}
+        </div>}
+      </div>
+      <div className="mt-4 text-center">
+        <p className="break-words text-lg font-semibold text-zinc-900">{host.name || "Homyz host"}</p>
+        <p className="mt-1 text-sm text-zinc-600">{host.isSuperhost ? "Superhost" : "Host"}</p>
+      </div>
+    </div>
+  );
+}
+
 function ListingAvailabilityCalendar({
   month,
   onMonthChange,
@@ -84,6 +159,7 @@ function ListingAvailabilityCalendar({
   onDateChange,
   onSelectionError,
   locationName,
+  minimumNights,
 }: {
   month: Date;
   onMonthChange: (month: Date) => void;
@@ -95,6 +171,7 @@ function ListingAvailabilityCalendar({
   onDateChange: (checkIn: string, checkOut: string) => void;
   onSelectionError: (message: string | null) => void;
   locationName: string;
+  minimumNights: number;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -102,12 +179,11 @@ function ListingAvailabilityCalendar({
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
   const canGoBack = firstDay.getTime() > new Date(today.getFullYear(), today.getMonth(), 1).getTime();
   const displayedMonths = [firstDay, new Date(month.getFullYear(), month.getMonth() + 1, 1)];
-  const isSelectingCheckout = Boolean(checkIn && !checkOut);
   const formattedStayDates = checkIn && checkOut
     ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
     : "Choose a check-in and check-out date";
   const nights = checkIn && checkOut
-    ? Math.max(0, Math.round((new Date(`${checkOut}T00:00:00`).getTime() - new Date(`${checkIn}T00:00:00`).getTime()) / 86_400_000))
+    ? Math.max(0, calendarNights(checkIn, checkOut))
     : 0;
 
   const chooseDate = (key: string) => {
@@ -124,6 +200,10 @@ function ListingAvailabilityCalendar({
       return;
     }
 
+    if (key < addCalendarDays(checkIn, minimumNights)) {
+      onSelectionError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
     if (overlapsBookedRange(checkIn, key, ranges)) {
       onSelectionError("Those dates include an unavailable night. Please choose different dates.");
       return;
@@ -150,12 +230,12 @@ function ListingAvailabilityCalendar({
             const key = dateKey(date);
             const past = date < today;
             const unavailable = isUnavailableDate(date, ranges);
-            const isCheckoutCandidate = Boolean(checkIn && !checkOut && key > checkIn && !overlapsBookedRange(checkIn, key, ranges));
-            const disabled = past || (unavailable && !isCheckoutCandidate);
+            const isCheckoutCandidate = Boolean(checkIn && !checkOut && key >= addCalendarDays(checkIn, minimumNights) && !overlapsBookedRange(checkIn, key, ranges));
+            const disabled = past || (unavailable && !isCheckoutCandidate) || Boolean(checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights));
             const isStart = key === checkIn;
             const isEnd = key === checkOut;
             const isInRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
-            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
+            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights) ? "minimum stay not met" : isInRange ? "selected stay" : "available";
 
             return (
               <div key={key} className={`relative flex aspect-square items-center justify-center ${isInRange ? "bg-amber-100" : ""}`}>
@@ -165,7 +245,7 @@ function ListingAvailabilityCalendar({
                   onClick={() => chooseDate(key)}
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
-                  aria-pressed={isStart || isEnd}
+                  aria-selected={isStart || isEnd}
                   className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 sm:size-9 ${
                     isStart || isEnd
                       ? "bg-[#F6CF7B] font-semibold text-zinc-900 shadow-sm"
@@ -195,7 +275,10 @@ function ListingAvailabilityCalendar({
         <p className="mt-1 text-xs text-zinc-500" aria-live="polite">{formattedStayDates}</p>
       </div>
       {error ? (
-        <p role="alert" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Availability could not be loaded. Please choose dates to confirm them before reserving.</p>
+        <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <span>{error}</span>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2">Try again</button>
+        </div>
       ) : (
         <div className="rounded-2xl bg-zinc-100 p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
@@ -230,13 +313,13 @@ export function PublicListingDetailClient({
 
   // Modal States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [isDescriptionExpandable, setIsDescriptionExpandable] = useState(false);
+  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
 
   // Booking Widget State — pre-filled from search URL params
-  const [checkIn, setCheckIn] = useState(searchCheckIn ?? "");
-  const [checkOut, setCheckOut] = useState(searchCheckOut ?? "");
+  const [checkIn, setCheckIn] = useState(isDateKey(searchCheckIn) ? searchCheckIn : "");
+  const [checkOut, setCheckOut] = useState(isDateKey(searchCheckOut) ? searchCheckOut : "");
   const [guestsCount, setGuestsCount] = useState(searchGuests ?? 1);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
@@ -248,8 +331,13 @@ export function PublicListingDetailClient({
   const [availabilityMonth, setAvailabilityMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(true);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [hostImageFailed, setHostImageFailed] = useState(false);
-  const descriptionRef = useRef<HTMLParagraphElement>(null);
+
+  // Review Stats State
+  const [reviewRating, setReviewRating] = useState<number | null>(listing.rating);
+  const [reviewCount, setReviewCount] = useState(listing.reviewsCount);
+
   const amenityCloseRef = useRef<HTMLButtonElement>(null);
   const normalizedDescription = listing.description?.trim() ?? "";
 
@@ -257,41 +345,29 @@ export function PublicListingDetailClient({
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
     const maximumGuests = Math.max(1, listing.guests || 1);
+    const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
+    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn) ? searchCheckOut : "";
+    const nextGuests = Math.min(Math.max(1, searchGuests ?? 1), maximumGuests);
     const timer = window.setTimeout(() => {
-      setCheckIn(searchCheckIn ?? "");
-      setCheckOut(searchCheckOut ?? "");
-      setGuestsCount(Math.min(Math.max(1, searchGuests ?? 1), maximumGuests));
+      setCheckIn(nextCheckIn);
+      setCheckOut(nextCheckOut);
+      setGuestsCount(nextGuests);
       setIsNonRefundable(false);
       setQuote(null);
       setQuoteError(null);
       setBookingSuccess(false);
       setHostImageFailed(false);
-      setIsDescriptionExpanded(false);
-      setIsDescriptionExpandable(false);
+      setIsDescriptionModalOpen(false);
       setIsAllAmenitiesOpen(false);
+      setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
-      setAvailabilityMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+      setBookedDateRanges([]);
+      setAvailabilityError(null);
+      setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+      setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
   }, [listing.id, listing.guests, searchCheckIn, searchCheckOut, searchGuests]);
-
-  useEffect(() => {
-    if (!normalizedDescription) return;
-    const measure = () => {
-      const element = descriptionRef.current;
-      if (element) setIsDescriptionExpandable(element.scrollHeight > element.clientHeight + 1);
-    };
-    const frame = window.requestAnimationFrame(() => {
-      setIsDescriptionExpandable(false);
-      measure();
-    });
-    const observer = new ResizeObserver(measure);
-    if (descriptionRef.current) observer.observe(descriptionRef.current);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
-    };
-  }, [listing.id, normalizedDescription, isDescriptionExpanded]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -303,12 +379,47 @@ export function PublicListingDetailClient({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isAllAmenitiesOpen]);
 
+  useEffect(() => {
+    if (!isDescriptionModalOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDescriptionModalOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isDescriptionModalOpen]);
+
+  useEffect(() => {
+    if (!isGuestSelectorOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsGuestSelectorOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isGuestSelectorOpen]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (checkIn) url.searchParams.set("checkIn", checkIn);
+    else url.searchParams.delete("checkIn");
+    if (checkOut) url.searchParams.set("checkOut", checkOut);
+    else url.searchParams.delete("checkOut");
+    url.searchParams.delete("startDate");
+    url.searchParams.delete("endDate");
+    url.searchParams.set("guests", String(guestsCount));
+    window.history.replaceState(window.history.state, "", url);
+  }, [checkIn, checkOut, guestsCount]);
+
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
   useEffect(() => {
     const controller = new AbortController();
-    const rangeStart = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth(), 1));
-    const rangeEnd = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth() + 2, 1));
+    const calendarRangeStart = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth(), 1));
+    const calendarRangeEnd = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth() + 2, 1));
+    // The selected stay and availability calendar intentionally share the
+    // same response cache. This also revalidates dates supplied by search.
+    const rangeStart = isDateKey(checkIn) && checkIn < calendarRangeStart ? checkIn : calendarRangeStart;
+    const selectedRangeEnd = isDateKey(checkOut) ? checkOut : isDateKey(checkIn) ? addCalendarDays(checkIn, 1) : "";
+    const rangeEnd = selectedRangeEnd && selectedRangeEnd > calendarRangeEnd ? selectedRangeEnd : calendarRangeEnd;
     const startRequest = window.setTimeout(() => {
       setIsAvailabilityLoading(true);
       setAvailabilityError(null);
@@ -319,11 +430,34 @@ export function PublicListingDetailClient({
           setAvailabilityError("Availability could not be loaded.");
           return;
         }
-        setBookedDateRanges(payload.data.ranges.filter((range: unknown): range is BookedDateRange => {
+        const fetchedRanges = payload.data.ranges.filter((range: unknown): range is BookedDateRange => {
           if (!range || typeof range !== "object") return false;
           const candidate = range as BookedDateRange;
           return typeof candidate.start === "string" && typeof candidate.end === "string";
-        }));
+        });
+        setBookedDateRanges((currentRanges) => {
+          // Replace data in the requested window, while retaining previously
+          // loaded months. This prevents a month change from forgetting a
+          // blocked date in an already-selected stay.
+          const retained = currentRanges.filter((range) => range.end <= rangeStart || range.start >= rangeEnd);
+          const unique = new Map<string, BookedDateRange>();
+          for (const range of [...retained, ...fetchedRanges]) unique.set(`${range.start}:${range.end}`, range);
+          return [...unique.values()].sort((a, b) => a.start.localeCompare(b.start));
+        });
+        // A direct/native date input may choose a date before its containing
+        // availability window has loaded. Reconcile that selection as soon as
+        // the authoritative window arrives instead of leaving an invalid
+        // range visibly selected.
+        if (isDateKey(checkIn) && isUnavailableDate(new Date(`${checkIn}T00:00:00`), fetchedRanges)) {
+          setCheckIn("");
+          setCheckOut("");
+          setQuote(null);
+          setQuoteError("Your selected check-in date is unavailable. Please choose different dates.");
+        } else if (isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, fetchedRanges)) {
+          setCheckOut("");
+          setQuote(null);
+          setQuoteError("Part of your selected stay is unavailable. Please choose another checkout date.");
+        }
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -337,7 +471,7 @@ export function PublicListingDetailClient({
       window.clearTimeout(startRequest);
       controller.abort();
     };
-  }, [listing.id, availabilityMonth]);
+  }, [listing.id, availabilityMonth, checkIn, checkOut, availabilityRefreshVersion]);
 
   useEffect(() => {
     if (listing?.id) {
@@ -376,9 +510,11 @@ export function PublicListingDetailClient({
     : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
   const maximumGuests = Math.max(1, listing.guests || 1);
-  const today = new Date().toISOString().slice(0, 10);
+  const minimumNights = Math.max(1, listing.minNights || 1);
+  const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
+  const today = dateKey(new Date());
   const minimumCheckOut = checkIn
-    ? new Date(new Date(`${checkIn}T00:00:00`).getTime() + 86_400_000).toISOString().slice(0, 10)
+    ? addCalendarDays(checkIn, minimumNights)
     : today;
   const locationString = [listing.city, listing.country]
     .filter((value): value is string => Boolean(value?.trim()))
@@ -390,14 +526,18 @@ export function PublicListingDetailClient({
       : null;
   const publicProfile = listing.host?.publicProfile?.profileVisible === false ? null : listing.host?.publicProfile ?? null;
   const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
-  const hostPrompts = publicProfile?.prompts && typeof publicProfile.prompts === "object" ? publicProfile.prompts as Record<string, unknown> : {};
-  const hostInterests = Array.isArray(publicProfile?.interests) ? publicProfile.interests.filter((value): value is string => typeof value === "string") : [];
-  const hostStamps = publicProfile?.stampsVisible !== false && Array.isArray(publicProfile?.selectedStamps) ? publicProfile.selectedStamps.filter((value): value is string => typeof value === "string") : [];
+  const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
+  const hostLanguages = Array.isArray(publicProfile?.languages)
+    ? publicProfile.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).slice(0, 4)
+    : [];
   const hostSince = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
     ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(listing.host.createdAt))
     : null;
-  const descriptionSections = listing.descriptionSections && typeof listing.descriptionSections === "object" ? listing.descriptionSections as Record<string, unknown> : {};
-  const structuredDescription = [["Your property", descriptionSections.property], ["Guest access", descriptionSections.guestAccess], ["Interaction with guests", descriptionSections.guestInteraction], ["Other details to note", descriptionSections.otherDetails]] as const;
+  const hostYears = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
+    ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear() - (new Date().getMonth() < new Date(listing.host.createdAt).getMonth() ? 1 : 0))
+    : null;
+  const hostTenure = hostYears === null ? null : hostYears > 0 ? `${hostYears} ${hostYears === 1 ? "year" : "years"}` : "Less than a year";
+  const hostProfileHref = publicProfile && listing.host?.id ? `/users/profile/${listing.host.id}` : null;
   const formatTime = (time: string | null | undefined) => {
     if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
     const [hour, minute] = time.split(":").map(Number);
@@ -405,6 +545,16 @@ export function PublicListingDetailClient({
     return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${suffix}`;
   };
   const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const aboutLocationDetails = [
+    ...(listing.neighborhoodDescription ? [{ heading: "Neighborhood", content: listing.neighborhoodDescription }] : []),
+    ...(listing.gettingAround ? [{ heading: "Getting around", content: listing.gettingAround }] : []),
+    ...(Array.isArray(listing.locationFeatures) && listing.locationFeatures.length > 0
+      ? [{ heading: "Location features", content: listing.locationFeatures.map(humanize).join(" · ") }]
+      : []),
+    ...(Array.isArray(listing.views) && listing.views.length > 0
+      ? [{ heading: "Views", content: listing.views.map(humanize).join(" · ") }]
+      : []),
+  ];
   const formatSafetyDisclosure = (entry: string): string | null => {
     const [key, status, ...detailParts] = entry.split(":");
     if (status === "NO") return null;
@@ -431,6 +581,22 @@ export function PublicListingDetailClient({
   const configuredHouseRules = Array.isArray(listing.houseRules)
     ? listing.houseRules.filter((rule): rule is string => typeof rule === "string" && rule.trim().length > 0)
     : [];
+  const trustHighlights: Array<{ icon: TrustHighlightIconName; title: string; description: string }> = [
+    ...(listing.isGuestFavorite
+      ? [{ icon: "award" as const, title: "Guest favourite", description: "Highly rated by guests who have stayed here." }]
+      : []),
+    ...((Array.isArray(listing.highlights) ? listing.highlights : []).slice(0, 2).map((title) => ({
+      icon: "sparkle" as const,
+      title,
+      description: "A highlight shared by this host.",
+    }))),
+    ...(cancellationLabel
+      ? [{ icon: "calendar" as const, title: "Cancellation policy", description: cancellationLabel }]
+      : []),
+    ...(displayPrice
+      ? [{ icon: "pricing" as const, title: "Clear pricing", description: "Your full price is shown before you reserve." }]
+      : []),
+  ].slice(0, 4);
 
   // Fetch quote when valid dates are selected
   useEffect(() => {
@@ -502,9 +668,75 @@ export function PublicListingDetailClient({
     };
   }, [checkIn, checkOut, guestsCount, isNonRefundable, listing.id, maximumGuests]);
 
-  const hasValidQuote = Boolean(
-    checkIn && checkOut && quote && !quoteError && !isQuoteLoading && guestsCount <= maximumGuests && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
+  const isDateRangeValid = Boolean(
+    isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
+  const isGuestSelectionValid = Number.isInteger(guestsCount) && guestsCount >= 1 && guestsCount <= maximumGuests;
+  const hasValidQuote = Boolean(
+    isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
+  );
+
+  const clearBookingDates = () => {
+    setCheckIn("");
+    setCheckOut("");
+    setQuote(null);
+    setQuoteError(null);
+  };
+
+  const updateCheckIn = (nextCheckIn: string) => {
+    if (!isDateKey(nextCheckIn) || nextCheckIn < today) {
+      setQuoteError("Choose a future check-in date.");
+      return;
+    }
+    if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
+      setQuoteError("That check-in date is unavailable. Please choose another date.");
+      return;
+    }
+    setQuote(null);
+    setQuoteError(null);
+    setCheckIn(nextCheckIn);
+    const nextNights = checkOut && isDateKey(checkOut) ? calendarNights(nextCheckIn, checkOut) : 0;
+    if (checkOut && (checkOut <= nextCheckIn || nextNights < minimumNights || nextNights > maximumNights || overlapsBookedRange(nextCheckIn, checkOut, bookedDateRanges))) {
+      setCheckOut("");
+      setQuoteError("Your previous checkout is no longer valid. Please choose another date.");
+    }
+  };
+
+  const updateCheckOut = (nextCheckOut: string) => {
+    if (!checkIn) {
+      setQuoteError("Choose a check-in date before selecting checkout.");
+      return;
+    }
+    if (!isDateKey(nextCheckOut) || nextCheckOut <= checkIn) {
+      setQuoteError("Checkout must be after check-in.");
+      return;
+    }
+    const nights = calendarNights(checkIn, nextCheckOut);
+    if (nights < minimumNights) {
+      setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (nights > maximumNights) {
+      setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (overlapsBookedRange(checkIn, nextCheckOut, bookedDateRanges)) {
+      setCheckOut("");
+      setQuote(null);
+      setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      return;
+    }
+    setQuote(null);
+    setQuoteError(null);
+    setCheckOut(nextCheckOut);
+  };
+
+  const updateGuestCount = (nextGuests: number) => {
+    const safeGuests = Math.min(maximumGuests, Math.max(1, nextGuests));
+    setQuote(null);
+    setQuoteError(null);
+    setGuestsCount(safeGuests);
+  };
 
   const handleShare = async () => {
     const shareData = {
@@ -532,7 +764,7 @@ export function PublicListingDetailClient({
   // Handle Booking
   const handleReserve = async () => {
     if (!hasValidQuote) {
-      setQuoteError("Choose valid available dates and guests before reserving.");
+      setQuoteError(!checkIn || !checkOut ? "Choose check-in and check-out dates to continue." : !isGuestSelectionValid ? `This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.` : availabilityError ? "Availability could not be confirmed. Please try again." : "Choose valid available dates and guests before reserving.");
       return;
     }
 
@@ -560,7 +792,9 @@ export function PublicListingDetailClient({
           router.push(`/login?returnUrl=${returnUrl}`);
           return;
         }
-        alert(data.error?.message || "Failed to complete reservation");
+        const message = data.error?.message || "Failed to complete reservation";
+        setQuoteError(message);
+        if (res.status === 409) setAvailabilityRefreshVersion((version) => version + 1);
       } else {
         clearLastSearch();
         setBookingSuccess(true);
@@ -572,38 +806,19 @@ export function PublicListingDetailClient({
     }
   };
 
-  // Structured Rooms
-  const rooms = (Array.isArray(listing.rooms) ? listing.rooms : []) as Array<{
-    id: string;
-    name: string;
-    beds?: Array<{ count: number; type: string }>;
-  }>;
-
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 pb-16 pt-4 sm:pt-5">
+      <main className="w-full flex-1 pb-20 pt-5 sm:pt-7">
         <Container>
-          <div className="mx-auto max-w-[1120px]">
+          <div className="mx-auto max-w-[1180px]">
           {/* Header Section */}
-          <div className="flex items-start justify-between gap-4 pb-3 sm:pb-4">
-            <div className="min-w-0 space-y-1.5">
-              <h1 className="max-w-3xl break-words text-xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-2xl">
+          <div className="flex items-start justify-between gap-4 pb-5 sm:pb-6">
+            <div className="min-w-0 space-y-2">
+              <h1 className="max-w-3xl break-words text-[22px] font-semibold leading-tight tracking-tight text-zinc-900 sm:text-[26px]">
                 {listing.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-zinc-700 sm:text-xs">
-              {locationString && (
-                <span className="inline-flex items-center gap-1.5">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 shrink-0 text-zinc-500">
-                    <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
-                    <circle cx="12" cy="10" r="2.5" />
-                  </svg>
-                  <span>{locationString}</span>
-                </span>
-              )}
-              <span className="font-medium text-zinc-600">No guest reviews yet</span>
-              </div>
               {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
               <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
                 {listing.isGuestFavorite && (
@@ -645,54 +860,86 @@ export function PublicListingDetailClient({
           </div>
 
           {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
-          <div className="grid grid-cols-1 gap-7 lg:grid-cols-12 lg:gap-8">
+          <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">
             {/* LEFT COLUMN */}
-            <div className="space-y-7 lg:col-span-7">
+            <div className="lg:col-span-7">
+              <section className="pb-1">
+                <h2 className="text-[15px] font-semibold leading-5 text-zinc-900 sm:text-base">
+                  {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
+                </h2>
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
+                </p>
+              </section>
+
+              {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
+                <section className="mt-5 grid overflow-hidden rounded-[20px] border border-zinc-300 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] sm:grid-cols-[1fr_1.7fr_.78fr_.55fr]" aria-label="Guest favourite rating summary">
+                  <div className="flex items-center gap-2.5 border-b border-zinc-200 px-4 py-3 sm:border-b-0 sm:border-r">
+                    <span aria-hidden="true" className="text-[27px] leading-none text-amber-700">❦</span>
+                    <span className="text-[11px] font-medium leading-[13px] text-zinc-800">Guest<br />favourite</span>
+                  </div>
+                  <p className="flex items-center px-4 py-3 text-[11px] leading-[14px] text-zinc-700 sm:border-r sm:py-2">One of the most loved homes on Homyz, according to guests.</p>
+                  <div className="flex items-center justify-center border-t border-zinc-200 px-4 py-3 sm:border-r sm:border-t-0">
+                    <div><p className="text-base font-bold leading-none text-zinc-900">{reviewRating.toFixed(2)}</p><p className="mt-1 text-[10px] tracking-[0.1em] text-amber-500">★★★★★</p></div>
+                  </div>
+                  <div className="flex items-center justify-center border-t border-zinc-200 px-3 py-3 sm:border-t-0"><p className="text-center text-xs font-semibold leading-4 text-zinc-900">{reviewCount}<br /><span className="text-[10px] font-normal text-zinc-500">{reviewCount === 1 ? "Review" : "Reviews"}</span></p></div>
+                </section>
+              )}
+
               {/* Property Summary & Host */}
-              <div className="flex items-center justify-between pb-6 border-b border-zinc-200/80">
-                <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-zinc-900">
-                    {listing.listingType || "Entire place"} hosted by {listing.host?.name || "Homyz host"}
-                  </h2>
-                  <p className="text-xs text-zinc-500 font-normal">
-                    {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} ·{" "}
-                    {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} ·{" "}
-                    {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} ·{" "}
-                    {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bathroom" : "bathrooms"}
-                  </p>
+              <section className="mt-7 flex items-center gap-3.5 border-b border-zinc-200/80 pb-6">
+                <div className="min-w-0 space-y-1">
+                  <h2 className="text-sm font-semibold text-zinc-900">Hosted by {listing.host?.name || "Homyz host"}</h2>
+                  <p className="text-[11px] text-zinc-500">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
                 </div>
                 {listing.host?.image && !hostImageFailed ? (
                   <img
                     src={listing.host.image}
                     alt={listing.host.name || "Host"}
                     onError={() => setHostImageFailed(true)}
-                    className="w-14 h-14 rounded-full object-cover border border-zinc-200 shrink-0"
+                    className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-900 text-lg border border-amber-200 shrink-0">
+                  <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
                     {(listing.host?.name || "H")[0].toUpperCase()}
                   </div>
                 )}
-              </div>
+              </section>
 
               {/* Highlights (if any) */}
-              {Array.isArray(listing.highlights) && listing.highlights.length > 0 && (
-                <div className="space-y-3 pb-6 border-b border-zinc-200/80">
-                  <h3 className="text-sm font-semibold text-zinc-900">Property highlights</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {listing.highlights.map((h: string, i: number) => (
-                      <span
-                        key={i}
-                        className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-800"
-                      >
-                        ✨ {h}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+              {trustHighlights.length > 0 && (
+                <section className="mt-5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
+                  {trustHighlights.map((highlight) => (
+                    <div key={highlight.title} className="flex items-start gap-3">
+                      <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-zinc-300 p-1.5 text-zinc-700"><TrustHighlightIcon name={highlight.icon} /></span>
+                      <div><h3 className="text-[11px] font-medium leading-4 text-zinc-900">{highlight.title}</h3><p className="mt-0.5 text-[10px] leading-[13px] text-zinc-500">{highlight.description}</p></div>
+                    </div>
+                  ))}
+                </section>
               )}
 
-              {/* Sleeping Arrangements */}
+              {/* Description */}
+              {normalizedDescription && (
+                <section className="mt-6 border-b border-zinc-200/80 pb-6">
+                  <h3 className="text-[15px] font-semibold text-zinc-900">About this place</h3>
+                  <p
+                    className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-[11px] leading-[15px] text-zinc-600"
+                  >
+                    {normalizedDescription}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsDescriptionModalOpen(true)}
+                    aria-haspopup="dialog"
+                    className="mt-4 rounded-full border border-zinc-300 bg-white px-5 py-2 text-[11px] font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                  >
+                    Show more
+                  </button>
+                </section>
+              )}
+
+              <div className="mt-8 flex flex-col gap-8">
+              {/* Sleeping arrangements are intentionally hidden on this page.
               {rooms.length > 0 && (
                 <div className="space-y-4 pb-6 border-b border-zinc-200/80">
                   <h3 className="text-base font-bold text-zinc-900">{"Where you'll sleep"}</h3>
@@ -718,68 +965,7 @@ export function PublicListingDetailClient({
                   </div>
                 </div>
               )}
-
-              {/* Description */}
-              {normalizedDescription && (
-                <div className="space-y-3 pb-6 border-b border-zinc-200/80">
-                  <h3 className="text-base font-bold text-zinc-900">About this space</h3>
-                  <p
-                    ref={descriptionRef}
-                    className={`text-xs text-zinc-700 leading-relaxed ${
-                      isDescriptionExpanded ? "whitespace-pre-line break-words" : "line-clamp-4 whitespace-pre-line break-words"
-                    }`}
-                  >
-                    {normalizedDescription}
-                  </p>
-                  {isDescriptionExpandable && (
-                    <button
-                      type="button"
-                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                      aria-expanded={isDescriptionExpanded}
-                      className="text-xs font-semibold text-zinc-900 underline cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-                    >
-                      {isDescriptionExpanded ? "Show less" : "Show more"}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {structuredDescription.some(([, value]) => typeof value === "string" && value.trim()) && (
-                <section className="space-y-4 pb-6 border-b border-zinc-200/80">
-                  {structuredDescription.map(([heading, value]) => typeof value === "string" && value.trim() ? <div key={heading} className="space-y-1"><h3 className="text-sm font-bold text-zinc-900">{heading}</h3><p className="text-xs leading-relaxed text-zinc-700">{value}</p></div> : null)}
-                </section>
-              )}
-
-              {(listing.host || hostBio || Object.values(hostPrompts).some((value) => (typeof value === "string" && value) || (Array.isArray(value) && value.length > 0)) || hostInterests.length > 0 || hostStamps.length > 0) && (
-                <section className="space-y-3 pb-6 border-b border-zinc-200/80">
-                  <h3 className="text-base font-bold text-zinc-900">Meet your host</h3>
-                  {listing.host && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-3">
-                      {listing.host.image && !hostImageFailed ? (
-                        <img src={listing.host.image} alt={listing.host.name || "Host"} onError={() => setHostImageFailed(true)} className="size-12 rounded-full border border-zinc-200 object-cover" />
-                      ) : (
-                        <div aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-sm font-bold text-amber-900">
-                          {(listing.host.name || "H")[0]?.toUpperCase()}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-zinc-900">{listing.host.name || "Homyz host"}</p>
-                        {hostSince && <p className="text-[11px] text-zinc-500">Hosting since {hostSince}</p>}
-                        <div className="mt-1 flex flex-wrap gap-1.5">
-                          {listing.host.isSuperhost && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800">Superhost</span>}
-                          {listing.isGuestFavorite && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900">Guest favourite listing</span>}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {hostBio && <p className="text-xs leading-relaxed text-zinc-700">{hostBio}</p>}
-                  {Object.entries(hostPrompts).filter(([, value]) => (typeof value === "string" && value) || (Array.isArray(value) && value.length > 0)).map(([key, value]) => (
-                    <div key={key} className="text-xs text-zinc-700"><span className="font-semibold">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}: </span>{Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").join(", ") : value as string}</div>
-                  ))}
-                  {hostInterests.length > 0 && <div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] capitalize text-zinc-700">{interest}</span>)}</div>}
-                  {hostStamps.length > 0 && <p className="text-xs text-zinc-600"><span className="font-semibold">Where I&apos;ve been: </span>{hostStamps.join(", ")}</p>}
-                </section>
-              )}
+              */}
 
               {/* Amenities Grid */}
               <div className="space-y-4 pb-6 border-b border-zinc-200/80">
@@ -796,7 +982,7 @@ export function PublicListingDetailClient({
                     ))}
                   </div>
 
-                  {categorizedAmenities.length > 8 && (
+                  {categorizedAmenities.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setIsAllAmenitiesOpen(true)}
@@ -808,33 +994,85 @@ export function PublicListingDetailClient({
                 </>}
               </div>
 
-              <ListingAvailabilityCalendar
-                month={availabilityMonth}
-                onMonthChange={setAvailabilityMonth}
-                ranges={bookedDateRanges}
-                isLoading={isAvailabilityLoading}
-                error={availabilityError}
+              {listing.host && (
+                <section className="order-5 border-b border-zinc-200/80 pb-8" aria-labelledby="meet-host-heading">
+                  <h3 id="meet-host-heading" className="mb-4 text-[17px] font-semibold text-zinc-900">Meet your host</h3>
+                  <div className="grid gap-7 md:grid-cols-[300px_minmax(0,1fr)] md:gap-12">
+                    <div>
+                      {hostProfileHref ? (
+                        <Link href={hostProfileHref} aria-label={`View ${listing.host.name || "host"}'s profile`} className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900">
+                          <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostSince={hostSince} hostTenure={hostTenure} />
+                        </Link>
+                      ) : (
+                        <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostSince={hostSince} hostTenure={hostTenure} />
+                      )}
+
+                      {(hostWork || hostLanguages.length > 0) && <div className="mt-5 space-y-3 text-sm text-zinc-700">
+                        {hostWork && <p className="flex items-center gap-3"><span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full border border-zinc-300"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-5"><path d="M7 8V6.5A2.5 2.5 0 0 1 9.5 4h5A2.5 2.5 0 0 1 17 6.5V8M4 9h16v9.5A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5V9Zm0 4h16M10 13v2h4v-2" /></svg></span><span>My work: {hostWork}</span></p>}
+                        {hostLanguages.length > 0 && <p className="flex items-center gap-3"><span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full border border-zinc-300 text-base">文</span><span>Speaks {hostLanguages.join(", ")}</span></p>}
+                      </div>}
+                    </div>
+
+                    <div className="min-w-0 pt-1">
+                      <h4 className="text-lg font-medium text-zinc-900">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : `Hosted by ${listing.host.name || "Homyz host"}`}</h4>
+                      {listing.host.isSuperhost && <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-500">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>}
+                      {hostBio && <p className="mt-4 max-w-2xl line-clamp-3 whitespace-pre-line text-sm leading-5 text-zinc-700">{hostBio}</p>}
+
+                      {(hostSince || listing.host.isSuperhost) && <div className="mt-6 space-y-1.5">
+                        <h5 className="text-base font-medium text-zinc-900">Host details</h5>
+                        {hostSince && <p className="text-sm text-zinc-500">Joined Homyz in {hostSince}</p>}
+                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-sm text-zinc-600"><span aria-hidden="true">★</span> Superhost</p>}
+                      </div>}
+
+                      {hostProfileHref && <Link href={hostProfileHref} className="mt-6 inline-flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">View profile</Link>}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              <div className="order-2">
+                <ListingAvailabilityCalendar
+                  month={availabilityMonth}
+                  onMonthChange={setAvailabilityMonth}
+                  ranges={bookedDateRanges}
+                  isLoading={isAvailabilityLoading}
+                  error={availabilityError}
                 checkIn={checkIn}
                 checkOut={checkOut}
                 locationName={listing.city || listing.title || "this property"}
+                minimumNights={minimumNights}
                 onDateChange={(nextCheckIn, nextCheckOut) => {
+                  if (!nextCheckIn && !nextCheckOut) {
+                    clearBookingDates();
+                    return;
+                  }
+                  setQuote(null);
+                  setQuoteError(null);
                   setCheckIn(nextCheckIn);
                   setCheckOut(nextCheckOut);
-                  setQuoteError(null);
                 }}
-                onSelectionError={setQuoteError}
-              />
+                  onSelectionError={setQuoteError}
+                />
+              </div>
 
-              {/* No property review model or public review API exists yet. Do
-                  not mislabel host-profile metrics as reviews for this stay. */}
-              <section className="space-y-2 border-b border-zinc-200/80 pb-6" aria-labelledby="guest-reviews-heading">
-                <h3 id="guest-reviews-heading" className="text-base font-bold text-zinc-900">Guest reviews</h3>
-                <p className="text-xs leading-relaxed text-zinc-600">This property has no guest reviews yet.</p>
-              </section>
+              {/* Guest Reviews Section */}
+              <div className="order-3">
+                <ReviewList
+                  listingId={listing.id}
+                  isGuestFavorite={listing.isGuestFavorite}
+                  onStatsChange={({ rating, count }) => {
+                    setReviewRating(rating);
+                    setReviewCount(count);
+                  }}
+                />
+              </div>
 
               {/* House Rules */}
-              <section className="space-y-3 pb-6 border-b border-zinc-200/80" aria-labelledby="house-rules-heading">
-                <h3 id="house-rules-heading" className="text-base font-bold text-zinc-900">House rules</h3>
+              <section className="order-6 border-b border-zinc-200/80 pb-7" aria-labelledby="things-to-know-heading">
+                <h3 id="things-to-know-heading" className="mb-4 text-base font-semibold text-zinc-900">Things to know</h3>
+                <div className="grid gap-3 md:grid-cols-3">
+              <div className="space-y-3 rounded-2xl border border-zinc-200 p-4" aria-labelledby="house-rules-heading">
+                <h4 id="house-rules-heading" className="text-sm font-semibold text-zinc-900">House rules</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-zinc-700">
                   {formatTime(listing.checkInStart) && <div className="flex items-center gap-2"><span aria-hidden="true">🕒</span><span>Check-in after {formatTime(listing.checkInStart)}{formatTime(listing.checkInEnd) ? `, before ${formatTime(listing.checkInEnd)}` : ""}</span></div>}
                   {formatTime(listing.checkOutTime) && <div className="flex items-center gap-2"><span aria-hidden="true">⏱️</span><span>Check-out before {formatTime(listing.checkOutTime)}</span></div>}
@@ -850,17 +1088,17 @@ export function PublicListingDetailClient({
                   {configuredHouseRules.map((rule) => <div key={rule} className="flex items-start gap-2"><span aria-hidden="true">✓</span><span>{rule}</span></div>)}
                   {listing.additionalRules && <div className="flex items-start gap-2 sm:col-span-2"><span aria-hidden="true">📋</span><span className="whitespace-pre-line break-words">{listing.additionalRules}</span></div>}
                 </div>
-              </section>
+              </div>
 
-              {(cancellationLabel || longTermCancellationLabel) && <section className="space-y-2 pb-6 border-b border-zinc-200/80" aria-labelledby="cancellation-heading">
-                <h3 id="cancellation-heading" className="text-base font-bold text-zinc-900">Cancellation policy</h3>
+              {(cancellationLabel || longTermCancellationLabel) && <div className="space-y-2 rounded-2xl border border-zinc-200 p-4" aria-labelledby="cancellation-heading">
+                <h4 id="cancellation-heading" className="text-sm font-semibold text-zinc-900">Cancellation policy</h4>
                 {cancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{cancellationLabel}.</span> Applies to stays under 28 nights.</p>}
                 {longTermCancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{longTermCancellationLabel}.</span> Applies to stays of 28 nights or more.</p>}
-              </section>}
+              </div>}
 
               {/* Safety Disclosures */}
-              <div className="space-y-3 pb-6 border-b border-zinc-200/80">
-                <h3 className="text-base font-bold text-zinc-900">Safety & property</h3>
+              <div className="space-y-3 rounded-2xl border border-zinc-200 p-4">
+                <h4 className="text-sm font-semibold text-zinc-900">Safety & property</h4>
                 <div className="space-y-2 text-xs text-zinc-600">
                   {publicSafetyEquipment.map((item) => <div key={item} className="flex items-center gap-2"><span>🛡️</span><span>{humanize(item)}</span></div>)}
                   {publicSafetyHazards.map((item) => <div key={item} className="flex items-center gap-2"><span>⚠️</span><span>{item}</span></div>)}
@@ -868,40 +1106,22 @@ export function PublicListingDetailClient({
                   {publicSafetyEquipment.length === 0 && publicSafetyHazards.length === 0 && publicSafetyDisclosures.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
                 </div>
               </div>
+                </div>
+              </section>
 
               {/* Location & Map Section */}
-              <div className="space-y-3 pb-6">
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
-                  {(() => {
-                    const mapsUrl = getGoogleMapsUrl(listing);
-                    if (!mapsUrl) return null;
-                    return (
-                      <a
-                        href={mapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackGoogleMapsOpen(listing.id, "property_details")}
-                        aria-label={`Open ${listing.title || "property"} location in Google Maps`}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-800 hover:text-amber-950 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-full transition-colors shrink-0 cursor-pointer"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5 text-zinc-600" aria-hidden="true">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                          <polyline points="15 3 21 3 21 9" />
-                          <line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                        <span>View in Google Maps</span>
-                      </a>
-                    );
-                  })()}
-                </div>
+              <div className="order-4 space-y-3 pb-6">
+                <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
                 <p className="text-xs text-zinc-500 font-normal">
                   {locationString || "Location details are not available for this listing."}
                   {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
                 </p>
                 {publicCoordinates ? (
-                  <div className="h-72 w-full rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
+                  <div className="h-[320px] w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 shadow-sm sm:h-[390px]">
                     <RealMap
+                      address={listing.shortAddress || listing.address || ""}
+                      city={listing.city || undefined}
+                      country={listing.country || undefined}
                       lat={publicCoordinates.latitude}
                       lng={publicCoordinates.longitude}
                       showExactLocation={listing.showExactLocation ?? false}
@@ -917,13 +1137,6 @@ export function PublicListingDetailClient({
                     Map location is not available for this listing.
                   </p>
                 )}
-                {(listing.neighborhoodDescription || listing.gettingAround || listing.locationFeatures?.length || listing.views?.length) && <div className="space-y-4 pt-3 text-xs text-zinc-700">
-                  {listing.neighborhoodDescription && <div><h4 className="font-semibold text-zinc-900">Neighborhood</h4><p className="mt-1 leading-relaxed">{listing.neighborhoodDescription}</p></div>}
-                  {listing.gettingAround && <div><h4 className="font-semibold text-zinc-900">Getting around</h4><p className="mt-1 leading-relaxed">{listing.gettingAround}</p></div>}
-                  {listing.locationFeatures && listing.locationFeatures.length > 0 && <div><h4 className="font-semibold text-zinc-900">Location features</h4><p className="mt-1 capitalize">{listing.locationFeatures.map((feature) => feature.replace(/_/g, " ")).join(" · ")}</p></div>}
-                  {listing.views && listing.views.length > 0 && <div><h4 className="font-semibold text-zinc-900">Views</h4><p className="mt-1 capitalize">{listing.views.map((view) => view.replace(/_/g, " ")).join(" · ")}</p></div>}
-                </div>}
-
                 {/* TEMPORARILY DISABLED: local guidebook cards are hidden while the feature is paused. */}
                 {/* {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
@@ -960,11 +1173,17 @@ export function PublicListingDetailClient({
                   </div>
                 )} */}
               </div>
+              </div>
             </div>
 
             {/* RIGHT COLUMN: BOOKING & PRICING PANEL */}
             <div className="lg:col-span-5">
-              <div className="sticky top-20 space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-lg">
+              <div className="sticky top-24 space-y-3">
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[11px] text-zinc-600 shadow-sm">
+                  <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">✓</span>
+                  Prices include all fees
+                </div>
+              <div className="space-y-4 rounded-2xl border border-zinc-300 bg-white p-4 shadow-[0_5px_16px_rgba(24,24,27,0.08)] sm:p-5">
                 {bookingSuccess ? (
                   <div className="py-8 text-center space-y-3">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
@@ -1006,14 +1225,7 @@ export function PublicListingDetailClient({
                             type="date"
                             value={checkIn}
                             min={today}
-                            onChange={(e) => {
-                              const nextCheckIn = e.target.value;
-                              setCheckIn(nextCheckIn);
-                              if (checkOut && (checkOut <= nextCheckIn || overlapsBookedRange(nextCheckIn, checkOut, bookedDateRanges))) {
-                                setCheckOut("");
-                                setQuoteError("Those dates include an unavailable night. Please choose different dates.");
-                              }
-                            }}
+                            onChange={(e) => updateCheckIn(e.target.value)}
                             className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
                           />
                         </div>
@@ -1025,15 +1237,8 @@ export function PublicListingDetailClient({
                             type="date"
                             value={checkOut}
                             min={minimumCheckOut}
-                            onChange={(e) => {
-                              const nextCheckOut = e.target.value;
-                              if (checkIn && overlapsBookedRange(checkIn, nextCheckOut, bookedDateRanges)) {
-                                setCheckOut("");
-                                setQuoteError("Those dates include an unavailable night. Please choose different dates.");
-                                return;
-                              }
-                              setCheckOut(nextCheckOut);
-                            }}
+                            disabled={!checkIn}
+                            onChange={(e) => updateCheckOut(e.target.value)}
                             className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
                           />
                         </div>
@@ -1043,24 +1248,37 @@ export function PublicListingDetailClient({
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                           Guests
                         </label>
-                        <select
-                          value={guestsCount}
-                          onChange={(e) => setGuestsCount(parseInt(e.target.value, 10))}
-                          className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
+                        <button
+                          type="button"
+                          aria-expanded={isGuestSelectorOpen}
+                          aria-controls="guest-selector"
+                          onClick={() => setIsGuestSelectorOpen((open) => !open)}
+                          className="flex w-full items-center justify-between text-left text-xs font-medium text-zinc-900"
                         >
-                          {Array.from({ length: maximumGuests }).map((_, i) => (
-                            <option key={i + 1} value={i + 1}>
-                              {i + 1} {i === 0 ? "guest" : "guests"}
-                            </option>
-                          ))}
-                        </select>
+                          <span>{guestsCount} {guestsCount === 1 ? "guest" : "guests"}</span>
+                          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-4 transition-transform ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                        {isGuestSelectorOpen && (
+                          <div id="guest-selector" className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3" aria-label="Guest selection">
+                            <div className="flex items-center justify-between gap-3">
+                              <div><p className="text-xs font-semibold text-zinc-900">Guests</p><p className="mt-0.5 text-[10px] text-zinc-500">This property allows up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p></div>
+                              <div className="flex items-center gap-2">
+                                <button type="button" onClick={() => updateGuestCount(guestsCount - 1)} disabled={guestsCount <= 1} aria-label="Remove one guest" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                <span className="min-w-4 text-center text-xs font-semibold text-zinc-900" aria-live="polite">{guestsCount}</span>
+                                <button type="button" onClick={() => updateGuestCount(guestsCount + 1)} disabled={guestsCount >= maximumGuests} aria-label="Add one guest" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     <p className="text-[11px] leading-relaxed text-zinc-500" aria-live="polite">
-                      {bookedDateRanges.length > 0
-                        ? "Unavailable dates are excluded automatically."
-                        : "Availability is confirmed before you reserve."}
+                      {isAvailabilityLoading
+                        ? "Checking availability…"
+                        : bookedDateRanges.length > 0
+                          ? "Unavailable dates cannot be reserved."
+                          : "Availability is confirmed before you reserve."}
                     </p>
 
                     {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-zinc-600 whitespace-pre-wrap">{listing.bookingMessage}</p>}
@@ -1143,20 +1361,8 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote.hostServiceFee > 0 && (
-                          <div className="flex items-center justify-between text-zinc-600">
-                            <span>Guest service fee ({quote.hostServiceFeePercentage}%)</span>
-                            <span>{formatListingPrice(quote.hostServiceFee, currencyCode)}</span>
-                          </div>
-                        )}
-
                         {quote.taxes && quote.taxes.length > 0 ? (
                           <>
-                            <div className="flex items-center justify-between text-zinc-600">
-                              <span>Total before taxes</span>
-                              <span>{formatListingPrice(((quote.nightlySubtotal - quote.discountAmount) + quote.cleaningFee + (quote.extraGuestFee || 0) + (quote.hostServiceFee || 0)), listing.currency ?? getCurrencyForCountry(listing.country))}</span>
-                            </div>
-
                             <div className="pt-2 border-t border-zinc-100 space-y-1.5">
                                 <div className="flex items-center justify-between text-zinc-600">
                                   <span className="flex items-center gap-1.5 font-medium">
@@ -1202,7 +1408,7 @@ export function PublicListingDetailClient({
                       type="button"
                       disabled={isBookingSubmitting || !hasValidQuote}
                       onClick={handleReserve}
-                      className="w-full rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-bold text-sm py-3.5 shadow-md transition-all cursor-pointer disabled:opacity-50"
+                      className="w-full rounded-2xl border border-amber-400 bg-[#fee09a] py-3 text-sm font-bold text-zinc-900 transition-colors hover:bg-[#fbd775] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isBookingSubmitting
                         ? "Confirming..."
@@ -1217,6 +1423,11 @@ export function PublicListingDetailClient({
                   </>
                 )}
               </div>
+                <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center gap-2 px-2 py-1 text-[11px] text-zinc-600 underline underline-offset-2 hover:text-zinc-900">
+                  <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">!</span>
+                  Report this listing
+                </a>
+              </div>
             </div>
           </div>
           </div>
@@ -1224,6 +1435,26 @@ export function PublicListingDetailClient({
       </main>
 
       {/* ListingGallery provides an integrated lightbox/modal */}
+
+      {isDescriptionModalOpen && (
+        <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
+              <h3 id="description-modal-title" className="text-lg font-semibold text-zinc-900">About this place</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="p-1 text-zinc-500 hover:text-zinc-900">✕</button>
+            </div>
+            <div className="mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
+              <p className="whitespace-pre-line">{normalizedDescription}</p>
+              {aboutLocationDetails.map((detail) => (
+                <section key={detail.heading}>
+                  <h4 className="text-sm font-semibold text-zinc-900">{detail.heading}</h4>
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
+                </section>
+              ))}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
 
       {/* ALL AMENITIES MODAL */}
       {isAllAmenitiesOpen && (

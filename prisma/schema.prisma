@@ -121,6 +121,13 @@ enum HostingType {
   SERVICE
 }
 
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+  DELETED
+  PENDING_MODERATION
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
@@ -179,6 +186,8 @@ model User {
   taxRegistrations                TaxRegistration[]
   taxAuditLogs                    TaxAuditLog[]
   listingRemovalFeedbacks         ListingRemovalFeedback[]
+  authoredReviews                 Review[]                   @relation("AuthoredReviews")
+  moderatedReviews                Review[]                   @relation("ModeratedReviews")
 
   @@index([role])
   @@index([adminRoleId])
@@ -468,6 +477,7 @@ model Listing {
   guidebookListings GuidebookListing[]
   taxes             ListingTax[]
   taxAuditLogs      TaxAuditLog[]
+  reviews           Review[]           @relation("ListingReviews")
 
   @@index([hostId])
   @@index([published])
@@ -539,10 +549,48 @@ model Booking {
   user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
   taxes   ReservationTax[]
+  reviews Review[]
 
   @@index([userId])
   @@index([listingId])
   @@index([listingId, startDate, endDate, status])
+}
+
+model Review {
+  id                String        @id @default(cuid())
+  listingId         String
+  bookingId         String?
+  authorId          String
+  rating            Int // 1-5
+  cleanlinessRating Int?
+  accuracyRating    Int?
+  checkInRating     Int?
+  communicationRating Int?
+  locationRating    Int?
+  valueRating       Int?
+  comment           String        @db.Text // Empty string allowed for rating-only reviews
+  topics            String[]      @default([])
+  status            ReviewStatus  @default(PUBLISHED)
+
+  // Moderation
+  moderatedAt       DateTime?
+  moderatedById     String?
+  rejectionReason   String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  listing   Listing   @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
+  booking   Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author    User      @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  moderator User?     @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([listingId, status])
+  @@index([listingId, status, createdAt])
+  @@index([authorId])
+  @@index([bookingId])
+  @@unique([bookingId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

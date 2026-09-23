@@ -11,6 +11,8 @@ import type {
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+import { BookingStatus, ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
+import { qualificationService } from "@/services/qualification.service";
 
 import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
 
@@ -247,6 +249,74 @@ async function getUserStats(userId: string) {
   };
 }
 
+/** Public, privacy-safe data for the dedicated host profile page. */
+async function getPublicHostProfile(userId: string) {
+  const host = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, image: true, createdAt: true, publicProfile: true },
+  });
+  if (!host) throw AppError.notFound("Host not found");
+
+  const profile = host.publicProfile && typeof host.publicProfile === "object" && !Array.isArray(host.publicProfile)
+    ? host.publicProfile as Record<string, unknown>
+    : null;
+  if (!profile || profile.profileVisible === false) throw AppError.notFound("Host profile is unavailable");
+
+  const publicListingWhere = {
+    hostId: host.id,
+    published: true,
+    status: ListingStatus.ACTIVE,
+    isPaused: false,
+    deletedAt: null,
+  };
+  const [listings, reviewSummary, latestReviews, bookingGroups] = await Promise.all([
+    prisma.listing.findMany({
+      where: publicListingWhere,
+      select: { id: true, customSlug: true, title: true, photos: true, city: true, country: true, listingType: true, price: true },
+      orderBy: { updatedAt: "desc" },
+      take: 12,
+    }),
+    prisma.review.aggregate({
+      where: { status: ReviewStatus.PUBLISHED, listing: publicListingWhere },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.review.findMany({
+      where: { status: ReviewStatus.PUBLISHED, comment: { not: "" }, listing: publicListingWhere },
+      select: { id: true, rating: true, comment: true, createdAt: true, author: { select: { name: true, image: true } }, listing: { select: { title: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+    prisma.booking.groupBy({
+      by: ["status"],
+      where: { listing: { hostId: host.id }, status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
+      _count: { _all: true },
+    }),
+  ]);
+  const bookingSummary = {
+    confirmed: bookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
+    cancelled: bookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
+  };
+
+  return {
+    host: {
+      id: host.id,
+      name: host.name,
+      image: host.image,
+      createdAt: host.createdAt,
+      publicProfile: profile,
+      isSuperhost: qualificationService.isSuperhost({ createdAt: host.createdAt, publicProfile: profile, bookingSummary }),
+    },
+    stats: {
+      reviewCount: reviewSummary._count._all,
+      averageRating: reviewSummary._avg.rating === null ? null : Math.round(reviewSummary._avg.rating * 100) / 100,
+      listingCount: listings.length,
+    },
+    reviews: latestReviews,
+    listings,
+  };
+}
+
 async function searchUsers(query: string, limit = 10) {
   const term = query.trim();
   return prisma.user.findMany({
@@ -278,5 +348,6 @@ export const userService = {
   updateTripPhoto,
   deleteTripPhoto,
   getUserStats,
+  getPublicHostProfile,
   searchUsers,
 };
