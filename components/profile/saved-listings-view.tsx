@@ -74,7 +74,7 @@ export function SavedListingsView() {
   return (
     <div className="flex flex-col animate-in fade-in duration-300">
       {/* Title Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:mb-8">
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:mb-8">
         <div>
           <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
             Saved Listings
@@ -130,7 +130,7 @@ export function SavedListingsView() {
         <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
           {filteredProperties.map((item) => (
             <article key={item.id} className="group flex flex-col">
-              <div className="relative aspect-[288/256] w-full overflow-hidden rounded-[24px] border border-[#727272] bg-[#F5F3EE]">
+              <div className="relative aspect-[288/256] w-full overflow-hidden xl:rounded-[24px] rounded-lg border border-[#727272] bg-[#F5F3EE]">
                 <Image
                   src={item.image}
                   alt={item.title}

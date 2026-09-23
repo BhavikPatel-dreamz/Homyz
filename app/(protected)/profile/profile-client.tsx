@@ -25,6 +25,7 @@ import { InviteEarnView } from "@/components/profile/invite-earn-view";
 import { SavedListingsView } from "@/components/profile/saved-listings-view";
 import { SupportChatView } from "@/components/profile/support-chat-view";
 import { NotificationsView } from "@/components/profile/notifications-view";
+import { BackButton } from "@/components/ui/back-button";
 import { ProfileManagementClient } from "@/app/(protected)/profile-management/profile-management-client";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 
@@ -181,8 +182,7 @@ export function ProfileClient({
   return (
     <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-5 lg:pb-28 xl:pt-[88px]">
         <div className="mb-5 flex items-center justify-between lg:hidden">
-          <button
-            type="button"
+          <BackButton
             onClick={() => {
               if (activeTab !== "about_me") {
                 handleSelectTab("about_me");
@@ -192,11 +192,7 @@ export function ProfileClient({
             }}
             aria-label="Go back"
             className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
+          />
           
         </div>
 

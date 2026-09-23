@@ -839,7 +839,7 @@ export function AdminUserTable({
                           {isRevoking && (
                             <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                           )}
-                          <span>Sign Out</span>
+                          <span>Log Out</span>
                         </button>
 
                         {/* Delete Admin */}

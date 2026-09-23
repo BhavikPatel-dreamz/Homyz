@@ -214,7 +214,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
             {menuOpen && (
-              <div className="absolute right-0 top-full z-50 max-h-[calc(100dvh-80px)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-3xl border border-zinc-200/80 bg-white p-3.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80">
+              <div className="visible-scrollbar absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px]">
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
@@ -229,9 +229,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       }}
                       className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 rounded-2xl transition-colors text-left cursor-pointer"
                     >
-                      <svg className="w-5 h-5 text-zinc-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                      </svg>
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                        <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />
+                      </span>
                       <span>{t("header_languages_currency")}</span>
                     </button>
 
@@ -337,33 +337,27 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
                         if (item.requireAdmin && role !== "ADMIN") return null;
                         return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${pathname === item.href
-                              ? "bg-amber-100 text-amber-950 font-semibold"
-                              : "text-zinc-800 hover:bg-zinc-50"
-                              }`}
-                          >
-                            {item.label}
-                          </Link>
+                          <React.Fragment key={item.href}>
+                            {item.separatorBefore && <div className="my-1.5 border-t border-zinc-300/80" />}
+                            <Link
+                              href={item.href}
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${pathname === item.href
+                                ? "bg-amber-100 text-amber-950 font-semibold"
+                                : "text-zinc-800 hover:bg-zinc-50"
+                                }`}
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                                <Image src={item.icon} alt="" width={20} height={20} className="size-5 object-contain" />
+                              </span>
+                              {item.label}
+                            </Link>
+                          </React.Fragment>
                         );
                       })}
                     </div>
 
                     <div className="border-t border-zinc-100 pt-2 mt-1 flex flex-col gap-1">
-                      <Link
-                        href="/help"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-xl transition-colors text-left"
-                      >
-                        <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{t("header_help_centre")}</span>
-                      </Link>
-
                       <button
                         type="button"
                         onClick={() => {
@@ -372,9 +366,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         }}
                         className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-xl transition-colors text-left"
                       >
-                        <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                          <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />
+                        </span>
                         <span>{t("header_languages_currency")}</span>
                       </button>
 
