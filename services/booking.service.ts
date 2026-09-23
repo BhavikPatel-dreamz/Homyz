@@ -486,8 +486,7 @@ async function listForUser(
   actor: AuthUser,
   opts: { skip: number; take: number },
 ): Promise<{ items: BookingDTO[]; total: number }> {
-  const page = Math.floor(opts.skip / Math.max(1, opts.take)) + 1;
-  const cacheKey = CACHE_KEYS.BOOKINGS_USER(actor.id, page);
+  const cacheKey = CACHE_KEYS.BOOKINGS_USER(actor.id, opts.skip, opts.take);
 
   return getOrSetCache(
     cacheKey,
@@ -515,11 +514,63 @@ async function listForUser(
   );
 }
 
+export type HostPendingBooking = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  guests: number;
+  createdAt: Date;
+  guest: { name: string | null; image: string | null };
+  listing: { title: string; city: string | null; country: string | null; photos: string[] };
+};
+
+/** Pending, future-facing requests owned by the authenticated host. */
+async function listPendingForHost(actor: AuthUser): Promise<HostPendingBooking[]> {
+  const bookings = await prisma.booking.findMany({
+    where: {
+      status: BookingStatus.PENDING,
+      endDate: { gt: new Date() },
+      listing: { hostId: actor.id },
+    },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      guests: true,
+      createdAt: true,
+      user: { select: { name: true, image: true } },
+      listing: { select: { title: true, city: true, country: true, photos: true } },
+    },
+    orderBy: [{ startDate: "asc" }, { createdAt: "asc" }],
+  });
+  return bookings.map((booking) => ({ ...booking, guest: booking.user }));
+}
+
+/** Confirms every active pending booking belonging to the authenticated host. */
+async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: number }> {
+  const pendingBookings = await prisma.booking.findMany({
+    where: {
+      status: BookingStatus.PENDING,
+      endDate: { gt: new Date() },
+      listing: { hostId: actor.id },
+    },
+    select: { id: true, userId: true },
+  });
+  if (pendingBookings.length === 0) return { approved: 0 };
+
+  const result = await prisma.booking.updateMany({
+    where: { id: { in: pendingBookings.map((booking) => booking.id) }, status: BookingStatus.PENDING },
+    data: { status: BookingStatus.CONFIRMED },
+  });
+  await Promise.all(pendingBookings.map((booking) => invalidateBookingCache(booking.id, booking.userId, actor.id)));
+  return { approved: result.count };
+}
+
 async function getById(actor: AuthUser, id: string): Promise<BookingDTO> {
   const booking = await getOrSetCache(
     CACHE_KEYS.BOOKING(id),
     async () => {
-      const b = await prisma.booking.findUnique({ where: { id } });
+      const b = await prisma.booking.findUnique({ where: { id }, include: { listing: true } });
       if (!b) throw AppError.notFound("Booking not found");
       return toBookingDTO(b);
     },
@@ -617,6 +668,8 @@ async function listForAdminDashboard() {
 export const bookingService = {
   create,
   listForUser,
+  listPendingForHost,
+  approveAllPendingForHost,
   getById,
   getQuote: getBookingQuote,
   getBookingQuote,

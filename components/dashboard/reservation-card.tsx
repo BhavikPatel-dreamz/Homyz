@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export interface ReservationCardData {
   id: string;
@@ -38,9 +39,11 @@ function formatDates(start: Date | string, end: Date | string) {
 export function ReservationCard({
   data,
   onSelect,
+  href,
 }: {
   data: ReservationCardData;
   onSelect?: (data: ReservationCardData) => void;
+  href?: string;
 }) {
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const title = data.propertyName || "Property name";
@@ -72,7 +75,15 @@ export function ReservationCard({
     </>
   );
 
-  return onSelect ? (
+  return href ? (
+    <Link
+      href={href}
+      aria-label={`View reservation for ${title}`}
+      className="block w-full min-w-0 cursor-pointer rounded-[24px] text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
+    >
+      {content}
+    </Link>
+  ) : onSelect ? (
     <button
       type="button"
       onClick={() => onSelect(data)}

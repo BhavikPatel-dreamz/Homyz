@@ -88,6 +88,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
     { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications" },
     { href: "/profile-management", label: t("header_account_settings") || "Account settings" },
     { href: "/dashboard", label: t("header_dashboard") || "Dashboard" },
+    { href: "/host/bookings", label: "Booking requests", requireHost: true },
     { href: "/host/today", label: t("header_today") || "Today", requireHost: true },
     { href: "/wishlists", label: "Wishlist" },
     { href: "/host/calendar", label: t("header_calendar") || "Calendar", requireHost: true },

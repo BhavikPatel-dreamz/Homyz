@@ -1,8 +1,8 @@
 export const GUEST_NAV_ITEMS = [
   { id: "about_me", label: "About me", href: "/profile", image: "/images/icons/profile-img.jpg" },
   { id: "upcoming_trips", label: "Upcoming Trips", href: "/profile/tab/upcoming", image: "/images/icons/upcoming-trips.svg" },
-  { id: "past_bookings", label: "Past Bookings", href: "/profile/tab/past", image: "/images/icons/post-bookings.svg" },
-  { id: "loyalty", label: "Loyalty Points Wallet", href: "/profile/tab/loyalty", image: "/images/icons/loyalty-points-wallet.svg" },
+  // { id: "past_bookings", label: "Past Bookings", href: "/profile/tab/past", image: "/images/icons/post-bookings.svg" },
+  // { id: "loyalty", label: "Loyalty Points Wallet", href: "/profile/tab/loyalty", image: "/images/icons/loyalty-points-wallet.svg" },
   { id: "invite", label: "Invite & Earn", href: "/profile/tab/invite", image: "/images/icons/invite-earn.svg" },
   { id: "saved", label: "Saved Listings", href: "/profile/tab/saved", image: "/images/icons/saved-listing.svg" },
   { id: "profile_management", label: "Profile Management", href: "/profile/tab/profile_management", image: "/images/icons/profile-management.svg" },
