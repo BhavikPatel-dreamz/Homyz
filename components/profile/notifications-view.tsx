@@ -71,7 +71,7 @@ export function NotificationsView() {
   return (
     <div className="flex flex-col animate-in fade-in duration-300">
       {/* Title Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:mb-8">
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row sm:items-center xl:justify-between xl:mb-8">
         <div>
           <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
             Notifications
@@ -119,11 +119,11 @@ export function NotificationsView() {
       {/* Notification Items List */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-200 py-16 text-center my-4">
-          <p className="text-sm font-semibold text-[#1F1F1F]">No notifications found</p>
+          <p className="text-sm font-medium text-[#1F1F1F]">No notifications found</p>
           <p className="mt-1 text-xs text-[#727272]">You are all caught up!</p>
         </div>
       ) : (
-        <div className="divide-y divide-[#E5E5E5] rounded-3xl border border-[#E5E5E5] bg-white overflow-hidden shadow-xs">
+        <div className="divide-y divide-[#E5E5E5] rounded-lg border border-[#E5E5E5] bg-white overflow-hidden shadow-xs">
           {filtered.map((item) => (
             <div
               key={item.id}
@@ -143,15 +143,15 @@ export function NotificationsView() {
               <div className="flex-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <h3
-                    className={`text-sm ${
-                      item.unread ? "font-semibold text-[#1F1F1F]" : "font-semibold text-zinc-700"
+                    className={`text-base ${
+                      item.unread ? "font-medium text-[#1F1F1F]" : "font-medium text-[#1f1f1f]"
                     }`}
                   >
                     {item.title}
                   </h3>
-                  <span className="shrink-0 text-[11px] text-[#727272]">{item.time}</span>
+                  <span className="shrink-0 text-sm text-[#727272]">{item.time}</span>
                 </div>
-                <p className="mt-1 text-xs leading-relaxed text-[#727272]">
+                <p className="mt-1 text-sm leading-relaxed text-[#727272]">
                   {item.description}
                 </p>
               </div>

@@ -450,7 +450,7 @@ export function ProfileManagementClient({
       )}
 
       {/* 1. HERO AVATAR CARD & COMMUNITY NOTE */}
-      <div className="mb-8 flex flex-col items-start gap-7 sm:flex-row sm:items-center sm:gap-6">
+      <div className="mb-8 flex flex-col items-start gap-7 xl:flex-row xl:items-center xl:gap-6">
         <div
           className={`profile-avtar-card relative md:mt-5 mt-0 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}
         >
@@ -504,7 +504,7 @@ export function ProfileManagementClient({
           )}
         </div>
 
-        <div className="flex-1 max-w-md sm:ml-15">
+        <div className="flex-1 max-w-md xl:ml-15">
           <h1 className="mb-4 text-[26px] font-semibold leading-tight text-[#1F1F1F] sm:hidden">
             My profile
           </h1>

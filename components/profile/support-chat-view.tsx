@@ -30,10 +30,18 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const messageFeedRef = useRef<HTMLDivElement>(null);
+  const messageIdRef = useRef(2);
+  void user;
 
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const messageFeed = messageFeedRef.current;
+    if (!messageFeed) return;
+
+    messageFeed.scrollTo({
+      top: messageFeed.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, isTyping]);
 
   const sendMessage = (textToSend: string) => {
@@ -41,7 +49,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
     if (!trimmed) return;
 
     const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${messageIdRef.current++}`,
       sender: "user",
       text: trimmed,
       time: "Just now",
@@ -66,7 +74,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
       }
 
       const agentReply: ChatMessage = {
-        id: `msg-${Date.now() + 1}`,
+        id: `msg-${messageIdRef.current++}`,
         sender: "agent",
         text: replyText,
         time: "Just now",
@@ -88,12 +96,12 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-1 gap-5 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
         {/* Live Chat Box */}
-        <div className="flex flex-col rounded-3xl border border-[#E5E5E5] bg-white shadow-xs overflow-hidden h-[540px]">
+        <div className="flex h-[clamp(420px,calc(100svh-11rem),540px)] min-w-0 flex-col overflow-hidden rounded-lg border border-[#727272] bg-white shadow-xs sm:h-[540px]">
           {/* Agent Chat Header */}
-          <div className="flex items-center justify-between border-b border-[#E5E5E5] bg-zinc-50/70 px-5 py-3.5">
-            <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center justify-between gap-3 border-b border-[#E5E5E5] bg-zinc-50/70 px-4 py-3 sm:px-5 sm:py-3.5">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="relative h-10 w-10 overflow-hidden rounded-full border border-zinc-200 bg-white">
                 <Image
                   src="/images/header-user-avatar.jpg"
@@ -102,19 +110,19 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
                   className="object-cover"
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-[#1F1F1F]">Sarah • Homyz Care</span>
-                <span className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-semibold text-[#1F1F1F]">Sarah • Homyz Care</span>
+                <span className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
                   Online • Typically replies instantly
                 </span>
               </div>
             </div>
-            <span className="text-[11px] text-[#727272]">24/7 Live Concierge</span>
+            <span className="shrink-0 text-[11px] text-[#727272] max-[420px]:hidden">24/7 Live Concierge</span>
           </div>
 
           {/* Chat Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div ref={messageFeedRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -145,18 +153,17 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
                 Sarah is typing...
               </div>
             )}
-            <div ref={chatBottomRef} />
           </div>
 
           {/* Quick Prompts */}
-          <div className="border-t border-[#E5E5E5] bg-white px-4 py-2 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="overflow-x-auto border-t border-[#E5E5E5] bg-white px-4 py-2 [scrollbar-width:none]">
+            <div className="flex touch-pan-x items-center gap-2 sm:flex-wrap">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => sendMessage(s)}
-                  className="rounded-full border border-[#D7D7D7] bg-white px-3 py-1 text-[11px] font-medium text-[#1F1F1F] hover:bg-[#FFF8E8] hover:border-[#FCDF9C] transition-colors shrink-0"
+                  className="shrink-0 rounded-full border border-[#D7D7D7] bg-white px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:border-[#FCDF9C] hover:bg-[#FFF8E8]"
                 >
                   {s}
                 </button>
@@ -170,19 +177,19 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
               e.preventDefault();
               sendMessage(inputText);
             }}
-            className="flex items-center gap-2 border-t border-[#E5E5E5] bg-white p-3"
+            className="flex min-w-0 items-center gap-2 border-t border-[#E5E5E5] bg-white p-3"
           >
             <input
               type="text"
               placeholder="Type your message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 rounded-full border border-[#D7D7D7] px-4 py-2 text-sm text-[#1F1F1F] placeholder:text-[#727272] focus:border-[#1F1F1F] focus:outline-none transition-colors"
+              className="min-w-0 flex-1 rounded-full border border-[#D7D7D7] px-4 py-2 text-sm text-[#1F1F1F] placeholder:text-[#727272] transition-colors focus:border-[#1F1F1F] focus:outline-none"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="flex h-10 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-sm font-semibold text-[#1F1F1F] hover:bg-[#F7D37D] disabled:opacity-40 transition-colors"
+              className="flex h-10 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] px-4 text-sm font-semibold text-[#1F1F1F] hover:text-white transition-colors duration-300 hover:bg-[#1f1f1f] disabled:opacity-40 sm:px-5"
             >
               Send
             </button>
@@ -190,43 +197,43 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
         </div>
 
         {/* Other Help Channels */}
-        <div className="flex flex-col gap-4">
-          <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">Phone Support</h4>
-            <p className="mt-1 text-xs text-[#727272] leading-relaxed">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 xl:flex xl:flex-col">
+          <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">Phone Support</h4>
+            <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               For immediate assistance with active reservations:
             </p>
             <a
               href="tel:+18005554669"
-              className="mt-3 block text-sm font-semibold text-[#1F1F1F] hover:underline"
+              className="mt-3 block text-sm font-medium text-[#1F1F1F] hover:underline"
             >
               +1 (800) 555-HOMYZ
             </a>
-            <span className="mt-0.5 text-[10px] text-[#727272]">Toll-free 24/7</span>
+            <span className="mt-0.5 text-xs text-[#727272]">Toll-free 24/7</span>
           </div>
 
-          <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">Email Support</h4>
-            <p className="mt-1 text-xs text-[#727272] leading-relaxed">
+          <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">Email Support</h4>
+            <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               Send documents or detailed billing inquiries:
             </p>
             <a
               href="mailto:support@homyz.app"
-              className="mt-3 block text-sm font-semibold text-[#1F1F1F] hover:underline"
+              className="mt-3 block break-words text-sm font-medium text-[#1F1F1F] hover:underline"
             >
               support@homyz.app
             </a>
-            <span className="mt-0.5 text-[10px] text-[#727272]">Avg response: 1-2 hours</span>
+            <span className="mt-0.5 text-xs text-[#727272]">Avg response: 1-2 hours</span>
           </div>
 
-          <div className="rounded-3xl border border-[#E5E5E5] bg-white p-5">
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">Help Centre</h4>
-            <p className="mt-1 text-xs text-[#727272] leading-relaxed">
+          <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">Help Centre</h4>
+            <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               Find instant answers to FAQs, cancellation policies, and guest guides.
             </p>
             <a
               href="/help"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] hover:underline"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] hover:underline"
             >
               <span>Browse Help Articles</span>
               <span>→</span>

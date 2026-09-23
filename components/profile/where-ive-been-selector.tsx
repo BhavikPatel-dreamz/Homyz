@@ -378,7 +378,7 @@ export function WhereIveBeenSelector({
           </div>
         ) : (
           <div className="max-h-[420px] overflow-y-auto pr-1">
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {allStamps.map((stamp) => {
                 const isSelected = selectedStamps.includes(stamp.id);
                 const isDisabled = !isOwner || (isLimitReached && !isSelected);

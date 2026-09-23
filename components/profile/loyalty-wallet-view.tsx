@@ -253,7 +253,7 @@ export function LoyaltyWalletView() {
         <h3 className="mb-4 text-lg font-semibold text-[#1F1F1F] sm:text-xl">
           Points Activity
         </h3>
-        <div className="divide-y divide-[#E5E5E5] rounded-2xl border border-[#E5E5E5] bg-white">
+        <div className="divide-y divide-[#E5E5E5] xl:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white">
           {transactions.map((tx) => (
             <div
               key={tx.id}

@@ -440,6 +440,33 @@ body {
   scrollbar-width: none;
 }
 
+/* Opt-in scrollbar for compact menus that need a visible scroll affordance. */
+.visible-scrollbar {
+  -ms-overflow-style: auto;
+  scrollbar-color: #9b9b9b transparent;
+  scrollbar-width: thin;
+}
+
+.visible-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+
+.visible-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.visible-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: #9b9b9b;
+}
+
+.visible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #727272;
+}
+
 .destination-scrollbar {
   position: absolute;
   top: 0;
