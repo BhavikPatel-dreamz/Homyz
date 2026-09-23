@@ -1604,7 +1604,7 @@ export function PublicListingDetailClient({
                     </p>
                     <div className="pt-2">
                       <Link
-                        href="/bookings"
+                        href="/profile/tab/upcoming"
                         className="rounded-full bg-zinc-900 text-white font-semibold text-xs px-6 py-2.5 inline-block"
                       >
                         View your bookings

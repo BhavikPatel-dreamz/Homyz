@@ -305,7 +305,7 @@ export function BookingCheckoutClient({
       } else {
         setBookingSuccess(true);
         setTimeout(() => {
-          router.push("/bookings");
+          router.push("/profile/tab/upcoming");
         }, 1500);
       }
     } catch {

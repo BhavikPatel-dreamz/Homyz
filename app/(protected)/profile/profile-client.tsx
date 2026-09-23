@@ -117,6 +117,7 @@ type ProfileClientProps = {
   initialTripPhotos?: unknown[];
   initialStats?: UserStatsData;
   initialReservations?: ReservationCardData[];
+  initialFavorites?: any[];
   isOwner?: boolean;
   initialTab?: string;
   initialSubTab?: ProfileMgmtSubTab;
@@ -127,6 +128,7 @@ export function ProfileClient({
   initialTripPhotos = [],
   initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
   initialReservations = [],
+  initialFavorites = [],
   isOwner = true,
   initialTab,
   initialSubTab,
@@ -411,7 +413,7 @@ export function ProfileClient({
             )}
 
             {activeTab === "saved" && (
-              <SavedListingsView />
+              <SavedListingsView initialFavorites={initialFavorites} />
             )}
 
             {activeTab === "profile_management" && (

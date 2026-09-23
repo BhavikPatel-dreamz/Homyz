@@ -25,6 +25,7 @@ export default async function ProfilePage({
       initialTripPhotos={data.tripPhotos}
       initialStats={data.stats}
       initialReservations={data.initialReservations}
+      initialFavorites={data.initialFavorites}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}
