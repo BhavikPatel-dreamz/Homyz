@@ -28,7 +28,7 @@ export function FilterBar({
   return (
     <div className="flex flex-col gap-6">
       {/* Title & View Filters Row matching Screenshots */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1>
             You have {totalCount} {filters.tab === "upcoming" ? "upcoming " : ""}reservations

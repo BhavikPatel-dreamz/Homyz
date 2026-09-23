@@ -532,7 +532,7 @@ export function WhereIveBeenSelector({
                     type="button"
                     disabled={uploadingImage}
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-400 bg-zinc-50 dark:bg-zinc-800 hover:bg-white dark:hover:bg-zinc-800 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 sm:min-h-[60px] min-h-[56px]"
+                    className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-400 bg-zinc-50 dark:bg-zinc-800 hover:bg-white dark:hover:bg-zinc-800 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 sm:min-h-[56px] min-h-[45px]"
                   >
                     {uploadingImage ? (
                       <span>Uploading icon image...</span>
@@ -570,7 +570,7 @@ export function WhereIveBeenSelector({
               <button
                 type="button"
                 onClick={() => setModalMode(null)}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-zinc-300 hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-semibold text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -578,7 +578,7 @@ export function WhereIveBeenSelector({
                 type="button"
                 onClick={handleSaveStamp}
                 disabled={!stampLocationValue.trim() || pending}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-8 py-2.5 text-sm font-semibold text-[#1f1f1f] transition-all duration-300 hover:bg-[#1f1f1f] hover:text-white disabled:cursor-wait disabled:opacity-70"
               >
                 {modalMode === "add" ? "Save Stamp" : "Update Stamp"}
               </button>

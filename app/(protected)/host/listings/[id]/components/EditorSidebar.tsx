@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { RealMap } from "@/components/ui/real-map";
 import { AMENITY_ICON_SOURCES, getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
@@ -367,6 +368,11 @@ export function EditorSidebar({
   const sidebarScrollTrackRef = React.useRef<HTMLDivElement>(null);
   const sidebarScrollFrameRef = React.useRef<number | null>(null);
   const [sidebarScrollThumb, setSidebarScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isSidebarScrollbarDragging, onThumbPointerDown: onSidebarThumbPointerDown, scrollByPage: scrollSidebarByPage } = useScrollbarDrag(
+    sidebarScrollRef,
+    sidebarScrollTrackRef,
+    sidebarScrollThumb.height,
+  );
 
   const updateSidebarScrollThumb = React.useCallback(() => {
     if (sidebarScrollFrameRef.current !== null) cancelAnimationFrame(sidebarScrollFrameRef.current);
@@ -377,12 +383,14 @@ export function EditorSidebar({
 
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
       const trackHeight = sidebarScrollTrackRef.current?.clientHeight || element.clientHeight;
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
       // The reference uses a compact, fixed-size visual thumb instead of the
       // browser's proportional thumb. Its travel still maps 1:1 to scrollTop.
-      const height = hasOverflow ? Math.min(60, trackHeight) : 0;
-      const maxTop = Math.max(0, trackHeight - height);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
       const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
-      const top = hasOverflow ? Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
 
       setSidebarScrollThumb((current) => (
         current.height === height && current.top === top && current.visible === hasOverflow
@@ -1146,7 +1154,7 @@ export function EditorSidebar({
                           );
                         })}
                         {editAmenities.length > 3 && (
-                          <span className="text-base font-semibold text-zinc-400 block pt-0.5">
+                          <span className="text-sm font-semibold text-[#1f1f1f] hover:text-[#727272] block pt-0.5 underline outline-offset-2 transition duration-300">
                             +{editAmenities.length - 3} {t("host_more")}
                           </span>
                         )}
@@ -1422,13 +1430,13 @@ export function EditorSidebar({
                     <div className="space-y-2 text-base text-[#727272] font-normal">
                       <div className="flex items-center gap-2.5">
                         <SafetySidebarIcon type="co" />
-                        <span className="text-[#727272] text-base font-medium leading-tight">
+                        <span className="text-[#727272] text-base font-normal leading-tight">
                           {t("host_co_alarm_not_reported")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2.5">
                         <SafetySidebarIcon type="smoke" />
-                        <span className="text-[#727272] text-base font-medium leading-tight">
+                            <span className="text-[#727272] text-base font-normal leading-tight">
                           {t("host_smoke_alarm_not_reported")}
                         </span>
                       </div>
@@ -1629,11 +1637,18 @@ export function EditorSidebar({
             )}
           </div>
           {sidebarScrollThumb.visible && (
-            <div ref={sidebarScrollTrackRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] xl:block">
+            <div ref={sidebarScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] xl:block">
+              <button type="button" aria-label="Scroll listing editor up" onClick={() => scrollSidebarByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+              </button>
               <div
-                className="absolute left-0 top-0 w-[22px] rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform"
+                onPointerDown={onSidebarThumbPointerDown}
+                className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isSidebarScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
                 style={{ height: `${sidebarScrollThumb.height}px`, transform: `translate3d(0, ${sidebarScrollThumb.top}px, 0)` }}
               />
+              <button type="button" aria-label="Scroll listing editor down" onClick={() => scrollSidebarByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              </button>
             </div>
           )}
         </div>

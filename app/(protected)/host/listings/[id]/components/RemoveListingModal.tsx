@@ -241,7 +241,7 @@ export function RemoveListingModal({
                   selectedReasonIds.length === 0 || (hasAnotherReason && customFeedback.trim().length === 0)
                 }
                 onClick={() => setStep(2)}
-                className={`min-h-11 rounded-full bg-[#FEE08B]  px-8 py-2.5 text-sm font-medium text-[#1f1f1f] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FEE08B] focus-visible:ring-offset-2 dark:bg-[#FEE08B] dark:text-[#1f1f1f] dark:focus-visible:ring-offset-zinc-900 ${
+                className={`min-h-11 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-5 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600 min-w-25 ${
                   selectedReasonIds.length > 0 && !(hasAnotherReason && customFeedback.trim().length === 0)
                   ? "cursor-pointer hover:bg-[#1f1f1f]"
                     : "cursor-not-allowed text-[#1f1f1f]/45"
@@ -262,7 +262,7 @@ export function RemoveListingModal({
               </h2>
               <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-zinc-400">
                 {t("host_remove_confirm_subtext_prefix") || "You are removing "}
-                <strong className="text-[#1f1f1f] dark:text-zinc-100">{listingTitle}</strong>
+                <strong className="text-[#1f1f1f] dark:text-zinc-100 font-semibold">{listingTitle}</strong>
                 {t("host_remove_confirm_subtext_suffix") || " from Homyz."}
               </p>
             </div>

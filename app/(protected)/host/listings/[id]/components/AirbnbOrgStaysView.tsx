@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { BackButton } from "@/components/ui/back-button";
 
 export interface OrgStaysConfig {
   enabled: boolean;
@@ -17,6 +18,7 @@ interface AirbnbOrgStaysViewProps {
   onSave?: (config: OrgStaysConfig) => Promise<void>;
   isSaving?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
+  onBack?: () => void;
 }
 
 export function AirbnbOrgStaysView({
@@ -26,8 +28,17 @@ export function AirbnbOrgStaysView({
   onSave,
   isSaving = false,
   onDirtyChange,
+  onBack,
 }: AirbnbOrgStaysViewProps) {
   const { t } = useLanguage();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      _setActiveSection("custom-link");
+    }
+  };
 
   // Extract initial values from listing discounts if present
   const initialConfig: OrgStaysConfig = React.useMemo(() => {
@@ -116,14 +127,17 @@ export function AirbnbOrgStaysView({
 
   return (
     <div className="max-w-2xl font-sans animate-in fade-in duration-200 pb-10 text-[#222222] dark:text-zinc-100">
-      {/* 1. Page Title */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight text-[#222222] dark:text-zinc-100 leading-tight">
-          {t("host_org_stays_title") || "Homyz.com Stays"}
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal mt-1">
-          {t("host_org_stays_subtitle") || "Homyz.org stays"}
-        </p>
+      {/* 1. Page Title with Back Button */}
+      <div className="mb-6 flex items-start gap-4">
+        <BackButton onClick={handleBack} className="mt-1 shrink-0" />
+        <div>
+          <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight text-[#222222] dark:text-zinc-100 leading-tight">
+            {t("host_org_stays_title") || "Homyz.com Stays"}
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal mt-1">
+            {t("host_org_stays_subtitle") || "Homyz.org stays"}
+          </p>
+        </div>
       </div>
 
       {/* 1b. Informational Guidance Notice */}
