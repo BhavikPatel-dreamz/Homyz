@@ -338,13 +338,13 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         if (item.requireAdmin && role !== "ADMIN") return null;
                         return (
                           <React.Fragment key={item.href}>
-                            {item.separatorBefore && <div className="my-1.5 border-t border-zinc-300/80" />}
+                            {item.separatorBefore && <div className="my-1.5 border-t border-[#727272]" />}
                             <Link
                               href={item.href}
                               onClick={() => setMenuOpen(false)}
-                              className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium rounded-xl transition-colors ${pathname === item.href
-                                ? "bg-amber-100 text-amber-950 font-semibold"
-                                : "text-zinc-800 hover:bg-zinc-50"
+                              className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${pathname === item.href
+                                ? "bg-amber-100 text-[#1f1f1f] font-medium"
+                                : "text-[#1f1f1f] hover:bg-zinc-50"
                                 }`}
                             >
                               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
@@ -357,14 +357,14 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       })}
                     </div>
 
-                    <div className="border-t border-zinc-100 pt-2 mt-1 flex flex-col gap-1">
+                      <div className="border-t border-[#727272] pt-2 mt-1 flex flex-col gap-1">
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
                           setLangModalOpen(true);
                         }}
-                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 rounded-xl transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal text-[#1f1f1f] hover:bg-zinc-50 rounded-xl transition-colors text-left"
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
                           <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />

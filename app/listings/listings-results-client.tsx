@@ -1129,7 +1129,7 @@ export function ListingsResultsClient({
               <div
                 className={`grid gap-5 ${
                   showMap
-                    ? "grid-cols-1 sm:grid-cols-2"
+                    ? "grid-cols-1 sm:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
                 }`}
               >
