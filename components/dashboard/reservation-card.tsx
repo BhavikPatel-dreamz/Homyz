@@ -79,6 +79,8 @@ export function ReservationCard({
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const title = data.propertyName || "Property stay";
   const detailsHref = href || `/bookings/${data.id}`;
+  const isPast = new Date(data.endDate).getTime() < Date.now();
+  const isReviewEligible = isPast && data.status === "CONFIRMED";
   return (
     <article className="group flex min-h-[304px] flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
       <div>
@@ -128,6 +130,26 @@ export function ReservationCard({
           <p className="mt-2 text-[10px] font-medium tracking-[0.02em] text-slate-400">
             Booking #{data.id.slice(-8).toUpperCase()}
           </p>
+        </div>
+
+        {/* FOOTER CTA */}
+        <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3">
+          <Link
+            href={detailsHref}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-800 transition-colors group-hover:text-emerald-700"
+          >
+            <span>View reservation details</span>
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
+
+          {isReviewEligible && (
+            <Link
+              href={`/bookings/${data.id}/review`}
+              className="inline-flex items-center rounded-lg bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors"
+            >
+              Write review
+            </Link>
+          )}
         </div>
       </div>
     </article>

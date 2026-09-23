@@ -52,6 +52,12 @@ assert(clientCode.includes("Write a message"), "Must include message textarea la
 assert(clientCode.includes("Review your request"), "Must include Step 4: Review your request");
 assert(clientCode.includes("The host has 24 hours to confirm your booking") || clientCode.includes("instant"), "Must explain confirmation term");
 assert(clientCode.includes(">Pay<") || clientCode.includes(">Pay") || clientCode.includes("Pay</button>"), "Must include Pay CTA button");
+assert(
+  clientCode.includes('now: "FULL"') &&
+    clientCode.includes('part: "SPLIT"') &&
+    clientCode.includes('klarna: "KLARNA"'),
+  "Checkout payment-plan choices must map to the booking API enum values",
+);
 console.log("✓ All 4 accordion steps verified!");
 
 // [3] Sticky Right Column & Price Details Audit
@@ -93,4 +99,3 @@ console.log("✓ Booking validation schema accepts all checkout payload fields!"
 console.log("\n==================================================================");
 console.log("   ALL BOOKING CHECKOUT TESTS PASSED (5/5)                        ");
 console.log("==================================================================\n");
-

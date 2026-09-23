@@ -6,11 +6,12 @@ import { FilterBar, FilterOptions } from "./filter-bar";
 import { LoadingSkeleton } from "./loading-skeleton";
 import { EmptyState } from "./empty-state";
 import { ErrorState } from "./error-state";
+import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
 
 export function ReservationDashboard({
-  initialReservations = [],
+  initialReservations,
   initialTab = "today",
   reviews = [],
   onTabChange,
@@ -20,21 +21,57 @@ export function ReservationDashboard({
   reviews?: GuestAuthoredReviewDTO[];
   onTabChange?: (tab: FilterOptions["tab"]) => void;
 }) {
-  const [reservations, setReservations] = useState<ReservationCardData[]>(initialReservations);
-
-  useEffect(() => {
-    setReservations(initialReservations);
-  }, [initialReservations]);
-
+  const [reservations, setReservations] = useState<ReservationCardData[]>(initialReservations || []);
   const [filters, setFilters] = useState<FilterOptions>({
     tab: initialTab,
     search: "",
     status: "ALL",
     dateRange: "ALL",
   });
-
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(initialReservations === undefined);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialReservations !== undefined) {
+      setReservations(initialReservations);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+
+    fetch("/api/v1/bookings?limit=50", {
+      signal: controller.signal,
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Unable to load reservations. Please try again.");
+        }
+        return res.json();
+      })
+      .then((json) => {
+        const rawItems = Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json?.items)
+            ? json.items
+            : [];
+        const mapped = rawItems.map((b: any) => toReservationCardData(b));
+        setReservations(mapped);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          setError(err.message || "Failed to load reservations");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [initialReservations]);
 
   const filteredItems = useMemo(() => {
     const now = new Date();

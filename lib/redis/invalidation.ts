@@ -6,11 +6,11 @@ import { CACHE_KEYS } from "./keys";
  * Specifications §7, §8, §9, §10.
  */
 
-/** Invalidate user profile and administrative counters */
+/** Invalidate user profile, stats, and administrative counters */
 export async function invalidateUserCache(userId: string): Promise<void> {
   await Promise.all([
     deleteCache(CACHE_KEYS.USER_PROFILE(userId)),
-    deleteCache(CACHE_KEYS.ADMIN_STATS()),
+    deleteCache(CACHE_KEYS.USER_STATS(userId)),
   ]);
 }
 
@@ -45,6 +45,7 @@ export async function invalidateBookingCache(
 
   if (userId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:user:${userId}:*`));
+    // Invalidate guest stats so trip counts stay accurate
   }
   if (hostId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:host:${hostId}:*`));

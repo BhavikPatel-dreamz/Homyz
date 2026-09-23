@@ -22,6 +22,9 @@ export const CACHE_KEYS = {
   /** User profile data by user ID */
   USER_PROFILE: (userId: string) => `${NS}:user:${userId}:profile`,
 
+  /** Guest dashboard stats (trips, reviews count) — short TTL */
+  USER_STATS: (userId: string) => `${NS}:user:${userId}:stats`,
+
   /** Listing details by listing ID */
   LISTING: (listingId: string) => `${NS}:listing:${listingId}`,
   LISTING_DETAILS: (listingId: string) => `${NS}:listing:${listingId}:details`,

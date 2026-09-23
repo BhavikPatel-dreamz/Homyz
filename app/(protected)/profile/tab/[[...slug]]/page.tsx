@@ -21,7 +21,7 @@ export default async function ProfileTabPage({
     searchParams: resolvedSearchParams,
   });
 
-  const data = await loadProfilePageData();
+  const data = await loadProfilePageData(route.tab);
 
   return (
     <ProfileClient

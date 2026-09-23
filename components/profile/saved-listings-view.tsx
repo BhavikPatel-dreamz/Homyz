@@ -31,9 +31,10 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
   }, [initialFavorites]);
 
   // Fetch latest favorites from API to guarantee freshly synced DB state
-  const refreshFavorites = useCallback(async () => {
+  const refreshFavorites = useCallback(async (signal?: AbortSignal) => {
     try {
       const res = await fetch("/api/v1/favorites", {
+        signal,
         headers: { "Cache-Control": "no-cache" },
       });
       if (res.ok) {
@@ -42,17 +43,23 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
           setItems(data.items);
         }
       }
-    } catch (err) {
-      console.error("Failed to load wishlist items:", err);
+    } catch (err: any) {
+      if (err?.name !== "AbortError") {
+        console.error("Failed to load wishlist items:", err);
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     // If we didn't receive initial server data, fetch immediately
     if (!initialFavorites) {
-      refreshFavorites();
+      const controller = new AbortController();
+      refreshFavorites(controller.signal);
+      return () => controller.abort();
     }
   }, [initialFavorites, refreshFavorites]);
 

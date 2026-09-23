@@ -44,6 +44,12 @@ interface QuoteData {
   cancellationPolicy: string;
 }
 
+const PAYMENT_PLAN_API_VALUES = {
+  now: "FULL",
+  part: "SPLIT",
+  klarna: "KLARNA",
+} as const;
+
 function dateKey(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -285,7 +291,7 @@ export function BookingCheckoutClient({
           pets: petsCount || 0,
           nonRefundable: isNonRefundable,
           message: hostMessage.trim() || undefined,
-          paymentPlan: paymentPlan.toUpperCase(),
+          paymentPlan: PAYMENT_PLAN_API_VALUES[paymentPlan],
           paymentMethod: paymentMethod.toUpperCase(),
         }),
       });

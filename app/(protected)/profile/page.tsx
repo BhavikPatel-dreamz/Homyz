@@ -17,7 +17,7 @@ export default async function ProfilePage({
     redirect(target);
   }
 
-  const data = await loadProfilePageData();
+  const data = await loadProfilePageData(route.tab);
 
   return (
     <ProfileClient

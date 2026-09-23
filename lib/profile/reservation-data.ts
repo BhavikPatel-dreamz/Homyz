@@ -21,7 +21,7 @@ function getActionType(startDate: Date | string, endDate: Date | string): Reserv
 }
 
 /** Maps the authenticated guest's actual booking and listing data for trip views. */
-export function toReservationCardData(booking: BookingDTO, guestName: string): ReservationCardData {
+export function toReservationCardData(booking: BookingDTO, guestName: string = "Guest"): ReservationCardData {
   const listing = booking.listing;
   const location = [listing?.city, listing?.country]
     .filter((value): value is string => typeof value === "string" && Boolean(value.trim()))

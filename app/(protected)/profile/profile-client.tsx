@@ -17,19 +17,81 @@ import {
 } from "@/lib/profile/tab-utils";
 import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
+import dynamic from "next/dynamic";
 import { LogoutButton } from "@/components/admin/logout-button";
-import { ReservationDashboard } from "@/components/dashboard/reservation-dashboard";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
-import { LoyaltyWalletView } from "@/components/profile/loyalty-wallet-view";
-import { InviteEarnView } from "@/components/profile/invite-earn-view";
-import { SavedListingsView } from "@/components/profile/saved-listings-view";
-import { SupportChatView } from "@/components/profile/support-chat-view";
-import { NotificationsView } from "@/components/profile/notifications-view";
 import { BackButton } from "@/components/ui/back-button";
-import { ProfileManagementClient } from "@/app/(protected)/profile-management/profile-management-client";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import {
+  SavedListingsSkeleton,
+  NotificationsSkeleton,
+  LoyaltyWalletSkeleton,
+  ProfileManagementSkeleton,
+  SupportChatSkeleton,
+} from "@/components/dashboard/section-skeletons";
+
+const ReservationDashboard = dynamic(
+  () =>
+    import("@/components/dashboard/reservation-dashboard").then(
+      (m) => m.ReservationDashboard,
+    ),
+  { loading: () => <LoadingSkeleton count={4} /> },
+);
+
+const ProfileManagementClient = dynamic(
+  () =>
+    import(
+      "@/app/(protected)/profile-management/profile-management-client"
+    ).then((m) => m.ProfileManagementClient),
+  { loading: () => <ProfileManagementSkeleton /> },
+);
+
+const SavedListingsView = dynamic(
+  () =>
+    import("@/components/profile/saved-listings-view").then(
+      (m) => m.SavedListingsView,
+    ),
+  { loading: () => <SavedListingsSkeleton /> },
+);
+
+const LoyaltyWalletView = dynamic(
+  () =>
+    import("@/components/profile/loyalty-wallet-view").then(
+      (m) => m.LoyaltyWalletView,
+    ),
+  { loading: () => <LoyaltyWalletSkeleton /> },
+);
+
+const InviteEarnView = dynamic(
+  () =>
+    import("@/components/profile/invite-earn-view").then(
+      (m) => m.InviteEarnView,
+    ),
+  {
+    loading: () => (
+      <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
+    ),
+  },
+);
+
+const SupportChatView = dynamic(
+  () =>
+    import("@/components/profile/support-chat-view").then(
+      (m) => m.SupportChatView,
+    ),
+  { loading: () => <SupportChatSkeleton /> },
+);
+
+const NotificationsView = dynamic(
+  () =>
+    import("@/components/profile/notifications-view").then(
+      (m) => m.NotificationsView,
+    ),
+  { loading: () => <NotificationsSkeleton /> },
+);
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
