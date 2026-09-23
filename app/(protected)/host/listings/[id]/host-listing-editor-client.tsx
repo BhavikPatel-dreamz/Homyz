@@ -1406,13 +1406,13 @@ export function HostListingEditorClient({
         </button>
       </div>
 
-      {/* 3. MAIN EDITOR CONTENT AREA (2-Column Figma Split Layout) */}
-      <Container>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:gap-0 lg:py-0 ${presentation === "admin" ? "xl:grid-cols-[280px_minmax(0,1fr)]" : "xl:grid-cols-[minmax(0,1fr)_440px]"}`}>
+      {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout) */}
+      <Container className={presentation === "admin" ? "max-w-full !px-0" : ""}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:gap-8 lg:h-[calc(100vh-6.5rem)] lg:overflow-hidden" : "lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]"}`}>
           {/* ============================================================ */}
-          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL (lg:col-span-7 or 8) */}
+          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
           {/* ============================================================ */}
-          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px] ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pl-8" : ""}`}>
+          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:pt-[58px]"}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
@@ -1537,6 +1537,7 @@ export function HostListingEditorClient({
                 isLoading={isLoading}
                 onBack={() => setActiveSection("sleeping-arrangements")}
                 setActiveSection={setActiveSection}
+                presentation={presentation}
               />
             )}
 
@@ -1570,6 +1571,7 @@ export function HostListingEditorClient({
             )}
 
             <PropertyDetailsViews
+              presentation={presentation}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               feedbackMsg={null}
@@ -1918,7 +1920,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1" : ""}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : ""}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}

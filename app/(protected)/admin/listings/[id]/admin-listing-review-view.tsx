@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "@/components/ui/toast";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import {
   adminModerateListingQualityAction,
   adminToggleDisableListingAction,
@@ -116,14 +117,47 @@ export function AdminListingReviewView({
   }
 
   if (auditOnly) {
-    return <section className="space-y-4 animate-in fade-in">
-      <div><p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">Admin review</p><h1 className="mt-1">Listing audit history</h1><p className="mt-1">Listing-only administrative actions. Sensitive guide data is never recorded here.</p></div>
-      {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}
-      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
-        {auditItems.length === 0 ? <p className="p-5 text-xs text-[var(--muted-foreground)]">No listing administration activity yet.</p> : <ul className="divide-y divide-[var(--border-subtle)]">{auditItems.map((item) => <li key={item.id} className="flex gap-3 p-4"><span className="mt-1.5 size-2 shrink-0 rounded-full bg-amber-500" /><div className="min-w-0"><p className="text-xs font-semibold text-[var(--foreground)]">{item.description}</p><p className="mt-1 text-[11px] text-[var(--muted-foreground)]">{item.actorEmail || "System"} · {new Date(item.createdAt).toLocaleString()}</p></div></li>)}</ul>}
-        {auditTotal > auditPageSize && <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] px-4 py-3"><p className="text-[11px] text-[var(--muted-foreground)]">Page {auditPage} of {auditTotalPages} · {auditTotal} entries</p><div className="flex gap-2"><button type="button" onClick={() => changeAuditPage(auditPage - 1)} disabled={auditPage === 1 || auditLoading} className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-semibold disabled:opacity-40">Previous</button><button type="button" onClick={() => changeAuditPage(auditPage + 1)} disabled={auditPage === auditTotalPages || auditLoading} className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-semibold disabled:opacity-40">{auditLoading ? "Loading…" : "Next"}</button></div></div>}
-      </div>
-    </section>;
+    return (
+      <section className="space-y-4 animate-in fade-in">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">Admin review</p>
+          <h1 className="mt-1">Listing audit history</h1>
+          <p className="mt-1">Listing-only administrative actions. Sensitive guide data is never recorded here.</p>
+        </div>
+        {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs">
+          {auditItems.length === 0 ? (
+            <p className="p-5 text-xs text-[var(--muted-foreground)]">No listing administration activity yet.</p>
+          ) : (
+            <ul className="divide-y divide-[var(--border-subtle)]">
+              {auditItems.map((item) => (
+                <li key={item.id} className="flex gap-3 p-4">
+                  <span className="mt-1.5 size-2 shrink-0 rounded-full bg-amber-500" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-[var(--foreground)]">{item.description}</p>
+                    <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
+                      {item.actorEmail || "System"} · {new Date(item.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {auditTotal > 0 && (
+            <div className="px-4 py-2 border-t border-[var(--border-subtle)]">
+              <AdminPagination
+                currentPage={auditPage}
+                totalPages={auditTotalPages}
+                totalItems={auditTotal}
+                pageSize={auditPageSize}
+                onPageChange={(nextPage) => void changeAuditPage(nextPage)}
+                itemLabel="entries"
+              />
+            </div>
+          )}
+        </div>
+      </section>
+    );
   }
 
   return <section className="space-y-5 animate-in fade-in">

@@ -1957,5 +1957,7 @@
   "host_room_cat_LAUNDRY": "Laundry",
   "host_room_cat_VIEW": "View",
   "host_room_cat_PARKING": "Parking",
-  "host_room_cat_OTHER": "Other"
+  "host_room_cat_OTHER": "Other",
+  "host_scroll_photo_tour_up": "Scroll photo tour up",
+  "host_scroll_photo_tour_down": "Scroll photo tour down"
 }
