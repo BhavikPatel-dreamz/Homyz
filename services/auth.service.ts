@@ -26,6 +26,7 @@ import { Role } from "@/generated/prisma/enums";
 
 import { toPublicUser, type PublicUser } from "./mappers";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
+import { referralService } from "./referral.service";
 
 // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -118,6 +119,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
   // here so ADMIN can never be created through this path.
   const role = input.role === "HOST" ? Role.HOST : Role.USER;
   const passwordHash = await hashPassword(input.password);
+  const referredById = await referralService.resolveReferrerId(input.referralCode);
 
   try {
     const user = await prisma.user.create({
@@ -126,6 +128,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
         name: input.name ?? null,
         passwordHash,
         role,
+        ...(referredById ? { referredById } : {}),
         ...(normalizedPhone ? { phone: normalizedPhone, phoneVerified: new Date() } : {}),
       },
     });
@@ -179,11 +182,13 @@ async function findOrCreatePhoneOtpUser(input: {
   normalizedPhone: string;
   possiblePhones: string[];
   cleanDigits: string;
+  referralCode?: string;
 }): Promise<UserWithAdminDetails | null> {
   const existing = await findUserByPhoneForAuthentication(input.possiblePhones, input.cleanDigits);
   if (existing) return existing;
 
   try {
+    const referredById = await referralService.resolveReferrerId(input.referralCode);
     return await prisma.user.create({
       data: {
         phone: input.normalizedPhone,
@@ -191,6 +196,7 @@ async function findOrCreatePhoneOtpUser(input: {
         role: "USER",
         name: `Guest (${input.cleanDigits.slice(-4) || "User"})`,
         email: `user_${input.cleanDigits}@homyz.app`,
+        ...(referredById ? { referredById } : {}),
       },
       include: authUserWithAdminRole,
     });

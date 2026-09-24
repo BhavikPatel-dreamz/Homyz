@@ -465,7 +465,7 @@ export function ProfileClient({
             )}
 
             {activeTab === "invite" && (
-              <InviteEarnView user={initial} />
+              <InviteEarnView />
             )}
 
             {activeTab === "saved" && (

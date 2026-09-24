@@ -43,18 +43,45 @@ export function getTranslatedSectionTitle(title: string, t: (key: any, params?: 
       const city = title.trim().substring("explore stays in ".length).trim();
       return t("home_section_explore_stays_in", { city });
     }
-    if (lower === "trending stays") {
+    if (lower === "trending stays" || lower === "trending properties") {
       return t("home_section_trending_stays");
     }
     if (lower === "recommended stays") {
       return t("home_section_recommended_stays");
     }
-    if (lower === "popular homes") {
+    if (lower === "guest favourites" || lower === "guest favorites") {
+      return t("home_section_guest_favourites");
+    }
+    if (lower === "popular homes" || lower === "most popular stays") {
       return t("home_section_popular_homes");
     }
     if (lower.startsWith("popular homes in ")) {
       const location = title.trim().substring("popular homes in ".length).trim();
       return t("home_section_popular_homes_in", { location });
+    }
+    if (lower === "luxury villas & private estates" || lower === "luxury villas") {
+      return t("home_section_luxury_villas");
+    }
+    if (lower === "top-rated 5-star stays" || lower === "top-rated stays") {
+      return t("home_section_top_rated");
+    }
+    if (lower === "city lofts & modern apartments" || lower === "city apartments") {
+      return t("home_section_city_apartments");
+    }
+    if (lower === "cozy cabins & countryside retreats" || lower === "cozy cabins") {
+      return t("home_section_cozy_cabins");
+    }
+    if (lower === "spacious family-friendly homes" || lower === "family-friendly stays") {
+      return t("home_section_family_homes");
+    }
+    if (lower === "stays hosted by superhosts" || lower === "superhost stays") {
+      return t("home_section_superhost_stays");
+    }
+    if (lower === "great value stays" || lower === "budget-friendly stays") {
+      return t("home_section_great_value");
+    }
+    if (lower === "newly added stays" || lower === "new on homyz") {
+      return t("home_section_newly_added");
     }
     if (lower.startsWith("homes in ")) {
       const location = title.trim().substring("homes in ".length).trim();

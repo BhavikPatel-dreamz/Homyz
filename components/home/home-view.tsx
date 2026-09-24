@@ -85,7 +85,9 @@ export function HomeView({
           const activeCity = (searchContext?.city || searchContext?.displayName || "").toLowerCase();
           const candidateSearches = pastSearches.filter((s) => {
             const name = (s.city || s.displayName || s.query || "").toLowerCase();
-            return name && name !== activeCity;
+            if (!name) return false;
+            if (mode === "SEARCH" && activeCity && name === activeCity) return false;
+            return true;
           }).slice(0, 4);
 
           if (candidateSearches.length > 0) {
@@ -94,7 +96,7 @@ export function HomeView({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 searches: candidateSearches,
-                currentCity: searchContext?.city || undefined,
+                currentCity: mode === "SEARCH" ? (searchContext?.city || undefined) : undefined,
                 limit: 4,
               }),
             })
@@ -324,6 +326,7 @@ export function HomeView({
         const normTitle = s.title.toLowerCase();
         if (existingTitles.has(normTitle)) return false;
         if (
+          mode === "SEARCH" &&
           activeCity &&
           (normTitle.includes(activeCity) ||
             normTitle === `stays in ${activeCity}` ||
@@ -496,8 +499,8 @@ export function HomeView({
               </>
             ) : (
               <>
-                {/* Default mode: general property sections followed by past searches */}
-                {propertySections.map((section) => (
+                {/* 1. Client activity rows (previous searches / suggestions based on user activity) always on top */}
+                {uniquePastSections.map((section) => (
                   <HomePropertySection
                     key={section.id}
                     title={section.title}
@@ -508,7 +511,8 @@ export function HomeView({
                   />
                 ))}
 
-                {uniquePastSections.map((section) => (
+                {/* 2. Latest discovery rows (Popular homes, Villas, Top-rated, etc.) at the bottom of previous suggestion rows */}
+                {propertySections.map((section) => (
                   <HomePropertySection
                     key={section.id}
                     title={section.title}

@@ -61,6 +61,10 @@ export const PERMISSIONS = {
   GUESTS_DELETE: "guests.delete",
   GUESTS_ACTIVITY: "guests.activity",
 
+  // Referral rewards
+  REFERRALS_VIEW: "referrals.view",
+  REFERRALS_REVIEW: "referrals.review",
+
   // Users (legacy/general)
   USERS_VIEW: "users.view",
   USERS_CREATE: "users.create",
@@ -176,6 +180,10 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.GUESTS_DELETE, module: "Guests", action: "Delete", description: "Permanently delete guest accounts" },
   { slug: PERMISSIONS.GUESTS_ACTIVITY, module: "Guests", action: "View Activity", description: "View guest activity and booking history" },
 
+  // Referral rewards
+  { slug: PERMISSIONS.REFERRALS_VIEW, module: "Referrals", action: "View", description: "View referral reward activity and credit status" },
+  { slug: PERMISSIONS.REFERRALS_REVIEW, module: "Referrals", action: "Review", description: "Approve or reject pending referral reward credits" },
+
   // Listings Module
   { slug: PERMISSIONS.LISTINGS_VIEW, module: "Listings", action: "View", description: "View property listings" },
   { slug: PERMISSIONS.LISTINGS_CREATE, module: "Listings", action: "Create", description: "Create property listings" },
@@ -256,6 +264,9 @@ export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
   [PERMISSIONS.GUESTS_SUSPEND]: [PERMISSIONS.GUESTS_VIEW],
   [PERMISSIONS.GUESTS_DELETE]: [PERMISSIONS.GUESTS_VIEW],
   [PERMISSIONS.GUESTS_ACTIVITY]: [PERMISSIONS.GUESTS_VIEW],
+
+  // Referral rewards
+  [PERMISSIONS.REFERRALS_REVIEW]: [PERMISSIONS.REFERRALS_VIEW],
 
   // Listings
   [PERMISSIONS.LISTINGS_CREATE]: [PERMISSIONS.LISTINGS_VIEW],

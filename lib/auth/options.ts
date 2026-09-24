@@ -25,6 +25,7 @@ function buildProviders(): NextAuthOptions["providers"] {
         password: { label: "Password", type: "password" },
         phone: { label: "Phone", type: "text" },
         otpCode: { label: "OTP Code", type: "text" },
+        referralCode: { label: "Referral Code", type: "text" },
         provider: { label: "Provider", type: "text" },
       },
       async authorize(credentials, req) {
@@ -67,6 +68,7 @@ function buildProviders(): NextAuthOptions["providers"] {
             normalizedPhone,
             possiblePhones,
             cleanDigits,
+            referralCode: credentials.referralCode,
           });
 
           if (!user) return null;

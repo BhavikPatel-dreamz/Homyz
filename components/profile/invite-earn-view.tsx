@@ -1,210 +1,89 @@
 "use client";
 
-import React, { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export function InviteEarnView({ user }: { user?: { name?: string | null; id?: string } }) {
-  const [copied, setCopied] = useState(false);
+type ReferralStatus = "JOINED" | "PENDING_APPROVAL" | "CREDITED" | "NOT_APPROVED";
+type ReferralData = {
+  referralUrl: string;
+  rewardRule: { points: number; qualifyingCondition: "FIRST_COMPLETED_STAY" } | null;
+  totals: { invited: number; pendingPoints: number; creditedPoints: number };
+  activity: Array<{ id: string; guestName: string; joinedAt: string; status: ReferralStatus; points: number | null; reviewedAt: string | null }>;
+};
+type CopyState = "idle" | "copied" | "error";
 
-  const referralCode = user?.name
-    ? `HOMIE-${user.name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6)}-26`
-    : "HOMIE-GUEST-26";
-  const referralLink = `https://homyz.app/invite/${referralCode}`;
+const statusCopy: Record<ReferralStatus, string> = {
+  JOINED: "Joined — awaiting first completed stay",
+  PENDING_APPROVAL: "Stay complete — credit awaiting approval",
+  CREDITED: "Points credited",
+  NOT_APPROVED: "Credit not approved",
+};
 
-  const handleCopy = async () => {
+async function copyToClipboard(value: string): Promise<void> {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("Clipboard access is unavailable");
+}
+
+function InviteEarnSkeleton() {
+  return <div aria-busy="true" aria-label="Loading invite and earn" className="w-full max-w-[1080px] animate-pulse space-y-6"><div className="h-10 w-52 rounded-lg bg-zinc-200" /><div className="h-36 rounded-2xl border border-[#E5E5E5] bg-zinc-50" /><div className="grid gap-4 sm:grid-cols-3"><div className="h-28 rounded-2xl bg-zinc-100" /><div className="h-28 rounded-2xl bg-zinc-100" /><div className="h-28 rounded-2xl bg-zinc-100" /></div><div className="h-56 rounded-2xl bg-zinc-100" /></div>;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
+}
+
+export function InviteEarnView() {
+  const [data, setData] = useState<ReferralData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<CopyState>("idle");
+  const copyResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const loadReferral = useCallback(async (signal?: AbortSignal) => {
+    setIsLoading(true); setError(null);
     try {
-      await navigator.clipboard.writeText(referralLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Fallback
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
+      const response = await fetch("/api/v1/referrals/me", { cache: "no-store", signal });
+      const payload = await response.json();
+      if (!response.ok || !payload?.success || !payload?.data?.referralUrl) throw new Error(payload?.error?.message || "Unable to load your referral details.");
+      setData(payload.data as ReferralData);
+    } catch (requestError) {
+      if ((requestError as { name?: string })?.name !== "AbortError") setError(requestError instanceof Error ? requestError.message : "Unable to load your referral details.");
+    } finally { if (!signal?.aborted) setIsLoading(false); }
+  }, []);
 
-  const shareVia = (platform: "whatsapp" | "twitter" | "email") => {
-    const text = `Join Homyz and get $25 off your first luxury stay! Use my invite link: ${referralLink}`;
-    if (platform === "whatsapp") {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-    } else if (platform === "twitter") {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
-    } else if (platform === "email") {
-      window.open(`mailto:?subject=Join Homyz and get $25 off&body=${encodeURIComponent(text)}`, "_blank");
-    }
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadReferral(controller.signal);
+    return () => { controller.abort(); if (copyResetTimer.current) clearTimeout(copyResetTimer.current); };
+  }, [loadReferral]);
 
+  const showCopyState = (nextState: CopyState) => {
+    if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+    setCopyState(nextState);
+    copyResetTimer.current = setTimeout(() => setCopyState("idle"), 2500);
+  };
+  const handleCopy = async () => { if (!data) return; try { await copyToClipboard(data.referralUrl); showCopyState("copied"); } catch { showCopyState("error"); } };
+  const shareOnWhatsApp = () => { if (data) window.open(`https://wa.me/?text=${encodeURIComponent(`Join Homyz using my referral link: ${data.referralUrl}`)}`, "_blank", "noopener,noreferrer"); };
+
+  if (isLoading) return <InviteEarnSkeleton />;
+  if (error || !data) return <div className="w-full max-w-[1080px]"><h2 className="text-[28px] font-medium text-[#1F1F1F]">Invite &amp; Earn</h2><div role="alert" className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-800"><p>{error || "Unable to load your referral details."}</p><button type="button" onClick={() => void loadReferral()} className="mt-4 rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-rose-800">Try again</button></div></div>;
+
+  const rewardCopy = data.rewardRule ? `Earn ${data.rewardRule.points.toLocaleString()} points when a friend completes their first stay. A Homyz administrator reviews the qualifying stay before points are credited.` : "Referral rewards are not currently available. Your unique link is still ready to share.";
   return (
     <div className="flex w-full max-w-[1080px] flex-col animate-in fade-in duration-300">
-      {/* Title Header */}
-      <div className="mb-7 lg:mb-9">
-        <h2 className="text-[26px] font-semibold leading-8 tracking-[-0.03em] text-[#1F1F1F] sm:text-[30px] sm:leading-9 lg:text-[34px] lg:leading-10">
-          Invite &amp; Earn
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#727272] sm:text-base">
-          Share your love for Homyz. Friends get $25 off their first stay, and you get $25 credit when they complete their trip.
-        </p>
-      </div>
-
-      {/* Shareable Link Hero Card */}
-      <div className="relative mb-8 rounded-lg border border-[#E5E5E5] bg-gradient-to-br from-[#FFF8E8] via-white to-[#FDF4D8] p-5 shadow-sm sm:p-7">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#727272]">
-          Your Exclusive Invite Link
-        </span>
-        <div className="mt-3 flex flex-col items-stretch gap-3 lg:flex-row">
-          <div className="flex min-h-12 flex-1 items-center justify-between rounded-xl border border-[#D7D7D7] bg-white px-3.5 py-2.5 text-sm text-[#1F1F1F] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:px-4">
-            <span className="min-w-0 truncate font-mono text-xs text-[#1F1F1F] select-all sm:text-sm">
-              {referralLink}
-            </span>
-            <span className="ml-3 shrink-0 rounded-md bg-[#FFF8E8] px-2 py-1 font-mono text-[10px] font-semibold tracking-wide text-[#1F1F1F] sm:text-[11px]">
-              {referralCode}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-all hover:bg-[#F7D37D] active:scale-98 lg:px-7"
-          >
-            {copied ? (
-              <>
-                <svg className="w-4 h-4 text-emerald-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span>Copied!</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4 text-[#1F1F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <span>Copy Link</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Share buttons */}
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-xs font-medium text-[#727272]">Quick share:</span>
-          <button
-            type="button"
-            onClick={() => shareVia("whatsapp")}
-            className="min-h-8 rounded-full border border-[#D7D7D7] bg-white px-3.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"
-          >
-            WhatsApp
-          </button>
-          <button
-            type="button"
-            onClick={() => shareVia("twitter")}
-            className="min-h-8 rounded-full border border-[#D7D7D7] bg-white px-3.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"
-          >
-            X / Twitter
-          </button>
-          <button
-            type="button"
-            onClick={() => shareVia("email")}
-            className="min-h-8 rounded-full border border-[#D7D7D7] bg-white px-3.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"
-          >
-            Email
-          </button>
-        </div>
-      </div>
-
-      {/* Referral Stats 4-Column Grid */}
-      <div className="mb-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <div className="flex min-h-32 flex-col rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5">
-          <span className="text-xs font-medium text-[#727272]">Invited Friends</span>
-          <span className="mt-2 text-2xl font-semibold leading-7 tracking-[-0.02em] text-[#1F1F1F]">4</span>
-          <span className="mt-auto pt-2 text-sm leading-4 text-[#727272]">Signed up with link</span>
-        </div>
-        <div className="flex min-h-32 flex-col rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5">
-          <span className="text-xs font-medium text-[#727272]">Completed Stays</span>
-          <span className="mt-2 text-2xl font-semibold leading-7 tracking-[-0.02em] text-[#1F1F1F]">2</span>
-          <span className="mt-auto pt-2 text-sm leading-4 text-[#727272]">Finished trips</span>
-        </div>
-        <div className="flex min-h-32 flex-col rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5">
-          <span className="text-xs font-medium text-[#727272]">Total Credits Earned</span>
-          <span className="mt-2 text-2xl font-semibold leading-7 tracking-[-0.02em] text-emerald-700">$50.00</span>
-          <span className="mt-auto pt-2 text-sm leading-4 text-[#727272]">Ready to use</span>
-        </div>
-        <div className="flex min-h-32 flex-col rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5">
-          <span className="text-xs font-medium text-[#727272]">Pending Credits</span>
-          <span className="mt-2 text-2xl font-semibold leading-7 tracking-[-0.02em] text-[#1F1F1F]">$25.00</span>
-          <span className="mt-auto pt-2 text-sm leading-4 text-[#727272]">Awaiting check-out</span>
-        </div>
-      </div>
-
-      {/* 3-Step Guide */}
-      <div className="mb-10">
-        <h3 className="mb-4 text-xl font-semibold tracking-[-0.02em] text-[#1F1F1F]">
-          How It Works
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="flex min-h-44 flex-col rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <span className="flex size-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
-              1
-            </span>
-            <h4 className="mt-4 text-sm font-semibold text-[#1F1F1F]">Send Invites</h4>
-            <p className="mt-1.5 text-sm leading-5 text-[#727272]">
-              Share your personal link via WhatsApp, email, or social media.
-            </p>
-          </div>
-          <div className="flex min-h-44 flex-col rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <span className="flex size-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
-              2
-            </span>
-            <h4 className="mt-4 text-sm font-semibold text-[#1F1F1F]">Friend Books</h4>
-            <p className="mt-1.5 text-sm leading-5 text-[#727272]">
-              They immediately receive $25 off their first eligible booking of $100+.
-            </p>
-          </div>
-          <div className="flex min-h-44 flex-col rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <span className="flex size-8 items-center justify-center rounded-full bg-[#FCDF9C] text-sm font-semibold text-[#1F1F1F]">
-              3
-            </span>
-            <h4 className="mt-4 text-sm font-semibold text-[#1F1F1F]">Get $25 Reward</h4>
-            <p className="mt-1.5 text-sm leading-5 text-[#727272]">
-              You receive $25 in your Homyz travel credit wallet as soon as they complete their trip.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Referrals Activity List */}
-      <div>
-        <h3 className="mb-4 text-xl font-semibold tracking-[-0.02em] text-[#1F1F1F]">
-          Referral Activity
-        </h3>
-        <div className="divide-y divide-[#E5E5E5] rounded-lg border border-[#E5E5E5] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-          <div className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-zinc-50 sm:px-5">
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-[#1F1F1F]">Sarah Miller</span>
-              <span className="mt-0.5 text-sm leading-5 text-[#727272]">Stay completed at Malibu Beach Villa • Aug 14, 2026</span>
-            </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 text-center">
-              +$25.00 Earned
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-zinc-50 sm:px-5">
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-[#1F1F1F]">David Kim</span>
-              <span className="mt-0.5 text-sm leading-5 text-[#727272]">Stay completed at Alpine Loft • Jul 28, 2026</span>
-            </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 text-center">
-              +$25.00 Earned
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-zinc-50 sm:px-5">
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-[#1F1F1F]">Elena Rostova</span>
-              <span className="mt-0.5 text-sm leading-5 text-[#727272]">Account created • Booking pending • Sep 01, 2026</span>
-            </div>
-            <span className="rounded-full bg-[#faeebc] px-3 py-1 text-xs font-semibold text-amber-800 text-center">
-              Pending $25.00
-            </span>
-          </div>
-        </div>
-      </div>
+      <div className="mb-7 lg:mb-9"><h2 className="text-[22px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] lg:text-[32px]">Invite &amp; Earn</h2><p className="mt-1 text-sm leading-6 text-[#727272] sm:text-base">Share your link, then follow every invitation and referral credit here.</p></div>
+      <section aria-labelledby="referral-link-heading" className="rounded-2xl border border-[#E5E5E5] bg-white p-5 sm:p-6"><h3 id="referral-link-heading" className="text-base font-semibold text-[#1F1F1F]">Your referral link</h3><div className="mt-3 flex flex-col gap-3 sm:flex-row"><p className="flex min-h-12 min-w-0 flex-1 items-center rounded-xl border border-[#D7D7D7] bg-zinc-50 px-3.5 font-mono text-xs text-[#1F1F1F] sm:text-sm" title={data.referralUrl}><span className="truncate">{data.referralUrl}</span></p><button type="button" onClick={() => void handleCopy()} className="min-h-12 rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F]">{copyState === "copied" ? "Copied" : "Copy link"}</button></div>{copyState === "error" ? <p role="status" className="mt-2 text-xs text-rose-700">We couldn&apos;t copy the link. Please select and copy it manually.</p> : null}<div className="mt-4 flex flex-wrap items-center gap-3"><span className="text-xs font-medium text-[#727272]">Share with:</span><button type="button" onClick={shareOnWhatsApp} className="min-h-10 rounded-full border border-[#D7D7D7] bg-white px-4 text-sm font-medium text-[#1F1F1F]">WhatsApp</button></div></section>
+      <section aria-label="Referral totals" className="mt-6 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-[#E5E5E5] bg-white p-5"><p className="text-sm text-[#727272]">Invitations</p><p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{data.totals.invited}</p></div><div className="rounded-2xl border border-[#E5E5E5] bg-white p-5"><p className="text-sm text-[#727272]">Pending credits</p><p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{data.totals.pendingPoints.toLocaleString()} <span className="text-sm font-medium">points</span></p></div><div className="rounded-2xl border border-[#E5E5E5] bg-white p-5"><p className="text-sm text-[#727272]">Credited points</p><p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{data.totals.creditedPoints.toLocaleString()} <span className="text-sm font-medium">points</span></p></div></section>
+      <section aria-labelledby="referral-activity-heading" className="mt-6 rounded-2xl border border-[#E5E5E5] bg-white p-5 sm:p-6"><div className="flex items-baseline justify-between gap-4"><div><h3 id="referral-activity-heading" className="text-base font-semibold text-[#1F1F1F]">Invitation activity</h3><p className="mt-1 text-sm text-[#727272]">Point credits appear only after approval.</p></div></div>{data.activity.length === 0 ? <p className="py-10 text-center text-sm text-[#727272]">No invitations yet. Share your link to get started.</p> : <div className="mt-4 divide-y divide-[#EDEDED]">{data.activity.map((item) => <div key={item.id} className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium text-[#1F1F1F]">{item.guestName}</p><p className="mt-0.5 text-xs text-[#727272]">Joined {formatDate(item.joinedAt)}</p></div><div className="text-left sm:text-right"><p className={`text-sm font-medium ${item.status === "CREDITED" ? "text-emerald-700" : item.status === "NOT_APPROVED" ? "text-rose-700" : "text-[#727272]"}`}>{statusCopy[item.status]}</p>{item.points !== null ? <p className="mt-0.5 text-xs text-[#727272]">{item.points.toLocaleString()} points{item.reviewedAt ? ` · reviewed ${formatDate(item.reviewedAt)}` : ""}</p> : null}</div></div>)}</div>}</section>
+      <section aria-labelledby="reward-rules-heading" className="mt-6 rounded-2xl border border-[#E5E5E5] bg-white p-5 sm:p-6"><h3 id="reward-rules-heading" className="text-base font-semibold text-[#1F1F1F]">Reward rules</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-[#727272]">{rewardCopy}</p></section>
     </div>
   );
 }
