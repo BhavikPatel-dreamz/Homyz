@@ -654,7 +654,8 @@ export function PublicListingDetailClient({
       typeof listing.longitude === "number" && Number.isFinite(listing.longitude)
       ? { latitude: listing.latitude, longitude: listing.longitude }
       : null;
-  const publicProfile = listing.host?.publicProfile?.profileVisible === false ? null : listing.host?.publicProfile ?? null;
+  const isProfileHidden = (listing.host?.publicProfile as Record<string, unknown> | null)?.profileVisible === false;
+  const publicProfile = isProfileHidden ? null : ((listing.host?.publicProfile as Record<string, unknown> | null) ?? {});
   const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
   const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
   const hostLanguages = Array.isArray(publicProfile?.languages)
@@ -667,7 +668,7 @@ export function PublicListingDetailClient({
     ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear() - (new Date().getMonth() < new Date(listing.host.createdAt).getMonth() ? 1 : 0))
     : null;
   const hostTenure = hostYears === null ? null : hostYears > 0 ? `${hostYears} ${hostYears === 1 ? "year" : "years"}` : "Less than a year";
-  const hostProfileHref = publicProfile && listing.host?.id ? `/users/profile/${listing.host.id}` : null;
+  const hostProfileHref = listing.host?.id && !isProfileHidden ? `/users/profile/${listing.host.id}` : null;
   const formatTime = (time: string | null | undefined) => {
     if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
     const [hour, minute] = time.split(":").map(Number);

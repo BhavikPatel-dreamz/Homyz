@@ -123,7 +123,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
 
   return (
     <div className="relative mb-8">
-      <div className="grid grid-cols-1 gap-4 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
+      <div className="relative grid grid-cols-1 gap-4 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
         <div className={`${total > 1 ? "md:col-span-2" : "md:col-span-4"} relative h-full overflow-hidden rounded-[20px] bg-zinc-100`}>
           {!failed[selectedIndex] ? (
             <button
@@ -179,12 +179,23 @@ export function ListingGallery({ photos, listingTitle }: Props) {
               </button>
             );
           })}
-          {total > 5 && (
-            <button type="button" onClick={handleOpenLightbox} className="absolute bottom-4 right-4 z-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white">
-              Show all {total} photos
-            </button>
-          )}
         </div>}
+
+        {total > 0 && (
+          <button
+            type="button"
+            onClick={handleOpenLightbox}
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-full border border-zinc-200 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span>{total > 1 ? `Show all ${total} photos` : "Show photo"}</span>
+          </button>
+        )}
       </div>
 
       {/* Thumbnails on mobile below main image */}

@@ -303,9 +303,9 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
   if (!host) throw AppError.notFound("Host not found");
 
   const profile = host.publicProfile && typeof host.publicProfile === "object" && !Array.isArray(host.publicProfile)
-    ? host.publicProfile as Record<string, unknown>
-    : null;
-  if (!profile || profile.profileVisible === false) throw AppError.notFound("Host profile is unavailable");
+    ? (host.publicProfile as Record<string, unknown>)
+    : {};
+  if (profile.profileVisible === false) throw AppError.notFound("Host profile is unavailable");
 
   const publicListingWhere = {
     hostId: host.id,
