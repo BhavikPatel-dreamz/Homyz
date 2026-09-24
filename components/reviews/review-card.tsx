@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ReviewIcon } from "./review-icon";
+import Image from "next/image";
 
 interface ReviewCardProps {
   id: string;
@@ -43,44 +43,46 @@ export function ReviewCard({ id, rating, comment, author, createdAt }: ReviewCar
   const visibleComment = isExpanded ? comment : previewText(comment);
 
   return (
-    <article className="border-t border-zinc-200/80 pt-6 first:border-t-0 first:pt-0">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-100 text-sm font-semibold text-amber-950">
+    <article className="min-w-0">
+      <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950">
           {author?.image && !imageFailed ? (
             // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
             <img src={author.image} alt="" className="h-full w-full object-cover" onError={() => setImageFailed(true)} />
           ) : initial}
-        </div>
-        <p className="min-w-0 truncate text-sm font-semibold text-zinc-900">{name}</p>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-zinc-600">
+      <div className="mt-3 flex items-center text-xs text-zinc-600">
         <span className="flex items-center gap-0.5 text-zinc-900" aria-label={`Rated ${rating} out of 5`}>
           {Array.from({ length: 5 }, (_, index) => (
-            <ReviewIcon
+            <Image
               key={index}
-              name="star"
-              className={`h-3.5 w-3.5 ${index < rating ? "fill-zinc-900 text-zinc-900" : "fill-transparent text-zinc-300"}`}
+              src="/images/icons/review-star.svg"
+              alt=""
+              width={15}
+              height={15}
+              className={`size-[15px] ${index < rating ? "opacity-100" : "opacity-20"}`}
             />
           ))}
           <span className="sr-only">Rated {rating} out of 5</span>
         </span>
-        <span aria-hidden="true">·</span>
-        <time dateTime={new Date(createdAt).toISOString()}>{relativeDate(createdAt)}</time>
+        <time className="sr-only" dateTime={new Date(createdAt).toISOString()}>{relativeDate(createdAt)}</time>
       </div>
 
-      {comment ? <p id={`review-${id}`} className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{visibleComment}</p> : null}
-      {isLongReview ? (
-        <button
-          type="button"
-          className="mt-2 text-sm font-semibold underline underline-offset-4 hover:text-zinc-600"
-          onClick={() => setIsExpanded((expanded) => !expanded)}
-          aria-expanded={isExpanded}
-          aria-controls={`review-${id}`}
-        >
-          {isExpanded ? "Show less" : "Show more"}
-        </button>
+      {comment ? (
+        <p id={`review-${id}`} className="mt-3 whitespace-pre-wrap sm:text-base text-sm leading-6 text-[#727272]">
+          {visibleComment}
+          {isLongReview && <>{" "}<button
+            type="button"
+            className="font-medium text-[#727272] underline underline-offset-2 transition-colors hover:text-[#1f1f1f]"
+            onClick={() => setIsExpanded((expanded) => !expanded)}
+            aria-expanded={isExpanded}
+            aria-controls={`review-${id}`}
+          >
+            {isExpanded ? "read less" : "read more"}
+          </button></>}
+        </p>
       ) : null}
+      <p className="mt-3 min-w-0 truncate sm:text-base text-sm font-medium text-[#1f1f1f]">{name}</p>
     </article>
   );
 }

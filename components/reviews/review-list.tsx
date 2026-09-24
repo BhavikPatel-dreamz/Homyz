@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.service";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -92,7 +93,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
       setLoading(true);
       setError(null);
       try {
-        const params = new URLSearchParams({ page: "1", limit: "6" });
+        const params = new URLSearchParams({ page: "1", limit: "4" });
         const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`);
         if (!response.ok) throw new Error("Unable to load reviews");
         const payload = await response.json() as ReviewsResponse;
@@ -119,7 +120,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
       metadata: { action: "show_more_reviews", nextPage, totalReviews: stats?.totalCount },
     });
     try {
-      const params = new URLSearchParams({ page: String(nextPage), limit: "6" });
+      const params = new URLSearchParams({ page: String(nextPage), limit: "4" });
       const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`);
       if (!response.ok) throw new Error("Unable to load more reviews");
       const payload = await response.json() as ReviewsResponse;
@@ -154,15 +155,15 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   }
 
   return (
-    <section className="border-b border-zinc-200/80 py-10 sm:py-14" aria-labelledby="guest-reviews-heading">
-      <div className="mx-auto max-w-lg text-center">
-        <div className="flex items-center justify-center gap-3" aria-hidden="true">
-          <span className="text-4xl text-[#d9ad4d]">❦</span>
-          <span className="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl">{stats.averageRating?.toFixed(2)}</span>
-          <span className="-scale-x-100 text-4xl text-[#d9ad4d]">❦</span>
+    <section className="border-b border-zinc-200/80 py-8 sm:py-14" aria-labelledby="guest-reviews-heading">
+      <div className="mx-auto max-w-[350px] text-center">
+        <div className="flex items-center justify-center gap-4" aria-hidden="true">
+          <Image src="/images/icons/filled-leaves-left.svg" alt="" width={70} height={127} className="h-[90px] w-[57px] sm:h-[127px] sm:w-[70px]" />
+          <span className="text-5xl font-medium tracking-tight text-[#1f1f1f] sm:text-6xl">{stats.averageRating?.toFixed(2)}</span>
+          <Image src="/images/icons/filled-leaves-right.svg" alt="" width={70} height={127} className="h-[90px] w-[57px] sm:h-[127px] sm:w-[70px]" />
         </div>
-        <h2 id="guest-reviews-heading" className="mt-4 text-sm font-semibold text-zinc-900">{isGuestFavorite ? "Guest favourite" : "Guest reviews"}</h2>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">{isGuestFavorite ? "This home is highly rated by guests based on reviews and reliability." : `${stats.totalCount} ${stats.totalCount === 1 ? "guest has" : "guests have"} shared their stay.`}</p>
+        <h2 id="guest-reviews-heading" className="mt-4 text-base font-normal text-[#1f1f1f]">{isGuestFavorite ? "Guest favourite" : "Guest reviews"}</h2>
+        <p className="mt-1 text-base text-[#727272]">{isGuestFavorite ? "This home is in the top 5% of eligible listings based on ratings, reviews, and reliability" : `${stats.totalCount} ${stats.totalCount === 1 ? "guest has" : "guests have"} shared their stay.`}</p>
       </div>
 
       <div className="mt-10">
@@ -171,7 +172,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           {reviews.map((review) => <ReviewCard key={review.id} {...review} />)}
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-zinc-400 px-5 py-2.5 text-sm font-semibold transition-colors hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? "Loading…" : `Show all ${stats.totalCount} reviews`}</button> : null}
+          {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-[#1f1f1f] bg-white px-6 py-3 text-base font-normal text-[#1f1f1f] transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? "Loading…" : `Show all ${stats.totalCount} reviews`}</button> : null}
           <button
             type="button"
             onClick={() => {
@@ -182,9 +183,9 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
                 metadata: { action: "how_reviews_work", totalReviews: stats.totalCount },
               });
             }}
-            className="text-xs text-zinc-600 underline underline-offset-4 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 cursor-pointer"
+            className="text-base text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 cursor-pointer"
           >
-            How reviews work
+            Learn how reviews work
           </button>
         </div>
         {error && reviews.length > 0 ? <p className="mt-4 text-sm text-amber-800">{error}</p> : null}

@@ -2,15 +2,21 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 type Props = {
   photos: string[];
   listingTitle?: string;
+  onShare?: () => void;
+  onSave?: () => void;
+  isSaved?: boolean;
+  saveDisabled?: boolean;
 };
 
-export function ListingGallery({ photos, listingTitle }: Props) {
+export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved = false, saveDisabled = false }: Props) {
+  const router = useRouter();
   // Listing.photos is an ordered array: the host editor keeps index 0 as the
   // cover photo. Remove invalid/duplicate URLs without changing that order.
   const galleryPhotos = useMemo(
@@ -122,7 +128,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
   }
 
   return (
-    <div className="relative mb-8">
+    <div className="relative mb-6 lg:mb-8">
       <div className="grid grid-cols-1 gap-4 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
         <div className={`${total > 1 ? "md:col-span-2" : "md:col-span-4"} relative h-full overflow-hidden rounded-[20px] bg-zinc-100`}>
           {!failed[selectedIndex] ? (
@@ -180,15 +186,35 @@ export function ListingGallery({ photos, listingTitle }: Props) {
             );
           })}
           {total > 5 && (
-            <button type="button" onClick={handleOpenLightbox} className="absolute bottom-4 right-4 z-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white">
+            <button type="button" onClick={handleOpenLightbox} className="absolute bottom-5 right-5 z-10 inline-flex items-center gap-2 rounded-full border border-[#1F1F1F] bg-white/95 px-4 py-1.5 text-base font-normal text-[#1f1f1f] transition hover:bg-white">
+              <Image src="/images/icons/camera-mode.svg" alt="" width={18} height={18} className="size-[18px]" />
               Show all {total} photos
             </button>
           )}
         </div>}
       </div>
 
+      <div className="absolute left-0 top-0 z-10 flex w-full items-start justify-between px-3 pt-3 md:hidden">
+        <button type="button" onClick={() => router.back()} aria-label="Go back" className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/30 bg-white/95 text-[#1f1f1f] shadow-sm">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-5"><path d="m14 6-6 6 6 6" /></svg>
+        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={onShare} aria-label="Share this listing" className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/20 bg-white/95 text-[#1f1f1f] shadow-sm">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-5"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
+          </button>
+          <button type="button" onClick={onSave} disabled={saveDisabled} aria-pressed={isSaved} aria-label={isSaved ? "Remove from wishlist" : "Save listing"} className={`flex size-9 items-center justify-center rounded-full border bg-white/95 shadow-sm disabled:opacity-50 ${isSaved ? "border-amber-300 text-amber-800" : "border-[#1f1f1f]/20 text-[#1f1f1f]"}`}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-5"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" onClick={handleOpenLightbox} className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-2 text-sm font-medium text-[#1f1f1f] shadow-sm md:hidden">
+        <Image src="/images/icons/camera-mode.svg" alt="" width={18} height={18} className="size-[18px]" />
+        {selectedIndex + 1}/{total}
+      </button>
+
       {/* Thumbnails on mobile below main image */}
-      <div className="md:hidden mt-2 flex gap-2 overflow-x-auto pb-1">
+      <div className="hidden mt-2 gap-2 overflow-x-auto pb-1">
         {galleryPhotos.map((p, i) => (
           <button
             type="button"
@@ -214,6 +240,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
         ))}
       </div>
 
+
       {/* Counter & Open */}
       {/* <div className="absolute right-4 bottom-4 rounded-full bg-white/90 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-md hover:bg-white transition-all cursor-pointer border border-zinc-200 flex items-center gap-2">
         <span>{selectedIndex + 1} / {total}</span>
@@ -222,7 +249,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
 
       {lightboxOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-label={`${listingTitle || "Property"} photo gallery`} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4">
-          <div className="max-w-5xl w-full mx-auto my-8">
+          <div className="max-w-5xl w-full h-full mx-auto my-8">
             <div className="flex items-center justify-between text-white sticky top-0 bg-black/60 backdrop-blur-md py-3 px-2 z-10">
               <span className="font-semibold text-sm">{selectedIndex + 1} / {total}</span>
               <div className="flex items-center gap-2">
@@ -232,8 +259,8 @@ export function ListingGallery({ photos, listingTitle }: Props) {
               </div>
             </div>
 
-            <div className="mt-4">
-              <div className="rounded-2xl overflow-hidden bg-zinc-900">
+            <div className="mt-4 w-full h-full max-h-[75vh]">
+              <div className="rounded-2xl overflow-hidden bg-zinc-900 h-full">
                 {!failed[selectedIndex] ? (
                   <div className="relative w-full h-[70vh]">
                     <Image
