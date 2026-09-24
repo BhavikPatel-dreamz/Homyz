@@ -100,6 +100,19 @@ if [[ "${RUN_DB_MIGRATE:-}" == "true" ]]; then
   pnpm_run db:migrate:deploy
 fi
 
+# A previous root/docker build leaves .next owned by another user.
+# next build then fails with EACCES on unlink. Renaming only needs
+# write permission on the parent directory, which the deploy user has.
+if [[ -d .next ]] && ! rm -rf .next; then
+  locked="${APP_DIR}/.next-locked-$(date +%s)"
+  echo "Cannot delete .next; moving it to ${locked}" >&2
+  if ! mv .next "${locked}"; then
+    echo "Cannot move ${APP_DIR}/.next either. Ask a server admin to remove it." >&2
+    ls -ld .next .next/build .next/build/package.json >&2 || true
+    exit 1
+  fi
+fi
+
 echo "Building"
 pnpm_run run build
 
