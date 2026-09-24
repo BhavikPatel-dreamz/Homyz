@@ -27,11 +27,24 @@ export const AMENITY_ICON_SOURCES: Record<string, string> = {
   tv: "/images/icons/tv.svg",
   kitchen: "/images/icons/kitchen.svg",
   washer: "/images/icons/washer.svg",
+  dryer: "/images/icons/dryer.svg",
   free_parking: "/images/icons/free-parking.svg",
   paid_parking: "/images/icons/paid-parking.svg",
+  self_check_in: "/images/icons/check-in-icon.svg",
   air_conditioning: "/images/icons/air-conditioning.svg",
+  heating: "/images/icons/heating.svg",
   workspace: "/images/icons/workspace.svg",
+  hot_water: "/images/icons/hot-water.svg",
+  iron: "/images/icons/iron.svg",
+  hair_dryer: "/images/icons/hair-dryer.svg",
+  essentials: "/images/icons/essentials.svg",
+  towels: "/images/icons/towels.svg",
   bed_linens: "/images/icons/bed-linens.svg",
+  extra_pillows_blankets: "/images/icons/extra-pillows-blankets.svg",
+  refrigerator: "/images/icons/refrigerator.svg",
+  freezer: "/images/icons/freezer.svg",
+  microwave: "/images/icons/microwave.svg",
+  oven: "/images/icons/oven.svg",
   body_soap: "/images/icons/body-soap.svg",
   pool: "/images/icons/pool.svg",
   private_pool: "/images/icons/pool.svg",
@@ -394,4 +407,3 @@ export function getAmenityTranslationKey(id: string): string {
   };
   return customKeys[id] || `host_amenity_${id}`;
 }
-
