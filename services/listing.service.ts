@@ -877,8 +877,8 @@ async function getPublicListingDetail(
       isSuperhost = true;
     } else {
       const bookingSummary = {
-        confirmed: bookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
-        cancelled: bookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
+        confirmed: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
+        cancelled: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
       };
       isSuperhost = qualificationService.isSuperhost({
         createdAt: listing.host.createdAt,

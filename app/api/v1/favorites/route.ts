@@ -27,7 +27,7 @@ export const GET = apiHandler(async (req) => {
     });
     const response = ok({
       user: { id: actor.id, name: actor.name ?? null },
-      listingIds: favorites.map((favorite) => favorite.listingId),
+      listingIds: favorites.map((favorite: { listingId: string }) => favorite.listingId),
     });
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     return response;
