@@ -2042,7 +2042,7 @@ export function PublicListingDetailClient({
                           className="mt-7 inline-flex min-h-14 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 group transition-colors"
                         >
                           <Image src="/images/icons/messages.svg" alt="messages.svg" width={18} height={18} className="size-6 group-hover:brightness-0 group-hover:invert transition-all duration-300" />
-                          Message host
+                          View host profile
                         </Link>
                       )}
                       <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">To help protect your payment, always use Homyz to send money and communicate with hosts.</p>
