@@ -33,7 +33,7 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
   // Fetch latest favorites from API to guarantee freshly synced DB state
   const refreshFavorites = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/v1/favorites", {
+      const res = await fetch("/api/v1/favorites?include=cards", {
         signal,
         headers: { "Cache-Control": "no-cache" },
       });

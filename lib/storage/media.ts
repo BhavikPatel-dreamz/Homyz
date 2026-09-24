@@ -11,13 +11,12 @@ import path from "node:path";
  * Private host documents stay behind the authenticated documents API.
  */
 
-export type PublicMediaKind = "listing-photos" | "stamp-icons" | "guidebook-photos";
+export type PublicMediaKind = "listing-photos" | "guidebook-photos";
 export type PrivateMediaKind = "host-documents";
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
 const PUBLIC_KINDS = new Set<string>([
   "listing-photos",
-  "stamp-icons",
   "guidebook-photos",
 ]);
 const PRIVATE_KINDS = new Set<string>(["host-documents"]);

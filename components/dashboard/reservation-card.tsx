@@ -131,26 +131,6 @@ export function ReservationCard({
             Booking #{data.id.slice(-8).toUpperCase()}
           </p>
         </div>
-
-        {/* FOOTER CTA */}
-        <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3">
-          <Link
-            href={detailsHref}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-800 transition-colors group-hover:text-emerald-700"
-          >
-            <span>View reservation details</span>
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
-
-          {isReviewEligible && (
-            <Link
-              href={`/bookings/${data.id}/review`}
-              className="inline-flex items-center rounded-lg bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors"
-            >
-              Write review
-            </Link>
-          )}
-        </div>
       </div>
     </article>
   );

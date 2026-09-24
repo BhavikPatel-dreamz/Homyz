@@ -128,6 +128,12 @@ enum ReviewStatus {
   PENDING_MODERATION
 }
 
+enum ReferralRewardStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
@@ -151,6 +157,8 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   tokenVersion  Int        @default(0)
+  referralCode  String?    @unique
+  referredById  String?
 
   accounts                        Account[]
   sessions                        Session[]
@@ -188,10 +196,16 @@ model User {
   listingRemovalFeedbacks         ListingRemovalFeedback[]
   authoredReviews                 Review[]                   @relation("AuthoredReviews")
   moderatedReviews                Review[]                   @relation("ModeratedReviews")
+  referredBy                      User?                     @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredGuests                  User[]                    @relation("GuestReferrals")
+  referralRewards                 ReferralReward[]          @relation("ReferralRewardInviter")
+  referralRewardEarnedFor         ReferralReward?           @relation("ReferralRewardReferredGuest")
+  reviewedReferralRewards         ReferralReward[]          @relation("ReferralRewardReviewer")
 
   @@index([role])
   @@index([adminRoleId])
   @@index([status])
+  @@index([referredById])
 }
 
 model TripPhoto {
@@ -550,10 +564,35 @@ model Booking {
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
   taxes   ReservationTax[]
   reviews Review[]
+  referralReward ReferralReward?
 
   @@index([userId])
   @@index([listingId])
   @@index([listingId, startDate, endDate, status])
+}
+
+// A reward is created once after the referred guest's first completed confirmed
+// stay. It remains pending until an authorised administrator approves it.
+model ReferralReward {
+  id                 String   @id @default(cuid())
+  inviterId          String
+  referredUserId     String   @unique
+  qualifyingBookingId String  @unique
+  points             Int
+  status             ReferralRewardStatus @default(PENDING)
+  reviewedById       String?
+  reviewedAt         DateTime?
+  rejectionReason    String?
+  createdAt          DateTime @default(now())
+
+  inviter           User    @relation("ReferralRewardInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  referredGuest     User    @relation("ReferralRewardReferredGuest", fields: [referredUserId], references: [id], onDelete: Cascade)
+  reviewedBy        User?   @relation("ReferralRewardReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  qualifyingBooking Booking @relation(fields: [qualifyingBookingId], references: [id], onDelete: Restrict)
+
+  @@index([inviterId, createdAt])
+  @@index([status, createdAt])
+  @@index([reviewedById])
 }
 
 model Review {

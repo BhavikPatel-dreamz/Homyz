@@ -192,6 +192,22 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
             </button>
           )}
         </div>}
+
+        {total > 0 && (
+          <button
+            type="button"
+            onClick={handleOpenLightbox}
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-full border border-zinc-200 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span>{total > 1 ? `Show all ${total} photos` : "Show photo"}</span>
+          </button>
+        )}
       </div>
 
       <div className="absolute left-0 top-0 z-10 flex w-full items-start justify-between px-3 pt-3 md:hidden">

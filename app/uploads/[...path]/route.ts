@@ -4,7 +4,6 @@ import { readPublicMediaFile, type PublicMediaKind } from "@/lib/storage/media";
 
 const PUBLIC_KINDS = new Set<PublicMediaKind>([
   "listing-photos",
-  "stamp-icons",
   "guidebook-photos",
 ]);
 

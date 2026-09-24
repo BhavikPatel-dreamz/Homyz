@@ -8,6 +8,26 @@ import { seedCuratedLocations } from "@/lib/location/seed";
 async function main() {
   const curatedLocations = await seedCuratedLocations();
   console.log(`[seed] Curated locations ready: ${curatedLocations.countries} countries / ${curatedLocations.locations} locations.`);
+
+  // The referral program is configuration, not UI state. The Invite & Earn
+  // page and reward worker read this record so changes do not require a deploy.
+  await prisma.appSettings.upsert({
+    where: { key: "REFERRAL_PROGRAM_CONFIG" },
+    update: {},
+    create: {
+      key: "REFERRAL_PROGRAM_CONFIG",
+      value: JSON.stringify({
+        enabled: true,
+        inviterRewardPoints: 250,
+        qualifyingCondition: "FIRST_COMPLETED_STAY",
+      }),
+      description: "Guest referral reward, credited after a referred guest completes their first stay.",
+      dataType: "JSON",
+      category: "REFERRAL",
+      isPublic: false,
+    },
+  });
+
   console.log("[seed] Seeding permissions...");
   for (const perm of ALL_PERMISSIONS) {
     await prisma.adminPermission.upsert({
@@ -80,6 +100,8 @@ async function main() {
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.REPORTS_EXPORT,
     PERMISSIONS.ACTIVITY_LOGS_VIEW,
+    PERMISSIONS.REFERRALS_VIEW,
+    PERMISSIONS.REFERRALS_REVIEW,
     PERMISSIONS.SECURITY_LOGS_VIEW,
     PERMISSIONS.SESSIONS_VIEW,
     PERMISSIONS.SETTINGS_VIEW,

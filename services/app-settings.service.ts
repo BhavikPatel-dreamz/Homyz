@@ -16,7 +16,14 @@ export interface HomepagePopularHomesConfig {
   enabled: boolean;
 }
 
+export interface ReferralProgramConfig {
+  enabled: boolean;
+  inviterRewardPoints: number;
+  qualifyingCondition: "FIRST_COMPLETED_STAY";
+}
+
 const HOMEPAGE_POPULAR_HOMES_CONFIG_KEY = "HOMEPAGE_POPULAR_HOMES_CONFIG";
+const REFERRAL_PROGRAM_CONFIG_KEY = "REFERRAL_PROGRAM_CONFIG";
 const DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG: HomepagePopularHomesConfig = {
   mode: "STATIC",
   city: "Riyadh",
@@ -37,6 +44,40 @@ function normalizeHomepagePopularHomesConfig(
     title: title || DEFAULT_HOMEPAGE_POPULAR_HOMES_CONFIG.title,
     enabled: config?.enabled !== false,
   };
+}
+
+/**
+ * Referral rewards remain disabled until an administrator configures the
+ * program. This intentionally has no reward fallback: a credit must never be
+ * invented when the business rule is absent.
+ */
+export async function getReferralProgramConfig(): Promise<ReferralProgramConfig | null> {
+  try {
+    const setting = await prisma.appSettings.findUnique({
+      where: { key: REFERRAL_PROGRAM_CONFIG_KEY },
+    });
+    if (!setting?.value) return null;
+
+    const parsed = JSON.parse(setting.value) as Partial<ReferralProgramConfig>;
+    const points = Number(parsed.inviterRewardPoints);
+    if (
+      parsed.enabled !== true ||
+      parsed.qualifyingCondition !== "FIRST_COMPLETED_STAY" ||
+      !Number.isInteger(points) ||
+      points <= 0
+    ) {
+      return null;
+    }
+
+    return {
+      enabled: true,
+      inviterRewardPoints: points,
+      qualifyingCondition: "FIRST_COMPLETED_STAY",
+    };
+  } catch (error) {
+    console.error("[AppSettings] Error fetching referral program configuration:", error);
+    return null;
+  }
 }
 
 /**
@@ -280,4 +321,5 @@ export const appSettingsService = {
   updateSetting,
   getHomepagePopularHomesConfig,
   updateHomepagePopularHomesConfig,
+  getReferralProgramConfig,
 };

@@ -19,8 +19,6 @@ async function runGuestProfileTests() {
         publicProfile: {
           whereILive: "Bucharest, Romania",
           bio: "Automated profile test guest bio.",
-          stampsVisible: true,
-          selectedStamps: ["paris", "coffee"],
         },
       },
     });
@@ -100,40 +98,7 @@ async function runGuestProfileTests() {
     }
     console.log(" ✅ PASS: Dynamic Backend User Search for Tag People");
 
-    // Test 7: Persist & Update Travel Stamps ("Where I've Been")
-    const updatedUserWithStamps = await userService.updateProfile(testUserId, {
-      publicProfile: {
-        whereILive: "Bucharest, Romania",
-        bio: "Automated profile test guest bio.",
-        stampsVisible: true,
-        selectedStamps: ["paris", "coffee", "rome", "tokyo", "newyork", "london"],
-      },
-    });
-    const savedStamps = (updatedUserWithStamps.publicProfile as any)?.selectedStamps;
-    if (!Array.isArray(savedStamps) || savedStamps.length !== 6 || !savedStamps.includes("tokyo")) {
-      throw new Error("Travel stamp selection persistence failed");
-    }
-    console.log(" ✅ PASS: Travel Stamp Selection & Persistence");
-
-    // Test 8: Enforce Maximum 10 Travel Stamps Limit & Visibility Toggle
-    const tenStamps = ["paris", "coffee", "rome", "tokyo", "newyork", "london", "barcelona", "dubai", "sydney", "bucharest"];
-    const elevenStamps = [...tenStamps, "bali"];
-
-    // Enforce max 10 slice/validation
-    const validSelection = elevenStamps.slice(0, 10);
-    const updatedUserLimit = await userService.updateProfile(testUserId, {
-      publicProfile: {
-        stampsVisible: false,
-        selectedStamps: validSelection,
-      },
-    });
-    const pubData = updatedUserLimit.publicProfile as any;
-    if (pubData.stampsVisible !== false || pubData.selectedStamps.length !== 10) {
-      throw new Error("Stamp max limit or visibility toggle failed");
-    }
-    console.log(" ✅ PASS: Enforced Max 10 Travel Stamp Limit & Visibility Toggle");
-
-    // Test 9: Server-side Ownership Verification for Modification
+    // Test 7: Server-side Ownership Verification for Modification
     try {
       await userService.updateTripPhoto("unauthorized-user-id", photoToEdit.id, { caption: "Hacked caption" });
       throw new Error("Failed to block unauthorized photo modification");

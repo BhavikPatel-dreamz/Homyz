@@ -47,6 +47,7 @@ export function HomyzAuthForm({
   const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
 
   const searchParamMethod = searchParams?.get("method");
+  const referralCode = searchParams?.get("ref")?.trim().toUpperCase() || undefined;
   const effectiveInitialMethod: "phone" | "email" =
     initialInputMethod || (searchParamMethod === "email" ? "email" : searchParamMethod === "phone" ? "phone" : "phone");
 
@@ -69,6 +70,9 @@ export function HomyzAuthForm({
     }
     if (callbackUrl && callbackUrl !== "/dashboard") {
       params.set("callbackUrl", callbackUrl);
+    }
+    if (referralCode) {
+      params.set("ref", referralCode);
     }
     const qs = params.toString();
     return qs ? `${basePath}?${qs}` : basePath;
@@ -200,6 +204,7 @@ export function HomyzAuthForm({
           password,
           role,
           phone: fullPhone,
+          referralCode,
         });
 
         if (!res.ok) {
@@ -337,6 +342,7 @@ export function HomyzAuthForm({
           const res = await signIn("credentials", {
             phone: fullPhone,
             otpCode: otpCode.trim(),
+            referralCode,
             redirect: false,
           });
 

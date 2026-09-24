@@ -38,6 +38,10 @@ import { forwardGeocodeQuery } from "@/lib/location/places-provider";
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
 const LISTING_TTL = 300;
 const LISTINGS_LIST_TTL = 120;
+// Public detail pages are read-heavy. Cache the fully sanitized payload for a
+// short window; the existing public-listing version counter immediately
+// invalidates it whenever listing or review data changes.
+const PUBLIC_LISTING_DETAIL_TTL = 60;
 // Only shallow pages of the public catalogue are cached; deep pagination is rare
 // and would bloat the keyspace, so it falls straight through to the DB.
 const MAX_CACHED_LIST_SKIP = 200;
@@ -91,7 +95,6 @@ export type ListingPublishReadiness = {
 function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const profile = value as Record<string, unknown>;
-  if (profile.profileVisible === false) return null;
   const promptSource = profile.prompts && typeof profile.prompts === "object" && !Array.isArray(profile.prompts)
     ? profile.prompts as Record<string, unknown> : {};
   const list = (input: unknown) => Array.isArray(input)
@@ -125,8 +128,6 @@ function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
     ...profileDetails,
     languages,
     interests: list(profile.interests),
-    stampsVisible: profile.stampsVisible !== false,
-    ...(profile.stampsVisible !== false ? { selectedStamps: list(profile.selectedStamps).slice(0, 10) } : {}),
   };
 }
 
@@ -830,13 +831,6 @@ async function getPublicListingDetail(
           publicProfile: true,
         },
       },
-      _count: {
-        select: {
-          bookings: {
-            where: { status: BookingStatus.CONFIRMED },
-          },
-        },
-      },
     },
   });
 
@@ -844,20 +838,35 @@ async function getPublicListingDetail(
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  // Property reviews are the single source of truth for property ratings and
-  // qualifications. Host profile data is deliberately not substituted here.
-  const reviewSummary = await prisma.review.aggregate({
-    where: { listingId: listing.id, status: "PUBLISHED" },
-    _avg: { rating: true },
-    _count: { _all: true },
-  });
+  // These independent aggregates are latency-bound against the database, so
+  // run them together rather than making the public page wait for each one.
+  const [reviewSummary, confirmedBookingCount, bookingGroups] = await Promise.all([
+    prisma.review.aggregate({
+      where: { listingId: listing.id, status: "PUBLISHED" },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.booking.count({
+      where: { listingId: listing.id, status: BookingStatus.CONFIRMED },
+    }),
+    listing.host && !hasVerifiedSuperhostFlag(listing.host.publicProfile)
+      ? prisma.booking.groupBy({
+          by: ["status"],
+          where: {
+            listing: { hostId: listing.host.id },
+            status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] },
+          },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+  ]);
   const propertyRating = roundRating(reviewSummary._avg.rating);
   const propertyReviewCount = reviewSummary._count._all;
   const isGuestFavorite = qualificationService.isGuestFavorite({
     isFeatured: listing.isFeatured,
     rating: propertyRating,
     reviewCount: propertyReviewCount,
-    confirmedBookingCount: listing._count.bookings,
+    confirmedBookingCount,
     status: listing.status,
     published: listing.published,
   });
@@ -867,18 +876,9 @@ async function getPublicListingDetail(
     if (hasVerifiedSuperhostFlag(listing.host.publicProfile)) {
       isSuperhost = true;
     } else {
-      // One aggregate query replaces loading every booking for this host.
-      const hostBookingGroups: Array<{ status: BookingStatus; _count: { _all: number } }> = await prisma.booking.groupBy({
-        by: ["status"],
-        where: {
-          listing: { hostId: listing.host.id },
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] },
-        },
-        _count: { _all: true },
-      });
       const bookingSummary = {
-        confirmed: hostBookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
-        cancelled: hostBookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
+        confirmed: bookingGroups.find((group) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
+        cancelled: bookingGroups.find((group) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
       };
       isSuperhost = qualificationService.isSuperhost({
         createdAt: listing.host.createdAt,
@@ -907,6 +907,29 @@ async function getPublicListingDetail(
   };
 }
 
+function revivePublicListingDetail(cached: PublicListingDetail): PublicListingDetail {
+  return {
+    ...cached,
+    createdAt: new Date(cached.createdAt),
+    updatedAt: new Date(cached.updatedAt),
+    host: cached.host
+      ? { ...cached.host, createdAt: new Date(cached.host.createdAt) }
+      : undefined,
+  };
+}
+
+async function getCachedPublicListingDetail(
+  cacheIdentity: string,
+  where: Prisma.ListingWhereUniqueInput,
+): Promise<PublicListingDetail> {
+  const version = await getCounter(keys.listingsPublicVersion());
+  return getOrSetCache(
+    `homyz:listings:detail:v1:v${version}:${cacheIdentity}`,
+    () => getPublicListingDetail(where),
+    { ttl: PUBLIC_LISTING_DETAIL_TTL, revive: revivePublicListingDetail },
+  );
+}
+
 async function getPublicListingById(id: string): Promise<
   PublicListingDTO & {
     host?: {
@@ -920,7 +943,7 @@ async function getPublicListingById(id: string): Promise<
     isGuestFavorite: boolean;
   }
 > {
-  return getPublicListingDetail({ id });
+  return getCachedPublicListingDetail(`id:${id}`, { id });
 }
 
 async function getPublicListingBySlug(slug: string): Promise<PublicListingDetail> {
@@ -929,7 +952,7 @@ async function getPublicListingBySlug(slug: string): Promise<PublicListingDetail
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
-  return getPublicListingDetail({ customSlug: normalized });
+  return getCachedPublicListingDetail(`slug:${normalized}`, { customSlug: normalized });
 }
 
 async function getById(id: string): Promise<ListingDTO> {

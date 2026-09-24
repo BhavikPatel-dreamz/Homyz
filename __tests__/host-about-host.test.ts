@@ -129,29 +129,12 @@ test("Host Listing Editor: About Host Component & Airbnb-Style Flow", () => {
   );
   console.log(" ✅ PASS: Hobbies chip manager with custom input and quick suggestions");
 
-  // 7. Where I’ve Been (Travel Stamps)
-  console.log("\n--- [7] Where I've Been & Travel Stamps ---");
+  // 7. Retired travel stamps
+  console.log("\n--- [7] Retired Travel Stamps ---");
   assert(
-    hostViewCode.includes("Where I’ve been") || hostViewCode.includes("Where I've been"),
-    "Must include 'Where I’ve been' section",
+    !hostViewCode.includes("WhereIveBeenSelector") && !hostViewCode.includes("TravelStampGraphic"),
+    "Must not render retired travel-stamp controls",
   );
-  assert(
-    hostViewCode.includes("role=\"switch\"") && hostViewCode.includes("stampsVisible"),
-    "Must include public visibility toggle switch",
-  );
-  assert(
-    hostViewCode.includes("TravelStampGraphic"),
-    "Must display stamp preview graphics",
-  );
-  assert(
-    hostViewCode.includes("WhereIveBeenSelector"),
-    "Must provide modal selector for picking travel stamps",
-  );
-  assert(
-    hostViewCode.includes("<ModalOverlay"),
-    "Modal must be wrapped in ModalOverlay for AGENTS.md scroll lock compliance",
-  );
-  console.log(" ✅ PASS: Travel stamps showcase, ON/OFF toggle, and scroll-locked selector modal");
 
   // 8. My Interests
   console.log("\n--- [8] My Interests ---");
@@ -227,8 +210,6 @@ test("Host Listing Editor: About Host Component & Airbnb-Style Flow", () => {
     },
     languages: ["en", "fr"],
     interests: ["Travel", "Photography"],
-    stampsVisible: true,
-    selectedStamps: ["stamp_paris", "stamp_rome"],
   };
   const parsed = updateHostPublicProfileSchema.parse(validProfile);
   assert.equal(parsed.bio, "Hi, I am a passionate host!");
@@ -241,4 +222,3 @@ test("Host Listing Editor: About Host Component & Airbnb-Style Flow", () => {
   console.log("   🎉 ALL HOST ABOUT HOST VERIFICATION TESTS PASSED (100%)!       ");
   console.log("==================================================================\n");
 });
-

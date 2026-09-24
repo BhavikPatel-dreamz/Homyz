@@ -120,7 +120,12 @@ export type DiscoveryListing = {
   price: number;
   weekdayBasePrice: number | null;
   guests: number;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
   propertyType: string | null;
+  placeCategory?: string | null;
+  amenities?: string[];
+  description?: string | null;
   isFeatured: boolean;
   blockedDates: string[];
   minNights: number;
@@ -381,6 +386,23 @@ function calculateTrendingScore(listing: DiscoveryListing, searchFrequency: numb
 }
 
 /**
+ * Multi-signal popularity score calculation (bookings, guest review count, ratings, and featured status).
+ */
+function calculatePopularityScore(listing: DiscoveryListing): number {
+  const bookingsCount = listing.bookings?.length || 0;
+  const hostProfile = (listing.host?.publicProfile || {}) as Record<string, unknown>;
+  const rating = typeof hostProfile.rating === "number" && hostProfile.rating > 0 ? hostProfile.rating : 4.5;
+  const reviewCount =
+    typeof hostProfile.reviewCount === "number"
+      ? hostProfile.reviewCount
+      : typeof hostProfile.reviewsCount === "number"
+      ? hostProfile.reviewsCount
+      : 0;
+  const isFav = listing.isFeatured ? 5 : 1;
+  return bookingsCount * 4 + rating * 3 + Math.min(reviewCount, 25) * 0.5 + isFav * 2;
+}
+
+/**
  * Reusable helper to build a section and deduplicate cards across sections.
  */
 function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSection[]) {
@@ -463,7 +485,12 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
           price: true,
           weekdayBasePrice: true,
           guests: true,
+          bedrooms: true,
+          bathrooms: true,
           propertyType: true,
+          placeCategory: true,
+          amenities: true,
+          description: true,
           isFeatured: true,
           blockedDates: true,
           minNights: true,
@@ -807,6 +834,227 @@ async function assembleHomepageData(params: {
       locationSectionCount++;
     }
 
+    // Curated discovery sections shared across DEFAULT and SEARCH mode ("Others" block)
+    const addCuratedDiscoverySections = (priorityBase: number = 0) => {
+      // 1. Popular homes / Most popular stays (Centralized Popularity Score)
+      const hasCityPopularHomes = sections.some((s) => s.id === "popular-homes");
+      const popularRankedListings = allListings.slice().sort(
+        (a, b) => calculatePopularityScore(b) - calculatePopularityScore(a),
+      );
+      addSection({
+        id: hasCityPopularHomes ? "most-popular-stays" : "popular-homes-global",
+        title: hasCityPopularHomes ? "Most popular stays" : "Popular homes",
+        type: "FEATURED",
+        source: "RECOMMENDATION",
+        priority: priorityBase > 0 ? 122 : 85,
+        candidates: popularRankedListings.map((listing) => ({ listing })),
+        seeAllHref: "/listings?sortBy=most_reviewed",
+      });
+
+      // 2. Luxury villas & private estates
+      const villaCandidates = allListings
+        .filter((l) => {
+          const pt = (l.propertyType || "").toUpperCase();
+          const titleLower = l.title.toLowerCase();
+          const hasPool = Boolean(l.amenities && (l.amenities.includes("private_pool") || l.amenities.includes("pool")));
+          return (
+            pt === "VILLA" ||
+            pt === "ESTATE" ||
+            titleLower.includes("villa") ||
+            titleLower.includes("estate") ||
+            hasPool ||
+            (l.price >= 25000 && l.guests >= 4)
+          );
+        })
+        .sort((a, b) => b.price - a.price);
+
+      if (villaCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "luxury-villas",
+          title: "Luxury villas & private estates",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 125,
+          candidates: villaCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=VILLA",
+        });
+      }
+
+      // 3. Top-rated 5-star stays
+      const topRatedCandidates = allListings
+        .slice()
+        .filter((l) => {
+          const hostProfile = (l.host?.publicProfile || {}) as Record<string, unknown>;
+          const r = typeof hostProfile.rating === "number" ? hostProfile.rating : null;
+          return r != null && r >= 4.7;
+        })
+        .sort((a, b) => {
+          const rA = ((a.host?.publicProfile || {}) as any).rating || 0;
+          const rB = ((b.host?.publicProfile || {}) as any).rating || 0;
+          return rB - rA;
+        });
+
+      if (topRatedCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "top-rated-stays",
+          title: "Top-rated 5-star stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 130,
+          candidates: topRatedCandidates.map((listing) => ({
+            listing,
+            extra: { badge: "guest_favorite" as const },
+          })),
+          seeAllHref: "/listings?sortBy=top_rated",
+        });
+      }
+
+      // 4. City lofts & modern apartments
+      const apartmentCandidates = allListings.filter((l) => {
+        const pt = (l.propertyType || "").toUpperCase();
+        const titleLower = l.title.toLowerCase();
+        return (
+          pt === "APARTMENT" ||
+          pt === "LOFT" ||
+          pt === "STUDIO" ||
+          pt === "PENTHOUSE" ||
+          titleLower.includes("apartment") ||
+          titleLower.includes("loft") ||
+          titleLower.includes("studio") ||
+          titleLower.includes("penthouse") ||
+          titleLower.includes("flat")
+        );
+      });
+
+      if (apartmentCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "city-apartments",
+          title: "City lofts & modern apartments",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 135,
+          candidates: apartmentCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=APARTMENT",
+        });
+      }
+
+      // 5. Cozy cabins & countryside retreats
+      const cabinCandidates = allListings.filter((l) => {
+        const pt = (l.propertyType || "").toUpperCase();
+        const titleLower = l.title.toLowerCase();
+        const descLower = (l.description || "").toLowerCase();
+        return (
+          pt === "CABIN" ||
+          pt === "GUEST_HOUSE" ||
+          pt === "COTTAGE" ||
+          pt === "HOUSE" ||
+          titleLower.includes("cabin") ||
+          titleLower.includes("cottage") ||
+          titleLower.includes("chalet") ||
+          titleLower.includes("retreat") ||
+          titleLower.includes("countryside") ||
+          titleLower.includes("woodland") ||
+          descLower.includes("cabin") ||
+          descLower.includes("cottage")
+        );
+      });
+
+      if (cabinCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "cozy-cabins",
+          title: "Cozy cabins & countryside retreats",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 140,
+          candidates: cabinCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=CABIN",
+        });
+      }
+
+      // 6. Spacious family-friendly homes
+      const familyCandidates = allListings
+        .filter((l) => l.guests >= 4 || (typeof l.bedrooms === "number" && l.bedrooms >= 2))
+        .sort((a, b) => b.guests - a.guests);
+
+      if (familyCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "family-friendly-homes",
+          title: "Spacious family-friendly homes",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 145,
+          candidates: familyCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?guests=4",
+        });
+      }
+
+      // 7. Recommended stays (Priority 150)
+      addSection({
+        id: "recommended-for-you",
+        title: "Recommended stays",
+        type: "PROPERTY",
+        source: "RECOMMENDATION",
+        priority: 150,
+        candidates: allListings.map((listing) => ({ listing })),
+        seeAllHref: "/listings?sortBy=recommended",
+      });
+
+      // 8. Stays hosted by Superhosts
+      const superhostCandidates = allListings.filter((l) => qualificationService.isSuperhost(l.host));
+      if (superhostCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "superhost-stays",
+          title: "Stays hosted by Superhosts",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 155,
+          candidates: superhostCandidates.map((listing) => ({
+            listing,
+            extra: { badge: "superhost" as const },
+          })),
+          seeAllHref: "/listings?featured=true",
+        });
+      }
+
+      // 9. Great value stays
+      const sortedByPrice = allListings
+        .slice()
+        .sort((a, b) => (a.weekdayBasePrice ?? a.price) - (b.weekdayBasePrice ?? b.price));
+      const affordableCutoff = sortedByPrice[Math.floor(sortedByPrice.length * 0.5)]?.price || 18000;
+      const greatValueCandidates = allListings
+        .filter((l) => (l.weekdayBasePrice ?? l.price) <= affordableCutoff)
+        .sort((a, b) => calculatePopularityScore(b) - calculatePopularityScore(a));
+
+      if (greatValueCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "great-value-stays",
+          title: "Great value stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 160,
+          candidates: greatValueCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?sortBy=price_low",
+        });
+      }
+
+      // 10. Newly added stays
+      const newlyAdded = allListings
+        .slice()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      if (newlyAdded.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "newly-added-stays",
+          title: "Newly added stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 165,
+          candidates: newlyAdded.map((listing) => ({ listing })),
+          seeAllHref: "/listings?sortBy=newest",
+        });
+      }
+    };
+
     // Global trending discovery under "Others"
     const trendingRanked = allListings.slice().sort(
       (a, b) => calculateTrendingScore(b) - calculateTrendingScore(a),
@@ -821,6 +1069,9 @@ async function assembleHomepageData(params: {
       seeAllHref: "/listings?sortBy=top_rated",
     });
 
+    // Add all discovery rows to SEARCH mode under "Others" (priority >= 100)
+    addCuratedDiscoverySections(100);
+
   } else {
     // =========================================================================
     // DEFAULT HOMEPAGE ENGINE (User has not searched anything yet)
@@ -829,6 +1080,227 @@ async function assembleHomepageData(params: {
     const popularHomesResolution = await resolvePopularHomesCity(popularHomesConfig, {
       ...requestContext,
     });
+
+    // Curated discovery sections for DEFAULT mode
+    const addCuratedDiscoverySections = (priorityBase: number = 0) => {
+      // 1. Popular homes / Most popular stays (Centralized Popularity Score)
+      const hasCityPopularHomes = sections.some((s) => s.id === "popular-homes");
+      const popularRankedListings = allListings.slice().sort(
+        (a, b) => calculatePopularityScore(b) - calculatePopularityScore(a),
+      );
+      addSection({
+        id: hasCityPopularHomes ? "most-popular-stays" : "popular-homes-global",
+        title: hasCityPopularHomes ? "Most popular stays" : "Popular homes",
+        type: "FEATURED",
+        source: "RECOMMENDATION",
+        priority: priorityBase > 0 ? 122 : 85,
+        candidates: popularRankedListings.map((listing) => ({ listing })),
+        seeAllHref: "/listings?sortBy=most_reviewed",
+      });
+
+      // 2. Luxury villas & private estates
+      const villaCandidates = allListings
+        .filter((l) => {
+          const pt = (l.propertyType || "").toUpperCase();
+          const titleLower = l.title.toLowerCase();
+          const hasPool = Boolean(l.amenities && (l.amenities.includes("private_pool") || l.amenities.includes("pool")));
+          return (
+            pt === "VILLA" ||
+            pt === "ESTATE" ||
+            titleLower.includes("villa") ||
+            titleLower.includes("estate") ||
+            hasPool ||
+            (l.price >= 25000 && l.guests >= 4)
+          );
+        })
+        .sort((a, b) => b.price - a.price);
+
+      if (villaCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "luxury-villas",
+          title: "Luxury villas & private estates",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 125,
+          candidates: villaCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=VILLA",
+        });
+      }
+
+      // 3. Top-rated 5-star stays
+      const topRatedCandidates = allListings
+        .slice()
+        .filter((l) => {
+          const hostProfile = (l.host?.publicProfile || {}) as Record<string, unknown>;
+          const r = typeof hostProfile.rating === "number" ? hostProfile.rating : null;
+          return r != null && r >= 4.7;
+        })
+        .sort((a, b) => {
+          const rA = ((a.host?.publicProfile || {}) as any).rating || 0;
+          const rB = ((b.host?.publicProfile || {}) as any).rating || 0;
+          return rB - rA;
+        });
+
+      if (topRatedCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "top-rated-stays",
+          title: "Top-rated 5-star stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 130,
+          candidates: topRatedCandidates.map((listing) => ({
+            listing,
+            extra: { badge: "guest_favorite" as const },
+          })),
+          seeAllHref: "/listings?sortBy=top_rated",
+        });
+      }
+
+      // 4. City lofts & modern apartments
+      const apartmentCandidates = allListings.filter((l) => {
+        const pt = (l.propertyType || "").toUpperCase();
+        const titleLower = l.title.toLowerCase();
+        return (
+          pt === "APARTMENT" ||
+          pt === "LOFT" ||
+          pt === "STUDIO" ||
+          pt === "PENTHOUSE" ||
+          titleLower.includes("apartment") ||
+          titleLower.includes("loft") ||
+          titleLower.includes("studio") ||
+          titleLower.includes("penthouse") ||
+          titleLower.includes("flat")
+        );
+      });
+
+      if (apartmentCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "city-apartments",
+          title: "City lofts & modern apartments",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 135,
+          candidates: apartmentCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=APARTMENT",
+        });
+      }
+
+      // 5. Cozy cabins & countryside retreats
+      const cabinCandidates = allListings.filter((l) => {
+        const pt = (l.propertyType || "").toUpperCase();
+        const titleLower = l.title.toLowerCase();
+        const descLower = (l.description || "").toLowerCase();
+        return (
+          pt === "CABIN" ||
+          pt === "GUEST_HOUSE" ||
+          pt === "COTTAGE" ||
+          pt === "HOUSE" ||
+          titleLower.includes("cabin") ||
+          titleLower.includes("cottage") ||
+          titleLower.includes("chalet") ||
+          titleLower.includes("retreat") ||
+          titleLower.includes("countryside") ||
+          titleLower.includes("woodland") ||
+          descLower.includes("cabin") ||
+          descLower.includes("cottage")
+        );
+      });
+
+      if (cabinCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "cozy-cabins",
+          title: "Cozy cabins & countryside retreats",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 140,
+          candidates: cabinCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?propertyType=CABIN",
+        });
+      }
+
+      // 6. Spacious family-friendly homes
+      const familyCandidates = allListings
+        .filter((l) => l.guests >= 4 || (typeof l.bedrooms === "number" && l.bedrooms >= 2))
+        .sort((a, b) => b.guests - a.guests);
+
+      if (familyCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "family-friendly-homes",
+          title: "Spacious family-friendly homes",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 145,
+          candidates: familyCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?guests=4",
+        });
+      }
+
+      // 7. Recommended stays (Priority 150)
+      addSection({
+        id: "recommended-for-you",
+        title: "Recommended stays",
+        type: "PROPERTY",
+        source: "RECOMMENDATION",
+        priority: 150,
+        candidates: allListings.map((listing) => ({ listing })),
+        seeAllHref: "/listings?sortBy=recommended",
+      });
+
+      // 8. Stays hosted by Superhosts
+      const superhostCandidates = allListings.filter((l) => qualificationService.isSuperhost(l.host));
+      if (superhostCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "superhost-stays",
+          title: "Stays hosted by Superhosts",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 155,
+          candidates: superhostCandidates.map((listing) => ({
+            listing,
+            extra: { badge: "superhost" as const },
+          })),
+          seeAllHref: "/listings?featured=true",
+        });
+      }
+
+      // 9. Great value stays
+      const sortedByPrice = allListings
+        .slice()
+        .sort((a, b) => (a.weekdayBasePrice ?? a.price) - (b.weekdayBasePrice ?? b.price));
+      const affordableCutoff = sortedByPrice[Math.floor(sortedByPrice.length * 0.5)]?.price || 18000;
+      const greatValueCandidates = allListings
+        .filter((l) => (l.weekdayBasePrice ?? l.price) <= affordableCutoff)
+        .sort((a, b) => calculatePopularityScore(b) - calculatePopularityScore(a));
+
+      if (greatValueCandidates.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "great-value-stays",
+          title: "Great value stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 160,
+          candidates: greatValueCandidates.map((listing) => ({ listing })),
+          seeAllHref: "/listings?sortBy=price_low",
+        });
+      }
+
+      // 10. Newly added stays
+      const newlyAdded = allListings
+        .slice()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      if (newlyAdded.length >= MIN_PROPERTY_CAROUSEL) {
+        addSection({
+          id: "newly-added-stays",
+          title: "Newly added stays",
+          type: "PROPERTY",
+          source: "RECOMMENDATION",
+          priority: 165,
+          candidates: newlyAdded.map((listing) => ({ listing })),
+          seeAllHref: "/listings?sortBy=newest",
+        });
+      }
+    };
 
     // 1. Priority 50: Guest favourites
     const guestFavourites = allListings.filter((l) =>
@@ -856,54 +1328,7 @@ async function assembleHomepageData(params: {
       });
     }
 
-    // 2. Priority 100: Popular stays near you (if current location detected)
-    if (userLocation.city) {
-      const nearUserListings = allListings.filter(
-        (l) => l.city?.toLowerCase() === userLocation.city!.toLowerCase(),
-      );
-      addSection({
-        id: "popular-stays-near-you",
-        title: `Popular stays near ${userLocation.city}`,
-        subtitle: "Based on your current location",
-        type: "LOCATION",
-        source: "CURRENT_LOCATION",
-        priority: 100,
-        candidates: nearUserListings.map((listing) => ({ listing })),
-        seeAllHref: `/listings?city=${encodeURIComponent(userLocation.city)}`,
-      });
-    }
-
-    // 3. Priority 110: Trending in your country (if country known)
-    if (userLocation.country) {
-      const inCountryListings = allListings.filter(
-        (l) => l.country?.toLowerCase() === userLocation.country!.toLowerCase(),
-      );
-      addSection({
-        id: "trending-in-country",
-        title: `Trending in ${userLocation.country}`,
-        type: "PROPERTY",
-        source: "TRENDING",
-        priority: 110,
-        candidates: inCountryListings.map((listing) => ({ listing })),
-        seeAllHref: `/listings?country=${encodeURIComponent(userLocation.country)}`,
-      });
-    }
-
-    // 4. Priority 120: Trending stays (scored centrally)
-    const trendingListings = allListings.slice().sort(
-      (a, b) => calculateTrendingScore(b) - calculateTrendingScore(a),
-    );
-    addSection({
-      id: "trending-stays",
-      title: "Trending properties",
-      type: "PROPERTY",
-      source: "TRENDING",
-      priority: 120,
-      candidates: trendingListings.map((listing) => ({ listing })),
-      seeAllHref: "/listings?sortBy=top_rated",
-    });
-
-    // 5. Priority 80: Popular homes in nearby / prominent cities
+    // 2. Priority 80: Popular homes in nearby / prominent cities
     if (popularHomesResolution.enabled && popularHomesResolution.city) {
       const popularCityListings = allListings.filter(
         (l) => l.city?.toLowerCase() === popularHomesResolution.city!.toLowerCase(),
@@ -923,16 +1348,55 @@ async function assembleHomepageData(params: {
       }
     }
 
-    // 6. Priority 150: Recommended for you
+    // 3. Priority 100: Popular stays near you (if current location detected)
+    if (userLocation.city) {
+      const nearUserListings = allListings.filter(
+        (l) => l.city?.toLowerCase() === userLocation.city!.toLowerCase(),
+      );
+      addSection({
+        id: "popular-stays-near-you",
+        title: `Popular stays near ${userLocation.city}`,
+        subtitle: "Based on your current location",
+        type: "LOCATION",
+        source: "CURRENT_LOCATION",
+        priority: 100,
+        candidates: nearUserListings.map((listing) => ({ listing })),
+        seeAllHref: `/listings?city=${encodeURIComponent(userLocation.city)}`,
+      });
+    }
+
+    // 4. Priority 110: Trending in your country (if country known)
+    if (userLocation.country) {
+      const inCountryListings = allListings.filter(
+        (l) => l.country?.toLowerCase() === userLocation.country!.toLowerCase(),
+      );
+      addSection({
+        id: "trending-in-country",
+        title: `Trending in ${userLocation.country}`,
+        type: "PROPERTY",
+        source: "TRENDING",
+        priority: 110,
+        candidates: inCountryListings.map((listing) => ({ listing })),
+        seeAllHref: `/listings?country=${encodeURIComponent(userLocation.country)}`,
+      });
+    }
+
+    // 5. Priority 120: Trending stays (scored centrally)
+    const trendingListings = allListings.slice().sort(
+      (a, b) => calculateTrendingScore(b) - calculateTrendingScore(a),
+    );
     addSection({
-      id: "recommended-for-you",
-      title: "Recommended stays",
+      id: "trending-stays",
+      title: "Trending properties",
       type: "PROPERTY",
-      source: "RECOMMENDATION",
-      priority: 150,
-      candidates: allListings.map((listing) => ({ listing })),
-      seeAllHref: "/listings?sortBy=recommended",
+      source: "TRENDING",
+      priority: 120,
+      candidates: trendingListings.map((listing) => ({ listing })),
+      seeAllHref: "/listings?sortBy=top_rated",
     });
+
+    // 6. Curated discovery rows for DEFAULT mode (Popular homes, Villas, Top-rated, City lofts, Cabins, Family homes, Recommended, Superhosts, Great value, Newly added)
+    addCuratedDiscoverySections(0);
   }
 
   // Sort all sections strictly by priority

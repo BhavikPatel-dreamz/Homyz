@@ -156,10 +156,9 @@ async function runProfileTabPathTests() {
     "info href must be '/profile/tab/profile_management/profile_information'",
   );
 
-  const subStamps = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "stamps");
   assert(
-    subStamps?.href === "/profile/tab/profile_management/where_ive_been",
-    "stamps href must be '/profile/tab/profile_management/where_ive_been'",
+    !PROFILE_MGMT_SUB_TABS.some((item) => item.slug === "where_ive_been"),
+    "retired Where I've Been subtab must not be registered",
   );
 
   const subPrivacy = PROFILE_MGMT_SUB_TABS.find((item) => item.id === "privacy");
@@ -178,10 +177,6 @@ async function runProfileTabPathTests() {
     "extractTabFromQuery with '?tab/profile_management/trip_photos' still resolves to primary tab 'profile_management'",
   );
 
-  assert(
-    extractSubTabFromQuery(new URLSearchParams("?tab/profile_management/where_ive_been")) === "stamps",
-    "extractSubTabFromQuery with '?tab/profile_management/where_ive_been' resolves to 'stamps'",
-  );
   assert(
     extractSubTabFromQuery(new URLSearchParams("?tab/profile_management/privacy_visibility")) === "privacy",
     "extractSubTabFromQuery with '?tab/profile_management/privacy_visibility' resolves to 'privacy'",
@@ -215,10 +210,6 @@ async function runProfileTabPathTests() {
     "extractSubTabFromQuery with alias 'photos' resolves to 'photos'",
   );
   assert(
-    extractSubTabFromQuery(null, "?tab/profile_management/stamps") === "stamps",
-    "extractSubTabFromQuery with alias 'stamps' resolves to 'stamps'",
-  );
-  assert(
     extractSubTabFromQuery(null, "?tab/profile_management/privacy") === "privacy",
     "extractSubTabFromQuery with alias 'privacy' resolves to 'privacy'",
   );
@@ -242,7 +233,7 @@ async function runProfileTabPathTests() {
     );
   }
 
-  // 8. Verify profile-management-client.tsx has canonical links to all 4 subtabs
+  // 8. Verify profile-management-client.tsx has canonical links to the active subtabs
   const clientContent = fs.readFileSync(path.join(process.cwd(), "app/(protected)/profile-management/profile-management-client.tsx"), "utf-8");
   assert(
     clientContent.includes("/profile/tab/profile_management/trip_photos"),
@@ -251,10 +242,6 @@ async function runProfileTabPathTests() {
   assert(
     clientContent.includes("/profile/tab/profile_management/profile_information"),
     "profile-management-client.tsx links to '/profile/tab/profile_management/profile_information'",
-  );
-  assert(
-    clientContent.includes("/profile/tab/profile_management/where_ive_been"),
-    "profile-management-client.tsx links to '/profile/tab/profile_management/where_ive_been'",
   );
   assert(
     clientContent.includes("/profile/tab/profile_management/privacy_visibility"),
@@ -291,18 +278,9 @@ async function runProfileTabPathTests() {
     "profile-management-client.tsx does not render on-screen Alert components",
   );
 
-  const stampsContent = fs.readFileSync(path.join(process.cwd(), "components/profile/where-ive-been-selector.tsx"), "utf-8");
   assert(
-    stampsContent.includes('toast.success("Travel stamps saved successfully!")'),
-    "Where I've Been tab uses toast.success for saving stamps",
-  );
-  assert(
-    stampsContent.includes('toast.error('),
-    "Where I've Been tab uses toast.error for validation and upload errors",
-  );
-  assert(
-    !stampsContent.includes("<Alert"),
-    "where-ive-been-selector.tsx does not render on-screen Alert components",
+    !fs.existsSync(path.join(process.cwd(), "components/profile/where-ive-been-selector.tsx")),
+    "retired Where I've Been selector is removed",
   );
 
   const formContent = fs.readFileSync(path.join(process.cwd(), "components/forms/profile-form.tsx"), "utf-8");

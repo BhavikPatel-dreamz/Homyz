@@ -26,11 +26,13 @@ import { Role } from "@/generated/prisma/enums";
 
 import { toPublicUser, type PublicUser } from "./mappers";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
+import { referralService } from "./referral.service";
 
 // ── Internal helpers ────────────────────────────────────────────────────────
 
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1h
+const MAX_OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 interface TokenMeta {
   userAgent?: string | null;
@@ -118,6 +120,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
   // here so ADMIN can never be created through this path.
   const role = input.role === "HOST" ? Role.HOST : Role.USER;
   const passwordHash = await hashPassword(input.password);
+  const referredById = await referralService.resolveReferrerId(input.referralCode);
 
   try {
     const user = await prisma.user.create({
@@ -126,6 +129,7 @@ async function register(input: RegisterInput): Promise<PublicUser> {
         name: input.name ?? null,
         passwordHash,
         role,
+        ...(referredById ? { referredById } : {}),
         ...(normalizedPhone ? { phone: normalizedPhone, phoneVerified: new Date() } : {}),
       },
     });
@@ -179,11 +183,13 @@ async function findOrCreatePhoneOtpUser(input: {
   normalizedPhone: string;
   possiblePhones: string[];
   cleanDigits: string;
+  referralCode?: string;
 }): Promise<UserWithAdminDetails | null> {
   const existing = await findUserByPhoneForAuthentication(input.possiblePhones, input.cleanDigits);
   if (existing) return existing;
 
   try {
+    const referredById = await referralService.resolveReferrerId(input.referralCode);
     return await prisma.user.create({
       data: {
         phone: input.normalizedPhone,
@@ -191,6 +197,7 @@ async function findOrCreatePhoneOtpUser(input: {
         role: "USER",
         name: `Guest (${input.cleanDigits.slice(-4) || "User"})`,
         email: `user_${input.cleanDigits}@homyz.app`,
+        ...(referredById ? { referredById } : {}),
       },
       include: authUserWithAdminRole,
     });
@@ -471,15 +478,29 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: 
 
   assertLoginRateLimit(identifier);
 
-  const cooldownSeconds = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS ?? 60);
+  const configuredCooldownSeconds = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS ?? 60);
+  const cooldownSeconds = Number.isFinite(configuredCooldownSeconds)
+    ? Math.min(MAX_OTP_RESEND_COOLDOWN_SECONDS, Math.max(1, Math.ceil(configuredCooldownSeconds)))
+    : MAX_OTP_RESEND_COOLDOWN_SECONDS;
+  const now = Date.now();
   const recent = await prisma.otpCode.findFirst({
-    where: { identifier, purpose: input.purpose },
+    where: {
+      identifier,
+      purpose: input.purpose,
+      // A bad system clock or imported data can create a future OTP record.
+      // Ignore timestamps beyond one cooldown window so one corrupt record
+      // cannot permanently prevent a user from signing in.
+      createdAt: { lte: new Date(now + cooldownSeconds * 1000) },
+    },
     orderBy: { createdAt: "desc" },
   });
   if (recent) {
-    const elapsed = Date.now() - recent.createdAt.getTime();
+    const elapsed = Math.max(0, now - recent.createdAt.getTime());
     if (elapsed < cooldownSeconds * 1000) {
-      const wait = Math.ceil((cooldownSeconds * 1000 - elapsed) / 1000);
+      const wait = Math.min(
+        cooldownSeconds,
+        Math.max(1, Math.ceil((cooldownSeconds * 1000 - elapsed) / 1000)),
+      );
       throw AppError.rateLimited(
         `Please wait ${wait}s before requesting another code`,
       );

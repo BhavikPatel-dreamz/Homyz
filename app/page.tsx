@@ -106,11 +106,10 @@ export default async function HomePage({
       }
     }
 
-    const hasSearch = Boolean(
-      hasExplicitUrlSearch ||
-        (resolvedContext && (resolvedContext.city || resolvedContext.displayName || resolvedContext.query)),
-    );
-
+    // Only explicit search in URL parameters triggers SEARCH mode.
+    // If the user visits the homepage root without explicit URL search params,
+    // mode is DEFAULT, showcasing all rich, professional discovery rows.
+    const hasSearch = Boolean(hasExplicitUrlSearch);
     const parsedLat = params.lat
       ? Number(params.lat)
       : resolvedContext?.latitude ?? null;

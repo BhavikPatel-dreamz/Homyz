@@ -95,15 +95,15 @@ console.log("✓ Interactive calendar date selection verified!");
 
 // [3] Host Information & Profile Links
 console.log("\n--- [3] Host Information & Profile Links ---");
-const getHostProfileHref = (host?: { id: string; publicProfile?: { profileVisible?: boolean } | null }) => {
+const getHostProfileHref = (host?: { id: string }) => {
   if (!host?.id) return null;
-  if (host.publicProfile?.profileVisible === false) return null;
   return `/users/profile/${host.id}`;
 };
 
-assert.strictEqual(getHostProfileHref({ id: "host_123", publicProfile: { profileVisible: true } }), "/users/profile/host_123");
-assert.strictEqual(getHostProfileHref({ id: "host_456", publicProfile: null }), "/users/profile/host_456");
-assert.strictEqual(getHostProfileHref({ id: "host_789", publicProfile: { profileVisible: false } }), null);
+assert.strictEqual(getHostProfileHref({ id: "host_123" }), "/users/profile/host_123");
+assert.strictEqual(getHostProfileHref({ id: "host_456" }), "/users/profile/host_456");
+// Guest-profile visibility does not affect the separate public host profile.
+assert.strictEqual(getHostProfileHref({ id: "host_789" }), "/users/profile/host_789");
 console.log("✓ Host profile link logic verified!");
 
 // [4] Map Privacy Mode

@@ -1,12 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import Image from "next/image";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
-import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
-import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import { LANGUAGE_OPTIONS, getLanguageNameById } from "@/lib/utils/language-options";
 import { adminUpdateListingHostProfileAction } from "@/actions/admin/listingActions";
 import { toast } from "@/components/ui/toast";
@@ -93,17 +88,12 @@ export function AdminAboutHostView({
   );
   const [languages, setLanguages] = useState<string[]>(() => getLanguageIds(rawProfile.languages));
   const [interests, setInterests] = useState<string[]>(() => getStringList(rawProfile.interests));
-  const [stampsVisible, setStampsVisible] = useState(rawProfile.stampsVisible !== false);
-  const [selectedStamps, setSelectedStamps] = useState<string[]>(() =>
-    Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : [],
-  );
 
   // Local transient states for adding items
   const [hobbyInput, setHobbyInput] = useState("");
   const [interestInput, setInterestInput] = useState("");
   const [languageSearch, setLanguageSearch] = useState("");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  const [isStampEditorOpen, setIsStampEditorOpen] = useState(false);
 
   // Status & feedback states
   const [isSaving, setIsSaving] = useState(false);
@@ -120,8 +110,6 @@ export function AdminAboutHostView({
     const initialHobbies = getTagList(rawProfile.prompts && typeof rawProfile.prompts === "object" ? (rawProfile.prompts as Record<string, unknown>).hobbies : []);
     const initialLanguages = getLanguageIds(rawProfile.languages);
     const initialInterests = getStringList(rawProfile.interests);
-    const initialStampsVisible = rawProfile.stampsVisible !== false;
-    const initialStamps = Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : [];
 
     return (
       bio !== initialBio ||
@@ -132,9 +120,7 @@ export function AdminAboutHostView({
       biography !== initialBiography ||
       JSON.stringify(hobbies) !== JSON.stringify(initialHobbies) ||
       JSON.stringify(languages) !== JSON.stringify(initialLanguages) ||
-      JSON.stringify(interests) !== JSON.stringify(initialInterests) ||
-      stampsVisible !== initialStampsVisible ||
-      JSON.stringify(selectedStamps) !== JSON.stringify(initialStamps)
+      JSON.stringify(interests) !== JSON.stringify(initialInterests)
     );
   }, [
     rawProfile,
@@ -147,8 +133,6 @@ export function AdminAboutHostView({
     hobbies,
     languages,
     interests,
-    stampsVisible,
-    selectedStamps,
   ]);
 
   // Derive authoritative tenure (years since registration)
@@ -178,8 +162,6 @@ export function AdminAboutHostView({
     setHobbies(getTagList(rawProfile.prompts && typeof rawProfile.prompts === "object" ? (rawProfile.prompts as Record<string, unknown>).hobbies : []));
     setLanguages(getLanguageIds(rawProfile.languages));
     setInterests(getStringList(rawProfile.interests));
-    setStampsVisible(rawProfile.stampsVisible !== false);
-    setSelectedStamps(Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : []);
     setFeedback(null);
   };
 
@@ -202,8 +184,6 @@ export function AdminAboutHostView({
         },
         languages,
         interests,
-        stampsVisible,
-        selectedStamps,
       };
 
       const result = await adminUpdateListingHostProfileAction({
@@ -675,107 +655,7 @@ export function AdminAboutHostView({
         />
       </section>
 
-      {/* 5. Where I've Been (Travel Stamps & Public Visibility) */}
-      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-          <div>
-            <h2 className="text-base font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">Where I&apos;ve Been</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Travel stamps showcasing places and experiences the host has visited.
-            </p>
-          </div>
-
-          {/* Visibility Toggle [ ON / OFF ] */}
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Show on public profile:
-            </span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={stampsVisible}
-              disabled={!canEdit}
-              onClick={() => setStampsVisible((v) => !v)}
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer disabled:cursor-not-allowed ${
-                stampsVisible
-                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900/60"
-                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700"
-              }`}
-            >
-              [ {stampsVisible ? "ON" : "OFF"} ]
-            </button>
-          </div>
-        </div>
-
-        {/* Travel Stamps Gallery */}
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3 min-h-[90px] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
-            {selectedStamps.length === 0 ? (
-              <p className="text-xs text-zinc-400 italic">No travel stamps selected yet.</p>
-            ) : (
-              selectedStamps.map((stampId) => {
-                const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
-                if (!stamp) return null;
-                return (
-                  <div key={stamp.id} className="overflow-hidden rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-2xs p-1">
-                    <TravelStampGraphic stamp={stamp} size="sm" />
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {canEdit && (
-            <button
-              type="button"
-              onClick={() => setIsStampEditorOpen(true)}
-              className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 px-4 py-2 text-xs font-semibold shadow-2xs cursor-pointer"
-            >
-              Manage travel stamps ({selectedStamps.length}/10)
-            </button>
-          )}
-        </div>
-
-        {/* Modal for selecting travel stamps */}
-        {isStampEditorOpen && (
-          <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-            <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800">
-              <div className="mb-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
-                <div>
-                  <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-100">Select Travel Stamps</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Pick up to 10 stamps for the host&apos;s public profile.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsStampEditorOpen(false)}
-                  className="rounded-full border border-zinc-300 dark:border-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  ✕ Close
-                </button>
-              </div>
-
-              <WhereIveBeenSelector
-                initialSelectedStamps={selectedStamps}
-                initialStampsVisible={stampsVisible}
-                currentPublicProfile={rawProfile}
-                maxStamps={10}
-                isOwner={true}
-                onSaved={(updatedProfile) => {
-                  if (Array.isArray(updatedProfile.selectedStamps)) {
-                    setSelectedStamps(updatedProfile.selectedStamps as string[]);
-                  }
-                  if (typeof updatedProfile.stampsVisible === "boolean") {
-                    setStampsVisible(updatedProfile.stampsVisible);
-                  }
-                  setIsStampEditorOpen(false);
-                }}
-              />
-            </div>
-          </ModalOverlay>
-        )}
-      </section>
-
-      {/* 6. My Interests (Multi-select, Selected Chips with [ × ], + Add Interest) */}
+      {/* 5. My Interests (Multi-select, Selected Chips with [ × ], + Add Interest) */}
       <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -928,4 +808,3 @@ export function AdminAboutHostView({
     </div>
   );
 }
-

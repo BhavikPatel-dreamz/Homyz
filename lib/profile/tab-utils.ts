@@ -10,7 +10,7 @@ export const GUEST_NAV_ITEMS = [
   { id: "notifications", label: "Notifications", href: "/profile/tab/notifications", image: "/images/icons/Notifications.svg" },
 ];
 
-export type ProfileMgmtSubTab = "info" | "photos" | "stamps" | "privacy";
+export type ProfileMgmtSubTab = "info" | "photos" | "privacy";
 
 export interface ProfileMgmtSubTabItem {
   id: ProfileMgmtSubTab;
@@ -34,13 +34,6 @@ export const PROFILE_MGMT_SUB_TABS: ProfileMgmtSubTabItem[] = [
     label: "Trip Photos",
     href: "/profile/tab/profile_management/trip_photos",
     aliases: ["photos", "trip_photos", "trip-photos", "tripphotos"],
-  },
-  {
-    id: "stamps",
-    slug: "where_ive_been",
-    label: "Where I've Been",
-    href: "/profile/tab/profile_management/where_ive_been",
-    aliases: ["stamps", "where_ive_been", "where-ive-been", "where_i_ve_been", "whereivebeen"],
   },
   {
     id: "privacy",
@@ -267,4 +260,3 @@ export function extractSubTabFromQuery(
 ): ProfileMgmtSubTab {
   return extractProfileRoute({ searchParams, rawSearch }).subTab;
 }
-

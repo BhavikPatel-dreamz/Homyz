@@ -25,7 +25,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     await deletePublicMedia({
-      kind: parsed.kind as "listing-photos" | "stamp-icons" | "guidebook-photos",
+      kind: parsed.kind as "listing-photos" | "guidebook-photos",
       fileName: parsed.fileName,
     });
 

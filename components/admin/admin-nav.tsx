@@ -44,6 +44,11 @@ export function AdminNav() {
       permission: PERMISSIONS.ACTIVITY_LOGS_VIEW,
     },
     {
+      href: "/admin/referrals",
+      label: "Referral Credits",
+      permission: PERMISSIONS.REFERRALS_VIEW,
+    },
+    {
       href: "/admin/security",
       label: "Security",
       permission: PERMISSIONS.SECURITY_LOGS_VIEW,

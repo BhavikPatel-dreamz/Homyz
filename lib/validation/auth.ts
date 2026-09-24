@@ -15,6 +15,12 @@ export const registerSchema = z.object({
   password: passwordSchema,
   role: z.enum(["USER", "HOST"]).default("USER"),
   phone: z.string().trim().optional(),
+  referralCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^HMY-[A-Z0-9]{10}$/, { message: "This referral link is invalid." })
+    .optional(),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
