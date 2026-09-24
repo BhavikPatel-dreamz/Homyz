@@ -222,7 +222,7 @@ jobs:
           username: ${{ secrets.VPS_USER || secrets.ECS_SSH_USER }}
           password: ${{ steps.auth.outputs.mode == 'password' && (secrets.VPS_KEY || secrets.ECS_SSH_PASSWORD || secrets.VPS_PASSWORD) || '' }}
           key: ${{ steps.auth.outputs.mode == 'key' && (secrets.VPS_KEY || secrets.ECS_SSH_KEY) || '' }}
-          source: ".,!node_modules,!.git,!.next,!.env,!.env.local,!app.log,!media.log,!homyz.pid,!media.pid,!public/uploads,!public/uploads/**,!media-server/data"
+          source: ".,!node_modules,!.git,!.next,!.env,!.env.local,!app.log,!media.log,!homyz.pid,!media.pid,!upload,!upload/**,!public/uploads,!public/uploads/**,!media-server/data"
           target: homyz
           overwrite: true
           rm: false
@@ -282,7 +282,7 @@ jobs:
               git remote set-url origin git@github.com:BhavikPatel-dreamz/Homyz.git
               git fetch origin
               git reset --hard "origin/main"
-              git clean -fd -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
+              git clean -fd -e upload -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
           else
               git clone -b main git@github.com:BhavikPatel-dreamz/Homyz.git "${{ env.VPS_APP_PATH }}"
           fi
@@ -311,10 +311,10 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ env.VPS_APP_PATH }}"
-          mkdir -p "${{ env.VPS_APP_PATH }}/public/uploads/listing-photos" \
-            "${{ env.VPS_APP_PATH }}/public/uploads/stamp-icons" \
-            "${{ env.VPS_APP_PATH }}/public/uploads/guidebook-photos" \
-            "${{ env.VPS_APP_PATH }}/public/uploads/host-documents"
+          mkdir -p "${{ env.VPS_APP_PATH }}/upload/listing-photos" \
+            "${{ env.VPS_APP_PATH }}/upload/stamp-icons" \
+            "${{ env.VPS_APP_PATH }}/upload/guidebook-photos" \
+            "${{ env.VPS_APP_PATH }}/upload/host-documents"
           npm ci || npm install
           npm run build
 

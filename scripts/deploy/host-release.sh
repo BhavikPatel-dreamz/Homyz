@@ -35,7 +35,7 @@ cd "${APP_DIR}"
 ls -l package.json pnpm-lock.yaml .env 2>/dev/null || ls -l
 
 # Live photos live here (or MEDIA_DATA_DIR). Never rm -rf this tree.
-UPLOAD_STORE="${APP_DIR}/public/uploads"
+UPLOAD_STORE="${APP_DIR}/upload"
 mkdir -p \
   "${UPLOAD_STORE}/listing-photos" \
   "${UPLOAD_STORE}/stamp-icons" \
@@ -85,7 +85,7 @@ if [[ "${SKIP_GIT:-}" != "1" && -d .git ]]; then
   git fetch origin
   git reset --hard origin/main
   # -fd does not remove gitignored files; still exclude uploads explicitly.
-  git clean -fd -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
+  git clean -fd -e upload -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
 fi
 
 echo "Installing dependencies"
