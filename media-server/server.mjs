@@ -28,7 +28,7 @@ const MAX_BYTES = Number.parseInt(process.env.MEDIA_MAX_BYTES || String(15 * 102
 
 const defaultDataDir = process.env.MEDIA_DATA_DIR?.trim()
   ? process.env.MEDIA_DATA_DIR.trim()
-  : path.resolve(__dirname, "../public/uploads");
+  : path.resolve(__dirname, "../upload");
 
 const storage = createLocalStorage(defaultDataDir);
 const secret = process.env.MEDIA_SERVER_SECRET?.trim() || "";

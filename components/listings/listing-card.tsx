@@ -99,6 +99,8 @@ export interface ListingCardProps {
   checkOut?: string;
   /** Choose which favorite control to render: heart (toggle) or remove (cross) */
   favoriteVariant?: "heart" | "remove";
+  /** Compact bordered card treatment used by the search-results grid. */
+  variant?: "default" | "search-grid";
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -112,6 +114,7 @@ export function ListingCard({
   checkIn,
   checkOut,
   favoriteVariant = "heart",
+  variant = "default",
 }: ListingCardProps) {
   const { formatPrice } = useCurrency();
   const router = useRouter();
@@ -284,6 +287,7 @@ export function ListingCard({
   // Compatibility static contract reference: href={`/listings/${listing.id}`}
   const slug = (listing as { customSlug?: string | null }).customSlug;
   const targetHref = slug ? `/listings/${slug}` : `/listings/${listing.id}`;
+  const isSearchGridCard = variant === "search-grid";
 
   // ── Favorite Action ─────────────────────────────────────────────────────────
   const toggleFavorite = useCallback(
@@ -348,22 +352,25 @@ export function ListingCard({
           propertyId: listing.id,
         });
       }}
-      className={`group block text-left ${className}`}
+      className={`group block overflow-hidden text-left ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
     >
       {/* ── Image Carousel ── */}
       <div
-        className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 select-none shadow-xs"
+        className={`relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {hasPhotos ? (
           <div
-            className="flex h-full w-full transition-transform duration-300 ease-out"
-            style={{ transform: `translateX(-${currentPhotoIndex * 100}%)` }}
+            className="relative h-full w-full overflow-hidden"
           >
             {validPhotos.map((photo, idx) => (
-              <div key={`${photo}-${idx}`} className="relative h-full w-full shrink-0">
+              <div
+                key={`${photo}-${idx}`}
+                aria-hidden={idx !== currentPhotoIndex}
+                className={`absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-300 ease-out ${idx === currentPhotoIndex ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}
+              >
                 <img
                   src={photo}
                   alt={listing.title || `Photo ${idx + 1}`}
@@ -415,7 +422,10 @@ export function ListingCard({
               </svg>
             </button>
           ) : (
-            <WishlistButton listingId={listing.id} />
+            <WishlistButton
+              listingId={listing.id}
+              className={isSearchGridCard ? "!rounded-none !bg-transparent !shadow-none !backdrop-blur-none" : ""}
+            />
           )
         )}
 
@@ -531,7 +541,29 @@ export function ListingCard({
         )}
       </div>
 
-      {/* ── Card Body ── */}
+      {/* ── Search-results card body ── */}
+      {isSearchGridCard ? (
+        <div className="space-y-1.5 px-3.5 py-3 text-left sm:px-4 sm:py-3.5">
+          <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
+            {primaryHeading}
+          </h3>
+          <p className="truncate text-xs leading-4 text-[#1F1F1F]">
+            {dateRangeString || secondarySubtitle || specsText}
+          </p>
+          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F]">
+            <span className="truncate">{formattedDiscountedPrice ?? formattedBasePrice} for {dateRangeString ? "selected nights" : "a night"}</span>
+            {numericRating !== null && (
+              <>
+                <span className="text-[#727272]">|</span>
+                <span className="inline-flex shrink-0 items-center gap-1 font-medium">
+                  <svg aria-hidden="true" className="size-3 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                  {numericRating.toFixed(1)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
       <div className="pt-3 pb-1 space-y-0.5 text-left">
         {/* Row 1: Title + Rating */}
         <div className="flex items-start justify-between gap-2">
@@ -608,6 +640,7 @@ export function ListingCard({
           )}
         </div>
       </div>
+      )}
     </Link>
   );
 }

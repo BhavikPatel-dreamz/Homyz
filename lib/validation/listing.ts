@@ -69,7 +69,7 @@ const listingPhotoUrl = z.string().trim().refine(
   (value) => {
     // Local development storage deliberately returns root-relative URLs. Restrict
     // those to the listing-media directory; production object storage uses HTTPS.
-    if (/^\/uploads\/listing-photos\/[A-Za-z0-9][A-Za-z0-9._-]*\.(?:jpe?g|png|webp|avif)$/i.test(value)) {
+    if (/^\/uploads\/listing-photos\/(?:\d{4}\/(?:0[1-9]|1[0-2])\/)?[A-Za-z0-9][A-Za-z0-9._-]*\.(?:jpe?g|png|webp|avif)$/i.test(value)) {
       return true;
     }
     try {

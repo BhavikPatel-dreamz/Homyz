@@ -35,7 +35,7 @@ cd "${APP_DIR}"
 ls -l package.json pnpm-lock.yaml .env 2>/dev/null || ls -l
 
 # Live photos live here (or MEDIA_DATA_DIR). Never rm -rf this tree.
-UPLOAD_STORE="${APP_DIR}/public/uploads"
+UPLOAD_STORE="${APP_DIR}/upload"
 mkdir -p \
   "${UPLOAD_STORE}/listing-photos" \
   "${UPLOAD_STORE}/stamp-icons" \
@@ -85,7 +85,7 @@ if [[ "${SKIP_GIT:-}" != "1" && -d .git ]]; then
   git fetch origin
   git reset --hard origin/main
   # -fd does not remove gitignored files; still exclude uploads explicitly.
-  git clean -fd -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
+  git clean -fd -e upload -e public/uploads -e .env -e app.log -e media.log -e homyz.pid -e media.pid
 fi
 
 echo "Installing dependencies"
@@ -98,6 +98,19 @@ fi
 if [[ "${RUN_DB_MIGRATE:-}" == "true" ]]; then
   echo "Applying Prisma migrations"
   pnpm_run db:migrate:deploy
+fi
+
+# A previous root/docker build leaves .next owned by another user.
+# next build then fails with EACCES on unlink. Renaming only needs
+# write permission on the parent directory, which the deploy user has.
+if [[ -d .next ]] && ! rm -rf .next; then
+  locked="${APP_DIR}/.next-locked-$(date +%s)"
+  echo "Cannot delete .next; moving it to ${locked}" >&2
+  if ! mv .next "${locked}"; then
+    echo "Cannot move ${APP_DIR}/.next either. Ask a server admin to remove it." >&2
+    ls -ld .next .next/build .next/build/package.json >&2 || true
+    exit 1
+  fi
 fi
 
 echo "Building"

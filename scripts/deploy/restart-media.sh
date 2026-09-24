@@ -19,7 +19,7 @@ if [[ -f .env ]]; then
   set +a
 fi
 
-MEDIA_DATA_DIR="${MEDIA_DATA_DIR:-${APP_DIR}/public/uploads}"
+MEDIA_DATA_DIR="${MEDIA_DATA_DIR:-${APP_DIR}/upload}"
 
 mkdir -p \
   "${MEDIA_DATA_DIR}/listing-photos" \

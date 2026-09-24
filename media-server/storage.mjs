@@ -1,5 +1,7 @@
 /**
- * Local-disk object store. Keys look like S3 keys: `{kind}/{fileName}`.
+ * Local-disk object store.
+ * New keys: `{kind}/{YYYY}/{MM}/{fileName}` (for example `listing-photos/2026/08/photo.jpg`).
+ * Older keys `{kind}/{fileName}` still resolve.
  * Swap this module for an S3/OSS backend later without changing the HTTP API.
  */
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
@@ -21,6 +23,8 @@ export const PUBLIC_MEDIA_KINDS = Object.freeze([
 const KIND_SET = new Set(MEDIA_KINDS);
 const PUBLIC_KIND_SET = new Set(PUBLIC_MEDIA_KINDS);
 const SAFE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const YEAR = /^\d{4}$/;
+const MONTH = /^(0[1-9]|1[0-2])$/;
 
 export function isPublicKind(kind) {
   return PUBLIC_KIND_SET.has(kind);
@@ -28,15 +32,28 @@ export function isPublicKind(kind) {
 
 export function parseObjectKey(raw) {
   if (typeof raw !== "string" || !raw) return null;
-  const normalized = raw.replace(/^\/+/, "").replace(/\\/g, "/");
-  const slash = normalized.indexOf("/");
-  if (slash <= 0) return null;
-  const kind = normalized.slice(0, slash);
-  const fileName = path.basename(normalized.slice(slash + 1));
-  if (!KIND_SET.has(kind) || fileName.includes("/") || !SAFE_FILE.test(fileName)) {
+  const parts = raw.replace(/^\/+/, "").replace(/\\/g, "/").split("/").filter(Boolean);
+  if (parts.some((part) => part === "." || part === "..")) return null;
+
+  let kind;
+  let fileName;
+  if (parts.length === 2 && KIND_SET.has(parts[0]) && SAFE_FILE.test(parts[1])) {
+    kind = parts[0];
+    fileName = parts[1];
+  } else if (
+    parts.length === 4 &&
+    KIND_SET.has(parts[0]) &&
+    YEAR.test(parts[1]) &&
+    MONTH.test(parts[2]) &&
+    SAFE_FILE.test(parts[3])
+  ) {
+    kind = parts[0];
+    fileName = parts[3];
+  } else {
     return null;
   }
-  return { kind, fileName, key: `${kind}/${fileName}` };
+
+  return { kind, fileName, key: parts.join("/"), segments: parts };
 }
 
 function contentTypeFromName(fileName) {
@@ -64,13 +81,13 @@ export function createLocalStorage(dataDir) {
   const root = path.resolve(dataDir);
 
   function filePath(parsed) {
-    return path.join(root, parsed.kind, parsed.fileName);
+    return path.join(root, ...parsed.segments);
   }
 
   async function put(parsed, body, contentType) {
-    const dir = path.join(root, parsed.kind);
-    await mkdir(dir, { recursive: true });
-    await writeFile(filePath(parsed), body);
+    const dest = filePath(parsed);
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, body);
     return {
       key: parsed.key,
       contentType: contentType || contentTypeFromName(parsed.fileName),

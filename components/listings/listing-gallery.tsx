@@ -112,7 +112,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
 
   if (total === 0) {
     return (
-      <div className="relative mb-10 overflow-hidden rounded-3xl border border-zinc-200">
+      <div className="relative mb-8">
         <div className="aspect-[21/9] w-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400">
           <span className="text-4xl mb-2">🏡</span>
           <span className="text-xs font-medium">No property photos uploaded</span>
@@ -122,9 +122,9 @@ export function ListingGallery({ photos, listingTitle }: Props) {
   }
 
   return (
-    <div className="relative mb-10 overflow-hidden rounded-3xl border border-zinc-200">
-      <div className="grid grid-cols-1 gap-2 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
-        <div className={`${total > 1 ? "md:col-span-2" : "md:col-span-4"} relative h-full overflow-hidden bg-zinc-100`}>
+    <div className="relative mb-8">
+      <div className="grid grid-cols-1 gap-4 aspect-[4/3] sm:aspect-[21/9] md:grid-cols-4">
+        <div className={`${total > 1 ? "md:col-span-2" : "md:col-span-4"} relative h-full overflow-hidden rounded-[20px] bg-zinc-100`}>
           {!failed[selectedIndex] ? (
             <button
               type="button"
@@ -151,7 +151,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
           )}
         </div>
 
-        {total > 1 && <div className="relative hidden h-full grid-cols-2 gap-2 md:col-span-2 md:grid">
+        {total > 1 && <div className="relative hidden h-full grid-cols-2 gap-4 md:col-span-2 md:grid">
           {galleryPhotos.slice(1, 5).map((photo, i) => {
             const index = i + 1;
             const isActive = index === selectedIndex;
@@ -161,7 +161,7 @@ export function ListingGallery({ photos, listingTitle }: Props) {
                 key={index}
                 onClick={() => handleSelectPhoto(index)}
                 aria-label={`Select photo ${index + 1}`}
-                className={`relative h-full overflow-hidden bg-zinc-100 cursor-pointer hover:opacity-95 transition-opacity ${isActive ? "ring-2 ring-amber-400" : ""}`}
+                className={`relative h-full overflow-hidden bg-zinc-100 cursor-pointer hover:opacity-95 transition-opacity rounded-[10px] ${isActive ? "ring-2 ring-amber-400" : ""}`}
               >
                 {!failed[index] ? (
                   <Image
@@ -215,10 +215,10 @@ export function ListingGallery({ photos, listingTitle }: Props) {
       </div>
 
       {/* Counter & Open */}
-      <div className="absolute right-4 bottom-4 rounded-full bg-white/90 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-md hover:bg-white transition-all cursor-pointer border border-zinc-200 flex items-center gap-2">
+      {/* <div className="absolute right-4 bottom-4 rounded-full bg-white/90 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-zinc-800 shadow-md hover:bg-white transition-all cursor-pointer border border-zinc-200 flex items-center gap-2">
         <span>{selectedIndex + 1} / {total}</span>
         <button type="button" onClick={handleOpenLightbox} className="text-xs font-medium text-zinc-700 underline">Open</button>
-      </div>
+      </div>*/}
 
       {lightboxOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-label={`${listingTitle || "Property"} photo gallery`} className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4">

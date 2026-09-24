@@ -38,7 +38,7 @@ const guidebookMediaUrlSchema = z
   .trim()
   .refine(
     (value) =>
-      value.startsWith("/uploads/guidebook-photos/") ||
+      /^\/uploads\/guidebook-photos\//.test(value) ||
       /^https?:\/\/.+/i.test(value),
     "Photo must be an uploaded guidebook image or an absolute URL"
   );

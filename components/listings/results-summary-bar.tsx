@@ -75,8 +75,8 @@ export function ResultsSummaryBar({
   }
 
   return (
-    <div className="pb-4 border-b border-zinc-200/80 mb-5">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-zinc-900 leading-tight">
+    <div className="pb-4 border-b border-[#1f1f1f] mb-5">
+      <h1>
         {headline}
       </h1>
       {subtitleParts.length > 0 && (

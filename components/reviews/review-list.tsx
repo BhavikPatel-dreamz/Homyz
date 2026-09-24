@@ -138,8 +138,8 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   if (!stats) {
     return (
       <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-        <h2 id="guest-reviews-heading" className="text-xl font-semibold text-zinc-900">Guest reviews</h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{error ?? "Unable to load reviews right now."}</p>
+        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+        <p className="mt-1 text-sm text-[#727272] font-normal">{error ?? "Unable to load reviews right now."}</p>
       </section>
     );
   }
@@ -147,8 +147,8 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   if (stats.totalCount === 0) {
     return (
       <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-        <h2 id="guest-reviews-heading" className="text-xl font-semibold text-zinc-900">Guest reviews</h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">No reviews yet. This property hasn&apos;t received any guest reviews yet.</p>
+        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+        <p className="mt-1 text-sm text-[#727272] font-normal">No reviews yet. This property hasn&apos;t received any guest reviews yet.</p>
       </section>
     );
   }
