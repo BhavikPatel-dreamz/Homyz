@@ -99,7 +99,6 @@ const profile = updateHostPublicProfileSchema.parse({
   prompts: { homeUnique: "Sunset views from the terrace." },
   languages: ["en", "ar"],
   interests: ["travel", "architecture"],
-  stampsVisible: true,
 });
 assert.equal(profile.prompts?.homeUnique, "Sunset views from the terrace.");
 assert.throws(() => updateHostPublicProfileSchema.parse({ bio: "x".repeat(2001) }));

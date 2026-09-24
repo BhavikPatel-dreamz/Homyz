@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import {
   GUEST_NAV_ITEMS,
@@ -15,8 +15,6 @@ import {
   getMgmtSubTabSlug,
   ProfileMgmtSubTab,
 } from "@/lib/profile/tab-utils";
-import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
-import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
 import dynamic from "next/dynamic";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
@@ -116,10 +114,7 @@ export type PublicProfileData = {
   bioTitle?: string;
   whereILive?: string;
   bio?: string;
-  stampsVisible?: boolean;
   profileVisible?: boolean;
-  selectedStamps?: string[];
-  customStamps?: TravelStampItem[];
 };
 
 type ProfileData = {
@@ -199,6 +194,8 @@ export function ProfileClient({
   initialTab,
   initialSubTab,
 }: ProfileClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
@@ -218,34 +215,14 @@ export function ProfileClient({
     return () => window.removeEventListener("homyz:profile-updated", onProfileUpdated);
   }, []);
 
-  const [activeTab, setActiveTab] = useState<string>(() =>
-    initialTab ? normalizeTabId(initialTab) : extractProfileRoute({ searchParams }).tab
-  );
-  const [activeSubTab, setActiveSubTab] = useState<ProfileMgmtSubTab>(() =>
-    initialSubTab || extractProfileRoute({ searchParams }).subTab
-  );
-
-  useEffect(() => {
-    const route = extractProfileRoute({ searchParams });
-    setActiveTab(route.tab);
-    setActiveSubTab(route.subTab);
-  }, [searchParams]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      const route = extractProfileRoute();
-      setActiveTab(route.tab);
-      setActiveSubTab(route.subTab);
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  const route = extractProfileRoute({ pathname: pathname ?? undefined, searchParams });
+  const activeTab = pathname ? route.tab : normalizeTabId(initialTab);
+  const activeSubTab = pathname ? route.subTab : initialSubTab || route.subTab;
 
   const handleSelectTab = (tabId: string) => {
     const normalized = normalizeTabId(tabId);
-    setActiveTab(normalized);
     const href = getProfileTabHref(normalized);
-    window.history.pushState(null, "", href);
+    router.push(href, { scroll: false });
   };
 
   const pub = currentUser.publicProfile || {};
@@ -265,7 +242,7 @@ export function ProfileClient({
   const years = initialStats.yearsOnHomyz || (currentUser.createdAt ? Math.max(1, new Date().getFullYear() - new Date(currentUser.createdAt).getFullYear()) : 1);
 
   return (
-    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-5 lg:pb-28 xl:pt-[88px]">
+    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans lg:pb-28">
         <div className="mb-5 flex items-center justify-between lg:hidden">
           <BackButton
             onClick={() => {
@@ -395,36 +372,6 @@ export function ProfileClient({
                   </section>
                 )}
 
-                {/* Where I've been Section (Public Profile - Only Selected Stamps, Hidden if stampsVisible === false) */}
-                {pub.stampsVisible !== false && pub.selectedStamps && pub.selectedStamps.length > 0 && (
-                  <>
-                    <div className="hidden flex-col gap-4 border-t border-zinc-200/70 py-4 lg:flex">
-                      <h3 className="text-xl font-semibold text-[#1F1F1F]">Where I&apos;ve been</h3>
-                      <p className="text-xs text-zinc-500 -mt-2">Places visited and travel stamps collected.</p>
-                      
-                      {(() => {
-                        const selectedIds = pub.selectedStamps || [];
-                        const allStamps = [...BUILTIN_TRAVEL_STAMPS, ...(pub.customStamps || [])];
-                        const visibleStamps = allStamps.filter((s) => selectedIds.includes(s.id));
-
-                        if (visibleStamps.length === 0) {
-                          return <p className="text-xs text-zinc-400 italic">No public stamps selected yet.</p>;
-                        }
-
-                        return (
-                          <div className="flex items-center gap-8 overflow-x-auto py-3 scrollbar-none">
-                            {visibleStamps.map((stamp) => (
-                              <TravelStampGraphic key={stamp.id} stamp={stamp} size="md" />
-                            ))}
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    <div className="my-4 hidden w-full border-b border-zinc-200/80 lg:block" />
-                  </>
-                )}
-
                 {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
                 <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
                   <MyReviewsSection reviews={initialReviews} />
@@ -482,9 +429,8 @@ export function ProfileClient({
                 embedded={true}
                 initialSubTab={activeSubTab}
                 onSubTabChange={(sub) => {
-                  setActiveSubTab(sub);
                   const href = getProfileTabHref("profile_management", sub);
-                  window.history.pushState(null, "", href);
+                  router.push(href, { scroll: false });
                 }}
                 onCancel={() => handleSelectTab("about_me")}
               />

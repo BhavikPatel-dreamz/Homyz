@@ -4,12 +4,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BackButton } from "@/components/ui/back-button";
-import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
-import { CloseIcon } from "@/components/ui/close-icon";
-import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
-import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
-import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import { LANGUAGE_OPTIONS, getLanguageNameById } from "@/lib/utils/language-options";
 import { useLanguage } from "@/lib/i18n/language-context";
 import {
@@ -133,10 +128,6 @@ export function HostAboutHostView({
   );
   const [languages, setLanguages] = useState<string[]>(() => getLanguageIds(rawProfile.languages));
   const [interests, setInterests] = useState<string[]>(() => getStringList(rawProfile.interests));
-  const [stampsVisible, setStampsVisible] = useState(rawProfile.stampsVisible !== false);
-  const [selectedStamps, setSelectedStamps] = useState<string[]>(() =>
-    Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : [],
-  );
   const [avatarUrl, setAvatarUrl] = useState(hostProfile.image);
 
   // Local transient states for adding items
@@ -144,7 +135,6 @@ export function HostAboutHostView({
   const [interestInput, setInterestInput] = useState("");
   const [languageSearch, setLanguageSearch] = useState("");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  const [isStampEditorOpen, setIsStampEditorOpen] = useState(false);
 
   // Status & feedback states
   const [isSaving, setIsSaving] = useState(false);
@@ -163,8 +153,6 @@ export function HostAboutHostView({
     setHobbies(getTagList(next.prompts && typeof next.prompts === "object" ? (next.prompts as Record<string, unknown>).hobbies : []));
     setLanguages(getLanguageIds(next.languages));
     setInterests(getStringList(next.interests));
-    setStampsVisible(next.stampsVisible !== false);
-    setSelectedStamps(Array.isArray(next.selectedStamps) ? next.selectedStamps.filter((v): v is string => typeof v === "string") : []);
     setAvatarUrl(hostProfile.image);
   }, [hostProfile.image, hostProfile.publicProfile]);
 
@@ -179,8 +167,6 @@ export function HostAboutHostView({
     const initialHobbies = getTagList(rawProfile.prompts && typeof rawProfile.prompts === "object" ? (rawProfile.prompts as Record<string, unknown>).hobbies : []);
     const initialLanguages = getLanguageIds(rawProfile.languages);
     const initialInterests = getStringList(rawProfile.interests);
-    const initialStampsVisible = rawProfile.stampsVisible !== false;
-    const initialStamps = Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : [];
 
     return (
       bio !== initialBio ||
@@ -191,9 +177,7 @@ export function HostAboutHostView({
       biography !== initialBiography ||
       JSON.stringify(hobbies) !== JSON.stringify(initialHobbies) ||
       JSON.stringify(languages) !== JSON.stringify(initialLanguages) ||
-      JSON.stringify(interests) !== JSON.stringify(initialInterests) ||
-      stampsVisible !== initialStampsVisible ||
-      JSON.stringify(selectedStamps) !== JSON.stringify(initialStamps)
+      JSON.stringify(interests) !== JSON.stringify(initialInterests)
     );
   }, [
     rawProfile,
@@ -206,8 +190,6 @@ export function HostAboutHostView({
     hobbies,
     languages,
     interests,
-    stampsVisible,
-    selectedStamps,
   ]);
 
   // Derive authoritative tenure (years since registration)
@@ -237,8 +219,6 @@ export function HostAboutHostView({
     setHobbies(getTagList(rawProfile.prompts && typeof rawProfile.prompts === "object" ? (rawProfile.prompts as Record<string, unknown>).hobbies : []));
     setLanguages(getLanguageIds(rawProfile.languages));
     setInterests(getStringList(rawProfile.interests));
-    setStampsVisible(rawProfile.stampsVisible !== false);
-    setSelectedStamps(Array.isArray(rawProfile.selectedStamps) ? rawProfile.selectedStamps.filter((v): v is string => typeof v === "string") : []);
     setFeedback(null);
   };
 
@@ -262,8 +242,6 @@ export function HostAboutHostView({
         },
         languages,
         interests,
-        stampsVisible,
-        selectedStamps,
       };
 
       const result = await updateHostPublicProfileAction({
@@ -940,112 +918,7 @@ export function HostAboutHostView({
           </div>
         </section>
 
-        {/* 6. Where I’ve Been (Travel Stamps) */}
-        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/90 p-6 shadow-xs sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-700 pb-4">
-            <div>
-              <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_travel_stamps_title") || "Where I’ve been"}</h2>
-              <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
-                {t("host_about_travel_stamps_desc") || "Pick the stamp you want to appear on your profile"}
-              </p>
-            </div>
-
-            {/* Visibility Switch */}
-            <div className="flex items-center gap-2.5">
-
-              <button
-                type="button"
-                role="switch"
-                aria-checked={stampsVisible}
-                aria-label={t("host_about_stamps_toggle_aria") || "Toggle public visibility of travel stamps"}
-                onClick={() => setStampsVisible((prev) => !prev)}
-                className={`relative inline-flex h-4.75 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${stampsVisible ? "bg-[#DF4557]" : "bg-[#DDDDDE] dark:bg-zinc-700"
-                  }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block size-3.75 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${stampsVisible ? "translate-x-6.5" : "translate-x-0"
-                    }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Stamps Gallery Preview */}
-          <div className="mt-5 space-y-4">
-            <div className="flex w-full min-h-24 items-center">
-              {selectedStamps.length > 0 ? (
-                <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-4 sm:grid-cols-2">
-                  {selectedStamps.slice(0, 8).map((stampId) => {
-                    const stamp = BUILTIN_TRAVEL_STAMPS.find((item) => item.id === stampId);
-                    if (!stamp) return null;
-                    return (
-                      <div
-                        key={stamp.id}
-                      >
-                        <TravelStampGraphic stamp={stamp} size="lg" />
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {t("host_about_no_stamps_selected") || "No travel stamps selected. Pick the stamps you want other people to see on your profile."}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {t("host_about_stamps_selected_count", { count: selectedStamps.length }) || `${selectedStamps.length} / 10 stamps selected`}
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsStampEditorOpen(true)}
-                className="w-full rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-950 transition-colors duration-300 hover:border-[#1f1f1f] dark:hover:border-amber-300 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 hover:text-white dark:hover:text-zinc-950 sm:w-auto"
-              >
-                {t("host_about_edit_travel_stamps_button") || "Edit travel stamp"}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Modal Overlay for Travel Stamps Selector */}
-        {isStampEditorOpen && (
-          <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs w-full h-full">
-            <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto overscroll-contain rounded-xl bg-white dark:bg-zinc-900 p-4 pr-14 shadow-2xl ring-1 ring-zinc-200 dark:ring-zinc-700 sm:p-6 sm:pr-16">
-              <button
-                type="button"
-                onClick={() => setIsStampEditorOpen(false)}
-                className="absolute right-3 top-5 inline-flex size-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-white text-zinc-600 shadow-sm transition-all hover:scale-105 hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:ring-zinc-100 sm:right-4 sm:top-4"
-                aria-label="Close travel stamp editor"
-              >
-                <CloseIcon className="size-4" />
-              </button>
-              <WhereIveBeenSelector
-                initialSelectedStamps={selectedStamps}
-                initialStampsVisible={stampsVisible}
-                currentPublicProfile={rawProfile}
-                maxStamps={10}
-                isOwner={true}
-                onSaved={(updatedProfile) => {
-                  const nextProfile = { ...rawProfile, ...updatedProfile };
-                  setSelectedStamps(
-                    Array.isArray(updatedProfile.selectedStamps)
-                      ? updatedProfile.selectedStamps
-                      : selectedStamps,
-                  );
-                  if (typeof updatedProfile.stampsVisible === "boolean") {
-                    setStampsVisible(updatedProfile.stampsVisible);
-                  }
-                  onHostProfileSaved(nextProfile as Record<string, unknown>);
-                  setIsStampEditorOpen(false);
-                }}
-              />
-            </div>
-          </ModalOverlay>
-        )}
-
-        {/* 7. My Interests */}
+        {/* 6. My Interests */}
         <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/90 p-6 shadow-xs sm:p-7">
           <div className="border-b border-zinc-100 dark:border-zinc-700 pb-4">
             <div className="flex items-center justify-between">

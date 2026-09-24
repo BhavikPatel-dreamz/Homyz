@@ -30,10 +30,10 @@ export default async function ProfileTabPage({
       initialStats={data.stats}
       initialReservations={data.initialReservations}
       initialFavorites={data.initialFavorites}
+      initialReviews={data.initialReviews}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}
     />
   );
 }
-

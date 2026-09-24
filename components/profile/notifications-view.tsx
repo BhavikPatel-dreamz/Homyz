@@ -36,14 +36,6 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     category: "promo",
     unread: false,
   },
-  {
-    id: "notif-4",
-    title: "Profile Stamp Added",
-    description: "Your 'Paris Eiffel Tower' travel stamp is now visible on your public guest profile.",
-    time: "1 week ago",
-    category: "account",
-    unread: false,
-  },
 ];
 
 export function NotificationsView() {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -9,8 +10,6 @@ import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
-import { RealMap } from "@/components/ui/real-map";
-import { ReviewList } from "@/components/reviews";
 import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
@@ -20,6 +19,137 @@ import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+
+// Reviews and the map are below the primary booking decision content. Keep
+// their interactive code out of the initial route bundle; both render a stable
+// placeholder until their client chunks are ready.
+const ReviewList = dynamic(
+  () => import("@/components/reviews").then((module) => module.ReviewList),
+  {
+    ssr: false,
+    loading: () => (
+      <section className="border-b border-zinc-200/80 py-8" aria-label="Loading guest reviews">
+        <h2 className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+        <div className="mt-5 h-28 animate-pulse rounded-2xl bg-zinc-100" />
+      </section>
+    ),
+  },
+);
+
+const RealMap = dynamic(
+  () => import("@/components/ui/real-map").then((module) => module.RealMap),
+  {
+    ssr: false,
+    loading: () => <div className="h-full w-full animate-pulse bg-zinc-100" aria-label="Loading map" />,
+  },
+);
+
+function DeferredReviewList({
+  listingId,
+  isGuestFavorite,
+  onStatsChange,
+}: {
+  listingId: string;
+  isGuestFavorite?: boolean;
+  onStatsChange: (stats: { rating: number | null; count: number }) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const target = containerRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef}>
+      {shouldLoad ? (
+        <ReviewList listingId={listingId} isGuestFavorite={isGuestFavorite} onStatsChange={onStatsChange} />
+      ) : (
+        <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
+          <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+          <div className="mt-5 h-28 rounded-2xl bg-zinc-100" />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function DeferredListingMap({
+  address,
+  city,
+  country,
+  latitude,
+  longitude,
+  showExactLocation,
+  ariaLabel,
+}: {
+  address: string;
+  city?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+  showExactLocation: boolean;
+  ariaLabel: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const target = containerRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="h-full w-full">
+      {shouldLoad ? (
+        <RealMap
+          address={address}
+          city={city}
+          country={country}
+          lat={latitude}
+          lng={longitude}
+          showExactLocation={showExactLocation}
+          preferInitialCoordinates
+          allowLocationEditing={false}
+          lazyLoad
+          className="relative h-full w-full overflow-hidden"
+          ariaLabel={ariaLabel}
+        />
+      ) : (
+        <div className="h-full w-full bg-zinc-100" aria-label="Map loads when this section is visible" />
+      )}
+    </div>
+  );
+}
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -380,8 +510,9 @@ export function PublicListingDetailClient({
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>([]);
   const [availabilityMonth, setAvailabilityMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(true);
+  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [availabilityRequested, setAvailabilityRequested] = useState(false);
   const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [hostImageFailed, setHostImageFailed] = useState(false);
 
@@ -492,6 +623,8 @@ export function PublicListingDetailClient({
       setAmenitySearchQuery("");
       setBookedDateRanges([]);
       setAvailabilityError(null);
+      setAvailabilityRequested(Boolean(nextCheckIn || nextCheckOut));
+      setIsAvailabilityLoading(false);
       setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
@@ -543,6 +676,9 @@ export function PublicListingDetailClient({
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
   useEffect(() => {
+    if (!availabilityRequested && !checkIn && !checkOut) {
+      return;
+    }
     const controller = new AbortController();
     const calendarRangeStart = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth(), 1));
     const calendarRangeEnd = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth() + 2, 1));
@@ -602,7 +738,7 @@ export function PublicListingDetailClient({
       window.clearTimeout(startRequest);
       controller.abort();
     };
-  }, [listing.id, availabilityMonth, checkIn, checkOut, availabilityRefreshVersion]);
+  }, [listing.id, availabilityMonth, checkIn, checkOut, availabilityRefreshVersion, availabilityRequested]);
 
   useEffect(() => {
     if (listing?.id) {
@@ -654,8 +790,7 @@ export function PublicListingDetailClient({
       typeof listing.longitude === "number" && Number.isFinite(listing.longitude)
       ? { latitude: listing.latitude, longitude: listing.longitude }
       : null;
-  const isProfileHidden = (listing.host?.publicProfile as Record<string, unknown> | null)?.profileVisible === false;
-  const publicProfile = isProfileHidden ? null : ((listing.host?.publicProfile as Record<string, unknown> | null) ?? {});
+  const publicProfile = (listing.host?.publicProfile as Record<string, unknown> | null) ?? {};
   const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
   const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
   const hostLanguages = Array.isArray(publicProfile?.languages)
@@ -668,7 +803,7 @@ export function PublicListingDetailClient({
     ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear() - (new Date().getMonth() < new Date(listing.host.createdAt).getMonth() ? 1 : 0))
     : null;
   const hostTenure = hostYears === null ? null : hostYears > 0 ? `${hostYears} ${hostYears === 1 ? "year" : "years"}` : "Less than a year";
-  const hostProfileHref = listing.host?.id && !isProfileHidden ? `/users/profile/${listing.host.id}` : null;
+  const hostProfileHref = listing.host?.id ? `/users/profile/${listing.host.id}` : null;
   const formatTime = (time: string | null | undefined) => {
     if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
     const [hour, minute] = time.split(":").map(Number);
@@ -1464,6 +1599,7 @@ export function PublicListingDetailClient({
                       minimumNights={minimumNights}
                       maximumNights={maximumNights}
                       onDateRangeChange={(nextCheckIn, nextCheckOut) => {
+                        setAvailabilityRequested(true);
                         if (nextCheckIn && !nextCheckOut) {
                           updateCheckIn(nextCheckIn);
                         } else if (nextCheckIn && nextCheckOut) {
@@ -1478,7 +1614,7 @@ export function PublicListingDetailClient({
 
                   {/* Guest Reviews Section */}
                   <div className="order-3">
-                    <ReviewList
+                    <DeferredReviewList
                       listingId={listing.id}
                       isGuestFavorite={listing.isGuestFavorite}
                       onStatsChange={({ rating, count }) => {
@@ -1539,17 +1675,13 @@ export function PublicListingDetailClient({
                     </p>
                     {publicCoordinates ? (
                       <div className="h-[320px] w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 shadow-sm sm:h-[390px]">
-                        <RealMap
+                        <DeferredListingMap
                           address={listing.shortAddress || listing.address || ""}
                           city={listing.city || undefined}
                           country={listing.country || undefined}
-                          lat={publicCoordinates.latitude}
-                          lng={publicCoordinates.longitude}
+                          latitude={publicCoordinates.latitude}
+                          longitude={publicCoordinates.longitude}
                           showExactLocation={listing.showExactLocation ?? false}
-                          preferInitialCoordinates
-                          allowLocationEditing={false}
-                          lazyLoad
-                          className="relative h-full w-full overflow-hidden"
                           ariaLabel={`${listing.showExactLocation ? "Property" : "Approximate property"} location map for ${locationString || listing.title}`}
                         />
                       </div>
@@ -1649,6 +1781,7 @@ export function PublicListingDetailClient({
                                 type="date"
                                 value={checkIn}
                                 min={today}
+                                onFocus={() => setAvailabilityRequested(true)}
                                 onChange={(e) => updateCheckIn(e.target.value)}
                                 className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
                               />
@@ -1662,6 +1795,7 @@ export function PublicListingDetailClient({
                                 value={checkOut}
                                 min={minimumCheckOut}
                                 disabled={!checkIn}
+                                onFocus={() => setAvailabilityRequested(true)}
                                 onChange={(e) => updateCheckOut(e.target.value)}
                                 className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
                               />
@@ -2004,6 +2138,7 @@ export function PublicListingDetailClient({
               <button
                 type="button"
                 onClick={() => {
+                  setAvailabilityRequested(true);
                   const calendarEl = document.getElementById("availability-heading");
                   if (calendarEl) {
                     calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });

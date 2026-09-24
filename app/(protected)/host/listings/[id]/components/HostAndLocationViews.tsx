@@ -18,9 +18,6 @@ import {
 } from "@/actions/host/cohosts";
 import { updateHostPublicProfileAction } from "@/actions/host/profile";
 import { updateProfileAction } from "@/actions/user/updateProfile";
-import { BUILTIN_TRAVEL_STAMPS } from "@/lib/stamps/stamps-data";
-import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
-import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
 import { getLanguageNameById, LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import {

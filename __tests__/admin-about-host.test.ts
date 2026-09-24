@@ -97,27 +97,11 @@ assert(
   "About Me textarea must enforce 2,000 char maximum"
 );
 
-// --- [5] Where I've Been & Public Visibility ---
-console.log("\n--- [5] Where I've Been & Public Visibility ---");
+// --- [5] Retired travel stamps ---
+console.log("\n--- [5] Retired Travel Stamps ---");
 assert(
-  adminViewCode.includes("Where I've Been") || adminViewCode.includes("Where I&apos;ve Been"),
-  "Must render 'Where I've Been' section"
-);
-assert(
-  adminViewCode.includes("Show on public profile"),
-  "Must render 'Show on public profile' label"
-);
-assert(
-  adminViewCode.includes("[ {stampsVisible ? \"ON\" : \"OFF\"} ]"),
-  "Must render visible [ ON / OFF ] indicator badge"
-);
-assert(
-  adminViewCode.includes("TravelStampGraphic"),
-  "Must render travel stamps using TravelStampGraphic"
-);
-assert(
-  adminViewCode.includes("WhereIveBeenSelector"),
-  "Must provide modal integration with WhereIveBeenSelector"
+  !adminViewCode.includes("WhereIveBeenSelector") && !adminViewCode.includes("TravelStampGraphic"),
+  "Must not render retired travel-stamp controls"
 );
 
 // --- [6] My Interests (Multi-select, Chips with [ × ], + Add Interest) ---
@@ -208,8 +192,6 @@ const testPayload = {
   },
   languages: ["en", "ar", "fr"],
   interests: ["Cooking", "Architecture", "History"],
-  stampsVisible: true,
-  selectedStamps: ["riyadh_stamp", "paris_stamp"],
 };
 
 const parsed = updateHostPublicProfileSchema.parse(testPayload);
@@ -218,10 +200,7 @@ assert.equal(parsed.prompts?.homeUnique, testPayload.prompts.homeUnique);
 assert.deepEqual(parsed.prompts?.hobbies, ["Architecture", "Photography", "Desert Hiking"]);
 assert.deepEqual(parsed.languages, ["en", "ar", "fr"]);
 assert.deepEqual(parsed.interests, ["Cooking", "Architecture", "History"]);
-assert.equal(parsed.stampsVisible, true);
-assert.deepEqual(parsed.selectedStamps, ["riyadh_stamp", "paris_stamp"]);
 
 console.log("\n==================================================================");
 console.log("   🎉 ALL ADMIN ABOUT HOST VERIFICATION TESTS PASSED (100%)!      ");
 console.log("==================================================================\n");
-

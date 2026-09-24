@@ -16,8 +16,24 @@ type FavoriteRow = {
 
 export const GET = apiHandler(async (req) => {
   const actor = await requireApiAuth(req);
+  const includeCards = req.nextUrl.searchParams.get("include") === "cards";
 
-  // Fetch favorites and include a public listing card projection to avoid extra per-listing calls
+  // Most pages only need favorite IDs for their heart buttons. Avoid joining and
+  // serializing every saved listing during the application's global startup.
+  if (!includeCards) {
+    const favorites = await prisma.listingFavorite.findMany({
+      where: { userId: actor.id },
+      select: { listingId: true },
+    });
+    const response = ok({
+      user: { id: actor.id, name: actor.name ?? null },
+      listingIds: favorites.map((favorite) => favorite.listingId),
+    });
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    return response;
+  }
+
+  // Saved-list pages explicitly opt into the heavier card payload.
   const favorites: FavoriteRow[] = await prisma.listingFavorite.findMany({
     where: { userId: actor.id },
     orderBy: { createdAt: "desc" },

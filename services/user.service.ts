@@ -11,25 +11,12 @@ import type {
 } from "@/lib/validation/user";
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
-import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+import { deleteManagedMediaUrl } from "@/lib/storage/media";
 import type { Prisma } from "@/generated/prisma/client";
 import { BookingStatus, ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 
 import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
-
-function customStampIconUrls(profile: unknown): string[] {
-  if (!profile || typeof profile !== "object" || !("customStamps" in profile)) return [];
-  const stamps = (profile as { customStamps?: unknown }).customStamps;
-  if (!Array.isArray(stamps)) return [];
-  return stamps
-    .map((stamp) => {
-      if (!stamp || typeof stamp !== "object" || !("iconUrl" in stamp)) return "";
-      const url = (stamp as { iconUrl?: unknown }).iconUrl;
-      return typeof url === "string" ? url : "";
-    })
-    .filter(Boolean);
-}
 
 // The profile payload is a pure function of the target user row (viewer-
 // independent), so the key is the target id and the entry is safe to share
@@ -82,13 +69,11 @@ async function updateProfile(
   }
   if (input.publicProfile !== undefined) {
     const pub = { ...input.publicProfile };
-    if (pub.selectedStamps && Array.isArray(pub.selectedStamps)) {
-      // Backend enforcement: remove duplicates & enforce max 10 stamps limit
-      pub.selectedStamps = Array.from(new Set(pub.selectedStamps as string[])).slice(0, 10);
-    }
-    if (pub.stampsVisible === undefined) {
-      pub.stampsVisible = true;
-    }
+    // Remove values from the retired travel-stamps feature when a profile is
+    // saved, so they cannot reappear in future profile responses.
+    delete pub.stampsVisible;
+    delete pub.selectedStamps;
+    delete pub.customStamps;
     if (typeof pub.bio === "string") {
       pub.bio = pub.bio.trim().slice(0, 500) || null;
     }
@@ -101,11 +86,6 @@ async function updateProfile(
     await deleteCache(keys.userProfile(userId));
     if (input.image && current?.image && current.image !== input.image) {
       await deleteManagedMediaUrl(current.image);
-    }
-    if (input.publicProfile !== undefined) {
-      const previousIcons = customStampIconUrls(current?.publicProfile);
-      const nextIcons = customStampIconUrls(data.publicProfile);
-      await deleteManagedMediaUrls(previousIcons.filter((url) => !nextIcons.includes(url)));
     }
     return toPublicUser(user);
   } catch (err) {
@@ -124,7 +104,10 @@ async function updateHostPublicProfile(userId: string, input: UpdateHostPublicPr
   });
   if (!existing) throw AppError.notFound("User not found");
 
-  const current = (existing.publicProfile as Record<string, unknown> | null) ?? {};
+  const current = { ...((existing.publicProfile as Record<string, unknown> | null) ?? {}) };
+  delete current.stampsVisible;
+  delete current.selectedStamps;
+  delete current.customStamps;
   const currentPrompts = (current.prompts as Record<string, unknown> | undefined) ?? {};
   const uniqueStrings = (values: string[]) => {
     const seen = new Set<string>();
@@ -141,8 +124,6 @@ async function updateHostPublicProfile(userId: string, input: UpdateHostPublicPr
     ...(input.prompts !== undefined ? { prompts: { ...currentPrompts, ...input.prompts } } : {}),
     ...(input.languages !== undefined ? { languages: uniqueStrings(input.languages) } : {}),
     ...(input.interests !== undefined ? { interests: uniqueStrings(input.interests) } : {}),
-    ...(input.stampsVisible !== undefined ? { stampsVisible: input.stampsVisible } : {}),
-    ...(input.selectedStamps !== undefined ? { selectedStamps: [...new Set(input.selectedStamps)].slice(0, 10) } : {}),
   };
   const user = await prisma.user.update({
     where: { id: userId },
@@ -305,7 +286,6 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
   const profile = host.publicProfile && typeof host.publicProfile === "object" && !Array.isArray(host.publicProfile)
     ? (host.publicProfile as Record<string, unknown>)
     : {};
-  if (profile.profileVisible === false) throw AppError.notFound("Host profile is unavailable");
 
   const publicListingWhere = {
     hostId: host.id,

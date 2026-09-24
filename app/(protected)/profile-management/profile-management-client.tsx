@@ -16,7 +16,6 @@ import { toast } from "@/components/ui/toast";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
-import { WhereIveBeenSelector } from "@/components/profile/where-ive-been-selector";
 import {
   extractSubTabFromQuery,
   getMgmtSubTabSlug,
@@ -39,9 +38,7 @@ export type PublicProfileData = {
   bioTitle?: string;
   whereILive?: string;
   bio?: string;
-  stampsVisible?: boolean;
   profileVisible?: boolean;
-  selectedStamps?: string[];
 };
 
 type ProfileData = {
@@ -86,108 +83,6 @@ type ProfileManagementClientProps = {
 function languagesForInput(value: string | string[] | undefined): string {
   if (Array.isArray(value)) return getLanguageDisplayNames(value).join(", ");
   return value || "";
-}
-
-// Hand-drawn Paris Eiffel Tower Stamp
-function StampParis() {
-  return (
-    <div className="flex flex-col items-center shrink-0">
-      <div className="relative w-36 h-36 flex items-center justify-center">
-        <svg className="w-full h-full" viewBox="0 0 160 160">
-          <circle
-            cx="80"
-            cy="88"
-            r="54"
-            fill="#FDE8EB"
-            stroke="#A1A1AA"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-          />
-          <path id="parisArc" d="M 28,68 A 62,62 0 0,1 132,68" fill="none" />
-          <text
-            className="text-[13px] fill-zinc-800"
-            style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}
-          >
-            <textPath href="#parisArc" startOffset="50%" textAnchor="middle">
-              stay like a homie.
-            </textPath>
-          </text>
-          <g
-            stroke="#27272A"
-            strokeWidth="1.75"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="80" y1="34" x2="80" y2="48" />
-            <circle cx="80" cy="33" r="1.5" fill="#27272A" />
-            <polygon points="76,48 84,48 82,72 78,72" />
-            <line x1="74" y1="72" x2="86" y2="72" />
-            <polygon points="76,72 84,72 87,105 73,105" />
-            <line x1="70" y1="105" x2="90" y2="105" />
-            <line x1="75" y1="88" x2="85" y2="88" />
-            <path d="M 73,105 L 63,142" />
-            <path d="M 87,105 L 97,142" />
-            <path d="M 69,142 C 72,120 88,120 91,142" />
-            <line x1="58" y1="142" x2="102" y2="142" />
-          </g>
-        </svg>
-      </div>
-      <span className="text-sm font-serif italic text-zinc-800 mt-1">
-        Paris
-      </span>
-    </div>
-  );
-}
-
-// Hand-drawn Coffee Moka Pot Stamp
-function StampCoffee() {
-  return (
-    <div className="flex flex-col items-center shrink-0">
-      <div className="relative w-36 h-36 flex items-center justify-center">
-        <svg className="w-full h-full" viewBox="0 0 160 160">
-          <circle
-            cx="80"
-            cy="88"
-            r="54"
-            fill="#EEF2FF"
-            stroke="#A1A1AA"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-          />
-          <path id="coffeeArc" d="M 28,68 A 62,62 0 0,1 132,68" fill="none" />
-          <text
-            className="text-[13px] fill-zinc-800"
-            style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}
-          >
-            <textPath href="#coffeeArc" startOffset="50%" textAnchor="middle">
-              stay like a homie.
-            </textPath>
-          </text>
-          <g
-            stroke="#27272A"
-            strokeWidth="1.75"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="80" cy="48" r="3" fill="#27272A" />
-            <path d="M 68,62 L 80,51 L 92,62 Z" />
-            <polygon points="68,62 92,62 88,92 72,92" />
-            <line x1="66" y1="92" x2="94" y2="92" />
-            <line x1="66" y1="96" x2="94" y2="96" />
-            <polygon points="72,96 88,96 92,134 68,134" />
-            <path d="M 92,68 C 108,70 108,110 90,115" />
-            <path d="M 68,66 L 58,76 L 68,84" />
-            <line x1="65" y1="134" x2="95" y2="134" />
-          </g>
-        </svg>
-      </div>
-      <span className="text-sm font-serif italic text-zinc-800 mt-1">
-        Coffee
-      </span>
-    </div>
-  );
 }
 
 const IconSprig = () => (
@@ -330,7 +225,6 @@ export function ProfileManagementClient({
     bioTitle: pub.bioTitle || "",
     whereILive: pub.whereILive || "",
     bio: pub.bio || "",
-    stampsVisible: pub.stampsVisible !== false,
   });
 
   const handleInputChange = (field: keyof PublicProfileData, value: PublicProfileData[keyof PublicProfileData]) => {
@@ -480,8 +374,6 @@ export function ProfileManagementClient({
     }
   };
 
-  const stampsVisible = formDataState.stampsVisible !== false;
-
   const managementWorkspace = (
     <div className="order-1 flex w-full min-w-0 flex-col animate-in fade-in lg:order-2 lg:justify-self-end">
       {!embedded && (
@@ -605,21 +497,6 @@ export function ProfileManagementClient({
           }`}
         >
           Trip Photos ({tripPhotos.length})
-        </Link>
-
-        <Link
-          href="/profile/tab/profile_management/where_ive_been"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubTabClick("stamps");
-          }}
-          className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeMgmtTab === "stamps"
-              ? "bg-zinc-900 text-white shadow-2xs"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          Where I&apos;ve Been
         </Link>
 
         <Link
@@ -1125,31 +1002,7 @@ export function ProfileManagementClient({
         </div>
       )}
 
-      {/* TAB 3: WHERE I'VE BEEN (STAMPS & VISIBILITY TOGGLE - Figma Compliant) */}
-      {activeMgmtTab === "stamps" && (
-        <WhereIveBeenSelector
-          initialSelectedStamps={
-            formDataState.selectedStamps || pub.selectedStamps || []
-          }
-          initialStampsVisible={stampsVisible}
-          maxStamps={10}
-          isOwner={isOwner}
-          currentPublicProfile={pub}
-          onSaved={(updatedProfile) => {
-            if (updatedProfile) {
-              setFormDataState((prev) => ({
-                ...prev,
-                stampsVisible:
-                  updatedProfile.stampsVisible ?? prev.stampsVisible,
-                selectedStamps:
-                  updatedProfile.selectedStamps ?? prev.selectedStamps,
-              }));
-            }
-          }}
-        />
-      )}
-
-      {/* TAB 4: PRIVACY & VISIBILITY */}
+      {/* PRIVACY & VISIBILITY */}
       {activeMgmtTab === "privacy" && (
         <div className="flex flex-col gap-6">
           <div>
@@ -1157,7 +1010,7 @@ export function ProfileManagementClient({
               Privacy & Visibility Settings
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
-              Manage who can see your profile and travel history on Homyz.
+              Manage who can see your profile on Homyz.
             </p>
           </div>
 
@@ -1218,57 +1071,6 @@ export function ProfileManagementClient({
               </div>
             </div>
 
-            {/* Row 2: Show Travel Stamps ("Where I've Been") */}
-            <div className="flex items-center justify-between gap-4 pt-5 border-t border-zinc-100">
-              <div>
-                <h4 className="text-sm font-semibold text-[#1F1F1F]">
-                  Show Travel Stamps (&quot;Where I&apos;ve Been&quot;)
-                </h4>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Display your collected country stamps publicly
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Active/OFF Badge */}
-                <span
-                  className={`text-xs font-semibold px-3.5 py-1 rounded-full border transition-all ${
-                    stampsVisible
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                      : "bg-zinc-200 text-zinc-700 border-zinc-300"
-                  }`}
-                >
-                  {stampsVisible ? "Active" : "OFF"}
-                </span>
-
-                {/* Interactive Red Toggle Switch matching screenshot */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextVal = !stampsVisible;
-                    setFormDataState((prev) => ({
-                      ...prev,
-                      stampsVisible: nextVal,
-                    }));
-                    saveDirectProfileField("stampsVisible", nextVal);
-                  }}
-                  className={`w-11 h-6 rounded-full relative transition-colors cursor-pointer focus:outline-none ${
-                    stampsVisible ? "bg-[#FA595D]" : "bg-zinc-300"
-                  }`}
-                  title={
-                    stampsVisible
-                      ? "Hide stamps from public profile"
-                      : "Show stamps on public profile"
-                  }
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-xs ${
-                      stampsVisible ? "translate-x-[22px]" : "translate-x-[2px]"
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

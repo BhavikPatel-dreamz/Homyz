@@ -2,7 +2,6 @@ import React, { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listingService } from "@/services/listing.service";
-import { guidebookService } from "@/services/guidebook.service";
 import { PublicListingDetailClient } from "./public-listing-detail-client";
 
 interface ListingDetailPageProps {
@@ -79,12 +78,9 @@ export default async function PublicListingPage({ params, searchParams }: Listin
   const searchGuests = sp.guests ? parseInt(sp.guests, 10) : undefined;
 
   let listing: Awaited<ReturnType<typeof resolveListing>> | null = null;
-  let guidebooks: Awaited<ReturnType<typeof guidebookService.getGuidebooksForListing>> = [];
 
   try {
     listing = await resolveListing(id);
-    // Always load guidebooks by the resolved real listing.id (not the URL slug/param)
-    guidebooks = await guidebookService.getGuidebooksForListing(listing.id).catch(() => []);
   } catch (err: unknown) {
     const error = err as { statusCode?: number; status?: number; message?: string } | null;
     if (error?.statusCode === 404 || error?.status === 404 || error?.message?.includes("not available")) {
@@ -102,7 +98,6 @@ export default async function PublicListingPage({ params, searchParams }: Listin
     <div suppressHydrationWarning={process.env.NODE_ENV === "development"}>
       <PublicListingDetailClient
         listing={listing}
-        guidebooks={guidebooks}
         searchCheckIn={searchCheckIn}
         searchCheckOut={searchCheckOut}
         searchGuests={searchGuests}

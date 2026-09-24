@@ -32,6 +32,7 @@ import { referralService } from "./referral.service";
 
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1h
+const MAX_OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 interface TokenMeta {
   userAgent?: string | null;
@@ -477,15 +478,29 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: 
 
   assertLoginRateLimit(identifier);
 
-  const cooldownSeconds = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS ?? 60);
+  const configuredCooldownSeconds = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS ?? 60);
+  const cooldownSeconds = Number.isFinite(configuredCooldownSeconds)
+    ? Math.min(MAX_OTP_RESEND_COOLDOWN_SECONDS, Math.max(1, Math.ceil(configuredCooldownSeconds)))
+    : MAX_OTP_RESEND_COOLDOWN_SECONDS;
+  const now = Date.now();
   const recent = await prisma.otpCode.findFirst({
-    where: { identifier, purpose: input.purpose },
+    where: {
+      identifier,
+      purpose: input.purpose,
+      // A bad system clock or imported data can create a future OTP record.
+      // Ignore timestamps beyond one cooldown window so one corrupt record
+      // cannot permanently prevent a user from signing in.
+      createdAt: { lte: new Date(now + cooldownSeconds * 1000) },
+    },
     orderBy: { createdAt: "desc" },
   });
   if (recent) {
-    const elapsed = Date.now() - recent.createdAt.getTime();
+    const elapsed = Math.max(0, now - recent.createdAt.getTime());
     if (elapsed < cooldownSeconds * 1000) {
-      const wait = Math.ceil((cooldownSeconds * 1000 - elapsed) / 1000);
+      const wait = Math.min(
+        cooldownSeconds,
+        Math.max(1, Math.ceil((cooldownSeconds * 1000 - elapsed) / 1000)),
+      );
       throw AppError.rateLimited(
         `Please wait ${wait}s before requesting another code`,
       );

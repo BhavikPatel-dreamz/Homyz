@@ -36,11 +36,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     return (payload as FavoritesResponse) ?? {};
   };
 
-  const syncFromServer = async (): Promise<{ listingIds: string[]; items: FavoriteItem[] } | null> => {
+  const syncFromServer = async (includeItems = false): Promise<{ listingIds: string[]; items: FavoriteItem[] } | null> => {
     const syncVersion = ++syncVersionRef.current;
 
     try {
-      const res = await fetch("/api/v1/favorites", { credentials: "same-origin", cache: "no-store" });
+      const res = await fetch(includeItems ? "/api/v1/favorites?include=cards" : "/api/v1/favorites", { credentials: "same-origin", cache: "no-store" });
       if (!res.ok) return null;
 
       const data = readFavoritesResponse(await res.json());
@@ -99,7 +99,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const freshFavorites = await syncFromServer();
+        const freshFavorites = await syncFromServer(true);
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("homyz:favorite-changed", { detail: { listingId: id, isFavorite: true, items: freshFavorites?.items } }));
         }
@@ -134,7 +134,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
         // Do not mutate the wishlist UI optimistically. This is the only state
         // update after a successful delete and comes from a fresh DB response.
-        const freshFavorites = await syncFromServer();
+        const freshFavorites = await syncFromServer(true);
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("homyz:favorite-changed", { detail: { listingId: id, isFavorite: false, items: freshFavorites?.items } }));
         }

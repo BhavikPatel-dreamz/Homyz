@@ -37,8 +37,6 @@ export const updateHostPublicProfileSchema = z.object({
   languages: z.array(z.string().trim().regex(/^[a-z]{2,3}(?:-[A-Z]{2})?$/)).max(20)
     .transform((values) => [...new Set(values.map((value) => value.toLowerCase()))]).optional(),
   interests: profileTagList(20).optional(),
-  stampsVisible: z.boolean().optional(),
-  selectedStamps: z.array(z.string().trim().min(1).max(80)).max(10).optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, { message: "No profile fields to update" });
 
 export type UpdateHostPublicProfileInput = z.infer<typeof updateHostPublicProfileSchema>;

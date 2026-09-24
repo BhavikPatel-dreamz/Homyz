@@ -1,41 +1,78 @@
-export default function Loading() {
+"use client";
+
+import { usePathname } from "next/navigation";
+import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { extractProfileRoute } from "@/lib/profile/tab-utils";
+
+function AboutMeSkeleton() {
   return (
-    <div
-      aria-busy="true"
-      aria-label="Loading profile"
-      className="min-h-[85vh] w-full animate-pulse bg-white pb-14 pt-0 sm:pt-5 lg:pb-28 xl:pt-[88px]"
-    >
-      <div className="grid grid-cols-1 gap-3 sm:gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
-        <aside className="order-2 w-full shrink-0 lg:order-1">
-          <div className="mb-7 hidden h-9 w-36 rounded-lg bg-zinc-200 lg:block xl:mb-10" />
-          <div className="grid grid-cols-2 gap-1.5 lg:block lg:mt-3 lg:space-y-0">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex min-h-[142px] items-center justify-center gap-3 rounded-lg border border-zinc-100 p-4 lg:h-[72px] lg:min-h-0 lg:justify-start lg:rounded-none lg:border-x-0 lg:border-t-0 lg:py-0 xl:h-[88px]"
-              >
-                <div className="h-10 w-10 rounded-full bg-zinc-200 lg:h-12 lg:w-12 xl:h-16 xl:w-16" />
-                <div className="h-4 w-20 rounded bg-zinc-200" />
+    <>
+      <div className="mb-8 flex items-center gap-5">
+        <div className="h-10 w-40 rounded-lg skeleton-shimmer" />
+        <div className="h-12 w-20 rounded-full skeleton-shimmer" />
+      </div>
+
+      <div className="mb-8 flex items-start gap-6">
+        <div className="h-[124px] w-[124px] shrink-0 rounded-xl skeleton-shimmer sm:h-[151px] sm:w-[233px] sm:rounded-2xl" />
+        <div className="flex min-h-[124px] flex-1 flex-col justify-center gap-4 sm:min-h-[151px] sm:max-w-[195px]">
+          <div className="h-5 w-28 rounded skeleton-shimmer" />
+          <div className="h-4 w-36 rounded skeleton-shimmer" />
+          <div className="flex gap-5 border-t border-zinc-200 pt-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="flex flex-col items-center gap-2">
+                <div className="h-9 w-9 rounded-full skeleton-shimmer" />
+                <div className="h-3 w-10 rounded skeleton-shimmer" />
               </div>
             ))}
           </div>
-        </aside>
+        </div>
+      </div>
 
-        <main className="order-1 flex min-w-0 flex-col lg:order-2">
-          <div className="mb-8 h-10 w-36 rounded-lg bg-zinc-200" />
-          <div className="mb-8 flex gap-6">
-            <div className="h-[124px] w-[124px] shrink-0 rounded-xl bg-zinc-200 sm:h-[151px] sm:w-[233px] sm:rounded-2xl" />
-            <div className="flex flex-1 flex-col justify-center gap-3">
-              <div className="h-5 w-40 rounded bg-zinc-200" />
-              <div className="h-4 w-28 rounded bg-zinc-100" />
-              <div className="h-4 w-48 rounded bg-zinc-100" />
-            </div>
+      <section className="border-t border-zinc-200/80 pt-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-36 rounded skeleton-shimmer" />
+            <div className="h-4 w-60 rounded skeleton-shimmer" />
           </div>
-          <div className="space-y-4">
-            <div className="h-5 w-32 rounded bg-zinc-200" />
-            <div className="h-4 w-full rounded bg-zinc-100" />
-            <div className="h-4 w-5/6 rounded bg-zinc-100" />
-          </div>
+          <div className="h-6 w-16 rounded-full skeleton-shimmer" />
+        </div>
+        <div className="h-56 max-w-[336px] rounded-2xl border border-zinc-200 skeleton-shimmer" />
+      </section>
+    </>
+  );
+}
+
+function ReservationsSkeleton() {
+  return (
+    <>
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="h-10 w-64 rounded-lg skeleton-shimmer" />
+        <div className="h-10 w-64 rounded-full skeleton-shimmer" />
+      </div>
+      <div className="mb-8 h-12 w-full rounded-full skeleton-shimmer" />
+      <LoadingSkeleton count={3} />
+    </>
+  );
+}
+
+export default function Loading() {
+  const pathname = usePathname();
+  const activeTab = extractProfileRoute({
+    pathname: pathname ?? "/profile",
+  }).tab;
+
+  return (
+    <div className="min-h-[85vh] w-full bg-white pb-14 pt-0 lg:pb-28">
+      <div className="grid grid-cols-1 gap-3 sm:gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+        <GuestDashboardSidebar activeId={activeTab} />
+
+        <main
+          aria-busy="true"
+          aria-label="Loading profile content"
+          className="order-1 flex min-w-0 flex-col lg:order-2"
+        >
+          {activeTab === "about_me" ? <AboutMeSkeleton /> : <ReservationsSkeleton />}
         </main>
       </div>
     </div>
