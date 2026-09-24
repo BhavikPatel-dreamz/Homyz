@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -10,7 +11,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { RealMap } from "@/components/ui/real-map";
 import { ReviewList } from "@/components/reviews";
-import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
@@ -108,7 +109,7 @@ function AmenityRow({ amenity }: { amenity: { id: string; icon?: string; label: 
       <span aria-hidden="true" className="text-xl">{amenity.icon || "✓"}</span>
       <div className="min-w-0">
         <h5 className="font-semibold text-zinc-900">{amenity.label}</h5>
-        {amenity.description && <p className="mt-0.5 text-[11px] text-zinc-500">{amenity.description}</p>}
+        {amenity.description && <p className="mt-0.5 text-base font-light text-[#1F1F1F]">{amenity.description}</p>}
       </div>
     </div>
   );
@@ -138,8 +139,8 @@ function HostIdentityCard({
           </div>
         )}
         {(hostSince || hostTenure) && <div className="min-w-0 flex-1 divide-y divide-zinc-200">
-          {hostSince && <div className="pb-3 text-[11px] text-zinc-500"><span className="block text-sm font-semibold leading-4 text-zinc-900">Joined</span>{hostSince}</div>}
-          {hostTenure && <div className="pt-3 text-[11px] text-zinc-500"><span className="block text-lg font-semibold leading-5 text-zinc-900">{hostTenure}</span>on Homyz</div>}
+          {hostSince && <div className="pb-3 text-base font-light text-[#1F1F1F]"><span className="block text-sm font-semibold leading-4 text-zinc-900">Joined</span>{hostSince}</div>}
+          {hostTenure && <div className="pt-3 text-base font-light text-[#1F1F1F]"><span className="block text-lg font-semibold leading-5 text-zinc-900">{hostTenure}</span>on Homyz</div>}
         </div>}
       </div>
       <div className="mt-4 text-center">
@@ -236,7 +237,7 @@ function ListingAvailabilityCalendar({
 
     return (
       <div key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}`} className="min-w-0">
-        <h4 className="mb-4 text-center text-sm font-semibold text-zinc-800">{title}</h4>
+        <h4 className="mb-4 text-center text-base font-medium text-[#1C1C1C]">{title}</h4>
         <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-zinc-400">
           {weekdays.map((day) => <span key={day} aria-hidden="true">{day.slice(0, 1)}</span>)}
         </div>
@@ -272,13 +273,13 @@ function ListingAvailabilityCalendar({
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
-                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 sm:size-9 ${isStart || isEnd
-                      ? "bg-[#F6CF7B] font-semibold text-zinc-900 shadow-sm"
-                      : isInRange
-                        ? "rounded-none bg-amber-100 text-zinc-900 hover:bg-amber-200"
-                        : past || unavailable
-                          ? "cursor-not-allowed text-zinc-300 line-through"
-                          : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
+                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:size-9 ${isStart || isEnd
+                    ? "bg-[#F6CF7B] font-semibold text-[#1f1f1f] shadow-sm"
+                    : isInRange
+                      ? "rounded-none bg-amber-100 text-[#1f1f1f] hover:bg-amber-200"
+                      : past || unavailable
+                        ? "cursor-not-allowed text-zinc-300 line-through"
+                        : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
                     } disabled:opacity-70`}
                 >
                   {index + 1}
@@ -293,11 +294,11 @@ function ListingAvailabilityCalendar({
 
   return (
     <section className="border-b border-zinc-200/80 pb-7" aria-labelledby="availability-heading">
-      <div className="mb-4">
-        <h3 id="availability-heading" className="text-lg font-semibold tracking-tight text-zinc-900">
-          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select dates in ${locationName}`}
+      <div className="mb-6">
+        <h3 id="availability-heading" className="text-[20px] font-normal text-[#1f1f1f]">
+          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select your dates in ${locationName}`}
         </h3>
-        <p className="mt-1 text-xs text-zinc-500" aria-live="polite">{formattedStayDates}</p>
+        <p className="mt-1 text-sm font-normal text-[#727272]" aria-live="polite">{formattedStayDates}</p>
       </div>
       {error ? (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
@@ -305,7 +306,7 @@ function ListingAvailabilityCalendar({
           <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2 cursor-pointer">Try again</button>
         </div>
       ) : (
-        <div className="rounded-2xl bg-zinc-100 p-3 sm:p-4">
+        <div className="max-w-[608px] rounded-2xl bg-[#F3F4F5] p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
             <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
               <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">‹</button>
@@ -315,7 +316,7 @@ function ListingAvailabilityCalendar({
               <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">›</button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-[11px] text-zinc-500">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-sm text-[#727272]">
             <span aria-live="polite">
               {isLoading
                 ? "Updating availability…"
@@ -1150,86 +1151,90 @@ export function PublicListingDetailClient({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased">
+    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       <AppHeader />
 
       <main className="w-full flex-1 pb-32 sm:pb-36 lg:pb-20 pt-5 sm:pt-7">
         <Container>
-          <div className="mx-auto max-w-[1180px]">
+          <div className="single-listing-page">
             {/* Header Section */}
             <div className="flex items-start justify-between gap-4 pb-5 sm:pb-6">
               <div className="min-w-0 space-y-2">
-                <h1 className="max-w-3xl break-words text-[22px] font-semibold leading-tight tracking-tight text-zinc-900 sm:text-[26px]">
+                <h1>
                   {listing.title}
                 </h1>
                 {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
                   <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
                     {listing.isGuestFavorite && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-950">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
                         <span aria-hidden="true">✦</span> Guest favourite
                       </span>
                     )}
                     {listing.host?.isSuperhost && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-950">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
                         <span aria-hidden="true">★</span> Superhost
                       </span>
                     )}
                     {listing.isFeatured && (
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700">
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
                         Featured stay
                       </span>
                     )}
                   </div>
                 )}
               </div>
-              <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
-                <button type="button" onClick={handleShare} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100" aria-label="Share this listing">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-4"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
+              <div className="flex shrink-0 items-center gap-3 pt-0.5 sm:gap-8">
+                <button type="button" onClick={handleShare} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272]" aria-label="Share this listing">
+                  <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
+                  </span>
                   <span className="hidden sm:inline">Share</span>
                 </button>
-                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" className="size-4"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
+                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
+                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-amber-300 bg-amber-50 text-amber-800" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
+                  </span>
                   <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
                 </button>
               </div>
             </div>
 
             {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
-            <div>
+            <div className="listing-galelry">
               <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} />
             </div>
 
             {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
             <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">
               {/* LEFT COLUMN */}
-              <div className="lg:col-span-7">
+              <div className="lg:col-span-7 max-w-[748px]">
                 <section className="pb-1">
-                  <h2 className="text-[15px] font-semibold leading-5 text-zinc-900 sm:text-base">
+                  <h2 className="text-[20px] font-normal leading-5 text-[#1f1f1f]">
                     {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
-                  <p className="mt-1 text-[11px] text-zinc-500">
+                  <p className="mt-2 text-base font-light text-[#1F1F1F]">
                     {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
                   </p>
                 </section>
 
                 {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
-                  <section className="mt-5 grid overflow-hidden rounded-[20px] border border-zinc-300 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] sm:grid-cols-[1fr_1.7fr_.78fr_.55fr]" aria-label="Guest favourite rating summary">
-                    <div className="flex items-center gap-2.5 border-b border-zinc-200 px-4 py-3 sm:border-b-0 sm:border-r">
-                      <span aria-hidden="true" className="text-[27px] leading-none text-amber-700">❦</span>
-                      <span className="text-[11px] font-medium leading-[13px] text-zinc-800">Guest<br />favourite</span>
+                  <section className="mt-7 grid max-w-[640px] overflow-hidden rounded-[28px] border border-zinc-300 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] sm:grid-cols-[1.15fr_1.75fr_.85fr_.62fr]" aria-label="Guest favourite rating summary">
+                    <div className="flex items-center justify-center gap-2 border-b border-zinc-200 px-4 py-4 sm:border-b-0 sm:border-r">
+                      <span aria-hidden="true" className="text-[25px] leading-none text-zinc-600">❦</span>
+                      <span className="text-xs font-normal leading-4 text-[#1f1f1f]">Guest<br />favourite</span>
                     </div>
-                    <p className="flex items-center px-4 py-3 text-[11px] leading-[14px] text-zinc-700 sm:border-r sm:py-2">One of the most loved homes on Homyz, according to guests.</p>
-                    <div className="flex items-center justify-center border-t border-zinc-200 px-4 py-3 sm:border-r sm:border-t-0">
-                      <div><p className="text-base font-bold leading-none text-zinc-900">{reviewRating.toFixed(2)}</p><p className="mt-1 text-[10px] tracking-[0.1em] text-amber-500">★★★★★</p></div>
+                    <p className="flex items-center px-5 py-4 text-sm font-normal leading-5 text-[#1f1f1f] sm:border-r">One of the most loved homes on Homyz, according to guests.</p>
+                    <div className="flex items-center justify-center border-t border-zinc-200 px-4 py-4 sm:border-r sm:border-t-0">
+                      <div><p className="text-xl font-medium leading-none text-[#1f1f1f]">{reviewRating.toFixed(2)}</p><p className="mt-1.5 text-[11px] tracking-[0.08em] text-amber-500">★★★★★</p></div>
                     </div>
-                    <div className="flex items-center justify-center border-t border-zinc-200 px-3 py-3 sm:border-t-0"><p className="text-center text-xs font-semibold leading-4 text-zinc-900">{reviewCount}<br /><span className="text-[10px] font-normal text-zinc-500">{reviewCount === 1 ? "Review" : "Reviews"}</span></p></div>
+                    <div className="lex items-center justify-center border-t border-zinc-200 px-3 py-4 sm:border-t-0"><p className="text-center text-base font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[11px] font-normal text-zinc-600">{reviewCount === 1 ? "Review" : "Reviews"}</span></p></div>
                   </section>
                 )}
 
                 {/* Property Summary & Host */}
-                <section className="mt-7 flex items-center gap-3.5 border-b border-zinc-200/80 pb-6">
-                  <div className="min-w-0 space-y-1">
-                    <h2 className="text-sm font-semibold text-zinc-900">
+                <section className="mt-7 flex items-center gap-6 border-b border-[#DDDDDE] pb-7.5">
+                  <div className="min-w-0 space-y-2">
+                    <h2 className="text-xl font-normal text-[#1f1f1f]">
                       {hostProfileHref ? (
                         <Link
                           href={hostProfileHref}
@@ -1248,7 +1253,7 @@ export function PublicListingDetailClient({
                         `Hosted by ${listing.host?.name || "Homyz host"}`
                       )}
                     </h2>
-                    <p className="text-[11px] text-zinc-500">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
+                    <p className="text-base font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
                   </div>
                   {hostProfileHref ? (
                     <Link
@@ -1268,10 +1273,10 @@ export function PublicListingDetailClient({
                           src={listing.host.image}
                           alt={listing.host.name || "Host"}
                           onError={() => setHostImageFailed(true)}
-                          className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                          className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-[104px]"
                         />
                       ) : (
-                        <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                        <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 sm:size-14">
                           {(listing.host?.name || "H")[0].toUpperCase()}
                         </div>
                       )}
@@ -1282,10 +1287,10 @@ export function PublicListingDetailClient({
                         src={listing.host.image}
                         alt={listing.host.name || "Host"}
                         onError={() => setHostImageFailed(true)}
-                        className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                        className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-[104px]"
                       />
                     ) : (
-                      <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                      <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 sm:size-14">
                         {(listing.host?.name || "H")[0].toUpperCase()}
                       </div>
                     )
@@ -1294,11 +1299,11 @@ export function PublicListingDetailClient({
 
                 {/* Highlights (if any) */}
                 {trustHighlights.length > 0 && (
-                  <section className="mt-5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
+                  <section className="mt-7.5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
                     {trustHighlights.map((highlight) => (
-                      <div key={highlight.title} className="flex items-start gap-3">
-                        <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-zinc-300 p-1.5 text-zinc-700"><TrustHighlightIcon name={highlight.icon} /></span>
-                        <div><h3 className="text-[11px] font-medium leading-4 text-zinc-900">{highlight.title}</h3><p className="mt-0.5 text-[10px] leading-[13px] text-zinc-500">{highlight.description}</p></div>
+                      <div key={highlight.title} className="flex items-start gap-6">
+                        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] p-1.5 text-[#1F1F1F]"><TrustHighlightIcon name={highlight.icon} /></span>
+                        <div><h3 className="text-base font-normal text-[#222222]">{highlight.title}</h3><p className="mt-0.5 text-sm font-normal text-[#6A6A6A]">{highlight.description}</p></div>
                       </div>
                     ))}
                   </section>
@@ -1306,10 +1311,10 @@ export function PublicListingDetailClient({
 
                 {/* Description */}
                 {normalizedDescription && (
-                  <section className="mt-6 border-b border-zinc-200/80 pb-6">
-                    <h3 className="text-[15px] font-semibold text-zinc-900">About this place</h3>
+                  <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
                     <p
-                      className={`mt-2.5 whitespace-pre-line break-words text-[11px] leading-[15px] text-zinc-600 ${isDescriptionExpanded ? "" : "line-clamp-4"
+                      className={`mt-2.5 whitespace-pre-line break-words text-base font-normal text-[#727272] ${isDescriptionExpanded ? "" : "line-clamp-4"
                         }`}
                     >
                       {normalizedDescription}
@@ -1335,7 +1340,7 @@ export function PublicListingDetailClient({
                             propertyId: listing.id,
                           });
                         }}
-                        className="mt-4 rounded-full border border-zinc-300 bg-white px-5 py-2 text-[11px] font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 cursor-pointer"
+                        className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-6 py-3.25 text-lg font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
                         {isDescriptionExpanded ? "Show less" : "Show more"}
                       </button>
@@ -1343,18 +1348,24 @@ export function PublicListingDetailClient({
                   </section>
                 )}
 
-                <div className="mt-8 flex flex-col gap-8">
+                <div className="mt-7.5 flex flex-col gap-7.5">
                   {/* Amenities Grid */}
-                  <div className="space-y-4 pb-6 border-b border-zinc-200/80">
-                    <h3 className="text-base font-bold text-zinc-900">What this place offers</h3>
+                  <div className="order-1 space-y-5 border-b border-zinc-200/80 pb-6">
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">What this place offers</h3>
                     {categorizedAmenities.length === 0 ? (
                       <p className="text-xs text-zinc-500">This host has not listed any amenities yet.</p>
                     ) : <>
-                      <div className="grid grid-cols-1 gap-3 text-xs text-zinc-800 sm:grid-cols-2">
-                        {categorizedAmenities.slice(0, 8).map((am) => (
-                          <div key={am.id} className="flex min-w-0 items-center gap-2.5">
-                            <span aria-hidden="true" className="text-base">{am.icon || "✓"}</span>
-                            <span className="font-medium break-words">{am.label}</span>
+                      <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
+                        {categorizedAmenities.slice(0, 6).map((am) => (
+                          <div key={am.id} className="flex min-w-0 items-center gap-3">
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
+                              {AMENITY_ICON_SOURCES[am.id] ? (
+                                <Image src={AMENITY_ICON_SOURCES[am.id]} alt="" width={18} height={18} className="size-[18px]" />
+                              ) : (
+                                <span aria-hidden="true" className="text-sm leading-none">{am.icon || "✓"}</span>
+                              )}
+                            </span>
+                            <span className="break-words text-base font-normal leading-5">{am.label}</span>
                           </div>
                         ))}
                       </div>
@@ -1370,9 +1381,9 @@ export function PublicListingDetailClient({
                               metadata: { totalAmenities: categorizedAmenities.length },
                             });
                           }}
-                          className="rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-xs font-semibold px-5 py-2.5 transition-all cursor-pointer shadow-2xs mt-2"
+                          className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-6 py-3.25 text-lg font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                         >
-                          Show all {categorizedAmenities.length} amenities
+                          Show all amenities
                         </button>
                       )}
                     </>}
@@ -1380,7 +1391,7 @@ export function PublicListingDetailClient({
 
                   {listing.host && (
                     <section className="order-5 border-b border-zinc-200/80 pb-8" aria-labelledby="meet-host-heading">
-                      <h3 id="meet-host-heading" className="mb-4 text-[17px] font-semibold text-zinc-900">Meet your host</h3>
+                      <h3 id="meet-host-heading" className="mb-4 text-[20px] font-normal text-[#1f1f1f]">Meet your host</h3>
                       <div className="grid gap-7 md:grid-cols-[300px_minmax(0,1fr)] md:gap-12">
                         <div>
                           {hostProfileHref ? (
@@ -1478,10 +1489,10 @@ export function PublicListingDetailClient({
 
                   {/* House Rules */}
                   <section className="order-6 border-b border-zinc-200/80 pb-7" aria-labelledby="things-to-know-heading">
-                    <h3 id="things-to-know-heading" className="mb-4 text-base font-semibold text-zinc-900">Things to know</h3>
+                    <h3 id="things-to-know-heading" className="mb-4 text-[20px] font-normal text-[#1f1f1f]">Things to know</h3>
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="space-y-3 rounded-2xl border border-zinc-200 p-4" aria-labelledby="house-rules-heading">
-                        <h4 id="house-rules-heading" className="text-sm font-semibold text-zinc-900">House rules</h4>
+                        <h4 id="house-rules-heading" className="text-xl font-normal text-[#1f1f1f]">House rules</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-zinc-700">
                           {formatTime(listing.checkInStart) && <div className="flex items-center gap-2"><span aria-hidden="true">🕒</span><span>Check-in after {formatTime(listing.checkInStart)}{formatTime(listing.checkInEnd) ? `, before ${formatTime(listing.checkInEnd)}` : ""}</span></div>}
                           {formatTime(listing.checkOutTime) && <div className="flex items-center gap-2"><span aria-hidden="true">⏱️</span><span>Check-out before {formatTime(listing.checkOutTime)}</span></div>}
@@ -1500,14 +1511,14 @@ export function PublicListingDetailClient({
                       </div>
 
                       {(cancellationLabel || longTermCancellationLabel) && <div className="space-y-2 rounded-2xl border border-zinc-200 p-4" aria-labelledby="cancellation-heading">
-                        <h4 id="cancellation-heading" className="text-sm font-semibold text-zinc-900">Cancellation policy</h4>
+                        <h4 id="cancellation-heading" className="text-xl font-normal text-[#1f1f1f]">Cancellation policy</h4>
                         {cancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{cancellationLabel}.</span> Applies to stays under 28 nights.</p>}
                         {longTermCancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{longTermCancellationLabel}.</span> Applies to stays of 28 nights or more.</p>}
                       </div>}
 
                       {/* Safety Disclosures */}
                       <div className="space-y-3 rounded-2xl border border-zinc-200 p-4">
-                        <h4 className="text-sm font-semibold text-zinc-900">Safety & property</h4>
+                        <h4 className="text-xl font-normal text-[#1f1f1f]">Safety & property</h4>
                         <div className="space-y-2 text-xs text-zinc-600">
                           {publicSafetyEquipment.map((item) => <div key={item} className="flex items-center gap-2"><span>🛡️</span><span>{humanize(item)}</span></div>)}
                           {publicSafetyHazards.map((item) => <div key={item} className="flex items-center gap-2"><span>⚠️</span><span>{item}</span></div>)}
@@ -1520,7 +1531,7 @@ export function PublicListingDetailClient({
 
                   {/* Location & Map Section */}
                   <div className="order-4 space-y-3 pb-6">
-                    <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">{"Where you'll be"}</h3>
                     <p className="text-xs text-zinc-500 font-normal">
                       {locationString || "Location details are not available for this listing."}
                       {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
@@ -1565,7 +1576,7 @@ export function PublicListingDetailClient({
                             </div>
                             <div className="min-w-0">
                               <h5 className="text-xs font-bold text-zinc-900 truncate">{gb.title}</h5>
-                              <p className="text-[11px] text-zinc-500 truncate">
+                              <p className="text-base font-light text-[#1F1F1F] truncate">
                                 {gb.itemsCount} recommendations by {gb.host?.name || "Host"}
                               </p>
                             </div>
@@ -1587,18 +1598,20 @@ export function PublicListingDetailClient({
 
               {/* RIGHT COLUMN: BOOKING & PRICING PANEL */}
               <div className="lg:col-span-5">
-                <div className="sticky top-24 space-y-3">
-                  <div className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[11px] text-zinc-600 shadow-sm">
-                    <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">✓</span>
+                <div className="sticky top-24 space-y-6">
+                  <div className="flex min-h-[72px] items-center justify-center gap-4 rounded-[30px] bg-[rgba(255,255,255,0.6)] px-4 py-3 text-base text-[#1F1F1F] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                    <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F]">
+                      <Image src="/images/icons/price-icon.svg" alt="" width={24} height={24} className="size-6" />
+                    </span>
                     Prices include all fees
                   </div>
-                  <div className="space-y-4 rounded-2xl border border-zinc-300 bg-white p-4 shadow-[0_5px_16px_rgba(24,24,27,0.08)] sm:p-5">
+                  <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
                     {bookingSuccess ? (
                       <div className="py-8 text-center space-y-3">
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                           ✓
                         </div>
-                        <h3 className="text-base font-bold text-zinc-900">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
+                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
                         <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                           Your stay has been recorded. You can manage your bookings in your trips dashboard.
                         </p>
@@ -1615,8 +1628,8 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            <span className="text-2xl font-bold text-zinc-900">{displayPrice ?? "Price unavailable"}</span>
-                            <span className="text-xs text-zinc-500 font-normal"> / night</span>
+                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                            <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
                             {listing.instantBook ? "Instant Book" : "Host approval required"}
@@ -1624,11 +1637,11 @@ export function PublicListingDetailClient({
                         </div>
 
                         {/* Date Pickers */}
-                        <div className={`rounded-2xl border overflow-hidden divide-y divide-zinc-200 text-xs transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-zinc-300"
+                        <div className={`rounded-[10px] border overflow-hidden divide-y divide-zinc-200 bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-zinc-300"
                           }`}>
                           <div className="grid grid-cols-2 divide-x divide-zinc-200">
                             <div className="p-3 space-y-1">
-                              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                              <label className="block text-base font-normal text-[#1f1f1f]">
                                 Check-in
                               </label>
                               <input
@@ -1636,11 +1649,11 @@ export function PublicListingDetailClient({
                                 value={checkIn}
                                 min={today}
                                 onChange={(e) => updateCheckIn(e.target.value)}
-                                className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
+                                className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
                               />
                             </div>
                             <div className="p-3 space-y-1">
-                              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                              <label className="block text-base font-normal text-[#1f1f1f]">
                                 Check-out
                               </label>
                               <input
@@ -1649,13 +1662,13 @@ export function PublicListingDetailClient({
                                 min={minimumCheckOut}
                                 disabled={!checkIn}
                                 onChange={(e) => updateCheckOut(e.target.value)}
-                                className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
+                                className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
                               />
                             </div>
                           </div>
 
                           <div className="p-3 space-y-1">
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                            <label className="block text-base font-normal text-[#1f1f1f]">
                               Guests
                             </label>
                             <button
@@ -1673,13 +1686,13 @@ export function PublicListingDetailClient({
                                   });
                                 }
                               }}
-                              className="flex w-full items-center justify-between text-left text-xs font-medium text-zinc-900"
+                              className="flex w-full items-center justify-between text-left text-sm font-normal text-[#727272]"
                             >
                               <span>{guestSummaryLabel}</span>
                               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-4 transition-transform ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                             </button>
                             {isGuestSelectorOpen && (
-                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50/90 p-3.5 text-xs" aria-label="Guest selection">
+                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
                                   <div>
@@ -1687,9 +1700,9 @@ export function PublicListingDetailClient({
                                     <p className="text-[10px] text-zinc-500">Age 13+</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                     <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{adultsCount}</span>
-                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
 
@@ -1700,9 +1713,9 @@ export function PublicListingDetailClient({
                                     <p className="text-[10px] text-zinc-500">Ages 2–12</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                     <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{childrenCount}</span>
-                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
 
@@ -1728,7 +1741,7 @@ export function PublicListingDetailClient({
                           </div>
                         </div>
 
-                        <p className="text-[11px] leading-relaxed text-zinc-500" aria-live="polite">
+                        <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
                           {isAvailabilityLoading
                             ? "Checking availability…"
                             : bookedDateRanges.length > 0
@@ -1833,7 +1846,7 @@ export function PublicListingDetailClient({
                                     </span>
                                     <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
-                                  <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-[11px] text-zinc-500">
+                                  <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-base font-light text-[#1F1F1F]">
                                     {quote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
@@ -1866,9 +1879,9 @@ export function PublicListingDetailClient({
                           type="button"
                           disabled={isBookingSubmitting}
                           onClick={handleReserve}
-                          className={`w-full rounded-2xl py-3 text-sm font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
-                              ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
-                              : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600 cursor-pointer"
+                          className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                            ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
+                            : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600 cursor-pointer"
                             }`}
                           aria-disabled={!hasValidQuote || isBookingSubmitting}
                         >
@@ -1887,8 +1900,10 @@ export function PublicListingDetailClient({
                       </>
                     )}
                   </div>
-                  <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center gap-2 px-2 py-1 text-[11px] text-zinc-600 underline underline-offset-2 hover:text-zinc-900">
-                    <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">!</span>
+                  <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center justify-center gap-4 text-base text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] group">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
+                      <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4.5" />
+                    </span>
                     Report this listing
                   </a>
                 </div>
@@ -1911,7 +1926,7 @@ export function PublicListingDetailClient({
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
-                  <h4 className="text-sm font-semibold text-zinc-900">{detail.heading}</h4>
+                  <h4 className="text-xl font-normal text-[#1f1f1f]">{detail.heading}</h4>
                   <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
                 </section>
               ))}
@@ -1967,7 +1982,7 @@ export function PublicListingDetailClient({
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-baseline gap-1 truncate">
-              <span className="text-base font-bold text-zinc-900 sm:text-lg">
+              <span className="text-[20px] font-normal text-[#1f1f1f] sm:text-lg">
                 {quote?.guestTotal || quote?.totalPrice
                   ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
                   : displayPrice ?? "Price unavailable"}
@@ -2003,8 +2018,8 @@ export function PublicListingDetailClient({
                 disabled={isBookingSubmitting || !hasValidQuote}
                 onClick={handleReserve}
                 className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
-                    ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
-                    : "border border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                  ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+                  : "border border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed"
                   }`}
                 aria-disabled={!hasValidQuote || isBookingSubmitting}
               >
