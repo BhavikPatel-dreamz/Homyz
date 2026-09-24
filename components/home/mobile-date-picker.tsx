@@ -165,7 +165,7 @@ export function MobileDatePicker({
                         onClick={() => setMonthOffset((n) => n - 1)}
                         className={`h-7 w-7 text-xl cursor-pointer disabled:opacity-20 ${offset === 1 ? "invisible" : ""}`}
                       >
-                        ‹
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mx-auto size-5"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
                       <h4 className="text-[16px] font-semibold">{monthLabel(month)}</h4>
                       <button
@@ -174,7 +174,7 @@ export function MobileDatePicker({
                         onClick={() => setMonthOffset((n) => n + 1)}
                         className={`h-7 w-7 text-xl cursor-pointer ${offset === 0 ? "invisible" : ""}`}
                       >
-                        ›
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mx-auto size-5"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
                     </div>
                     <div className="grid grid-cols-7 text-center text-[12px]">

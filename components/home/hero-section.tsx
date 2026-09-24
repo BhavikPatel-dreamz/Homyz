@@ -1198,7 +1198,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               }`}
               onClick={() => setDesktopPanel("where")}
             >
-              <label htmlFor="desktop-destination" className="text-[12px] font-bold uppercase tracking-wider text-zinc-800 cursor-pointer">
+              <label htmlFor="desktop-destination" className="text-base font-normal text-[#1f1f1f] cursor-pointer">
                 {t("home_search_where")}
               </label>
               <div className="flex items-center gap-1.5 w-full">
@@ -1279,8 +1279,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkIn" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
               }`}
             >
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_when")}</span>
-              <span className="block truncate text-[14px] font-medium text-zinc-600">
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
+              <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkIn || t("home_search_add_dates")}
               </span>
             </button>
@@ -1297,8 +1297,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkOut" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
               }`}
             >
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_when")}</span>
-              <span className="block truncate text-[14px] font-medium text-zinc-600">
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
+              <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkOut || t("home_search_add_dates")}
               </span>
             </button>
@@ -1316,8 +1316,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   desktopPanel === "who" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
                 }`}
               >
-                <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">{t("home_search_who")}</span>
-                <span className="block truncate text-[14px] font-medium text-zinc-600">
+                <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_who")}</span>
+                <span className="block truncate text-sm font-normal text-[#727272]">
                   {mobileGuestSummary || t("home_search_add_guests")}
                 </span>
               </button>
@@ -1353,7 +1353,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     ? "Guests"
                     : "Choose dates"
                 }
-                className={`absolute top-full z-50 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+                className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
                   desktopPanel === "where"
                     ? "left-0 w-[400px] sm:w-[480px]"
                     : desktopPanel === "who"

@@ -1011,7 +1011,7 @@ export function ListingSearchBar() {
             }`}
             onClick={() => setDesktopPanel("where")}
           >
-            <label htmlFor="listing-desktop-destination" className="text-[12px] font-bold uppercase tracking-wider text-zinc-800 cursor-pointer">
+            <label htmlFor="listing-desktop-destination" className="text-base font-normal text-[#1f1f1f] cursor-pointer">
               {t("home_search_where", undefined, "Where")}
             </label>
             <div className="flex items-center gap-1.5 w-full">
@@ -1169,7 +1169,7 @@ export function ListingSearchBar() {
                   ? "Guests"
                   : "Choose dates"
               }
-              className={`absolute top-full z-50 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+              className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
                 desktopPanel === "where"
                   ? "left-0 w-[420px] sm:w-[480px]"
                   : desktopPanel === "who"
