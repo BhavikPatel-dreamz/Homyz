@@ -2212,7 +2212,7 @@ export function PublicListingDetailClient({
               </button>
             </div>
 
-            <div className="py-3">
+            <div className="py-5">
               <input
                 type="text"
                 value={amenitySearchQuery}
@@ -2227,7 +2227,7 @@ export function PublicListingDetailClient({
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
               ) : amenityGroups.map(([category, amenities]) => (
                 <section key={category} aria-label={`${category} amenities`}>
-                  <h4 className="mb-4 text-base font-semibold capitalize text-[#1f1f1f]">{category.replace(/_/g, " ")}</h4>
+                  <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">{category.replace(/_/g, " ")}</h4>
                   <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
                 </section>
               ))}
