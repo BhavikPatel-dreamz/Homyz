@@ -567,7 +567,7 @@ export function PublicListingDetailClient({
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [expandedThingsCards, setExpandedThingsCards] = useState({ rules: false, safety: false, cancellation: false });
+  const [openThingsCard, setOpenThingsCard] = useState<"rules" | "safety" | "cancellation" | null>(null);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
 
@@ -618,10 +618,6 @@ export function PublicListingDetailClient({
     }
     return `${adultsCount} ${adultsCount === 1 ? "guest" : "guests"}`;
   }, [adultsCount, childrenCount]);
-
-  const toggleThingsCard = (card: "rules" | "safety" | "cancellation") => {
-    setExpandedThingsCards((current) => ({ ...current, [card]: !current[card] }));
-  };
 
   // Telemetry: track listing_page_view once on mount
   const hasTrackedViewRef = useRef(false);
@@ -1760,9 +1756,9 @@ export function PublicListingDetailClient({
                         </div>
 
                         {/* Date Pickers */}
-                        <div className={`rounded-[10px] border overflow-hidden divide-y divide-zinc-200 bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-zinc-300"
+                          <div className={`rounded-[10px] border overflow-hidden divide-y divide-[#727272] bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-[#727272]"
                           }`}>
-                          <div className="grid grid-cols-2 divide-x divide-zinc-200">
+                          <div className="grid grid-cols-2 divide-x divide-[#727272]">
                             <div className="p-3 space-y-1">
                               <label className="block text-base font-normal text-[#1f1f1f]">
                                 Check-in
@@ -1814,7 +1810,7 @@ export function PublicListingDetailClient({
                               className="flex w-full items-center justify-between text-left text-sm font-normal text-[#727272]"
                             >
                               <span>{guestSummaryLabel}</span>
-                              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-4 transition-transform ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
+                              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-6 transition-transform relative -top-4 ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                             </button>
                             {isGuestSelectorOpen && (
                               <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
@@ -2015,7 +2011,7 @@ export function PublicListingDetailClient({
                             : isQuoteLoading
                               ? "Checking availability..."
                               : listing.instantBook
-                                ? "Reserve now"
+                                ? "Reserve"
                                 : "Request to book"}
                         </button>
 
@@ -2119,36 +2115,36 @@ export function PublicListingDetailClient({
                   <div className="order-1 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white/60 sm:p-7 py-8 px-5 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]" aria-labelledby="house-rules-heading">
                     <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">House rules</h4>
                     <div className="shrink-0 mt-5 space-y-4 text-base text-[#1f1f1f]">
-                      {(expandedThingsCards.rules ? houseRuleItems : houseRuleItems.slice(0, 4)).map((item) => (
+                      {houseRuleItems.slice(0, 4).map((item) => (
                         <div key={item.id} className="shrink-0 flex items-center gap-3">
                           {item.icon}
                           <span className="whitespace-pre-line break-words">{item.text}</span>
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => toggleThingsCard("rules")} aria-expanded={expandedThingsCards.rules} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{expandedThingsCards.rules ? "Show less" : "Show more"}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
                   </div>
 
                   {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
                     <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Cancellation policy</h4>
                     <div className="mt-4 space-y-4">
-                      {(expandedThingsCards.cancellation ? cancellationItems : cancellationItems.slice(0, 4)).map((item, index) => (
+                      {cancellationItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
                       ))}
                     </div>
-                    <button type="button" onClick={() => toggleThingsCard("cancellation")} aria-expanded={expandedThingsCards.cancellation} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{expandedThingsCards.cancellation ? "Show less" : "Show more"}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
                   </div>}
 
                   {/* Safety Disclosures */}
                   <div className="order-2 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]">
                     <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Safety & property</h4>
                     <div className="mt-5 space-y-4 text-base text-[#1f1f1f]">
-                      {(expandedThingsCards.safety ? safetyItems : safetyItems.slice(0, 4)).map((item, index) => (
+                      {safetyItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`}>{item}</p>
                       ))}
                       {safetyItems.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
                     </div>
-                    <button type="button" onClick={() => toggleThingsCard("safety")} aria-expanded={expandedThingsCards.safety} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{expandedThingsCards.safety ? "Show less" : "Show more"}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
                   </div>
                 </div>
               </section>
@@ -2223,6 +2219,58 @@ export function PublicListingDetailClient({
       </main>
 
       {/* ListingGallery provides an integrated lightbox/modal */}
+
+      {openThingsCard && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="things-to-know-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenThingsCard(null); }}
+        >
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
+              <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
+                {openThingsCard === "rules" ? "House rules" : openThingsCard === "safety" ? "Safety & property" : "Cancellation policy"}
+              </h3>
+              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
+            </div>
+            <div className="overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
+              {openThingsCard === "rules" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">You’ll be staying in someone’s home, so please treat it with care and respect.</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {houseRuleItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 py-5 text-base text-[#1f1f1f]">
+                        {item.icon}
+                        <span className="whitespace-pre-line break-words">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {openThingsCard === "safety" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">Avoid surprises by looking over these important details about your host’s property.</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {safetyItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
+                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">No safety equipment or property hazards have been reported.</p>}
+                  </div>
+                </>
+              )}
+              {openThingsCard === "cancellation" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">Review the cancellation terms for this listing before you reserve.</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {cancellationItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
 
       {isDescriptionModalOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
