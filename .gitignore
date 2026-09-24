@@ -54,6 +54,8 @@ next-env.d.ts
 temp_auto_push.bat
 
 # User-generated uploads (owned by the media service / local fallback)
+/upload/**
+!/upload/.gitkeep
 /public/uploads/**
 !/public/uploads/.gitkeep
 /media-server/data/

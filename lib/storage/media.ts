@@ -5,7 +5,7 @@ import path from "node:path";
  * Media storage backends, in order:
  *   1. S3_BUCKET          — AWS S3 / compatible (direct)
  *   2. MEDIA_SERVER_URL   — dedicated Homyz media service (local disk today, S3 later)
- *   3. public/uploads     — local fallback for `next dev` without the media process
+ *   3. upload             — local fallback for `next dev` without the media process
  *
  * Public kinds return a browser URL (`/uploads/{kind}/{file}` unless S3 is on).
  * Private host documents stay behind the authenticated documents API.
@@ -49,9 +49,41 @@ function region(): string {
   );
 }
 
+const YEAR = /^\d{4}$/;
+const MONTH = /^(0[1-9]|1[0-2])$/;
+
+function datePrefix(date = new Date()): string {
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  return `${date.getUTCFullYear()}/${month}`;
+}
+
+/** New objects: `{kind}/2026/08/{file}`. */
 function objectKey(kind: MediaKind, fileName: string): string {
   const safe = path.basename(fileName);
-  return `${kind}/${safe}`;
+  return `${kind}/${datePrefix()}/${safe}`;
+}
+
+/**
+ * Locate an existing object. `fileName` may be a bare name (older files)
+ * or `YYYY/MM/{file}` from a dated upload.
+ */
+function resolveStoredKey(kind: MediaKind, fileName: string): string {
+  const parts = fileName.replace(/^\/+/, "").replace(/\\/g, "/").split("/").filter(Boolean);
+  if (parts.some((part) => part === "." || part === "..")) {
+    throw new Error("Invalid media path.");
+  }
+  if (parts.length === 1 && SAFE_FILE.test(parts[0])) {
+    return `${kind}/${parts[0]}`;
+  }
+  if (
+    parts.length === 3 &&
+    YEAR.test(parts[0]) &&
+    MONTH.test(parts[1]) &&
+    SAFE_FILE.test(parts[2])
+  ) {
+    return `${kind}/${parts[0]}/${parts[1]}/${parts[2]}`;
+  }
+  throw new Error("Invalid media path.");
 }
 
 function publicBaseUrl(): string {
@@ -101,8 +133,8 @@ async function getS3(): Promise<import("@aws-sdk/client-s3").S3Client> {
   return client;
 }
 
-function localDir(kind: MediaKind): string {
-  return path.join(process.cwd(), "public", "uploads", kind);
+function localFile(key: string): string {
+  return path.join(process.cwd(), "upload", ...key.split("/"));
 }
 
 function warnLocalDisk(): void {
@@ -199,9 +231,9 @@ async function deleteMediaServer(key: string): Promise<void> {
   }
 }
 
-async function deleteLocal(kind: MediaKind, fileName: string): Promise<void> {
+async function deleteLocal(key: string): Promise<void> {
   try {
-    await unlink(path.join(localDir(kind), fileName));
+    await unlink(localFile(key));
   } catch (err) {
     const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
     if (code !== "ENOENT") throw err;
@@ -228,10 +260,13 @@ export function parseManagedMediaUrl(url: string | null | undefined): ParsedMana
   if (!trimmed) return null;
 
   const privateDoc = trimmed.match(
-    /\/api\/v1\/host\/application\/documents\/file\/([A-Za-z0-9][A-Za-z0-9._-]*)$/,
+    /\/api\/v1\/host\/application\/documents\/file\/(?:(\d{4})\/(0[1-9]|1[0-2])\/)?([A-Za-z0-9][A-Za-z0-9._-]*)$/,
   );
   if (privateDoc) {
-    return { kind: "host-documents", fileName: privateDoc[1], visibility: "private" };
+    const fileName = privateDoc[1] && privateDoc[2]
+      ? `${privateDoc[1]}/${privateDoc[2]}/${privateDoc[3]}`
+      : privateDoc[3];
+    return { kind: "host-documents", fileName, visibility: "private" };
   }
 
   let pathname = trimmed;
@@ -243,6 +278,19 @@ export function parseManagedMediaUrl(url: string | null | undefined): ParsedMana
     return null;
   }
 
+  const datedUploads = pathname.match(
+    /^\/uploads\/([a-z0-9-]+)\/(\d{4})\/(0[1-9]|1[0-2])\/([A-Za-z0-9][A-Za-z0-9._-]*)$/,
+  );
+  if (datedUploads) {
+    const kind = asKind(datedUploads[1]);
+    if (!kind || !SAFE_FILE.test(datedUploads[4])) return null;
+    return {
+      kind,
+      fileName: `${datedUploads[2]}/${datedUploads[3]}/${datedUploads[4]}`,
+      visibility: PUBLIC_KINDS.has(kind) ? "public" : "private",
+    };
+  }
+
   const uploads = pathname.match(
     /^\/uploads\/([a-z0-9-]+)\/([A-Za-z0-9][A-Za-z0-9._-]*)$/,
   );
@@ -252,6 +300,19 @@ export function parseManagedMediaUrl(url: string | null | undefined): ParsedMana
     return {
       kind,
       fileName: uploads[2],
+      visibility: PUBLIC_KINDS.has(kind) ? "public" : "private",
+    };
+  }
+
+  const datedObject = pathname.match(
+    /^\/([a-z0-9-]+)\/(\d{4})\/(0[1-9]|1[0-2])\/([A-Za-z0-9][A-Za-z0-9._-]*)$/,
+  );
+  if (datedObject) {
+    const kind = asKind(datedObject[1]);
+    if (!kind || !SAFE_FILE.test(datedObject[4])) return null;
+    return {
+      kind,
+      fileName: `${datedObject[2]}/${datedObject[3]}/${datedObject[4]}`,
       visibility: PUBLIC_KINDS.has(kind) ? "public" : "private",
     };
   }
@@ -278,7 +339,7 @@ async function writeObject(options: {
   body: Buffer;
   contentType: string;
   cacheControl?: string;
-}): Promise<{ url: string; fileName: string }> {
+}): Promise<{ url: string; fileName: string; key: string }> {
   const fileName = path.basename(options.fileName);
   const key = objectKey(options.kind, fileName);
 
@@ -289,7 +350,7 @@ async function writeObject(options: {
       contentType: options.contentType,
       cacheControl: options.cacheControl,
     });
-    return { url: `${publicBaseUrl()}/${key}`, fileName };
+    return { url: `${publicBaseUrl()}/${key}`, fileName, key };
   }
 
   if (isMediaServerEnabled()) {
@@ -301,19 +362,19 @@ async function writeObject(options: {
     return {
       url: publicMediaUrl(key, saved.publicUrl),
       fileName,
+      key,
     };
   }
 
   warnLocalDisk();
-  const dir = localDir(options.kind);
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, fileName), options.body);
-  return { url: `/uploads/${key}`, fileName };
+  const dest = localFile(key);
+  await mkdir(path.dirname(dest), { recursive: true });
+  await writeFile(dest, options.body);
+  return { url: `/uploads/${key}`, fileName, key };
 }
 
 async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
-  const safe = path.basename(fileName);
-  const key = objectKey(kind, safe);
+  const key = resolveStoredKey(kind, fileName);
 
   if (isS3Enabled()) {
     await deleteS3Object(key);
@@ -323,7 +384,7 @@ async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
     await deleteMediaServer(key);
     return;
   }
-  await deleteLocal(kind, safe);
+  await deleteLocal(key);
 }
 
 /**
@@ -347,23 +408,24 @@ export async function savePrivateMedia(options: {
   fileName: string;
   body: Buffer;
   contentType: string;
-}): Promise<{ fileName: string }> {
+}): Promise<{ fileName: string; storagePath: string }> {
   const saved = await writeObject({
     ...options,
     cacheControl: "private, max-age=0, no-store",
   });
-  return { fileName: saved.fileName };
+  const storagePath = saved.key.slice(options.kind.length + 1);
+  return { fileName: saved.fileName, storagePath };
 }
 
 export async function readPrivateMedia(
   kind: PrivateMediaKind,
   fileName: string,
 ): Promise<Buffer> {
-  const safe = path.basename(fileName);
+  const key = resolveStoredKey(kind, fileName);
 
   if (isS3Enabled()) {
     try {
-      return await getS3Object(objectKey(kind, safe));
+      return await getS3Object(key);
     } catch {
       throw Object.assign(new Error("Requested document file not found."), {
         code: "NOT_FOUND",
@@ -372,11 +434,11 @@ export async function readPrivateMedia(
   }
 
   if (isMediaServerEnabled()) {
-    return getMediaServer(objectKey(kind, safe));
+    return getMediaServer(key);
   }
 
   try {
-    return await readFile(path.join(localDir(kind), safe));
+    return await readFile(localFile(key));
   } catch {
     throw Object.assign(new Error("Requested document file not found."), {
       code: "NOT_FOUND",
@@ -418,16 +480,22 @@ export async function readPublicMediaFile(
   kind: PublicMediaKind,
   fileName: string,
 ): Promise<{ body: Buffer; contentType: string } | null> {
+  let key: string;
+  try {
+    key = resolveStoredKey(kind, fileName);
+  } catch {
+    return null;
+  }
+  if (!PUBLIC_KINDS.has(kind)) return null;
   const safe = path.basename(fileName);
-  if (!PUBLIC_KINDS.has(kind) || !SAFE_FILE.test(safe)) return null;
 
   try {
     if (isS3Enabled()) {
-      const body = await getS3Object(objectKey(kind, safe));
+      const body = await getS3Object(key);
       return { body, contentType: contentTypeFromName(safe) };
     }
     if (isMediaServerEnabled()) {
-      const res = await fetch(`${mediaServerBase()}/uploads/${kind}/${safe}`);
+      const res = await fetch(`${mediaServerBase()}/uploads/${key}`);
       if (res.status === 404) return null;
       if (!res.ok) throw new Error(`Media server public read failed (${res.status})`);
       return {
@@ -435,7 +503,7 @@ export async function readPublicMediaFile(
         contentType: res.headers.get("content-type") || contentTypeFromName(safe),
       };
     }
-    const body = await readFile(path.join(localDir(kind), safe));
+    const body = await readFile(localFile(key));
     return { body, contentType: contentTypeFromName(safe) };
   } catch (err) {
     const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";

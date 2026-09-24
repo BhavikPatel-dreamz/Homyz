@@ -12,12 +12,15 @@ export async function GET(
   _req: NextRequest,
   context: { params: Promise<{ path: string[] }> },
 ) {
-  const { path } = await context.params;
-  if (!path || path.length !== 2) {
+  const { path: segments } = await context.params;
+  if (!segments || (segments.length !== 2 && segments.length !== 4)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const [kind, fileName] = path;
+  const kind = segments[0];
+  const fileName = segments.length === 2
+    ? segments[1]
+    : `${segments[1]}/${segments[2]}/${segments[3]}`;
   if (!PUBLIC_KINDS.has(kind as PublicMediaKind)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

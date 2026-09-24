@@ -1,13 +1,19 @@
 {
-  "name": "homyz-media",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "engines": {
-    "node": ">=22"
-  },
+  "name": "media-server",
+  "version": "1.0.0",
+  "description": "Standalone media server for Medusa.js file uploads",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.mjs",
-    "dev": "node --watch server.mjs"
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^2.0.1",
+    "sharp": "^0.34.2"
   }
 }

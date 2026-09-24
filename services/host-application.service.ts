@@ -364,14 +364,14 @@ export class HostApplicationService {
 
     const fileExt = path.extname(file.fileName) || (file.mimeType === "application/pdf" ? ".pdf" : ".jpg");
     const safeBaseName = `${req.applicationId}_${documentType.toLowerCase()}_${Date.now()}${fileExt}`;
-    await savePrivateMedia({
+    const saved = await savePrivateMedia({
       kind: "host-documents",
       fileName: safeBaseName,
       body: file.buffer,
       contentType: file.mimeType,
     });
 
-    const relativeUrl = `/api/v1/host/application/documents/file/${safeBaseName}`;
+    const relativeUrl = `/api/v1/host/application/documents/file/${saved.storagePath}`;
 
     // Check if existing document of this type exists for this request
     const existingDoc = await prisma.hostRegistrationDocument.findFirst({
@@ -544,7 +544,7 @@ export class HostApplicationService {
 
     let fileBuffer: Buffer;
     try {
-      fileBuffer = await readPrivateMedia("host-documents", safeBaseName);
+      fileBuffer = await readPrivateMedia("host-documents", fileName);
     } catch {
       throw AppError.notFound("Requested document file not found.");
     }
