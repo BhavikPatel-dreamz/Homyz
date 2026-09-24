@@ -6,18 +6,21 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { LanguageProvider } from "@/lib/i18n/language-context";
 import { Toaster } from "@/components/ui/toaster";
 import { WishlistProvider } from "@/components/wishlist/WishlistProvider";
+import { CurrencyProvider } from "@/lib/currency-context";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <LanguageProvider>
-        <SessionProvider>
-          <WishlistProvider>
-            {children}
-            <Toaster />
-          </WishlistProvider>
-        </SessionProvider>
-      </LanguageProvider>
+      <CurrencyProvider>
+        <LanguageProvider>
+          <SessionProvider>
+            <WishlistProvider>
+              {children}
+              <Toaster />
+            </WishlistProvider>
+          </SessionProvider>
+        </LanguageProvider>
+      </CurrencyProvider>
     </ThemeProvider>
   );
 }

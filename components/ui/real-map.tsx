@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { MAP_CONFIG } from "@/components/listings/search-map";
 import { reverseGeocodeLocation } from "@/lib/location/geocoding";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 interface LeafletMapInstance {
   remove: () => void;
@@ -284,38 +285,44 @@ export function RealMap({
         iconAnchor: [20, 20],
       });
 
-      // Marker
-      const marker = L.marker([coords.lat, coords.lng], {
-        icon: customPinIcon,
-        draggable: allowLocationEditing,
-      }).addTo(map);
+      // Marker: Render only when host permits exact location sharing or editing is enabled.
+      // In approximate-location mode, the pin is strictly omitted to preserve host privacy.
+      const shouldRenderMarker = Boolean(showExactLocation || allowLocationEditing);
+      if (shouldRenderMarker) {
+        const marker = L.marker([coords.lat, coords.lng], {
+          icon: customPinIcon,
+          draggable: allowLocationEditing,
+        }).addTo(map);
+        markerRef.current = marker;
+
+        // Click on map to reposition marker and update inputs dynamically
+        if (allowLocationEditing) {
+          map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
+            const { lat: clickLat, lng: clickLng } = e.latlng;
+            handlePositionChange(clickLat, clickLng);
+          });
+
+          // Drag marker to reposition and update inputs dynamically
+          marker.on("dragend", () => {
+            const position = marker.getLatLng();
+            handlePositionChange(position.lat, position.lng);
+          });
+        }
+      } else {
+        markerRef.current = null;
+      }
 
       // Radial Glow Area Circle (Matching Homyz location sharing design)
       const circle = L.circle([coords.lat, coords.lng], {
-        color: "#FEE08B",
+        color: showExactLocation ? "#FEE08B" : "#d97706",
         fillColor: "#FEE08B",
-        fillOpacity: showExactLocation ? 0.25 : 0.4,
+        fillOpacity: showExactLocation ? 0.25 : 0.35,
         radius: showExactLocation ? 180 : 1_000,
-        weight: 1.5,
+        weight: showExactLocation ? 1.5 : 2,
       }).addTo(map);
 
-      markerRef.current = marker;
       circleRef.current = circle;
       mapInstanceRef.current = map;
-
-      // Click on map to reposition marker and update inputs dynamically
-      if (allowLocationEditing) {
-        map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
-          const { lat: clickLat, lng: clickLng } = e.latlng;
-          handlePositionChange(clickLat, clickLng);
-        });
-
-        // Drag marker to reposition and update inputs dynamically
-        marker.on("dragend", () => {
-          const position = marker.getLatLng();
-          handlePositionChange(position.lat, position.lng);
-        });
-      }
     }).catch(() => {
       if (isMounted) setMapLoadError(true);
     });
@@ -327,31 +334,41 @@ export function RealMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [allowLocationEditing, handlePositionChange, shouldLoadMap]);
+  }, [allowLocationEditing, handlePositionChange, shouldLoadMap, showExactLocation]);
 
   // Update map center & marker when coords or showExactLocation changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !markerRef.current) return;
+    if (!mapInstanceRef.current) return;
 
-    mapInstanceRef.current.setView([coords.lat, coords.lng], mapInstanceRef.current.getZoom() || 14);
-    markerRef.current.setLatLng([coords.lat, coords.lng]);
+    mapInstanceRef.current.setView([coords.lat, coords.lng], mapInstanceRef.current.getZoom() || (showExactLocation ? 14 : 13));
+    if (markerRef.current) {
+      markerRef.current.setLatLng([coords.lat, coords.lng]);
+    }
 
     if (circleRef.current) {
       circleRef.current.setLatLng([coords.lat, coords.lng]);
       circleRef.current.setRadius(showExactLocation ? 180 : 1_000);
-      circleRef.current.setStyle({ fillOpacity: showExactLocation ? 0.25 : 0.4 });
+      circleRef.current.setStyle({ fillOpacity: showExactLocation ? 0.25 : 0.35 });
     }
   }, [coords, showExactLocation]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.zoomIn();
+      trackListingEvent({
+        eventType: "map_interacted",
+        metadata: { action: "zoom_in" },
+      });
     }
   };
 
   const handleZoomOut = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.zoomOut();
+      trackListingEvent({
+        eventType: "map_interacted",
+        metadata: { action: "zoom_out" },
+      });
     }
   };
 
@@ -376,6 +393,13 @@ export function RealMap({
         <div className="absolute top-3 left-3 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-xs z-10 flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
           Updating address details...
+        </div>
+      )}
+
+      {/* Privacy Note for Approximate Location Mode */}
+      {!showExactLocation && !allowLocationEditing && shouldLoadMap && !mapLoadError && (
+        <div className="absolute bottom-3 left-3 z-10 rounded-full border border-zinc-200/90 bg-white/95 px-3 py-1.5 text-[11px] font-medium text-zinc-700 shadow-sm backdrop-blur-xs">
+          Approximate location · Exact location provided after booking
         </div>
       )}
 

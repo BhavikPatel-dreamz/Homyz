@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 
 export function MainHeader() {
   const { data: session } = useSession();
@@ -14,7 +15,7 @@ export function MainHeader() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
+  const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -136,7 +137,7 @@ export function MainHeader() {
                     {t("header_host_workspace") || "Host Workspace"}
                   </Link>
                   <Link
-                    href="/wishlists"
+                    href="/profile/tab/saved"
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition"
                   >
@@ -219,7 +220,7 @@ export function MainHeader() {
                   {t("header_currency") || "Select Currency"}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map(
+                  {DISPLAY_CURRENCIES.map(
                     (curr) => (
                       <button
                         key={curr}

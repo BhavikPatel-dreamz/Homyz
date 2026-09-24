@@ -3,7 +3,7 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useMemo } from "react";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { formatSarFromHalalas } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 
 const bookingDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -56,6 +56,7 @@ export function AdminBookingsClient({
   initialBookings: BookingItem[];
   summary: { total: number; pending: number; confirmed: number; cancelled: number };
 }) {
+  const { formatPrice } = useCurrency();
   const [bookings] = useState<BookingItem[]>(initialBookings);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -107,7 +108,7 @@ export function AdminBookingsClient({
         `"${formatBookingDate(b.startDate)}"`,
         `"${formatBookingDate(b.endDate)}"`,
         `"${nights}"`,
-        `"${formatSarFromHalalas(total)}"`,
+        `"${formatPrice(total, "SAR")}"`,
         `"${b.status}"`,
       ];
     });
@@ -280,7 +281,7 @@ export function AdminBookingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono">
-                        {formatSarFromHalalas(totalPrice)}
+                        {formatPrice(totalPrice, "SAR")}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -360,7 +361,7 @@ export function AdminBookingsClient({
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Amount</span>
-                    <span className="font-semibold text-muted-foreground font-mono">{formatSarFromHalalas(totalPrice)}</span>
+                    <span className="font-semibold text-muted-foreground font-mono">{formatPrice(totalPrice, "SAR")}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
@@ -453,7 +454,7 @@ export function AdminBookingsClient({
                 <div className="text-right">
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Total Amount</span>
                   <span className="text-base font-semibold text-amber-600 dark:text-amber-400">
-                    {formatSarFromHalalas(selectedBooking.listing.price * getDurationNights(selectedBooking.startDate, selectedBooking.endDate))}
+                    {formatPrice(selectedBooking.listing.price * getDurationNights(selectedBooking.startDate, selectedBooking.endDate), "SAR")}
                   </span>
                 </div>
               </div>

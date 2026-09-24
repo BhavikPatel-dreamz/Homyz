@@ -5,6 +5,8 @@ import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { useCurrency } from "@/lib/currency-context";
+import { getCurrencyForCountry } from "@/lib/currency";
 import type {
   ListingTaxDTO,
   TaxJurisdictionDTO,
@@ -59,6 +61,8 @@ export function TaxesManager({
   setActiveSection,
   onDirtyChange,
 }: TaxesManagerProps) {
+  const { formatPrice } = useCurrency();
+  const listingCurrency = getCurrencyForCountry(listingCountry);
   const { t } = useLanguage();
   const [_isLoading, setIsLoading] = useState(true);
 
@@ -526,7 +530,7 @@ export function TaxesManager({
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                       {tax.calculationMethod === "PERCENTAGE"
                         ? `${tax.rate}% ${t("host_tax_type_percentage_per_booking").toLowerCase()}`
-                        : `${((tax.amount || 0) / 100).toFixed(2)} ${jurisdiction?.currency || "SAR"} (${formatCalculationMethod(tax.calculationMethod, t).toLowerCase()})`}
+                        : `${formatPrice(tax.amount || 0, jurisdiction?.currency || listingCurrency, 2)} (${formatCalculationMethod(tax.calculationMethod, t).toLowerCase()})`}
                       {tax.longStayExemptionNights && (
                         <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px]">
                           {t("host_taxes_exempt_after_nights", { count: tax.longStayExemptionNights })}

@@ -5,12 +5,13 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 
 const BecomeHostModal = dynamic(
@@ -35,7 +36,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("SAR (ر.س)");
+  const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,20 +82,29 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
     }
   };
 
-  const navItems = [
-    { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
-    { href: "/bookings", label: t("header_trips") || "Trips", icon: "/images/icons/trip.svg" },
+  type NavItem = {
+    href: string;
+    label: string;
+    requireHost?: boolean;
+    requireAdmin?: boolean;
+    separatorBefore?: boolean;
+    icon?: string;
+  };
+
+  const isHost = role === "HOST" || role === "ADMIN";
+
+  const hostNavItems: NavItem[] = [
+    { href: "/host/today", label: t("header_today") || "Today", icon: "/images/icons/today-icon.svg" },
+    { href: "/host/calendar", label: t("header_calendar") || "Calendar", icon: "/images/icons/calendar-date.svg" },
+    { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg" },
+    { href: "/host/bookings", label: "Booking requests", icon: "/images/icons/post-bookings.svg" },
     { href: "/host/messages", label: t("header_messages") || "Messages", icon: "/images/icons/messages.svg" },
+    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/home-icon.svg" },
     { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg" },
-    { href: "/profile-management", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg", separatorBefore: true },
-    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/grid-Icon.svg" },
-    { href: "/host/bookings", label: "Booking requests", icon: "/images/icons/upcoming-trips.svg", requireHost: true },
-    { href: "/host/today", label: t("header_today") || "Today", icon: "/images/icons/today-icon.svg", requireHost: true },
-    { href: "/wishlists", label: "Wishlist", icon: "/images/icons/wishlist.svg" },
-    { href: "/host/calendar", label: t("header_calendar") || "Calendar", icon: "/images/icons/calendar-date.svg", requireHost: true },
-    { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg", requireHost: true },
-    { href: "/host/onboarding", label: t("header_become_a_host_app") || "Become a Host / Application", icon: "/images/icons/house.svg" },
-    { href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/setting.svg", requireAdmin: true },
+    { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
+    { href: "/profile-management", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" },
+    { href: "/profile/tab/saved", label: "Wishlist", icon: "/images/icons/wishlist.svg" },
+    ...(role === "ADMIN" ? [{ href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/grid-Icon.svg" }] : []),
   ];
 
   return (
@@ -308,12 +318,12 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       {t("header_login_signup")}
                     </Link>
                   </div>
-                ) : (
+                ) : !isHost ? (
                   /* ------------------------------------------------------------- */
-                  /* LOGGED IN DROPDOWN MENU                                      */
+                  /* REGULAR USER / GUEST MENU (100% Matches Reference Image 1)   */
                   /* ------------------------------------------------------------- */
                   <div className="space-y-1">
-                    <div className="border-b border-zinc-100 px-3.5 py-3 mb-1">
+                    <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
                       <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
@@ -321,53 +331,187 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       </span>
                     </div>
 
-                    <div className="py-1">
+                    {/* Group 1: User Navigation with Icons matching Image 1 */}
+                    <div className="py-0.5 space-y-1">
+                      {/* Wishlist */}
+                      <Link
+                        href="/profile/tab/saved"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname === "/profile/tab/saved" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/wishlist.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Wishlist</span>
+                      </Link>
+
+                      {/* Trips */}
+                      <Link
+                        href="/profile/tab/upcoming"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname?.startsWith("/profile/tab/upcoming") || pathname === "/bookings" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Trips</span>
+                      </Link>
+
+                      {/* Messages */}
+                      <Link
+                        href="/host/messages"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname === "/host/messages" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Messages</span>
+                      </Link>
+
+                      {/* Profile */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Profile</span>
+                      </Link>
+                    </div>
+
+                    <div className="my-1 border-t border-zinc-200/80" />
+
+                    {/* Group 2: Account setting & Help centre */}
+                    <div className="py-0.5 space-y-1">
+                      {/* Account setting */}
+                      <Link
+                        href="/profile-management"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Account setting</span>
+                      </Link>
+
+                      {/* Help centre */}
+                      <Link
+                        href="/help"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                          pathname === "/help" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        }`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/help.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Help centre</span>
+                      </Link>
+                    </div>
+
+                    <div className="my-1 border-t border-zinc-200/80" />
+
+                    {/* Group 3: Plain text links (Refer a Host, Find a co-Host, Gift Cards) */}
+                    <div className="py-0.5 space-y-0.5">
+                      <Link
+                        href="/host/refer"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        Refer a Host
+                      </Link>
+                      <Link
+                        href="/host/co-host"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        Find a co-Host
+                      </Link>
+                      <Link
+                        href="/giftcards"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        Gift Cards
+                      </Link>
+                    </div>
+
+                    <div className="my-1 border-t border-zinc-200/80" />
+
+                    {/* Group 4: Log out matching Image 1 */}
+                    <div className="pt-0.5">
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
-                          handleBecomeHost();
+                          signOut({ callbackUrl: "/login?logged_out=true" });
                         }}
-                        disabled={isConvertingRole}
-                        className="w-full flex items-center px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl text-amber-900 bg-amber-50 hover:bg-amber-100 transition-colors text-left cursor-pointer lg:hidden mb-1"
+                        className="w-full text-left px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors underline underline-offset-4 cursor-pointer"
                       >
-                        {isConvertingRole ? (t("host_loading") || "Loading...") : t("header_become_a_host")}
+                        Log out
                       </button>
-                      {navItems.map((item) => {
-                        if (item.requireHost && role !== "HOST" && role !== "ADMIN") return null;
-                        if (item.requireAdmin && role !== "ADMIN") return null;
-                        return (
-                          <React.Fragment key={item.href}>
-                            {item.separatorBefore && <div className="my-1.5 border-t border-[#727272]" />}
-                            <Link
-                              href={item.href}
-                              onClick={() => setMenuOpen(false)}
-                              className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${pathname === item.href
-                                ? "bg-amber-100 text-[#1f1f1f] font-medium"
-                                : "text-[#1f1f1f] hover:bg-zinc-50"
-                                }`}
-                            >
-                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
-                                <Image src={item.icon} alt="" width={20} height={20} className="size-5 object-contain" />
-                              </span>
-                              {item.label}
-                            </Link>
-                          </React.Fragment>
-                        );
-                      })}
+                    </div>
+                  </div>
+                ) : (
+                  /* ------------------------------------------------------------- */
+                  /* HOST & ADMIN MENU ("host show all")                           */
+                  /* ------------------------------------------------------------- */
+                  <div className="space-y-1">
+                    <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
+                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
+                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                        {role || "HOST"}
+                      </span>
                     </div>
 
-                      <div className="border-t border-[#727272] pt-2 mt-1 flex flex-col gap-1">
+                    <div className="py-1">
+                      {hostNavItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${
+                            pathname === item.href
+                              ? "bg-amber-100 text-[#1F1F1F] font-medium"
+                              : "text-[#1F1F1F] hover:bg-white"
+                          }`}
+                        >
+                          {item.icon && (
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-2xs">
+                              <Image src={item.icon} alt="" width={16} height={16} className="size-4 object-contain" />
+                            </span>
+                          )}
+                          <span>{item.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-zinc-200/80 pt-2 mt-1 flex flex-col gap-1">
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
                           setLangModalOpen(true);
                         }}
-                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal text-[#1f1f1f] hover:bg-zinc-50 rounded-xl transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors text-left"
                       >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
-                          <Image src="/images/icons/translate-icon.svg" alt="" width={20} height={20} className="size-5 object-contain" />
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-2xs">
+                          <Image src="/images/icons/translate-icon.svg" alt="" width={16} height={16} className="size-4 object-contain" />
                         </span>
                         <span>{t("header_languages_currency")}</span>
                       </button>
@@ -426,7 +570,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">{t("header_currency")}</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["SAR (ر.س)", "USD ($)", "EUR (€)", "GBP (£)", "CAD ($)", "AUD ($)", "INR (₹)"].map((curr) => (
+                  {DISPLAY_CURRENCIES.map((curr) => (
                     <button
                       key={curr}
                       type="button"

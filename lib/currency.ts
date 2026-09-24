@@ -1,5 +1,16 @@
 export const LISTING_CURRENCY = "SAR";
 
+/** USD value of one unit of each supported currency. Used for display conversion only. */
+const USD_PER_CURRENCY_UNIT: Record<string, number> = {
+  SAR: 1 / 3.75, AED: 1 / 3.6725, USD: 1, EUR: 1.09, GBP: 1.28,
+  CAD: 0.74, AUD: 0.65, INR: 0.012, JPY: 0.0067, CHF: 1.13,
+  KWD: 3.25, QAR: 1 / 3.64, BHD: 2.65, OMR: 2.6, EGP: 0.02, JOD: 1.41,
+};
+
+export function normalizeCurrencyCode(currencyCode?: string | null): string {
+  return currencyCode?.trim().toUpperCase() || LISTING_CURRENCY;
+}
+
 /** Formats a value already expressed in Saudi riyals. */
 export function formatSar(amount: number, fractionDigits = 2): string {
   const safeAmount = Number.isFinite(amount) ? amount : 0;
@@ -111,7 +122,7 @@ export function formatListingPrice(
   fractionDigits = 0,
 ): string {
   const safeAmount = Number.isFinite(amountMinorUnits) ? amountMinorUnits / 100 : 0;
-  const currency = currencyCode?.trim().toUpperCase() || LISTING_CURRENCY;
+  const currency = normalizeCurrencyCode(currencyCode);
   const symbol = CURRENCY_SYMBOLS[currency];
 
   const formattedNum = new Intl.NumberFormat("en", {
@@ -127,4 +138,25 @@ export function formatListingPrice(
   }
 
   return `${currency} ${formattedNum}`;
+}
+
+/**
+ * Converts a persisted minor-unit amount for interface display.  This must not
+ * be used to change booking totals or settlement amounts.
+ */
+export function formatConvertedListingPrice(
+  amountMinorUnits: number,
+  sourceCurrency: string | null | undefined,
+  displayCurrency: string | null | undefined,
+  fractionDigits = 0,
+): string {
+  const source = normalizeCurrencyCode(sourceCurrency);
+  const target = normalizeCurrencyCode(displayCurrency);
+  const amount = Number.isFinite(amountMinorUnits) ? amountMinorUnits : 0;
+  const sourceRate = USD_PER_CURRENCY_UNIT[source];
+  const targetRate = USD_PER_CURRENCY_UNIT[target];
+
+  if (!sourceRate || !targetRate) return formatListingPrice(amount, target, fractionDigits);
+  const convertedMinorUnits = (amount / 100) * sourceRate / targetRate * 100;
+  return formatListingPrice(convertedMinorUnits, target, fractionDigits);
 }

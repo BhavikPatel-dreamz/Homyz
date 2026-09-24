@@ -6,12 +6,13 @@ import { HostSubNav } from "./host-sub-nav";
 import { updateListingAction } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
 import Image from "next/image";
+import { useCurrency } from "@/lib/currency-context";
+import { getCurrencyForCountry } from "@/lib/currency";
 import {
   WorkspaceDialog,
   ReservationDetails,
   MoneyDialog,
   dateKey,
-  money,
   type HostWorkspaceProps,
   type HostReservation,
 } from "./host-workspace-shared";
@@ -57,6 +58,8 @@ function MonthGrid({
   compact: boolean;
   onDay: (key: string, booking?: HostReservation) => void;
 }) {
+  const { formatPrice } = useCurrency();
+  const sourceCurrency = getCurrencyForCountry(listing.country);
   const count = new Date(
     month.getFullYear(),
     month.getMonth() + 1,
@@ -111,7 +114,7 @@ function MonthGrid({
             <button
               key={key}
               onClick={() => onDay(key, reservation)}
-              aria-label={`${key}, ${reservation ? `reserved by ${reservation.guestName}` : blocked ? "blocked" : "available"}, ${money(rate)}`}
+              aria-label={`${key}, ${reservation ? `reserved by ${reservation.guestName}` : blocked ? "blocked" : "available"}, ${formatPrice(rate, sourceCurrency, 2)}`}
               className={`group relative flex min-w-0 flex-col items-center justify-center rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 ${
                 compact
                   ? "min-h-3 rounded-full p-0 sm:min-h-[68px] sm:rounded-[9px] sm:py-1.5"
@@ -153,7 +156,7 @@ function MonthGrid({
                     : "text-[#1F1F1F] dark:text-zinc-100"
                 }`}
               >
-                {blocked ? "Blocked" : money(rate)}
+                {blocked ? "Blocked" : formatPrice(rate, sourceCurrency, 2)}
               </span>
               {customPrice !== null && !blocked && !reservation && (
                 <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
@@ -242,6 +245,7 @@ export function HostCalendarWorkspace({
   listings: initialListings,
   bookings: initialBookings,
 }: HostWorkspaceProps) {
+  const { formatPrice } = useCurrency();
   const listings =
     initialListings.length > 0 ? initialListings : [DEFAULT_DEMO_LISTING];
   const bookings =
@@ -271,6 +275,7 @@ export function HostCalendarWorkspace({
     savedListings[selectedId] ||
     listings.find((l) => l.id === selectedId) ||
     listings[0];
+  const sourceCurrency = getCurrencyForCountry(listing?.country);
 
   async function save(values: Record<string, unknown>) {
     if (!listing || saving) return;
@@ -627,11 +632,11 @@ export function HostCalendarWorkspace({
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-white">
-                      {money(currentRate)}
+                      {formatPrice(currentRate, sourceCurrency, 2)}
                     </span>
                     {hasCustom && (
                       <span className="text-xs text-zinc-400 line-through">
-                        {money(isWeekendDay && listing.weekendPrice ? listing.weekendPrice : weekdayBase)}
+                        {formatPrice(isWeekendDay && listing.weekendPrice ? listing.weekendPrice : weekdayBase, sourceCurrency, 2)}
                       </span>
                     )}
                   </div>
@@ -653,7 +658,7 @@ export function HostCalendarWorkspace({
                     className="pt-2 border-t border-white/10 space-y-2"
                   >
                     <label className="block text-[11px] text-zinc-300 font-medium">
-                      Set custom price for this night (SAR)
+                      Set custom price for this night ({sourceCurrency})
                     </label>
                     <div className="flex gap-2">
                       <input

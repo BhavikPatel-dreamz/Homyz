@@ -10,6 +10,8 @@ export const revalidate = 0;
 export const POST = apiHandler(async (req, context: { params: Promise<{ listingId: string }> }) => {
   const [actor, { listingId }] = await Promise.all([requireApiAuth(req), context.params]);
   await favoriteService.saveFavorite(actor.id, listingId);
+  revalidatePath("/profile/tab/saved");
+  revalidatePath("/wishlists");
   return ok({ listingId, favorite: true });
 });
 
@@ -18,6 +20,7 @@ export const DELETE = apiHandler(async (req, context: { params: Promise<{ listin
   await favoriteService.removeFavorite(actor.id, listingId);
   // The wishlist page is already force-dynamic, but invalidate the route's
   // client/server cache as well so a navigation immediately reads the DB.
+  revalidatePath("/profile/tab/saved");
   revalidatePath("/wishlists");
   return noContent();
 });

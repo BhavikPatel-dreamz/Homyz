@@ -4,7 +4,8 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatSarFromHalalas } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import {
   adminUpdateListingDetailsAction,
   adminUpdateListingPricingAction,
@@ -115,6 +116,7 @@ const HOUSE_RULE_OPTIONS = [
 ];
 
 export function AdminListingDetailClient({ listing: initialListing }: { listing: DetailListingData }) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const [listing, setListing] = useState<DetailListingData>(initialListing);
 
@@ -565,7 +567,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-[var(--border-subtle)] pt-5 text-xs font-medium">
               <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
                 <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold tracking-wider">Nightly Rate</span>
-                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{formatSarFromHalalas(listing.price)}</span>
+                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{formatPrice(listing.price, getCurrencyForCountry(listing.country))}</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-[var(--surface-secondary)] border border-[var(--border-subtle)] flex flex-col gap-1">
@@ -1079,7 +1081,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
           <div className="grid gap-4 sm:grid-cols-4">
             <div>
-              <label className="block font-bold text-muted-foreground mb-1">Standard Base Rate (SAR/night) *</label>
+              <label className="block font-bold text-muted-foreground mb-1">Standard Base Rate ({getCurrencyForCountry(listing.country)}/night) *</label>
               <input
                 type="number"
                 min="0"
@@ -1090,7 +1092,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-bold text-muted-foreground mb-1">Weekend Rate (SAR/night)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Weekend Rate ({getCurrencyForCountry(listing.country)}/night)</label>
               <input
                 type="number"
                 step="0.01"
@@ -1102,7 +1104,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-bold text-muted-foreground mb-1">Cleaning Fee (SAR)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Cleaning Fee ({getCurrencyForCountry(listing.country)})</label>
               <input
                 type="number"
                 step="0.01"
@@ -1114,7 +1116,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </div>
 
             <div>
-              <label className="block font-bold text-muted-foreground mb-1">Security Deposit / Extra Fee (SAR)</label>
+              <label className="block font-bold text-muted-foreground mb-1">Security Deposit / Extra Fee ({getCurrencyForCountry(listing.country)})</label>
               <input
                 type="number"
                 step="0.01"
@@ -1153,7 +1155,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
             <div className="flex items-center justify-between border-t border-[var(--border-subtle)] pt-2.5">
               <span className="font-semibold text-muted-foreground">Standard Base Price Set:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">✓ PASSED (SAR {editPrice}/night)</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">✓ PASSED ({getCurrencyForCountry(listing.country)} {editPrice}/night)</span>
             </div>
           </div>
 

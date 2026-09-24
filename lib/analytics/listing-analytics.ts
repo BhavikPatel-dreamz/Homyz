@@ -18,7 +18,31 @@ export type ListingEventType =
   | "map_zoom"
   | "map_area_search"
   | "load_more"
-  | "listing_no_results";
+  | "listing_no_results"
+  | "gallery_opened"
+  | "gallery_photo_changed"
+  | "wishlist_toggled"
+  | "date_picker_opened"
+  | "checkin_selected"
+  | "checkout_selected"
+  | "dates_cleared"
+  | "guest_selector_opened"
+  | "guest_count_changed"
+  | "availability_conflict"
+  | "quote_calculated"
+  | "reserve_clicked"
+  | "reserve_validation_failed"
+  | "booking_flow_started"
+  | "host_profile_clicked"
+  | "contact_host_clicked"
+  | "amenities_opened"
+  | "description_expanded"
+  | "description_collapsed"
+  | "share_clicked"
+  | "availability_section_viewed"
+  | "house_rules_viewed"
+  | "reviews_opened"
+  | "map_interacted";
 
 export interface ListingAnalyticsPayload {
   eventType: ListingEventType;

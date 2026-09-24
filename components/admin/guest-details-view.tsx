@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/toast";
 import type { GuestDetailsData } from "@/services/admin.service";
 import { UserStatus } from "@/generated/prisma/enums";
 import { AdminPagination } from "./admin-pagination";
-import { formatSarFromHalalas } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import {
   updateGuestAction,
   toggleGuestSuspensionAction,
@@ -20,6 +20,7 @@ interface GuestDetailsViewProps {
 }
 
 export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -216,7 +217,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Total Spending</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">{formatSarFromHalalas(metrics.totalSpending)}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">{formatPrice(metrics.totalSpending, "SAR", 2)}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Joined Date</p>
@@ -346,7 +347,7 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
                         {b.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-semibold text-muted-foreground">{formatSarFromHalalas(b.amount)}</td>
+                    <td className="py-3.5 px-4 text-right font-semibold text-muted-foreground">{formatPrice(b.amount, "SAR", 2)}</td>
                   </tr>
                 ))
               )}

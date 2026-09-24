@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -11,13 +10,15 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { RealMap } from "@/components/ui/real-map";
 import { ReviewList } from "@/components/reviews";
-import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 interface PublicListingDetailClientProps {
   listing: PublicListingDTO & {
@@ -106,7 +107,7 @@ function AmenityRow({ amenity }: { amenity: { id: string; icon?: string; label: 
     <div className="flex items-start gap-3 text-xs">
       <span aria-hidden="true" className="text-xl">{amenity.icon || "✓"}</span>
       <div className="min-w-0">
-        <h5 className="font-semibold text-[#1f1f1f]">{amenity.label}</h5>
+        <h5 className="font-semibold text-zinc-900">{amenity.label}</h5>
         {amenity.description && <p className="mt-0.5 text-[11px] text-zinc-500">{amenity.description}</p>}
       </div>
     </div>
@@ -137,12 +138,12 @@ function HostIdentityCard({
           </div>
         )}
         {(hostSince || hostTenure) && <div className="min-w-0 flex-1 divide-y divide-zinc-200">
-          {hostSince && <div className="pb-3 text-[11px] text-zinc-500"><span className="block text-sm font-semibold leading-4 text-[#1f1f1f]">Joined</span>{hostSince}</div>}
-          {hostTenure && <div className="pt-3 text-[11px] text-zinc-500"><span className="block text-lg font-semibold leading-5 text-[#1f1f1f]">{hostTenure}</span>on Homyz</div>}
+          {hostSince && <div className="pb-3 text-[11px] text-zinc-500"><span className="block text-sm font-semibold leading-4 text-zinc-900">Joined</span>{hostSince}</div>}
+          {hostTenure && <div className="pt-3 text-[11px] text-zinc-500"><span className="block text-lg font-semibold leading-5 text-zinc-900">{hostTenure}</span>on Homyz</div>}
         </div>}
       </div>
       <div className="mt-4 text-center">
-        <p className="break-words text-lg font-semibold text-[#1f1f1f]">{host.name || "Homyz host"}</p>
+        <p className="break-words text-lg font-semibold text-zinc-900">{host.name || "Homyz host"}</p>
         <p className="mt-1 text-sm text-zinc-600">{host.isSuperhost ? "Superhost" : "Host"}</p>
       </div>
     </div>
@@ -157,10 +158,12 @@ function ListingAvailabilityCalendar({
   error,
   checkIn,
   checkOut,
-  onDateChange,
-  onSelectionError,
+  onDateRangeChange,
+  onClearDates,
+  onErrorMessage,
   locationName,
   minimumNights,
+  maximumNights,
 }: {
   month: Date;
   onMonthChange: (month: Date) => void;
@@ -169,10 +172,12 @@ function ListingAvailabilityCalendar({
   error: string | null;
   checkIn: string;
   checkOut: string;
-  onDateChange: (checkIn: string, checkOut: string) => void;
-  onSelectionError: (message: string | null) => void;
+  onDateRangeChange: (checkIn: string, checkOut: string) => void;
+  onClearDates: () => void;
+  onErrorMessage?: (message: string | null) => void;
   locationName: string;
   minimumNights: number;
+  maximumNights?: number;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -182,10 +187,14 @@ function ListingAvailabilityCalendar({
   const displayedMonths = [firstDay, new Date(month.getFullYear(), month.getMonth() + 1, 1)];
   const formattedStayDates = checkIn && checkOut
     ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
-    : "Choose a check-in and check-out date";
+    : checkIn
+      ? `Check-in: ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – Select checkout`
+      : "Select check-in date";
   const nights = checkIn && checkOut
     ? Math.max(0, calendarNights(checkIn, checkOut))
     : 0;
+
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
 
   const chooseDate = (key: string) => {
     const selectedDate = new Date(`${key}T00:00:00`);
@@ -193,24 +202,31 @@ function ListingAvailabilityCalendar({
 
     if (!checkIn || checkOut || key <= checkIn) {
       if (isUnavailableDate(selectedDate, ranges)) {
-        onSelectionError("That check-in date is unavailable. Please choose another date.");
+        onErrorMessage?.("That check-in date is unavailable. Please choose another date.");
         return;
       }
-      onSelectionError(null);
-      onDateChange(key, "");
+      onErrorMessage?.(null);
+      onDateRangeChange(key, "");
       return;
     }
 
-    if (key < addCalendarDays(checkIn, minimumNights)) {
-      onSelectionError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+    // Check-in exists and user is picking check-out date
+    const calculatedNights = calendarNights(checkIn, key);
+    if (calculatedNights < minimumNights) {
+      onErrorMessage?.(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (maximumNights && calculatedNights > maximumNights) {
+      onErrorMessage?.(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
       return;
     }
     if (overlapsBookedRange(checkIn, key, ranges)) {
-      onSelectionError("Those dates include an unavailable night. Please choose different dates.");
+      onErrorMessage?.("Those dates include an unavailable night. Please choose different dates.");
       return;
     }
-    onSelectionError(null);
-    onDateChange(checkIn, key);
+
+    onErrorMessage?.(null);
+    onDateRangeChange(checkIn, key);
   };
 
   const renderMonth = (calendarMonth: Date) => {
@@ -220,23 +236,24 @@ function ListingAvailabilityCalendar({
 
     return (
       <div key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}`} className="min-w-0">
-        <h4 className="mb-4 text-center text-base font-medium text-[#1C1C1C]">{title}</h4>
+        <h4 className="mb-4 text-center text-sm font-semibold text-zinc-800">{title}</h4>
         <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-zinc-400">
           {weekdays.map((day) => <span key={day} aria-hidden="true">{day.slice(0, 1)}</span>)}
         </div>
-        <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability`}>
+        <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability calendar`}>
           {Array.from({ length: monthFirstDay.getDay() }, (_, index) => <span key={`empty-${index}`} aria-hidden="true" className="aspect-square" />)}
           {Array.from({ length: daysInMonth }, (_, index) => {
             const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index + 1);
             const key = dateKey(date);
             const past = date < today;
             const unavailable = isUnavailableDate(date, ranges);
-            const isCheckoutCandidate = Boolean(checkIn && !checkOut && key >= addCalendarDays(checkIn, minimumNights) && !overlapsBookedRange(checkIn, key, ranges));
-            const disabled = past || (unavailable && !isCheckoutCandidate) || Boolean(checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights));
             const isStart = key === checkIn;
             const isEnd = key === checkOut;
-            const isInRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
-            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : checkIn && !checkOut && key > checkIn && key < addCalendarDays(checkIn, minimumNights) ? "minimum stay not met" : isInRange ? "selected stay" : "available";
+            const isInConfirmedRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
+            const isInHoverRange = Boolean(checkIn && !checkOut && hoverDate && key > checkIn && key <= hoverDate && !overlapsBookedRange(checkIn, hoverDate, ranges));
+            const isInRange = isInConfirmedRange || isInHoverRange;
+            const disabled = past || (unavailable && !isStart && !isEnd);
+            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
 
             return (
               <div key={key} className={`relative flex aspect-square items-center justify-center ${isInRange ? "bg-amber-100" : ""}`}>
@@ -244,16 +261,24 @@ function ListingAvailabilityCalendar({
                   type="button"
                   disabled={disabled || isLoading}
                   onClick={() => chooseDate(key)}
+                  onMouseEnter={() => {
+                    if (checkIn && !checkOut && key > checkIn) {
+                      setHoverDate(key);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (hoverDate) setHoverDate(null);
+                  }}
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
-                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:size-9 ${isStart || isEnd
-                      ? "bg-[#F6CF7B] font-semibold text-[#1f1f1f] shadow-sm"
+                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 sm:size-9 ${isStart || isEnd
+                      ? "bg-[#F6CF7B] font-semibold text-zinc-900 shadow-sm"
                       : isInRange
-                        ? "rounded-none bg-amber-100 text-[#1f1f1f] hover:bg-amber-200"
+                        ? "rounded-none bg-amber-100 text-zinc-900 hover:bg-amber-200"
                         : past || unavailable
                           ? "cursor-not-allowed text-zinc-300 line-through"
-                          : "text-zinc-700 hover:bg-zinc-100"
+                          : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
                     } disabled:opacity-70`}
                 >
                   {index + 1}
@@ -268,31 +293,47 @@ function ListingAvailabilityCalendar({
 
   return (
     <section className="border-b border-zinc-200/80 pb-7" aria-labelledby="availability-heading">
-      <div className="mb-6">
-        <h3 id="availability-heading" className="text-[20px] font-normal text-[#1f1f1f]">
-          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select your dates in ${locationName}`}
+      <div className="mb-4">
+        <h3 id="availability-heading" className="text-lg font-semibold tracking-tight text-zinc-900">
+          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select dates in ${locationName}`}
         </h3>
-        <p className="mt-1 text-sm text-[#727272] font-normal" aria-live="polite">{formattedStayDates}</p>
+        <p className="mt-1 text-xs text-zinc-500" aria-live="polite">{formattedStayDates}</p>
       </div>
       {error ? (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <span>{error}</span>
-          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2">Try again</button>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2 cursor-pointer">Try again</button>
         </div>
       ) : (
-          <div className="rounded-2xl bg-[#F3F4F5] p-3 sm:p-4 max-w-[608px]">
+        <div className="rounded-2xl bg-zinc-100 p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
             <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
-              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">‹</button>
+              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">‹</button>
               <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6">
                 {displayedMonths.map(renderMonth)}
               </div>
-              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">›</button>
+              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer">›</button>
             </div>
           </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-sm text-[#727272]">
-            <span aria-live="polite">{isLoading ? "Updating availability…" : "Select check-in, then check-out"}</span>
-              <button type="button" onClick={() => { onSelectionError(null); onDateChange("", ""); }} disabled={!checkIn && !checkOut} className="underline decoration-[#727272] underline-offset-2 hover:text-[#1f1f1f] disabled:cursor-not-allowed disabled:no-underline disabled:opacity-0">Clear dates</button>
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-[11px] text-zinc-500">
+            <span aria-live="polite">
+              {isLoading
+                ? "Updating availability…"
+                : !checkIn
+                  ? "Select check-in date"
+                  : !checkOut
+                    ? `Minimum stay: ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}. Select checkout date.`
+                    : `${nights} ${nights === 1 ? "night" : "nights"} selected`}
+            </span>
+            {(checkIn || checkOut) && (
+              <button
+                type="button"
+                onClick={onClearDates}
+                className="font-medium underline decoration-zinc-400 underline-offset-2 hover:text-zinc-900 cursor-pointer"
+              >
+                Clear dates
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -307,20 +348,29 @@ export function PublicListingDetailClient({
   searchCheckOut,
   searchGuests,
 }: PublicListingDetailClientProps) {
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const wishlist = useWishlist();
   void guidebooks; // The section is intentionally paused; retain the existing server contract.
 
-  // Modal States
+  // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
+
+  const maximumGuests = Math.max(1, listing.guests || 1);
+  const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
+  const allowsPets = listing.petsAllowed !== false;
 
   // Booking Widget State — pre-filled from search URL params
   const [checkIn, setCheckIn] = useState(isDateKey(searchCheckIn) ? searchCheckIn : "");
   const [checkOut, setCheckOut] = useState(isDateKey(searchCheckOut) ? searchCheckOut : "");
-  const [guestsCount, setGuestsCount] = useState(searchGuests ?? 1);
+  const [adultsCount, setAdultsCount] = useState(() => Math.min(maximumGuests, Math.max(1, searchGuests ?? 1)));
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [infantsCount, setInfantsCount] = useState(0);
+  const [petsCount, setPetsCount] = useState(0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
@@ -341,23 +391,101 @@ export function PublicListingDetailClient({
   const amenityCloseRef = useRef<HTMLButtonElement>(null);
   const normalizedDescription = listing.description?.trim() ?? "";
 
+  const totalCapacityGuests = adultsCount + childrenCount;
+  const canAddCapacityGuest = totalCapacityGuests < maximumGuests;
+
+  const guestSummaryLabel = useMemo(() => {
+    if (childrenCount > 0) {
+      const adultPart = `${adultsCount} ${adultsCount === 1 ? "adult" : "adults"}`;
+      const childPart = `${childrenCount} ${childrenCount === 1 ? "child" : "children"}`;
+      return `${adultPart}, ${childPart}`;
+    }
+    return `${adultsCount} ${adultsCount === 1 ? "guest" : "guests"}`;
+  }, [adultsCount, childrenCount]);
+
+  // Telemetry: track listing_page_view once on mount
+  const hasTrackedViewRef = useRef(false);
+  const hasTrackedAvailabilityViewRef = useRef(false);
+  const hasTrackedHouseRulesViewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current || !listing?.id) return;
+    hasTrackedViewRef.current = true;
+    trackListingEvent({
+      eventType: "listing_page_view",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      guestCount: totalCapacityGuests,
+      checkIn: checkIn || null,
+      checkOut: checkOut || null,
+      metadata: {
+        propertyType: listing.propertyType,
+        listingType: listing.listingType,
+        instantBook: listing.instantBook,
+        isGuestFavorite: listing.isGuestFavorite,
+      },
+    });
+  }, [listing, totalCapacityGuests, checkIn, checkOut]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined" || !listing?.id) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target.id === "availability-heading" && !hasTrackedAvailabilityViewRef.current) {
+              hasTrackedAvailabilityViewRef.current = true;
+              trackListingEvent({
+                eventType: "availability_section_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            } else if (entry.target.id === "things-to-know-heading" && !hasTrackedHouseRulesViewRef.current) {
+              hasTrackedHouseRulesViewRef.current = true;
+              trackListingEvent({
+                eventType: "house_rules_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+
+    const availEl = document.getElementById("availability-heading");
+    const rulesEl = document.getElementById("things-to-know-heading");
+    if (availEl) observer.observe(availEl);
+    if (rulesEl) observer.observe(rulesEl);
+
+    return () => observer.disconnect();
+  }, [listing.id, listing.city, listing.country]);
+
   // A client component may be preserved while the route segment changes. Reset
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
-    const maximumGuests = Math.max(1, listing.guests || 1);
     const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
     const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn) ? searchCheckOut : "";
     const nextGuests = Math.min(Math.max(1, searchGuests ?? 1), maximumGuests);
     const timer = window.setTimeout(() => {
       setCheckIn(nextCheckIn);
       setCheckOut(nextCheckOut);
-      setGuestsCount(nextGuests);
+      setAdultsCount(nextGuests);
+      setChildrenCount(0);
+      setInfantsCount(0);
+      setPetsCount(0);
       setIsNonRefundable(false);
       setQuote(null);
       setQuoteError(null);
       setBookingSuccess(false);
       setHostImageFailed(false);
       setIsDescriptionModalOpen(false);
+      setIsDescriptionExpanded(false);
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
@@ -367,7 +495,7 @@ export function PublicListingDetailClient({
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, listing.guests, searchCheckIn, searchCheckOut, searchGuests]);
+  }, [listing.id, maximumGuests, searchCheckIn, searchCheckOut, searchGuests]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -405,9 +533,11 @@ export function PublicListingDetailClient({
     else url.searchParams.delete("checkOut");
     url.searchParams.delete("startDate");
     url.searchParams.delete("endDate");
-    url.searchParams.set("guests", String(guestsCount));
+    url.searchParams.set("guests", String(totalCapacityGuests));
+    if (petsCount > 0) url.searchParams.set("pets", String(petsCount));
+    else url.searchParams.delete("pets");
     window.history.replaceState(window.history.state, "", url);
-  }, [checkIn, checkOut, guestsCount]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount]);
 
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
@@ -506,10 +636,9 @@ export function PublicListingDetailClient({
 
   // Format price
   const displayPrice = typeof listing.price === "number"
-    ? formatListingPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
+    ? formatPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
     : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
-  const maximumGuests = Math.max(1, listing.guests || 1);
   const minimumNights = Math.max(1, listing.minNights || 1);
   const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
   const today = dateKey(new Date());
@@ -609,7 +738,7 @@ export function PublicListingDetailClient({
       return () => window.clearTimeout(timer);
     }
 
-    if (guestsCount < 1 || guestsCount > maximumGuests) {
+    if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(`This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
@@ -639,7 +768,7 @@ export function PublicListingDetailClient({
       setQuoteError(null);
 
       fetch(
-        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&nonRefundable=${isNonRefundable}`,
+        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${totalCapacityGuests}&pets=${petsCount}&nonRefundable=${isNonRefundable}`,
         { signal: controller.signal, cache: "no-store" },
       )
         .then(async (res) => ({ ok: res.ok, data: await res.json() }))
@@ -651,6 +780,23 @@ export function PublicListingDetailClient({
           }
           setQuote(data.data);
           setQuoteError(null);
+          trackListingEvent({
+            eventType: "quote_calculated",
+            propertyId: listing.id,
+            city: listing.city,
+            country: listing.country,
+            checkIn,
+            checkOut,
+            guestCount: totalCapacityGuests,
+            metadata: {
+              nights: data.data.nights,
+              totalPrice: data.data.guestTotal ?? data.data.totalPrice,
+              cleaningFee: data.data.cleaningFee,
+              extraGuestFee: data.data.extraGuestFee,
+              appliedDiscount: data.data.appliedDiscount?.name,
+              nonRefundable: isNonRefundable,
+            },
+          });
         })
         .catch((error: unknown) => {
           if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
@@ -666,12 +812,12 @@ export function PublicListingDetailClient({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, guestsCount, isNonRefundable, listing.id, maximumGuests]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
-  const isGuestSelectionValid = Number.isInteger(guestsCount) && guestsCount >= 1 && guestsCount <= maximumGuests;
+  const isGuestSelectionValid = Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests;
   const hasValidQuote = Boolean(
     isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
   );
@@ -681,6 +827,12 @@ export function PublicListingDetailClient({
     setCheckOut("");
     setQuote(null);
     setQuoteError(null);
+    trackListingEvent({
+      eventType: "dates_cleared",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
   };
 
   const updateCheckIn = (nextCheckIn: string) => {
@@ -690,11 +842,23 @@ export function PublicListingDetailClient({
     }
     if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
       setQuoteError("That check-in date is unavailable. Please choose another date.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { date: nextCheckIn, type: "checkIn_unavailable" },
+      });
       return;
     }
     setQuote(null);
     setQuoteError(null);
     setCheckIn(nextCheckIn);
+    trackListingEvent({
+      eventType: "checkin_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn: nextCheckIn,
+    });
     const nextNights = checkOut && isDateKey(checkOut) ? calendarNights(nextCheckIn, checkOut) : 0;
     if (checkOut && (checkOut <= nextCheckIn || nextNights < minimumNights || nextNights > maximumNights || overlapsBookedRange(nextCheckIn, checkOut, bookedDateRanges))) {
       setCheckOut("");
@@ -714,6 +878,11 @@ export function PublicListingDetailClient({
     const nights = calendarNights(checkIn, nextCheckOut);
     if (nights < minimumNights) {
       setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { minimumNights, nightsRequested: nights },
+      });
       return;
     }
     if (nights > maximumNights) {
@@ -724,21 +893,90 @@ export function PublicListingDetailClient({
       setCheckOut("");
       setQuote(null);
       setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { checkIn, checkOut: nextCheckOut, type: "stay_overlaps_booked" },
+      });
       return;
     }
     setQuote(null);
     setQuoteError(null);
     setCheckOut(nextCheckOut);
+    trackListingEvent({
+      eventType: "checkout_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut: nextCheckOut,
+    });
   };
 
-  const updateGuestCount = (nextGuests: number) => {
-    const safeGuests = Math.min(maximumGuests, Math.max(1, nextGuests));
+  const updateAdults = (delta: number) => {
+    const next = adultsCount + delta;
+    if (next < 1) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
     setQuote(null);
     setQuoteError(null);
-    setGuestsCount(safeGuests);
+    setAdultsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: next + childrenCount,
+      metadata: { category: "adults", adults: next, children: childrenCount, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateChildren = (delta: number) => {
+    const next = childrenCount + delta;
+    if (next < 0) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
+    setQuote(null);
+    setQuoteError(null);
+    setChildrenCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: adultsCount + next,
+      metadata: { category: "children", adults: adultsCount, children: next, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateInfants = (delta: number) => {
+    const next = infantsCount + delta;
+    if (next < 0 || next > 5) return;
+    setInfantsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "infants", adults: adultsCount, children: childrenCount, infants: next, pets: petsCount },
+    });
+  };
+
+  const updatePets = (delta: number) => {
+    const next = petsCount + delta;
+    if (next < 0 || next > maxPetsAllowed) return;
+    setQuote(null);
+    setQuoteError(null);
+    setPetsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "pets", adults: adultsCount, children: childrenCount, infants: infantsCount, pets: next },
+    });
   };
 
   const handleShare = async () => {
+    trackListingEvent({
+      eventType: "share_clicked",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
+
     const shareData = {
       title: listing.title,
       text: locationString ? `${listing.title} in ${locationString}` : listing.title,
@@ -757,167 +995,310 @@ export function PublicListingDetailClient({
   };
 
   const handleSave = async () => {
+    const nextSaved = !wishlist.has(listing.id);
+    trackListingEvent({
+      eventType: "wishlist_toggled",
+      propertyId: listing.id,
+      metadata: { saved: nextSaved },
+    });
     if (wishlist.has(listing.id)) await wishlist.remove(listing.id);
     else await wishlist.add(listing.id);
   };
 
-  // Handle Booking
-  const handleReserve = async () => {
-    if (!hasValidQuote) {
-      setQuoteError(!checkIn || !checkOut ? "Choose check-in and check-out dates to continue." : !isGuestSelectionValid ? `This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.` : availabilityError ? "Availability could not be confirmed. Please try again." : "Choose valid available dates and guests before reserving.");
+  // Handle Booking — validates all listing settings before redirecting to /book/[id]
+  const handleReserve = () => {
+    if (!checkIn || !checkOut) {
+      setQuoteError("Please choose check-in and check-out dates to continue.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_dates" },
+      });
       return;
     }
 
-    setIsBookingSubmitting(true);
-    try {
-      const res = await fetch("/api/v1/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing.id,
-          startDate: checkIn,
-          endDate: checkOut,
-          guests: guestsCount,
-          nonRefundable: isNonRefundable,
-        }),
+    if (!isDateKey(checkIn) || !isDateKey(checkOut)) {
+      setQuoteError("Please enter valid check-in and check-out dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "invalid_date_format" },
       });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        if (res.status === 401) {
-          // Redirect to login preserving booking intent
-          const returnUrl = encodeURIComponent(
-            `/listings/${listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}`
-          );
-          router.push(`/login?returnUrl=${returnUrl}`);
-          return;
-        }
-        const message = data.error?.message || "Failed to complete reservation";
-        setQuoteError(message);
-        if (res.status === 409) setAvailabilityRefreshVersion((version) => version + 1);
-      } else {
-        clearLastSearch();
-        setBookingSuccess(true);
-      }
-    } catch {
-      alert("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsBookingSubmitting(false);
+      return;
     }
+
+    if (checkIn < today) {
+      setQuoteError("Check-in date cannot be in the past.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkin_in_past" },
+      });
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      setQuoteError("Checkout must be after check-in.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkout_before_checkin" },
+      });
+      return;
+    }
+
+    const nights = calendarNights(checkIn, checkOut);
+    if (nights < minimumNights) {
+      setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "minimum_nights_not_met", minimumNights, nights },
+      });
+      return;
+    }
+
+    if (nights > maximumNights) {
+      setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "maximum_nights_exceeded", maximumNights, nights },
+      });
+      return;
+    }
+
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "dates_unavailable" },
+      });
+      return;
+    }
+
+    if (!isGuestSelectionValid || totalCapacityGuests > maximumGuests) {
+      setQuoteError(`This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "max_guests_exceeded", totalCapacityGuests, maximumGuests },
+      });
+      return;
+    }
+
+    if (isQuoteLoading || isAvailabilityLoading) {
+      return;
+    }
+
+    if (quoteError) {
+      return;
+    }
+
+    if (!hasValidQuote || !quote) {
+      setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_valid_quote" },
+      });
+      return;
+    }
+
+    trackListingEvent({
+      eventType: "reserve_clicked",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut,
+      guestCount: totalCapacityGuests,
+      metadata: {
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        isNonRefundable,
+      },
+    });
+
+    trackListingEvent({
+      eventType: "booking_flow_started",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut,
+      guestCount: totalCapacityGuests,
+    });
+
+    const queryParams = new URLSearchParams({
+      checkIn,
+      checkOut,
+      guests: String(totalCapacityGuests),
+      adults: String(adultsCount),
+      children: String(childrenCount),
+    });
+    if (infantsCount > 0) queryParams.set("infants", String(infantsCount));
+    if (petsCount > 0) queryParams.set("pets", String(petsCount));
+    if (isNonRefundable) {
+      queryParams.set("nonRefundable", "true");
+    }
+
+    router.push(`/book/${listing.customSlug || listing.id}?${queryParams.toString()}`);
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
+    <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 pb-20 pt-5 sm:pt-7">
+      <main className="w-full flex-1 pb-32 sm:pb-36 lg:pb-20 pt-5 sm:pt-7">
         <Container>
-          <div className="single-listing-page">
+          <div className="mx-auto max-w-[1180px]">
             {/* Header Section */}
             <div className="flex items-start justify-between gap-4 pb-5 sm:pb-6">
               <div className="min-w-0 space-y-2">
-                <h1>
+                <h1 className="max-w-3xl break-words text-[22px] font-semibold leading-tight tracking-tight text-zinc-900 sm:text-[26px]">
                   {listing.title}
                 </h1>
                 {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
                   <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
                     {listing.isGuestFavorite && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-950">
                         <span aria-hidden="true">✦</span> Guest favourite
                       </span>
                     )}
                     {listing.host?.isSuperhost && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-950">
                         <span aria-hidden="true">★</span> Superhost
                       </span>
                     )}
                     {listing.isFeatured && (
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700">
                         Featured stay
                       </span>
                     )}
                   </div>
                 )}
               </div>
-              <div className="flex shrink-0 items-center gap-3 pt-0.5 sm:gap-8">
-                <button type="button" onClick={handleShare} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272]" aria-label="Share this listing">
-                  <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
-                  </span>
+              <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
+                <button type="button" onClick={handleShare} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100" aria-label="Share this listing">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="size-4"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
                   <span className="hidden sm:inline">Share</span>
                 </button>
-                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
-                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-amber-300 bg-amber-50 text-amber-800" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
-                  </span>
+                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" className="size-4"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
                 </button>
               </div>
             </div>
 
-            {/* Photo Gallery (ListingGallery component) */}
+            {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
             <div>
-              {/* ListingGallery handles thumbnails, lightbox, lazy loading, and fallbacks */}
-              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-              {/* @ts-ignore */}
               <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} />
             </div>
 
             {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
             <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">
               {/* LEFT COLUMN */}
-              <div className="lg:col-span-7 max-w-[748px]">
+              <div className="lg:col-span-7">
                 <section className="pb-1">
-                  <h2 className="text-[20px] font-normal leading-5 text-[#1f1f1f]">
+                  <h2 className="text-[15px] font-semibold leading-5 text-zinc-900 sm:text-base">
                     {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
-                  <p className="mt-2 text-base font-light text-[#1F1F1F]">
+                  <p className="mt-1 text-[11px] text-zinc-500">
                     {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
                   </p>
                 </section>
 
                 {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
-                  <section className="mt-7 grid max-w-[640px] overflow-hidden rounded-[28px] border border-zinc-300 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] sm:grid-cols-[1.15fr_1.75fr_.85fr_.62fr]" aria-label="Guest favourite rating summary">
-                    <div className="flex items-center justify-center gap-2 border-b border-zinc-200 px-4 py-4 sm:border-b-0 sm:border-r">
-                      <span aria-hidden="true" className="text-[25px] leading-none text-zinc-600">❦</span>
-                      <span className="text-xs font-normal leading-4 text-[#1f1f1f]">Guest<br />favourite</span>
-                      <span aria-hidden="true" className="-ml-1 text-[25px] leading-none text-zinc-600">❦</span>
+                  <section className="mt-5 grid overflow-hidden rounded-[20px] border border-zinc-300 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] sm:grid-cols-[1fr_1.7fr_.78fr_.55fr]" aria-label="Guest favourite rating summary">
+                    <div className="flex items-center gap-2.5 border-b border-zinc-200 px-4 py-3 sm:border-b-0 sm:border-r">
+                      <span aria-hidden="true" className="text-[27px] leading-none text-amber-700">❦</span>
+                      <span className="text-[11px] font-medium leading-[13px] text-zinc-800">Guest<br />favourite</span>
                     </div>
-                    <p className="flex items-center px-5 py-4 text-sm font-normal leading-5 text-[#1f1f1f] sm:border-r">One of the most loved homes on Homyz, according to guests.</p>
-                    <div className="flex items-center justify-center border-t border-zinc-200 px-4 py-4 sm:border-r sm:border-t-0">
-                      <div><p className="text-xl font-medium leading-none text-[#1f1f1f]">{reviewRating.toFixed(2)}</p><p className="mt-1.5 text-[11px] tracking-[0.08em] text-amber-500">★★★★★</p></div>
+                    <p className="flex items-center px-4 py-3 text-[11px] leading-[14px] text-zinc-700 sm:border-r sm:py-2">One of the most loved homes on Homyz, according to guests.</p>
+                    <div className="flex items-center justify-center border-t border-zinc-200 px-4 py-3 sm:border-r sm:border-t-0">
+                      <div><p className="text-base font-bold leading-none text-zinc-900">{reviewRating.toFixed(2)}</p><p className="mt-1 text-[10px] tracking-[0.1em] text-amber-500">★★★★★</p></div>
                     </div>
-                    <div className="flex items-center justify-center border-t border-zinc-200 px-3 py-4 sm:border-t-0"><p className="text-center text-base font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[11px] font-normal text-zinc-600">{reviewCount === 1 ? "Review" : "Reviews"}</span></p></div>
+                    <div className="flex items-center justify-center border-t border-zinc-200 px-3 py-3 sm:border-t-0"><p className="text-center text-xs font-semibold leading-4 text-zinc-900">{reviewCount}<br /><span className="text-[10px] font-normal text-zinc-500">{reviewCount === 1 ? "Review" : "Reviews"}</span></p></div>
                   </section>
                 )}
 
                 {/* Property Summary & Host */}
-                <section className="mt-7 flex items-center gap-6 border-b border-[#DDDDDE] pb-7.5">
-                  <div className="min-w-0 space-y-2">
-                    <h2 className="text-xl font-normal text-[#1f1f1f]">Hosted by {listing.host?.name || "Homyz host"}</h2>
-                    <p className="text-base font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
+                <section className="mt-7 flex items-center gap-3.5 border-b border-zinc-200/80 pb-6">
+                  <div className="min-w-0 space-y-1">
+                    <h2 className="text-sm font-semibold text-zinc-900">
+                      {hostProfileHref ? (
+                        <Link
+                          href={hostProfileHref}
+                          onClick={() => {
+                            trackListingEvent({
+                              eventType: "host_profile_clicked",
+                              propertyId: listing.id,
+                              metadata: { hostId: listing.host?.id, source: "summary_title" },
+                            });
+                          }}
+                          className="hover:underline underline-offset-2"
+                        >
+                          Hosted by {listing.host?.name || "Homyz host"}
+                        </Link>
+                      ) : (
+                        `Hosted by ${listing.host?.name || "Homyz host"}`
+                      )}
+                    </h2>
+                    <p className="text-[11px] text-zinc-500">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
                   </div>
-                  {listing.host?.image && !hostImageFailed ? (
-                    <img
-                      src={listing.host.image}
-                      alt={listing.host.name || "Host"}
-                      onError={() => setHostImageFailed(true)}
-                      className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-[104px]"
-                    />
+                  {hostProfileHref ? (
+                    <Link
+                      href={hostProfileHref}
+                      aria-label={`View ${listing.host?.name || "host"}'s profile`}
+                      onClick={() => {
+                        trackListingEvent({
+                          eventType: "host_profile_clicked",
+                          propertyId: listing.id,
+                          metadata: { hostId: listing.host?.id, source: "summary_avatar" },
+                        });
+                      }}
+                      className="order-first block rounded-full transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                    >
+                      {listing.host?.image && !hostImageFailed ? (
+                        <img
+                          src={listing.host.image}
+                          alt={listing.host.name || "Host"}
+                          onError={() => setHostImageFailed(true)}
+                          className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                        />
+                      ) : (
+                        <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                          {(listing.host?.name || "H")[0].toUpperCase()}
+                        </div>
+                      )}
+                    </Link>
                   ) : (
-                    <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 sm:size-14">
-                      {(listing.host?.name || "H")[0].toUpperCase()}
-                    </div>
+                    listing.host?.image && !hostImageFailed ? (
+                      <img
+                        src={listing.host.image}
+                        alt={listing.host.name || "Host"}
+                        onError={() => setHostImageFailed(true)}
+                        className="order-first size-12 shrink-0 rounded-full border border-zinc-200 object-cover sm:size-14"
+                      />
+                    ) : (
+                      <div className="order-first flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-bold text-amber-900 sm:size-14">
+                        {(listing.host?.name || "H")[0].toUpperCase()}
+                      </div>
+                    )
                   )}
                 </section>
 
                 {/* Highlights (if any) */}
                 {trustHighlights.length > 0 && (
-                  <section className="mt-7.5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
+                  <section className="mt-5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
                     {trustHighlights.map((highlight) => (
-                      <div key={highlight.title} className="flex items-start gap-6">
-                        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] p-1.5 text-[#1F1F1F]"><TrustHighlightIcon name={highlight.icon} /></span>
-                        <div><h3 className="text-base font-normal text-[#222222]">{highlight.title}</h3><p className="mt-0.5 text-sm text-[#6A6A6A] font-normal">{highlight.description}</p></div>
+                      <div key={highlight.title} className="flex items-start gap-3">
+                        <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-zinc-300 p-1.5 text-zinc-700"><TrustHighlightIcon name={highlight.icon} /></span>
+                        <div><h3 className="text-[11px] font-medium leading-4 text-zinc-900">{highlight.title}</h3><p className="mt-0.5 text-[10px] leading-[13px] text-zinc-500">{highlight.description}</p></div>
                       </div>
                     ))}
                   </section>
@@ -925,70 +1306,55 @@ export function PublicListingDetailClient({
 
                 {/* Description */}
                 {normalizedDescription && (
-                  <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
-                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
+                  <section className="mt-6 border-b border-zinc-200/80 pb-6">
+                    <h3 className="text-[15px] font-semibold text-zinc-900">About this place</h3>
                     <p
-                      className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base text-[#727272] font-normal"
+                      className={`mt-2.5 whitespace-pre-line break-words text-[11px] leading-[15px] text-zinc-600 ${isDescriptionExpanded ? "" : "line-clamp-4"
+                        }`}
                     >
                       {normalizedDescription}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => setIsDescriptionModalOpen(true)}
-                      aria-haspopup="dialog"
-                      className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-6 py-3.25 text-lg font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
-                    >
-                      Show more
-                    </button>
+                    {isDescriptionExpanded && aboutLocationDetails.length > 0 && (
+                      <div className="mt-4 space-y-3 pt-3 border-t border-zinc-100">
+                        {aboutLocationDetails.map((detail) => (
+                          <div key={detail.heading}>
+                            <h4 className="text-xs font-semibold text-zinc-900">{detail.heading}</h4>
+                            <p className="mt-0.5 whitespace-pre-line text-[11px] leading-[15px] text-zinc-600">{detail.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {(normalizedDescription.length > 200 || aboutLocationDetails.length > 0) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !isDescriptionExpanded;
+                          setIsDescriptionExpanded(next);
+                          trackListingEvent({
+                            eventType: next ? "description_expanded" : "description_collapsed",
+                            propertyId: listing.id,
+                          });
+                        }}
+                        className="mt-4 rounded-full border border-zinc-300 bg-white px-5 py-2 text-[11px] font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 cursor-pointer"
+                      >
+                        {isDescriptionExpanded ? "Show less" : "Show more"}
+                      </button>
+                    )}
                   </section>
                 )}
 
-                <div className="mt-7.5 flex flex-col gap-7.5">
-                  {/* Sleeping arrangements are intentionally hidden on this page.
-              {rooms.length > 0 && (
-                <div className="space-y-4 pb-6 border-b border-zinc-200/80">
-                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">{"Where you'll sleep"}</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {rooms.map((room) => (
-                      <div key={room.id} className="rounded-2xl border border-zinc-200 p-4 space-y-2 bg-zinc-50/50">
-                        <span className="text-xl block">🛏️</span>
-                        <h4 className="text-xs font-semibold text-[#1f1f1f]">{room.name}</h4>
-                        <div className="space-y-0.5 text-[11px] text-zinc-500">
-                          {Array.isArray(room.beds) && room.beds.length > 0 ? (
-                            room.beds.map((b: { count: number; type: string }, bi: number) => (
-                              <p key={bi}>
-                                {b.count} {b.type.replace(/_/g, " ").toLowerCase()}{" "}
-                                {b.count === 1 ? "bed" : "beds"}
-                              </p>
-                            ))
-                          ) : (
-                            <p>1 queen bed</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              */}
-
+                <div className="mt-8 flex flex-col gap-8">
                   {/* Amenities Grid */}
-                  <div className="order-1 space-y-5 border-b border-zinc-200/80 pb-6">
-                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">What this place offers</h3>
+                  <div className="space-y-4 pb-6 border-b border-zinc-200/80">
+                    <h3 className="text-base font-bold text-zinc-900">What this place offers</h3>
                     {categorizedAmenities.length === 0 ? (
                       <p className="text-xs text-zinc-500">This host has not listed any amenities yet.</p>
                     ) : <>
-                      <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
-                        {categorizedAmenities.slice(0, 6).map((am) => (
-                          <div key={am.id} className="flex min-w-0 items-center gap-3">
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
-                              {AMENITY_ICON_SOURCES[am.id] ? (
-                                <Image src={AMENITY_ICON_SOURCES[am.id]} alt="" width={18} height={18} className="size-[18px]" />
-                              ) : (
-                                <span aria-hidden="true" className="text-sm leading-none">{am.icon || "✓"}</span>
-                              )}
-                            </span>
-                            <span className="break-words text-base font-normal leading-5">{am.label}</span>
+                      <div className="grid grid-cols-1 gap-3 text-xs text-zinc-800 sm:grid-cols-2">
+                        {categorizedAmenities.slice(0, 8).map((am) => (
+                          <div key={am.id} className="flex min-w-0 items-center gap-2.5">
+                            <span aria-hidden="true" className="text-base">{am.icon || "✓"}</span>
+                            <span className="font-medium break-words">{am.label}</span>
                           </div>
                         ))}
                       </div>
@@ -996,10 +1362,17 @@ export function PublicListingDetailClient({
                       {categorizedAmenities.length > 0 && (
                         <button
                           type="button"
-                          onClick={() => setIsAllAmenitiesOpen(true)}
-                            className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-6 py-3.25 text-lg font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                          onClick={() => {
+                            setIsAllAmenitiesOpen(true);
+                            trackListingEvent({
+                              eventType: "amenities_opened",
+                              propertyId: listing.id,
+                              metadata: { totalAmenities: categorizedAmenities.length },
+                            });
+                          }}
+                          className="rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-xs font-semibold px-5 py-2.5 transition-all cursor-pointer shadow-2xs mt-2"
                         >
-                          Show all amenities
+                          Show all {categorizedAmenities.length} amenities
                         </button>
                       )}
                     </>}
@@ -1007,11 +1380,22 @@ export function PublicListingDetailClient({
 
                   {listing.host && (
                     <section className="order-5 border-b border-zinc-200/80 pb-8" aria-labelledby="meet-host-heading">
-                      <h3 id="meet-host-heading" className="mb-4 text-[17px] font-semibold text-[#1f1f1f]">Meet your host</h3>
+                      <h3 id="meet-host-heading" className="mb-4 text-[17px] font-semibold text-zinc-900">Meet your host</h3>
                       <div className="grid gap-7 md:grid-cols-[300px_minmax(0,1fr)] md:gap-12">
                         <div>
                           {hostProfileHref ? (
-                            <Link href={hostProfileHref} aria-label={`View ${listing.host.name || "host"}'s profile`} className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1f1f1f]">
+                            <Link
+                              href={hostProfileHref}
+                              aria-label={`View ${listing.host.name || "host"}'s profile`}
+                              onClick={() => {
+                                trackListingEvent({
+                                  eventType: "host_profile_clicked",
+                                  propertyId: listing.id,
+                                  metadata: { hostId: listing.host?.id },
+                                });
+                              }}
+                              className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
+                            >
                               <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostSince={hostSince} hostTenure={hostTenure} />
                             </Link>
                           ) : (
@@ -1025,17 +1409,31 @@ export function PublicListingDetailClient({
                         </div>
 
                         <div className="min-w-0 pt-1">
-                          <h4 className="text-lg font-medium text-[#1f1f1f]">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : `Hosted by ${listing.host.name || "Homyz host"}`}</h4>
+                          <h4 className="text-lg font-medium text-zinc-900">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : `Hosted by ${listing.host.name || "Homyz host"}`}</h4>
                           {listing.host.isSuperhost && <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-500">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>}
                           {hostBio && <p className="mt-4 max-w-2xl line-clamp-3 whitespace-pre-line text-sm leading-5 text-zinc-700">{hostBio}</p>}
 
                           {(hostSince || listing.host.isSuperhost) && <div className="mt-6 space-y-1.5">
-                            <h5 className="text-base font-medium text-[#1f1f1f]">Host details</h5>
+                            <h5 className="text-base font-medium text-zinc-900">Host details</h5>
                             {hostSince && <p className="text-sm text-zinc-500">Joined Homyz in {hostSince}</p>}
                             {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-sm text-zinc-600"><span aria-hidden="true">★</span> Superhost</p>}
                           </div>}
 
-                          {hostProfileHref && <Link href={hostProfileHref} className="mt-6 inline-flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">View profile</Link>}
+                          {hostProfileHref && (
+                            <Link
+                              href={hostProfileHref}
+                              onClick={() => {
+                                trackListingEvent({
+                                  eventType: "host_profile_clicked",
+                                  propertyId: listing.id,
+                                  metadata: { hostId: listing.host?.id },
+                                });
+                              }}
+                              className="mt-6 inline-flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                            >
+                              View profile
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </section>
@@ -1052,17 +1450,17 @@ export function PublicListingDetailClient({
                       checkOut={checkOut}
                       locationName={listing.city || listing.title || "this property"}
                       minimumNights={minimumNights}
-                      onDateChange={(nextCheckIn, nextCheckOut) => {
-                        if (!nextCheckIn && !nextCheckOut) {
-                          clearBookingDates();
-                          return;
+                      maximumNights={maximumNights}
+                      onDateRangeChange={(nextCheckIn, nextCheckOut) => {
+                        if (nextCheckIn && !nextCheckOut) {
+                          updateCheckIn(nextCheckIn);
+                        } else if (nextCheckIn && nextCheckOut) {
+                          setCheckIn(nextCheckIn);
+                          updateCheckOut(nextCheckOut);
                         }
-                        setQuote(null);
-                        setQuoteError(null);
-                        setCheckIn(nextCheckIn);
-                        setCheckOut(nextCheckOut);
                       }}
-                      onSelectionError={setQuoteError}
+                      onClearDates={clearBookingDates}
+                      onErrorMessage={setQuoteError}
                     />
                   </div>
 
@@ -1080,10 +1478,10 @@ export function PublicListingDetailClient({
 
                   {/* House Rules */}
                   <section className="order-6 border-b border-zinc-200/80 pb-7" aria-labelledby="things-to-know-heading">
-                    <h3 id="things-to-know-heading" className="mb-4 text-base font-semibold text-[#1f1f1f]">Things to know</h3>
+                    <h3 id="things-to-know-heading" className="mb-4 text-base font-semibold text-zinc-900">Things to know</h3>
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="space-y-3 rounded-2xl border border-zinc-200 p-4" aria-labelledby="house-rules-heading">
-                        <h4 id="house-rules-heading" className="text-sm font-semibold text-[#1f1f1f]">House rules</h4>
+                        <h4 id="house-rules-heading" className="text-sm font-semibold text-zinc-900">House rules</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-zinc-700">
                           {formatTime(listing.checkInStart) && <div className="flex items-center gap-2"><span aria-hidden="true">🕒</span><span>Check-in after {formatTime(listing.checkInStart)}{formatTime(listing.checkInEnd) ? `, before ${formatTime(listing.checkInEnd)}` : ""}</span></div>}
                           {formatTime(listing.checkOutTime) && <div className="flex items-center gap-2"><span aria-hidden="true">⏱️</span><span>Check-out before {formatTime(listing.checkOutTime)}</span></div>}
@@ -1102,14 +1500,14 @@ export function PublicListingDetailClient({
                       </div>
 
                       {(cancellationLabel || longTermCancellationLabel) && <div className="space-y-2 rounded-2xl border border-zinc-200 p-4" aria-labelledby="cancellation-heading">
-                        <h4 id="cancellation-heading" className="text-sm font-semibold text-[#1f1f1f]">Cancellation policy</h4>
+                        <h4 id="cancellation-heading" className="text-sm font-semibold text-zinc-900">Cancellation policy</h4>
                         {cancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{cancellationLabel}.</span> Applies to stays under 28 nights.</p>}
                         {longTermCancellationLabel && <p className="text-xs text-zinc-600"><span className="font-semibold text-zinc-800">{longTermCancellationLabel}.</span> Applies to stays of 28 nights or more.</p>}
                       </div>}
 
                       {/* Safety Disclosures */}
                       <div className="space-y-3 rounded-2xl border border-zinc-200 p-4">
-                        <h4 className="text-sm font-semibold text-[#1f1f1f]">Safety & property</h4>
+                        <h4 className="text-sm font-semibold text-zinc-900">Safety & property</h4>
                         <div className="space-y-2 text-xs text-zinc-600">
                           {publicSafetyEquipment.map((item) => <div key={item} className="flex items-center gap-2"><span>🛡️</span><span>{humanize(item)}</span></div>)}
                           {publicSafetyHazards.map((item) => <div key={item} className="flex items-center gap-2"><span>⚠️</span><span>{item}</span></div>)}
@@ -1122,7 +1520,7 @@ export function PublicListingDetailClient({
 
                   {/* Location & Map Section */}
                   <div className="order-4 space-y-3 pb-6">
-                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">{"Where you'll be"}</h3>
+                    <h3 className="text-base font-bold text-zinc-900">{"Where you'll be"}</h3>
                     <p className="text-xs text-zinc-500 font-normal">
                       {locationString || "Location details are not available for this listing."}
                       {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
@@ -1152,7 +1550,7 @@ export function PublicListingDetailClient({
                     {/* {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
+                      <h4 className="font-bold text-sm text-zinc-900">Local Host Guidebook</h4>
                       <span className="text-[11px] text-zinc-400">Curated recommendations</span>
                     </div>
                     <div className="space-y-2.5">
@@ -1166,7 +1564,7 @@ export function PublicListingDetailClient({
                               📖
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-[#1f1f1f] truncate">{gb.title}</h5>
+                              <h5 className="text-xs font-bold text-zinc-900 truncate">{gb.title}</h5>
                               <p className="text-[11px] text-zinc-500 truncate">
                                 {gb.itemsCount} recommendations by {gb.host?.name || "Host"}
                               </p>
@@ -1189,27 +1587,25 @@ export function PublicListingDetailClient({
 
               {/* RIGHT COLUMN: BOOKING & PRICING PANEL */}
               <div className="lg:col-span-5">
-                <div className="sticky top-24 space-y-6">
-                  <div className="flex min-h-[72px] items-center justify-center gap-4 rounded-[30px] bg-[rgba(255,255,255,0.6)] px-4 py-3 text-base text-[#1F1F1F] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                    <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F]">
-                      <Image src="/images/icons/price-icon.svg" alt="" width={24} height={24} className="size-6" />
-                    </span>
+                <div className="sticky top-24 space-y-3">
+                  <div className="flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[11px] text-zinc-600 shadow-sm">
+                    <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">✓</span>
                     Prices include all fees
                   </div>
-                  <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
+                  <div className="space-y-4 rounded-2xl border border-zinc-300 bg-white p-4 shadow-[0_5px_16px_rgba(24,24,27,0.08)] sm:p-5">
                     {bookingSuccess ? (
                       <div className="py-8 text-center space-y-3">
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                           ✓
                         </div>
-                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
+                        <h3 className="text-base font-bold text-zinc-900">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
                         <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                           Your stay has been recorded. You can manage your bookings in your trips dashboard.
                         </p>
                         <div className="pt-2">
                           <Link
-                            href="/bookings"
-                            className="rounded-full bg-[#1f1f1f] text-white font-semibold text-xs px-6 py-2.5 inline-block"
+                            href="/profile/tab/upcoming"
+                            className="rounded-full bg-zinc-900 text-white font-semibold text-xs px-6 py-2.5 inline-block"
                           >
                             View your bookings
                           </Link>
@@ -1219,8 +1615,8 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
-                              <span className="text-base text-[#1F1F1F] font-normal"> / for 1 night</span>
+                            <span className="text-2xl font-bold text-zinc-900">{displayPrice ?? "Price unavailable"}</span>
+                            <span className="text-xs text-zinc-500 font-normal"> / night</span>
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
                             {listing.instantBook ? "Instant Book" : "Host approval required"}
@@ -1228,10 +1624,11 @@ export function PublicListingDetailClient({
                         </div>
 
                         {/* Date Pickers */}
-                          <div className="rounded-[10px] border border-zinc-300 bg-[#F3F4F5] overflow-hidden divide-y divide-zinc-200 text-sm">
+                        <div className={`rounded-2xl border overflow-hidden divide-y divide-zinc-200 text-xs transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-zinc-300"
+                          }`}>
                           <div className="grid grid-cols-2 divide-x divide-zinc-200">
                             <div className="p-3 space-y-1">
-                              <label className="block text-base font-normal text-[#1f1f1f]">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                                 Check-in
                               </label>
                               <input
@@ -1239,11 +1636,11 @@ export function PublicListingDetailClient({
                                 value={checkIn}
                                 min={today}
                                 onChange={(e) => updateCheckIn(e.target.value)}
-                                  className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
+                                className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
                               />
                             </div>
                             <div className="p-3 space-y-1">
-                              <label className="block text-base font-normal text-[#1f1f1f]">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                                 Check-out
                               </label>
                               <input
@@ -1252,41 +1649,86 @@ export function PublicListingDetailClient({
                                 min={minimumCheckOut}
                                 disabled={!checkIn}
                                 onChange={(e) => updateCheckOut(e.target.value)}
-                                  className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
+                                className="w-full bg-transparent outline-none font-medium text-zinc-900 text-xs cursor-pointer"
                               />
                             </div>
                           </div>
 
                           <div className="p-3 space-y-1">
-                            <label className="block text-base font-normal text-[#1f1f1f]">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                               Guests
                             </label>
                             <button
                               type="button"
                               aria-expanded={isGuestSelectorOpen}
                               aria-controls="guest-selector"
-                              onClick={() => setIsGuestSelectorOpen((open) => !open)}
-                              className="flex w-full items-center justify-between text-left text-sm font-normal text-[#727272]"
+                              onClick={() => {
+                                const nextOpen = !isGuestSelectorOpen;
+                                setIsGuestSelectorOpen(nextOpen);
+                                if (nextOpen) {
+                                  trackListingEvent({
+                                    eventType: "guest_selector_opened",
+                                    propertyId: listing.id,
+                                    guestCount: totalCapacityGuests,
+                                  });
+                                }
+                              }}
+                              className="flex w-full items-center justify-between text-left text-xs font-medium text-zinc-900"
                             >
-                              <span>{guestsCount} {guestsCount === 1 ? "guest" : "guests"}</span>
+                              <span>{guestSummaryLabel}</span>
                               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-4 transition-transform ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                             </button>
                             {isGuestSelectorOpen && (
-                              <div id="guest-selector" className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3" aria-label="Guest selection">
+                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50/90 p-3.5 text-xs" aria-label="Guest selection">
+                                {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
-                                  <div><p className="text-base font-medium text-[#1f1f1f]">Guests</p><p className="mt-0.5 text-sm text-[#727272]">This property allows up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p></div>
+                                  <div>
+                                    <p className="font-semibold text-zinc-900">Adults</p>
+                                    <p className="text-[10px] text-zinc-500">Age 13+</p>
+                                  </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateGuestCount(guestsCount - 1)} disabled={guestsCount <= 1} aria-label="Remove one guest" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
-                                    <span className="min-w-4 text-center text-xs font-semibold text-[#1f1f1f]" aria-live="polite">{guestsCount}</span>
-                                    <button type="button" onClick={() => updateGuestCount(guestsCount + 1)} disabled={guestsCount >= maximumGuests} aria-label="Add one guest" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{adultsCount}</span>
+                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
+
+                                {/* Children */}
+                                <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                  <div>
+                                    <p className="font-semibold text-zinc-900">Children</p>
+                                    <p className="text-[10px] text-zinc-500">Ages 2–12</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-semibold text-zinc-900" aria-live="polite">{childrenCount}</span>
+                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-zinc-300 text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                  </div>
+                                </div>
+
+
+
+                                <div className="border-t border-zinc-200/80 pt-2 text-[10px] text-zinc-500">
+                                  {totalCapacityGuests >= maximumGuests ? (
+                                    <p className="font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
+                                  ) : (
+                                    <p>This property accommodates up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setIsGuestSelectorOpen(false)}
+                                  className="w-full rounded-lg bg-zinc-200/70 py-1.5 text-center text-xs font-semibold text-zinc-800 hover:bg-zinc-300/80 cursor-pointer"
+                                >
+                                  Done
+                                </button>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
+                        <p className="text-[11px] leading-relaxed text-zinc-500" aria-live="polite">
                           {isAvailabilityLoading
                             ? "Checking availability…"
                             : bookedDateRanges.length > 0
@@ -1298,14 +1740,14 @@ export function PublicListingDetailClient({
 
                         {quote?.nonRefundableAvailable && !isQuoteLoading && (
                           <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
-                            <legend className="px-1 font-semibold text-[#1f1f1f]">Choose your reservation</legend>
-                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${!isNonRefundable ? "border-[#1f1f1f] bg-white" : "border-transparent"}`}>
+                            <legend className="px-1 font-semibold text-zinc-900">Choose your reservation</legend>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${!isNonRefundable ? "border-zinc-900 bg-white" : "border-transparent"}`}>
                               <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Standard booking</span><span className="text-zinc-600">Uses this listing&apos;s normal cancellation policy.</span></span>
+                              <span><span className="block font-semibold text-zinc-900">Standard booking</span><span className="text-zinc-600">Uses this listing&apos;s normal cancellation policy.</span></span>
                             </label>
                             <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${isNonRefundable ? "border-amber-500 bg-amber-50" : "border-transparent"}`}>
                               <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Non-refundable booking</span><span className="text-zinc-600">Discounted price. If you cancel, you cannot receive the normal cancellation refund and the host retains the booked payout.</span></span>
+                              <span><span className="block font-semibold text-zinc-900">Non-refundable booking</span><span className="text-zinc-600">Discounted price. If you cancel, you cannot receive the normal cancellation refund and the host retains the booked payout.</span></span>
                             </label>
                           </fieldset>
                         )}
@@ -1318,8 +1760,11 @@ export function PublicListingDetailClient({
                         )}
 
                         {quoteError && (
-                          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
-                            {quoteError}
+                          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2 animate-in fade-in">
+                            <svg className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            <span className="flex-1">{quoteError}</span>
                           </div>
                         )}
 
@@ -1327,10 +1772,10 @@ export function PublicListingDetailClient({
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
                             <div className="flex items-center justify-between text-zinc-600">
                               <span>
-                                {formatListingPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
+                                {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
                                 {quote.nights === 1 ? "night" : "nights"}
                               </span>
-                              <span>{formatListingPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
 
                             {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
@@ -1342,35 +1787,35 @@ export function PublicListingDetailClient({
                             {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
                               <div className="flex items-center justify-between text-zinc-500 text-[11px]">
                                 <span>Includes {quote.weekendNights} weekend nights</span>
-                                <span>{formatListingPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
+                                <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
                             )}
 
                             {quote.cleaningFee > 0 && (
                               <div className="flex items-center justify-between text-zinc-600">
                                 <span>Cleaning fee</span>
-                                <span>{formatListingPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                <span>{formatPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
 
                             {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                               <div className="flex items-center justify-between text-zinc-600">
                                 <span>Extra guest fee</span>
-                                <span>{formatListingPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
 
                             {quote.appliedDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
                                 <span>{quote.appliedDiscount.name}</span>
-                                <span>−{formatListingPrice(quote.appliedDiscount.amount, currencyCode)}</span>
+                                <span>−{formatPrice(quote.appliedDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
                             {quote.nonRefundableDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
                                 <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
-                                <span>−{formatListingPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                <span>−{formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
@@ -1386,7 +1831,7 @@ export function PublicListingDetailClient({
                                         </span>
                                       )}
                                     </span>
-                                    <span className="font-medium">{formatListingPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                    <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                   <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-[11px] text-zinc-500">
                                     {quote.taxes.map((tax, idx) => (
@@ -1396,21 +1841,21 @@ export function PublicListingDetailClient({
                                           {tax.rate ? ` (${tax.rate}%)` : ""}
                                           {tax.isExempt ? ` • ${tax.exemptionReason || "Exempt"}` : ""}
                                         </span>
-                                        <span>{tax.isExempt ? formatListingPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatListingPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                        <span>{tax.isExempt ? formatPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
 
-                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                                   <span>Total</span>
-                                  <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                              <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                              <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-zinc-900">
                                 <span>Total</span>
-                                <span>{formatListingPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
                           </div>
@@ -1419,27 +1864,31 @@ export function PublicListingDetailClient({
                         {/* Reserve CTA */}
                         <button
                           type="button"
-                          disabled={isBookingSubmitting || !hasValidQuote}
+                          disabled={isBookingSubmitting}
                           onClick={handleReserve}
-                            className="w-full rounded-full border border-transparent hover:border-[#1f1f1f] bg-[#FCDF9C] py-3 text-lg font-medium text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-50"
+                          className={`w-full rounded-2xl py-3 text-sm font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                              ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
+                              : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600 cursor-pointer"
+                            }`}
+                          aria-disabled={!hasValidQuote || isBookingSubmitting}
                         >
                           {isBookingSubmitting
                             ? "Confirming..."
-                            : listing.instantBook
-                              ? "Reserve"
-                              : "Request to book"}
+                            : isQuoteLoading
+                              ? "Checking availability..."
+                              : listing.instantBook
+                                ? "Reserve now"
+                                : "Request to book"}
                         </button>
 
-                        <p className="text-sm text-[#1f1f1f] text-center font-normal">
-                          {"*You won't be charged yet."}
+                        <p className="text-[11px] text-zinc-400 text-center font-normal">
+                          {"You won't be charged yet. Taxes and additional charges may be calculated at checkout."}
                         </p>
                       </>
                     )}
                   </div>
-                  <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center justify-center gap-4 text-base text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] group">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
-                      <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-[18px]" />
-                    </span>
+                  <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center gap-2 px-2 py-1 text-[11px] text-zinc-600 underline underline-offset-2 hover:text-zinc-900">
+                    <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-zinc-300 text-[10px]">!</span>
                     Report this listing
                   </a>
                 </div>
@@ -1455,14 +1904,14 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-lg font-semibold text-[#1f1f1f]">About this place</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="p-1 text-zinc-500 hover:text-[#1f1f1f]">✕</button>
+              <h3 id="description-modal-title" className="text-lg font-semibold text-zinc-900">About this place</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="p-1 text-zinc-500 hover:text-zinc-900">✕</button>
             </div>
             <div className="mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
-                  <h4 className="text-sm font-semibold text-[#1f1f1f]">{detail.heading}</h4>
+                  <h4 className="text-sm font-semibold text-zinc-900">{detail.heading}</h4>
                   <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
                 </section>
               ))}
@@ -1476,13 +1925,13 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-bold text-lg text-[#1f1f1f]">What this place offers</h3>
+              <h3 id="amenities-modal-title" className="font-bold text-lg text-zinc-900">What this place offers</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
                 onClick={() => setIsAllAmenitiesOpen(false)}
                 aria-label="Close amenities"
-                className="cursor-pointer p-1 text-sm font-semibold text-zinc-500 hover:text-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                className="cursor-pointer p-1 text-sm font-semibold text-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
               >
                 ✕
               </button>
@@ -1494,7 +1943,7 @@ export function PublicListingDetailClient({
                 value={amenitySearchQuery}
                 onChange={(e) => setAmenitySearchQuery(e.target.value)}
                 placeholder="Search amenities..."
-                className="w-full rounded-full border border-zinc-300 px-4 py-2 text-xs outline-none focus:border-[#1f1f1f]"
+                className="w-full rounded-full border border-zinc-300 px-4 py-2 text-xs outline-none focus:border-zinc-900"
               />
             </div>
 
@@ -1503,7 +1952,7 @@ export function PublicListingDetailClient({
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
               ) : amenityGroups.map(([category, amenities]) => (
                 <section key={category} aria-label={`${category} amenities`}>
-                  <h4 className="mb-2 text-xs font-semibold capitalize text-[#1f1f1f]">{category.replace(/_/g, " ")}</h4>
+                  <h4 className="mb-2 text-xs font-semibold capitalize text-zinc-900">{category.replace(/_/g, " ")}</h4>
                   <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
                 </section>
               ))}
@@ -1512,6 +1961,65 @@ export function PublicListingDetailClient({
           </div>
         </ModalOverlay>
       )}
+
+      {/* Mobile Sticky Booking Bar (Visible below lg breakpoint where desktop card is not sticky) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1 truncate">
+              <span className="text-base font-bold text-zinc-900 sm:text-lg">
+                {quote?.guestTotal || quote?.totalPrice
+                  ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
+                  : displayPrice ?? "Price unavailable"}
+              </span>
+              <span className="text-xs font-normal text-zinc-500">
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : "/ night"}
+              </span>
+            </div>
+            <div className="truncate text-xs font-medium text-zinc-600">
+              {checkIn && checkOut
+                ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
+                : "Choose your dates"}
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            {!checkIn || !checkOut ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const calendarEl = document.getElementById("availability-heading");
+                  if (calendarEl) {
+                    calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }}
+                className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-zinc-900 shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+              >
+                Check availability
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isBookingSubmitting || !hasValidQuote}
+                onClick={handleReserve}
+                className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                    ? "border border-amber-400 bg-[#fee09a] text-zinc-900 hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+                    : "border border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                  }`}
+                aria-disabled={!hasValidQuote || isBookingSubmitting}
+              >
+                {isBookingSubmitting
+                  ? "Confirming..."
+                  : isQuoteLoading
+                    ? "Checking..."
+                    : listing.instantBook
+                      ? "Reserve"
+                      : "Request to book"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <Footer />
     </div>

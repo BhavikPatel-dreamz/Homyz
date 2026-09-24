@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { BookingReviewWizard } from "@/components/reviews/booking-review-wizard";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { CurrencyPrice } from "@/components/ui/currency-price";
 import { requirePageUser } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { reviewService } from "@/services/review.service";
@@ -26,6 +27,6 @@ export default async function BookingReviewPage({ params }: { params: Promise<{ 
     listingPhoto={booking.listing.photos[0] || null}
     location={[booking.listing.city, booking.listing.country].filter(Boolean).join(", ") || null}
     stayDates={formatStayDates(booking.startDate, booking.endDate)}
-    totalPaid={formatListingPrice(booking.totalPrice || 0, currency)}
+    totalPaid={<CurrencyPrice amountMinorUnits={booking.totalPrice || 0} sourceCurrency={currency} />}
   />;
 }

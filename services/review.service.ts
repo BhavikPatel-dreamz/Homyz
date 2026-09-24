@@ -246,4 +246,47 @@ export const reviewService = {
     });
     return reviews.map(toPublicReviewDTO);
   },
+
+  async getGuestReviews(authorId: string) {
+    const reviews = await prisma.review.findMany({
+      where: { authorId, status: "PUBLISHED" },
+      include: {
+        listing: {
+          select: {
+            id: true,
+            title: true,
+            photos: true,
+            city: true,
+            country: true,
+            customSlug: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    });
+    return (reviews as any[]).map((r: any) => ({
+      id: r.id,
+      listingId: r.listingId,
+      bookingId: r.bookingId,
+      rating: r.rating,
+      comment: r.comment,
+      topics: r.topics,
+      createdAt: (r.createdAt instanceof Date ? r.createdAt : new Date(r.createdAt)).toISOString(),
+      listing: r.listing,
+      booking: r.booking
+        ? {
+            id: r.booking.id,
+            startDate: (r.booking.startDate instanceof Date ? r.booking.startDate : new Date(r.booking.startDate)).toISOString(),
+            endDate: (r.booking.endDate instanceof Date ? r.booking.endDate : new Date(r.booking.endDate)).toISOString(),
+          }
+        : null,
+    }));
+  },
 };

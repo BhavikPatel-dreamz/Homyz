@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 type CategoryKey = "checkIn" | "cleanliness" | "accuracy" | "communication" | "location" | "value";
 
@@ -12,7 +12,7 @@ type ReviewWizardProps = {
   listingPhoto: string | null;
   location: string | null;
   stayDates: string;
-  totalPaid: string;
+  totalPaid: ReactNode;
 };
 
 type ReviewDraft = {

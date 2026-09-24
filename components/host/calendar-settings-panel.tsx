@@ -2,9 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
+import { getCurrencyForCountry } from "@/lib/currency";
 
 const controlClass =
   "rounded-xl bg-[#F3F4F5] dark:bg-zinc-800 px-3.5 py-3 shadow-[0_2px_4px_#00000025] border border-white dark:border-zinc-700";
@@ -76,6 +76,7 @@ export function CalendarSettingsPanel({
       )
     : ((listing.discounts || {}) as Record<string, number>);
   const editorHref = `/host/listings/${listing.id}/pricing`;
+  const listingCurrency = getCurrencyForCountry(listing.country);
   const input = (
     name: string,
     label: string,
@@ -86,7 +87,7 @@ export function CalendarSettingsPanel({
     <label className={`block ${controlClass}`}>
       <span className="mb-2 block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{label}</span>
       <span className="flex items-center gap-1 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
-        {suffix === "SAR" && <span>SAR</span>}
+        {suffix === "currency" && <span>{listingCurrency}</span>}
         <input
           aria-label={label}
           name={name}
@@ -192,19 +193,15 @@ export function CalendarSettingsPanel({
             <div className="flex items-center justify-between pt-1">
               <span className="text-sm font-normal text-[#1F1F1F] dark:text-zinc-100">Weekday base price</span>
               <div className="relative inline-flex shrink-0 items-center">
-                <Image
-                  src="/images/icons/SAR-icon.svg"
-                  alt=""
-                  width={20}
-                  height={19}
-                  className="pointer-events-none absolute left-3 dark:invert"
-                />
+                <span className="pointer-events-none absolute left-3 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                  {listingCurrency}
+                </span>
                 <select
                   aria-label="Pricing currency"
-                  defaultValue="SAR"
-                  className="h-10 w-[114px] cursor-pointer appearance-none rounded-full border border-[#858585] dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-10 pr-8 text-base font-normal text-[#1F1F1F] dark:text-zinc-100 focus-visible:outline-none"
+                  defaultValue={listingCurrency}
+                  className="h-10 w-[114px] cursor-pointer appearance-none rounded-full border border-[#858585] dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-[52px] pr-8 text-base font-normal text-[#1F1F1F] dark:text-zinc-100 focus-visible:outline-none"
                 >
-                  <option value="SAR">SAR</option>
+                  <option value={listingCurrency}>{listingCurrency}</option>
                 </select>
                 <svg
                   aria-hidden="true"
@@ -220,11 +217,11 @@ export function CalendarSettingsPanel({
                 </svg>
               </div>
             </div>
-            {input("price", "Weekday base rate", ((listing as any).weekdayBasePrice ?? listing.price) / 100, "SAR")}
+            {input("price", "Weekday base rate", ((listing as any).weekdayBasePrice ?? listing.price) / 100, "currency")}
             <ExpandControl title="Custom weekend price">
               {input(
                 "weekendPrice",
-                "Per night · SAR",
+                `Per night · ${listingCurrency}`,
                 listing.weekendPrice == null ? "" : listing.weekendPrice / 100,
               )}
             </ExpandControl>
@@ -285,12 +282,12 @@ export function CalendarSettingsPanel({
             <ExpandControl title="Fees" subtitle="Cleaning, pets, extra guests">
               {input(
                 "cleaningFee",
-                "Cleaning fee · SAR",
+                `Cleaning fee · ${listingCurrency}`,
                 (listing.cleaningFee || 0) / 100,
               )}
               {input(
                 "extraGuestFee",
-                "Extra guest fee (per guest per night) · SAR",
+                `Extra guest fee (per guest per night) · ${listingCurrency}`,
                 ((listing as any).extraGuestFee || 0) / 100,
               )}
               <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F] dark:text-zinc-300 dark:hover:text-amber-400">

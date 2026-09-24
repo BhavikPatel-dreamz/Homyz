@@ -17,7 +17,7 @@ export default async function ProfilePage({
     redirect(target);
   }
 
-  const data = await loadProfilePageData();
+  const data = await loadProfilePageData(route.tab);
 
   return (
     <ProfileClient
@@ -25,6 +25,8 @@ export default async function ProfilePage({
       initialTripPhotos={data.tripPhotos}
       initialStats={data.stats}
       initialReservations={data.initialReservations}
+      initialFavorites={data.initialFavorites}
+      initialReviews={data.initialReviews}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}

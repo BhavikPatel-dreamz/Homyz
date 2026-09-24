@@ -5,7 +5,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import useWishlist from "@/hooks/useWishlist";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatListingPrice } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface PropertyCardData {
@@ -62,6 +62,7 @@ function PropertyCardComponent({
   alternativeDates,
 }: PropertyCardData) {
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const isAuthenticated = canFavorite;
 
@@ -132,7 +133,7 @@ function PropertyCardComponent({
 
   const rawPrice = pricePerNight ?? price;
   const formattedPrice =
-    typeof rawPrice === "number" ? formatListingPrice(rawPrice, currency) : rawPrice;
+    typeof rawPrice === "number" ? formatPrice(rawPrice, currency) : rawPrice;
 
   const displaySubtitle =
     subtitle ||

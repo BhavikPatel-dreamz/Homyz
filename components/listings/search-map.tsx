@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { PublicListingCardDTO } from "@/services/mappers";
-import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 
 // ─── Minimal Leaflet Type Stubs (SSR-safe) ────────────────────────────────────
 interface LeafletMap {
@@ -235,6 +236,7 @@ export function SearchMap({
   center,
   zoom = 13,
 }: SearchMapProps) {
+  const { formatPrice } = useCurrency();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<Map<string, LeafletMarker>>(new Map());
@@ -420,7 +422,7 @@ export function SearchMap({
         const lng = item.lng;
         const currency = getCurrencyForCountry(listing.country);
         // Formats as e.g. SAR 450, £99, $120
-        const priceLabel = formatListingPrice(listing.price, currency);
+        const priceLabel = formatPrice(listing.price, currency);
 
         const icon = L.divIcon({
           html: `<div style="${pillStyle(false)}">${priceLabel}</div>`,
@@ -473,7 +475,7 @@ export function SearchMap({
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, listings, buildDetailUrl, onMarkerClick]);
+  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice]);
 
   // ── Effect 4: In-place highlight update — no marker rebuild ──────────────
   useEffect(() => {

@@ -5,6 +5,7 @@ import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.service";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ReviewCard } from "./review-card";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
 interface ReviewListProps {
   listingId: string;
@@ -112,6 +113,11 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   async function showMore() {
     const nextPage = currentPage + 1;
     setLoadingMore(true);
+    trackListingEvent({
+      eventType: "reviews_opened",
+      propertyId: listingId,
+      metadata: { action: "show_more_reviews", nextPage, totalReviews: stats?.totalCount },
+    });
     try {
       const params = new URLSearchParams({ page: String(nextPage), limit: "6" });
       const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`);
@@ -168,8 +174,15 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-zinc-400 px-5 py-2.5 text-sm font-semibold transition-colors hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? "Loading…" : `Show all ${stats.totalCount} reviews`}</button> : null}
           <button
             type="button"
-            onClick={() => setIsReviewInfoOpen(true)}
-            className="text-xs text-zinc-600 underline underline-offset-4 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900"
+            onClick={() => {
+              setIsReviewInfoOpen(true);
+              trackListingEvent({
+                eventType: "reviews_opened",
+                propertyId: listingId,
+                metadata: { action: "how_reviews_work", totalReviews: stats.totalCount },
+              });
+            }}
+            className="text-xs text-zinc-600 underline underline-offset-4 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 cursor-pointer"
           >
             How reviews work
           </button>

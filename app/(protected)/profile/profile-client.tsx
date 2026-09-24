@@ -17,17 +17,81 @@ import {
 } from "@/lib/profile/tab-utils";
 import { BUILTIN_TRAVEL_STAMPS, TravelStampItem } from "@/lib/stamps/stamps-data";
 import { TravelStampGraphic } from "@/components/stamps/travel-stamp-graphics";
+import dynamic from "next/dynamic";
 import { LogoutButton } from "@/components/admin/logout-button";
-import { ReservationDashboard } from "@/components/dashboard/reservation-dashboard";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
-import { LoyaltyWalletView } from "@/components/profile/loyalty-wallet-view";
-import { InviteEarnView } from "@/components/profile/invite-earn-view";
-import { SavedListingsView } from "@/components/profile/saved-listings-view";
-import { SupportChatView } from "@/components/profile/support-chat-view";
-import { NotificationsView } from "@/components/profile/notifications-view";
 import { BackButton } from "@/components/ui/back-button";
-import { ProfileManagementClient } from "@/app/(protected)/profile-management/profile-management-client";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
+import { MyReviewsSection } from "@/components/profile/my-reviews-section";
+import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import {
+  SavedListingsSkeleton,
+  NotificationsSkeleton,
+  LoyaltyWalletSkeleton,
+  ProfileManagementSkeleton,
+  SupportChatSkeleton,
+} from "@/components/dashboard/section-skeletons";
+
+const ReservationDashboard = dynamic(
+  () =>
+    import("@/components/dashboard/reservation-dashboard").then(
+      (m) => m.ReservationDashboard,
+    ),
+  { loading: () => <LoadingSkeleton count={4} /> },
+);
+
+const ProfileManagementClient = dynamic(
+  () =>
+    import(
+      "@/app/(protected)/profile-management/profile-management-client"
+    ).then((m) => m.ProfileManagementClient),
+  { loading: () => <ProfileManagementSkeleton /> },
+);
+
+const SavedListingsView = dynamic(
+  () =>
+    import("@/components/profile/saved-listings-view").then(
+      (m) => m.SavedListingsView,
+    ),
+  { loading: () => <SavedListingsSkeleton /> },
+);
+
+const LoyaltyWalletView = dynamic(
+  () =>
+    import("@/components/profile/loyalty-wallet-view").then(
+      (m) => m.LoyaltyWalletView,
+    ),
+  { loading: () => <LoyaltyWalletSkeleton /> },
+);
+
+const InviteEarnView = dynamic(
+  () =>
+    import("@/components/profile/invite-earn-view").then(
+      (m) => m.InviteEarnView,
+    ),
+  {
+    loading: () => (
+      <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
+    ),
+  },
+);
+
+const SupportChatView = dynamic(
+  () =>
+    import("@/components/profile/support-chat-view").then(
+      (m) => m.SupportChatView,
+    ),
+  { loading: () => <SupportChatSkeleton /> },
+);
+
+const NotificationsView = dynamic(
+  () =>
+    import("@/components/profile/notifications-view").then(
+      (m) => m.NotificationsView,
+    ),
+  { loading: () => <NotificationsSkeleton /> },
+);
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -117,6 +181,8 @@ type ProfileClientProps = {
   initialTripPhotos?: unknown[];
   initialStats?: UserStatsData;
   initialReservations?: ReservationCardData[];
+  initialFavorites?: any[];
+  initialReviews?: GuestAuthoredReviewDTO[];
   isOwner?: boolean;
   initialTab?: string;
   initialSubTab?: ProfileMgmtSubTab;
@@ -125,13 +191,32 @@ type ProfileClientProps = {
 export function ProfileClient({
   initial,
   initialTripPhotos = [],
-  initialStats = { trips: 12, likes: 0, reviews: 10, yearsOnHomyz: 4 },
+  initialStats = { trips: 0, likes: 0, reviews: 0, yearsOnHomyz: 0 },
   initialReservations = [],
+  initialFavorites = [],
+  initialReviews = [],
   isOwner = true,
   initialTab,
   initialSubTab,
 }: ProfileClientProps) {
   const searchParams = useSearchParams();
+
+  const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
+
+  useEffect(() => {
+    setCurrentUser(initial);
+  }, [initial]);
+
+  useEffect(() => {
+    function onProfileUpdated(e: Event) {
+      const ev = e as CustomEvent<ProfileData>;
+      if (ev?.detail) {
+        setCurrentUser(ev.detail);
+      }
+    }
+    window.addEventListener("homyz:profile-updated", onProfileUpdated);
+    return () => window.removeEventListener("homyz:profile-updated", onProfileUpdated);
+  }, []);
 
   const [activeTab, setActiveTab] = useState<string>(() =>
     initialTab ? normalizeTabId(initialTab) : extractProfileRoute({ searchParams }).tab
@@ -163,7 +248,7 @@ export function ProfileClient({
     window.history.pushState(null, "", href);
   };
 
-  const pub = initial.publicProfile || {};
+  const pub = currentUser.publicProfile || {};
   const hostPrompts = pub.prompts || {};
   const hostHobbies = Array.isArray(hostPrompts.hobbies)
     ? hostPrompts.hobbies.filter((hobby): hobby is string => typeof hobby === "string")
@@ -177,7 +262,7 @@ export function ProfileClient({
     pub.bio || hostPrompts.homeUnique || hostPrompts.guestsShouldKnow ||
     hostPrompts.education || hostPrompts.perfectGuest || hostHobbies.length || hostInterests.length,
   );
-  const years = initialStats.yearsOnHomyz || (initial.createdAt ? Math.max(1, new Date().getFullYear() - new Date(initial.createdAt).getFullYear()) : 4);
+  const years = initialStats.yearsOnHomyz || (currentUser.createdAt ? Math.max(1, new Date().getFullYear() - new Date(currentUser.createdAt).getFullYear()) : 1);
 
   return (
     <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-0 font-sans sm:pt-5 lg:pb-28 xl:pt-[88px]">
@@ -201,7 +286,7 @@ export function ProfileClient({
           <GuestDashboardSidebar
             activeId={activeTab}
             onSelectTab={handleSelectTab}
-            avatarUrl={initial.image}
+            avatarUrl={currentUser.image}
           />
 
           <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
@@ -228,10 +313,10 @@ export function ProfileClient({
                 <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
                   {/* Rounded rectangular profile image */}
                   <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
-                    {initial.image ? (
+                    {currentUser.image ? (
                       <Image
-                        src={initial.image}
-                        alt={initial.name || "User profile image"}
+                        src={currentUser.image}
+                        alt={currentUser.name || "User profile image"}
                         fill
                         className="object-cover"
                         sizes="(max-width: 639px) 124px, 233px"
@@ -250,10 +335,10 @@ export function ProfileClient({
                   <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
                     <div className="flex flex-col gap-1 sm:gap-2">
                       <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
-                        {initial.name || "Name"}
+                        {currentUser.name || "Name"}
                       </h3>
                       <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
-                        {pub.whereILive || "Town, Country"}
+                        {pub.whereILive || (isOwner ? "Add your location" : "")}
                       </p>
                     </div>
 
@@ -261,14 +346,14 @@ export function ProfileClient({
                     <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
                       <div className="flex flex-col items-center">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.trips || 12}
+                          {initialStats.trips ?? 0}
                         </div>
                         <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Trips</span>
                       </div>
 
                       <div className="flex flex-col items-center">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.reviews || 10}
+                          {initialStats.reviews ?? 0}
                         </div>
                         <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Reviews</span>
                       </div>
@@ -286,12 +371,14 @@ export function ProfileClient({
                 </div>
 
                 {/* Languages Row */}
-                <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
-                    <IconTranslate />
-                  </span>
-                  <span>Speaks {Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages || "English and Russian"}</span>
-                </div>
+                {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
+                  <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
+                      <IconTranslate />
+                    </span>
+                    <span>Speaks {Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages}</span>
+                  </div>
+                ) : null}
 
                 {hasHostProfileDetails && (
                   <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
@@ -338,40 +425,9 @@ export function ProfileClient({
                   </>
                 )}
 
-                {/* 3. My Reviews Section */}
-                <div className="mt-8 hidden w-full max-w-[382px] flex-col gap-8 lg:flex">
-                  <h3 className="text-xl leading-7 font-medium text-[#1F1F1F]">My reviews</h3>
-
-                  <div className="flex flex-col items-start gap-3">
-                    <div className="relative h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-zinc-200">
-                        <Image
-                          src="/images/header-user-avatar.jpg"
-                          alt="Reviewer avatar"
-                          fill
-                          className="object-cover"
-                          sizes="60px"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-0.5 text-xl leading-5 text-[#1F1F1F]" aria-label="5 out of 5 stars">
-                      ★★★★★
-                    </div>
-
-                    <p className="text-base leading-6 font-normal text-[#727272]">
-                      Lorem ipsum dolor sit amet consectetur. Fames quis facilisis dolor turpis lacus eu tellus faucibus. Blandit porttitor justo pretium ridiculus. Metus non in gravida tristique. Vitae iaculis suscipit enim el...{" "}
-                    <span className="cursor-pointer font-normal text-[#727272] hover:text-[#1F1F1F] underline underline-offset-2 transition">read more</span>
-                    </p>
-                  <p className="text-base leading-6 font-medium text-[#1D1D1D] ">Name, Country</p>
-                  </div>
-
-                  <div>
-                    <button
-                      type="button"
-                    className="no-brush-border flex h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base leading-6 font-medium text-[#1F1F1F] transition-colors border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
-                    >
-                      Show review
-                    </button>
-                  </div>
+                {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
+                <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
+                  <MyReviewsSection reviews={initialReviews} />
                 </div>
               </div>
             )}
@@ -381,6 +437,7 @@ export function ProfileClient({
                 <ReservationDashboard
                   initialReservations={initialReservations}
                   initialTab="upcoming"
+                  reviews={initialReviews}
                   onTabChange={(filterTab) => {
                     if (filterTab === "past") handleSelectTab("past_bookings");
                     else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
@@ -394,6 +451,7 @@ export function ProfileClient({
                 <ReservationDashboard
                   initialReservations={initialReservations}
                   initialTab="past"
+                  reviews={initialReviews}
                   onTabChange={(filterTab) => {
                     if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
                     else if (filterTab === "past") handleSelectTab("past_bookings");
@@ -411,12 +469,13 @@ export function ProfileClient({
             )}
 
             {activeTab === "saved" && (
-              <SavedListingsView />
+              <SavedListingsView initialFavorites={initialFavorites} />
             )}
 
             {activeTab === "profile_management" && (
               <ProfileManagementClient
-                initial={initial}
+                initial={currentUser}
+                onProfileUpdated={(updated) => setCurrentUser(updated)}
                 initialTripPhotos={initialTripPhotos as any}
                 initialStats={initialStats}
                 isOwner={isOwner}

@@ -21,7 +21,7 @@ export default async function ProfileTabPage({
     searchParams: resolvedSearchParams,
   });
 
-  const data = await loadProfilePageData();
+  const data = await loadProfilePageData(route.tab);
 
   return (
     <ProfileClient
@@ -29,6 +29,7 @@ export default async function ProfileTabPage({
       initialTripPhotos={data.tripPhotos}
       initialStats={data.stats}
       initialReservations={data.initialReservations}
+      initialFavorites={data.initialFavorites}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}

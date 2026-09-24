@@ -69,6 +69,8 @@ export type UserStatsData = {
   reviews: number;
 };
 
+export const MAX_BIO_LENGTH = 500;
+
 type ProfileManagementClientProps = {
   initial: ProfileData;
   initialTripPhotos?: TripPhotoItem[];
@@ -78,11 +80,12 @@ type ProfileManagementClientProps = {
   onCancel?: () => void;
   initialSubTab?: ProfileMgmtSubTab;
   onSubTabChange?: (subTab: ProfileMgmtSubTab) => void;
+  onProfileUpdated?: (updated: ProfileData) => void;
 };
 
 function languagesForInput(value: string | string[] | undefined): string {
   if (Array.isArray(value)) return getLanguageDisplayNames(value).join(", ");
-  return value || "English and Russian";
+  return value || "";
 }
 
 // Hand-drawn Paris Eiffel Tower Stamp
@@ -255,6 +258,7 @@ export function ProfileManagementClient({
   onCancel,
   initialSubTab,
   onSubTabChange,
+  onProfileUpdated,
 }: ProfileManagementClientProps) {
   const router = useRouter();
   const [activeMgmtTab, setActiveMgmtTab] = useState<ProfileMgmtSubTab>(() =>
@@ -290,6 +294,7 @@ export function ProfileManagementClient({
   const [tripPhotos, setTripPhotos] =
     useState<TripPhotoItem[]>(initialTripPhotos);
   const [pending, startTransition] = useTransition();
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const { data: session, update: updateSession } = useSession();
 
   const [imageUrl, setImageUrl] = useState(initial.image || "");
@@ -323,10 +328,8 @@ export function ProfileManagementClient({
     languages: languagesForInput(pub.languages),
     obsessedWith: pub.obsessedWith || "",
     bioTitle: pub.bioTitle || "",
-    whereILive: pub.whereILive || "Bucharest, Romania",
-    bio:
-      pub.bio ||
-      "Your profile's got star power—hosts and guests can check it out, helping Homyz stay awesome and trustworthy!",
+    whereILive: pub.whereILive || "",
+    bio: pub.bio || "",
     stampsVisible: pub.stampsVisible !== false,
   });
 
@@ -351,7 +354,12 @@ export function ProfileManagementClient({
         return;
       }
       if (res.data) {
-        setProfileData(res.data as ProfileData);
+        const updated = res.data as ProfileData;
+        setProfileData(updated);
+        onProfileUpdated?.(updated);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:profile-updated", { detail: updated }));
+        }
       }
       toast.success("Settings updated successfully.");
       router.refresh();
@@ -360,24 +368,64 @@ export function ProfileManagementClient({
 
   const onSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
-    if (!isOwner) return;
+    if (!isOwner || saveStatus === "saving" || pending) return;
+
+    setSaveStatus("saving");
+
+    const rawLanguages = typeof formDataState.languages === "string"
+      ? formDataState.languages.split(",").map((l) => l.trim()).filter(Boolean)
+      : formDataState.languages;
+    const uniqueLanguages = Array.isArray(rawLanguages)
+      ? Array.from(new Set(rawLanguages))
+      : rawLanguages;
+
+    const trimmedBio = (formDataState.bio || "").trim().slice(0, MAX_BIO_LENGTH);
+    const trimmedWhereILive = (formDataState.whereILive || "").trim();
+    const trimmedMyWork = (formDataState.myWork || "").trim();
+    const trimmedSchool = (formDataState.school || "").trim();
 
     const payload = {
       image: imageUrl || initial.image || null,
-      name: name || initial.name || null,
+      name: (name || initial.name || "").trim() || null,
       phone: initial.phone || null,
-      publicProfile: { ...pub, ...formDataState },
+      publicProfile: {
+        ...pub,
+        ...formDataState,
+        bio: trimmedBio || null,
+        whereILive: trimmedWhereILive || null,
+        myWork: trimmedMyWork || null,
+        school: trimmedSchool || null,
+        languages: uniqueLanguages || [],
+      },
     };
 
     startTransition(async () => {
-      const res = await updateProfileAction(payload);
-      if (!res.ok) {
-        toast.error(res.error || "Failed to update profile.");
-        return;
+      try {
+        const res = await updateProfileAction(payload);
+        if (!res.ok) {
+          setSaveStatus("error");
+          toast.error(res.error || "Failed to update profile.");
+          return;
+        }
+        const updated = res.data as ProfileData;
+        setProfileData(updated);
+        setSaveStatus("saved");
+        toast.success("Profile changes saved successfully!");
+
+        onProfileUpdated?.(updated);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:profile-updated", { detail: updated }));
+        }
+
+        setTimeout(() => {
+          setSaveStatus("idle");
+        }, 2500);
+
+        router.refresh();
+      } catch (err) {
+        setSaveStatus("error");
+        toast.error(err instanceof Error ? err.message : "Failed to update profile.");
       }
-      toast.success("Profile changes saved successfully!");
-      setProfileData(res.data as ProfileData);
-      router.refresh();
     });
   };
 
@@ -408,6 +456,15 @@ export function ProfileManagementClient({
 
       if (!saveRes.ok) {
         throw new Error(saveRes.error || "Failed to save updated avatar.");
+      }
+
+      if (saveRes.data) {
+        const updated = saveRes.data as ProfileData;
+        setProfileData(updated);
+        onProfileUpdated?.(updated);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:profile-updated", { detail: updated }));
+        }
       }
 
       if (session?.user) {
@@ -813,8 +870,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Languages I speak:{" "}
-                  {formDataState.languages || "English and Russian"}
+                  Languages I speak{formDataState.languages ? `: ${formDataState.languages}` : ""}
                 </span>
                 <input
                   value={formDataState.languages}
@@ -823,7 +879,7 @@ export function ProfileManagementClient({
                     handleInputChange("languages", e.target.value)
                   }
                   className="w-full sm:text-lg text-sm bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
-                  placeholder="Languages"
+                  placeholder="e.g. English, Arabic, French"
                 />
               </div>
             </div>
@@ -879,8 +935,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Where I live:{" "}
-                  {formDataState.whereILive || "Bucharest, Romania"}
+                  Where I live{formDataState.whereILive ? `: ${formDataState.whereILive}` : ""}
                 </span>
                 <input
                   value={formDataState.whereILive}
@@ -897,29 +952,63 @@ export function ProfileManagementClient({
 
           {/* About me Textarea Box */}
           <div className="mt-4">
-            <h3 className="text-lg font-medium text-[#1F1F1F] mb-3">
-              About me
-            </h3>
-            <div className="rounded-lg border border-[#727272] p-6 min-h-[100px] focus-within:border-zinc-400 transition-colors bg-white">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-medium text-[#1F1F1F]">
+                About me
+              </h3>
+              <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-semibold" : "text-zinc-500"}`}>
+                {(formDataState.bio || "").length} / {MAX_BIO_LENGTH}
+              </span>
+            </div>
+            <div className="rounded-lg border border-[#727272] p-4 sm:p-6 min-h-[120px] focus-within:border-zinc-400 transition-colors bg-white">
               <textarea
                 value={formDataState.bio}
-                disabled={!isOwner}
-                onChange={(e) => handleInputChange("bio", e.target.value)}
-                onBlur={() => onSubmit()}
-                className="w-full h-full bg-transparent resize-none font-normal text-base text-[#727272] placeholder-[#1f1f1f80 focus:outline-none leading-relaxed"
-                placeholder="Your profile's got star power—hosts and guests can check it out, helping Homyz stay awesome and trustworthy!"
+                disabled={!isOwner || saveStatus === "saving"}
+                maxLength={MAX_BIO_LENGTH}
+                onChange={(e) => {
+                  const val = e.target.value.slice(0, MAX_BIO_LENGTH);
+                  handleInputChange("bio", val);
+                }}
+                className="w-full h-full min-h-[90px] bg-transparent resize-y font-normal text-base text-[#1F1F1F] placeholder-zinc-400 focus:outline-none leading-relaxed"
+                placeholder="Tell hosts and guests a little about yourself, your hobbies, and travel style..."
               />
             </div>
+            <p className="mt-1.5 text-xs text-zinc-500">
+              Maximum {MAX_BIO_LENGTH} characters. About me will be visible on your public profile and to hosts when booking.
+            </p>
           </div>
 
           {isOwner && (
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-4">
               <button
                 type="submit"
-                disabled={pending}
-                className="hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors lg:inline-flex border border-transparent hover:border-[#1F1F1F]  hover:text-[#fff]"
+                disabled={pending || saveStatus === "saving"}
+                className={`inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap rounded-full px-7 py-3 text-base font-medium transition-colors cursor-pointer ${
+                  saveStatus === "saving"
+                    ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+                    : saveStatus === "saved"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white"
+                }`}
               >
-                {pending ? "Saving..." : "Save profile"}
+                {saveStatus === "saving" ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Saving...</span>
+                  </>
+                ) : saveStatus === "saved" ? (
+                  <>
+                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Saved!</span>
+                  </>
+                ) : (
+                  <span>Save profile</span>
+                )}
               </button>
             </div>
           )}

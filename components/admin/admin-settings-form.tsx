@@ -10,6 +10,7 @@ import {
   updatePopularHomesSelectionAction,
 } from "@/actions/admin/settingsActions";
 import type { HomepagePopularHomesConfig } from "@/services/app-settings.service";
+import { useCurrency } from "@/lib/currency-context";
 
 interface AdminSettingsFormProps {
   initialHostServiceFee?: number;
@@ -27,6 +28,7 @@ export function AdminSettingsForm({
     enabled: true,
   },
 }: AdminSettingsFormProps) {
+  const { currency, formatPrice } = useCurrency();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -263,29 +265,29 @@ export function AdminSettingsForm({
             <div>
               <span className="font-bold text-muted-foreground block mb-2">Live Calculation Simulation</span>
               <p className="text-[11px] text-[var(--muted-foreground)] mb-4">
-                Example booking with a stay amount of 1,000.00 SAR:
+                Example booking with a stay amount of {formatPrice(100_000, "SAR", 2)}:
               </p>
 
               <dl className="space-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-[var(--border-subtle)]">
                   <dt className="text-[var(--muted-foreground)]">Stay Amount (Accommodation)</dt>
-                  <dd className="font-mono font-medium text-foreground">1,000.00 SAR</dd>
+                  <dd className="font-mono font-medium text-foreground">{formatPrice(100_000, "SAR", 2)}</dd>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--border-subtle)]">
                   <dt className="text-[var(--muted-foreground)]">Guest Service Fee ({hostServiceFee}%)</dt>
                   <dd className="font-mono font-bold text-rose-500">
-                    - {(1000 * (hostServiceFee / 100)).toFixed(2)} SAR
+                    - {formatPrice(Math.round(100_000 * (hostServiceFee / 100)), "SAR", 2)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[var(--border-subtle)]">
                   <dt className="text-[var(--muted-foreground)]">Host Net Payout</dt>
                   <dd className="font-mono font-bold text-emerald-600">
-                    {(1000 - 1000 * (hostServiceFee / 100)).toFixed(2)} SAR
+                    {formatPrice(Math.round(100_000 * (1 - hostServiceFee / 100)), "SAR", 2)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1 text-[11px] text-[var(--muted-foreground)]">
-                  <dt>VAT (15% on 1,000 SAR Stay)</dt>
-                  <dd className="font-mono">150.00 SAR</dd>
+                  <dt>VAT (15% on a {currency} display)</dt>
+                  <dd className="font-mono">{formatPrice(15_000, "SAR", 2)}</dd>
                 </div>
               </dl>
             </div>
