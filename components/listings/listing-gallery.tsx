@@ -193,7 +193,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
           )}
         </div>}
 
-        {total > 0 && (
+        {/* {total > 0 && (
           <button
             type="button"
             onClick={handleOpenLightbox}
@@ -207,7 +207,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
             </svg>
             <span>{total > 1 ? `Show all ${total} photos` : "Show photo"}</span>
           </button>
-        )}
+        )} */}
       </div>
 
       <div className="absolute left-0 top-0 z-10 flex w-full items-start justify-between px-3 pt-3 md:hidden">
