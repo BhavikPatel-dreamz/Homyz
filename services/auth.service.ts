@@ -22,11 +22,12 @@ import type {
   VerifyOtpInput,
 } from "@/lib/validation/auth";
 import type { User } from "@/generated/prisma/client";
-import { Role } from "@/generated/prisma/enums";
+import { Role, NotificationType } from "@/generated/prisma/enums";
 
 import { toPublicUser, type PublicUser } from "./mappers";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
 import { referralService } from "./referral.service";
+import { notificationService } from "./notification.service";
 
 // ── Internal helpers ────────────────────────────────────────────────────────
 
@@ -135,6 +136,23 @@ async function register(input: RegisterInput): Promise<PublicUser> {
     });
 
     await sendEmailVerification(emailAddr);
+
+    if (referredById) {
+      try {
+        await notificationService.create({
+          userId: referredById,
+          type: NotificationType.PROMOTION,
+          title: "Friend Joined Homyz!",
+          message: `${input.name || "A friend"} just joined Homyz using your referral link. You'll receive points after their first stay!`,
+          link: "/profile/tab/invite",
+          entityType: "referral_signup",
+          metadata: { referredUserId: user.id },
+        });
+      } catch (err) {
+        console.warn("[auth.service] Failed to send referral signup notification:", err);
+      }
+    }
+
     return toPublicUser(user);
   } catch (err: any) {
     if (err?.code === "P2002") {

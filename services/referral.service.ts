@@ -3,10 +3,11 @@ import { customAlphabet } from "nanoid";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@/generated/prisma/client";
-import { BookingStatus, ReferralRewardStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ReferralRewardStatus, NotificationType } from "@/generated/prisma/enums";
 import type { AuthUser } from "@/lib/auth/types";
 import { auditService } from "./audit.service";
 import { getReferralProgramConfig, type ReferralProgramConfig } from "./app-settings.service";
+import { notificationService } from "./notification.service";
 
 const REFERRAL_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const createReferralSuffix = customAlphabet(REFERRAL_CODE_ALPHABET, 10);
@@ -217,6 +218,36 @@ async function reviewReward(actor: AuthUser, rewardId: string, action: "APPROVE"
     description: `${action === "APPROVE" ? "Approved" : "Rejected"} ${reward.points} referral points.`,
     metadata: { inviterId: reward.inviterId, referredUserId: reward.referredUserId, points: reward.points, rejectionReason: reward.rejectionReason },
   });
+
+  // Targeted notification sent strictly to the inviter who earned/claimed the reward
+  try {
+    if (action === "APPROVE") {
+      await notificationService.create({
+        userId: reward.inviterId,
+        type: NotificationType.PROMOTION,
+        title: "Referral Points Credited",
+        message: `Your referral reward of ${reward.points} points has been approved and credited to your account!`,
+        entityId: reward.id,
+        entityType: "referral_reward",
+        link: "/profile/tab/invite",
+        metadata: { rewardId: reward.id, points: reward.points, status: "APPROVED" },
+      });
+    } else {
+      await notificationService.create({
+        userId: reward.inviterId,
+        type: NotificationType.SYSTEM,
+        title: "Referral Reward Update",
+        message: `Your referral claim could not be approved${reward.rejectionReason ? `: ${reward.rejectionReason}` : "."}`,
+        entityId: reward.id,
+        entityType: "referral_reward",
+        link: "/profile/tab/invite",
+        metadata: { rewardId: reward.id, status: "REJECTED" },
+      });
+    }
+  } catch (err) {
+    console.warn("[referral.service] Failed to dispatch referral notification:", err);
+  }
+
   return reward;
 }
 

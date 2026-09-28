@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
+import { AdminPersonalInformationPanel } from "@/components/admin/personal-information-panel";
 import type { HostDetailsData } from "@/services/admin.service";
 import { useCurrency } from "@/lib/currency-context";
 
@@ -79,7 +80,15 @@ function ConfirmModal({ title, description, confirmLabel, danger = false, onCanc
   return <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="host-action-title" onMouseDown={onCancel}><div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(event) => event.stopPropagation()}><h2 id="host-action-title" className="text-lg font-semibold text-muted-foreground">{title}</h2><p className="mt-2 text-sm text-[var(--muted-foreground)]">{description}</p><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={onCancel} disabled={pending} className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50">Cancel</button><button type="button" onClick={onConfirm} disabled={pending} className={`rounded-full px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"}`}>{pending ? "Working…" : confirmLabel}</button></div></div></ModalOverlay>;
 }
 
-export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }) {
+export function HostDetailsView({
+  initialData,
+  canViewIdentity = false,
+  canReviewIdentity = false,
+}: {
+  initialData: HostDetailsDTO;
+  canViewIdentity?: boolean;
+  canReviewIdentity?: boolean;
+}) {
   const { formatPrice } = useCurrency();
   const router = useRouter();
   const [data, setData] = useState(initialData);
@@ -124,6 +133,16 @@ export function HostDetailsView({ initialData }: { initialData: HostDetailsDTO }
 
     {activeTab === "overview" && (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {data.personalInfo && (
+          <div className="lg:col-span-2">
+            <AdminPersonalInformationPanel
+              userId={host.id}
+              initialData={data.personalInfo}
+              canViewDocument={canViewIdentity}
+              canReviewDocument={canReviewIdentity}
+            />
+          </div>
+        )}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <h2 className="text-sm font-semibold text-muted-foreground">Host Profile</h2>
           <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">

@@ -8,7 +8,7 @@ import path from "node:path";
  *   3. upload             — local fallback for `next dev` without the media process
  *
  * Public kinds return a browser URL (`/uploads/{kind}/{file}` unless S3 is on).
- * Private host documents stay behind the authenticated documents API.
+ * Private documents stay behind their authenticated document APIs.
  */
 
 export type PublicMediaKind = "listing-photos" | "guidebook-photos";
@@ -399,8 +399,8 @@ export async function savePublicMedia(options: {
 }
 
 /**
- * Store a private host document. Callers should keep serving it through the
- * authenticated `/api/v1/host/application/documents/file/[fileName]` route.
+ * Store a private document. Callers must serve it through an authenticated
+ * route instead of exposing its storage key under `/uploads`.
  */
 export async function savePrivateMedia(options: {
   kind: PrivateMediaKind;

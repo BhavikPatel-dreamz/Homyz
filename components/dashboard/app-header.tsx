@@ -52,7 +52,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
   const isListingRoute = showSearchBar === true;
-  const routeHasHeaderDivider = !["/", "/dashboard", "/profile", "/profile-management"].some(
+  const routeHasHeaderDivider = !["/", "/dashboard", "/profile", "/profile-management", "/account-settings"].some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
   );
   const hasHeaderDivider = showBottomBorder ?? routeHasHeaderDivider;
@@ -103,7 +103,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
     { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/home-icon.svg" },
     { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg" },
     { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
-    { href: "/profile-management", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" },
+    { href: "/profile/tab/account_settings", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" }, // alias: /account-settings/personal-info
     { href: "/profile/tab/saved", label: "Wishlist", icon: "/images/icons/wishlist.svg" },
     ...(role === "ADMIN" ? [{ href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/grid-Icon.svg" }] : []),
   ];
@@ -401,9 +401,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                     <div className="py-0.5 space-y-1">
                       {/* Account setting */}
                       <Link
-                        href="/profile-management"
+                        href="/profile/tab/account_settings"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
                           }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">

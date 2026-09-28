@@ -33,6 +33,13 @@ enum OtpPurpose {
   PASSWORD_RESET
 }
 
+enum NotificationType {
+  BOOKING
+  MESSAGE
+  PROMOTION
+  SYSTEM
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED
@@ -155,6 +162,7 @@ model User {
   phone         String?    @unique
   phoneVerified DateTime?
   birthDate     DateTime?  @db.Date
+  personalInfo  Json? // Stores private account settings: legalName, preferredName, identityStatus, addresses, emergencyContact
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   tokenVersion  Int        @default(0)
@@ -202,11 +210,33 @@ model User {
   referralRewards                 ReferralReward[]          @relation("ReferralRewardInviter")
   referralRewardEarnedFor         ReferralReward?           @relation("ReferralRewardReferredGuest")
   reviewedReferralRewards         ReferralReward[]          @relation("ReferralRewardReviewer")
+  notifications                   Notification[]
 
   @@index([role])
   @@index([adminRoleId])
   @@index([status])
   @@index([referredById])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  isRead     Boolean          @default(false)
+  readAt     DateTime?
+  entityId   String?
+  entityType String?
+  link       String?
+  metadata   Json?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model TripPhoto {

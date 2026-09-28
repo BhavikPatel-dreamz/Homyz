@@ -6,6 +6,7 @@ export const GUEST_NAV_ITEMS = [
   { id: "invite", label: "Invite & Earn", href: "/profile/tab/invite", image: "/images/icons/invite-earn.svg" },
   { id: "saved", label: "Saved Listings / Wishlists", href: "/profile/tab/saved", image: "/images/icons/saved-listing.svg" },
   { id: "profile_management", label: "Profile Management", href: "/profile/tab/profile_management", image: "/images/icons/profile-management.svg" },
+  { id: "account_settings", label: "Account settings", href: "/profile/tab/account_settings", image: "/images/icons/setting.svg" },
   { id: "support", label: "Support / Chat with Agent", href: "/profile/tab/support", image: "/images/icons/support-chat-with-agent.svg" },
   { id: "notifications", label: "Notifications", href: "/profile/tab/notifications", image: "/images/icons/Notifications.svg" },
 ];
@@ -50,6 +51,15 @@ export function normalizeTabId(tab: string | null | undefined): string {
   if (tab.startsWith("past")) return "past_bookings";
   if (tab.startsWith("profile_management")) return "profile_management";
   if (tab === "saved" || tab === "wishlist" || tab === "wishlists") return "saved";
+  if (
+    tab === "account_settings" ||
+    tab === "account-settings" ||
+    tab === "personal_info" ||
+    tab === "personal-info" ||
+    tab === "account"
+  ) {
+    return "account_settings";
+  }
   return tab;
 }
 

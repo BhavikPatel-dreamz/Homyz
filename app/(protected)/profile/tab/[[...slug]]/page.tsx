@@ -21,6 +21,12 @@ export default async function ProfileTabPage({
     searchParams: resolvedSearchParams,
   });
 
+  // Canonicalize personal_info aliases to /profile/tab/account_settings
+  // (Supports /account-settings/personal-info integrated directly within My profile tabs)
+  if (slug[0] === "personal-info" || slug[0] === "personal_info" || slug[0] === "account-settings") {
+    redirect("/profile/tab/account_settings");
+  }
+
   const data = await loadProfilePageData(route.tab);
 
   return (
@@ -31,6 +37,8 @@ export default async function ProfileTabPage({
       initialReservations={data.initialReservations}
       initialFavorites={data.initialFavorites}
       initialReviews={data.initialReviews}
+      initialNotifications={data.initialNotifications}
+      initialPersonalInfo={data.initialPersonalInfo}
       isOwner={true}
       initialTab={route.tab}
       initialSubTab={route.subTab}
