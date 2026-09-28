@@ -108,12 +108,11 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   ];
 
   return (
-    <header className="header sticky top-0 z-40 w-full bg-white text-[#1F1F1F]"  suppressHydrationWarning>
+    <header className="header sticky top-0 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
       <Container>
         <div
-          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${
-            hasHeaderDivider ? "md:border-b md:border-[rgba(31,31,31,0.9)]" : ""
-          }`}
+          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[rgba(31,31,31,0.9)]" : ""
+            }`}
         >
           <Link
             href="/"
@@ -325,10 +324,12 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   <div className="space-y-1">
                     <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
-                      <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
-                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                        {role || "USER"}
-                      </span>
+                      <div className="flex items-center justify-between gap-5">
+                        <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
+                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                          {role || "USER"}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Group 1: User Navigation with Icons matching Image 1 */}
@@ -337,9 +338,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/profile/tab/saved"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname === "/profile/tab/saved" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile/tab/saved" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/wishlist.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -351,9 +351,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/profile/tab/upcoming"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname?.startsWith("/profile/tab/upcoming") || pathname === "/bookings" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.startsWith("/profile/tab/upcoming") || pathname === "/bookings" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -365,9 +364,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/host/messages"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname === "/host/messages" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/host/messages" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -379,9 +377,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/profile"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -398,9 +395,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/profile-management"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -412,9 +408,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       <Link
                         href="/help"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                          pathname === "/help" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                        }`}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/help" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                          }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/help.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
@@ -473,10 +468,12 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   <div className="space-y-1">
                     <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
-                      <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
-                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                        {role || "HOST"}
-                      </span>
+                      <div className="flex items-center justify-between gap-5">
+                        <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
+                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                          {role || "HOST"}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="py-1">
@@ -485,11 +482,10 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                           key={item.href}
                           href={item.href}
                           onClick={() => setMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${
-                            pathname === item.href
-                              ? "bg-amber-100 text-[#1F1F1F] font-medium"
-                              : "text-[#1F1F1F] hover:bg-white"
-                          }`}
+                          className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${pathname === item.href
+                            ? "bg-amber-100 text-[#1F1F1F] font-medium"
+                            : "text-[#1F1F1F] hover:bg-white"
+                            }`}
                         >
                           {item.icon && (
                             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-2xs">
@@ -516,9 +512,11 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         <span>{t("header_languages_currency")}</span>
                       </button>
 
-                      <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
-                        {t("header_sign_out")}
-                      </LogoutButton>
+                      <div className="border-t border-zinc-200/80 pt-2 mt-1">
+                        <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
+                          {t("header_sign_out")}
+                        </LogoutButton>
+                      </div>
                     </div>
                   </div>
                 )}
