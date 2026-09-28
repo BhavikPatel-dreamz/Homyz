@@ -52,7 +52,7 @@ export function StepProgressFooter({
           return (
             <div
               key={idx}
-              className={`w-2.5 rounded-full transition-all duration-200 ${isActive ? "h-7 bg-[#EBA900]" : "h-5 bg-[#DDDDDE]"
+              className={`w-2.5 rounded-full transition-all duration-200 ${isActive ? "h-7 bg-[#FCDF9C]" : "h-5 bg-[#DDDDDE]"
                 }`}
             />
           );

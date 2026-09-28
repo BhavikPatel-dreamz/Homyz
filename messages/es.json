@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "Este enlace de restablecimiento de contraseña no es válido o falta su token de seguridad.",
   "auth_request_new_reset_link": "Solicitar nuevo enlace de restablecimiento",
   "home_hero_title": "Reserva alojamientos acogedores que se sientan como en casa",
+  "home_hero_title_line_one": "Reserva alojamientos acogedores",
+  "home_hero_title_line_two": "que se sientan como en casa",
   "home_hero_subtitle": "Explora apartamentos, lofts, villas y casas acogedoras seleccionados a mano.",
   "home_search_where": "Dónde",
   "home_search_where_placeholder": "Buscar destinos",

@@ -215,10 +215,10 @@ function HomePropertySectionComponent({
           {seeAllHref && (
             <Link
               href={seeAllHref}
-              className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#0052cc] hover:text-[#003b95] hover:underline transition-colors ml-1"
+              className="hidden sm:flex justify-center items-center bg-[#F3F4F5] hover:bg-[#FCDF9C] text-[#1f1f1f] transition-colors ml-1 w-8 h-8 rounded-full"
             >
-              <span>{t("home_see_all")}</span>
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+              {/* <span>{t("home_see_all")}</span> */}
+              <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
@@ -305,7 +305,7 @@ function HomePropertySectionComponent({
               onClick={() => goToPage(idx)}
               className={`cursor-pointer transition-all duration-300 ${
                 idx === activeIndex
-                  ? "h-7 w-2 rounded-full bg-[#eba900]"
+                  ? "h-7 w-2 rounded-full bg-[#FCDF9C]"
                   : "h-5 w-2 rounded-full bg-[#ddddde] hover:bg-gray-400"
               }`}
             />

@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "Dieser Link zum Zurücksetzen des Passworts ist ungültig oder der Sicherheitstoken fehlt.",
   "auth_request_new_reset_link": "Neuen Link anfordern",
   "home_hero_title": "Buchen Sie gemütliche Unterkünfte wie zu Hause",
+  "home_hero_title_line_one": "Buchen Sie gemütliche",
+  "home_hero_title_line_two": "Unterkünfte wie zu Hause",
   "home_hero_subtitle": "Entdecken Sie handverlesene Wohnungen, Lofts, Villen und gemütliche Häuser.",
   "home_search_where": "Wohin",
   "home_search_where_placeholder": "Reiseziele suchen",

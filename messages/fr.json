@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "Ce lien de réinitialisation de mot de passe est invalide ou ne contient pas de jeton de sécurité.",
   "auth_request_new_reset_link": "Demander un nouveau lien de réinitialisation",
   "home_hero_title": "Réservez des séjours chaleureux comme à la maison",
+  "home_hero_title_line_one": "Réservez des séjours chaleureux",
+  "home_hero_title_line_two": "comme à la maison",
   "home_hero_subtitle": "Découvrez des appartements, lofts, villas et maisons sélectionnées avec soin.",
   "home_search_where": "Où",
   "home_search_where_placeholder": "Rechercher des destinations",

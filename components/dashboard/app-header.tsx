@@ -172,25 +172,25 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host") || "Become a host"}
               </Link>
             )}
 
             {isHostRoute ? (
-              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
                 {t("header_switch_traveling") || "Switch to traveling"}
               </Link>
             ) : role === "HOST" ? (
-              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
+              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
                 {t("header_switch_hosting") || "Switch to hosting"}
               </Link>
             ) : null}
