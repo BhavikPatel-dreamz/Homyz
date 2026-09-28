@@ -2,6 +2,8 @@ import { requirePageUser } from "@/lib/permissions/page-guards";
 import { userService } from "@/services/user.service";
 import { bookingService } from "@/services/booking.service";
 import { reviewService } from "@/services/review.service";
+import { notificationService, type NotificationDTO } from "@/services/notification.service";
+import { personalInfoService, type PersonalInfoDTO } from "@/services/personal-info.service";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { prisma } from "@/lib/db/prisma";
@@ -51,6 +53,11 @@ export async function loadProfilePageData(tab?: string) {
     normalizedTab === "today";
   const isSaved = normalizedTab === "saved";
   const isManagement = normalizedTab === "profile_management";
+  const isNotifications = normalizedTab === "notifications";
+  const isAccountSettings =
+    normalizedTab === "account_settings" ||
+    normalizedTab === "personal_info" ||
+    normalizedTab === "account";
 
   // If no tab was specified at all, load all for backwards compatibility
   const shouldLoadAll = tab === undefined;
@@ -63,6 +70,8 @@ export async function loadProfilePageData(tab?: string) {
     isAboutMe ||
     normalizedTab === "past_bookings" ||
     normalizedTab === "past";
+  const needsNotifications = shouldLoadAll || isNotifications;
+  const needsPersonalInfo = shouldLoadAll || isAccountSettings;
 
   const [
     user,
@@ -71,6 +80,8 @@ export async function loadProfilePageData(tab?: string) {
     initialReservations,
     initialFavorites,
     initialReviews,
+    initialNotifications,
+    initialPersonalInfo,
   ] = await Promise.all([
     userService.getById(actor.id),
     userService.getUserStats(actor.id),
@@ -120,6 +131,18 @@ export async function loadProfilePageData(tab?: string) {
           return [];
         })
       : Promise.resolve([]),
+    needsNotifications
+      ? notificationService.listForUser(actor.id, { take: 50 }).catch((err: unknown) => {
+          console.error("Failed to load user notifications:", err);
+          return { items: [], total: 0, unreadCount: 0 };
+        })
+      : Promise.resolve({ items: [], total: 0, unreadCount: 0 }),
+    needsPersonalInfo
+      ? personalInfoService.getPersonalInfo(actor.id).catch((err: unknown) => {
+          console.error("Failed to load personal info:", err);
+          return null;
+        })
+      : Promise.resolve(null),
   ]);
 
   return {
@@ -129,6 +152,8 @@ export async function loadProfilePageData(tab?: string) {
     initialReservations,
     initialFavorites,
     initialReviews,
+    initialNotifications,
+    initialPersonalInfo,
   };
 }
 

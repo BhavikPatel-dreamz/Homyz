@@ -31,16 +31,47 @@ export function SavedListingsSkeleton() {
 
 export function NotificationsSkeleton() {
   return (
-    <div aria-label="Loading notifications" role="status" className="max-w-3xl space-y-4 animate-pulse">
-      <SectionHeaderSkeleton />
-      <div className="space-y-3">
+    <div aria-label="Loading notifications" role="status" className="max-w-4xl space-y-6 animate-pulse">
+      {/* Notifications Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-zinc-100">
+        <div className="space-y-2">
+          <div className="h-8 w-44 rounded-lg bg-zinc-200 skeleton-shimmer" />
+          <div className="h-4 w-72 rounded bg-zinc-100 skeleton-shimmer" />
+        </div>
+        <div className="h-9 w-32 rounded-xl bg-zinc-100 skeleton-shimmer" />
+      </div>
+
+      {/* Filter Tabs Skeleton */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <div className="h-9 w-16 rounded-xl bg-zinc-200 skeleton-shimmer" />
+        <div className="h-9 w-20 rounded-xl bg-zinc-100 skeleton-shimmer" />
+        <div className="h-9 w-24 rounded-xl bg-zinc-100 skeleton-shimmer" />
+        <div className="h-9 w-24 rounded-xl bg-zinc-100 skeleton-shimmer" />
+        <div className="h-9 w-24 rounded-xl bg-zinc-100 skeleton-shimmer" />
+      </div>
+
+      {/* Notifications List Rows */}
+      <div className="space-y-3 pt-1">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-start gap-4 rounded-2xl border border-zinc-100 p-4">
-            <div className="h-10 w-10 shrink-0 rounded-xl bg-zinc-200" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-1/3 rounded bg-zinc-200" />
-              <div className="h-3 w-3/4 rounded bg-zinc-100" />
+          <div
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs"
+          >
+            {/* Notification type icon */}
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-zinc-200 skeleton-shimmer" />
+
+            {/* Notification content */}
+            <div className="flex-1 space-y-2.5">
+              <div className="flex items-center justify-between gap-4">
+                <div className="h-4 w-48 rounded bg-zinc-200 skeleton-shimmer" />
+                <div className="h-3 w-16 rounded bg-zinc-100 skeleton-shimmer" />
+              </div>
+              <div className="h-3.5 w-3/4 rounded bg-zinc-100 skeleton-shimmer" />
+              <div className="h-3 w-28 rounded bg-zinc-100 skeleton-shimmer" />
             </div>
+
+            {/* Read/unread toggle button placeholder */}
+            <div className="h-6 w-6 shrink-0 rounded-full bg-zinc-100 skeleton-shimmer" />
           </div>
         ))}
       </div>
@@ -101,6 +132,25 @@ export function SupportChatSkeleton() {
     <div aria-label="Loading concierge chat" role="status" className="max-w-2xl space-y-4 animate-pulse">
       <SectionHeaderSkeleton />
       <div className="h-80 w-full rounded-2xl border border-zinc-200 bg-zinc-50" />
+    </div>
+  );
+}
+
+export function PersonalInfoSkeleton() {
+  return (
+    <div aria-label="Loading personal information" role="status" className="w-full max-w-2xl space-y-6 animate-pulse">
+      <div className="h-8 w-56 rounded-lg bg-zinc-200 skeleton-shimmer" />
+      <div className="divide-y divide-zinc-200">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between py-5">
+            <div className="space-y-2">
+              <div className="h-4 w-36 rounded bg-zinc-200 skeleton-shimmer" />
+              <div className="h-3 w-48 rounded bg-zinc-100 skeleton-shimmer" />
+            </div>
+            <div className="h-4 w-12 rounded bg-zinc-200 skeleton-shimmer" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { AdminPersonalInformationPanel } from "@/components/admin/personal-information-panel";
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -17,9 +18,13 @@ import {
 
 interface GuestDetailsViewProps {
   initialData: GuestDetailsData;
+  canReviewIdentity?: boolean;
 }
 
-export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
+export function GuestDetailsView({
+  initialData,
+  canReviewIdentity = false,
+}: GuestDetailsViewProps) {
   const { formatPrice } = useCurrency();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -253,6 +258,13 @@ export function GuestDetailsView({ initialData }: GuestDetailsViewProps) {
       {/* Tab 1: OVERVIEW */}
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <AdminPersonalInformationPanel
+              userId={guest.id}
+              initialData={data.personalInfo}
+              canReviewDocument={canReviewIdentity}
+            />
+          </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <h2 className="text-base font-semibold text-muted-foreground">Personal & Contact Info</h2>

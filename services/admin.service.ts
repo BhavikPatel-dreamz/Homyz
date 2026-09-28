@@ -21,6 +21,116 @@ import { invitationService } from "./invitation.service";
 import { hostRegistrationService } from "./host-registration.service";
 import { toPublicUser, type PublicUser } from "./mappers";
 
+export type PersonalIdentityStatus = "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED";
+
+export interface AdminPersonalInfoData {
+  legalFirstName: string;
+  legalLastName: string;
+  legalName: string;
+  preferredFirstName: string;
+  email: string;
+  phone: string;
+  identityStatus: PersonalIdentityStatus;
+  identityDocument: {
+    documentType: "passport" | "license" | "national_id";
+    fileName: string;
+    uploadedAt: string;
+    previewUrl: string;
+    reviewedAt?: string;
+    reviewedById?: string;
+    rejectionReason?: string;
+  } | null;
+  residentialAddress: AdminAddressData | null;
+  postalAddress: AdminAddressData | null;
+  sameAsResidential: boolean;
+  emergencyContact: AdminEmergencyContactData | null;
+}
+
+export interface AdminAddressData {
+  street: string;
+  apt: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface AdminEmergencyContactData {
+  name: string;
+  relationship: string;
+  countryCode: string;
+  phoneNumber: string;
+  email?: string;
+  preferredLanguage?: string;
+}
+
+type StoredPersonalInfo = Partial<{
+  legalFirstName: string;
+  legalLastName: string;
+  preferredFirstName: string;
+  identityStatus: PersonalIdentityStatus;
+  identityDocument: {
+    documentType: "passport" | "license" | "national_id";
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: string;
+    reviewedAt?: string;
+    reviewedById?: string;
+    rejectionReason?: string;
+  };
+  residentialAddress: AdminAddressData;
+  postalAddress: AdminAddressData;
+  sameAsResidential: boolean;
+  emergencyContact: AdminEmergencyContactData;
+}>;
+
+function storedPersonalInfo(value: unknown): StoredPersonalInfo {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as StoredPersonalInfo)
+    : {};
+}
+
+function toAdminPersonalInfo(user: {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  personalInfo: unknown;
+}): AdminPersonalInfoData {
+  const info = storedPersonalInfo(user.personalInfo);
+  const legalFirstName = info.legalFirstName || "";
+  const legalLastName = info.legalLastName || "";
+  const document = info.identityDocument;
+
+  return {
+    legalFirstName,
+    legalLastName,
+    legalName:
+      legalFirstName || legalLastName
+        ? `${legalFirstName} ${legalLastName}`.trim()
+        : user.name || "",
+    preferredFirstName: info.preferredFirstName || "",
+    email: user.email || "",
+    phone: user.phone || "",
+    identityStatus: info.identityStatus || "NOT_STARTED",
+    identityDocument: document
+      ? {
+          documentType: document.documentType,
+          fileName: document.fileName,
+          uploadedAt: document.uploadedAt,
+          previewUrl: `/api/v1/admin/users/${user.id}/identity-document`,
+          reviewedAt: document.reviewedAt,
+          reviewedById: document.reviewedById,
+          rejectionReason: document.rejectionReason,
+        }
+      : null,
+    residentialAddress: info.residentialAddress || null,
+    postalAddress: info.postalAddress || null,
+    sameAsResidential: info.sameAsResidential ?? false,
+    emergencyContact: info.emergencyContact || null,
+  };
+}
+
 
 const STATS_TTL = 60;
 
@@ -105,6 +215,99 @@ async function getAdminById(id: string): Promise<PublicUser> {
   });
   if (!user) throw AppError.notFound("User not found");
   return toPublicUser(user);
+}
+
+async function getUserRole(userId: string): Promise<Role | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  return user?.role ?? null;
+}
+
+async function getPersonalIdentityDocument(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      personalInfo: true,
+    },
+  });
+  if (!user) throw AppError.notFound("User not found");
+
+  const info = storedPersonalInfo(user.personalInfo);
+  const document = info.identityDocument;
+  if (!document) throw AppError.notFound("Identity document not found");
+
+  const prefix = "/api/v1/users/personal-info/identity-document/file/";
+  if (!document.fileUrl.startsWith(prefix)) {
+    throw AppError.notFound("Identity document storage path is invalid");
+  }
+
+  return {
+    user,
+    document,
+    storagePath: document.fileUrl.slice(prefix.length),
+  };
+}
+
+async function reviewPersonalIdentityDocument(
+  actor: AuthUser,
+  userId: string,
+  status: "VERIFIED" | "REJECTED",
+  rejectionReason?: string,
+): Promise<AdminPersonalInfoData> {
+  const { user, document } = await getPersonalIdentityDocument(userId);
+  const info = storedPersonalInfo(user.personalInfo);
+  const reviewedAt = new Date().toISOString();
+  const updatedInfo: StoredPersonalInfo = {
+    ...info,
+    identityStatus: status,
+    identityDocument: {
+      ...document,
+      reviewedAt,
+      reviewedById: actor.id,
+      rejectionReason:
+        status === "REJECTED" ? rejectionReason?.trim() || "Document rejected" : undefined,
+    },
+  };
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { personalInfo: updatedInfo as unknown as Prisma.InputJsonValue },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      personalInfo: true,
+    },
+  });
+
+  await Promise.all([
+    deleteCache(keys.userProfile(userId)),
+    auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action:
+        status === "VERIFIED"
+          ? "PERSONAL_IDENTITY_DOCUMENT_VERIFIED"
+          : "PERSONAL_IDENTITY_DOCUMENT_REJECTED",
+      resourceType: "UserPersonalInfo",
+      resourceId: userId,
+      description: `${status === "VERIFIED" ? "Verified" : "Rejected"} account identity document for ${user.email || userId}`,
+      metadata: {
+        documentType: document.documentType,
+        rejectionReason: status === "REJECTED" ? rejectionReason?.trim() || null : null,
+      },
+    }),
+  ]);
+
+  return toAdminPersonalInfo(updated);
 }
 
 async function createAdmin(
@@ -672,6 +875,7 @@ export interface HostDetailsData {
     completedStepsCount: number;
     totalStepsCount: number;
   };
+  personalInfo: AdminPersonalInfoData | null;
   registrationRequest: {
     id: string;
     applicationId: string;
@@ -1620,6 +1824,7 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       completedStepsCount: stepsCompleted,
       totalStepsCount: 7,
     },
+    personalInfo: user ? toAdminPersonalInfo(user) : null,
     registrationRequest: {
       id: primaryReq.id,
       applicationId: primaryReq.applicationId,
@@ -2198,6 +2403,7 @@ export interface GuestDetailsData {
     createdAt: Date;
     lastActive: Date;
   };
+  personalInfo: AdminPersonalInfoData;
   metrics: {
     totalBookings: number;
     totalSpending: number;
@@ -2388,6 +2594,7 @@ async function getGuestDetails(guestId: string): Promise<GuestDetailsData> {
       createdAt: guest.createdAt,
       lastActive: guest.lastLoginAt || guest.createdAt,
     },
+    personalInfo: toAdminPersonalInfo(guest),
     metrics: {
       totalBookings,
       totalSpending,
@@ -2503,6 +2710,9 @@ export const adminService = {
   listUsers,
   listAdmins,
   getAdminById,
+  getUserRole,
+  getPersonalIdentityDocument,
+  reviewPersonalIdentityDocument,
   createAdmin,
   updateAdmin,
   deleteAdmin,

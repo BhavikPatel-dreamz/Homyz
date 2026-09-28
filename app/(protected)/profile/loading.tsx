@@ -3,6 +3,12 @@
 import { usePathname } from "next/navigation";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import {
+  NotificationsSkeleton,
+  PersonalInfoSkeleton,
+  SavedListingsSkeleton,
+  SupportChatSkeleton,
+} from "@/components/dashboard/section-skeletons";
 import { extractProfileRoute } from "@/lib/profile/tab-utils";
 
 function AboutMeSkeleton() {
@@ -162,9 +168,18 @@ export default function Loading() {
           {activeTab === "profile_management" && (
             <ProfileManagementSkeleton subTab={route.subTab} />
           )}
-          {activeTab !== "about_me" && activeTab !== "profile_management" && (
-            <ReservationsSkeleton />
-          )}
+          {activeTab === "notifications" && <NotificationsSkeleton />}
+          {activeTab === "account_settings" && <PersonalInfoSkeleton />}
+          {activeTab === "saved" && <SavedListingsSkeleton />}
+          {activeTab === "support" && <SupportChatSkeleton />}
+          {activeTab !== "about_me" &&
+            activeTab !== "profile_management" &&
+            activeTab !== "notifications" &&
+            activeTab !== "account_settings" &&
+            activeTab !== "saved" &&
+            activeTab !== "support" && (
+              <ReservationsSkeleton />
+            )}
         </main>
       </div>
     </div>

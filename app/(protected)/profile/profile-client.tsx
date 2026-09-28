@@ -23,6 +23,7 @@ import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { PersonalInfoView } from "@/components/account-settings/personal-info-view";
 import {
   SavedListingsSkeleton,
   NotificationsSkeleton,
@@ -178,6 +179,12 @@ type ProfileClientProps = {
   initialReservations?: ReservationCardData[];
   initialFavorites?: any[];
   initialReviews?: GuestAuthoredReviewDTO[];
+  initialNotifications?: {
+    items: any[];
+    total: number;
+    unreadCount: number;
+  };
+  initialPersonalInfo?: import("@/services/personal-info.service").PersonalInfoDTO | null;
   isOwner?: boolean;
   initialTab?: string;
   initialSubTab?: ProfileMgmtSubTab;
@@ -190,6 +197,8 @@ export function ProfileClient({
   initialReservations = [],
   initialFavorites = [],
   initialReviews = [],
+  initialNotifications,
+  initialPersonalInfo,
   isOwner = true,
   initialTab,
   initialSubTab,
@@ -441,7 +450,13 @@ export function ProfileClient({
             )}
 
             {activeTab === "notifications" && (
-              <NotificationsView />
+              <NotificationsView initialData={initialNotifications} />
+            )}
+
+            {activeTab === "account_settings" && (
+              <div className="flex flex-col animate-in fade-in">
+                <PersonalInfoView initialData={initialPersonalInfo} />
+              </div>
             )}
           </main>
         </div>
@@ -449,18 +464,18 @@ export function ProfileClient({
         <div className="mt-8 lg:hidden">
           <div>
             {[
-              ["Account setting", "profile_management", "settings"],
+              ["Account setting", "account_settings", "settings"],
               ["Help centre", "/help", "help"],
               ["Refer a Host", "/host/refer", "refer"],
               ["Find a co-Host", "/host/co-host", "cohost"],
               ["Gift Cards", "/gift-cards", "gift"],
             ].map(([label, target, icon], index) => {
-              const isTab = target === "profile_management";
+              const isTab = target.startsWith("profile_management") || target === "account_settings";
               return isTab ? (
                 <button
                   key={label}
                   type="button"
-                  onClick={() => handleSelectTab("profile_management")}
+                  onClick={() => handleSelectTab(target)}
                   className="flex w-full items-center gap-3 py-1.5 text-sm text-[#3F3F3F]"
                 >
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">

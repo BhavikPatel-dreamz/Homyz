@@ -10,7 +10,8 @@ import type { CreateBookingInput } from "@/lib/validation/booking";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ListingStatus, NotificationType } from "@/generated/prisma/enums";
+import { notificationService } from "./notification.service";
 import type { Prisma } from "@/generated/prisma/client";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
@@ -478,6 +479,58 @@ async function create(
   // Invalidate booking caches after creation
   await invalidateBookingCache(booking.id, actor.id, listing.hostId);
 
+  // Trigger booking notification for guest
+  try {
+    const isAutoConfirmed = booking.status === BookingStatus.CONFIRMED;
+    await notificationService.create({
+      userId: actor.id,
+      type: NotificationType.BOOKING,
+      title: isAutoConfirmed
+        ? `Reservation Confirmed: ${listing.title}`
+        : `Booking Request Submitted: ${listing.title}`,
+      message: isAutoConfirmed
+        ? `Your stay at ${listing.title} from ${input.startDate} to ${input.endDate} is confirmed.`
+        : `Your request for ${listing.title} has been submitted for host approval.`,
+      entityId: booking.id,
+      entityType: "booking",
+      link: "/profile/tab/upcoming",
+      metadata: {
+        bookingId: booking.id,
+        listingId: listing.id,
+        status: booking.status,
+        role: "guest",
+      },
+    });
+
+    // Also trigger booking notification for HOST
+    if (listing.hostId && listing.hostId !== actor.id) {
+      const guestName = actor.name || "A guest";
+      await notificationService.create({
+        userId: listing.hostId,
+        type: NotificationType.BOOKING,
+        title: isAutoConfirmed
+          ? `New Reservation: ${listing.title}`
+          : `New Booking Request: ${listing.title}`,
+        message: isAutoConfirmed
+          ? `${guestName} booked ${listing.title} from ${input.startDate} to ${input.endDate}.`
+          : `${guestName} requested to book ${listing.title} from ${input.startDate} to ${input.endDate}. Review request now.`,
+        entityId: booking.id,
+        entityType: "host_booking",
+        link: "/host/bookings",
+        metadata: {
+          bookingId: booking.id,
+          listingId: listing.id,
+          guestId: actor.id,
+          guestName,
+          status: booking.status,
+          role: "host",
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("[booking.service] Failed to create booking notification:", err);
+  }
+
   return toBookingDTO(booking);
 }
 
@@ -554,7 +607,11 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
       endDate: { gt: new Date() },
       listing: { hostId: actor.id },
     },
-    select: { id: true, userId: true },
+    select: {
+      id: true,
+      userId: true,
+      listing: { select: { id: true, title: true } },
+    },
   });
   if (pendingBookings.length === 0) return { approved: 0 };
 
@@ -563,6 +620,29 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
     data: { status: BookingStatus.CONFIRMED },
   });
   await Promise.all(pendingBookings.map((b: { id: string; userId: string }) => invalidateBookingCache(b.id, b.userId, actor.id)));
+
+  // Trigger targeted notification for each guest who owns that approved booking
+  for (const b of pendingBookings) {
+    try {
+      await notificationService.create({
+        userId: b.userId,
+        type: NotificationType.BOOKING,
+        title: `Reservation Confirmed: ${b.listing.title}`,
+        message: `Your booking request for ${b.listing.title} has been approved by the host.`,
+        entityId: b.id,
+        entityType: "booking",
+        link: "/profile/tab/upcoming",
+        metadata: {
+          bookingId: b.id,
+          listingId: b.listing.id,
+          status: BookingStatus.CONFIRMED,
+        },
+      });
+    } catch (err) {
+      console.warn("[booking.service] Failed to send guest approval notification:", err);
+    }
+  }
+
   return { approved: result.count };
 }
 
@@ -635,6 +715,46 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
   });
 
   await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+
+  try {
+    await notificationService.create({
+      userId: cancelled.userId,
+      type: NotificationType.BOOKING,
+      title: `Reservation Cancelled: ${cancelled.listing.title}`,
+      message: `Your reservation for ${cancelled.listing.title} has been cancelled.`,
+      entityId: cancelled.id,
+      entityType: "booking",
+      link: "/profile/tab/past",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        status: BookingStatus.CANCELLED,
+        role: "guest",
+      },
+    });
+
+    // Notify host as well
+    if (cancelled.listing?.hostId && cancelled.listing.hostId !== cancelled.userId) {
+      await notificationService.create({
+        userId: cancelled.listing.hostId,
+        type: NotificationType.BOOKING,
+        title: `Reservation Cancelled: ${cancelled.listing.title}`,
+        message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
+        entityId: cancelled.id,
+        entityType: "host_booking",
+        link: "/host/bookings",
+        metadata: {
+          bookingId: cancelled.id,
+          listingId: cancelled.listingId,
+          status: BookingStatus.CANCELLED,
+          role: "host",
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("[booking.service] Failed to create cancellation notification:", err);
+  }
+
   return toBookingDTO(cancelled);
 }
 
@@ -692,6 +812,46 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
   });
 
   await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+
+  try {
+    await notificationService.create({
+      userId: cancelled.userId,
+      type: NotificationType.BOOKING,
+      title: `Reservation Cancelled: ${cancelled.listing.title}`,
+      message: `Your reservation for ${cancelled.listing.title} has been cancelled.`,
+      entityId: cancelled.id,
+      entityType: "booking",
+      link: "/profile/tab/past",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        status: BookingStatus.CANCELLED,
+        role: "guest",
+      },
+    });
+
+    // Notify host as well
+    if (cancelled.listing?.hostId && cancelled.listing.hostId !== cancelled.userId) {
+      await notificationService.create({
+        userId: cancelled.listing.hostId,
+        type: NotificationType.BOOKING,
+        title: `Reservation Cancelled: ${cancelled.listing.title}`,
+        message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
+        entityId: cancelled.id,
+        entityType: "host_booking",
+        link: "/host/bookings",
+        metadata: {
+          bookingId: cancelled.id,
+          listingId: cancelled.listingId,
+          status: BookingStatus.CANCELLED,
+          role: "host",
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("[booking.service] Failed to create cancellation notification:", err);
+  }
+
   return toBookingDTO(cancelled);
 }
 
