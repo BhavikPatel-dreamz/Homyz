@@ -1840,7 +1840,7 @@ export function PublicListingDetailClient({
                         )}
 
                         {quote && !isQuoteLoading && (
-                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
+                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
                                 {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
@@ -1850,13 +1850,13 @@ export function PublicListingDetailClient({
                             </div>
 
                             {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
-                              <div className="flex items-center justify-between text-amber-700 text-[11px] font-medium bg-amber-50 px-2 py-0.5 rounded">
+                              <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
                                 <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
                               </div>
                             )}
 
                             {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
-                              <div className="flex items-center justify-between text-zinc-500 text-[11px]">
+                              <div className="flex items-center justify-between text-zinc-500 text-sm">
                                 <span>Includes {quote.weekendNights} weekend nights</span>
                                 <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
@@ -1904,7 +1904,7 @@ export function PublicListingDetailClient({
                                     </span>
                                     <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
-                                  <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-base font-light text-[#1F1F1F]">
+                                    <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
                                     {quote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
@@ -1918,13 +1918,13 @@ export function PublicListingDetailClient({
                                   </div>
                                 </div>
 
-                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                   <span>Total</span>
                                   <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                              <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                 <span>Total</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
@@ -1938,7 +1938,7 @@ export function PublicListingDetailClient({
                           disabled={isBookingSubmitting}
                           onClick={handleReserve}
                           className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
-                            ? "border border-amber-400 bg-[#fee09a] text-[#1f1f1f] hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
+                            ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                             : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
                             }`}
                           aria-disabled={!hasValidQuote || isBookingSubmitting}
@@ -1952,7 +1952,7 @@ export function PublicListingDetailClient({
                                 : "Request to book"}
                         </button>
 
-                        <p className="text-[11px] text-zinc-400 text-center font-normal">
+                        <p className="text-xs text-[#727272] text-center font-normal">
                           {"You won't be charged yet. Taxes and additional charges may be calculated at checkout."}
                         </p>
                       </>
