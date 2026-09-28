@@ -158,7 +158,16 @@ export function StepWeekendPrice({
                       className="h-1.5 w-full cursor-pointer appearance-none rounded-lg outline-none transition-all [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:shadow-md"
                     />
                   </div>
-                  <span className="mt-2.5 text-xs font-normal text-[#1F1F1F]">{t("host_try_5_percent")}</span>
+                  <div className="mt-2.5 flex w-full items-center justify-between text-xs">
+                    <span className="font-semibold text-[#1F1F1F]">+{currentPercentage}%</span>
+                    <button
+                      type="button"
+                      onClick={() => onChangeWeekendPrice(Math.round(baseWeekday * 1.05))}
+                      className="text-[#717171] hover:text-[#1F1F1F] underline cursor-pointer transition-colors"
+                    >
+                      {t("host_try_5_percent")}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

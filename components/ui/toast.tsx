@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface ToastOptions {
@@ -55,16 +53,28 @@ class ToastManager {
     this.recentMessages.set(msgKey, now);
 
     const id = options.id || Math.random().toString(36).substring(2, 9);
-    
+
     // Clean technical Prisma / DB traces for public display
     let displayMessage = message;
-    if (typeof message === "string" && (message.includes("PrismaClient") || message.includes("Invalid `prisma.") || message.includes("db error"))) {
+    if (
+      typeof message === "string" &&
+      (message.includes("PrismaClient") ||
+        message.includes("Invalid `prisma.") ||
+        message.includes("db error"))
+    ) {
       displayMessage = "An unexpected database error occurred. Please try again.";
       console.error("[Database Error Trace]:", message);
     }
 
     const existingIdx = this.toasts.findIndex((t) => t.id === id);
-    const item: ToastItem = { id, message: displayMessage, type, title: options.title, duration, createdAt: now };
+    const item: ToastItem = {
+      id,
+      message: displayMessage,
+      type,
+      title: options.title,
+      duration,
+      createdAt: now,
+    };
 
     if (existingIdx >= 0) {
       this.toasts[existingIdx] = item;
@@ -104,6 +114,30 @@ class ToastManager {
   public info(message: string, options?: Omit<ToastOptions, "type">) {
     return this.show(message, { ...options, type: "info" });
   }
+
+  public promise<T>(
+    promise: Promise<T>,
+    msgs: {
+      loading: string;
+      success: string | ((data: T) => string);
+      error: string | ((err: unknown) => string);
+    },
+    options?: ToastOptions
+  ): Promise<T> {
+    const id = this.show(msgs.loading, { ...options, type: "info", duration: 0 });
+
+    return promise
+      .then((data) => {
+        const msg = typeof msgs.success === "function" ? msgs.success(data) : msgs.success;
+        this.show(msg, { ...options, id, type: "success", duration: options?.duration ?? 4000 });
+        return data;
+      })
+      .catch((err) => {
+        const msg = typeof msgs.error === "function" ? msgs.error(err) : msgs.error;
+        this.show(msg, { ...options, id, type: "error", duration: options?.duration ?? 6000 });
+        throw err;
+      });
+  }
 }
 
 export const toastManager = new ToastManager();
@@ -111,10 +145,23 @@ export const toastManager = new ToastManager();
 export const toast = Object.assign(
   (message: string, options?: ToastOptions) => toastManager.show(message, options),
   {
-    success: (message: string, options?: Omit<ToastOptions, "type">) => toastManager.success(message, options),
-    error: (message: string, options?: Omit<ToastOptions, "type">) => toastManager.error(message, options),
-    warning: (message: string, options?: Omit<ToastOptions, "type">) => toastManager.warning(message, options),
-    info: (message: string, options?: Omit<ToastOptions, "type">) => toastManager.info(message, options),
+    success: (message: string, options?: Omit<ToastOptions, "type">) =>
+      toastManager.success(message, options),
+    error: (message: string, options?: Omit<ToastOptions, "type">) =>
+      toastManager.error(message, options),
+    warning: (message: string, options?: Omit<ToastOptions, "type">) =>
+      toastManager.warning(message, options),
+    info: (message: string, options?: Omit<ToastOptions, "type">) =>
+      toastManager.info(message, options),
+    promise: <T,>(
+      promise: Promise<T>,
+      msgs: {
+        loading: string;
+        success: string | ((data: T) => string);
+        error: string | ((err: unknown) => string);
+      },
+      options?: ToastOptions
+    ) => toastManager.promise(promise, msgs, options),
     dismiss: (id: string) => toastManager.dismiss(id),
     clear: () => toastManager.clear(),
   }
