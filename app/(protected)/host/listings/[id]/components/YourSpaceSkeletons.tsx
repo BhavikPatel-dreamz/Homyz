@@ -1,6 +1,10 @@
 "use client";
 
 import React from "react";
+import { HostHeader } from "@/components/host/host-header";
+import { HostSubNav } from "@/components/host/host-sub-nav";
+import { Container } from "@/components/ui/container";
+import { Footer } from "@/components/dashboard/footer";
 
 // ============================================================================
 // BASE SHIMMER & SKELETON PRIMITIVES
@@ -152,7 +156,14 @@ export const TitleBoxSkeleton = TitleSkeleton;
 
 export function PropertyTypeSkeleton() {
   return (
-    <div className="space-y-5 pt-1 animate-in fade-in font-sans">
+    <div className="space-y-6 animate-in fade-in pb-10 pr-0 font-sans lg:pr-6">
+      {/* Back button & Section Header Skeleton */}
+      <div className="flex items-center gap-6">
+        <SkeletonCircle className="size-10 rounded-full shrink-0" />
+        <SkeletonText className="h-8 w-52 rounded-lg" />
+      </div>
+
+      <div className="space-y-5 pt-1 max-w-none lg:max-w-[491px]">
       {/* 1. Which is most like your place? */}
       <div className="space-y-3">
         <SkeletonText className="h-3.5 w-44" />
@@ -251,6 +262,7 @@ export function PropertyTypeSkeleton() {
       <div className="pt-2">
         <SkeletonButton className="h-11 w-28 rounded-full" />
       </div>
+    </div>
     </div>
   );
 }
@@ -1110,3 +1122,46 @@ export function YourSpaceSectionSkeleton({ section }: { section: string }) {
       return <PropertyTypeSkeleton />;
   }
 }
+
+// ============================================================================
+// FULL EDITOR PAGE WORKSPACE SKELETON
+// ============================================================================
+
+export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?: string }) {
+  return (
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0">
+      {/* 1. TOP HEADER */}
+      <div className="hidden lg:block">
+        <HostHeader />
+      </div>
+
+      {/* 2. TOP NAV TABS */}
+      <div className="hidden lg:block">
+        <HostSubNav activeTab="listing" showRightActions={false} />
+      </div>
+
+      {/* Mobile top spacing button placeholder */}
+      <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">
+        <div className="h-8 w-8 rounded-full skeleton-shimmer" />
+      </div>
+
+      {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout - 100% Matches HostListingEditorClient) */}
+      <Container>
+        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]">
+          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
+          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
+            <YourSpaceSectionSkeleton section={section} />
+          </main>
+
+          {/* RIGHT COLUMN: EDITOR SIDEBAR PANEL */}
+          <aside className="hidden lg:block">
+            <EditorSidebarSkeleton />
+          </aside>
+        </div>
+      </Container>
+
+      <Footer />
+    </div>
+  );
+}
+
