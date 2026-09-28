@@ -12,6 +12,7 @@ import { authService } from "@/services/auth.service";
 import { auditService } from "@/services/audit.service";
 import type { Role } from "@/generated/prisma/enums";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
+import { getMissingProfileFields } from "@/lib/auth/profile-completion";
 
 // Build the provider list from whatever credentials are present in the
 // environment. OAuth providers are only added when their keys are set, so the
@@ -27,6 +28,7 @@ function buildProviders(): NextAuthOptions["providers"] {
         otpCode: { label: "OTP Code", type: "text" },
         referralCode: { label: "Referral Code", type: "text" },
         provider: { label: "Provider", type: "text" },
+        authMode: { label: "Auth Mode", type: "text" },
       },
       async authorize(credentials, req) {
         const headers = req?.headers as Record<string, string | string[] | undefined> | undefined;
@@ -37,59 +39,81 @@ function buildProviders(): NextAuthOptions["providers"] {
 
         // 1. Phone OTP Verification Sign-In
         if (credentials?.phone && credentials?.otpCode) {
-          const normalizedPhone = normalizePhone(credentials.phone);
-          const cleanDigits = normalizedPhone.replace(/\D/g, "");
-          const possiblePhones = Array.from(new Set([
-            normalizedPhone,
-            credentials.phone,
-            cleanDigits,
-            `+${cleanDigits}`,
-            `00${cleanDigits}`,
-          ]));
+          try {
+            const normalizedPhone = normalizePhone(credentials.phone);
+            const cleanDigits = normalizedPhone.replace(/\D/g, "");
+            const possiblePhones = Array.from(new Set([
+              normalizedPhone,
+              credentials.phone,
+              cleanDigits,
+              `+${cleanDigits}`,
+              `00${cleanDigits}`,
+            ]));
 
-          const verified = await authService.verifyOtp({
-            identifier: normalizedPhone,
-            code: credentials.otpCode,
-            purpose: "LOGIN",
-          }).catch(async () => {
-            // Also attempt verification under PHONE_VERIFICATION purpose if LOGIN purpose OTP was issued for signup
-            return await authService.verifyOtp({
-              identifier: normalizedPhone,
-              code: credentials.otpCode,
-              purpose: "PHONE_VERIFICATION",
+            // authMode is passed from the form so we pick the correct OTP purpose.
+            // Signup sends OTPs with PHONE_VERIFICATION; login sends with LOGIN.
+            // We try the matching purpose first, then fall back to the other.
+            const authMode = credentials?.authMode;
+            const primaryPurpose = authMode === "signup" ? "PHONE_VERIFICATION" : "LOGIN";
+            const fallbackPurpose = authMode === "signup" ? "LOGIN" : "PHONE_VERIFICATION";
+
+            let verified: { success: true; verified: true } | null = null;
+            try {
+              verified = await authService.verifyOtp({
+                identifier: normalizedPhone,
+                code: credentials.otpCode,
+                purpose: primaryPurpose,
+              });
+            } catch (primaryErr: any) {
+              console.warn(`[auth/phone] primary verifyOtp (${primaryPurpose}) failed: ${primaryErr?.message}. Trying fallback (${fallbackPurpose}).`);
+              try {
+                verified = await authService.verifyOtp({
+                  identifier: normalizedPhone,
+                  code: credentials.otpCode,
+                  purpose: fallbackPurpose,
+                });
+              } catch (fallbackErr: any) {
+                console.warn(`[auth/phone] fallback verifyOtp (${fallbackPurpose}) also failed: ${fallbackErr?.message}`);
+                throw primaryErr;
+              }
+            }
+
+            if (!verified?.success) {
+              return null;
+            }
+
+            const user = await authService.findOrCreatePhoneOtpUser({
+              normalizedPhone,
+              possiblePhones,
+              cleanDigits,
+              referralCode: credentials.referralCode,
             });
-          });
 
-          if (!verified?.success) {
-            return null;
+            if (!user) return null;
+
+            if (user.status === "SUSPENDED") {
+              throw new Error("Your account is currently unavailable. Please contact support.");
+            }
+
+            const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
+            const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: user.role,
+              status: user.status,
+              adminRoleSlug: user.adminRole?.slug ?? null,
+              permissions: effectivePermissions,
+            };
+          } catch (err: any) {
+            console.error("[auth/phone] authorize error:", err?.message ?? err);
+            // Re-throw with the actual message so NextAuth passes it back as
+            // the error string and the UI can show the real reason.
+            throw new Error(err?.message ?? "Phone OTP sign-in failed. Please try again.");
           }
-
-          const user = await authService.findOrCreatePhoneOtpUser({
-            normalizedPhone,
-            possiblePhones,
-            cleanDigits,
-            referralCode: credentials.referralCode,
-          });
-
-          if (!user) return null;
-
-          if (user.status === "SUSPENDED") {
-            throw new Error("Your account is currently unavailable. Please contact support.");
-          }
-
-          const { getEffectivePermissionsForUser } = await import("@/lib/permissions/admin-permission-service");
-          const effectivePermissions = await getEffectivePermissionsForUser(user.id, user.role, user.adminRole?.slug);
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            role: user.role,
-            status: user.status,
-            adminRoleSlug: user.adminRole?.slug ?? null,
-            permissions: effectivePermissions,
-          };
         }
 
         // 2. Social Provider Fallback Sign-In (Demo/Development Mode Only)
@@ -266,17 +290,26 @@ export const authOptions: NextAuthOptions = {
         token.adminRoleSlug = (user as { adminRoleSlug?: string | null }).adminRoleSlug;
         token.permissions = (user as { permissions?: string[] }).permissions;
         token.tokenVersion = (user as { tokenVersion?: number }).tokenVersion ?? 0;
-        return token;
       }
 
-      // Sync status, tokenVersion, and effective permissions from DB so changes take effect immediately
+      // Sync session-critical claims from the database. This runs for the initial
+      // sign-in too, so a newly authenticated user gets the authoritative
+      // profile-completion state in the very first session response.
       if (token.id) {
         try {
           const dbUser = await authService.getSessionClaims(token.id as string);
           if (dbUser) {
-            if (dbUser.image) {
-              (token as { picture?: string | null }).picture = dbUser.image;
-            }
+            token.name = dbUser.name;
+            token.email = dbUser.email;
+            (token as { picture?: string | null }).picture = dbUser.image;
+            // Administrative/system identities are outside the guest/host
+            // registration flow and must retain access after this migration.
+            const missingProfileFields =
+              dbUser.role === "ADMIN" || dbUser.adminRole
+                ? []
+                : getMissingProfileFields(dbUser);
+            token.missingProfileFields = missingProfileFields;
+            token.profileComplete = missingProfileFields.length === 0;
             if (
               token.tokenVersion !== undefined &&
               token.tokenVersion < dbUser.tokenVersion
@@ -308,6 +341,10 @@ export const authOptions: NextAuthOptions = {
         session.user.adminRoleSlug = token.adminRoleSlug as string | null | undefined;
         session.user.permissions = token.permissions as string[] | undefined;
         session.user.tokenVersion = token.tokenVersion as number | undefined;
+        session.user.profileComplete = token.profileComplete as boolean | undefined;
+        session.user.missingProfileFields = token.missingProfileFields;
+        session.user.name = typeof token.name === "string" ? token.name : null;
+        session.user.email = typeof token.email === "string" ? token.email : null;
         session.user.image = ((token as { picture?: string | null }).picture ?? session.user.image) as string | undefined;
       }
       return session;

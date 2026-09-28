@@ -195,8 +195,6 @@ async function findOrCreatePhoneOtpUser(input: {
         phone: input.normalizedPhone,
         phoneVerified: new Date(),
         role: "USER",
-        name: `Guest (${input.cleanDigits.slice(-4) || "User"})`,
-        email: `user_${input.cleanDigits}@homyz.app`,
         ...(referredById ? { referredById } : {}),
       },
       include: authUserWithAdminRole,
@@ -288,6 +286,10 @@ async function getSessionClaims(userId: string) {
     select: {
       status: true,
       role: true,
+      name: true,
+      email: true,
+      phone: true,
+      birthDate: true,
       image: true,
       tokenVersion: true,
       adminRole: { select: { slug: true } },
@@ -487,10 +489,9 @@ async function sendOtp(input: SendOtpInput): Promise<{ success: true; devCode?: 
     where: {
       identifier,
       purpose: input.purpose,
-      // A bad system clock or imported data can create a future OTP record.
-      // Ignore timestamps beyond one cooldown window so one corrupt record
-      // cannot permanently prevent a user from signing in.
-      createdAt: { lte: new Date(now + cooldownSeconds * 1000) },
+      // Strictly exclude future timestamps — bad system clocks or seeded data
+      // can create records dated ahead of now; they must never block a user.
+      createdAt: { lte: new Date(now) },
     },
     orderBy: { createdAt: "desc" },
   });

@@ -7,6 +7,7 @@ import { CACHE_KEYS, keys } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 import type {
   ChangePasswordInput,
+  CompleteRegistrationProfileInput,
   UpdateProfileInput,
 } from "@/lib/validation/user";
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
@@ -15,6 +16,8 @@ import { deleteManagedMediaUrl } from "@/lib/storage/media";
 import type { Prisma } from "@/generated/prisma/client";
 import { BookingStatus, ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
+import { getMissingProfileFields, hasUsableProfileEmail } from "@/lib/auth/profile-completion";
+import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
 
 import { revivePublicUser, toPublicUser, type PublicUser } from "./mappers";
 
@@ -91,6 +94,77 @@ async function updateProfile(
   } catch (err) {
     if (isUniqueViolation(err)) {
       throw AppError.conflict("That phone number is already in use");
+    }
+    throw err;
+  }
+}
+
+async function completeRegistrationProfile(
+  userId: string,
+  input: CompleteRegistrationProfileInput,
+): Promise<PublicUser> {
+  const current = await prisma.user.findUnique({ where: { id: userId } });
+  if (!current) throw AppError.notFound("User not found");
+
+  const currentEmail = hasUsableProfileEmail(current.email) ? normalizeEmail(current.email!) : "";
+  const currentPhone = current.phone ? normalizePhone(current.phone) : "";
+  const email = input.email ? normalizeEmail(input.email) : currentEmail;
+  const phone = input.phone ? normalizePhone(input.phone) : currentPhone;
+  const birthDate = new Date(`${input.birthDate}T00:00:00.000Z`);
+
+  const missingFields = getMissingProfileFields({
+    name: input.name,
+    birthDate,
+    email,
+    phone,
+  });
+  if (missingFields.length > 0) {
+    throw AppError.validation(
+      "Complete all required profile fields",
+      missingFields.map((field) => ({ path: field, message: `${field} is required` })),
+    );
+  }
+
+  const phoneDigits = phone.replace(/\D/g, "");
+  const duplicate = await prisma.user.findFirst({
+    where: {
+      id: { not: userId },
+      OR: [
+        { email: { equals: email, mode: "insensitive" } },
+        { phone: { in: Array.from(new Set([phone, phoneDigits, `+${phoneDigits}`, `00${phoneDigits}`])) } },
+        ...(phoneDigits.length >= 7 ? [{ phone: { endsWith: phoneDigits.slice(-10) } }] : []),
+      ],
+    },
+    select: { email: true, phone: true },
+  });
+  if (duplicate?.email && normalizeEmail(duplicate.email) === email) {
+    throw AppError.validation("That email address is already in use", [
+      { path: "email", message: "That email address is already in use" },
+    ]);
+  }
+  if (duplicate?.phone && normalizePhone(duplicate.phone) === phone) {
+    throw AppError.validation("That mobile number is already in use", [
+      { path: "phone", message: "That mobile number is already in use" },
+    ]);
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: input.name.trim(),
+        birthDate,
+        email,
+        phone,
+        ...(phone !== currentPhone ? { phoneVerified: null } : {}),
+        ...(email !== currentEmail ? { emailVerified: null } : {}),
+      },
+    });
+    await deleteCache(keys.userProfile(userId));
+    return toPublicUser(user);
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      throw AppError.conflict("That email address or mobile number is already in use");
     }
     throw err;
   }
@@ -366,6 +440,7 @@ async function searchUsers(query: string, limit = 10) {
 export const userService = {
   getById,
   updateProfile,
+  completeRegistrationProfile,
   updateHostPublicProfile,
   changePassword,
   getTripPhotos,

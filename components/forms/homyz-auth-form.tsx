@@ -339,19 +339,31 @@ export function HomyzAuthForm({
     } else {
       startTransition(async () => {
         try {
+          const safeReferralCode = referralCode && referralCode !== "undefined" ? referralCode : undefined;
           const res = await signIn("credentials", {
             phone: fullPhone,
             otpCode: otpCode.trim(),
-            referralCode,
+            ...(safeReferralCode ? { referralCode: safeReferralCode } : {}),
+            authMode,
             redirect: false,
           });
 
           if (!res || res.error) {
+            // NextAuth encodes thrown Error messages as the error string
+            const rawError = res?.error ?? "";
             let msg = "The verification code is incorrect. Please try again.";
-            if (res?.error?.includes("not registered")) {
+            if (rawError.includes("not registered")) {
               msg = "This mobile number is not registered. Please create an account to continue.";
-            } else if (res?.error?.includes("unavailable") || res?.error?.includes("contact support")) {
+            } else if (rawError.includes("unavailable") || rawError.includes("contact support")) {
               msg = "Your account is currently unavailable. Please contact support.";
+            } else if (rawError.includes("expired")) {
+              msg = "This verification code has expired. Please request a new one.";
+            } else if (rawError.includes("Too many")) {
+              msg = rawError;
+            } else if (rawError.includes("No active code")) {
+              msg = "No active verification code found. Please request a new one.";
+            } else if (rawError && rawError !== "CredentialsSignin") {
+              msg = rawError;
             }
             setError(msg);
             return;

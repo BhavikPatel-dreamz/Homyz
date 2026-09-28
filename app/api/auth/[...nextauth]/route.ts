@@ -57,6 +57,8 @@ export async function GET(req: NextRequest, ctx: any) {
               adminRoleSlug: token.adminRoleSlug ?? null,
               permissions: token.permissions ?? [],
               tokenVersion: token.tokenVersion ?? 0,
+              profileComplete: token.profileComplete,
+              missingProfileFields: token.missingProfileFields ?? [],
             },
             expires: token.exp
               ? new Date((token.exp as number) * 1000).toISOString()

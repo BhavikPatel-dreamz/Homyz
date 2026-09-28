@@ -1,21 +1,24 @@
 import { getServerSession } from "next-auth/next";
+import type { Session } from "next-auth";
+import { cache } from "react";
 import { authOptions } from "./options";
 import { authService } from "@/services/auth.service";
 import type { AuthUser } from "./types";
+import type { Role } from "@/generated/prisma/enums";
+import { getMissingProfileFields } from "./profile-completion";
 
-/**
- * Resolve the current web session into a normalized AuthUser, or null.
- * Enforces real-time database status checks so suspended accounts lose access immediately.
- */
-export async function getSessionUser(): Promise<AuthUser | null> {
+// React scopes this memoization to the current server render/request. Root
+// session hydration and protected page guards therefore share one NextAuth
+// resolution instead of repeating the same cookie/database work.
+export const getAuthSession = cache(async (): Promise<Session | null> => {
   try {
     const { headers } = await import("next/headers");
-    const h = await headers();
-    const host = h.get("x-forwarded-host") || h.get("host");
+    const headerList = await headers();
+    const host = headerList.get("x-forwarded-host") || headerList.get("host");
     if (host) {
       const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
       const isIp = /^\d+\.\d+\.\d+\.\d+/.test(host);
-      const forwardedProto = h.get("x-forwarded-proto");
+      const forwardedProto = headerList.get("x-forwarded-proto");
       const proto = forwardedProto || (isLocal || isIp ? "http" : "https");
       process.env.NEXTAUTH_URL = `${proto}://${host}`;
       process.env.APP_URL = `${proto}://${host}`;
@@ -23,48 +26,66 @@ export async function getSessionUser(): Promise<AuthUser | null> {
     }
   } catch {}
 
-  let session = await getServerSession(authOptions);
+  const resolved = await getServerSession(authOptions);
+  if (resolved?.user?.id) return resolved;
 
-  // Fallback: If getServerSession missed the session (e.g. cookie name prefix mismatch
-  // or Authorization header in RSC), resolve and decode the token directly
-  if (!session?.user?.id) {
-    try {
-      const { cookies, headers } = await import("next/headers");
-      const [cookieJar, headerList] = await Promise.all([cookies(), headers()]);
-      const sessionToken =
-        cookieJar.get("next-auth.session-token")?.value ||
-        cookieJar.get("__Secure-next-auth.session-token")?.value ||
-        (headerList.get("authorization")?.startsWith("Bearer ")
-          ? headerList.get("authorization")?.slice(7).trim()
-          : null);
+  // Preserve the existing secure/non-secure cookie recovery path, but expose
+  // it to the root provider as well as page guards so both surfaces agree.
+  try {
+    const { cookies, headers } = await import("next/headers");
+    const [cookieJar, headerList] = await Promise.all([cookies(), headers()]);
+    const sessionToken =
+      cookieJar.get("next-auth.session-token")?.value ||
+      cookieJar.get("__Secure-next-auth.session-token")?.value ||
+      (headerList.get("authorization")?.startsWith("Bearer ")
+        ? headerList.get("authorization")?.slice(7).trim()
+        : null);
 
-      if (sessionToken && process.env.NEXTAUTH_SECRET) {
-        const { decode } = await import("next-auth/jwt");
-        const decoded = await decode({
-          token: sessionToken,
-          secret: process.env.NEXTAUTH_SECRET,
-        });
+    if (!sessionToken || !process.env.NEXTAUTH_SECRET) return null;
 
-        if (decoded?.id) {
-          session = {
-            user: {
-              id: decoded.id as string,
-              role: (decoded.role as any) || "USER",
-              email: (decoded.email as string) || null,
-              name: (decoded.name as string) || null,
-              status: (decoded.status as string) || "ACTIVE",
-              adminRoleSlug: (decoded.adminRoleSlug as string) || null,
-              permissions: (decoded.permissions as string[]) || [],
-              tokenVersion: (decoded.tokenVersion as number) || 0,
-            },
-            expires: decoded.exp
-              ? new Date((decoded.exp as number) * 1000).toISOString()
-              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          };
-        }
-      }
-    } catch {}
+    const { decode } = await import("next-auth/jwt");
+    const decoded = await decode({
+      token: sessionToken,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    if (!decoded?.id) return null;
+
+    const dbUser = await authService.getSessionClaims(decoded.id as string).catch(() => null);
+    const missingProfileFields = dbUser
+      ? dbUser.role === "ADMIN" || dbUser.adminRole
+        ? []
+        : getMissingProfileFields(dbUser)
+      : (decoded.missingProfileFields as AuthUser["missingProfileFields"] | undefined) ?? [];
+
+    return {
+      user: {
+        id: decoded.id as string,
+        role: dbUser?.role ?? (decoded.role as Role | undefined) ?? ("USER" as Role),
+        email: dbUser?.email ?? (typeof decoded.email === "string" ? decoded.email : null),
+        name: dbUser?.name ?? (typeof decoded.name === "string" ? decoded.name : null),
+        image: dbUser?.image ?? (typeof decoded.picture === "string" ? decoded.picture : null),
+        status: dbUser?.status ?? (decoded.status as string | undefined),
+        adminRoleSlug: dbUser?.adminRole?.slug ?? (decoded.adminRoleSlug as string | null | undefined),
+        permissions: (decoded.permissions as string[]) ?? [],
+        tokenVersion: dbUser?.tokenVersion ?? (decoded.tokenVersion as number | undefined),
+        profileComplete: missingProfileFields.length === 0,
+        missingProfileFields,
+      },
+      expires: decoded.exp
+        ? new Date((decoded.exp as number) * 1000).toISOString()
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+  } catch {
+    return null;
   }
+});
+
+/**
+ * Resolve the current web session into a normalized AuthUser, or null.
+ * Enforces real-time database status checks so suspended accounts lose access immediately.
+ */
+export async function getSessionUser(): Promise<AuthUser | null> {
+  const session = await getAuthSession();
 
   if (!session?.user?.id) return null;
 
@@ -89,6 +110,8 @@ export async function getSessionUser(): Promise<AuthUser | null> {
       adminRoleSlug: liveUser.adminRole?.slug ?? session.user.adminRoleSlug,
       permissions: session.user.permissions,
       tokenVersion: liveUser.tokenVersion,
+      profileComplete: session.user.profileComplete,
+      missingProfileFields: session.user.missingProfileFields,
     };
   } catch {
     return {
@@ -98,6 +121,8 @@ export async function getSessionUser(): Promise<AuthUser | null> {
       status: session.user.status,
       adminRoleSlug: session.user.adminRoleSlug,
       permissions: session.user.permissions,
+      profileComplete: session.user.profileComplete,
+      missingProfileFields: session.user.missingProfileFields,
     };
   }
 }

@@ -27,8 +27,9 @@ type AppHeaderProps = {
 export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session, update } = useSession();
+  const { data: session, status: sessionStatus, update } = useSession();
   const user = session?.user ?? null;
+  const sessionLoading = sessionStatus === "loading";
   const role = user?.role;
   const [isConvertingRole, setIsConvertingRole] = useState(false);
 
@@ -167,7 +168,12 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
           )}
 
           <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5" ref={menuRef}>
-            {user ? (
+            {sessionLoading ? (
+              <div
+                aria-label="Loading account"
+                className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 min-[1440px]:block"
+              />
+            ) : user ? (
               <button
                 type="button"
                 onClick={handleBecomeHost}
@@ -195,7 +201,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               </Link>
             ) : null}
 
-            {user?.image ? (
+            {sessionLoading ? (
+              <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 md:block" aria-hidden="true" />
+            ) : user?.image ? (
               <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
                 <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
               </Link>
@@ -217,12 +225,12 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               <Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="h-6 w-6" />
             </button>
 
-            <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 md:h-9 md:w-9" aria-label="Open menu" aria-expanded={menuOpen}>
+            <button type="button" onClick={() => setMenuOpen(!menuOpen)} disabled={sessionLoading} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 disabled:cursor-wait md:h-9 md:w-9" aria-label={sessionLoading ? "Loading account" : "Open menu"} aria-expanded={menuOpen}>
               <Image src="/images/icons/menu-icon.svg" alt="" width={18} height={16} className="h-4 w-[18px] md:h-[14px] md:w-4" />
             </button>
 
             {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
-            {menuOpen && (
+            {menuOpen && !sessionLoading && (
               <div className="visible-scrollbar absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px]">
                 {!user ? (
                   /* ------------------------------------------------------------- */

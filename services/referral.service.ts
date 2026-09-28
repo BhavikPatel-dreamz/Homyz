@@ -65,7 +65,11 @@ async function ensureReferralCode(userId: string): Promise<string> {
 /** Resolve a referral link at signup; callers never receive an inviter user ID. */
 export async function resolveReferrerId(referralCode?: string): Promise<string | null> {
   if (!referralCode) return null;
-  const normalized = normalizeReferralCode(referralCode);
+  // Clients occasionally forward the literal string "undefined" or "null"
+  // when no referral code is present. Treat these as absent.
+  const trimmed = referralCode.trim();
+  if (!trimmed || trimmed.toLowerCase() === "undefined" || trimmed.toLowerCase() === "null") return null;
+  const normalized = normalizeReferralCode(trimmed);
   if (!REFERRAL_CODE_PATTERN.test(normalized)) throw AppError.badRequest("This referral link is invalid.");
   const referrer = await prisma.user.findUnique({ where: { referralCode: normalized }, select: { id: true, status: true } });
   if (!referrer || referrer.status !== "ACTIVE") throw AppError.badRequest("This referral link is invalid.");
