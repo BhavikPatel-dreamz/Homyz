@@ -421,7 +421,7 @@ function ListingAvailabilityCalendar({
             const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
 
             return (
-              <div key={key} className={`relative flex aspect-square items-center justify-center ${isInRange ? "bg-amber-100" : ""}`}>
+              <div key={key} className="relative flex aspect-square items-center justify-center">
                 <button
                   type="button"
                   disabled={disabled || isLoading}
@@ -437,13 +437,13 @@ function ListingAvailabilityCalendar({
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
-                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:size-9 ${isStart || isEnd
-                    ? "bg-[#F6CF7B] font-semibold text-[#1f1f1f] shadow-sm"
+                  className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-8 sm:w-8 ${isStart || isEnd
+                    ? "bg-[#FCDF9C] font-semibold text-[#1f1f1f] shadow-sm"
                     : isInRange
-                      ? "rounded-none bg-amber-100 text-[#1f1f1f] hover:bg-amber-200"
+                      ? "bg-[#FCDF9C] text-[#1f1f1f] hover:bg-[#F6CF7B]"
                       : past || unavailable
                         ? "cursor-not-allowed text-zinc-300 line-through"
-                        : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
+                        : "cursor-pointer text-[#1f1f1f] hover:bg-[#F3F4F5]"
                     } disabled:opacity-70`}
                 >
                   {index + 1}
@@ -521,7 +521,6 @@ export function PublicListingDetailClient({
   // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [openThingsCard, setOpenThingsCard] = useState<"rules" | "safety" | "cancellation" | null>(null);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
@@ -680,7 +679,6 @@ export function PublicListingDetailClient({
       setBookingSuccess(false);
       setHostImageFailed(false);
       setIsDescriptionModalOpen(false);
-      setIsDescriptionExpanded(false);
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
@@ -1568,36 +1566,22 @@ export function PublicListingDetailClient({
                 {normalizedDescription && (
                   <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
                     <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
-                    <p
-                      className={`mt-2.5 whitespace-pre-line break-words text-base font-normal text-[#727272] ${isDescriptionExpanded ? "" : "line-clamp-4"
-                        }`}
-                    >
+                    <p className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base font-normal text-[#727272]">
                       {normalizedDescription}
                     </p>
-                    {isDescriptionExpanded && aboutLocationDetails.length > 0 && (
-                      <div className="mt-4 space-y-4 pt-4 border-t border-zinc-100">
-                        {aboutLocationDetails.map((detail) => (
-                          <div key={detail.heading}>
-                            <h4 className="text-[20px] font-normal text-[#1f1f1f]">{detail.heading}</h4>
-                            <p className="mt-2.5 whitespace-pre-line text-base font-normal leading-6 text-[#727272]">{detail.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {(normalizedDescription.length > 200 || aboutLocationDetails.length > 0) && (
                       <button
                         type="button"
                         onClick={() => {
-                          const next = !isDescriptionExpanded;
-                          setIsDescriptionExpanded(next);
+                          setIsDescriptionModalOpen(true);
                           trackListingEvent({
-                            eventType: next ? "description_expanded" : "description_collapsed",
+                            eventType: "description_expanded",
                             propertyId: listing.id,
                           });
                         }}
                         className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] sm:px-7 px-4 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        {isDescriptionExpanded ? "Show less" : "Show more"}
+                        Show more
                       </button>
                     )}
                   </section>
@@ -2181,14 +2165,14 @@ export function PublicListingDetailClient({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs"
           onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenThingsCard(null); }}
         >
-          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
               <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
                 {openThingsCard === "rules" ? "House rules" : openThingsCard === "safety" ? "Safety & property" : "Cancellation policy"}
               </h3>
               <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
             </div>
-            <div className="overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
+            <div className="visible-scrollbar overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
               {openThingsCard === "rules" && (
                 <>
                   <p className="text-base leading-6 text-[#1f1f1f]">You’ll be staying in someone’s home, so please treat it with care and respect.</p>
@@ -2229,14 +2213,14 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-lg font-semibold text-[#1f1f1f]">About this place</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="p-1 text-zinc-500 hover:text-[#1f1f1f]">✕</button>
+              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">About this place</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
-            <div className="mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
+            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
-                  <h4 className="text-xl font-normal text-[#1f1f1f]">{detail.heading}</h4>
+                  <h4 className="text-lg font-medium text-[#1f1f1f]">{detail.heading}</h4>
                   <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
                 </section>
               ))}
@@ -2248,9 +2232,9 @@ export function PublicListingDetailClient({
       {/* ALL AMENITIES MODAL */}
       {isAllAmenitiesOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-lg border border-zinc-200 bg-white p-6 shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-medium text-xl text-[#1f1f1f]">What this place offers</h3>
+              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">What this place offers</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
@@ -2272,7 +2256,7 @@ export function PublicListingDetailClient({
               />
             </div>
 
-            <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+            <div className="visible-scrollbar flex-1 space-y-5 overflow-y-auto pr-1">
               {amenitySearchQuery.trim() ? (
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
               ) : amenityGroups.map(([category, amenities]) => (
