@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "رابط إعادة تعيين كلمة المرور هذا غير صالحة أو ينقصه رمز الأمان.",
   "auth_request_new_reset_link": "طلب رابط إعادة تعيين جديد",
   "home_hero_title": "احجز إقامات مريحة تمنحك شعور المنزل",
+  "home_hero_title_line_one": "احجز إقامات مريحة",
+  "home_hero_title_line_two": "تمنحك شعور المنزل",
   "home_hero_subtitle": "استكشف شققاً وفاخرة وفيلات ومنازل مريحة تم اختيارها بعناية.",
   "home_search_where": "أين",
   "home_search_where_placeholder": "البحث عن الوجهات",

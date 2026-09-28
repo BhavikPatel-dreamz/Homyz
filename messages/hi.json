@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "यह पासवर्ड रीसेट लिंक अमान्य है या इसमें सुरक्षा टोकन गायब है।",
   "auth_request_new_reset_link": "नया रीसेट लिंक अनुरोध करें",
   "home_hero_title": "घर जैसा अनुभव देने वाले आरामदायक आवास बुक करें",
+  "home_hero_title_line_one": "आरामदायक आवास बुक करें",
+  "home_hero_title_line_two": "घर जैसा अनुभव देने वाले",
   "home_hero_subtitle": "चयनित अपार्टमेंट, लॉफ्ट, विला और आरामदायक घरों की खोज करें।",
   "home_search_where": "कहाँ",
   "home_search_where_placeholder": "गंतव्य खोजें",

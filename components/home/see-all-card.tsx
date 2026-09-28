@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/language-context";
 
 interface SeeAllCardProps {
   href: string;
@@ -21,9 +20,7 @@ export function SeeAllCard({
   href,
   previewImages = [],
   title,
-  totalCount,
 }: SeeAllCardProps) {
-  const { t } = useLanguage();
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   // Ensure we always have 3 images for the fan stack
@@ -75,18 +72,14 @@ export function SeeAllCard({
         </div>
       </div>
 
-      {/* "See all" Text & Count */}
-      <div className="flex flex-col items-center">
-        <span className="text-base sm:text-lg font-bold text-[#0052cc] group-hover:text-[#003b95] group-hover:underline transition-colors">
-          {t("home_see_all")}
-        </span>
-        {totalCount && totalCount > 0 ? (
-          <span className="text-[11px] text-zinc-400 font-normal mt-0.5">
-            {t("home_count_stays", { count: totalCount })}
-          </span>
-        ) : null}
-      </div>
+      <span
+        aria-hidden="true"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FCDF9C] border border-[#FCDF9C] text-[#1f1f1f] transition-all duration-300 group-hover:bg-[#1f1f1f] group-hover:border-[#1f1f1f] group-hover:text-white  group-focus-visible:bg-[#FCDF9C] group-focus-visible:text-[#1f1f1f]"
+      >
+        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5">
+          <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
     </Link>
   );
 }
-

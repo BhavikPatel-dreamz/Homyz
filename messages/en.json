@@ -75,6 +75,8 @@
   "auth_invalid_reset_token": "This password reset link is invalid or missing its security token.",
   "auth_request_new_reset_link": "Request New Reset Link",
   "home_hero_title": "Book cozy stays that feel like home",
+  "home_hero_title_line_one": "Book cozy stays",
+  "home_hero_title_line_two": "that feel like home",
   "home_hero_subtitle": "Explore hand-picked apartments, lofts, villas, and cozy homes.",
   "home_search_where": "Where",
   "home_search_where_placeholder": "Search destinations",

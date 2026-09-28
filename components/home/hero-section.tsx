@@ -1180,8 +1180,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
         {/* Hero Content & Search Bar */}
         <div className="relative z-10 w-full px-7 sm:px-12 lg:px-8 xl:px-8">
-          <h1 className="mb-11 text-[34px] font-normal leading-[1.12] tracking-[-1.4px] text-[#1f1f1f] sm:text-[42px] lg:text-[50px] lg:leading-[1.08] xl:text-[52px]">
-            {t("home_hero_title")}
+          <h1 className="mb-11 max-w-[470px] text-[34px] font-normal leading-[1.12] tracking-[-1.4px] text-[#1f1f1f] sm:text-[42px] lg:text-[50px] lg:leading-[1.08] xl:text-[52px]">
+            <span className="block">{t("home_hero_title_line_one")}</span>
+            <span className="block font-medium">{t("home_hero_title_line_two")}</span>
           </h1>
 
           {/* Floating Search Container */}

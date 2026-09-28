@@ -191,7 +191,7 @@ function PropertyCardComponent({
               aria-hidden="true"
               viewBox="0 0 24 24"
               fill="white"
-              stroke="#eba900"
+              stroke="#FCDF9C"
               strokeWidth="2"
               strokeLinejoin="round"
               className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0"
