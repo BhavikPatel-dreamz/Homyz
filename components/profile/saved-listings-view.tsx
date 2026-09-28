@@ -111,61 +111,62 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
     });
   }, [validItems, categoryFilter]);
 
+  const formatCategoryLabel = (category: string) =>
+    category
+      .replace(/[_-]/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
   return (
     <div className="flex flex-col animate-in fade-in duration-300">
       {/* Title Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between xl:mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-              Wishlists
-            </h2>
-            {validItems.length > 0 && (
-              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-                {validItems.length} {validItems.length === 1 ? "saved stay" : "saved stays"}
-              </span>
-            )}
+      <div className="mb-7 rounded-[28px] border border-[#F2E3BF] bg-[#FFF9ED] px-5 py-5 sm:px-7 sm:py-6 xl:mb-9">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-xl">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[#9A6A12]">Your collection</p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="text-[26px] leading-[32px] font-medium tracking-[-0.03em] text-[#1F1F1F] sm:text-[32px] sm:leading-[38px] xl:text-[36px] xl:leading-[42px]">Wishlists</h2>
+              {validItems.length > 0 && (
+                <span className="inline-flex items-center rounded-full border border-[#F0CE81] bg-[#FCDF9C] px-3 py-1 text-xs font-semibold text-[#563B00]">
+                  {validItems.length} {validItems.length === 1 ? "saved stay" : "saved stays"}
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-sm leading-5 text-[#6E6250] sm:text-base sm:leading-6">Properties and stays you have saved for upcoming getaways.</p>
           </div>
-          <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
-            Properties and stays you have saved for upcoming getaways.
-          </p>
-        </div>
 
-        {/* Category Filter Pills (if multiple categories available) */}
-        {availableCategories.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-[#F5F5F5] p-1 w-fit">
-            <button
-              type="button"
-              onClick={() => setCategoryFilter("ALL")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                categoryFilter === "ALL"
-                  ? "bg-white text-[#1F1F1F] shadow-2xs"
-                  : "text-[#727272] hover:text-[#1F1F1F]"
-              }`}
-            >
-              All ({validItems.length})
-            </button>
-            {availableCategories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setCategoryFilter(cat)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all capitalize ${
-                  categoryFilter === cat
-                    ? "bg-white text-[#1F1F1F] shadow-2xs"
-                    : "text-[#727272] hover:text-[#1F1F1F]"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        )}
+          {/* Category Filter Pills (if multiple categories available) */}
+          {availableCategories.length > 0 && (
+            <div className="-mx-1 overflow-x-auto pb-1 [scrollbar-width:none] xl:mx-0 xl:overflow-visible">
+              <div className="flex w-max items-center gap-1.5 rounded-2xl border border-[#E7D9BD] bg-white/80 p-1.5 shadow-[0_3px_12px_rgba(75,54,14,0.06)]">
+                <button
+                  type="button"
+                  onClick={() => setCategoryFilter("ALL")}
+                  aria-pressed={categoryFilter === "ALL"}
+                  className={`rounded-xl px-3.5 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A932] focus-visible:ring-offset-1 ${categoryFilter === "ALL" ? "bg-[#1F1F1F] text-white shadow-sm" : "text-[#6C6252] hover:bg-[#FFF4D9] hover:text-[#1F1F1F]"}`}
+                >
+                  All ({validItems.length})
+                </button>
+                {availableCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCategoryFilter(cat)}
+                    aria-pressed={categoryFilter === cat}
+                    className={`rounded-xl px-3.5 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A932] focus-visible:ring-offset-1 ${categoryFilter === cat ? "bg-[#1F1F1F] text-white shadow-sm" : "text-[#6C6252] hover:bg-[#FFF4D9] hover:text-[#1F1F1F]"}`}
+                  >
+                    {formatCategoryLabel(cat)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Loading Skeleton */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse space-y-3">
               <div className="aspect-[288/256] w-full rounded-2xl bg-zinc-200" />
@@ -208,7 +209,7 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
         </div>
       ) : (
         /* Property Cards Grid */
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((item) => (
             <div key={item.listingId || item.id} className="relative">
               <ListingCard
@@ -216,6 +217,7 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
                 initialFavorite={true}
                 showFavorite={true}
                 favoriteVariant="remove"
+                className="h-full rounded-[22px] border border-[#EAE4D9] bg-white p-2 shadow-[0_5px_18px_rgba(31,31,31,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#E5C56F] hover:shadow-[0_14px_30px_rgba(91,68,24,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A932] focus-visible:ring-offset-2"
               />
             </div>
           ))}

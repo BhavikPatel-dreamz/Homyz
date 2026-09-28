@@ -1035,18 +1035,30 @@ export function ListingsResultsClient({
 
         {/* Right: Sort dropdown */}
         <div className="shrink-0 pl-1">
-          <select
-            value={currentFilters.sortBy ?? "recommended"}
-            onChange={(e) => handleSortChange(e.target.value as SortBy)}
-            className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer shrink-0"
-            aria-label="Sort by"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative shrink-0">
+            <select
+              value={currentFilters.sortBy ?? "recommended"}
+              onChange={(e) => handleSortChange(e.target.value as SortBy)}
+              className="appearance-none rounded-full border border-zinc-200 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer"
+              aria-label="Sort by"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-zinc-600"
+            >
+              <path d="m4 6 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
         </div>
       </div>
 

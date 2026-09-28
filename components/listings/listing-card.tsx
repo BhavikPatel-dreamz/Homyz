@@ -544,7 +544,7 @@ export function ListingCard({
       {/* ── Search-results card body ── */}
       {isSearchGridCard ? (
         <div className="space-y-1.5 px-3.5 py-3 text-left sm:px-4 sm:py-3.5">
-          <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
+          <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-[#727272]">
             {primaryHeading}
           </h3>
           <p className="truncate text-xs leading-4 text-[#1F1F1F]">

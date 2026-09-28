@@ -37,7 +37,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
           <h2 id="my-reviews-heading" className="text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F]">
             My reviews
           </h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-sm text-[#727272] mt-0.5">
             Reviews you have written for completed stays
           </p>
         </div>

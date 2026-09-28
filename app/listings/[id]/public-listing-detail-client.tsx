@@ -10,7 +10,8 @@ import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
-import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { AmenityIcon } from "@/components/ui/amenity-icon";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
@@ -252,58 +253,12 @@ function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
   return ranges.some((range) => key >= range.start && key < range.end);
 }
 
-function AmenityFallbackIcon({ id, category }: { id: string; category?: string }) {
-  const common = {
-    className: "size-5 text-[#1f1f1f]",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.7,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  const isOneOf = (...ids: string[]) => ids.includes(id);
-
-  if (isOneOf("bedroom_laundry", "room_darkening_shades", "clothing_storage", "drying_rack", "hangers", "extra_pillows_blankets", "towels")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M4 18V9.5h16V18M4 14h16M7 9.5V7.5h4v2M4 18h16" /></svg>;
-  }
-  if (isOneOf("refrigerator", "freezer", "microwave", "oven", "stove", "dishwasher", "coffee_maker", "kettle", "toaster", "cooking_basics", "dishes_cutlery", "dining_table", "blender", "bbq_utensils")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M7 4v16M4.5 4v6c0 1.4 1.1 2.5 2.5 2.5S9.5 11.4 9.5 10V4M15.5 4v16M15.5 4c2.2 0 4 1.8 4 4v4h-4" /></svg>;
-  }
-  if (isOneOf("shower", "bathtub", "shampoo", "conditioner", "toilet_paper", "bidet")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M5 15.5h14l-1.2 3H6.2L5 15.5ZM7 15.5V12h10v3.5M8 9.5V7a2.5 2.5 0 0 1 5 0v.5H9.5" /></svg>;
-  }
-  if (isOneOf("smart_tv", "sound_system", "books", "board_games", "game_console")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M5 14h3l4 3V7l-4 3H5v4ZM15 10.5c.9.8 1.4 1.8 1.4 3s-.5 2.2-1.4 3M18 8c1.6 1.4 2.5 3.3 2.5 5.5S19.6 17.6 18 19" /></svg>;
-  }
-  if (isOneOf("beach_access", "lake_access", "waterfront", "private_balcony", "shared_balcony", "backyard", "garden", "outdoor_furniture", "hammock")) {
-    return <svg viewBox="0 0 24 24" {...common}><circle cx="17" cy="7" r="2.5" /><path d="M3.5 15.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 3.5 0M3.5 19c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 3.5 0" /></svg>;
-  }
-  if (isOneOf("garage", "street_parking", "ev_charger")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="m5 11 2-4h10l2 4v6H5v-6ZM5 13h14M8 17v2M16 17v2" /><circle cx="8" cy="13" r="1" /><circle cx="16" cy="13" r="1" /></svg>;
-  }
-  if (category === "safety") {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M12 3.5 19 6v5.5c0 4.2-2.7 7.6-7 9-4.3-1.4-7-4.8-7-9V6l7-2.5Z" /><path d="m8.8 12 2.1 2.1 4.4-4.4" /></svg>;
-  }
-  if (category === "accessibility") {
-    return <svg viewBox="0 0 24 24" {...common}><circle cx="12" cy="5" r="1.8" /><path d="M10.5 9.5h3L15 13h3M11 10l-1 5h4l2 4M10 15l-3 3" /></svg>;
-  }
-  if (category === "services") {
-    return <svg viewBox="0 0 24 24" {...common}><rect x="4" y="7" width="16" height="12" rx="2" /><path d="M9 7V5.5h6V7M4 12h16M10 12v1h4v-1" /></svg>;
-  }
-  return <svg viewBox="0 0 24 24" {...common}><path d="m4 11 8-6 8 6v8.5H4V11Z" /><path d="M9.5 19.5v-5h5v5" /></svg>;
-}
-
 function AmenityRow({ amenity }: { amenity: { id: string; category?: string; label: string; description?: string } }) {
-  const iconSource = AMENITY_ICON_SOURCES[amenity.id];
 
   return (
     <div className="flex items-start gap-3 text-xs">
       <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
-        {iconSource ? (
-          <Image src={iconSource} alt="" width={20} height={20} className="size-5 object-contain" />
-        ) : (
-          <AmenityFallbackIcon id={amenity.id} category={amenity.category} />
-        )}
+        <AmenityIcon id={amenity.id} className="size-5" />
       </span>
       <div className="min-w-0">
         <h5 className="text-sm font-semibold text-[#1f1f1f]">{amenity.label}</h5>
@@ -1462,7 +1417,7 @@ export function PublicListingDetailClient({
                   <span className="hidden sm:inline">Share</span>
                 </button>
                 <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
-                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-amber-300 bg-amber-50 text-amber-800" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
+                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   </span>
                   <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
@@ -1658,11 +1613,7 @@ export function PublicListingDetailClient({
                       {categorizedAmenities.slice(0, 6).map((am) => (
                         <div key={am.id} className="flex min-w-0 items-center gap-3">
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
-                            {AMENITY_ICON_SOURCES[am.id] ? (
-                              <Image src={AMENITY_ICON_SOURCES[am.id]} alt="" width={18} height={18} className="size-[18px]" />
-                            ) : (
-                              <span aria-hidden="true" className="text-sm leading-none">{am.icon || "✓"}</span>
-                            )}
+                            <AmenityIcon id={am.id} className="size-[18px]" />
                           </span>
                           <span className="break-words text-base font-normal leading-5">{am.label}</span>
                         </div>
