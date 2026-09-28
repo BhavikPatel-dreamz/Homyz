@@ -21,7 +21,17 @@ import {
   getMgmtSubTabSlug,
   ProfileMgmtSubTab,
 } from "@/lib/profile/tab-utils";
-import { getLanguageDisplayNames } from "@/lib/utils/language-options";
+import {
+  getLanguageDisplayNames,
+  LANGUAGE_OPTIONS,
+  getLanguageById,
+  POPULAR_LANGUAGE_IDS,
+} from "@/lib/utils/language-options";
+import {
+  POPULAR_GLOBAL_DESTINATIONS,
+  searchLocations,
+  type StructuredLocation,
+} from "@/lib/location/geocoding";
 
 export type PublicProfileData = {
   whereIWantToGo?: string;
@@ -144,6 +154,584 @@ const IconTrash = () => (
   </svg>
 );
 
+
+function LanguageMultiSelect({
+  selected,
+  onChange,
+  disabled = false,
+}: {
+  selected: string[];
+  onChange: (ids: string[]) => void;
+  disabled?: boolean;
+}) {
+  const [search, setSearch] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [activeIndex, setActiveIndex] = React.useState(-1);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch("");
+        setActiveIndex(-1);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Deduplicate and canonicalize selected language entries
+  const uniqueSelected = React.useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const item of selected) {
+      if (!item) continue;
+      const resolved = getLanguageById(item);
+      const canonicalKey = resolved ? resolved.id.toLowerCase() : item.trim().toLowerCase();
+      if (!seen.has(canonicalKey)) {
+        seen.add(canonicalKey);
+        result.push(resolved ? resolved.id : item.trim());
+      }
+    }
+    return result;
+  }, [selected]);
+
+  // Helper to test if a language is already selected (by code or name)
+  const isSelected = React.useCallback(
+    (lang: (typeof LANGUAGE_OPTIONS)[number]) => {
+      const targetId = lang.id.toLowerCase();
+      const targetName = lang.name.toLowerCase();
+      return uniqueSelected.some((s) => {
+        const itemLower = s.trim().toLowerCase();
+        if (itemLower === targetId || itemLower === targetName) return true;
+        const resolved = getLanguageById(s);
+        return resolved ? resolved.id.toLowerCase() === targetId : false;
+      });
+    },
+    [uniqueSelected],
+  );
+
+  // Filter languages: all languages not yet selected that match the search query
+  const query = search.trim().toLowerCase();
+  const unselectedLanguages = React.useMemo(() => {
+    return LANGUAGE_OPTIONS.filter((lang) => !isSelected(lang));
+  }, [isSelected]);
+
+  const filtered = React.useMemo(() => {
+    if (!query) return unselectedLanguages;
+    return unselectedLanguages.filter(
+      (lang) =>
+        lang.name.toLowerCase().includes(query) ||
+        (lang.nativeName && lang.nativeName.toLowerCase().includes(query)) ||
+        lang.id.toLowerCase() === query,
+    );
+  }, [unselectedLanguages, query]);
+
+  // Popular languages (subset of unselected when search is empty)
+  const popularLanguages = React.useMemo(() => {
+    if (query) return [];
+    return unselectedLanguages.filter((l) => POPULAR_LANGUAGE_IDS.includes(l.id));
+  }, [unselectedLanguages, query]);
+
+  const addLanguage = (langOrId: string) => {
+    const resolved = getLanguageById(langOrId);
+    const idToAdd = resolved ? resolved.id : langOrId.trim();
+    if (!idToAdd) return;
+    const targetKey = idToAdd.toLowerCase();
+    const already = uniqueSelected.some((s) => {
+      const match = getLanguageById(s);
+      return (
+        s.toLowerCase() === targetKey ||
+        (match && match.id.toLowerCase() === targetKey)
+      );
+    });
+    if (!already) {
+      onChange([...uniqueSelected, idToAdd]);
+    }
+    setSearch("");
+    setActiveIndex(-1);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const removeLanguage = (itemToRemove: string) => {
+    const targetLower = itemToRemove.trim().toLowerCase();
+    const resolvedTarget = getLanguageById(itemToRemove);
+    onChange(
+      uniqueSelected.filter((s) => {
+        const sLower = s.trim().toLowerCase();
+        if (sLower === targetLower) return false;
+        if (resolvedTarget) {
+          const sResolved = getLanguageById(s);
+          if (sResolved && sResolved.id.toLowerCase() === resolvedTarget.id.toLowerCase()) return false;
+        }
+        return true;
+      }),
+    );
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!open) setOpen(true);
+      setActiveIndex((prev) => Math.min(prev + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && activeIndex >= 0 && filtered[activeIndex]) {
+      e.preventDefault();
+      addLanguage(filtered[activeIndex].id);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+      setSearch("");
+      setActiveIndex(-1);
+    } else if (e.key === "Backspace" && search === "" && selected.length > 0) {
+      removeLanguage(selected[selected.length - 1]);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeIndex >= 0 && listRef.current) {
+      const item = listRef.current.children[activeIndex] as HTMLElement | undefined;
+      item?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeIndex]);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      {/* Box containing selected chips and search input */}
+      <div
+        className={`flex flex-wrap gap-1.5 min-h-[44px] items-center rounded-xl border px-3 py-2 transition-all cursor-text ${
+          open
+            ? "border-[#1F1F1F] ring-2 ring-zinc-200/80 bg-white shadow-2xs"
+            : disabled
+            ? "border-zinc-200 bg-zinc-50 cursor-default"
+            : "border-zinc-300 bg-white hover:border-zinc-400"
+        }`}
+        onClick={() => {
+          if (!disabled) {
+            setOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }
+        }}
+      >
+        {/* Selected chips */}
+        {uniqueSelected.map((item, idx) => {
+          const resolved = getLanguageById(item);
+          const displayName = resolved ? resolved.name : item;
+          const displayKey = resolved ? resolved.id : item;
+          return (
+            <span
+              key={`chip-${displayKey}-${idx}`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#1F1F1F] pl-2.5 pr-1.5 py-1 text-xs font-medium text-white shadow-2xs leading-none"
+            >
+              <span>{displayName}</span>
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeLanguage(item);
+                  }}
+                  className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors cursor-pointer"
+                  aria-label={`Remove ${displayName}`}
+                >
+                  <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M2 2l6 6M8 2l-6 6" />
+                  </svg>
+                </button>
+              )}
+            </span>
+          );
+        })}
+
+        {/* Search input inside chips container */}
+        {!disabled && (
+          <input
+            ref={inputRef}
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setActiveIndex(-1);
+              if (!open) setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              selected.length === 0
+                ? "Search & select languages (e.g. English, Arabic)..."
+                : "Add another language..."
+            }
+            className="flex-1 min-w-[140px] bg-transparent text-sm text-[#1F1F1F] placeholder-zinc-400 focus:outline-none py-1"
+          />
+        )}
+
+        {/* Count badge when closed */}
+        {!open && uniqueSelected.length > 0 && !disabled && (
+          <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+            {uniqueSelected.length} selected
+          </span>
+        )}
+      </div>
+
+      {/* Dropdown panel */}
+      {open && !disabled && (
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+          {/* Header */}
+          <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
+            <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+              {filtered.length} {filtered.length === 1 ? "Language" : "Languages"} Available
+            </span>
+            <span className="text-[10px] text-zinc-400">
+              Press Enter to add · Esc to close
+            </span>
+          </div>
+
+          {/* Quick popular tags when not searching */}
+          {!query && popularLanguages.length > 0 && (
+            <div className="px-3.5 py-2.5 border-b border-zinc-100 bg-zinc-50/30">
+              <p className="text-[11px] font-medium text-zinc-400 mb-1.5">Commonly Spoken:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {popularLanguages.slice(0, 8).map((pLang) => (
+                  <button
+                    key={`pop-${pLang.id}`}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      addLanguage(pLang.id);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white hover:border-[#1F1F1F] hover:bg-zinc-900 hover:text-white px-2 py-0.5 text-xs font-medium text-[#1F1F1F] transition-all cursor-pointer"
+                  >
+                    <span>+</span>
+                    <span>{pLang.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scrollable list of ALL languages */}
+          <div ref={listRef} className="max-h-60 overflow-y-auto overscroll-contain py-1 divide-y divide-zinc-50">
+            {filtered.length === 0 ? (
+              <div className="px-4 py-6 text-center">
+                <p className="text-sm font-medium text-zinc-600 mb-1">
+                  {query ? `No languages match "${query}"` : "All languages have been selected"}
+                </p>
+                {query && (
+                  <p className="text-xs text-zinc-400">
+                    Try typing the English name or native spelling (e.g. Français, Español).
+                  </p>
+                )}
+              </div>
+            ) : (
+              filtered.map((lang, idx) => {
+                const isActive = idx === activeIndex;
+                return (
+                  <button
+                    key={lang.id}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      addLanguage(lang.id);
+                    }}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-[#1F1F1F] text-white"
+                        : "hover:bg-zinc-50 text-[#1F1F1F]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={`text-xs ${isActive ? "text-zinc-300" : "text-zinc-400"}`}>🌐</span>
+                      <span className="text-sm font-medium truncate">{lang.name}</span>
+                    </div>
+                    {lang.nativeName && lang.nativeName !== lang.name && (
+                      <span
+                        className={`text-xs shrink-0 ${
+                          isActive ? "text-zinc-300" : "text-zinc-400"
+                        }`}
+                      >
+                        {lang.nativeName}
+                      </span>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Footer bar */}
+          <div className="border-t border-zinc-100 bg-zinc-50/70 px-3.5 py-2 flex items-center justify-between text-xs">
+            <span className="text-[11px] text-zinc-500">
+              {uniqueSelected.length} selected
+            </span>
+            {uniqueSelected.length > 0 && (
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange([]);
+                }}
+                className="text-[11px] text-red-500 hover:text-red-700 font-medium transition-colors cursor-pointer"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InlineLocationSearch({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState(value);
+  const [suggestions, setSuggestions] = React.useState<StructuredLocation[]>(POPULAR_GLOBAL_DESTINATIONS);
+  const [loading, setLoading] = React.useState(false);
+  const [activeIndex, setActiveIndex] = React.useState(-1);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Sync internal query with incoming value
+  React.useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  // Click outside: if user entered text but didn't select an address, revert to value
+  React.useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setActiveIndex(-1);
+        // Do not allow invalid/free-text values: revert to verified saved value
+        setQuery(value);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [value]);
+
+  // Debounced Place Search
+  React.useEffect(() => {
+    if (!open) return;
+    const clean = query.trim();
+    if (clean.length < 2) {
+      setSuggestions(POPULAR_GLOBAL_DESTINATIONS);
+      setLoading(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const results = await searchLocations(clean);
+        setSuggestions(results || []);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [query, open]);
+
+  const handleSelect = (dest: StructuredLocation) => {
+    const formatted = dest.formattedAddress;
+    setQuery(formatted);
+    onChange(formatted);
+    setOpen(false);
+    setActiveIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!open) setOpen(true);
+      setActiveIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && activeIndex >= 0 && suggestions[activeIndex]) {
+      e.preventDefault();
+      handleSelect(suggestions[activeIndex]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+      setQuery(value);
+      setActiveIndex(-1);
+    }
+  };
+
+  const handleClear = () => {
+    setQuery("");
+    onChange("");
+    setSuggestions(POPULAR_GLOBAL_DESTINATIONS);
+    setOpen(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      {/* Search Input Box with Map Pin */}
+      <div
+        className={`flex items-center gap-2.5 min-h-[44px] rounded-xl border px-3 py-2 transition-all ${
+          open
+            ? "border-[#1F1F1F] ring-2 ring-zinc-200/80 bg-white shadow-2xs"
+            : disabled
+            ? "border-zinc-200 bg-zinc-50 cursor-default"
+            : "border-zinc-300 bg-white hover:border-zinc-400"
+        }`}
+        onClick={() => {
+          if (!disabled) {
+            setOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }
+        }}
+      >
+        <span className="text-zinc-500 text-sm shrink-0">📍</span>
+
+        <input
+          ref={inputRef}
+          type="text"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          disabled={disabled}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setActiveIndex(-1);
+            if (!open) setOpen(true);
+          }}
+          onFocus={() => {
+            if (!open) setOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Search town, city or country (e.g. Rome, Italy)..."
+          className="flex-1 min-w-0 bg-transparent text-sm text-[#1F1F1F] placeholder-zinc-400 focus:outline-none font-medium"
+        />
+
+        {query && !disabled && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClear();
+            }}
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 transition-colors cursor-pointer"
+            title="Clear location"
+            aria-label="Clear location"
+          >
+            <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M2 2l6 6M8 2l-6 6" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown with Suggestions */}
+      {open && !disabled && (
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+          <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
+            <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+              {query.trim().length >= 2 ? "Search Results" : "Popular Destinations"}
+            </span>
+            <span className="text-[10px] text-zinc-400">
+              Select one to apply
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center gap-2.5 px-4 py-5 text-xs text-zinc-500">
+              <svg className="w-4 h-4 animate-spin text-zinc-400" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
+              </svg>
+              <span>Searching locations…</span>
+            </div>
+          ) : suggestions.length === 0 ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm font-medium text-zinc-600 mb-1">
+                No places found for &ldquo;{query}&rdquo;
+              </p>
+              <p className="text-xs text-zinc-400">
+                Try searching for a city, district, or country name.
+              </p>
+            </div>
+          ) : (
+            <div className="max-h-60 overflow-y-auto overscroll-contain py-1 divide-y divide-zinc-50">
+              {suggestions.map((dest, idx) => {
+                const isActive = idx === activeIndex;
+                const isSelected =
+                  value && dest.formattedAddress.toLowerCase() === value.toLowerCase();
+
+                return (
+                  <button
+                    key={`${dest.formattedAddress}-${idx}`}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(dest);
+                    }}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-[#1F1F1F] text-white"
+                        : isSelected
+                        ? "bg-amber-50 text-[#1F1F1F]"
+                        : "hover:bg-zinc-50 text-[#1F1F1F]"
+                    }`}
+                  >
+                    <span className={`text-xs shrink-0 ${isActive ? "text-zinc-300" : "text-zinc-400"}`}>📍</span>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-medium truncate ${isActive ? "text-white" : "text-[#1F1F1F]"}`}>
+                        {dest.locationName}
+                      </p>
+                      <p className={`text-xs truncate ${isActive ? "text-zinc-300" : "text-zinc-500"}`}>
+                        {dest.formattedAddress}
+                      </p>
+                    </div>
+                    {dest.countryCode && (
+                      <span
+                        className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-zinc-100 text-zinc-500"
+                        }`}
+                      >
+                        {dest.countryCode}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Footer note */}
+          <div className="border-t border-zinc-100 bg-zinc-50/70 px-3.5 py-1.5 text-[10px] text-zinc-400">
+            Click a suggestion to set your location
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 export function ProfileManagementClient({
   initial,
   initialTripPhotos = [],
@@ -220,7 +808,25 @@ export function ProfileManagementClient({
     uselessSkill: pub.uselessSkill || "",
     funFact: pub.funFact || "",
     favoriteSong: pub.favoriteSong || "",
-    languages: languagesForInput(pub.languages),
+    languages: (() => {
+      const raw = Array.isArray(pub.languages)
+        ? pub.languages
+        : typeof pub.languages === "string"
+        ? pub.languages.split(",").map((l: string) => l.trim()).filter(Boolean)
+        : [];
+      const seen = new Set<string>();
+      const deduped: string[] = [];
+      for (const l of raw) {
+        if (!l) continue;
+        const resolved = getLanguageById(l);
+        const key = resolved ? resolved.id.toLowerCase() : l.trim().toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          deduped.push(resolved ? resolved.id : l.trim());
+        }
+      }
+      return deduped;
+    })(),
     obsessedWith: pub.obsessedWith || "",
     bioTitle: pub.bioTitle || "",
     whereILive: pub.whereILive || "",
@@ -743,20 +1349,27 @@ export function ProfileManagementClient({
             </div>
 
             {/* Item 10 */}
-            <div className="item-box flex items-center gap-3.5 pb-2.5 border-b border-zinc-200/80">
-              <IconSprig />
+            <div className="item-box flex items-start gap-3.5 pb-2.5 border-b border-zinc-200/80">
+              <div className="mt-0.5">
+                <IconSprig />
+              </div>
               <div className="flex-1 min-w-0">
-                <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Languages I speak{formDataState.languages ? `: ${formDataState.languages}` : ""}
+                <span className="block sm:text-base text-sm font-normal text-[#727272] mb-1.5">
+                  Languages I speak
                 </span>
-                <input
-                  value={formDataState.languages}
-                  disabled={!isOwner}
-                  onChange={(e) =>
-                    handleInputChange("languages", e.target.value)
+                <LanguageMultiSelect
+                  selected={
+                    Array.isArray(formDataState.languages)
+                      ? formDataState.languages
+                      : formDataState.languages
+                      ? String(formDataState.languages)
+                          .split(",")
+                          .map((l) => l.trim())
+                          .filter(Boolean)
+                      : []
                   }
-                  className="w-full sm:text-lg text-sm bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
-                  placeholder="e.g. English, Arabic, French"
+                  onChange={(ids) => handleInputChange("languages", ids)}
+                  disabled={!isOwner}
                 />
               </div>
             </div>
@@ -808,21 +1421,34 @@ export function ProfileManagementClient({
             </div>
 
             {/* Item 13 */}
-            <div className="flex items-center gap-3.5 border-b border-zinc-200/80 pb-2.5">
-              <IconSprig />
+            <div className="item-box flex items-start gap-3.5 border-b border-zinc-200/80 pb-2.5">
+              <div className="mt-0.5">
+                <IconSprig />
+              </div>
               <div className="flex-1 min-w-0">
-                <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Where I live{formDataState.whereILive ? `: ${formDataState.whereILive}` : ""}
+                <span className="block sm:text-base text-sm font-normal text-[#727272] mb-1.5">
+                  Where I live
                 </span>
-                <input
-                  value={formDataState.whereILive}
-                  disabled={!isOwner}
-                  onChange={(e) =>
-                    handleInputChange("whereILive", e.target.value)
-                  }
-                  className="w-full md:text-lg text-sm bg-transparent text-[#1F1F1F] font-medium focus:outline-none"
-                  placeholder="Town, Country"
-                />
+                {isOwner ? (
+                  <InlineLocationSearch
+                    value={formDataState.whereILive || ""}
+                    onChange={(val) => handleInputChange("whereILive", val)}
+                    disabled={!isOwner}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 py-2">
+                    <span className="text-zinc-500 text-sm">📍</span>
+                    <span
+                      className={`sm:text-base text-sm ${
+                        formDataState.whereILive
+                          ? "text-[#1F1F1F] font-medium"
+                          : "text-zinc-400 font-normal"
+                      }`}
+                    >
+                      {formDataState.whereILive || "Not specified"}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

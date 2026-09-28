@@ -110,8 +110,32 @@ export const LANGUAGE_OPTIONS = [...LANGUAGE_OPTIONS_UNSORTED].sort((a, b) =>
 
 export const DEFAULT_LANGUAGE_IDS = ["en"];
 
+export const POPULAR_LANGUAGE_IDS = [
+  "en", // English
+  "ar", // Arabic
+  "es", // Spanish
+  "fr", // French
+  "de", // German
+  "it", // Italian
+  "zh", // Chinese
+  "ja", // Japanese
+  "pt", // Portuguese
+  "ru", // Russian
+  "hi", // Hindi
+  "tr", // Turkish
+];
+
 export function getLanguageById(id: string): LanguageOption | undefined {
-  return LANGUAGE_OPTIONS.find((language) => language.id === id);
+  if (!id) return undefined;
+  const trimmed = id.trim().toLowerCase();
+  return (
+    LANGUAGE_OPTIONS.find(
+      (language) =>
+        language.id.toLowerCase() === trimmed ||
+        language.name.toLowerCase() === trimmed ||
+        (language.nativeName && language.nativeName.toLowerCase() === trimmed),
+    )
+  );
 }
 
 export function getLanguageNameById(id: string): string {
@@ -120,7 +144,9 @@ export function getLanguageNameById(id: string): string {
 
 export function getLanguageDisplayNames(ids: string[]): string[] {
   return ids
-    .map((id) => getLanguageById(id))
-    .filter((language): language is LanguageOption => Boolean(language))
-    .map((language) => language.name);
+    .map((id) => {
+      const match = getLanguageById(id);
+      return match ? match.name : id.trim();
+    })
+    .filter(Boolean);
 }

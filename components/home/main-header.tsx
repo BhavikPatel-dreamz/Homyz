@@ -3,14 +3,14 @@
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 
 export function MainHeader() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const user = session?.user;
+  const sessionLoading = sessionStatus === "loading";
   const { selectedLangLabel, setLanguage, t } = useLanguage();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -68,14 +68,16 @@ export function MainHeader() {
 
         {/* Right Navigation Actions */}
         <div className="w-1/3 flex items-center justify-end gap-3.5 relative" ref={menuRef}>
-          {user && (
+          {sessionLoading ? (
+            <div className="h-9 w-32 animate-pulse rounded-full bg-gray-100" aria-hidden="true" />
+          ) : user ? (
             <Link
               className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
               href="/host/onboarding"
             >
               {t("header_become_a_host") || "Become a host"}
             </Link>
-          )}
+          ) : null}
 
           {/* Language button */}
           <button
@@ -92,6 +94,7 @@ export function MainHeader() {
             type="button"
             aria-label="User Menu"
             onClick={() => setMenuOpen(!menuOpen)}
+            disabled={sessionLoading}
             className="flex items-center gap-2 p-1.5 pl-2 border border-gray-200 rounded-full hover:shadow-sm cursor-pointer transition bg-white"
           >
             <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200 relative shrink-0">
@@ -105,7 +108,7 @@ export function MainHeader() {
           </button>
 
           {/* Profile Dropdown */}
-          {menuOpen && (
+          {menuOpen && !sessionLoading && (
             <div className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl z-50 text-gray-800 animate-in fade-in zoom-in-95">
               {user ? (
                 <div className="space-y-1">

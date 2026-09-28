@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Caveat, Poppins, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { getAuthSession } from "@/lib/auth/session";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -27,7 +28,12 @@ export const metadata: Metadata = {
   description: "Stay like a homie. Premium booking and property management.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Resolve the cookie-backed session before the first client render. Passing
+  // this snapshot into SessionProvider prevents an authenticated browser from
+  // ever hydrating through a false logged-out state.
+  const session = await getAuthSession();
+
   return (
     <html
       lang="en"
@@ -38,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${poppins.className} min-h-full flex flex-col text-muted-foreground bg-white`}
         suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );

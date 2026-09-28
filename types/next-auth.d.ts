@@ -1,6 +1,7 @@
 import type { DefaultSession } from "next-auth";
 
 import type { Role } from "@/generated/prisma/enums";
+import type { RequiredProfileField } from "@/lib/auth/profile-completion";
 
 // Module augmentation: carry our `id` and `role` through the NextAuth session
 // and JWT. The `jwt` callback injects them (guarded by `if (user)`); the
@@ -14,6 +15,8 @@ declare module "next-auth" {
       adminRoleSlug?: string | null;
       permissions?: string[];
       tokenVersion?: number;
+      profileComplete?: boolean;
+      missingProfileFields?: RequiredProfileField[];
     } & DefaultSession["user"];
   }
 
@@ -36,5 +39,7 @@ declare module "next-auth/jwt" {
     permissions?: string[];
     tokenVersion?: number;
     isRevoked?: boolean;
+    profileComplete?: boolean;
+    missingProfileFields?: RequiredProfileField[];
   }
 }

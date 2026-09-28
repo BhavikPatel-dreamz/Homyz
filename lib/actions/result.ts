@@ -29,7 +29,15 @@ export async function runAction<T>(
       return { ok: false, error: "Validation failed", fieldErrors };
     }
     if (err instanceof AppError) {
-      return { ok: false, error: err.message };
+      const fieldErrors = err.details?.reduce<Record<string, string>>((errors, detail) => {
+        errors[detail.path] ??= detail.message;
+        return errors;
+      }, {});
+      return {
+        ok: false,
+        error: err.message,
+        ...(fieldErrors && Object.keys(fieldErrors).length > 0 ? { fieldErrors } : {}),
+      };
     }
     console.error("[action] unhandled error:", err);
     return { ok: false, error: "Something went wrong" };

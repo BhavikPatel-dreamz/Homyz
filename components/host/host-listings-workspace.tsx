@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
+import { HostListingsSkeleton } from "./host-listings-skeleton";
 import { BecomeHostModal } from "./become-host-modal";
 import { Footer } from "@/components/dashboard/footer";
 import {
@@ -109,12 +110,18 @@ export function HostListingsWorkspace({
   currentUserId,
   initialShowSearch = false,
   initialSearchQuery = "",
+  isLoading = false,
 }: {
   initialListings: ListingDTO[];
   currentUserId: string;
   initialShowSearch?: boolean;
   initialSearchQuery?: string;
+  isLoading?: boolean;
 }) {
+  if (isLoading) {
+    return <HostListingsSkeleton />;
+  }
+
   const router = useRouter();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<string>("ALL");

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
 import type { Booking, Listing, Prisma, User, Review } from "@/generated/prisma/client";
+import { getMissingProfileFields } from "@/lib/auth/profile-completion";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -35,6 +36,7 @@ function getPublicCoordinates(
 export function toPublicUser(
   u: User & { adminRole?: { name: string; slug: string } | null },
 ) {
+  const missingProfileFields = u.role === "ADMIN" || u.adminRole ? [] : getMissingProfileFields(u);
   return {
     id: u.id,
     name: u.name,
@@ -45,11 +47,14 @@ export function toPublicUser(
     adminRoleId: u.adminRoleId,
     adminRole: u.adminRole ? { name: u.adminRole.name, slug: u.adminRole.slug } : null,
     phone: u.phone,
+    birthDate: u.birthDate,
     image: u.image,
     publicProfile: (u.publicProfile as Record<string, unknown> | null) ?? null, // Include publicProfile object
     emailVerified: u.emailVerified,
     phoneVerified: u.phoneVerified,
     createdAt: u.createdAt,
+    profileComplete: missingProfileFields.length === 0,
+    missingProfileFields,
   };
 }
 export type PublicUser = ReturnType<typeof toPublicUser>;
@@ -446,6 +451,7 @@ export function revivePublicUser(u: PublicUser): PublicUser {
     ...u,
     emailVerified: u.emailVerified ? new Date(u.emailVerified) : u.emailVerified,
     phoneVerified: u.phoneVerified ? new Date(u.phoneVerified) : u.phoneVerified,
+    birthDate: u.birthDate ? new Date(u.birthDate) : u.birthDate,
     lastLoginAt: u.lastLoginAt ? new Date(u.lastLoginAt) : null,
     createdAt: new Date(u.createdAt),
   };

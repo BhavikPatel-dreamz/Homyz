@@ -1863,11 +1863,13 @@ export function PublicListingDetailClient({
                         </div>
 
                         <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
-                          {isAvailabilityLoading
+                          {isAvailabilityLoading || (Boolean(checkIn && checkOut) && isQuoteLoading)
                             ? "Checking availability…"
-                            : bookedDateRanges.length > 0
-                              ? "Unavailable dates cannot be reserved."
-                              : "Availability is confirmed before you reserve."}
+                            : isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, bookedDateRanges)
+                              ? "Your selected dates are unavailable."
+                              : hasValidQuote
+                                ? "Your selected dates are available."
+                                : "Availability is confirmed before you reserve."}
                         </p>
 
                         {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}

@@ -154,6 +154,7 @@ model User {
   adminRoleId   String?
   phone         String?    @unique
   phoneVerified DateTime?
+  birthDate     DateTime?  @db.Date
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   tokenVersion  Int        @default(0)
