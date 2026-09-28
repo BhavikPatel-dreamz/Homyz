@@ -86,7 +86,7 @@ function LocationIcon({ type }: { type?: string }) {
   switch (type) {
     case "beach":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 shadow-2xs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
             <path d="M12 9v12" />
@@ -95,7 +95,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "station":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 shadow-2xs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <rect x="4" y="3" width="16" height="16" rx="2" />
             <path d="M4 11h16" />
@@ -109,7 +109,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "airport":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z" />
           </svg>
@@ -117,7 +117,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "mall":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fuchsia-50 text-fuchsia-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
             <path d="M3 6h18" />
@@ -127,7 +127,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "university":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
             <path d="M6 12v5c3 3 9 3 12 0v-5" />
@@ -136,7 +136,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "hospital":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M12 6v12M6 12h12" />
             <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -145,7 +145,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     case "street":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M4 19L8 5h8l4 14" />
             <line x1="12" y1="8" x2="12" y2="10" />
@@ -156,7 +156,7 @@ function LocationIcon({ type }: { type?: string }) {
     case "landmark":
     case "poi":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-700 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
@@ -166,7 +166,7 @@ function LocationIcon({ type }: { type?: string }) {
     case "area":
     case "district":
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-800 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-800 group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
@@ -175,7 +175,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     default:
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1f1f1f] group-hover:bg-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
             <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
             <circle cx="12" cy="8" r="2" />
@@ -193,7 +193,7 @@ function highlightMatch(text: string, query: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <strong className="font-bold text-zinc-950 underline decoration-zinc-400 underline-offset-2">
+      <strong className="font-semibold text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
         {text.slice(idx, idx + q.length)}
       </strong>
       {text.slice(idx + q.length)}
@@ -714,7 +714,7 @@ export function ListingSearchBar() {
         className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-100/90 bg-zinc-50/50 mb-2"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
             {isLocating ? (
               <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />
             ) : (
@@ -728,7 +728,7 @@ export function ListingSearchBar() {
             )}
           </div>
           <div className="min-w-0">
-            <span className="block text-[14px] font-bold text-zinc-900 leading-tight">
+            <span className="block text-[14px] font-semibold text-[#1f1f1f] leading-tight">
               {isLocating ? "Detecting location..." : "Use current location"}
             </span>
             <span className="block text-[11px] text-zinc-500 font-medium">Discover verified stays near you</span>
@@ -786,7 +786,7 @@ export function ListingSearchBar() {
             className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-amber-50/70 border border-amber-200/60 bg-amber-50/20"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-900 shadow-2xs">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-900 shadow-2xs">
                 🏙️
               </div>
               <div className="min-w-0">
@@ -819,7 +819,7 @@ export function ListingSearchBar() {
                   setActiveStep("when");
                   if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                 }}
-                className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
+                className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer group ${
                   suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
                 }`}
               >
@@ -857,7 +857,7 @@ export function ListingSearchBar() {
                   setActiveStep("when");
                   if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                 }}
-                className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/80"
+                className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-[#F3F4F5] group"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <LocationIcon type="district" />
@@ -889,7 +889,7 @@ export function ListingSearchBar() {
                 setActiveStep("when");
                 if (!isMobileSearchOpen) setDesktopPanel("checkIn");
               }}
-              className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/80"
+              className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-[#F3F4F5] group"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <LocationIcon type="city" />
@@ -965,19 +965,12 @@ export function ListingSearchBar() {
             setDesktopPanel(null);
             setIsMobileSearchOpen(true);
           }}
-          className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs border border-zinc-200/80 transition-transform active:scale-[0.99] cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+          className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform active:scale-[0.99] cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
           aria-label={isSearching ? "Searching..." : "Start your search"}
         >
-          <div className="flex flex-col text-left min-w-0 pr-2">
-            <span className="truncate text-sm font-semibold text-[#1f1f1f]">
-              {destination || t("home_search_where_placeholder", undefined, "Search destinations")}
-            </span>
-            <span className="truncate text-[11px] text-zinc-500 font-medium">
-              {(checkIn && checkOut ? `${formatShortDate(checkIn)} – ${formatShortDate(checkOut)}` : checkIn ? formatShortDate(checkIn) : "Anytime") +
-                " · " +
-                (mobileGuestSummary || "Add guests")}
-            </span>
-          </div>
+          <span className="truncate text-base font-medium text-[#1f1f1f]">
+            {destination || t("home_search_where_placeholder", undefined, "Search destinations")}
+          </span>
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
             {isSearching ? (
               <svg className="h-4.5 w-4.5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1002,12 +995,12 @@ export function ListingSearchBar() {
           ref={desktopSearchRef}
           onSubmit={handleSearchSubmit}
           autoComplete="off"
-          className="relative flex h-[66px] w-full max-w-[840px] items-center rounded-full bg-white shadow-[0_4px_24px_rgba(0,0,0,0.09)] border border-zinc-200/90 transition-shadow hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)]"
+          className="relative flex h-[66px] w-full max-w-[820px] items-center rounded-full bg-white shadow-[0_4px_24px_rgba(0,0,0,0.09)] border border-zinc-200/90 transition-shadow hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)]"
         >
           {/* Segment 1: Where */}
           <div
-            className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-5 transition-colors cursor-pointer ${
-              desktopPanel === "where" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+            className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-300 cursor-pointer ${
+              desktopPanel === "where" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
             }`}
             onClick={() => setDesktopPanel("where")}
           >
@@ -1028,7 +1021,7 @@ export function ListingSearchBar() {
                 aria-expanded={desktopPanel === "where"}
                 aria-haspopup="listbox"
                 aria-controls="listing-search-panel"
-                placeholder={t("home_search_where_placeholder", undefined, "Search destinations (e.g. Surat, Mumbai)")}
+                placeholder={t("home_search_where_placeholder", undefined, "Search destinations")}
                 value={destination}
                 onFocus={() => setDesktopPanel("where")}
                 onClick={(e) => {
@@ -1062,7 +1055,7 @@ export function ListingSearchBar() {
                     }
                   }
                 }}
-                className="w-full truncate bg-transparent text-[14px] font-medium text-zinc-900 placeholder:text-zinc-400 outline-none"
+                className="w-full truncate bg-transparent text-[14px] font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none"
               />
               {destination && (
                 <button
@@ -1077,7 +1070,11 @@ export function ListingSearchBar() {
             </div>
           </div>
 
-          <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+          <div
+            className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              desktopPanel === "where" || desktopPanel === "checkIn" ? "opacity-0" : "opacity-100"
+            }`}
+          />
 
           {/* Segment 2: Check In */}
           <button
@@ -1085,19 +1082,23 @@ export function ListingSearchBar() {
             aria-expanded={desktopPanel === "checkIn"}
             aria-controls="listing-search-panel"
             onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
-            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-              desktopPanel === "checkIn" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${
+              desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
             }`}
           >
-            <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">
-              {t("home_search_when", undefined, "Check in")}
+            <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
+              {t("home_search_when", undefined, "When")}
             </span>
-            <span className="block truncate text-[14px] font-medium text-zinc-600">
+            <span className="block truncate text-sm font-normal text-[#727272]">
               {datePreferences.mode !== "dates" ? "Flexible" : formatShortDate(checkIn) || t("home_search_add_dates", undefined, "Add dates")}
             </span>
           </button>
 
-          <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+          <div
+            className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
+            }`}
+          />
 
           {/* Segment 3: Check Out */}
           <button
@@ -1105,19 +1106,23 @@ export function ListingSearchBar() {
             aria-expanded={desktopPanel === "checkOut"}
             aria-controls="listing-search-panel"
             onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
-            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-              desktopPanel === "checkOut" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${
+              desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
             }`}
           >
-            <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">
-              {t("home_search_when", undefined, "Check out")}
+            <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
+              {t("home_search_when", undefined, "When")}
             </span>
-            <span className="block truncate text-[14px] font-medium text-zinc-600">
+            <span className="block truncate text-sm font-normal text-[#727272]">
               {datePreferences.mode !== "dates" ? "Flexible" : formatShortDate(checkOut) || t("home_search_add_dates", undefined, "Add dates")}
             </span>
           </button>
 
-          <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+          <div
+            className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
+            }`}
+          />
 
           {/* Segment 4: Who & Search Button */}
           <div className="flex h-full min-w-0 flex-[1.3] items-center pr-2">
@@ -1126,14 +1131,14 @@ export function ListingSearchBar() {
               aria-expanded={desktopPanel === "who"}
               aria-controls="listing-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "who" ? null : "who")}
-              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-                desktopPanel === "who" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${
+                desktopPanel === "who" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
             >
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-zinc-800">
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
                 {t("home_search_who", undefined, "Who")}
               </span>
-              <span className="block truncate text-[14px] font-medium text-zinc-600">
+              <span className="block truncate text-sm font-normal text-[#727272]">
                 {mobileGuestSummary || t("home_search_add_guests", undefined, "Add guests")}
               </span>
             </button>
@@ -1169,9 +1174,9 @@ export function ListingSearchBar() {
                   ? "Guests"
                   : "Choose dates"
               }
-              className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+              className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-[#fff] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
                 desktopPanel === "where"
-                  ? "left-0 w-[420px] sm:w-[480px]"
+                  ? "left-0 w-[400px] sm:w-[480px]"
                   : desktopPanel === "who"
                   ? "right-0 w-[380px]"
                   : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[620px]"
@@ -1179,7 +1184,7 @@ export function ListingSearchBar() {
             >
               {desktopPanel === "where" ? (
                 <>
-                  <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wider text-zinc-500">Destinations</p>
+                  <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Suggested destinations</p>
                   {destinationSuggestions}
                 </>
               ) : desktopPanel === "who" ? (

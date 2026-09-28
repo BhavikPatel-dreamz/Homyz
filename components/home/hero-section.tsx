@@ -203,7 +203,7 @@ function LocationIcon({ type }: { type?: string }) {
       );
     default:
       return (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-2xs">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#1f1f1f] shadow-2xs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
             <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
             <circle cx="12" cy="8" r="2" />
@@ -877,14 +877,14 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       <div className="flex items-center gap-3 min-w-0">
                         <LocationIcon type={c.locationType || c.type || "city"} />
                         <div className="min-w-0">
-                          <div className="text-[14px] font-semibold text-zinc-900 truncate">
+                          <div className="text-[14px] font-normal text-[#1f1f1f] truncate">
                             {highlightMatch(c.fullLabel || c.name || c.city, destination)}
                           </div>
-                          {c.subtitle && <div className="text-[12px] text-zinc-500 truncate">{c.subtitle}</div>}
+                          {c.subtitle && <div className="text-[14px] text-[#727272] truncate">{c.subtitle}</div>}
                         </div>
                       </div>
                       {isStayBadge ? (
-                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
+                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-900">
                           Available Stays
                         </span>
                       ) : (
@@ -1193,8 +1193,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           >
             {/* Where */}
             <div
-              className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-5 transition-colors cursor-pointer ${
-                desktopPanel === "where" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+              className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-300 cursor-pointer ${
+                desktopPanel === "where" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
               onClick={() => setDesktopPanel("where")}
             >
@@ -1218,7 +1218,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   data-form-type="other"
                   data-lpignore="true"
                   data-1p-ignore="true"
-                  placeholder="Search destinations (e.g. Surat, Mumbai)"
+                  placeholder="Search destinations"
                   value={destination}
                   onFocus={() => setDesktopPanel("where")}
                   onClick={(e) => {
@@ -1252,7 +1252,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       }
                     }
                   }}
-                  className="w-full truncate bg-transparent text-[14px] font-medium text-zinc-900 placeholder:text-zinc-400 outline-none"
+                  className="w-full truncate bg-transparent text-[14px] font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none"
                 />
                 {destination && (
                   <button
@@ -1267,7 +1267,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               </div>
             </div>
 
-            <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+            <div
+              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+                desktopPanel === "where" || desktopPanel === "checkIn" ? "opacity-0" : "opacity-100"
+              }`}
+            />
 
             {/* Check In */}
             <button
@@ -1275,8 +1279,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-expanded={desktopPanel === "checkIn"}
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
-              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-                desktopPanel === "checkIn" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors  duration-300 cursor-pointer ${
+                desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
@@ -1285,7 +1289,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               </span>
             </button>
 
-            <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+            <div
+              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+                desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
+              }`}
+            />
 
             {/* Check Out */}
             <button
@@ -1293,8 +1301,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-expanded={desktopPanel === "checkOut"}
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
-              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-                desktopPanel === "checkOut" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors   duration-300cursor-pointer ${
+                desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
@@ -1303,7 +1311,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               </span>
             </button>
 
-            <div className="h-7 w-px bg-zinc-200/90 shrink-0" />
+            <div
+              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+                desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
+              }`}
+            />
 
             {/* Who & Search Button */}
             <div className="flex h-full min-w-0 flex-[1.3] items-center pr-2">
@@ -1312,8 +1324,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 aria-expanded={desktopPanel === "who"}
                 aria-controls="desktop-search-panel"
                 onClick={() => setDesktopPanel(desktopPanel === "who" ? null : "who")}
-                className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-4 text-left transition-colors cursor-pointer ${
-                  desktopPanel === "who" ? "bg-[#fcdf9c]" : "hover:bg-zinc-100/70"
+                className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors  duration-300 cursor-pointer ${
+                  desktopPanel === "who" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
                 }`}
               >
                 <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_who")}</span>
@@ -1353,7 +1365,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     ? "Guests"
                     : "Choose dates"
                 }
-                className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+                className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
                   desktopPanel === "where"
                     ? "left-0 w-[400px] sm:w-[480px]"
                     : desktopPanel === "who"
@@ -1363,7 +1375,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               >
                 {desktopPanel === "where" ? (
                   <>
-                    <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wider text-zinc-500">Destinations</p>
+                    <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Sugested destinations</p>
                     {destinationSuggestions}
                   </>
                 ) : desktopPanel === "who" ? (

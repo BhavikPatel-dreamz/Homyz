@@ -882,7 +882,7 @@ export function ListingsResultsClient({
     <>
       {/* ── Listing Search Bar (shown only for home-search entries) ── */}
       {showListingSearchBar && (
-        <div className="w-full flex justify-center pb-6">
+        <div className="w-full flex justify-center pb-10">
           <ListingSearchBar />
         </div>
       )}
