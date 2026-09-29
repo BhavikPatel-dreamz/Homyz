@@ -33,6 +33,11 @@ import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/med
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
 import { calculateDistance } from "@/lib/location/places-search";
 import { forwardGeocodeQuery } from "@/lib/location/places-provider";
+import {
+  compareReviewSortCandidates,
+  type PublicListingSort,
+  type ReviewSortCandidate,
+} from "@/lib/listings/public-sort";
 
 // Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
 // the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
@@ -141,18 +146,23 @@ function roundRating(value: number | null): number | null {
   return value === null ? null : Math.round(value * 100) / 100;
 }
 
-async function mapCardsWithReviewSummaries(items: PublicListingCardRecord[]): Promise<PublicListingCardDTO[]> {
-  if (!items.length) return [];
+async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<string, ListingReviewSummary>> {
+  if (!listingIds.length) return new Map();
   const summaries = await prisma.review.groupBy({
     by: ["listingId"],
-    where: { listingId: { in: items.map((item) => item.id) }, status: "PUBLISHED" },
+    where: { listingId: { in: listingIds }, status: "PUBLISHED" },
     _avg: { rating: true },
     _count: { _all: true },
   }) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
-  const byListingId = new Map<string, ListingReviewSummary>(summaries.map((summary) => [summary.listingId, {
+  return new Map<string, ListingReviewSummary>(summaries.map((summary) => [summary.listingId, {
     averageRating: roundRating(summary._avg.rating),
     totalCount: summary._count._all,
   }]));
+}
+
+async function mapCardsWithReviewSummaries(items: PublicListingCardRecord[]): Promise<PublicListingCardDTO[]> {
+  if (!items.length) return [];
+  const byListingId = await getPublishedReviewSummaries(items.map((item) => item.id));
   return items.map((item) => toPublicListingCardDTO({ ...item, reviewSummary: byListingId.get(item.id) }));
 }
 
@@ -262,12 +272,7 @@ async function list(opts: {
   );
 }
 
-export type SortBy =
-  | "recommended"
-  | "price_low"
-  | "price_high"
-  | "top_rated"
-  | "most_reviewed";
+export type SortBy = PublicListingSort;
 
 export type PublicSearchFilters = {
   city?: string;
@@ -632,19 +637,20 @@ async function searchPublicListings(
   let orderBy: Prisma.ListingOrderByWithRelationInput[] = [
     { isFeatured: "desc" },
     { createdAt: "desc" },
+    { id: "asc" },
   ];
   switch (filters.sortBy) {
     case "price_low":
-      orderBy = [{ price: "asc" }];
+      orderBy = [{ price: "asc" }, { createdAt: "desc" }, { id: "asc" }];
       break;
     case "price_high":
-      orderBy = [{ price: "desc" }];
+      orderBy = [{ price: "desc" }, { createdAt: "desc" }, { id: "asc" }];
       break;
     case "top_rated":
     case "most_reviewed":
     case "recommended":
     default:
-      orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }];
+      orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }, { id: "asc" }];
   }
 
   // Pagination
@@ -669,6 +675,50 @@ async function searchPublicListings(
   }
 
   const hasDateFilter = Boolean(filters.checkIn && filters.checkOut);
+
+  const findSortedCards = async (): Promise<PublicListingCardDTO[]> => {
+    if (filters.sortBy !== "top_rated" && filters.sortBy !== "most_reviewed") {
+      const records = await prisma.listing.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: publicListingCardSelect,
+      });
+      return mapCardsWithReviewSummaries(records);
+    }
+
+    const candidates: Array<{ id: string; isFeatured: boolean; createdAt: Date }> = await prisma.listing.findMany({
+      where,
+      select: { id: true, isFeatured: true, createdAt: true },
+    });
+    const summaries = await getPublishedReviewSummaries(candidates.map((candidate) => candidate.id));
+    const sortedCandidates: ReviewSortCandidate[] = candidates.map((candidate) => {
+      const summary = summaries.get(candidate.id);
+      return {
+        ...candidate,
+        averageRating: summary?.averageRating ?? null,
+        reviewsCount: summary?.totalCount ?? 0,
+      };
+    });
+    sortedCandidates.sort((left, right) =>
+      compareReviewSortCandidates(left, right, filters.sortBy as "top_rated" | "most_reviewed"),
+    );
+
+    const pageIds = sortedCandidates.slice(skip, skip + take).map((candidate) => candidate.id);
+    if (!pageIds.length) return [];
+
+    const pageRecords: PublicListingCardRecord[] = await prisma.listing.findMany({
+      where: { AND: [where, { id: { in: pageIds } }] },
+      select: publicListingCardSelect,
+    });
+    const recordsById = new Map(pageRecords.map((record) => [record.id, record]));
+    return pageIds.flatMap((id) => {
+      const record = recordsById.get(id);
+      if (!record) return [];
+      return [toPublicListingCardDTO({ ...record, reviewSummary: summaries.get(id) })];
+    });
+  };
 
   if (!hasDateFilter) {
     const cacheVersion = await getCounter(keys.listingsPublicVersion());
@@ -701,7 +751,7 @@ async function searchPublicListings(
       skip,
       take,
     });
-    const cacheKey = `homyz:listings:search:card:v1:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+    const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
     type CachePayload = {
       items: PublicListingCardDTO[];
       total: number;
@@ -718,7 +768,7 @@ async function searchPublicListings(
     }
 
     const [items, total, priceAgg] = await Promise.all([
-      prisma.listing.findMany({ where, skip, take, orderBy, select: publicListingCardSelect }),
+      findSortedCards(),
       prisma.listing.count({ where }),
       includePriceRange
         ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
@@ -727,7 +777,7 @@ async function searchPublicListings(
     const priceRange = priceAgg
       ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
       : undefined;
-    let mappedItems: PublicListingCardDTO[] = await mapCardsWithReviewSummaries(items);
+    let mappedItems: PublicListingCardDTO[] = items;
 
     if (effectiveLat !== undefined && effectiveLng !== undefined) {
       mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
@@ -763,13 +813,13 @@ async function searchPublicListings(
 
   // Live path (availability check active)
   const [items, total, priceAgg] = await Promise.all([
-    prisma.listing.findMany({ where, skip, take, orderBy, select: publicListingCardSelect }),
+    findSortedCards(),
     prisma.listing.count({ where }),
     includePriceRange
       ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
       : Promise.resolve(null),
   ]);
-  let mappedItems: PublicListingCardDTO[] = await mapCardsWithReviewSummaries(items);
+  let mappedItems: PublicListingCardDTO[] = items;
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
       if (dto.latitude != null && dto.longitude != null) {

@@ -8,6 +8,7 @@ import type { SortBy } from "@/services/listing.service";
 import { ListingsResultsClient } from "./listings-results-client";
 import { getSessionUser } from "@/lib/auth/session";
 import { favoriteService } from "@/services/favorite.service";
+import { parsePublicListingSort } from "@/lib/listings/public-sort";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +97,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const beds = sp.beds ? parseInt(sp.beds, 10) : undefined;
   const instantBook = sp.instantBook === "true" ? true : undefined;
   const featured = sp.featured === "true" ? true : undefined;
-  const sortBy = (sp.sortBy as SortBy) || undefined;
+  const sortBy: SortBy | undefined = parsePublicListingSort(sp.sortBy);
   const page = sp.page ? parseInt(sp.page, 10) : 1;
 
   // Map bounds (for map-based search, supports both neLat/neLng/swLat/swLng and north/east/south/west)

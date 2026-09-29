@@ -5,6 +5,7 @@ import { requireApiRole } from "@/lib/permissions/guards";
 import { createListingSchema } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
 import { Role } from "@/generated/prisma/enums";
+import { parsePublicListingSort } from "@/lib/listings/public-sort";
 
 // GET /api/v1/listings — public catalogue & search of published listings (paginated).
 export const GET = apiHandler(async (req) => {
@@ -51,7 +52,7 @@ export const GET = apiHandler(async (req) => {
   const languages = languagesParam
     ? languagesParam.split(",").map((s) => s.trim()).filter(Boolean)
     : undefined;
-  const sortBy = (sp.get("sortBy") as import("@/services/listing.service").SortBy) || undefined;
+  const sortBy = parsePublicListingSort(sp.get("sortBy"));
   // Map bounds (supports both neLat/neLng/swLat/swLng and north/east/south/west)
   const rawNorth = sp.get("neLat") || sp.get("north");
   const rawEast = sp.get("neLng") || sp.get("east");
