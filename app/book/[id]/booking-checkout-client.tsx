@@ -562,7 +562,7 @@ export function BookingCheckoutClient({
                           {paymentMethod === "card" && (
                             <div className="mt-6">
                               <div>
-                                <label className="block text-base font-normal text-[#1F1F1F] mb-3">
+                                <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                   Card Number *
                                 </label>
                                 <div className="relative">
@@ -582,7 +582,7 @@ export function BookingCheckoutClient({
 
                               <div className="grid md:grid-cols-2 grid-cols-1 gap-3 mt-5">
                                 <div>
-                                  <label className="block text-base font-normal text-[#1F1F1F] mb-3">
+                                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                     Expiry Date *
                                   </label>
                                   <input
@@ -595,7 +595,7 @@ export function BookingCheckoutClient({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-base font-normal text-[#1F1F1F] mb-3">
+                                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                     Card Code (CVC) *
                                   </label>
                                   <input
@@ -769,7 +769,7 @@ export function BookingCheckoutClient({
 
                       {/* Message Textarea */}
                       <div>
-                        <label className="block text-base font-normal text-[#1F1F1F] mb-3">
+                        <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                           Write a message
                         </label>
                         <textarea
@@ -1082,8 +1082,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Change dates</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Change dates</h3>
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
@@ -1096,7 +1096,7 @@ export function BookingCheckoutClient({
             <div className="py-5 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                     Check-in date
                   </label>
                   <input
@@ -1104,11 +1104,11 @@ export function BookingCheckoutClient({
                     value={checkIn}
                     min={dateKey(new Date())}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 p-2.5 text-sm font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                     Check-out date
                   </label>
                   <input
@@ -1116,20 +1116,20 @@ export function BookingCheckoutClient({
                     value={checkOut}
                     min={checkIn || dateKey(new Date())}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 p-2.5 text-sm font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#727272]">
                 Minimum stay: {listing.minNights || 1} {listing.minNights === 1 ? "night" : "nights"}. Price and availability update automatically.
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Apply dates
               </button>
@@ -1150,8 +1150,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Guests</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Guests</h3>
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
@@ -1161,9 +1161,9 @@ export function BookingCheckoutClient({
               </button>
             </div>
 
-            <div className="py-5 space-y-5 divide-y divide-zinc-100">
+            <div className="divide-y divide-[#727272]">
               {/* Adults */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between py-2">
                 <div>
                   <h4 className="text-sm font-normal text-zinc-900">Adults</h4>
                   <p className="text-xs text-zinc-500">Age 13+</p>
@@ -1192,7 +1192,7 @@ export function BookingCheckoutClient({
               </div>
 
               {/* Pets */}
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between py-2">
                 <div>
                   <h4 className="text-sm font-normal text-zinc-900">Pets</h4>
                   <p className="text-xs text-zinc-500">Service animals welcome</p>
@@ -1221,11 +1221,11 @@ export function BookingCheckoutClient({
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -1246,8 +1246,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Cancellation policy</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Cancellation policy</h3>
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
@@ -1304,12 +1304,12 @@ export function BookingCheckoutClient({
             className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Price breakdown</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[#727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Price breakdown</h3>
               <button
                 type="button"
                 onClick={() => setIsBreakdownModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-[#1f1f1f] cursor-pointer"
               >
                 ✕
               </button>
@@ -1339,17 +1339,17 @@ export function BookingCheckoutClient({
                 </span>
               </div>
 
-              <div className="pt-3 border-t border-zinc-200 flex justify-between font-bold text-base text-zinc-950">
+              <div className="pt-3 border-t border-[#727272] flex justify-between font-semibold text-base text-[#1f1f1f]">
                 <span>Total ({currencySymbol})</span>
                 <span>{formatMoney(effectiveTotalMinor, true)}</span>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-zinc-100">
+            <div className="flex justify-end pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsBreakdownModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Done
               </button>
