@@ -339,7 +339,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                     <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
-                        <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
+                        <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
                           {role || "USER"}
                         </span>
@@ -488,7 +488,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                     <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
-                        <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
+                        <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
                           {role || "HOST"}
                         </span>
