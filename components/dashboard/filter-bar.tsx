@@ -79,8 +79,22 @@ export function FilterBar({
             placeholder={t("dashboard_search_placeholder", "Search by property, guest name, or location...")}
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
-            className="w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-sm font-normal text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]"
+            className={`w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 ${
+              filters.search ? "pr-10" : "pr-4"
+            } py-2 text-sm font-normal text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]`}
           />
+          {filters.search.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => onChange({ search: "" })}
+              aria-label={t("dashboard_search_clear" as any, "Clear search")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-200 transition-colors cursor-pointer"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Status Dropdown */}

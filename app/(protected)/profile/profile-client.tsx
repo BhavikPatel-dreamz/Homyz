@@ -31,6 +31,7 @@ import {
   PersonalInfoSkeleton,
   ProfileManagementSkeleton,
   SupportChatSkeleton,
+  InviteEarnSkeleton,
 } from "@/components/dashboard/section-skeletons";
 
 const ReservationDashboard = dynamic(
@@ -70,11 +71,7 @@ const InviteEarnView = dynamic(
     import("@/components/profile/invite-earn-view").then(
       (m) => m.InviteEarnView,
     ),
-  {
-    loading: () => (
-      <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
-    ),
-  },
+  { loading: () => <InviteEarnSkeleton /> },
 );
 
 const SupportChatView = dynamic(
@@ -250,10 +247,46 @@ export function ProfileClient({
   const activeTab = pathname ? route.tab : normalizeTabId(initialTab);
   const activeSubTab = pathname ? route.subTab : initialSubTab || route.subTab;
 
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingTab(null);
+  }, [pathname, searchParams]);
+
   const handleSelectTab = (tabId: string) => {
     const normalized = normalizeTabId(tabId);
+    if (normalized !== activeTab) {
+      setPendingTab(normalized);
+    }
     const href = getProfileTabHref(normalized);
     router.push(href, { scroll: false });
+  };
+
+  const currentTab = pendingTab || activeTab;
+  const isPendingTransition = Boolean(pendingTab && pendingTab !== activeTab);
+
+  const renderPendingSkeleton = (tab: string) => {
+    switch (tab) {
+      case "profile_management":
+        return <ProfileManagementSkeleton />;
+      case "account_settings":
+        return <PersonalInfoSkeleton />;
+      case "saved":
+        return <SavedListingsSkeleton />;
+      case "notifications":
+        return <NotificationsSkeleton />;
+      case "support":
+        return <SupportChatSkeleton />;
+      case "loyalty":
+        return <LoyaltyWalletSkeleton />;
+      case "invite":
+        return <InviteEarnSkeleton />;
+      case "today":
+      case "upcoming":
+      case "past":
+      default:
+        return <LoadingSkeleton count={4} />;
+    }
   };
 
   const pub = currentUser.publicProfile || {};
@@ -292,12 +325,16 @@ export function ProfileClient({
       <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
           <GuestDashboardSidebar
-            activeId={activeTab}
+            activeId={currentTab}
             onSelectTab={handleSelectTab}
             avatarUrl={currentUser.image}
           />
 
           <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
+            {isPendingTransition ? (
+              renderPendingSkeleton(currentTab)
+            ) : (
+              <>
             {activeTab === "about_me" && (
               <div className="flex flex-col animate-in fade-in">
                 {/* 1. Header with Title & Yellow Edit Button */}
@@ -484,6 +521,8 @@ export function ProfileClient({
               <div className="flex flex-col animate-in fade-in">
                 <PersonalInfoView initialData={initialPersonalInfo} />
               </div>
+            )}
+              </>
             )}
           </main>
         </div>

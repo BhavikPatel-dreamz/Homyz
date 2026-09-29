@@ -148,12 +148,14 @@ export function ReservationDashboard({
   }, [filteredItems, filters.tab]);
 
   const handleFilterChange = (updated: Partial<FilterOptions>) => {
-    setLoading(true);
-    setFilters((prev) => ({ ...prev, ...updated }));
-    if (updated.tab && onTabChange) {
-      onTabChange(updated.tab);
+    if (updated.tab) {
+      setLoading(true);
+      if (onTabChange) {
+        onTabChange(updated.tab);
+      }
+      setTimeout(() => setLoading(false), 200);
     }
-    setTimeout(() => setLoading(false), 200);
+    setFilters((prev) => ({ ...prev, ...updated }));
   };
 
   return (
@@ -169,7 +171,7 @@ export function ReservationDashboard({
       {error ? (
         <ErrorState message={error} onRetry={() => setError(null)} />
       ) : loading ? (
-        <LoadingSkeleton count={4} />
+        <LoadingSkeleton count={4} tab={filters.tab} showFilterBar={false} />
       ) : filteredItems.length === 0 ? (
         filters.tab === "upcoming" && !filters.search ? (
           <EmptyState

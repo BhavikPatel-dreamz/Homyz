@@ -8,6 +8,7 @@ import {
   PersonalInfoSkeleton,
   SavedListingsSkeleton,
   SupportChatSkeleton,
+  InviteEarnSkeleton,
 } from "@/components/dashboard/section-skeletons";
 import { extractProfileRoute } from "@/lib/profile/tab-utils";
 
@@ -49,17 +50,8 @@ function AboutMeSkeleton() {
   );
 }
 
-function ReservationsSkeleton() {
-  return (
-    <>
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div className="h-10 w-64 rounded-lg skeleton-shimmer" />
-        <div className="h-10 w-64 rounded-full skeleton-shimmer" />
-      </div>
-      <div className="mb-8 h-12 w-full rounded-full skeleton-shimmer" />
-      <LoadingSkeleton count={3} />
-    </>
-  );
+function ReservationsSkeleton({ tab }: { tab?: string }) {
+  return <LoadingSkeleton count={4} tab={tab} />;
 }
 
 function ProfileInformationSkeleton() {
@@ -172,13 +164,15 @@ export default function Loading() {
           {activeTab === "account_settings" && <PersonalInfoSkeleton />}
           {activeTab === "saved" && <SavedListingsSkeleton />}
           {activeTab === "support" && <SupportChatSkeleton />}
+          {activeTab === "invite" && <InviteEarnSkeleton />}
           {activeTab !== "about_me" &&
             activeTab !== "profile_management" &&
             activeTab !== "notifications" &&
             activeTab !== "account_settings" &&
             activeTab !== "saved" &&
-            activeTab !== "support" && (
-              <ReservationsSkeleton />
+            activeTab !== "support" &&
+            activeTab !== "invite" && (
+              <ReservationsSkeleton tab={activeTab} />
             )}
         </main>
       </div>
