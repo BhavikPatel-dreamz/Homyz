@@ -8,7 +8,8 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { RealMap } from "@/components/ui/real-map";
-import { AMENITY_ICON_SOURCES, getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
+import { AmenityIcon } from "@/components/ui/amenity-icon";
+import { getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { formatTimeDisplay } from "../section-helpers";
 import {
   cancellationPolicyLabel,
@@ -1136,18 +1137,13 @@ export function EditorSidebar({
                       <>
                         {editAmenities.slice(0, 3).map((am) => {
                           const meta = getAmenityMeta(am);
-                          const iconSource = AMENITY_ICON_SOURCES[meta.id];
                           const key = getAmenityTranslationKey(meta.id) as keyof typeof import("@/messages/en.json");
                           const translated = t(key);
                           const localizedLabel = translated && translated !== key ? translated : meta.label;
                           return (
                             <div key={meta.id || am} className="flex items-center gap-3">
                               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] bg-white">
-                                {iconSource ? (
-                                  <Image src={iconSource} alt="" width={20} height={20} className="h-4.75 w-4.75 object-contain" />
-                                ) : (
-                                  <span className="text-base font-normal text-[#727272]">{meta.icon || "✨"}</span>
-                                )}
+                                <AmenityIcon id={meta.id} className="size-5 text-[#1F1F1F]" />
                               </span>
                               <span className="text-base font-normal text-[#727272]">{localizedLabel}</span>
                             </div>

@@ -1,13 +1,14 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any, react/no-unescaped-entities -- legacy editor integration */
 
+import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { BackButton } from "@/components/ui/back-button";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import Image from "next/image";
 
 import React from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId, getAmenityTranslationKey } from "@/lib/constants/amenities";
+import { CANONICAL_AMENITIES, getAmenityMeta, normalizeAmenities, normalizeAmenityId, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import {
   normalizeAccessibilityFeature,
   normalizeMostLikeSelection,
@@ -226,6 +227,15 @@ export function PropertyDetailsViews({
     amenitiesScrollTrackRef,
     amenitiesScrollThumb.height,
   );
+  const mainAmenitiesScrollRef = React.useRef<HTMLDivElement>(null);
+  const mainAmenitiesScrollTrackRef = React.useRef<HTMLDivElement>(null);
+  const mainAmenitiesScrollFrameRef = React.useRef<number | null>(null);
+  const [mainAmenitiesScrollThumb, setMainAmenitiesScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isMainAmenitiesScrollbarDragging, onThumbPointerDown: onMainAmenitiesThumbPointerDown, scrollByPage: scrollMainAmenitiesByPage } = useScrollbarDrag(
+    mainAmenitiesScrollRef,
+    mainAmenitiesScrollTrackRef,
+    mainAmenitiesScrollThumb.height,
+  );
   const accessibilityPhotoInput = React.useRef<HTMLInputElement>(null);
   const [accessibilityPhotoFeatureId, setAccessibilityPhotoFeatureId] = React.useState<string | null>(null);
   const [uploadingAccessibilityPhoto, setUploadingAccessibilityPhoto] = React.useState(false);
@@ -312,6 +322,49 @@ export function PropertyDetailsViews({
       if (amenitiesScrollFrameRef.current !== null) cancelAnimationFrame(amenitiesScrollFrameRef.current);
     };
   }, [activeSection, amenitiesScrollThumb.visible, updateAmenitiesScrollThumb]);
+
+  const updateMainAmenitiesScrollThumb = React.useCallback(() => {
+    if (mainAmenitiesScrollFrameRef.current !== null) cancelAnimationFrame(mainAmenitiesScrollFrameRef.current);
+
+    mainAmenitiesScrollFrameRef.current = requestAnimationFrame(() => {
+      const element = mainAmenitiesScrollRef.current;
+      if (!element) return;
+
+      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
+      const trackHeight = mainAmenitiesScrollTrackRef.current?.clientHeight || element.clientHeight;
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
+      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+
+      setMainAmenitiesScrollThumb((current) => (
+        current.height === height && current.top === top && current.visible === hasOverflow
+          ? current
+          : { height, top, visible: hasOverflow }
+      ));
+      mainAmenitiesScrollFrameRef.current = null;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const element = mainAmenitiesScrollRef.current;
+    if (!element) return;
+
+    updateMainAmenitiesScrollThumb();
+    const resizeObserver = new ResizeObserver(updateMainAmenitiesScrollThumb);
+    const mutationObserver = new MutationObserver(updateMainAmenitiesScrollThumb);
+    resizeObserver.observe(element);
+    if (mainAmenitiesScrollTrackRef.current) resizeObserver.observe(mainAmenitiesScrollTrackRef.current);
+    mutationObserver.observe(element, { childList: true, subtree: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      if (mainAmenitiesScrollFrameRef.current !== null) cancelAnimationFrame(mainAmenitiesScrollFrameRef.current);
+    };
+  }, [activeSection, mainAmenitiesScrollThumb.visible, updateMainAmenitiesScrollThumb]);
 
   const updateAccessibilityDetail = (featureId: string, updater: (detail: AccessibilityFeatureDetail) => AccessibilityFeatureDetail) => {
     const current = accessibilityDetails.find((detail) => detail.featureId === featureId) ?? { featureId, photos: [] };
@@ -1619,7 +1672,6 @@ export function PropertyDetailsViews({
                     ) : (
                       filteredCatalog.map((item) => {
                         const isSelected = normalizedSelectedIds.has(item.id);
-                        const iconSource = AMENITY_ICON_SOURCES[item.id];
                         return (
                           <div
                             key={item.id}
@@ -1628,11 +1680,7 @@ export function PropertyDetailsViews({
                           >
                             <div className="flex items-center sm:gap-6 gap-4 min-w-0 pr-4">
                               <div className="size-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base shrink-0 group-hover:border-[#727272] dark:group-hover:border-zinc-500">
-                                {iconSource ? (
-                                  <Image src={iconSource} alt="" width={24} height={24} className="size-6 object-contain dark:invert" />
-                                ) : (
-                                  item.icon || "✨"
-                                )}
+                                <AmenityIcon id={item.id} className="size-6 text-[#1F1F1F] dark:text-zinc-100" />
                               </div>
                               <div className="min-w-0">
                                 <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 block">
@@ -1675,7 +1723,7 @@ export function PropertyDetailsViews({
               </div>
             ) : (
               /* Main Amenities List View */
-              <div className="max-w-[716px] space-y-2 pt-1">
+              <div className="w-full space-y-2 pt-1">
                 {editAmenities.length === 0 ? (
                   <div className="p-8 text-center rounded-md border border-dashed border-[#DDDDDE] dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 space-y-3">
                     <p className="text-[14px] text-[#727272] dark:text-zinc-400 font-normal">
@@ -1690,44 +1738,62 @@ export function PropertyDetailsViews({
                     </button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#DDDDDE] dark:divide-zinc-800">
-                    {editAmenities.map((am) => {
-                      const meta = getAmenityMeta(am);
-                      const localizedLabel = getAmenityLabel(meta.id, meta.label);
-                      const iconSource = AMENITY_ICON_SOURCES[meta.id];
-                      return (
-                        <div key={am} className="py-3 flex items-start sm:gap-6 gap-4">
-                          {isEditingAmenityList ? (
-                            <button
-                              type="button"
-                              onClick={() => toggleAmenity(am)}
-                              className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#F3F4F5] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
-                              aria-label={t("host_remove_amenity", { name: localizedLabel })}
-                            >
-                              <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert" />
-                            </button>
-                          ) : (
-                            <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
-                              {iconSource ? (
-                                <Image src={iconSource} alt="" width={20} height={20} className="size-6 object-contain dark:invert" />
+                  <div className="relative min-h-0">
+                    <div
+                      ref={mainAmenitiesScrollRef}
+                      onScroll={updateMainAmenitiesScrollThumb}
+                      className={`custom-scrollbar overflow-x-hidden pr-1 lg:pr-[85px] ${presentation === "admin" ? "" : "lg:h-[1850px] overflow-y-auto"}`}
+                    >
+                            <div className="max-w-[716px] divide-y divide-[#DDDDDE] dark:divide-zinc-800">
+                        {editAmenities.map((am) => {
+                          const meta = getAmenityMeta(am);
+                          const localizedLabel = getAmenityLabel(meta.id, meta.label);
+                          return (
+                            <div key={am} className="py-3 flex items-start sm:gap-6 gap-4">
+                              {isEditingAmenityList ? (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAmenity(am)}
+                                  className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#F3F4F5] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
+                                  aria-label={t("host_remove_amenity", { name: localizedLabel })}
+                                >
+                                  <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                                </button>
                               ) : (
-                                meta.icon || "✨"
+                                <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
+                                  <AmenityIcon id={meta.id} className="size-6 text-[#1F1F1F] dark:text-zinc-100" />
+                                </div>
                               )}
+                              <div className="flex-1 min-w-0 space-y-0.5">
+                                <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">
+                                  {localizedLabel}
+                                </h4>
+                                {getAmenityDescription(meta.id, meta.description) ? (
+                                  <p className="sm:text-base text-sm text-[#727272] dark:text-zinc-400 font-normal leading-5">
+                                    {getAmenityDescription(meta.id, meta.description)}
+                                  </p>
+                                ) : null}
+                              </div>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0 space-y-0.5">
-                            <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">
-                              {localizedLabel}
-                            </h4>
-                            {getAmenityDescription(meta.id, meta.description) ? (
-                              <p className="sm:text-base text-sm text-[#727272] dark:text-zinc-400 font-normal leading-5">
-                                {getAmenityDescription(meta.id, meta.description)}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {mainAmenitiesScrollThumb.visible && (
+                      <div ref={mainAmenitiesScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
+                        <button type="button" aria-label="Scroll amenities up" onClick={() => scrollMainAmenitiesByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+                          <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+                        </button>
+                        <div
+                          onPointerDown={onMainAmenitiesThumbPointerDown}
+                          className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform dark:border-zinc-700 dark:bg-zinc-600 ${isMainAmenitiesScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
+                          style={{ height: `${mainAmenitiesScrollThumb.height}px`, transform: `translate3d(0, ${mainAmenitiesScrollThumb.top}px, 0)` }}
+                        />
+                        <button type="button" aria-label="Scroll amenities down" onClick={() => scrollMainAmenitiesByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+                          <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1862,114 +1928,114 @@ export function PropertyDetailsViews({
                             </button>
                           </div>
 
-                        {/* Examples Gallery Grid */}
-                        <div className="space-y-2 pt-1">
-                          <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">{t("host_acc_examples")}</span>
-                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
-                              {/* Photo 1 */}
-                            </div>
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
-                              {/* Photo 2 */}
-                            </div>
-                            <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
-                              {/* Photo 3 */}
+                          {/* Examples Gallery Grid */}
+                          <div className="space-y-2 pt-1">
+                            <span className="text-sm mb-3 font-normal text-[#727272] dark:text-zinc-400">{t("host_acc_examples")}</span>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                                {/* Photo 1 */}
+                              </div>
+                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                                {/* Photo 2 */}
+                              </div>
+                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                                {/* Photo 3 */}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Feature Selection Options */}
-                        <div className="feature-selection-options space-y-2 pt-1 max-w-[490px]">
-                          {/* Option 1: I don't have this feature */}
-                          <div
-                            onClick={() => {
-                              if (Array.isArray(accessibilityFeatures)) {
-                                setAccessibilityFeatures(
-                                  accessibilityFeatures.filter((value: string) => normalizeAccessibilityFeature(value) !== featureId)
-                                );
-                              }
-                              setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
-                            }}
-                            className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${!isSelected
-                              ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
-                              : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
-                              }`}
-                          >
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 dark:border-zinc-100 bg-[#1f1f1f] dark:bg-zinc-100" : "border-[#727272] dark:border-zinc-600"
-                              }`}>
-                              {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
-                            </div>
-                            <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
-                          </div>
-
-                          {/* Option 2: I have this feature */}
-                          <div
-                            onClick={() => {
-                              if (Array.isArray(accessibilityFeatures)) {
-                                if (!isSelected) {
-                                  setAccessibilityFeatures([...accessibilityFeatures, featureId]);
+                          {/* Feature Selection Options */}
+                          <div className="feature-selection-options space-y-2 pt-1 max-w-[490px]">
+                            {/* Option 1: I don't have this feature */}
+                            <div
+                              onClick={() => {
+                                if (Array.isArray(accessibilityFeatures)) {
+                                  setAccessibilityFeatures(
+                                    accessibilityFeatures.filter((value: string) => normalizeAccessibilityFeature(value) !== featureId)
+                                  );
                                 }
-                              } else {
-                                setAccessibilityFeatures([featureId]);
-                              }
-                            }}
-                            className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${isSelected
-                              ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
-                              : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
-                              }`}
-                          >
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100" : "border-zinc-400 dark:border-zinc-600"
-                              }`}>
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
-                            </div>
-                            <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
-                          </div>
-                        </div>
-
-                        {isSelected && (
-                          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3.5 space-y-3">
-                            <div className="flex flex-wrap items-start justify-between gap-2">
-                              <div>
-                                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_acc_photos_heading")}</h4>
-                                <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">{t("host_acc_photos_subtitle")}</p>
+                                setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
+                              }}
+                              className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${!isSelected
+                                ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
+                                : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
+                                }`}
+                            >
+                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!isSelected ? "border-zinc-900 dark:border-zinc-100 bg-[#1f1f1f] dark:bg-zinc-100" : "border-[#727272] dark:border-zinc-600"
+                                }`}>
+                                {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                              <button
-                                type="button"
-                                disabled={uploadingAccessibilityPhoto}
-                                onClick={() => {
-                                  setAccessibilityPhotoFeatureId(featureId);
-                                  if (accessibilityPhotoInput.current) {
-                                    accessibilityPhotoInput.current.dataset.featureId = featureId;
+                              <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
+                            </div>
+
+                            {/* Option 2: I have this feature */}
+                            <div
+                              onClick={() => {
+                                if (Array.isArray(accessibilityFeatures)) {
+                                  if (!isSelected) {
+                                    setAccessibilityFeatures([...accessibilityFeatures, featureId]);
                                   }
-                                  accessibilityPhotoInput.current?.click();
-                                }}
-                                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60"
-                              >
-                                {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? t("host_acc_uploading_photo") : t("host_acc_add_photos_btn")}
-                              </button>
-                            </div>
-
-                            {featurePhotos.length > 0 ? (
-                              <div className="grid grid-cols-3 gap-2">
-                                {featurePhotos.map((photo) => (
-                                  <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                                    <img src={photo} alt={t("host_acc_photo_evidence_alt", { name: feature.name })} className="h-full w-full object-cover" />
-                                    <button
-                                      type="button"
-                                      aria-label={t("host_acc_remove_photo", { name: feature.name })}
-                                      onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
-                                      className="absolute right-1 top-1 rounded-full bg-white/95 dark:bg-zinc-900/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-                                    >
-                                      ×
-                                    </button>
-                                  </div>
-                                ))}
+                                } else {
+                                  setAccessibilityFeatures([featureId]);
+                                }
+                              }}
+                              className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${isSelected
+                                ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
+                                : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
+                                }`}
+                            >
+                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100" : "border-zinc-400 dark:border-zinc-600"
+                                }`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                            ) : (
-                              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/40 dark:border dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">{t("host_acc_photo_required_warning")}</p>
-                            )}
+                              <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
+                            </div>
                           </div>
-                        )}
+
+                          {isSelected && (
+                            <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3.5 space-y-3">
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <div>
+                                  <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_acc_photos_heading")}</h4>
+                                  <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">{t("host_acc_photos_subtitle")}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={uploadingAccessibilityPhoto}
+                                  onClick={() => {
+                                    setAccessibilityPhotoFeatureId(featureId);
+                                    if (accessibilityPhotoInput.current) {
+                                      accessibilityPhotoInput.current.dataset.featureId = featureId;
+                                    }
+                                    accessibilityPhotoInput.current?.click();
+                                  }}
+                                  className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                  {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? t("host_acc_uploading_photo") : t("host_acc_add_photos_btn")}
+                                </button>
+                              </div>
+
+                              {featurePhotos.length > 0 ? (
+                                <div className="grid grid-cols-3 gap-2">
+                                  {featurePhotos.map((photo) => (
+                                    <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                      <img src={photo} alt={t("host_acc_photo_evidence_alt", { name: feature.name })} className="h-full w-full object-cover" />
+                                      <button
+                                        type="button"
+                                        aria-label={t("host_acc_remove_photo", { name: feature.name })}
+                                        onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
+                                        className="absolute right-1 top-1 rounded-full bg-white/95 dark:bg-zinc-900/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="rounded-lg bg-amber-50 dark:bg-amber-950/40 dark:border dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">{t("host_acc_photo_required_warning")}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

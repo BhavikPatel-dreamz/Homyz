@@ -339,7 +339,7 @@ function LanguageMultiSelect({
                   className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors cursor-pointer"
                   aria-label={`Remove ${displayName}`}
                 >
-                  <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="1">
                     <path d="M2 2l6 6M8 2l-6 6" />
                   </svg>
                 </button>

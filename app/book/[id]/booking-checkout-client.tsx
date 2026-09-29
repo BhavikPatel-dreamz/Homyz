@@ -353,11 +353,11 @@ export function BookingCheckoutClient({
     <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased selection:bg-amber-100">
       <AppHeader showBottomBorder={true} />
 
-      <main className="w-full flex-1 pb-24 pt-6 sm:pt-8">
+      <main className="w-full flex-1 py-8 sm:py-12 lg:py-24">
         <Container>
-          <div className="mx-auto max-w-[1140px]">
+          <div className="mx-auto max-w-[1040px]">
             {/* Top Navigation Bar: Back Button & Page Title */}
-            <div className="flex items-center gap-4 mb-8">
+            <div className="mb-10 flex items-center gap-4 lg:mb-12">
               <button
                 type="button"
                 onClick={() => router.back()}
@@ -368,17 +368,17 @@ export function BookingCheckoutClient({
                   <path d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h1 className="text-2xl sm:text-[32px] font-bold tracking-tight text-zinc-900">
+              <h1 className="text-[32px] font-semibold tracking-[-0.035em] sm:text-[38px]">
                 Request to book
               </h1>
             </div>
 
             {/* Main Content Layout: 2 Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,618px)_minmax(0,571px)] lg:gap-18.5">
               {/* ======================================================== */}
               {/* LEFT COLUMN: 4 PROGRESSIVE ACCORDION STEPS (lg:col-span-7) */}
               {/* ======================================================== */}
-              <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-9">
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* STEP 1: Choose when to pay */}
                 {/* ────────────────────────────────────────────────────────── */}
@@ -390,19 +390,15 @@ export function BookingCheckoutClient({
 
                   {activeStep === 1 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 pt-7 shadow-xs">
-                      <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-6 text-center">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white px-8 pb-6 pt-10 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:px-9">
+                      <h2 className="mb-5 text-center text-base font-medium text-zinc-900 sm:text-lg">
                         Choose when to pay
                       </h2>
 
-                      <div className="space-y-4">
+                      <div>
                         {/* Option 1: Pay now */}
                         <label
-                          className={`flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentPlan === "now"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
+                          className="flex cursor-pointer items-center gap-5 border-b border-zinc-200 py-4 first:pt-2"
                         >
                           <input
                             type="radio"
@@ -410,22 +406,18 @@ export function BookingCheckoutClient({
                             value="now"
                             checked={paymentPlan === "now"}
                             onChange={() => setPaymentPlan("now")}
-                            className="mt-1 h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
+                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-bold text-zinc-900">
-                              Pay {formatMoney(effectiveTotalMinor)} now
+                            <span className="text-sm font-normal text-zinc-900">
+                              Pay <strong className="font-semibold">{formatMoney(effectiveTotalMinor)}</strong> now
                             </span>
                           </div>
                         </label>
 
                         {/* Option 2: Pay part now, part later */}
                         <label
-                          className={`flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentPlan === "part"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
+                          className="flex cursor-pointer items-start gap-5 border-b border-zinc-200 py-5"
                         >
                           <input
                             type="radio"
@@ -433,11 +425,11 @@ export function BookingCheckoutClient({
                             value="part"
                             checked={paymentPlan === "part"}
                             onChange={() => setPaymentPlan("part")}
-                            className="mt-1 h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
+                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-bold text-zinc-900 block">
-                              Pay part now, part lather
+                            <span className="block text-sm font-normal text-zinc-900">
+                              Pay <strong className="font-semibold">part now, part later</strong>
                             </span>
                             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
                               {formatMoney(partNowMinor)} now, {formatMoney(partLaterMinor)} will be charged on {formatPartPaymentDate(checkIn)}. No extra fees.{" "}
@@ -457,11 +449,7 @@ export function BookingCheckoutClient({
 
                         {/* Option 3: Klarna */}
                         <label
-                          className={`flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentPlan === "klarna"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
+                          className="flex cursor-pointer items-start gap-5 py-5 pb-3"
                         >
                           <input
                             type="radio"
@@ -469,10 +457,10 @@ export function BookingCheckoutClient({
                             value="klarna"
                             checked={paymentPlan === "klarna"}
                             onChange={() => setPaymentPlan("klarna")}
-                            className="mt-1 h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
+                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-bold text-zinc-900 block">
+                            <span className="block text-sm font-normal text-zinc-900">
                               Pay over time, with Klarna
                             </span>
                             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
@@ -493,11 +481,11 @@ export function BookingCheckoutClient({
                       </div>
 
                       {/* Next Button */}
-                      <div className="flex justify-end mt-6">
+                      <div className="mt-4 flex justify-end">
                         <button
                           type="button"
                           onClick={handleStep1Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-xs cursor-pointer active:scale-95"
+                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
                         >
                           Next
                         </button>
@@ -505,9 +493,9 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(1) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-zinc-900">
+                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
                           Choose when to pay
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5 font-medium">
@@ -528,7 +516,7 @@ export function BookingCheckoutClient({
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-6 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <span className="text-sm sm:text-base font-semibold text-zinc-700">
                         Choose when to pay
                       </span>
@@ -546,8 +534,8 @@ export function BookingCheckoutClient({
 
                   {activeStep === 2 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 pt-7 shadow-xs">
-                      <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-6 text-center">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                      <h2 className="text-base sm:text-lg font-medium text-zinc-900 mb-6 text-center">
                         Payment method
                       </h2>
 
@@ -569,7 +557,7 @@ export function BookingCheckoutClient({
                               onChange={() => setPaymentMethod("card")}
                               className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
                             />
-                            <span className="text-sm font-bold text-zinc-900">
+                            <span className="text-sm font-normal text-zinc-900">
                               Credit / debit card
                             </span>
                           </label>
@@ -654,7 +642,7 @@ export function BookingCheckoutClient({
                             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.22-.54 2.88-1.36z" />
                             </svg>
-                            <span className="text-sm font-bold text-zinc-900">Apple Pay</span>
+                            <span className="text-sm font-normal text-zinc-900">Apple Pay</span>
                           </div>
                         </label>
 
@@ -699,7 +687,7 @@ export function BookingCheckoutClient({
                             className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
                           />
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-zinc-900">Local gateways</span>
+                            <span className="text-sm font-normal text-zinc-900">Local gateways</span>
                             <span className="text-xs text-zinc-400">(Mada, STC Pay, Tamara)</span>
                           </div>
                         </label>
@@ -710,7 +698,7 @@ export function BookingCheckoutClient({
                         <button
                           type="button"
                           onClick={handleStep2Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-xs cursor-pointer active:scale-95"
+                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
                         >
                           Next
                         </button>
@@ -718,9 +706,9 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(2) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <div>
-                        <h3 className="text-sm sm:text-base font-bold text-zinc-900">
+                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
                           Payment method
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5 font-medium">
@@ -743,7 +731,7 @@ export function BookingCheckoutClient({
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <span className="text-sm sm:text-base font-semibold text-zinc-700">
                         Payment method
                       </span>
@@ -761,7 +749,7 @@ export function BookingCheckoutClient({
 
                   {activeStep === 3 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 pt-7 shadow-xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-2 text-center">
                         Write a message to the host
                       </h2>
@@ -786,7 +774,7 @@ export function BookingCheckoutClient({
                           )}
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-zinc-900">
+                          <h4 className="text-sm font-normal text-zinc-900">
                             Hosted by {hostName}
                           </h4>
                           <p className="text-xs text-zinc-500 mt-0.5">
@@ -814,7 +802,7 @@ export function BookingCheckoutClient({
                         <button
                           type="button"
                           onClick={handleStep3Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-xs cursor-pointer active:scale-95"
+                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
                         >
                           Next
                         </button>
@@ -822,9 +810,9 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(3) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <div className="min-w-0 pr-4">
-                        <h3 className="text-sm sm:text-base font-bold text-zinc-900">
+                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
                           Write a message to the host
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5 font-medium truncate max-w-sm">
@@ -841,7 +829,7 @@ export function BookingCheckoutClient({
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <span className="text-sm sm:text-base font-semibold text-zinc-700">
                         Write a message to the host
                       </span>
@@ -859,7 +847,7 @@ export function BookingCheckoutClient({
 
                   {activeStep === 4 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-6 pt-7 shadow-xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-3 text-center">
                         Review your request
                       </h2>
@@ -910,7 +898,7 @@ export function BookingCheckoutClient({
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[28px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-2xs">
+                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
                       <span className="text-sm sm:text-base font-semibold text-zinc-700">
                         Review your request
                       </span>
@@ -922,11 +910,11 @@ export function BookingCheckoutClient({
               {/* ======================================================== */}
               {/* RIGHT COLUMN: STICKY PROPERTY & PRICE SUMMARY (lg:col-span-5) */}
               {/* ======================================================== */}
-              <div className="lg:col-span-5 lg:sticky lg:top-24">
-                <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+              <div className="lg:sticky lg:top-24">
+                <div className="rounded-[30px] border border-zinc-200 bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-8">
                   {/* Property Header */}
                   <div>
-                    <h3 className="text-base font-bold text-zinc-900">
+                    <h3 className="text-xl font-medium text-[#1f1f1f]">
                       {propertyCategory} – {locationLabel}
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-zinc-600 mt-1">
@@ -962,7 +950,7 @@ export function BookingCheckoutClient({
 
                   {/* Free cancellation */}
                   <div className="mt-5 pb-5 border-b border-zinc-200/80">
-                    <h4 className="text-sm font-bold text-zinc-900">
+                    <h4 className="text-sm font-normal text-zinc-900">
                       Free cancellation
                     </h4>
                     <p className="text-xs text-zinc-500 mt-1">
@@ -980,7 +968,7 @@ export function BookingCheckoutClient({
                   {/* Dates Row */}
                   <div className="py-4 border-b border-zinc-200/80 flex items-center justify-between">
                     <div>
-                      <span className="block text-sm font-bold text-zinc-900">
+                      <span className="block text-base font-semibold text-[#1f1f1f]">
                         Dates
                       </span>
                       <span className="text-xs text-zinc-500 mt-0.5 block">
@@ -999,7 +987,7 @@ export function BookingCheckoutClient({
                   {/* Guests Row */}
                   <div className="py-4 border-b border-zinc-200/80 flex items-center justify-between">
                     <div>
-                      <span className="block text-sm font-bold text-zinc-900">
+                      <span className="block text-base font-semibold text-[#1f1f1f]">
                         Guests
                       </span>
                       <span className="text-xs text-zinc-500 mt-0.5 block">
@@ -1018,7 +1006,7 @@ export function BookingCheckoutClient({
 
                   {/* Price details */}
                   <div className="pt-5 pb-5 border-b border-zinc-200/80 space-y-2.5">
-                    <h4 className="text-sm font-bold text-zinc-900 mb-1">
+                    <h4 className="text-base font-semibold text-[#1f1f1f] mb-1">
                       Price details
                     </h4>
 
@@ -1029,7 +1017,7 @@ export function BookingCheckoutClient({
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-center justify-between text-xs text-zinc-700">
+                        <div className="flex items-center justify-between text-sm text-[#727272]">
                           <span>
                             {nightsCount} night{nightsCount > 1 ? "s" : ""} x {formatMoney(effectiveBaseNightlyMinor)}
                           </span>
@@ -1039,7 +1027,7 @@ export function BookingCheckoutClient({
                         </div>
 
                         {quote?.cleaningFee ? (
-                          <div className="flex items-center justify-between text-xs text-zinc-700">
+                          <div className="flex items-center justify-between text-sm text-[#727272]">
                             <span>Cleaning fee</span>
                             <span className="font-medium text-zinc-900">
                               {formatMoney(quote.cleaningFee, true)}
@@ -1047,7 +1035,7 @@ export function BookingCheckoutClient({
                           </div>
                         ) : null}
 
-                        <div className="flex items-center justify-between text-xs text-zinc-700">
+                        <div className="flex items-center justify-between text-sm text-[#727272]">
                           <span>Taxes</span>
                           <span className="font-medium text-zinc-900">
                             {formatMoney(effectiveTaxesMinor, true)}
@@ -1059,7 +1047,7 @@ export function BookingCheckoutClient({
 
                   {/* Total Row */}
                   <div className="pt-4 flex items-center justify-between">
-                    <span className="text-sm sm:text-base font-bold text-zinc-900">
+                    <span className="text-sm sm:text-base font-medium text-[#1f1f1f]">
                       Total <span className="underline decoration-zinc-400">{currencySymbol}</span>
                     </span>
                     <span className="text-sm sm:text-base font-bold text-zinc-950">
@@ -1094,7 +1082,7 @@ export function BookingCheckoutClient({
           onClick={() => setIsDatesModalOpen(false)}
         >
           <div
-            className="w-full max-w-lg rounded-[28px] bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95"
+            className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
@@ -1162,7 +1150,7 @@ export function BookingCheckoutClient({
           onClick={() => setIsGuestsModalOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95"
+            className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
@@ -1180,7 +1168,7 @@ export function BookingCheckoutClient({
               {/* Adults */}
               <div className="flex items-center justify-between pt-2">
                 <div>
-                  <h4 className="text-sm font-bold text-zinc-900">Adults</h4>
+                  <h4 className="text-sm font-normal text-zinc-900">Adults</h4>
                   <p className="text-xs text-zinc-500">Age 13+</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1209,7 +1197,7 @@ export function BookingCheckoutClient({
               {/* Pets */}
               <div className="flex items-center justify-between pt-4">
                 <div>
-                  <h4 className="text-sm font-bold text-zinc-900">Pets</h4>
+                  <h4 className="text-sm font-normal text-zinc-900">Pets</h4>
                   <p className="text-xs text-zinc-500">Service animals welcome</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -1258,7 +1246,7 @@ export function BookingCheckoutClient({
           onClick={() => setIsPolicyModalOpen(false)}
         >
           <div
-            className="w-full max-w-lg rounded-[28px] bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95"
+            className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
@@ -1316,7 +1304,7 @@ export function BookingCheckoutClient({
           onClick={() => setIsBreakdownModalOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95"
+            className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100">

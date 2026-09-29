@@ -10,7 +10,8 @@ import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
-import { AMENITY_ICON_SOURCES, CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { AmenityIcon } from "@/components/ui/amenity-icon";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
@@ -254,58 +255,12 @@ function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
   return ranges.some((range) => key >= range.start && key < range.end);
 }
 
-function AmenityFallbackIcon({ id, category }: { id: string; category?: string }) {
-  const common = {
-    className: "size-5 text-[#1f1f1f]",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.7,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  const isOneOf = (...ids: string[]) => ids.includes(id);
-
-  if (isOneOf("bedroom_laundry", "room_darkening_shades", "clothing_storage", "drying_rack", "hangers", "extra_pillows_blankets", "towels")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M4 18V9.5h16V18M4 14h16M7 9.5V7.5h4v2M4 18h16" /></svg>;
-  }
-  if (isOneOf("refrigerator", "freezer", "microwave", "oven", "stove", "dishwasher", "coffee_maker", "kettle", "toaster", "cooking_basics", "dishes_cutlery", "dining_table", "blender", "bbq_utensils")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M7 4v16M4.5 4v6c0 1.4 1.1 2.5 2.5 2.5S9.5 11.4 9.5 10V4M15.5 4v16M15.5 4c2.2 0 4 1.8 4 4v4h-4" /></svg>;
-  }
-  if (isOneOf("shower", "bathtub", "shampoo", "conditioner", "toilet_paper", "bidet")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M5 15.5h14l-1.2 3H6.2L5 15.5ZM7 15.5V12h10v3.5M8 9.5V7a2.5 2.5 0 0 1 5 0v.5H9.5" /></svg>;
-  }
-  if (isOneOf("smart_tv", "sound_system", "books", "board_games", "game_console")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M5 14h3l4 3V7l-4 3H5v4ZM15 10.5c.9.8 1.4 1.8 1.4 3s-.5 2.2-1.4 3M18 8c1.6 1.4 2.5 3.3 2.5 5.5S19.6 17.6 18 19" /></svg>;
-  }
-  if (isOneOf("beach_access", "lake_access", "waterfront", "private_balcony", "shared_balcony", "backyard", "garden", "outdoor_furniture", "hammock")) {
-    return <svg viewBox="0 0 24 24" {...common}><circle cx="17" cy="7" r="2.5" /><path d="M3.5 15.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 3.5 0M3.5 19c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 3.5 0" /></svg>;
-  }
-  if (isOneOf("garage", "street_parking", "ev_charger")) {
-    return <svg viewBox="0 0 24 24" {...common}><path d="m5 11 2-4h10l2 4v6H5v-6ZM5 13h14M8 17v2M16 17v2" /><circle cx="8" cy="13" r="1" /><circle cx="16" cy="13" r="1" /></svg>;
-  }
-  if (category === "safety") {
-    return <svg viewBox="0 0 24 24" {...common}><path d="M12 3.5 19 6v5.5c0 4.2-2.7 7.6-7 9-4.3-1.4-7-4.8-7-9V6l7-2.5Z" /><path d="m8.8 12 2.1 2.1 4.4-4.4" /></svg>;
-  }
-  if (category === "accessibility") {
-    return <svg viewBox="0 0 24 24" {...common}><circle cx="12" cy="5" r="1.8" /><path d="M10.5 9.5h3L15 13h3M11 10l-1 5h4l2 4M10 15l-3 3" /></svg>;
-  }
-  if (category === "services") {
-    return <svg viewBox="0 0 24 24" {...common}><rect x="4" y="7" width="16" height="12" rx="2" /><path d="M9 7V5.5h6V7M4 12h16M10 12v1h4v-1" /></svg>;
-  }
-  return <svg viewBox="0 0 24 24" {...common}><path d="m4 11 8-6 8 6v8.5H4V11Z" /><path d="M9.5 19.5v-5h5v5" /></svg>;
-}
-
 function AmenityRow({ amenity }: { amenity: { id: string; category?: string; label: string; description?: string } }) {
-  const iconSource = AMENITY_ICON_SOURCES[amenity.id];
 
   return (
     <div className="flex items-start gap-3 text-xs">
       <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
-        {iconSource ? (
-          <Image src={iconSource} alt="" width={20} height={20} className="size-5 object-contain" />
-        ) : (
-          <AmenityFallbackIcon id={amenity.id} category={amenity.category} />
-        )}
+        <AmenityIcon id={amenity.id} className="size-5" />
       </span>
       <div className="min-w-0">
         <h5 className="text-sm font-semibold text-[#1f1f1f]">{amenity.label}</h5>
@@ -507,7 +462,7 @@ function ListingAvailabilityCalendar({
             const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
 
             return (
-              <div key={key} className={`relative flex aspect-square items-center justify-center ${isInRange ? "bg-amber-100" : ""}`}>
+              <div key={key} className="relative flex aspect-square items-center justify-center">
                 <button
                   type="button"
                   disabled={disabled || isLoading}
@@ -523,13 +478,13 @@ function ListingAvailabilityCalendar({
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
-                  className={`relative z-10 flex size-8 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:size-9 ${isStart || isEnd
-                    ? "bg-[#F6CF7B] font-semibold text-[#1f1f1f] shadow-sm"
+                  className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-8 sm:w-8 ${isStart || isEnd
+                    ? "bg-[#FCDF9C] font-semibold text-[#1f1f1f] shadow-sm"
                     : isInRange
-                      ? "rounded-none bg-amber-100 text-[#1f1f1f] hover:bg-amber-200"
+                      ? "bg-[#FCDF9C] text-[#1f1f1f] hover:bg-[#F6CF7B]"
                       : past || unavailable
                         ? "cursor-not-allowed text-zinc-300 line-through"
-                        : "cursor-pointer text-zinc-700 hover:bg-zinc-100"
+                        : "cursor-pointer text-[#1f1f1f] hover:bg-[#F3F4F5]"
                     } disabled:opacity-70`}
                 >
                   {index + 1}
@@ -607,7 +562,6 @@ export function PublicListingDetailClient({
   // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [openThingsCard, setOpenThingsCard] = useState<"rules" | "safety" | "cancellation" | null>(null);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
@@ -766,7 +720,6 @@ export function PublicListingDetailClient({
       setBookingSuccess(false);
       setHostImageFailed(false);
       setIsDescriptionModalOpen(false);
-      setIsDescriptionExpanded(false);
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
@@ -1503,7 +1456,7 @@ export function PublicListingDetailClient({
                   <span className="hidden sm:inline">Share</span>
                 </button>
                 <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
-                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-amber-300 bg-amber-50 text-amber-800" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
+                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   </span>
                   <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
@@ -1655,36 +1608,22 @@ export function PublicListingDetailClient({
                 {normalizedDescription && (
                   <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
                     <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
-                    <p
-                      className={`mt-2.5 whitespace-pre-line break-words text-base font-normal text-[#727272] ${isDescriptionExpanded ? "" : "line-clamp-4"
-                        }`}
-                    >
+                    <p className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base font-normal text-[#727272]">
                       {normalizedDescription}
                     </p>
-                    {isDescriptionExpanded && aboutLocationDetails.length > 0 && (
-                      <div className="mt-4 space-y-4 pt-4 border-t border-zinc-100">
-                        {aboutLocationDetails.map((detail) => (
-                          <div key={detail.heading}>
-                            <h4 className="text-[20px] font-normal text-[#1f1f1f]">{detail.heading}</h4>
-                            <p className="mt-2.5 whitespace-pre-line text-base font-normal leading-6 text-[#727272]">{detail.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {(normalizedDescription.length > 200 || aboutLocationDetails.length > 0) && (
                       <button
                         type="button"
                         onClick={() => {
-                          const next = !isDescriptionExpanded;
-                          setIsDescriptionExpanded(next);
+                          setIsDescriptionModalOpen(true);
                           trackListingEvent({
-                            eventType: next ? "description_expanded" : "description_collapsed",
+                            eventType: "description_expanded",
                             propertyId: listing.id,
                           });
                         }}
                         className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] sm:px-7 px-4 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        {isDescriptionExpanded ? "Show less" : "Show more"}
+                        Show more
                       </button>
                     )}
                   </section>
@@ -1700,11 +1639,7 @@ export function PublicListingDetailClient({
                       {categorizedAmenities.slice(0, 6).map((am) => (
                         <div key={am.id} className="flex min-w-0 items-center gap-3">
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
-                            {AMENITY_ICON_SOURCES[am.id] ? (
-                              <Image src={AMENITY_ICON_SOURCES[am.id]} alt="" width={18} height={18} className="size-[18px]" />
-                            ) : (
-                              <span aria-hidden="true" className="text-sm leading-none">{am.icon || "✓"}</span>
-                            )}
+                            <AmenityIcon id={am.id} className="size-[18px]" />
                           </span>
                           <span className="break-words text-base font-normal leading-5">{am.label}</span>
                         </div>
@@ -1947,7 +1882,7 @@ export function PublicListingDetailClient({
                         )}
 
                         {quote && !isQuoteLoading && (
-                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-xs">
+                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
                                 {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
@@ -1957,13 +1892,13 @@ export function PublicListingDetailClient({
                             </div>
 
                             {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
-                              <div className="flex items-center justify-between text-amber-700 text-[11px] font-medium bg-amber-50 px-2 py-0.5 rounded">
+                              <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
                                 <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
                               </div>
                             )}
 
                             {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
-                              <div className="flex items-center justify-between text-zinc-500 text-[11px]">
+                              <div className="flex items-center justify-between text-zinc-500 text-sm">
                                 <span>Includes {quote.weekendNights} weekend nights</span>
                                 <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
@@ -2011,7 +1946,7 @@ export function PublicListingDetailClient({
                                     </span>
                                     <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
-                                  <div className="pl-2.5 space-y-1 border-l-2 border-amber-300 text-base font-light text-[#1F1F1F]">
+                                    <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
                                     {quote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
@@ -2025,13 +1960,13 @@ export function PublicListingDetailClient({
                                   </div>
                                 </div>
 
-                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                   <span>Total</span>
                                   <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                              <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-sm font-bold text-[#1f1f1f]">
+                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                 <span>Total</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
@@ -2045,7 +1980,7 @@ export function PublicListingDetailClient({
                           disabled={isBookingSubmitting}
                           onClick={handleReserve}
                           className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
-                            ? "border border-amber-400 bg-[#fee09a] text-[#1f1f1f] hover:bg-[#fbd775] cursor-pointer active:scale-[0.99]"
+                            ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                             : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
                             }`}
                           aria-disabled={!hasValidQuote || isBookingSubmitting}
@@ -2059,7 +1994,7 @@ export function PublicListingDetailClient({
                                 : "Request to book"}
                         </button>
 
-                        <p className="text-[11px] text-zinc-400 text-center font-normal">
+                        <p className="text-xs text-[#727272] text-center font-normal">
                           {"You won't be charged yet. Taxes and additional charges may be calculated at checkout."}
                         </p>
                       </>
@@ -2272,14 +2207,14 @@ export function PublicListingDetailClient({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs"
           onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenThingsCard(null); }}
         >
-          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
               <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
                 {openThingsCard === "rules" ? "House rules" : openThingsCard === "safety" ? "Safety & property" : "Cancellation policy"}
               </h3>
               <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
             </div>
-            <div className="overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
+            <div className="visible-scrollbar overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
               {openThingsCard === "rules" && (
                 <>
                   <p className="text-base leading-6 text-[#1f1f1f]">You’ll be staying in someone’s home, so please treat it with care and respect.</p>
@@ -2320,14 +2255,14 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-lg font-semibold text-[#1f1f1f]">About this place</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="p-1 text-zinc-500 hover:text-[#1f1f1f]">✕</button>
+              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">About this place</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
-            <div className="mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
+            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
-                  <h4 className="text-xl font-normal text-[#1f1f1f]">{detail.heading}</h4>
+                  <h4 className="text-lg font-medium text-[#1f1f1f]">{detail.heading}</h4>
                   <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
                 </section>
               ))}
@@ -2339,9 +2274,9 @@ export function PublicListingDetailClient({
       {/* ALL AMENITIES MODAL */}
       {isAllAmenitiesOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-lg border border-zinc-200 bg-white p-6 shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-medium text-xl text-[#1f1f1f]">What this place offers</h3>
+              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">What this place offers</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
@@ -2363,7 +2298,7 @@ export function PublicListingDetailClient({
               />
             </div>
 
-            <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+            <div className="visible-scrollbar flex-1 space-y-5 overflow-y-auto pr-1">
               {amenitySearchQuery.trim() ? (
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
               ) : amenityGroups.map(([category, amenities]) => (

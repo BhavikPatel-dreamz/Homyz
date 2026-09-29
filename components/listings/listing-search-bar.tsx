@@ -1180,7 +1180,7 @@ export function ListingSearchBar() {
                   ? "left-0 w-[400px] sm:w-[480px]"
                   : desktopPanel === "who"
                   ? "right-0 w-[380px]"
-                  : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[620px]"
+                  : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[756px]"
               }`}
             >
               {desktopPanel === "where" ? (

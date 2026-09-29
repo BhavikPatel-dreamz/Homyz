@@ -145,6 +145,12 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
     });
   }, [validItems, categoryFilter]);
 
+  const formatCategoryLabel = (category: string) =>
+    category
+      .replace(/[_-]/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
   return (
     <div className="flex min-w-0 w-full flex-col animate-in fade-in duration-300">
       {/* Title Header */}
@@ -160,10 +166,6 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
-            Properties and stays you have saved for upcoming getaways.
-          </p>
-        </div>
 
         {/* Category Filter Pills (if multiple categories available) */}
         {availableCategories.length > 0 && (
@@ -199,7 +201,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
 
       {/* Loading Skeleton */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse space-y-3">
               <div className="aspect-[288/256] w-full rounded-2xl bg-zinc-200" />

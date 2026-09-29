@@ -1230,7 +1230,7 @@ function CheckOutInstructionsView({
             </div>
             <div>
               <span className="text-sm font-medium text-[#727272] dark:text-zinc-400 block">{t("host_checkout_time_label_title") || "Check-out time"}</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{formattedCheckOut}</span>
+              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{formattedCheckOut}</span>
             </div>
           </div>
           <button
@@ -1993,7 +1993,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_start_time") || "Start time"}</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart === "Flexible" ? (t("host_flexible") || "Flexible") : (checkInStart || "3:00 PM")}</span>
+              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart === "Flexible" ? (t("host_flexible") || "Flexible") : (checkInStart || "3:00 PM")}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingStart ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -2010,7 +2010,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingStart(false);
                   }}
-                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((tVal) => (
                     <option key={tVal} value={tVal}>
@@ -2034,7 +2034,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_end_time") || "End time"}</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd === "Flexible" || !checkInEnd ? (t("host_flexible") || "Flexible") : checkInEnd}</span>
+              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd === "Flexible" || !checkInEnd ? (t("host_flexible") || "Flexible") : checkInEnd}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingEnd ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -2051,7 +2051,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingEnd(false);
                   }}
-                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((tVal) => (
                     <option key={tVal} value={tVal}>
@@ -2082,7 +2082,7 @@ function CheckInCheckOutView({
           >
             <div className="space-y-0.5">
               <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_select_time") || "Select time"}</span>
-              <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime === "Flexible" ? (t("host_flexible") || "Flexible") : (checkOutTime || "12:00 PM")}</span>
+              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime === "Flexible" ? (t("host_flexible") || "Flexible") : (checkOutTime || "12:00 PM")}</span>
             </div>
             <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingCheckOut ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -2099,7 +2099,7 @@ function CheckInCheckOutView({
                     handleSaveSection("arrival-guide");
                     setEditingCheckOut(false);
                   }}
-                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
+                  className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors sm:min-h-[60px] min-h-[56px]"
                 >
                   {timesList.map((tVal) => (
                     <option key={tVal} value={tVal}>

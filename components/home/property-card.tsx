@@ -160,7 +160,7 @@ function PropertyCardComponent({
   return (
     <Link
       href={targetHref}
-      className="group block cursor-pointer overflow-hidden rounded-[20px] sm:rounded-[22px] border border-zinc-200 bg-white hover:bg-[#FCDF9C]/30 hover:border-zinc-300 transition-all duration-200"
+      className="group block cursor-pointer overflow-hidden rounded-[20px] border border-zinc-200 bg-white transition-all duration-200"
     >
       <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
         {displayImage ? (
@@ -180,30 +180,19 @@ function PropertyCardComponent({
 
         {/* Badges: Only rendered when qualified by backend formula */}
         {showFeatured && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-zinc-900 shadow-xs border border-white/60">
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-zinc-900 shadow-xs border border-white/60">
             {t("home_featured")}
           </span>
         )}
 
         {showGuestFavorite && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/85 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-normal text-[#1f1f1f] shadow-xs backdrop-blur-md">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="white"
-              stroke="#FCDF9C"
-              strokeWidth="2"
-              strokeLinejoin="round"
-              className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0"
-            >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
             {t("home_guest_favorite")}
           </span>
         )}
 
         {showSuperhost && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center rounded-full bg-[#eca7b0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-normal text-white shadow-xs">
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center rounded-full bg-[#eca7b0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs">
             {t("home_superhost")}
           </span>
         )}

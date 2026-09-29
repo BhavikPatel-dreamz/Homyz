@@ -20,7 +20,7 @@ export const initialDatePreferences: DatePreferences = {
 
 const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-const pill = "shrink-0 rounded-full border px-3 py-1.5 text-[12px] transition-colors cursor-pointer";
+const pill = "shrink-0 rounded-full border px-3 h-[26px] text-[12px] transition-colors cursor-pointer";
 
 export function MobileDatePicker({
   checkIn,
@@ -115,10 +115,10 @@ export function MobileDatePicker({
   ] as const;
 
   return (
-    <div>
+    <div className={desktop ? "mx-auto w-full max-w-[664px]" : ""}>
       <div
         className={`mx-auto mb-5 flex w-full overflow-hidden rounded-full ${
-          desktop ? "max-w-[280px] bg-[#f3f3f3]" : "bg-white"
+          desktop ? "max-w-[346px] bg-white" : "bg-white"
         }`}
         role="tablist"
         aria-label="Date selection"
@@ -144,14 +144,14 @@ export function MobileDatePicker({
         id={`${pickerId}-panel`}
         role="tabpanel"
         aria-labelledby={`${pickerId}-tab-${preferences.mode}`}
-        className="rounded-[22px] bg-white px-3 py-4"
+        className={`bg-white ${desktop ? "rounded-[22px] px-5 py-4" : "rounded-[22px] px-3 py-4"}`}
       >
         {preferences.mode === "dates" ? (
           <>
             <p className="sr-only" aria-live="polite">
               {!checkIn ? "Choose check-in date" : !checkOut ? "Choose check-out date" : `${checkIn} to ${checkOut}`}
             </p>
-            <div className={desktop ? "grid grid-cols-2 gap-5" : ""}>
+            <div className={desktop ? "grid grid-cols-2 gap-8" : ""}>
               {[0, 1].map((offset) => {
                 const month = new Date(today.getFullYear(), today.getMonth() + monthOffset + offset, 1);
                 const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -167,7 +167,7 @@ export function MobileDatePicker({
                       >
                         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mx-auto size-5"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </button>
-                      <h4 className="text-[16px] font-semibold">{monthLabel(month)}</h4>
+                      <h4 className="text-[16px] font-medium">{monthLabel(month)}</h4>
                       <button
                         type="button"
                         aria-label="Next month"
@@ -189,18 +189,25 @@ export function MobileDatePicker({
                       {Array.from({ length: days }, (_, i) => {
                         const date = new Date(month.getFullYear(), month.getMonth(), i + 1);
                         const key = dateKey(date);
-                        const selected = key === checkIn || key === checkOut;
-                        const inRange = checkIn && checkOut && key > checkIn && key < checkOut;
+                        const isCheckIn = key === checkIn;
+                        const isCheckOut = key === checkOut;
+                        const isInRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
                         return (
                           <button
                             key={key}
                             type="button"
                             disabled={key < dateKey(today)}
                             aria-label={date.toLocaleDateString(locale, { dateStyle: "full" })}
-                            aria-pressed={selected}
+                            aria-pressed={isCheckIn || isCheckOut}
                             onClick={() => selectDate(key)}
-                            className={`h-9 rounded-full cursor-pointer disabled:opacity-25 ${
-                              selected ? "bg-[#1f1f1f] text-white" : inRange ? "bg-[#fcdf9c]" : "hover:bg-gray-100"
+                            className={`h-10 rounded-full border border-transparent cursor-pointer disabled:opacity-25 ${
+                              isCheckIn
+                                ? "border-[#1f1f1f] bg-white text-[#1f1f1f]"
+                                : isCheckOut
+                                ? "border-[#f2bd40] bg-[#fcdf9c] text-[#1f1f1f]"
+                                : isInRange
+                                ? "bg-[#fcdf9c] text-[#1f1f1f]"
+                                : "hover:bg-gray-100"
                             }`}
                           >
                             {i + 1}

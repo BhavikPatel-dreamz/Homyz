@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { CANONICAL_AMENITIES } from "@/lib/constants/amenities";
 import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 
@@ -314,17 +315,17 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
 
           <div className="border-b border-zinc-200 py-7">
             <h2 className="mb-5 text-lg font-semibold text-zinc-950">Amenities</h2>
-            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><span aria-hidden="true">{amenity!.icon}</span>{amenity!.label}</FilterPill>)}</div></div>)}</div>
-            {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><span aria-hidden="true">{amenity.icon}</span>{amenity.label}</FilterPill>)}</div>}
+            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{amenity!.label}</FilterPill>)}</div></div>)}</div>
+            {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><AmenityIcon id={amenity.id} className="size-4" />{amenity.label}</FilterPill>)}</div>}
             <button type="button" onClick={() => setShowAllAmenities((value) => !value)} className="mt-5 text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{showAllAmenities ? "Show less" : "Show more"}</button>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
             <h2 className="mb-4 text-lg font-semibold text-zinc-950">Booking options</h2>
             <div className="flex flex-wrap gap-2">
-              <FilterPill active={draft.instantBook} onClick={() => setDraft((previous) => ({ ...previous, instantBook: !previous.instantBook }))}>⚡ Instant Book</FilterPill>
-              <FilterPill active={draft.amenities.includes("self_check_in")} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, "self_check_in") }))}>🔑 Self check-in</FilterPill>
-              <FilterPill active={draft.pets} onClick={() => setDraft((previous) => ({ ...previous, pets: !previous.pets }))}>🐾 Allows pets</FilterPill>
+              <FilterPill active={draft.instantBook} onClick={() => setDraft((previous) => ({ ...previous, instantBook: !previous.instantBook }))}><svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-9 12h7l-1 8 9-12h-7z" /></svg>Instant Book</FilterPill>
+              <FilterPill active={draft.amenities.includes("self_check_in")} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, "self_check_in") }))}><AmenityIcon id="self_check_in" className="size-4" />Self check-in</FilterPill>
+              <FilterPill active={draft.pets} onClick={() => setDraft((previous) => ({ ...previous, pets: !previous.pets }))}><AmenityIcon id="pet_friendly" className="size-4" />Allows pets</FilterPill>
               <FilterPill active={draft.featured} onClick={() => setDraft((previous) => ({ ...previous, featured: !previous.featured }))}>★ Guest favourite</FilterPill>
             </div>
           </div>

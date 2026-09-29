@@ -1284,7 +1284,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
             >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check in</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkIn || t("home_search_add_dates")}
               </span>
@@ -1306,7 +1306,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
             >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_when")}</span>
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check out</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkOut || t("home_search_add_dates")}
               </span>
@@ -1366,12 +1366,12 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     ? "Guests"
                     : "Choose dates"
                 }
-                className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[28px] border border-zinc-100 bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+                className={`absolute top-full z-99 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[16px] border border-zinc-100 bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
                   desktopPanel === "where"
                     ? "left-0 w-[400px] sm:w-[480px]"
                     : desktopPanel === "who"
                     ? "right-0 w-[380px]"
-                    : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[620px]"
+                    : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[756px]"
                 }`}
               >
                 {desktopPanel === "where" ? (
