@@ -376,11 +376,11 @@ export function BookingCheckoutClient({
     <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased selection:bg-amber-100">
       <AppHeader showBottomBorder={true} />
 
-      <main className="w-full flex-1 py-8 sm:py-12 lg:py-24">
+      <main className="w-full flex-1 pt-8 pb-20 sm:py-12 lg:py-24">
         <Container>
-          <div className="mx-auto max-w-[1040px]">
+          <div className="mx-auto max-w-[1263px]">
             {/* Top Navigation Bar: Back Button & Page Title */}
-            <div className="mb-10 flex items-center gap-4 lg:mb-12">
+            <div className="mb-10 flex items-center gap-6 lg:mb-15 lg:-ml-15">
               <button
                 type="button"
                 onClick={() => router.back()}
@@ -391,37 +391,40 @@ export function BookingCheckoutClient({
                   <path d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h1 className="text-[32px] font-semibold tracking-[-0.035em] sm:text-[38px]">
+              <h1>
                 Request to book
               </h1>
             </div>
 
             {/* Main Content Layout: 2 Columns */}
-            <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,618px)_minmax(0,571px)] lg:gap-18.5">
+            <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[618px_571px] lg:gap-18.5">
               {/* ======================================================== */}
               {/* LEFT COLUMN: 4 PROGRESSIVE ACCORDION STEPS (lg:col-span-7) */}
               {/* ======================================================== */}
-              <div className="space-y-9">
+              <div className="order-2 space-y-12 lg:order-1">
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* STEP 1: Choose when to pay */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <div className="relative">
+                <div className="relative isolate">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]">
+                    <div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" />
+                  </div>
                   {/* Step Number Badge */}
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-800 shadow-2xs">
+                  <div className={activeStep === 1 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
                     1
                   </div>
 
                   {activeStep === 1 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white px-8 pb-6 pt-10 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:px-9">
-                      <h2 className="mb-5 text-center text-base font-medium text-zinc-900 sm:text-lg">
+                    <div className="relative z-10 px-4 sm:pb-8 pb-6 pt-10 sm:px-10">
+                      <h2 className="mb-5 text-center font-medium text-[#1f1f1f] text-lg">
                         Choose when to pay
                       </h2>
 
                       <div>
                         {/* Option 1: Pay now */}
                         <label
-                          className="flex cursor-pointer items-center gap-5 border-b border-zinc-200 py-4 first:pt-2"
+                          className="flex cursor-pointer items-center gap-5 border-b border-[#727272] py-4 first:pt-2"
                         >
                           <input
                             type="radio"
@@ -429,7 +432,7 @@ export function BookingCheckoutClient({
                             value="now"
                             checked={paymentPlan === "now"}
                             onChange={() => setPaymentPlan("now")}
-                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
+                            className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
                             <span className="text-sm font-normal text-zinc-900" aria-live="polite">
@@ -440,7 +443,7 @@ export function BookingCheckoutClient({
 
                         {/* Option 2: Pay part now, part later */}
                         <label
-                          className="flex cursor-pointer items-start gap-5 border-b border-zinc-200 py-5"
+                          className="flex cursor-pointer items-start gap-5 border-b border-[#727272] py-5"
                         >
                           <input
                             type="radio"
@@ -448,7 +451,7 @@ export function BookingCheckoutClient({
                             value="part"
                             checked={paymentPlan === "part"}
                             onChange={() => setPaymentPlan("part")}
-                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
+                            className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
                             <span className="block text-sm font-normal text-zinc-900">
@@ -462,7 +465,7 @@ export function BookingCheckoutClient({
                                   e.preventDefault();
                                   setIsBreakdownModalOpen(true);
                                 }}
-                                className="underline font-medium text-zinc-700 hover:text-zinc-900"
+                                className="underline font-normal text-[#727272] hover:text-[#1f1f1f]"
                               >
                                 More info
                               </button>
@@ -480,7 +483,7 @@ export function BookingCheckoutClient({
                             value="klarna"
                             checked={paymentPlan === "klarna"}
                             onChange={() => setPaymentPlan("klarna")}
-                            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
+                            className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
                             <span className="block text-sm font-normal text-zinc-900">
@@ -494,7 +497,7 @@ export function BookingCheckoutClient({
                                   e.preventDefault();
                                   setIsBreakdownModalOpen(true);
                                 }}
-                                className="underline font-medium text-zinc-700 hover:text-zinc-900"
+                                className="underline font-normal text-[#727272] hover:text-[#1f1f1f]"
                               >
                                 More info
                               </button>
@@ -523,9 +526,9 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(1) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                    <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div>
-                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
+                        <h3 className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
                           Choose when to pay
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5 font-medium">
@@ -539,15 +542,15 @@ export function BookingCheckoutClient({
                       <button
                         type="button"
                         onClick={() => setActiveStep(1)}
-                        className="rounded-full border border-zinc-300 bg-white px-5 py-1.5 text-xs sm:text-sm font-semibold text-zinc-800 hover:border-zinc-900 hover:bg-zinc-50 transition-colors cursor-pointer"
+                        className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
                         Change
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-6 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <span className="text-sm sm:text-base font-semibold text-zinc-700">
+                    <div className="relative z-10 px-6 py-6 text-center">
+                      <span className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
                         Choose when to pay
                       </span>
                     </div>
@@ -557,46 +560,43 @@ export function BookingCheckoutClient({
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* STEP 2: Payment method */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <div className="relative">
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-800 shadow-2xs">
+                <div className="relative isolate">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
+                  <div className={activeStep === 2 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
                     2
                   </div>
 
                   {activeStep === 2 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <h2 className="text-base sm:text-lg font-medium text-zinc-900 mb-6 text-center">
+                    <div className="relative z-10 px-4 sm:pb-8 pb-6 pt-10 sm:px-10">
+                      <h2 className="text-lg sm:text-xl sm:font-medium font-normal text-[#1f1f1f] mb-6 text-center">
                         Payment method
                       </h2>
 
-                      <div className="space-y-4">
+                      <div className="card-options">
                         {/* Option 1: Credit / debit card */}
                         <div
-                          className={`rounded-2xl border p-4 transition-all ${
-                            paymentMethod === "card"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
+                          className={`${paymentMethod === "card"}`}
                         >
-                          <label className="flex items-center gap-4 cursor-pointer">
+                          <label className="flex items-center sm:gap-8 gap-3 cursor-pointer">
                             <input
                               type="radio"
                               name="paymentMethod"
                               value="card"
                               checked={paymentMethod === "card"}
                               onChange={() => setPaymentMethod("card")}
-                              className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
+                              className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
-                            <span className="text-sm font-normal text-zinc-900">
+                            <span className="text-base font-semibold text-[#1f1f1f]">
                               Credit / debit card
                             </span>
                           </label>
 
                           {/* Card Inputs Form (shown when Credit card is active) */}
                           {paymentMethod === "card" && (
-                            <div className="mt-4 pt-4 border-t border-zinc-200/80 space-y-3">
+                            <div className="mt-6">
                               <div>
-                                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                   Card Number *
                                 </label>
                                 <div className="relative">
@@ -606,7 +606,7 @@ export function BookingCheckoutClient({
                                     placeholder="1234 1234 1234 1234"
                                     value={cardNumber}
                                     onChange={handleCardNumberChange}
-                                    className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors"
+                                    className="w-full rounded-[8px] border border-[#727272] bg-white px-4 py-2.5 text-base text-[#1f1f1f] placeholder:text-[rgba(31, 31, 31, 0.5)] focus:border-zinc-900 focus:outline-none transition-colors sm:min-h-[56px]  min-h-[45px] "
                                   />
                                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">
                                     💳
@@ -614,9 +614,9 @@ export function BookingCheckoutClient({
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-3">
+                              <div className="grid md:grid-cols-2 grid-cols-1 gap-3 mt-5">
                                 <div>
-                                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                     Expiry Date *
                                   </label>
                                   <input
@@ -625,11 +625,11 @@ export function BookingCheckoutClient({
                                     placeholder="mm/yy"
                                     value={expiryDate}
                                     onChange={handleExpiryChange}
-                                    className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors"
+                                    className="w-full rounded-[8px] border border-[#727272] bg-white px-4 py-2.5 text-base text-[#1f1f1f] placeholder:text-[rgba(31, 31, 31, 0.5)] focus:border-zinc-900 focus:outline-none transition-colors sm:min-h-[56px]  min-h-[45px] "
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                                     Card Code (CVC) *
                                   </label>
                                   <input
@@ -638,7 +638,7 @@ export function BookingCheckoutClient({
                                     placeholder="CVC"
                                     value={cardCvc}
                                     onChange={handleCvcChange}
-                                    className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors"
+                                    className="w-full rounded-[8px] border border-[#727272] bg-white px-4 py-2.5 text-base text-[#1f1f1f] placeholder:text-[rgba(31, 31, 31, 0.5)] focus:border-zinc-900 focus:outline-none transition-colors sm:min-h-[56px]  min-h-[45px] "
                                   />
                                 </div>
                               </div>
@@ -652,75 +652,62 @@ export function BookingCheckoutClient({
                           )}
                         </div>
 
-                        {/* Option 2: Apple Pay */}
-                        <label
-                          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentMethod === "apple_pay"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="apple_pay"
-                            checked={paymentMethod === "apple_pay"}
-                            onChange={() => setPaymentMethod("apple_pay")}
-                            className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
-                          />
-                          <div className="flex items-center gap-2">
-                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.22-.54 2.88-1.36z" />
-                            </svg>
-                            <span className="text-sm font-normal text-zinc-900">Apple Pay</span>
-                          </div>
-                        </label>
+                        <div className="mt-6">
+                          {/* Option 2: Apple Pay */}
+                          <label
+                            className={`flex items-center sm:gap-8 gap-3 sm:py-6 py-5 border-t border-[#727272] transition-all cursor-pointer ${paymentMethod === "apple_pay"}`}
+                          >
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="apple_pay"
+                              checked={paymentMethod === "apple_pay"}
+                              onChange={() => setPaymentMethod("apple_pay")}
+                              className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                            />
+                            <div className="flex sm:flex-row flex-row-reverse items-center gap-3">
+                              <Image src="/images/icons/ApplePay.svg" alt="" width={19} height={24} className="h-6 w-[19px]" />
+                              <span className="text-base font-semibold text-[#1f1f1f]">Apple Pay</span>
+                            </div>
+                          </label>
 
-                        {/* Option 3: Google Pay */}
-                        <label
-                          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentMethod === "google_pay"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="google_pay"
-                            checked={paymentMethod === "google_pay"}
-                            onChange={() => setPaymentMethod("google_pay")}
-                            className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
-                          />
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-zinc-900 flex items-center gap-1">
-                              <span className="text-blue-500 font-extrabold">G</span>
-                              <span>Pay</span>
-                            </span>
-                          </div>
-                        </label>
+                          {/* Option 3: Google Pay */}
+                          <label
+                            className={`flex items-center sm:gap-8 gap-3 sm:py-6 py-5 border-t border-[#727272] transition-all cursor-pointer ${paymentMethod === "google_pay"
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="google_pay"
+                              checked={paymentMethod === "google_pay"}
+                              onChange={() => setPaymentMethod("google_pay")}
+                              className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                            />
+                            <div className="flex sm:flex-row flex-row-reverse items-center gap-3">
+                              <Image src="/images/icons/G.svg" alt="" width={20} height={20} className="size-5" />
+                              <span className="text-base font-semibold text-[#1f1f1f]">Google Pay</span>
+                            </div>
+                          </label>
 
-                        {/* Option 4: Local gateways */}
-                        <label
-                          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                            paymentMethod === "local"
-                              ? "border-zinc-900 bg-zinc-50/50 ring-1 ring-zinc-900"
-                              : "border-zinc-200 hover:border-zinc-400"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="local"
-                            checked={paymentMethod === "local"}
-                            onChange={() => setPaymentMethod("local")}
-                            className="h-4 w-4 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
-                          />
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-normal text-zinc-900">Local gateways</span>
-                            <span className="text-xs text-zinc-400">(Mada, STC Pay, Tamara)</span>
-                          </div>
-                        </label>
+                          {/* Option 4: Local gateways */}
+                          <label
+                            className={`flex items-center sm:gap-8 gap-3 sm:py-6 py-5 border-t border-[#727272] transition-all cursor-pointer ${paymentMethod === "local"}`}
+                          >
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="local"
+                              checked={paymentMethod === "local"}
+                              onChange={() => setPaymentMethod("local")}
+                              className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                            />
+                            <div className="flex sm:flex-row flex-col sm:items-center items-start sm:gap-3">
+                              <span className="text-base font-semibold text-[#1f1f1f]">Local gateways</span>
+                              <span className="text-xs text-zinc-400">(Mada, STC Pay, Tamara)</span>
+                            </div>
+                          </label>
+                        </div>
                       </div>
 
                       {/* Next Button */}
@@ -728,7 +715,7 @@ export function BookingCheckoutClient({
                         <button
                           type="button"
                           onClick={handleStep2Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
+                          className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] border border-[#1f1f1f] hover:text-white font-medium px-8 py-2.5 sm:text-lg text-base transition-all duration-300 cursor-pointer sm:min-w-[136px] min-w-[100px] sm:min-h-[56px] min-h-[45px]"
                         >
                           Next
                         </button>
@@ -736,33 +723,33 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(2) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                    <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div>
-                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
+                        <h3 className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
                           Payment method
                         </h3>
-                        <p className="text-xs text-zinc-500 mt-0.5 font-medium">
+                        <p className="text-base text-[#1f1f1f] mt-0.5 font-normal mt-1">
                           {paymentMethod === "card"
                             ? "Credit / debit card"
                             : paymentMethod === "apple_pay"
-                            ? "Apple Pay"
-                            : paymentMethod === "google_pay"
-                            ? "Google Pay"
-                            : "Local gateways"}
+                              ? "Apple Pay"
+                              : paymentMethod === "google_pay"
+                                ? "Google Pay"
+                                : "Local gateways"}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setActiveStep(2)}
-                        className="rounded-full border border-zinc-300 bg-white px-5 py-1.5 text-xs sm:text-sm font-semibold text-zinc-800 hover:border-zinc-900 hover:bg-zinc-50 transition-colors cursor-pointer"
+                        className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
                         Change
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <span className="text-sm sm:text-base font-semibold text-zinc-700">
+                    <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
+                      <span className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
                         Payment method
                       </span>
                     </div>
@@ -772,24 +759,25 @@ export function BookingCheckoutClient({
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* STEP 3: Write a message to the host */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <div className="relative">
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-800 shadow-2xs">
+                <div className="relative isolate">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
+                  <div className={activeStep === 3 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
                     3
                   </div>
 
                   {activeStep === 3 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-2 text-center">
+                    <div className="relative z-10 px-4 sm:pb-8 pb-6 pt-10 sm:px-10">
+                      <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] mb-2 text-center">
                         Write a message to the host
                       </h2>
-                      <p className="text-xs sm:text-sm text-zinc-500 text-center max-w-md mx-auto mb-6">
+                      <p className="text-sm sm:text-base text-[#727272] text-left mb-4">
                         Before you can continue, let {hostName} know a little about your trip and why their place is a good fit.
                       </p>
 
                       {/* Host Snippet Card */}
-                      <div className="flex items-center gap-3.5 mb-5 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                        <div className="relative h-12 w-12 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
+                      <div className="flex items-center sm:gap-6 gap-4 mb-4">
+                        <div className="relative h-16 w-16 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
                           {listing.host?.image ? (
                             <Image
                               src={listing.host.image}
@@ -804,10 +792,10 @@ export function BookingCheckoutClient({
                           )}
                         </div>
                         <div>
-                          <h4 className="text-sm font-normal text-zinc-900">
+                          <h4 className="text-base font-normal text-[#1F1F1F]">
                             Hosted by {hostName}
                           </h4>
-                          <p className="text-xs text-zinc-500 mt-0.5">
+                          <p className="text-sm text-[#1f1f1f] mt-1">
                             Superhost · {listing.host?.createdAt ? `${new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear() || 1} years hosting` : "3 years hosting"}
                           </p>
                         </div>
@@ -815,7 +803,7 @@ export function BookingCheckoutClient({
 
                       {/* Message Textarea */}
                       <div>
-                        <label className="block text-xs font-semibold text-zinc-800 mb-1.5">
+                        <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                           Write a message
                         </label>
                         <textarea
@@ -823,16 +811,16 @@ export function BookingCheckoutClient({
                           value={hostMessage}
                           onChange={(e) => setHostMessage(e.target.value)}
                           placeholder={`Example: "Hi ${hostName}, I'm going to visit your place."`}
-                          className="w-full rounded-2xl border border-zinc-300 bg-white p-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors resize-none"
+                          className="w-full sm:rounded-[20px] rounded-[10px] border border-[#727272] bg-white sm:p-4 p-3 sm:text-base text-sm text-[#1f1f1f] placeholder:text-[rgba(31,31,31,0.5)] focus:border-zinc-900 focus:outline-none transition-colors resize-none"
                         />
                       </div>
 
                       {/* Next Button */}
-                      <div className="flex justify-end mt-6">
+                      <div className="flex justify-end sm:mt-6 mt-5">
                         <button
                           type="button"
                           onClick={handleStep3Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
+                          className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] border border-[#1f1f1f] hover:text-white font-medium px-8 py-2.5 text-lg transition-all duration-300 cursor-pointer min-w-[136px] sm:min-h-[56px] min-h-[45px]"
                         >
                           Next
                         </button>
@@ -840,27 +828,27 @@ export function BookingCheckoutClient({
                     </div>
                   ) : completedSteps.has(3) ? (
                     // COMPLETED / COLLAPSED STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white px-6 py-4.5 pt-5 flex items-center justify-between shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                    <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div className="min-w-0 pr-4">
-                        <h3 className="text-sm sm:text-base font-medium text-[#1f1f1f]">
+                        <h3 className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
                           Write a message to the host
                         </h3>
-                        <p className="text-xs text-zinc-500 mt-0.5 font-medium truncate max-w-sm">
+                        <p className="text-base text-[#1f1f1f] mt-0.5 font-normal mt-1">
                           {hostMessage ? `"${hostMessage}"` : `“Hi ${hostName}, I'm going to visit your place.”`}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setActiveStep(3)}
-                        className="rounded-full border border-zinc-300 bg-white px-5 py-1.5 text-xs sm:text-sm font-semibold text-zinc-800 hover:border-zinc-900 hover:bg-zinc-50 transition-colors cursor-pointer shrink-0"
+                        className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
                         Change
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <span className="text-sm sm:text-base font-semibold text-zinc-700">
+                    <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
+                      <span className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
                         Write a message to the host
                       </span>
                     </div>
@@ -870,18 +858,19 @@ export function BookingCheckoutClient({
                 {/* ────────────────────────────────────────────────────────── */}
                 {/* STEP 4: Review your request */}
                 {/* ────────────────────────────────────────────────────────── */}
-                <div className="relative">
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-800 shadow-2xs">
+                <div className="relative isolate">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_2px_4px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"><div className="size-full rounded-[10px] bg-white [-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)] sm:[mask-image:radial-gradient(circle_30px_at_50%_0,transparent_29px,#000_30px)]" /></div>
+                  <div className={activeStep === 4 ? "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-[#E9EBFF] text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold" : "absolute -top-5 left-1/2 z-20 flex size-10 -translate-x-1/2 items-center justify-center rounded-full bg-white text-base font-medium text-[#1F1F1F] shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:-top-6 sm:size-12 sm:text-lg lg:text-sm lg:font-semibold"}>
                     4
                   </div>
 
                   {activeStep === 4 ? (
                     // OPEN / ACTIVE STATE
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-6 pt-7 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <h2 className="text-base sm:text-lg font-bold text-zinc-900 mb-3 text-center">
+                    <div className="relative z-10 px-4 sm:pb-8 pb-6 pt-10 sm:px-10">
+                      <h2 className="text-lg sm:text-xl font-medium text-[#1f1f1f] mb-3 text-center">
                         Review your request
                       </h2>
-                      <p className="text-xs sm:text-sm text-zinc-600 text-center max-w-md mx-auto leading-relaxed">
+                      <p className="text-base text-[#1f1f1f] mt-1 font-normal text-left leading-relaxed">
                         {listing.instantBook
                           ? "Your reservation will be confirmed instantly. You'll be charged now."
                           : "The host has 24 hours to confirm your booking. You'll be charged after the request is accepted."}
@@ -900,36 +889,46 @@ export function BookingCheckoutClient({
                       )}
 
                       {bookingSuccess && (
-                        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm font-bold text-emerald-800 text-center animate-in fade-in">
-                          🎉 Reservation request submitted successfully! Redirecting to your bookings...
+                        <div role="status" className="mt-5 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-left animate-in fade-in">
+                          <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm">
+                            <svg className="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.25"><path d="m3.25 8.25 2.8 2.8 6.7-6.7" /></svg>
+                          </span>
+                          <div className="min-w-0 pt-0.5">
+                            <p className="text-sm font-semibold text-emerald-950">Reservation request submitted</p>
+                            <p className="mt-0.5 text-xs leading-5 text-emerald-800">Taking you to your bookings now.</p>
+                          </div>
                         </div>
                       )}
 
-                      {/* Pay CTA */}
-                      <button
-                        type="button"
-                        onClick={handleFinalBooking}
-                        disabled={isSubmitting || bookingSuccess || isQuoteLoading || !quote || Boolean(quoteError)}
-                        className="w-full rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-3.5 text-sm sm:text-base transition-all shadow-md mt-6 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Processing payment...</span>
-                          </>
-                        ) : (
-                          <span>Pay</span>
-                        )}
-                      </button>
+                      {!bookingSuccess && (
+                        <>
+                          {/* Pay CTA */}
+                          <button
+                            type="button"
+                            onClick={handleFinalBooking}
+                            disabled={isSubmitting || isQuoteLoading || !quote || Boolean(quoteError)}
+                            className="w-full rounded-full bg-[#1f1f1f] hover:bg-[#FCDF9C] text-white hover:text-[#1f1f1f] border border-[#1f1f1f] font-semibold py-3.5 text-base sm:text-[18px] transition-all sm:mt-6 mt-5 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Processing payment...</span>
+                              </>
+                            ) : (
+                              <span>Pay</span>
+                            )}
+                          </button>
 
-                      <p className="text-[11px] text-zinc-400 mt-4 text-center leading-relaxed">
-                        By selecting the button above, I agree to the Host&apos;s House Rules, Ground Rules for Guests, and Homyz&apos;s Rebooking and Refund Policy.
-                      </p>
+                          <p className="text-sm text-[#727272] mt-4 text-center leading-relaxed">
+                            By selecting the button above, I agree to the Host&apos;s House Rules, Ground Rules for Guests, and Homyz&apos;s Rebooking and Refund Policy.
+                          </p>
+                        </>
+                      )}
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
-                    <div className="rounded-[30px] border border-zinc-200 bg-white p-4.5 pt-5 text-center shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-                      <span className="text-sm sm:text-base font-semibold text-zinc-700">
+                    <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
+                      <span className="text-lg sm:text-xl sm:font-medium font-normal text-[#1F1F1F]">
                         Review your request
                       </span>
                     </div>
@@ -940,29 +939,31 @@ export function BookingCheckoutClient({
               {/* ======================================================== */}
               {/* RIGHT COLUMN: STICKY PROPERTY & PRICE SUMMARY (lg:col-span-5) */}
               {/* ======================================================== */}
-              <div className="lg:sticky lg:top-24">
-                <div className="rounded-[30px] border border-zinc-200 bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-8">
+              <div className="order-1 lg:order-2 lg:sticky lg:top-24">
+                <div className="sm:rounded-[30px] rounded-[10px] border border-zinc-200 bg-white p-6 shadow-[0px_2px_4px_0px_#00000040,2px_0px_4px_0px_#00000040] sm:p-8">
                   {/* Property Header */}
                   <div>
                     <h3 className="text-xl font-medium text-[#1f1f1f]">
                       {propertyCategory} – {locationLabel}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-zinc-600 mt-1">
-                      <span className="flex items-center gap-1 font-semibold text-zinc-800">
-                        ★ {typeof listing.rating === "number" && listing.rating > 0 ? listing.rating.toFixed(2) : "4.96"}
-                        <span className="text-zinc-500 font-normal">
+                    <div className="flex items-center gap-2 text-sm text-[#1f1f1f] mt-1">
+                      <span className="flex items-center gap-2 font-normal text-[#1f1f1f]">
+                        <Image src="/images/icons/star-fill.svg" alt="star-fill.svg" width={20} height={20} className="sm:w-5 sm:h-5 w-4 h-4" /> {typeof listing.rating === "number" && listing.rating > 0 ? listing.rating.toFixed(2) : "4.96"}
+                        <span>
                           ({listing.reviewsCount || "xx"} review)
                         </span>
                       </span>
                       <span>|</span>
-                      <span className="font-semibold text-zinc-800 flex items-center gap-1">
-                        <span>🌿</span> Guest favorite
+                      <span className="font-normal text-zinc-800 flex items-center sm:gap-1">
+                        <Image src="/images/icons/leaves-fill-left.svg" alt="" width={15} height={23} className="h-4 w-auto" aria-hidden="true" />
+                        <span>Guest favorite</span>
+                        <Image src="/images/icons/leaves-fill-right.svg" alt="" width={15} height={23} className="h-4 w-auto" aria-hidden="true" />
                       </span>
                     </div>
                   </div>
 
                   {/* Property Photo */}
-                  <div className="relative mt-4 h-48 sm:h-52 w-full rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-100 shadow-2xs">
+                  <div className="relative mt-4 h-48 sm:h-52 w-full sm:rounded-2xl rounded-[10px] overflow-hidden bg-zinc-100 border border-zinc-100 shadow-2xs">
                     {listing.photos && listing.photos.length > 0 ? (
                       <Image
                         src={listing.photos[0]}
@@ -979,16 +980,16 @@ export function BookingCheckoutClient({
                   </div>
 
                   {/* Free cancellation */}
-                  <div className="mt-5 pb-5 border-b border-zinc-200/80">
-                    <h4 className="text-sm font-normal text-zinc-900">
+                  <div className="mt-5 pb-5 border-b border-[#727272]">
+                    <h4 className="text-base font-semibold text-[#1f1f1f]">
                       Free cancellation
                     </h4>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-sm font-normal text-[#727272] mt-1">
                       Cancel before {formatCancellationCutoff(checkIn)} for a full refund.{" "}
                       <button
                         type="button"
                         onClick={() => setIsPolicyModalOpen(true)}
-                        className="underline font-medium text-zinc-800 hover:text-zinc-950 cursor-pointer"
+                        className="underline font-normal text-[#1f1f1f] hover:text-[#727272] cursor-pointer"
                       >
                         Full policy
                       </button>
@@ -996,31 +997,31 @@ export function BookingCheckoutClient({
                   </div>
 
                   {/* Dates Row */}
-                  <div className="py-4 border-b border-zinc-200/80 flex items-center justify-between">
+                  <div className="sm:py-6 py-3.75 border-b border-[#727272] flex items-center justify-between">
                     <div>
                       <span className="block text-base font-semibold text-[#1f1f1f]">
                         Dates
                       </span>
-                      <span className="text-xs text-zinc-500 mt-0.5 block">
+                      <span className="text-sm text-[#727272] mt-0.5 block">
                         {formatDateRange(checkIn, checkOut)}
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setIsDatesModalOpen(true)}
-                      className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-semibold text-zinc-800 hover:border-zinc-900 hover:bg-zinc-50 transition-colors cursor-pointer"
+                      className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px]"
                     >
                       Change
                     </button>
                   </div>
 
                   {/* Guests Row */}
-                  <div className="py-4 border-b border-zinc-200/80 flex items-center justify-between">
+                  <div className="sm:py-6 py-3.75 border-b border-[#727272] flex items-center justify-between">
                     <div>
                       <span className="block text-base font-semibold text-[#1f1f1f]">
                         Guests
                       </span>
-                      <span className="text-xs text-zinc-500 mt-0.5 block">
+                      <span className="text-sm text-[#727272] mt-0.5 block">
                         {guestsCount} adult{guestsCount > 1 ? "s" : ""}
                         {petsCount > 0 ? `, ${petsCount} pet${petsCount > 1 ? "s" : ""}` : ""}
                       </span>
@@ -1028,14 +1029,14 @@ export function BookingCheckoutClient({
                     <button
                       type="button"
                       onClick={() => setIsGuestsModalOpen(true)}
-                      className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-semibold text-zinc-800 hover:border-zinc-900 hover:bg-zinc-50 transition-colors cursor-pointer"
+                      className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px]"
                     >
                       Change
                     </button>
                   </div>
 
                   {/* Price details */}
-                  <div className="pt-5 pb-5 border-b border-zinc-200/80 space-y-2.5">
+                  <div className="pt-5 pb-5 border-b border-[#727272] space-y-2.5">
                     <h4 className="text-base font-semibold text-[#1f1f1f] mb-1">
                       Price details
                     </h4>
@@ -1124,7 +1125,7 @@ export function BookingCheckoutClient({
 
                   {/* Total Row */}
                   <div className="pt-4 flex items-center justify-between">
-                    <span className="text-sm sm:text-base font-medium text-[#1f1f1f]">
+                    <span className="text-sm sm:text-base font-semibold text-[#1f1f1f]">
                       Total <span className="underline decoration-zinc-400">{currencySymbol}</span>
                     </span>
                     <span className="text-sm sm:text-base font-bold text-zinc-950" aria-live="polite">
@@ -1132,11 +1133,11 @@ export function BookingCheckoutClient({
                     </span>
                   </div>
 
-                  <div className="mt-2 text-right">
+                  <div className="mt-5 text-left">
                     <button
                       type="button"
                       onClick={() => setIsBreakdownModalOpen(true)}
-                      className="text-xs font-semibold text-zinc-800 underline hover:text-zinc-950 transition-colors cursor-pointer"
+                      className="text-base font-semibold text-[#1f1f1f] underline hover:text-[#727272] transition-colors cursor-pointer"
                     >
                       Price breakdown
                     </button>
@@ -1162,8 +1163,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Change dates</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Change dates</h3>
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
@@ -1176,7 +1177,7 @@ export function BookingCheckoutClient({
             <div className="py-5 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                     Check-in date
                   </label>
                   <input
@@ -1184,11 +1185,11 @@ export function BookingCheckoutClient({
                     value={checkIn}
                     min={dateKey(new Date())}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 p-2.5 text-sm font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-2">
                     Check-out date
                   </label>
                   <input
@@ -1196,20 +1197,20 @@ export function BookingCheckoutClient({
                     value={checkOut}
                     min={checkIn || dateKey(new Date())}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 p-2.5 text-sm font-semibold text-zinc-900 focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-[8px] border border-[#727272] p-2.5 text-sm font-semibold text-[#1f1f1f] focus:border-zinc-900 focus:outline-none sm:min-h-[56px] min-h-[45px]"
                   />
                 </div>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#727272]">
                 Minimum stay: {listing.minNights || 1} {listing.minNights === 1 ? "night" : "nights"}. Price and availability update automatically.
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Apply dates
               </button>
@@ -1230,8 +1231,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Guests</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Guests</h3>
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
@@ -1241,9 +1242,9 @@ export function BookingCheckoutClient({
               </button>
             </div>
 
-            <div className="py-5 space-y-5 divide-y divide-zinc-100">
+            <div className="divide-y divide-[#727272]">
               {/* Adults */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between py-2">
                 <div>
                   <h4 className="text-sm font-normal text-zinc-900">Adults</h4>
                   <p className="text-xs text-zinc-500">Age 13+</p>
@@ -1272,7 +1273,7 @@ export function BookingCheckoutClient({
               </div>
 
               {/* Pets */}
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between py-2">
                 <div>
                   <h4 className="text-sm font-normal text-zinc-900">Pets</h4>
                   <p className="text-xs text-zinc-500">Service animals welcome</p>
@@ -1301,11 +1302,11 @@ export function BookingCheckoutClient({
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -1326,8 +1327,8 @@ export function BookingCheckoutClient({
             className="w-full max-w-lg rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Cancellation policy</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[$727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Cancellation policy</h3>
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
@@ -1384,12 +1385,12 @@ export function BookingCheckoutClient({
             className="w-full max-w-md rounded-[30px] bg-white p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-zinc-900">Price breakdown</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-[#727272]">
+              <h3 className="text-lg font-medium text-[#1f1f1f]">Price breakdown</h3>
               <button
                 type="button"
                 onClick={() => setIsBreakdownModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-[#1f1f1f] cursor-pointer"
               >
                 ✕
               </button>
@@ -1450,17 +1451,17 @@ export function BookingCheckoutClient({
                 </span>
               </div>
 
-              <div className="pt-3 border-t border-zinc-200 flex justify-between font-bold text-base text-zinc-950">
+              <div className="pt-3 border-t border-[#727272] flex justify-between font-semibold text-base text-[#1f1f1f]">
                 <span>Total ({currencySymbol})</span>
                 <span>{checkoutTotalLabel}</span>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-zinc-100">
+            <div className="flex justify-end pt-4 border-t border-[#727272]">
               <button
                 type="button"
                 onClick={() => setIsBreakdownModalOpen(false)}
-                className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 Done
               </button>
