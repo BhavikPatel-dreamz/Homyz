@@ -42,7 +42,7 @@ export function LogoutButton({
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50 ${className}`}
+          className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm font-medium text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50 ${className}`}
         >
           {isLoggingOut ? (
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

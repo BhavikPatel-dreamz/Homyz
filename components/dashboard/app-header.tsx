@@ -177,14 +177,14 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               isHostRoute ? (
                 <Link
                   href="/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
                   href="/host/listings"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -194,14 +194,14 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg: text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host") || "Become a host"}
               </Link>
@@ -235,9 +235,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               <Image src="/images/icons/menu-icon.svg" alt="" width={18} height={16} className="h-4 w-[18px] md:h-[14px] md:w-4" />
             </button>
 
-            {/* Dropdown Menu Container (Positioned below header, fully scrollable to avoid cut-off) */}
+            {/* Logged-in menus keep their account details and sign-out action visible; only their links scroll. */}
             {menuOpen && !sessionLoading && (
-              <div className="visible-scrollbar absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px]">
+              <div className={`absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px] ${user ? "flex flex-col overflow-hidden" : "visible-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain"}`}>
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
@@ -335,8 +335,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   /* ------------------------------------------------------------- */
                   /* REGULAR USER / GUEST MENU (100% Matches Reference Image 1)   */
                   /* ------------------------------------------------------------- */
-                  <div className="space-y-1">
-                    <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
+                  <div className="flex min-h-0 flex-1 flex-col">
+                    <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
@@ -346,6 +346,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       </div>
                     </div>
 
+                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                      <div className="space-y-1">
                     {/* Group 1: User Navigation with Icons matching Image 1 */}
                     <div className="py-0.5 space-y-1">
                       {/* Wishlist */}
@@ -461,8 +463,11 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                     <div className="my-1 border-t border-zinc-200/80" />
 
+                      </div>
+                    </div>
+
                     {/* Group 4: Log out matching Image 1 */}
-                    <div className="pt-0.5">
+                    <div className="shrink-0 border-t border-zinc-200/80 pt-1.5 mt-1">
                       <button
                         type="button"
                         onClick={() => {
@@ -479,8 +484,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   /* ------------------------------------------------------------- */
                   /* HOST & ADMIN MENU ("host show all")                           */
                   /* ------------------------------------------------------------- */
-                  <div className="space-y-1">
-                    <div className="border-b border-zinc-200/80 px-3.5 py-3 mb-1">
+                  <div className="flex min-h-0 flex-1 flex-col">
+                    <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
@@ -490,7 +495,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       </div>
                     </div>
 
-                    <div className="py-1">
+                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                      <div className="py-1">
                       {hostNavItems.map((item) => (
                         <Link
                           key={item.href}
@@ -509,9 +515,10 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                           <span>{item.label}</span>
                         </Link>
                       ))}
+                      </div>
                     </div>
 
-                    <div className="border-t border-zinc-200/80 pt-2 mt-1 flex flex-col gap-1">
+                    <div className="mt-1 shrink-0 border-t border-zinc-200/80 pt-2 flex flex-col gap-1">
                       <button
                         type="button"
                         onClick={() => {
