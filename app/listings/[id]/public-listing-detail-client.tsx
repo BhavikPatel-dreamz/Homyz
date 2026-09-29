@@ -22,9 +22,9 @@ import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
-// Reviews and the map are below the primary booking decision content. Keep
-// their interactive code out of the initial route bundle; both render a stable
-// placeholder until their client chunks are ready.
+// Reviews and the map sit below the booking decision. Split them out of the
+// initial route bundle, and keep a stable placeholder until each chunk loads.
+// The map is server-rendered: RealMap only attaches Leaflet in the browser.
 const ReviewList = dynamic(
   () => import("@/components/reviews").then((module) => module.ReviewList),
   {
@@ -41,7 +41,6 @@ const ReviewList = dynamic(
 const RealMap = dynamic(
   () => import("@/components/ui/real-map").then((module) => module.RealMap),
   {
-    ssr: false,
     loading: () => <div className="h-full w-full animate-pulse bg-zinc-100" aria-label="Loading map" />,
   },
 );
