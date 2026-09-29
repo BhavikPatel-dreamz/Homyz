@@ -166,6 +166,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
               </span>
             )}
           </div>
+        </div>
 
         {/* Category Filter Pills (if multiple categories available) */}
         {availableCategories.length > 0 && (
