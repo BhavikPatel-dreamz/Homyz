@@ -32,7 +32,7 @@ export interface HomyzAuthFormProps {
 export function HomyzAuthForm({
   initialMode = "login",
   initialInputMethod,
-  callbackUrl = "/dashboard",
+  callbackUrl = "/",
   initialError,
   providers = {},
 }: HomyzAuthFormProps) {
@@ -68,7 +68,7 @@ export function HomyzAuthForm({
     if (inputMethod) {
       params.set("method", inputMethod);
     }
-    if (callbackUrl && callbackUrl !== "/dashboard") {
+    if (callbackUrl && callbackUrl !== "/") {
       params.set("callbackUrl", callbackUrl);
     }
     if (referralCode) {
@@ -123,7 +123,20 @@ export function HomyzAuthForm({
   const maxPhoneLen = selectedPhoneCountry?.maxLength || 15;
   const isPhoneValid = cleanPhoneDigits.length >= minPhoneLen && cleanPhoneDigits.length <= maxPhoneLen;
 
-  const targetCallbackUrl = getSafeCallbackUrl(callbackUrl);
+  const targetCallbackUrl = getSafeCallbackUrl(callbackUrl, "/");
+
+  const getPostAuthDestination = (session: Awaited<ReturnType<typeof getSession>>) => {
+    if (session?.user?.role === "ADMIN" || session?.user?.adminRoleSlug) {
+      return "/admin";
+    }
+    if (session?.user?.role === "HOST" && (targetCallbackUrl === "/" || targetCallbackUrl === "/dashboard")) {
+      return "/dashboard";
+    }
+    // A guest should never receive the legacy dashboard landing route after
+    // authentication. Preserve any other explicit callback (booking, listing,
+    // invitation, etc.) so their original intent is not lost.
+    return targetCallbackUrl === "/dashboard" ? "/" : targetCallbackUrl;
+  };
 
 
   async function handleSocialLogin(providerName: SocialProvider) {
@@ -137,14 +150,14 @@ export function HomyzAuthForm({
           redirect: false,
         });
         if (fallbackRes?.ok) {
-          window.location.href = targetCallbackUrl;
+          window.location.href = getPostAuthDestination(await getSession());
           return;
         }
         setError(`Failed to authenticate with ${providerName}.`);
       } else if (res?.url) {
         window.location.href = getSafeCallbackUrl(res.url, targetCallbackUrl);
       } else {
-        window.location.href = targetCallbackUrl;
+        window.location.href = getPostAuthDestination(await getSession());
       }
     } catch {
       window.location.href = targetCallbackUrl;
@@ -234,7 +247,7 @@ export function HomyzAuthForm({
           return;
         }
 
-        window.location.href = targetCallbackUrl;
+        window.location.href = getPostAuthDestination(await getSession());
       });
       return;
     }
@@ -266,12 +279,10 @@ export function HomyzAuthForm({
       // Check session to determine intelligent redirection
       try {
         const session = await getSession();
-        if (session?.user?.role === "ADMIN" || session?.user?.adminRoleSlug) {
-          window.location.href = "/admin";
-          return;
-        }
+        window.location.href = getPostAuthDestination(session);
+        return;
       } catch {}
-      window.location.href = targetCallbackUrl;
+      window.location.href = targetCallbackUrl === "/dashboard" ? "/" : targetCallbackUrl;
     });
   }
 
@@ -369,8 +380,8 @@ export function HomyzAuthForm({
             return;
           }
 
-          setSuccess("Verification successful! Redirecting to dashboard...");
-          window.location.href = targetCallbackUrl;
+          setSuccess("Verification successful! Redirecting...");
+          window.location.href = getPostAuthDestination(await getSession());
         } catch {
           setError("Verification failed. Please try again.");
         }

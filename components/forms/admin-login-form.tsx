@@ -74,7 +74,7 @@ export function AdminLoginForm() {
       let destination = callbackUrl;
       if (!isAdmin) {
         if (!destination || destination === "/admin" || destination.startsWith("/admin/")) {
-          destination = "/dashboard";
+          destination = "/";
         }
       }
 

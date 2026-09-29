@@ -329,8 +329,8 @@ export function ProfileClient({
                         priority
                       />
                     ) : (
-                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
-                        <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">
+                        <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
                       </div>

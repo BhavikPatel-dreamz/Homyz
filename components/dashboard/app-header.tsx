@@ -376,9 +376,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                       {/* Messages */}
                       <Link
-                        href="/host/messages"
+                        href="/profile/tab/support"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/host/messages" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile/tab/support" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
                           }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
@@ -405,6 +405,17 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                     {/* Group 2: Account setting & Help centre */}
                     <div className="py-0.5 space-y-1">
+                      <Link
+                        href="/profile/tab/notifications"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.startsWith("/profile/tab/notifications") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"}`}
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Notifications</span>
+                      </Link>
+
                       {/* Account setting (alias href="/profile-management") */}
                       <Link
                         href="/profile/tab/account_settings"
@@ -417,6 +428,20 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         </span>
                         <span>Account setting</span>
                       </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setLangModalOpen(true);
+                        }}
+                        className="flex w-full items-center gap-3.5 px-3 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] transition-colors hover:bg-white rounded-2xl"
+                      >
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/translate-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                        </span>
+                        <span>Languages &amp; currency</span>
+                      </button>
 
                       {/* Help centre */}
                       <Link
@@ -436,6 +461,16 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                     {/* Group 3: Plain text links (Refer a Host, Find a co-Host, Gift Cards) */}
                     <div className="py-0.5 space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setBecomeHostModalOpen(true);
+                        }}
+                        className="block w-full px-3.5 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        Become a host
+                      </button>
                       <Link
                         href="/host/refer"
                         onClick={() => setMenuOpen(false)}
@@ -449,13 +484,6 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
                       >
                         Find a co-Host
-                      </Link>
-                      <Link
-                        href="/giftcards"
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                      >
-                        Gift Cards
                       </Link>
                     </div>
 

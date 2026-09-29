@@ -15,7 +15,7 @@ export default async function AdminLoginPage() {
     if (user.role === "ADMIN" || user.adminRoleSlug) {
       redirect("/admin");
     }
-    redirect("/dashboard");
+    redirect("/");
   }
 
   return (
