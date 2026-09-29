@@ -24,6 +24,7 @@ export const CACHE_KEYS = {
 
   /** Guest dashboard stats (trips, reviews count) — short TTL */
   USER_STATS: (userId: string) => `${NS}:user:${userId}:stats`,
+  PERSONAL_INFO: (userId: string) => `${NS}:user:${userId}:personal-info`,
 
   /** Listing details by listing ID */
   LISTING: (listingId: string) => `${NS}:listing:${listingId}`,
@@ -43,6 +44,18 @@ export const CACHE_KEYS = {
   BOOKING: (bookingId: string) => `${NS}:booking:${bookingId}:v2`,
   BOOKINGS_USER: (userId: string, skip: number = 0, take: number = 20) => `${NS}:bookings:user:${userId}:s${skip}:t${take}`,
   BOOKINGS_HOST: (hostId: string, page: number = 1) => `${NS}:bookings:host:${hostId}:p${page}`,
+
+  /** Versioned, user-scoped notification pages. */
+  NOTIFICATIONS_VER: (userId: string) => `${NS}:notifications:user:${userId}:ver`,
+  NOTIFICATIONS_PAGE: (userId: string, ver: number, filterHash: string) =>
+    `${NS}:notifications:user:${userId}:v${ver}:${filterHash}`,
+
+  /** Versioned wishlist cards for fast repeat dashboard visits. */
+  FAVORITES_VER: (userId: string) => `${NS}:favorites:user:${userId}:ver`,
+  FAVORITE_IDS: (userId: string, ver: number) =>
+    `${NS}:favorites:user:${userId}:v${ver}:ids`,
+  FAVORITES_CARDS: (userId: string, ver: number, skip: number, take: number) =>
+    `${NS}:favorites:user:${userId}:v${ver}:cards:s${skip}:t${take}`,
 
   /** Admin & Host Dashboards */
   ADMIN_STATS: () => `${NS}:admin:stats:global`,

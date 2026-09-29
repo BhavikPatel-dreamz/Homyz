@@ -84,7 +84,7 @@ export const getAuthSession = cache(async (): Promise<Session | null> => {
  * Resolve the current web session into a normalized AuthUser, or null.
  * Enforces real-time database status checks so suspended accounts lose access immediately.
  */
-export async function getSessionUser(): Promise<AuthUser | null> {
+export const getSessionUser = cache(async (): Promise<AuthUser | null> => {
   const session = await getAuthSession();
 
   if (!session?.user?.id) return null;
@@ -125,4 +125,4 @@ export async function getSessionUser(): Promise<AuthUser | null> {
       missingProfileFields: session.user.missingProfileFields,
     };
   }
-}
+});

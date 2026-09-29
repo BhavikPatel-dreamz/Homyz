@@ -813,6 +813,8 @@ type PublicListingDetail = PublicListingDTO & {
     createdAt: Date;
     publicProfile: Record<string, unknown> | null;
     isSuperhost: boolean;
+    rating?: number | null;
+    reviewsCount?: number;
   };
 };
 
@@ -840,7 +842,7 @@ async function getPublicListingDetail(
 
   // These independent aggregates are latency-bound against the database, so
   // run them together rather than making the public page wait for each one.
-  const [reviewSummary, confirmedBookingCount, bookingGroups] = await Promise.all([
+  const [reviewSummary, confirmedBookingCount, bookingGroups, hostReviewSummary] = await Promise.all([
     prisma.review.aggregate({
       where: { listingId: listing.id, status: "PUBLISHED" },
       _avg: { rating: true },
@@ -859,6 +861,16 @@ async function getPublicListingDetail(
           _count: { _all: true },
         })
       : Promise.resolve([]),
+    listing.hostId
+      ? prisma.review.aggregate({
+          where: {
+            listing: { hostId: listing.hostId },
+            status: "PUBLISHED",
+          },
+          _avg: { rating: true },
+          _count: { _all: true },
+        })
+      : Promise.resolve({ _avg: { rating: null }, _count: { _all: 0 } }),
   ]);
   const propertyRating = roundRating(reviewSummary._avg.rating);
   const propertyReviewCount = reviewSummary._count._all;
@@ -902,6 +914,8 @@ async function getPublicListingDetail(
           createdAt: listing.host.createdAt,
           publicProfile: toPublicHostProfile(listing.host.publicProfile),
           isSuperhost,
+          rating: roundRating(hostReviewSummary._avg.rating),
+          reviewsCount: hostReviewSummary._count._all,
         }
       : undefined,
   };
@@ -930,19 +944,7 @@ async function getCachedPublicListingDetail(
   );
 }
 
-async function getPublicListingById(id: string): Promise<
-  PublicListingDTO & {
-    host?: {
-      id: string;
-      name: string | null;
-      image: string | null;
-      createdAt: Date;
-      publicProfile: Record<string, unknown> | null;
-      isSuperhost: boolean;
-    };
-    isGuestFavorite: boolean;
-  }
-> {
+async function getPublicListingById(id: string): Promise<PublicListingDetail> {
   return getCachedPublicListingDetail(`id:${id}`, { id });
 }
 

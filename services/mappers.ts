@@ -396,9 +396,41 @@ export function toAdminListingDTO(l: Listing) {
 }
 export type AdminListingDTO = ReturnType<typeof toAdminListingDTO>;
 
-export function toBookingDTO(
-  b: Booking & { listing?: Listing | null; user?: User | null },
-) {
+type BookingDTOInput = Pick<
+  Booking,
+  | "id"
+  | "userId"
+  | "listingId"
+  | "status"
+  | "startDate"
+  | "endDate"
+  | "guests"
+  | "totalPrice"
+  | "nightlyPrice"
+  | "cleaningFee"
+  | "currency"
+  | "priceBreakdown"
+  | "cancellationPolicy"
+  | "isNonRefundable"
+  | "createdAt"
+> & {
+  listing?: Pick<
+    Listing,
+    | "id"
+    | "customSlug"
+    | "title"
+    | "photos"
+    | "description"
+    | "price"
+    | "city"
+    | "country"
+    | "checkInStart"
+    | "checkOutTime"
+  > | null;
+  user?: Pick<User, "id" | "name" | "email"> | null;
+};
+
+export function toBookingDTO(b: BookingDTOInput) {
   return {
     id: b.id,
     userId: b.userId,

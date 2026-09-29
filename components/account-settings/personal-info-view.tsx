@@ -855,13 +855,6 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   </div>
                 ) : data.identityStatus === "PENDING" ? (
                   <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 text-amber-600 font-medium">
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-                        <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
-                      </svg>
-                      Pending review
-                    </span>
                     {data.identityDocument?.fileName && (
                       <p className="text-xs text-zinc-500">
                         Uploaded: <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>

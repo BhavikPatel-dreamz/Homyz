@@ -283,6 +283,30 @@ export function ListingCard({
   const dateRangeString =
     formatDateRange(checkIn, checkOut) || (listing as any).alternativeDates || null;
 
+  // Nights calculation (defaults to 2 nights like the Airbnb reference image)
+  const nights = (() => {
+    if (checkIn && checkOut) {
+      const inDate = new Date(checkIn);
+      const outDate = new Date(checkOut);
+      const diff = Math.round((outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff > 0) return diff;
+    }
+    return 2;
+  })();
+
+  const totalPrice = (discountedPrice ?? basePrice) * nights;
+
+  const hasFreeCancellation =
+    (listing as any).cancellationPolicy !== "STRICT" &&
+    (listing as any).cancellationPolicy !== "NON_REFUNDABLE";
+
+  const formattedRating =
+    numericRating !== null
+      ? Number.isInteger(numericRating)
+        ? `${numericRating}.0`
+        : numericRating.toFixed(2).replace(/0$/, "")
+      : null;
+
   // Navigation target — prefer customSlug when available
   // Compatibility static contract reference: href={`/listings/${listing.id}`}
   const slug = (listing as { customSlug?: string | null }).customSlug;
@@ -544,24 +568,54 @@ export function ListingCard({
       {/* ── Search-results card body ── */}
       {isSearchGridCard ? (
         <div className="space-y-1.5 px-3.5 py-3 text-left sm:px-4 sm:py-3.5">
-          <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
-            {primaryHeading}
-          </h3>
-          <p className="truncate text-xs leading-4 text-[#1F1F1F]">
-            {dateRangeString || secondarySubtitle || specsText}
-          </p>
-          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F]">
-            <span className="truncate">{formattedDiscountedPrice ?? formattedBasePrice} for {dateRangeString ? "selected nights" : "a night"}</span>
-            {numericRating !== null && (
-              <>
-                <span className="text-[#727272]">|</span>
-                <span className="inline-flex shrink-0 items-center gap-1 font-medium">
-                  <svg aria-hidden="true" className="size-3 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                  {numericRating.toFixed(1)}
-                </span>
-              </>
+          {/* Row 1: Title & Rating */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950 flex-1 min-w-0">
+              {primaryHeading}
+            </h3>
+            {numericRating !== null ? (
+              <div className="flex items-center gap-1 text-xs font-medium text-[#1F1F1F] shrink-0 ml-1">
+                <svg aria-hidden="true" className="size-3 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span>{formattedRating}</span>
+                {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
+              </div>
+            ) : (
+              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ New</span>
             )}
           </div>
+
+          {/* Row 2: Subtitle / descriptive title */}
+          {secondarySubtitle && (
+            <p className="truncate text-xs leading-4 text-[#727272]">
+              {secondarySubtitle}
+            </p>
+          )}
+
+          {/* Row 3: Room breakdown / specs */}
+          <p className="truncate text-xs leading-4 text-[#727272]">
+            {specsText}
+          </p>
+
+          {/* Row 4: Price & Nights */}
+          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5">
+            <span className="font-semibold underline">
+              {formatPrice(totalPrice, currency)}
+            </span>
+            <span className="text-[#727272]">
+              for {nights} {nights === 1 ? "night" : "nights"}
+            </span>
+          </div>
+
+          {/* Row 5: Free cancellation badge */}
+          {hasFreeCancellation && (
+            <div className="pt-0.5 flex items-center">
+              <span className="inline-block text-[11px] font-normal text-[#727272] bg-zinc-100 px-2 py-0.5 rounded">
+                Free cancellation
+              </span>
+            </div>
+          )}
         </div>
       ) : (
       <div className="pt-3 pb-1 space-y-0.5 text-left">

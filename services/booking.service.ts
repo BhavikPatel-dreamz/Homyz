@@ -10,7 +10,7 @@ import type { CreateBookingInput } from "@/lib/validation/booking";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, ListingStatus, NotificationType } from "@/generated/prisma/enums";
+import { BookingStatus, ListingStatus, NotificationType, Role } from "@/generated/prisma/enums";
 import { notificationService } from "./notification.service";
 import type { Prisma } from "@/generated/prisma/client";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
@@ -20,6 +20,16 @@ import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
 import { calculateBookingPrice, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
 import { getCurrencyForCountry } from "@/lib/currency";
+import {
+  computeBookingStatus,
+  getBookingAvailableActions,
+  type BookingStatusDetails,
+  type BookingAvailableActions,
+} from "@/lib/booking/booking-status";
+import {
+  getAuthoritativePriceBreakdown,
+  type AuthoritativePriceBreakdown,
+} from "@/lib/booking/booking-price";
 
 export type BookingQuote = {
   listingId: string;
@@ -550,7 +560,38 @@ async function listForUser(
           where,
           skip: opts.skip,
           take: opts.take,
-          include: { listing: true, user: true },
+          select: {
+            id: true,
+            userId: true,
+            listingId: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            guests: true,
+            totalPrice: true,
+            nightlyPrice: true,
+            cleaningFee: true,
+            currency: true,
+            priceBreakdown: true,
+            cancellationPolicy: true,
+            isNonRefundable: true,
+            createdAt: true,
+            listing: {
+              select: {
+                id: true,
+                customSlug: true,
+                title: true,
+                photos: true,
+                description: true,
+                price: true,
+                city: true,
+                country: true,
+                checkInStart: true,
+                checkOutTime: true,
+              },
+            },
+            user: { select: { id: true, name: true, email: true } },
+          },
           orderBy: { createdAt: "desc" },
         }),
         prisma.booking.count({ where }),
@@ -882,12 +923,445 @@ async function listForAdminDashboard() {
   return { bookings, totalCount, stats };
 }
 
+export type BookingDetailsData = {
+  booking: {
+    id: string;
+    userId: string;
+    listingId: string;
+    status: BookingStatus;
+    startDate: Date;
+    endDate: Date;
+    guests: number;
+    totalPrice: number | null;
+    nightlyPrice: number | null;
+    cleaningFee: number | null;
+    currency: string;
+    priceBreakdown: unknown;
+    cancellationPolicy: string | null;
+    isNonRefundable: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  listing: {
+    id: string;
+    customSlug: string | null;
+    title: string;
+    description: string;
+    photos: string[];
+    price: number;
+    propertyType: string | null;
+    placeCategory: string | null;
+    listingType: string | null;
+    bedrooms: number;
+    beds: number;
+    bathrooms: number;
+    guests: number;
+    shortAddress: string | null;
+    address: string | null;
+    apartment: string | null;
+    city: string | null;
+    district: string | null;
+    postalCode: string | null;
+    country: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    showExactLocation: boolean;
+    checkInMethod: string | null;
+    checkInStart: string | null;
+    checkInEnd: string | null;
+    checkOutTime: string | null;
+    directions: string | null;
+    parkingInstructions: string | null;
+    checkInInstructions: string | null;
+    checkOutInstructions: string | null;
+    houseManual: string | null;
+    wifiNetwork: string | null;
+    wifiPassword: string | null;
+    doorCode: string | null;
+    lockboxCode: string | null;
+    houseRules: string[];
+    petsAllowed: boolean | null;
+    maxPets: number | null;
+    petFee: number | null;
+    petRestrictions: string | null;
+    smokingAllowed: boolean | null;
+    smokingLocation: string | null;
+    eventsAllowed: boolean | null;
+    childrenAllowed: boolean | null;
+    infantsAllowed: boolean | null;
+    quietHours: boolean | null;
+    quietHoursStart: string | null;
+    quietHoursEnd: string | null;
+    additionalRules: string | null;
+    safetyDisclosures: string[];
+    safetyEquipment: string[];
+    minNights: number;
+    maxNights: number;
+    host: {
+      id: string;
+      name: string | null;
+      image: string | null;
+      email: string | null;
+      publicProfile: unknown;
+      createdAt: Date;
+    };
+  };
+  guest: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  };
+  review: {
+    hasReview: boolean;
+    reviewId: string | null;
+    reviewRating: number | null;
+  };
+  statusDetails: BookingStatusDetails;
+  actions: BookingAvailableActions;
+  pricing: AuthoritativePriceBreakdown;
+};
+
+async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDetailsData> {
+  const b = await prisma.booking.findUnique({
+    where: { id },
+    include: {
+      listing: {
+        include: {
+          host: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              email: true,
+              publicProfile: true,
+              createdAt: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      reviews: {
+        select: {
+          id: true,
+          rating: true,
+          authorId: true,
+        },
+      },
+    },
+  });
+
+  if (!b) throw AppError.notFound("Booking not found");
+
+  const isGuest = actor.id === b.userId;
+  const isHost = actor.id === b.listing.hostId;
+  const isAdmin = actor.role === Role.ADMIN;
+  if (!isGuest && !isHost && !isAdmin) {
+    throw AppError.forbidden("You do not have permission to view this reservation.");
+  }
+
+  // If stay has completed and DB was PENDING, lazily update to CONFIRMED
+  if (b.status === BookingStatus.PENDING && new Date(b.endDate) < new Date()) {
+    try {
+      await prisma.booking.update({
+        where: { id: b.id },
+        data: { status: BookingStatus.CONFIRMED },
+      });
+      b.status = BookingStatus.CONFIRMED;
+    } catch {
+      // non-fatal
+    }
+  }
+
+  const existingReview = b.reviews.find((r: { id: string; rating: number; authorId: string }) => r.authorId === b.userId) || b.reviews[0] || null;
+  const hasReview = Boolean(existingReview);
+
+  const statusDetails = computeBookingStatus({
+    dbStatus: b.status,
+    startDate: b.startDate,
+    endDate: b.endDate,
+    checkInStart: b.listing.checkInStart,
+    checkOutTime: b.listing.checkOutTime,
+  });
+
+  const actions = getBookingAvailableActions({
+    statusDetails,
+    startDate: b.startDate,
+    endDate: b.endDate,
+    checkInStart: b.listing.checkInStart,
+    checkOutTime: b.listing.checkOutTime,
+    hasReview,
+    reviewId: existingReview?.id,
+    isNonRefundable: b.isNonRefundable,
+  });
+
+  const pricing = getAuthoritativePriceBreakdown(b);
+
+  return {
+    booking: {
+      id: b.id,
+      userId: b.userId,
+      listingId: b.listingId,
+      status: b.status,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      cleaningFee: b.cleaningFee,
+      currency: b.currency,
+      priceBreakdown: b.priceBreakdown,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
+      createdAt: b.createdAt,
+      updatedAt: b.updatedAt,
+    },
+    listing: {
+      id: b.listing.id,
+      customSlug: b.listing.customSlug,
+      title: b.listing.title,
+      description: b.listing.description,
+      photos: b.listing.photos,
+      price: b.listing.price,
+      propertyType: b.listing.propertyType,
+      placeCategory: b.listing.placeCategory,
+      listingType: b.listing.listingType,
+      bedrooms: b.listing.bedrooms,
+      beds: b.listing.beds,
+      bathrooms: b.listing.bathrooms,
+      guests: b.listing.guests,
+      shortAddress: b.listing.shortAddress,
+      address: b.listing.address,
+      apartment: b.listing.apartment,
+      city: b.listing.city,
+      district: b.listing.district,
+      postalCode: b.listing.postalCode,
+      country: b.listing.country,
+      latitude: b.listing.latitude,
+      longitude: b.listing.longitude,
+      showExactLocation: b.listing.showExactLocation,
+      checkInMethod: b.listing.checkInMethod,
+      checkInStart: b.listing.checkInStart,
+      checkInEnd: b.listing.checkInEnd,
+      checkOutTime: b.listing.checkOutTime,
+      directions: b.listing.directions,
+      parkingInstructions: b.listing.parkingInstructions,
+      checkInInstructions: b.listing.checkInInstructions,
+      checkOutInstructions: b.listing.checkOutInstructions,
+      houseManual: b.listing.houseManual,
+      // Time-gated access credentials
+      wifiNetwork: actions.isArrivalInfoReleased ? b.listing.wifiNetwork : null,
+      wifiPassword: actions.isArrivalInfoReleased ? b.listing.wifiPassword : null,
+      doorCode: actions.isArrivalInfoReleased ? b.listing.doorCode : null,
+      lockboxCode: actions.isArrivalInfoReleased ? b.listing.lockboxCode : null,
+      houseRules: b.listing.houseRules,
+      petsAllowed: b.listing.petsAllowed,
+      maxPets: b.listing.maxPets,
+      petFee: b.listing.petFee,
+      petRestrictions: b.listing.petRestrictions,
+      smokingAllowed: b.listing.smokingAllowed,
+      smokingLocation: b.listing.smokingLocation,
+      eventsAllowed: b.listing.eventsAllowed,
+      childrenAllowed: b.listing.childrenAllowed,
+      infantsAllowed: b.listing.infantsAllowed,
+      quietHours: b.listing.quietHours,
+      quietHoursStart: b.listing.quietHoursStart,
+      quietHoursEnd: b.listing.quietHoursEnd,
+      additionalRules: b.listing.additionalRules,
+      safetyDisclosures: b.listing.safetyDisclosures,
+      safetyEquipment: b.listing.safetyEquipment,
+      minNights: b.listing.minNights,
+      maxNights: b.listing.maxNights,
+      host: b.listing.host,
+    },
+    guest: b.user,
+    review: {
+      hasReview,
+      reviewId: existingReview?.id ?? null,
+      reviewRating: existingReview?.rating ?? null,
+    },
+    statusDetails,
+    actions,
+    pricing,
+  };
+}
+
+async function changeBookingReservationPreview(
+  actor: AuthUser,
+  id: string,
+  input: { startDate: string | Date; endDate: string | Date; guests?: number },
+): Promise<{
+  available: boolean;
+  reason?: string;
+  oldTotal: number;
+  newTotal: number;
+  difference: number;
+  newNights: number;
+  quote?: BookingQuote;
+  currency: string;
+}> {
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: { listing: true },
+  });
+  if (!booking) throw AppError.notFound("Booking not found");
+  assertOwnership(actor, booking.userId);
+
+  const statusDetails = computeBookingStatus({
+    dbStatus: booking.status,
+    startDate: booking.startDate,
+    endDate: booking.endDate,
+  });
+  if (statusDetails.status !== "CONFIRMED") {
+    throw AppError.badRequest("Only upcoming confirmed reservations can be modified.");
+  }
+
+  const checkIn = toCalendarDate(input.startDate);
+  const checkOut = toCalendarDate(input.endDate);
+  const today = toCalendarDate(new Date());
+
+  if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+    throw AppError.badRequest("Invalid dates provided.");
+  }
+  if (checkIn < today) {
+    throw AppError.badRequest("Check-in date cannot be in the past.");
+  }
+  if (checkOut <= checkIn) {
+    throw AppError.badRequest("Check-out date must be after check-in date.");
+  }
+
+  const requestedGuests = input.guests ?? booking.guests;
+  if (requestedGuests < 1 || requestedGuests > (booking.listing.guests || 16)) {
+    throw AppError.badRequest(`Number of guests must be between 1 and ${booking.listing.guests || 16}.`);
+  }
+
+  // Check conflicting bookings on this listing (excluding this booking)
+  const conflict = await prisma.booking.findFirst({
+    where: {
+      id: { not: booking.id },
+      listingId: booking.listingId,
+      status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+      startDate: { lt: checkOut },
+      endDate: { gt: checkIn },
+    },
+  });
+
+  if (conflict) {
+    return {
+      available: false,
+      reason: "The requested dates are no longer available. Please select different dates.",
+      oldTotal: booking.totalPrice ?? 0,
+      newTotal: 0,
+      difference: 0,
+      newNights: 0,
+      currency: booking.currency,
+    };
+  }
+
+  const quote = await getBookingQuote({
+    listingId: booking.listingId,
+    checkIn,
+    checkOut,
+    guests: requestedGuests,
+    nonRefundable: booking.isNonRefundable,
+  });
+
+  const oldTotal = booking.totalPrice ?? 0;
+  const newTotal = quote.guestTotal;
+  const difference = newTotal - oldTotal;
+
+  return {
+    available: true,
+    oldTotal,
+    newTotal,
+    difference,
+    newNights: quote.nights,
+    quote,
+    currency: quote.currency,
+  };
+}
+
+async function changeBookingReservation(
+  actor: AuthUser,
+  id: string,
+  input: { startDate: string | Date; endDate: string | Date; guests?: number },
+): Promise<BookingDetailsData> {
+  const preview = await changeBookingReservationPreview(actor, id, input);
+  if (!preview.available || !preview.quote) {
+    throw AppError.conflict(preview.reason || "The selected dates are unavailable.");
+  }
+
+  const checkIn = toCalendarDate(input.startDate);
+  const checkOut = toCalendarDate(input.endDate);
+  const requestedGuests = input.guests ?? 1;
+
+  const updatedBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${preview.quote!.listingId}))`;
+
+    const conflict = await tx.booking.findFirst({
+      where: {
+        id: { not: id },
+        listingId: preview.quote!.listingId,
+        status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+        startDate: { lt: checkOut },
+        endDate: { gt: checkIn },
+      },
+    });
+    if (conflict) throw AppError.conflict("The selected dates are no longer available.");
+
+    return tx.booking.update({
+      where: { id },
+      data: {
+        startDate: checkIn,
+        endDate: checkOut,
+        guests: requestedGuests,
+        totalPrice: preview.quote!.guestTotal,
+        nightlyPrice: preview.quote!.baseNightlyPrice,
+        cleaningFee: preview.quote!.cleaningFee,
+        priceBreakdown: preview.quote! as unknown as Prisma.InputJsonValue,
+      },
+      include: { listing: true },
+    });
+  });
+
+  await invalidateBookingCache(updatedBooking.id, updatedBooking.userId, updatedBooking.listing.hostId);
+
+  try {
+    await notificationService.create({
+      userId: updatedBooking.userId,
+      type: NotificationType.BOOKING,
+      title: `Reservation Updated: ${updatedBooking.listing.title}`,
+      message: `Your reservation dates have been changed to ${checkIn.toISOString().slice(0, 10)} – ${checkOut.toISOString().slice(0, 10)}.`,
+      entityId: updatedBooking.id,
+      entityType: "booking",
+      link: `/bookings/${updatedBooking.id}`,
+      metadata: {
+        bookingId: updatedBooking.id,
+        listingId: updatedBooking.listingId,
+        status: updatedBooking.status,
+      },
+    });
+  } catch (err) {
+    console.warn("Failed to send reservation update notification:", err);
+  }
+
+  return getBookingDetails(actor, id);
+}
+
 export const bookingService = {
   create,
   listForUser,
   listPendingForHost,
   approveAllPendingForHost,
   getById,
+  getBookingDetails,
+  changeBookingReservationPreview,
+  changeBookingReservation,
   getQuote: getBookingQuote,
   getBookingQuote,
   cancelNonRefundableByGuest,

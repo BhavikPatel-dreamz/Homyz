@@ -26,6 +26,7 @@ export async function uploadTripPhotosAction(
     if (!actor) throw AppError.unauthorized();
     const created = await userService.createTripPhotos(actor.id, photos);
     revalidatePath("/profile");
+    revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
     return created;
   });
@@ -40,6 +41,7 @@ export async function updateTripPhotoAction(
     if (!actor) throw AppError.unauthorized();
     const updated = await userService.updateTripPhoto(actor.id, photoId, input);
     revalidatePath("/profile");
+    revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
     return updated;
   });
@@ -51,6 +53,7 @@ export async function deleteTripPhotoAction(photoId: string) {
     if (!actor) throw AppError.unauthorized();
     const res = await userService.deleteTripPhoto(actor.id, photoId);
     revalidatePath("/profile");
+    revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
     return res;
   });

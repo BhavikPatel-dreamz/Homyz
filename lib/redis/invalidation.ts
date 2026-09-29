@@ -11,6 +11,7 @@ export async function invalidateUserCache(userId: string): Promise<void> {
   await Promise.all([
     deleteCache(CACHE_KEYS.USER_PROFILE(userId)),
     deleteCache(CACHE_KEYS.USER_STATS(userId)),
+    deleteCache(CACHE_KEYS.PERSONAL_INFO(userId)),
   ]);
 }
 

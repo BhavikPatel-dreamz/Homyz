@@ -2,17 +2,10 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { prisma } from "@/lib/db/prisma";
-import { toPublicListingCardDTO, publicListingCardSelect } from "@/services/mappers";
+import { favoriteService } from "@/services/favorite.service";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-type FavoriteRow = {
-  id: string;
-  listingId: string;
-  createdAt: Date;
-  listing: Parameters<typeof toPublicListingCardDTO>[0] | null;
-};
 
 export const GET = apiHandler(async (req) => {
   const actor = await requireApiAuth(req);
@@ -34,19 +27,14 @@ export const GET = apiHandler(async (req) => {
   }
 
   // Saved-list pages explicitly opt into the heavier card payload.
-  const favorites: FavoriteRow[] = await prisma.listingFavorite.findMany({
-    where: { userId: actor.id },
-    orderBy: { createdAt: "desc" },
-    include: { listing: { select: publicListingCardSelect } },
-  });
+  const skip = Math.max(0, Number.parseInt(req.nextUrl.searchParams.get("skip") ?? "0", 10) || 0);
+  const take = Math.min(48, Math.max(1, Number.parseInt(req.nextUrl.searchParams.get("take") ?? "48", 10) || 48));
+  const [{ items, total }, listingIds] = await Promise.all([
+    favoriteService.listUserFavoriteCards(actor.id, { skip, take }),
+    favoriteService.listUserFavoriteListingIds(actor.id),
+  ]);
 
-  const items = favorites
-    .map((f: FavoriteRow) => ({ id: f.id, listingId: f.listingId, createdAt: f.createdAt, listing: f.listing ? toPublicListingCardDTO(f.listing) : null }))
-    .filter((x) => x.listing !== null);
-
-  const listingIds = items.map((i) => i.listingId);
-
-  const response = ok({ user: { id: actor.id, name: actor.name ?? null }, listingIds, items });
+  const response = ok({ user: { id: actor.id, name: actor.name ?? null }, listingIds, items, total });
   // Favorites are private, user-specific state. Prevent browser/proxy caches
   // from serving a pre-delete list to the client refetch.
   response.headers.set("Cache-Control", "private, no-store, max-age=0");

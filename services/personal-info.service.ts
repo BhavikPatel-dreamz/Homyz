@@ -11,6 +11,9 @@ import {
   type UpdatePhoneInput,
 } from "@/lib/validation/personal-info";
 import type { Prisma } from "@/generated/prisma/client";
+import { getOrSetCache } from "@/lib/redis/cache";
+import { CACHE_KEYS } from "@/lib/redis/keys";
+import { CACHE_TTL } from "@/lib/redis/ttl";
 
 export type IdentityStatus = "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED";
 
@@ -80,52 +83,54 @@ export class PersonalInfoService {
    * Strictly authorized to the user themselves.
    */
   async getPersonalInfo(userId: string): Promise<PersonalInfoDTO> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        personalInfo: true,
-      },
-    });
+    return getOrSetCache(CACHE_KEYS.PERSONAL_INFO(userId), async () => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          personalInfo: true,
+        },
+      });
 
-    if (!user) {
-      throw AppError.notFound("User not found");
-    }
+      if (!user) {
+        throw AppError.notFound("User not found");
+      }
 
-    const info = parseStoredPersonalInfo(user.personalInfo);
+      const info = parseStoredPersonalInfo(user.personalInfo);
 
-    let legalFirstName = info.legalFirstName || "";
-    let legalLastName = info.legalLastName || "";
+      let legalFirstName = info.legalFirstName || "";
+      let legalLastName = info.legalLastName || "";
 
     // Fallback: if not explicitly configured in personalInfo, derive from user.name
-    if (!legalFirstName && !legalLastName && user.name) {
-      const parts = user.name.trim().split(" ");
-      legalFirstName = parts[0] || "";
-      legalLastName = parts.slice(1).join(" ") || "";
-    }
+      if (!legalFirstName && !legalLastName && user.name) {
+        const parts = user.name.trim().split(" ");
+        legalFirstName = parts[0] || "";
+        legalLastName = parts.slice(1).join(" ") || "";
+      }
 
-    const legalName =
-      legalFirstName || legalLastName
-        ? `${legalFirstName} ${legalLastName}`.trim()
-        : user.name || "Not provided";
+      const legalName =
+        legalFirstName || legalLastName
+          ? `${legalFirstName} ${legalLastName}`.trim()
+          : user.name || "Not provided";
 
-    return {
-      legalFirstName,
-      legalLastName,
-      legalName,
-      preferredFirstName: info.preferredFirstName || "",
-      email: user.email || "",
-      phone: user.phone || "",
-      identityStatus: info.identityStatus || "NOT_STARTED",
-      identityDocument: info.identityDocument || null,
-      residentialAddress: info.residentialAddress || null,
-      postalAddress: info.postalAddress || null,
-      sameAsResidential: info.sameAsResidential ?? false,
-      emergencyContact: info.emergencyContact || null,
-    };
+      return {
+        legalFirstName,
+        legalLastName,
+        legalName,
+        preferredFirstName: info.preferredFirstName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        identityStatus: info.identityStatus || "NOT_STARTED",
+        identityDocument: info.identityDocument || null,
+        residentialAddress: info.residentialAddress || null,
+        postalAddress: info.postalAddress || null,
+        sameAsResidential: info.sameAsResidential ?? false,
+        emergencyContact: info.emergencyContact || null,
+      };
+    }, { ttl: CACHE_TTL.USER_PROFILE });
   }
 
   /**
@@ -468,4 +473,3 @@ export class PersonalInfoService {
 }
 
 export const personalInfoService = new PersonalInfoService();
-

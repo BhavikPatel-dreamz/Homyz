@@ -235,8 +235,9 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isRead])
+  @@index([userId, isRead, createdAt])
   @@index([userId, createdAt])
+  @@index([userId, type, entityId, entityType])
 }
 
 model TripPhoto {
@@ -251,7 +252,7 @@ model TripPhoto {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([userId, createdAt])
   @@index([createdAt])
 }
 
@@ -597,7 +598,7 @@ model Booking {
   reviews Review[]
   referralReward ReferralReward?
 
-  @@index([userId])
+  @@index([userId, createdAt])
   @@index([listingId])
   @@index([listingId, startDate, endDate, status])
 }

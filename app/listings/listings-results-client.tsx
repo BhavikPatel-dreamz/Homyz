@@ -120,6 +120,22 @@ const TOP_FILTER_OPTIONS: QuickFilterOption[] = [
 ];
 
 // ─────────────────────────────────────────────
+// Helper: Deduplicate listings by unique ID
+// ─────────────────────────────────────────────
+function dedupeListings<T extends { id: string }>(items: T[]): T[] {
+  if (!Array.isArray(items)) return [];
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+// ─────────────────────────────────────────────
 // Skeleton Card
 // ─────────────────────────────────────────────
 function SkeletonCard() {
@@ -142,13 +158,26 @@ function SkeletonCard() {
 function SelectedPreviewCard({
   listing,
   onClose,
+  checkIn,
+  checkOut,
 }: {
   listing: PublicListingCardDTO;
   onClose: () => void;
+  checkIn?: string;
+  checkOut?: string;
 }) {
   const { formatPrice } = useCurrency();
   const currency = getCurrencyForCountry(listing.country);
-  const formattedPrice = formatPrice(listing.price, currency);
+  const selectedStayNights = (() => {
+    if (!checkIn || !checkOut) return 1;
+    const toUtcMidnight = (value: string) => {
+      const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+      return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : Number.NaN;
+    };
+    const nights = (toUtcMidnight(checkOut) - toUtcMidnight(checkIn)) / 86_400_000;
+    return Number.isFinite(nights) && nights > 0 ? nights : 1;
+  })();
+  const formattedPrice = formatPrice(listing.price * selectedStayNights, currency);
 
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
@@ -187,7 +216,9 @@ function SelectedPreviewCard({
           </p>
           <div className="text-xs font-bold text-zinc-950 mt-0.5">
             {formattedPrice}
-            <span className="text-[10px] font-normal text-zinc-500"> / night</span>
+            <span className="text-[10px] font-normal text-zinc-500">
+              {selectedStayNights === 1 ? " / night" : ` for ${selectedStayNights} nights`}
+            </span>
           </div>
         </div>
       </Link>
@@ -319,10 +350,11 @@ export function ListingsResultsClient({
       : 12;
 
   // All listings accumulated (for infinite scroll)
-  const [allListings, setAllListings] = useState(initialListings);
+  const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() => dedupeListings(initialListings));
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const isLoadingMoreRef = useRef(false);
   const [total, setTotal] = useState(initialTotal);
   // Track desktop vs mobile/tablet breakpoint (lg: 1024px)
   const [isDesktop, setIsDesktop] = useState<boolean>(false);
@@ -773,7 +805,8 @@ export function ListingsResultsClient({
   }, [hasMore, isLoadingMore, currentPage]);
 
   const loadNextPage = async () => {
-    if (isLoadingMore || !hasMore) return;
+    if (isLoadingMore || !hasMore || isLoadingMoreRef.current) return;
+    isLoadingMoreRef.current = true;
     setIsLoadingMore(true);
 
     if (abortControllerRef.current) {
@@ -798,7 +831,11 @@ export function ListingsResultsClient({
       if (res.ok) {
         const data = await res.json();
         const newItems: PublicListingCardDTO[] = data.items ?? data.data ?? [];
-        setAllListings((prev) => [...prev, ...newItems]);
+        setAllListings((prev) => {
+          const seen = new Set(prev.map((l) => l.id));
+          const unique = newItems.filter((item) => item?.id && !seen.has(item.id));
+          return [...prev, ...unique];
+        });
         setCurrentPage(nextPage);
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;
         setHasMore(nextPage < totalPages);
@@ -807,6 +844,7 @@ export function ListingsResultsClient({
       if (err?.name === "AbortError") return;
       // silently fail
     } finally {
+      isLoadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
   };
@@ -816,7 +854,7 @@ export function ListingsResultsClient({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    setAllListings(initialListings);
+    setAllListings(dedupeListings(initialListings));
     setCurrentPage(initialPage);
     setHasMore(initialPage < initialTotalPages);
     setTotal(initialTotal);
@@ -933,6 +971,8 @@ export function ListingsResultsClient({
               <SelectedPreviewCard
                 listing={selectedListing}
                 onClose={() => setSelectedPropertyId(null)}
+                checkIn={currentFilters.checkIn}
+                checkOut={currentFilters.checkOut}
               />
             </div>
           )}
@@ -1053,9 +1093,9 @@ export function ListingsResultsClient({
       {/* ── Results Area ────────────────── */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: listings list */}
-        <div className={`w-full min-w-0 ${showMap ? "lg:w-[56%] xl:w-[50%]" : "w-full"}`}>
+        <div className={`w-full min-w-0 ${showMap ? "lg:w-[58%] xl:w-[56%]" : "w-full"}`}>
           {isPending ? (
-            <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
+            <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
@@ -1137,7 +1177,7 @@ export function ListingsResultsClient({
               >
                 {allListings.map((item, index) => (
                   <div
-                    key={item.id}
+                    key={`${item.id}-${index}`}
                     data-listing-id={item.id}
                     ref={(el) => {
                       if (el) cardRefs.current.set(item.id, el);
@@ -1182,7 +1222,7 @@ export function ListingsResultsClient({
 
         {/* Right: sticky map (desktop) */}
         {isDesktop && showMap && (
-          <div className="hidden lg:block w-full lg:w-[44%] xl:w-[50%] shrink-0 sticky top-[84px] h-[calc(100vh-104px)] rounded-[20px] overflow-hidden border border-[#1f1f1f] z-10 isolate">
+          <div className="hidden lg:block w-full lg:w-[42%] xl:w-[44%] shrink-0 sticky top-[84px] h-[calc(100vh-104px)] rounded-[20px] overflow-hidden border border-[#1f1f1f] z-10 isolate">
             <SearchMap
               listings={allListings}
               highlightedId={effectiveHighlightedId}
@@ -1202,6 +1242,8 @@ export function ListingsResultsClient({
                 <SelectedPreviewCard
                   listing={selectedListing}
                   onClose={() => setSelectedPropertyId(null)}
+                  checkIn={currentFilters.checkIn}
+                  checkOut={currentFilters.checkOut}
                 />
               </div>
             )}
@@ -1273,6 +1315,8 @@ export function ListingsResultsClient({
                 <SelectedPreviewCard
                   listing={selectedListing}
                   onClose={() => setSelectedPropertyId(null)}
+                  checkIn={currentFilters.checkIn}
+                  checkOut={currentFilters.checkOut}
                 />
               </div>
             )}

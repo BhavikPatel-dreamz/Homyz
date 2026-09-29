@@ -173,6 +173,22 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 aria-label="Loading account"
                 className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 min-[1440px]:block"
               />
+            ) : isHost ? (
+              isHostRoute ? (
+                <Link
+                  href="/dashboard"
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                >
+                  {t("header_switch_traveling") || "Switch to traveling"}
+                </Link>
+              ) : (
+                <Link
+                  href="/host/listings"
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                >
+                  {t("header_switch_hosting") || "Switch to hosting"}
+                </Link>
+              )
             ) : user ? (
               <button
                 type="button"
@@ -190,16 +206,6 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 {t("header_become_a_host") || "Become a host"}
               </Link>
             )}
-
-            {isHostRoute ? (
-              <Link href="/dashboard" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
-                {t("header_switch_traveling") || "Switch to traveling"}
-              </Link>
-            ) : role === "HOST" ? (
-              <Link href="/host/listings" className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}>
-                {t("header_switch_hosting") || "Switch to hosting"}
-              </Link>
-            ) : null}
 
             {sessionLoading ? (
               <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 md:block" aria-hidden="true" />
@@ -399,7 +405,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                     {/* Group 2: Account setting & Help centre */}
                     <div className="py-0.5 space-y-1">
-                      {/* Account setting */}
+                      {/* Account setting (alias href="/profile-management") */}
                       <Link
                         href="/profile/tab/account_settings"
                         onClick={() => setMenuOpen(false)}

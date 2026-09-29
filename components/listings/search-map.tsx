@@ -123,6 +123,24 @@ interface PositionedListing {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+/**
+ * Returns the number of calendar nights in the selected date range. Map prices
+ * should fall back to a single nightly rate when a complete valid range is not
+ * selected.
+ */
+function getSelectedStayNights(checkIn?: string, checkOut?: string): number {
+  if (!checkIn || !checkOut) return 1;
+
+  const toUtcMidnight = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (!match) return Number.NaN;
+    return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  };
+
+  const nights = (toUtcMidnight(checkOut) - toUtcMidnight(checkIn)) / 86_400_000;
+  return Number.isFinite(nights) && nights > 0 ? nights : 1;
+}
+
 async function loadLeaflet() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const L = (await import("leaflet" as any)) as any;
@@ -258,6 +276,7 @@ export function SearchMap({
   const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [searchAsMove, setSearchAsMove] = useState(false);
+  const selectedStayNights = getSelectedStayNights(checkIn, checkOut);
 
   // ── Stable callbacks ────────────────────────────────────────────────────────
   const buildDetailUrl = useCallback(
@@ -421,8 +440,9 @@ export function SearchMap({
         const lat = item.lat;
         const lng = item.lng;
         const currency = getCurrencyForCountry(listing.country);
-        // Formats as e.g. SAR 450, £99, $120
-        const priceLabel = formatPrice(listing.price, currency);
+        // Match listing cards: show the selected stay total, or one night when
+        // a complete date range has not been selected.
+        const priceLabel = formatPrice(listing.price * selectedStayNights, currency);
 
         const icon = L.divIcon({
           html: `<div style="${pillStyle(false)}">${priceLabel}</div>`,
@@ -475,7 +495,7 @@ export function SearchMap({
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice]);
+  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights]);
 
   // ── Effect 4: In-place highlight update — no marker rebuild ──────────────
   useEffect(() => {

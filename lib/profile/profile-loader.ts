@@ -2,18 +2,17 @@ import { requirePageUser } from "@/lib/permissions/page-guards";
 import { userService } from "@/services/user.service";
 import { bookingService } from "@/services/booking.service";
 import { reviewService } from "@/services/review.service";
-import { notificationService, type NotificationDTO } from "@/services/notification.service";
-import { personalInfoService, type PersonalInfoDTO } from "@/services/personal-info.service";
-import { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { notificationService } from "@/services/notification.service";
+import { personalInfoService } from "@/services/personal-info.service";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
-import { prisma } from "@/lib/db/prisma";
-import { publicListingCardSelect, toPublicListingCardDTO, type PublicListingDTO } from "@/services/mappers";
+import type { PublicListingDTO } from "@/services/mappers";
+import { favoriteService } from "@/services/favorite.service";
 
 export type FavoriteItem = {
   id: string;
   listingId: string;
   createdAt: string;
-  listing: PublicListingDTO | any;
+  listing: PublicListingDTO;
 };
 
 export type GuestAuthoredReviewDTO = {
@@ -39,7 +38,7 @@ export type GuestAuthoredReviewDTO = {
   } | null;
 };
 
-export async function loadProfilePageData(tab?: string) {
+export async function loadProfilePageData(tab?: string, subTab?: string) {
   const actor = await requirePageUser();
   const normalizedTab = tab?.toLowerCase();
 
@@ -62,7 +61,10 @@ export async function loadProfilePageData(tab?: string) {
   // If no tab was specified at all, load all for backwards compatibility
   const shouldLoadAll = tab === undefined;
 
-  const needsTripPhotos = shouldLoadAll || isAboutMe || isManagement;
+  const needsTripPhotos =
+    shouldLoadAll ||
+    (isManagement && (subTab === "photos" || subTab === "trip_photos"));
+  const needsStats = shouldLoadAll || isAboutMe;
   const needsReservations = shouldLoadAll || isTrips;
   const needsFavorites = shouldLoadAll || isSaved;
   const needsReviews =
@@ -78,13 +80,15 @@ export async function loadProfilePageData(tab?: string) {
     stats,
     tripPhotos,
     initialReservations,
-    initialFavorites,
+    initialFavoritesResult,
     initialReviews,
     initialNotifications,
     initialPersonalInfo,
   ] = await Promise.all([
     userService.getById(actor.id),
-    userService.getUserStats(actor.id),
+    needsStats
+      ? userService.getUserStats(actor.id)
+      : Promise.resolve({ trips: 0, likes: 0, reviews: 0 }),
     needsTripPhotos
       ? userService.getTripPhotos(actor.id).catch(() => [])
       : Promise.resolve([]),
@@ -105,26 +109,12 @@ export async function loadProfilePageData(tab?: string) {
           })
       : Promise.resolve([]),
     needsFavorites
-      ? prisma.listingFavorite.findMany({
-            where: { userId: actor.id },
-            orderBy: { createdAt: "desc" },
-            include: { listing: { select: publicListingCardSelect } },
-          })
-          .then((favorites: any[]) =>
-            favorites
-              .map((f: any) => ({
-                id: f.id,
-                listingId: f.listingId,
-                createdAt: f.createdAt.toISOString(),
-                listing: f.listing ? toPublicListingCardDTO(f.listing) : null,
-              }))
-              .filter((x: any) => x.listing !== null),
-          )
+      ? favoriteService.listUserFavoriteCards(actor.id, { take: 48 }) // queries prisma.listingFavorite.findMany
           .catch((err: unknown) => {
             console.error("Failed to load user favorites:", err);
-            return [];
+            return { items: [], total: 0 };
           })
-      : Promise.resolve([]),
+      : Promise.resolve({ items: [], total: 0 }),
     needsReviews
       ? reviewService.getGuestReviews(actor.id).catch((err: unknown) => {
           console.error("Failed to load user reviews:", err);
@@ -132,7 +122,7 @@ export async function loadProfilePageData(tab?: string) {
         })
       : Promise.resolve([]),
     needsNotifications
-      ? notificationService.listForUser(actor.id, { take: 50 }).catch((err: unknown) => {
+      ? notificationService.listForUser(actor.id, { take: 20 }).catch((err: unknown) => {
           console.error("Failed to load user notifications:", err);
           return { items: [], total: 0, unreadCount: 0 };
         })
@@ -148,12 +138,13 @@ export async function loadProfilePageData(tab?: string) {
   return {
     user,
     tripPhotos,
+    tripPhotosLoaded: needsTripPhotos,
     stats,
     initialReservations,
-    initialFavorites,
+    initialFavorites: initialFavoritesResult.items,
+    initialFavoritesTotal: initialFavoritesResult.total,
     initialReviews,
     initialNotifications,
     initialPersonalInfo,
   };
 }
-

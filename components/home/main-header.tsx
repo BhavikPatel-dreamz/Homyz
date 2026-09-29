@@ -70,6 +70,13 @@ export function MainHeader() {
         <div className="w-1/3 flex items-center justify-end gap-3.5 relative" ref={menuRef}>
           {sessionLoading ? (
             <div className="h-9 w-32 animate-pulse rounded-full bg-gray-100" aria-hidden="true" />
+          ) : (user as any)?.role === "HOST" || (user as any)?.role === "ADMIN" ? (
+            <Link
+              className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
+              href="/host/listings"
+            >
+              {t("header_switch_hosting") || "Switch to hosting"}
+            </Link>
           ) : user ? (
             <Link
               className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"

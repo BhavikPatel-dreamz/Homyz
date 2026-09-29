@@ -17,6 +17,7 @@ export type ReferralDashboardData = {
   referralCode: string;
   rewardRule: { points: number; qualifyingCondition: "FIRST_COMPLETED_STAY" } | null;
   totals: { invited: number; pendingPoints: number; creditedPoints: number };
+  activityTotal: number;
   activity: Array<{
     id: string;
     guestName: string;
@@ -80,34 +81,42 @@ export async function resolveReferrerId(referralCode?: string): Promise<string |
 /** Create one pending credit after a referred guest's first completed stay. */
 async function issueEligibleRewards(inviterId: string, program: ReferralProgramConfig | null): Promise<void> {
   if (!program?.enabled) return;
-  const referredGuests = await prisma.user.findMany({ where: { referredById: inviterId }, select: { id: true } });
+  const now = new Date();
+  const eligibleGuests = await prisma.user.findMany({
+    where: {
+      referredById: inviterId,
+      referralRewardEarnedFor: { is: null },
+      bookings: {
+        some: { status: BookingStatus.CONFIRMED, endDate: { lte: now } },
+      },
+    },
+    select: {
+      id: true,
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED, endDate: { lte: now } },
+        orderBy: [{ endDate: "asc" }, { id: "asc" }],
+        take: 1,
+        select: { id: true },
+      },
+    },
+  });
 
-  for (const guest of referredGuests) {
-    try {
-      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const reward = await tx.referralReward.findUnique({ where: { referredUserId: guest.id }, select: { id: true } });
-        if (reward) return;
-        const firstCompletedStay = await tx.booking.findFirst({
-          where: { userId: guest.id, status: BookingStatus.CONFIRMED, endDate: { lte: new Date() } },
-          orderBy: [{ endDate: "asc" }, { id: "asc" }],
-          select: { id: true },
-        });
-        if (!firstCompletedStay) return;
-        await tx.referralReward.create({
-          data: {
+  if (eligibleGuests.length === 0) return;
+
+  await prisma.referralReward.createMany({
+    data: eligibleGuests.flatMap((guest: { id: string; bookings: Array<{ id: string }> }) =>
+      guest.bookings[0]
+        ? [{
             inviterId,
             referredUserId: guest.id,
-            qualifyingBookingId: firstCompletedStay.id,
+            qualifyingBookingId: guest.bookings[0].id,
             points: program.inviterRewardPoints,
             status: ReferralRewardStatus.PENDING,
-          },
-        });
-      });
-    } catch (error: unknown) {
-      // Unique constraints make concurrent eligibility checks harmless.
-      if ((error as { code?: string })?.code !== "P2002") throw error;
-    }
-  }
+          }]
+        : [],
+    ),
+    skipDuplicates: true,
+  });
 }
 
 function toDashboardStatus(status: ReferralRewardStatus | undefined) {
@@ -120,12 +129,7 @@ function toDashboardStatus(status: ReferralRewardStatus | undefined) {
 async function getDashboard(userId: string): Promise<ReferralDashboardData> {
   const [referralCode, program] = await Promise.all([ensureReferralCode(userId), getReferralProgramConfig()]);
   await issueEligibleRewards(userId, program);
-  const referredGuests: Array<{
-    id: string;
-    name: string | null;
-    createdAt: Date;
-    referralRewardEarnedFor: { status: ReferralRewardStatus; points: number; reviewedAt: Date | null } | null;
-  }> = await prisma.user.findMany({
+  const [referredGuests, activityTotal, rewardTotals] = await Promise.all([prisma.user.findMany({
     where: { referredById: userId },
     select: {
       id: true,
@@ -134,7 +138,17 @@ async function getDashboard(userId: string): Promise<ReferralDashboardData> {
       referralRewardEarnedFor: { select: { status: true, points: true, reviewedAt: true } },
     },
     orderBy: { createdAt: "desc" },
-  });
+    take: 50,
+  }), prisma.user.count({ where: { referredById: userId } }), prisma.referralReward.groupBy({
+    by: ["status"],
+    where: { inviterId: userId },
+    _sum: { points: true },
+  })]) as [Array<{
+    id: string;
+    name: string | null;
+    createdAt: Date;
+    referralRewardEarnedFor: { status: ReferralRewardStatus; points: number; reviewedAt: Date | null } | null;
+  }>, number, Array<{ status: ReferralRewardStatus; _sum: { points: number | null } }>];
   const activity: ReferralDashboardData["activity"] = referredGuests.map((guest) => ({
     id: guest.id,
     // Never reveal an invitee's email address in another guest's dashboard.
@@ -148,10 +162,11 @@ async function getDashboard(userId: string): Promise<ReferralDashboardData> {
     referralCode,
     rewardRule: program ? { points: program.inviterRewardPoints, qualifyingCondition: program.qualifyingCondition } : null,
     totals: {
-      invited: activity.length,
-      pendingPoints: activity.filter((item) => item.status === "PENDING_APPROVAL").reduce((total, item) => total + (item.points ?? 0), 0),
-      creditedPoints: activity.filter((item) => item.status === "CREDITED").reduce((total, item) => total + (item.points ?? 0), 0),
+      invited: activityTotal,
+      pendingPoints: rewardTotals.find((item) => item.status === ReferralRewardStatus.PENDING)?._sum.points ?? 0,
+      creditedPoints: rewardTotals.find((item) => item.status === ReferralRewardStatus.APPROVED)?._sum.points ?? 0,
     },
+    activityTotal,
     activity,
   };
 }

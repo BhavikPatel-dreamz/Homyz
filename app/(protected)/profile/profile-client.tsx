@@ -20,14 +20,14 @@ import { LogoutButton } from "@/components/admin/logout-button";
 import { ReservationCardData } from "@/components/dashboard/reservation-card";
 import { BackButton } from "@/components/ui/back-button";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
-import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import type { FavoriteCardItem } from "@/services/favorite.service";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
-import { PersonalInfoView } from "@/components/account-settings/personal-info-view";
 import {
   SavedListingsSkeleton,
   NotificationsSkeleton,
   LoyaltyWalletSkeleton,
+  PersonalInfoSkeleton,
   ProfileManagementSkeleton,
   SupportChatSkeleton,
 } from "@/components/dashboard/section-skeletons";
@@ -45,7 +45,7 @@ const ProfileManagementClient = dynamic(
     import(
       "@/app/(protected)/profile-management/profile-management-client"
     ).then((m) => m.ProfileManagementClient),
-  { loading: () => <ProfileManagementSkeleton /> },
+  { loading: () => <PersonalInfoSkeleton /> },
 );
 
 const SavedListingsView = dynamic(
@@ -90,6 +90,22 @@ const NotificationsView = dynamic(
       (m) => m.NotificationsView,
     ),
   { loading: () => <NotificationsSkeleton /> },
+);
+
+const MyReviewsSection = dynamic(
+  () =>
+    import("@/components/profile/my-reviews-section").then(
+      (m) => m.MyReviewsSection,
+    ),
+  { loading: () => <div className="h-56 max-w-[336px] skeleton-shimmer" /> },
+);
+
+const PersonalInfoView = dynamic(
+  () =>
+    import("@/components/account-settings/personal-info-view").then(
+      (m) => m.PersonalInfoView,
+    ),
+  { loading: () => <ProfileManagementSkeleton /> },
 );
 
 export type PublicProfileData = {
@@ -175,9 +191,11 @@ const MobileAccountIcon = ({ type }: { type: string }) => {
 type ProfileClientProps = {
   initial: ProfileData;
   initialTripPhotos?: unknown[];
+  initialTripPhotosLoaded?: boolean;
   initialStats?: UserStatsData;
   initialReservations?: ReservationCardData[];
-  initialFavorites?: any[];
+  initialFavorites?: FavoriteCardItem[];
+  initialFavoritesTotal?: number;
   initialReviews?: GuestAuthoredReviewDTO[];
   initialNotifications?: {
     items: any[];
@@ -193,9 +211,11 @@ type ProfileClientProps = {
 export function ProfileClient({
   initial,
   initialTripPhotos = [],
+  initialTripPhotosLoaded = false,
   initialStats = { trips: 0, likes: 0, reviews: 0, yearsOnHomyz: 0 },
   initialReservations = [],
   initialFavorites = [],
+  initialFavoritesTotal = 0,
   initialReviews = [],
   initialNotifications,
   initialPersonalInfo,
@@ -425,14 +445,19 @@ export function ProfileClient({
             )}
 
             {activeTab === "saved" && (
-              <SavedListingsView initialFavorites={initialFavorites} />
+              <SavedListingsView
+                initialFavorites={initialFavorites}
+                initialTotal={initialFavoritesTotal}
+              />
             )}
 
             {activeTab === "profile_management" && (
               <ProfileManagementClient
+                key={`trip-photos-${initialTripPhotosLoaded ? "loaded" : "deferred"}`}
                 initial={currentUser}
                 onProfileUpdated={(updated) => setCurrentUser(updated)}
                 initialTripPhotos={initialTripPhotos as any}
+                initialTripPhotosLoaded={initialTripPhotosLoaded}
                 initialStats={initialStats}
                 isOwner={isOwner}
                 embedded={true}

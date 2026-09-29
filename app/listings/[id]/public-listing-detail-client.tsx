@@ -160,6 +160,8 @@ interface PublicListingDetailClientProps {
       createdAt?: Date | string;
       publicProfile?: Record<string, unknown> | null;
       isSuperhost?: boolean;
+      rating?: number | null;
+      reviewsCount?: number | null;
     } | null;
     isGuestFavorite?: boolean;
     // Listings currently derive display currency from their country. Keep this
@@ -321,13 +323,36 @@ function HostIdentityCard({
   reviewRating,
   reviewCount,
 }: {
-  host: { name?: string | null; image?: string | null; isSuperhost?: boolean };
+  host: {
+    name?: string | null;
+    image?: string | null;
+    isSuperhost?: boolean;
+    rating?: number | null;
+    reviewsCount?: number | null;
+  };
   imageFailed: boolean;
   onImageError: () => void;
   hostTenure: string | null;
   reviewRating: number | null;
   reviewCount: number;
 }) {
+  const effectiveReviewCount =
+    typeof host.reviewsCount === "number" && host.reviewsCount > 0
+      ? host.reviewsCount
+      : reviewCount;
+
+  const effectiveRating =
+    typeof host.rating === "number" && host.rating > 0
+      ? host.rating
+      : reviewRating;
+
+  const formattedRating =
+    effectiveRating !== null && effectiveRating > 0
+      ? Number.isInteger(effectiveRating)
+        ? `${effectiveRating}.0`
+        : effectiveRating.toFixed(2).replace(/0$/, "")
+      : null;
+
   return (
     <div className="min-h-[260px] sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white px-7 py-7 shadow-[0_2px_5px_rgba(0,0,0,0.14)] transition-shadow hover:shadow-[0_5px_14px_rgba(0,0,0,0.14)]">
       <div className="grid grid-cols-2 gap-x-7 gap-y-4">
@@ -346,9 +371,25 @@ function HostIdentityCard({
         </div>
 
         <div className="min-w-0 divide-y divide-[#dedede]">
-          <div className="pb-4"><p className="sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">{reviewCount || "—"}</p>
-            <p className="mt-1 text-xs font-normal text-[#727272]">Reviews</p></div>
-          <div className="py-4"><p className="flex items-center gap-1 sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">{reviewRating?.toFixed(2) ?? "—"}<span className="text-[#e9a400]">★</span></p><p className="mt-2 text-xs font-normal text-[#727272]">Rating</p></div>
+          <div className="pb-4">
+            <p className="sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
+              {effectiveReviewCount > 0 ? effectiveReviewCount : "—"}
+            </p>
+            <p className="mt-1 text-xs font-normal text-[#727272]">Reviews</p>
+          </div>
+          <div className="py-4">
+            <p className="flex items-center gap-1 sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
+              {formattedRating ? (
+                <>
+                  <span>{formattedRating}</span>
+                  <span className="text-[#e9a400]">★</span>
+                </>
+              ) : (
+                <span className="text-base font-normal text-[#727272]">★ New</span>
+              )}
+            </p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">Rating</p>
+          </div>
           <div className="pt-4">
             <p className="sm:text-[20px] text-base font-normal leading-5 text-[#1f1f1f]">{hostTenure || "—"}</p>
             <p className="mt-2 text-xs font-normal text-[#727272]">time hosting</p>
@@ -576,8 +617,8 @@ export function PublicListingDetailClient({
   const allowsPets = listing.petsAllowed !== false;
 
   // Booking Widget State — pre-filled from search URL params
-  const [checkIn, setCheckIn] = useState(isDateKey(searchCheckIn) ? searchCheckIn : "");
-  const [checkOut, setCheckOut] = useState(isDateKey(searchCheckOut) ? searchCheckOut : "");
+  const [checkIn, setCheckIn] = useState(searchCheckIn && isDateKey(searchCheckIn) ? searchCheckIn : "");
+  const [checkOut, setCheckOut] = useState(searchCheckOut && isDateKey(searchCheckOut) ? searchCheckOut : "");
   const [adultsCount, setAdultsCount] = useState(() => Math.min(maximumGuests, Math.max(1, searchGuests ?? 1)));
   const [childrenCount, setChildrenCount] = useState(0);
   const [infantsCount, setInfantsCount] = useState(0);
@@ -1485,6 +1526,7 @@ export function PublicListingDetailClient({
                   <h2 className="text-[18px] font-normal leading-6 text-[#1f1f1f] lg:text-[20px] lg:leading-5">
                     {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
+                  {/* Where you'll sleep */}
                   <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
                     {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
                   </p>
@@ -2053,10 +2095,10 @@ export function PublicListingDetailClient({
                           }}
                           className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1f1f1f]"
                         >
-                          <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={reviewRating} reviewCount={reviewCount} />
+                          <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={listing.host?.rating ?? reviewRating} reviewCount={listing.host?.reviewsCount ?? reviewCount} />
                         </Link>
                       ) : (
-                        <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={reviewRating} reviewCount={reviewCount} />
+                        <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={listing.host?.rating ?? reviewRating} reviewCount={listing.host?.reviewsCount ?? reviewCount} />
                       )}
 
                       {(hostWork || hostLanguages.length > 0) && <div className="mt-7 space-y-4 text-base text-[#1f1f1f]">

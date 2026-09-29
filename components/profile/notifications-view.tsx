@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   NotificationDTO,
-  NotificationFilter,
 } from "@/services/notification.service";
 import {
   markNotificationReadAction,
@@ -131,16 +130,18 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   const [unreadCount, setUnreadCount] = useState<number>(
     initialData?.unreadCount ?? 0,
   );
+  const [total, setTotal] = useState(initialData?.total ?? 0);
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [loading, setLoading] = useState<boolean>(!initialData);
   const [error, setError] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [, startTransition] = useTransition();
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getNotificationsAction();
+      const res = await getNotificationsAction({ skip: 0, take: 20 });
       if (!res.ok) {
         setError(res.error || "Failed to load notifications.");
         return;
@@ -148,6 +149,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       if (res.data) {
         setNotifications(res.data.items);
         setUnreadCount(res.data.unreadCount);
+        setTotal(res.data.total);
       }
     } catch {
       setError("An unexpected error occurred while fetching notifications.");
@@ -162,10 +164,38 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     }
   }, [initialData, loadNotifications]);
 
+  const loadMore = async () => {
+    if (loadingMore || notifications.length >= total) return;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const res = await getNotificationsAction({
+        skip: notifications.length,
+        take: 20,
+      });
+      if (!res.ok) {
+        setError(res.error || "Failed to load more notifications.");
+        return;
+      }
+      const nextPage = res.data;
+      setNotifications((current) => {
+        const knownIds = new Set(current.map((item) => item.id));
+        return [...current, ...nextPage.items.filter((item) => !knownIds.has(item.id))];
+      });
+      setUnreadCount(nextPage.unreadCount);
+      setTotal(nextPage.total);
+    } catch {
+      setError("An unexpected error occurred while fetching notifications.");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const handleMarkAllRead = () => {
     if (unreadCount === 0) return;
 
-    // Optimistic UI update
+    const previousNotifications = notifications;
+    const previousUnreadCount = unreadCount;
     setNotifications((prev) =>
       prev.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() })),
     );
@@ -175,11 +205,14 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       try {
         const res = await markAllNotificationsReadAction();
         if (!res.ok) {
-          // Revert if error
-          loadNotifications();
+          setNotifications(previousNotifications);
+          setUnreadCount(previousUnreadCount);
+          setError(res.error || "Failed to mark notifications as read.");
         }
       } catch {
-        loadNotifications();
+        setNotifications(previousNotifications);
+        setUnreadCount(previousUnreadCount);
+        setError("Failed to mark notifications as read.");
       }
     });
   };
@@ -187,6 +220,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   const handleToggleRead = (e: React.MouseEvent, item: NotificationDTO) => {
     e.stopPropagation();
     const newIsRead = !item.isRead;
+    const previousNotifications = notifications;
+    const previousUnreadCount = unreadCount;
 
     // Optimistic UI update
     setNotifications((prev) =>
@@ -205,12 +240,16 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     startTransition(async () => {
       try {
         if (newIsRead) {
-          await markNotificationReadAction(item.id);
+          const res = await markNotificationReadAction(item.id);
+          if (!res.ok) throw new Error(res.error);
         } else {
-          await markNotificationUnreadAction(item.id);
+          const res = await markNotificationUnreadAction(item.id);
+          if (!res.ok) throw new Error(res.error);
         }
       } catch {
-        loadNotifications();
+        setNotifications(previousNotifications);
+        setUnreadCount(previousUnreadCount);
+        setError("Failed to update the notification. Please try again.");
       }
     });
   };
@@ -225,9 +264,20 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
 
       startTransition(async () => {
         try {
-          await markNotificationReadAction(item.id);
+          const res = await markNotificationReadAction(item.id);
+          if (!res.ok) {
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === item.id ? { ...n, isRead: false, readAt: null } : n)),
+            );
+            setUnreadCount((prev) => prev + 1);
+            setError(res.error || "Failed to update the notification.");
+          }
         } catch {
-          // non-blocking
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === item.id ? { ...n, isRead: false, readAt: null } : n)),
+          );
+          setUnreadCount((prev) => prev + 1);
+          setError("Failed to update the notification.");
         }
       });
     }
@@ -272,7 +322,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   }
 
   return (
-    <div className="flex flex-col animate-in fade-in duration-300">
+    <div className="flex min-w-0 w-full flex-col animate-in fade-in duration-300">
       {/* Title & Actions Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between xl:mb-8">
         <div>
@@ -317,7 +367,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       )}
 
       {/* Filter Category Pills */}
-      <div className="mb-6 flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 flex w-full min-w-0 max-w-full flex-nowrap items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap">
         {[
           { id: "ALL" as FilterTab, label: `All (${notifications.length})` },
           { id: "UNREAD" as FilterTab, label: `Unread (${unreadCount})` },
@@ -437,6 +487,18 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               </div>
             );
           })}
+          {filter === "ALL" && notifications.length < total && (
+            <div className="flex justify-center p-4">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+              >
+                {loadingMore ? "Loading..." : "Load more"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -17,15 +17,17 @@ export default async function ProfilePage({
     redirect(target);
   }
 
-  const data = await loadProfilePageData(route.tab);
+  const data = await loadProfilePageData(route.tab, route.subTab);
 
   return (
     <ProfileClient
       initial={data.user}
       initialTripPhotos={data.tripPhotos}
+      initialTripPhotosLoaded={data.tripPhotosLoaded}
       initialStats={data.stats}
       initialReservations={data.initialReservations}
       initialFavorites={data.initialFavorites}
+      initialFavoritesTotal={data.initialFavoritesTotal}
       initialReviews={data.initialReviews}
       initialNotifications={data.initialNotifications}
       initialPersonalInfo={data.initialPersonalInfo}

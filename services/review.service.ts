@@ -270,6 +270,7 @@ export const reviewService = {
         },
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 24,
     });
     return (reviews as any[]).map((r: any) => ({
       id: r.id,

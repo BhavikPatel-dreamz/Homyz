@@ -997,6 +997,7 @@ export function ListingSearchBar() {
           autoComplete="off"
           className="relative flex h-[66px] w-full max-w-[820px] items-center rounded-full bg-white shadow-[0_4px_24px_rgba(0,0,0,0.09)] border border-zinc-200/90 transition-shadow hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)]"
         >
+          {/* desktopPanel === "where" ? "bg-[#fcdf9c]" : desktopPanel === "checkIn" ? "bg-[#fcdf9c]" : desktopPanel === "checkOut" ? "bg-[#fcdf9c]" : desktopPanel === "who" ? "bg-[#fcdf9c]" */}
           {/* Segment 1: Where */}
           <div
             className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-300 cursor-pointer ${

@@ -15,32 +15,39 @@ export interface FavoriteItem {
 
 interface SavedListingsViewProps {
   initialFavorites?: FavoriteItem[];
+  initialTotal?: number;
 }
 
-export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) {
+export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedListingsViewProps) {
   const [items, setItems] = useState<FavoriteItem[]>(initialFavorites || []);
+  const [total, setTotal] = useState(initialTotal);
   const [isLoading, setIsLoading] = useState<boolean>(!initialFavorites);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
 
   // Keep state in sync if SSR prop updates
   useEffect(() => {
     if (initialFavorites) {
       setItems(initialFavorites);
+      setTotal(initialTotal);
       setIsLoading(false);
     }
-  }, [initialFavorites]);
+  }, [initialFavorites, initialTotal]);
 
   // Fetch latest favorites from API to guarantee freshly synced DB state
   const refreshFavorites = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/v1/favorites?include=cards", {
+      const res = await fetch("/api/v1/favorites?include=cards&take=48", {
         signal,
         headers: { "Cache-Control": "no-cache" },
       });
       if (res.ok) {
-        const data = await res.json();
+        const payload = await res.json();
+        const data = payload?.data ?? payload;
         if (Array.isArray(data?.items)) {
           setItems(data.items);
+          setTotal(typeof data.total === "number" ? data.total : data.items.length);
         }
       }
     } catch (err: any) {
@@ -76,6 +83,7 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
           setItems((prev) =>
             prev.filter((it) => it.listingId !== ev.detail.listingId && it.id !== ev.detail.listingId)
           );
+          setTotal((current) => Math.max(0, current - 1));
         } else {
           refreshFavorites();
         }
@@ -85,6 +93,32 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
     window.addEventListener("homyz:favorite-changed", onFavoriteChanged);
     return () => window.removeEventListener("homyz:favorite-changed", onFavoriteChanged);
   }, [refreshFavorites]);
+
+  const loadMore = async () => {
+    if (isLoadingMore || items.length >= total) return;
+    setIsLoadingMore(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/favorites?include=cards&skip=${items.length}&take=48`, {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      const payload = await res.json();
+      const data = payload?.data ?? payload;
+      if (!res.ok || !Array.isArray(data?.items)) {
+        throw new Error(data?.error?.message || "Unable to load more saved stays.");
+      }
+      setItems((current) => {
+        const knownIds = new Set(current.map((item) => item.id));
+        return [...current, ...data.items.filter((item: FavoriteItem) => !knownIds.has(item.id))];
+      });
+      setTotal(typeof data.total === "number" ? data.total : total);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load more saved stays.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Extract unique categories from saved listings
   const availableCategories = useMemo(() => {
@@ -112,10 +146,10 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
   }, [validItems, categoryFilter]);
 
   return (
-    <div className="flex flex-col animate-in fade-in duration-300">
+    <div className="flex min-w-0 w-full flex-col animate-in fade-in duration-300">
       {/* Title Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between xl:mb-8">
-        <div>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between xl:mb-8">
+        <div className="min-w-0">
           <div className="flex items-center gap-3">
             <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
               Wishlists
@@ -133,11 +167,11 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
 
         {/* Category Filter Pills (if multiple categories available) */}
         {availableCategories.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-[#F5F5F5] p-1 w-fit">
+          <div className="flex w-full min-w-0 max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-[#D7D7D7] bg-[#F5F5F5] p-1 sm:ml-4 sm:w-auto sm:max-w-[58%]">
             <button
               type="button"
               onClick={() => setCategoryFilter("ALL")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
                 categoryFilter === "ALL"
                   ? "bg-white text-[#1F1F1F] shadow-2xs"
                   : "text-[#727272] hover:text-[#1F1F1F]"
@@ -150,7 +184,7 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
                 key={cat}
                 type="button"
                 onClick={() => setCategoryFilter(cat)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all capitalize ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all capitalize ${
                   categoryFilter === cat
                     ? "bg-white text-[#1F1F1F] shadow-2xs"
                     : "text-[#727272] hover:text-[#1F1F1F]"
@@ -208,18 +242,33 @@ export function SavedListingsView({ initialFavorites }: SavedListingsViewProps) 
         </div>
       ) : (
         /* Property Cards Grid */
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredItems.map((item) => (
-            <div key={item.listingId || item.id} className="relative">
-              <ListingCard
-                listing={item.listing}
-                initialFavorite={true}
-                showFavorite={true}
-                favoriteVariant="remove"
-              />
+        <>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredItems.map((item) => (
+              <div key={item.listingId || item.id} className="relative">
+                <ListingCard
+                  listing={item.listing}
+                  initialFavorite={true}
+                  showFavorite={true}
+                  favoriteVariant="remove"
+                />
+              </div>
+            ))}
+          </div>
+          {error && <p role="alert" className="mt-5 text-sm text-rose-700">{error}</p>}
+          {categoryFilter === "ALL" && items.length < total && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={isLoadingMore}
+                className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+              >
+                {isLoadingMore ? "Loading..." : "Load more"}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

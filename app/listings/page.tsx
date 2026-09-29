@@ -225,14 +225,14 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
             fallback={
               <div className="flex flex-col lg:flex-row gap-6 items-start">
                 {/* Left section skeleton */}
-                <div className="w-full lg:w-[56%] xl:w-[58%] min-w-0">
+                <div className="w-full lg:w-[58%] xl:w-[56%] min-w-0">
                   <div className="pb-4 border-b border-zinc-200/80 mb-5 animate-pulse">
                     <div className="h-7 w-72 bg-zinc-200 rounded-md mb-2" />
                     <div className="h-4 w-48 bg-zinc-200 rounded-md" />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                     {Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="rounded-[22px] border border-zinc-100 overflow-hidden animate-pulse">
+                      <div key={i} className="rounded-[20px] border border-[#1f1f1f] overflow-hidden animate-pulse">
                         <div className="aspect-[4/3] bg-zinc-200 w-full" />
                         <div className="p-3.5 space-y-2">
                           <div className="h-3.5 bg-zinc-200 rounded w-3/4" />
@@ -244,7 +244,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
                 </div>
 
                 {/* Right sticky map skeleton (Desktop) */}
-                <div className="hidden lg:block w-full lg:w-[44%] xl:w-[42%] shrink-0 h-[calc(100vh-104px)] rounded-2xl bg-zinc-100 border border-zinc-200 animate-pulse" />
+                <div className="hidden lg:block w-full lg:w-[42%] xl:w-[44%] shrink-0 h-[calc(100vh-104px)] rounded-[20px] border border-[#1f1f1f] bg-zinc-100 animate-pulse" />
               </div>
             }
           >

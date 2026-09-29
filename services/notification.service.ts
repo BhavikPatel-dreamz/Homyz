@@ -2,6 +2,9 @@ import { prisma } from "@/lib/db/prisma";
 import { NotificationType, BookingStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
+import { getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
+import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
+import { CACHE_TTL } from "@/lib/redis/ttl";
 
 export type NotificationDTO = {
   id: string;
@@ -58,6 +61,10 @@ function toDTO(n: {
   };
 }
 
+async function invalidateUserNotifications(userId: string): Promise<void> {
+  await incrCounter(CACHE_KEYS.NOTIFICATIONS_VER(userId));
+}
+
 // In-flight synchronization mutex to avoid concurrent duplicate creation
 const activeSyncs = new Map<string, Promise<void>>();
 
@@ -100,6 +107,7 @@ async function create(data: {
             metadata: data.metadata ?? undefined,
           },
         });
+        await invalidateUserNotifications(data.userId);
         return toDTO(updated);
       }
       return toDTO(existing);
@@ -130,6 +138,8 @@ async function create(data: {
       metadata: data.metadata ?? undefined,
     },
   });
+
+  await invalidateUserNotifications(data.userId);
 
   return toDTO(created);
 }
@@ -272,7 +282,7 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
 
             let title = `New Reservation: ${listingTitle}`;
             let message = `${guestName} booked ${listingTitle} from ${startStr} to ${endStr}.`;
-            let link = "/host/bookings";
+            const link = "/host/bookings";
 
             if (isCancelled) {
               title = `Reservation Cancelled: ${listingTitle}`;
@@ -387,13 +397,6 @@ async function listForUser(
     throw AppError.unauthorized("Authentication required to list notifications");
   }
 
-  // Sync real events once per user session
-  try {
-    await syncRealEventsForUser(userId);
-  } catch (err) {
-    console.warn("[notification.service] syncRealEvents error:", err);
-  }
-
   // STRICT query clause: only notifications where userId equals the authenticated user's ID
   const whereClause: Prisma.NotificationWhereInput = {
     userId,
@@ -407,37 +410,37 @@ async function listForUser(
     whereClause.isRead = false;
   }
 
-  const [rawItems, total, unreadCount] = await Promise.all([
-    prisma.notification.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      skip: filter?.skip ?? 0,
-      take: filter?.take ?? 50,
-    }),
-    prisma.notification.count({ where: whereClause }),
-    prisma.notification.count({ where: { userId, isRead: false } }),
-  ]);
+  const skip = Math.max(0, Math.trunc(filter?.skip ?? 0));
+  const take = Math.min(50, Math.max(1, Math.trunc(filter?.take ?? 20)));
+  const version = await getCounter(CACHE_KEYS.NOTIFICATIONS_VER(userId));
+  const cacheKey = CACHE_KEYS.NOTIFICATIONS_PAGE(
+    userId,
+    version,
+    hashFilters({ type: filter?.type, unreadOnly: filter?.unreadOnly, skip, take }),
+  );
 
-  // In-memory deduplication safeguard
-  const seenKeys = new Set<string>();
-  const items: NotificationDTO[] = [];
+  return getOrSetCache(
+    cacheKey,
+    async () => {
+      const [rawItems, total, unreadCount] = await Promise.all([
+        prisma.notification.findMany({
+          where: whereClause,
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          skip,
+          take,
+        }),
+        prisma.notification.count({ where: whereClause }),
+        prisma.notification.count({ where: { userId, isRead: false } }),
+      ]);
 
-  for (const raw of rawItems) {
-    const key = raw.entityId
-      ? `${raw.type}:${raw.entityId}`
-      : `${raw.type}:${raw.entityType || raw.title}`;
-
-    if (!seenKeys.has(key)) {
-      seenKeys.add(key);
-      items.push(toDTO(raw));
-    }
-  }
-
-  return {
-    items,
-    total: items.length < rawItems.length ? items.length : total,
-    unreadCount,
-  };
+      return {
+        items: rawItems.map(toDTO),
+        total,
+        unreadCount,
+      };
+    },
+    { ttl: CACHE_TTL.SHORT_LIVED },
+  );
 }
 
 /**
@@ -482,6 +485,8 @@ async function markAsRead(
     },
   });
 
+  await invalidateUserNotifications(userId);
+
   return toDTO(updated);
 }
 
@@ -513,6 +518,8 @@ async function markAsUnread(
     },
   });
 
+  await invalidateUserNotifications(userId);
+
   return toDTO(updated);
 }
 
@@ -535,6 +542,8 @@ async function markAllAsRead(userId: string): Promise<{ count: number }> {
       readAt: new Date(),
     },
   });
+
+  if (res.count > 0) await invalidateUserNotifications(userId);
 
   return { count: res.count };
 }
@@ -561,6 +570,7 @@ async function deleteNotification(
   await prisma.notification.delete({
     where: { id: notificationId },
   });
+  await invalidateUserNotifications(userId);
 }
 
 /**

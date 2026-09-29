@@ -81,6 +81,7 @@ export const MAX_BIO_LENGTH = 500;
 type ProfileManagementClientProps = {
   initial: ProfileData;
   initialTripPhotos?: TripPhotoItem[];
+  initialTripPhotosLoaded?: boolean;
   initialStats?: UserStatsData;
   isOwner?: boolean;
   embedded?: boolean;
@@ -735,6 +736,7 @@ function InlineLocationSearch({
 export function ProfileManagementClient({
   initial,
   initialTripPhotos = [],
+  initialTripPhotosLoaded = false,
   initialStats = { trips: 12, likes: 0, reviews: 10 },
   isOwner = true,
   embedded = false,
@@ -765,6 +767,9 @@ export function ProfileManagementClient({
 
   const handleSubTabClick = (tab: ProfileMgmtSubTab) => {
     setActiveMgmtTab(tab);
+    if (tab === "photos" && !initialTripPhotosLoaded) {
+      setIsTripPhotosLoading(true);
+    }
     if (onSubTabChange) {
       onSubTabChange(tab);
     } else {
@@ -776,6 +781,12 @@ export function ProfileManagementClient({
   const [profileData, setProfileData] = useState<ProfileData>(initial);
   const [tripPhotos, setTripPhotos] =
     useState<TripPhotoItem[]>(initialTripPhotos);
+  const [failedTripPhotoIds, setFailedTripPhotoIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [isTripPhotosLoading, setIsTripPhotosLoading] = useState(
+    activeMgmtTab === "photos" && !initialTripPhotosLoaded,
+  );
   const [pending, startTransition] = useTransition();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const { data: session, update: updateSession } = useSession();
@@ -1542,7 +1553,21 @@ export function ProfileManagementClient({
             )}
           </div>
 
-          {tripPhotos.length === 0 ? (
+          {isTripPhotosLoading ? (
+            <div
+              aria-busy="true"
+              aria-live="polite"
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+            >
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={index}
+                  className="aspect-4/3 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100"
+                />
+              ))}
+              <p className="sr-only">Loading trip photos</p>
+            </div>
+          ) : tripPhotos.length === 0 ? (
             <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
               <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
                 <IconCamera />
@@ -1571,14 +1596,27 @@ export function ProfileManagementClient({
                   key={photo.id}
                   className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs"
                 >
-                  <Image
-                    src={photo.url}
-                    alt={photo.caption || "Trip photo"}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    onClick={() => setLightboxPhoto(photo)}
-                  />
+                  {failedTripPhotoIds.has(photo.id) ? (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-zinc-500">
+                      <IconCamera />
+                      <p className="text-xs font-medium">Image unavailable</p>
+                    </div>
+                  ) : (
+                    <Image
+                      src={photo.url}
+                      alt={photo.caption || "Trip photo"}
+                      fill
+                      unoptimized
+                      className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      onClick={() => setLightboxPhoto(photo)}
+                      onError={() => {
+                        setFailedTripPhotoIds((previous) =>
+                          new Set(previous).add(photo.id),
+                        );
+                      }}
+                    />
+                  )}
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3.5 flex flex-col justify-between pointer-events-none">
                     {isOwner && (
@@ -1709,7 +1747,15 @@ export function ProfileManagementClient({
         <MultiImageUploadModal
           onClose={() => setUploadModalOpen(false)}
           onUploaded={(newPhotos) => {
-            setTripPhotos((prev) => [...newPhotos, ...prev]);
+            setTripPhotos((prev) => {
+              const photosById = new Map(prev.map((photo) => [photo.id, photo]));
+              newPhotos.forEach((photo) => photosById.set(photo.id, photo));
+              return [...photosById.values()].sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+              );
+            });
+            setIsTripPhotosLoading(false);
             setUploadModalOpen(false);
           }}
         />
@@ -1790,10 +1836,24 @@ function MultiImageUploadModal({
   const [caption, setCaption] = useState("");
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({
+    completed: 0,
+    total: 0,
+    phase: "idle" as "idle" | "uploading" | "saving",
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  React.useEffect(
+    () => () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    },
+    [],
+  );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (uploading) return;
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
@@ -1814,22 +1874,41 @@ function MultiImageUploadModal({
     }
 
     setSelectedFiles((prev) => [...prev, ...validFiles]);
-    setPreviews((prev) => [...prev, ...newPreviews]);
+    setPreviews((prev) => {
+      const next = [...prev, ...newPreviews];
+      previewUrlsRef.current = next;
+      return next;
+    });
+    e.target.value = "";
   };
 
   const removeFile = (idx: number) => {
+    if (uploading) return;
     setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
-    setPreviews((prev) => prev.filter((_, i) => i !== idx));
+    setPreviews((prev) => {
+      const removed = prev[idx];
+      if (removed) URL.revokeObjectURL(removed);
+      const next = prev.filter((_, i) => i !== idx);
+      previewUrlsRef.current = next;
+      return next;
+    });
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFiles.length) return;
     setUploading(true);
+    setUploadProgress({
+      completed: 0,
+      total: selectedFiles.length,
+      phase: "uploading",
+    });
 
     try {
-      const uploadedUrls: string[] = [];
-      for (const file of selectedFiles) {
+      const uploadedUrls = new Array<string>(selectedFiles.length);
+      let nextFileIndex = 0;
+
+      const uploadFile = async (file: File, index: number) => {
         const fd = new FormData();
         fd.append("file", file);
         const res = await fetch("/api/v1/upload/listing-photo", {
@@ -1837,10 +1916,30 @@ function MultiImageUploadModal({
           credentials: "include",
           body: fd,
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Upload failed");
-        uploadedUrls.push(data.url);
-      }
+        const data = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(data?.error || "Upload failed");
+        if (!data?.url) throw new Error("Upload did not return an image URL");
+        uploadedUrls[index] = data.url;
+        setUploadProgress((current) => ({
+          ...current,
+          completed: current.completed + 1,
+        }));
+      };
+
+      const worker = async () => {
+        while (nextFileIndex < selectedFiles.length) {
+          const index = nextFileIndex++;
+          await uploadFile(selectedFiles[index], index);
+        }
+      };
+
+      await Promise.all(
+        Array.from(
+          { length: Math.min(3, selectedFiles.length) },
+          () => worker(),
+        ),
+      );
+      setUploadProgress((current) => ({ ...current, phase: "saving" }));
 
       const tags = taggedUsers.map((u) => u.name || u.email || u.id);
 
@@ -1860,6 +1959,7 @@ function MultiImageUploadModal({
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Upload error");
       setUploading(false);
+      setUploadProgress({ completed: 0, total: 0, phase: "idle" });
     }
   };
 
@@ -1878,7 +1978,8 @@ function MultiImageUploadModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer"
+            disabled={uploading}
+            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             ✕
           </button>
@@ -1887,8 +1988,8 @@ function MultiImageUploadModal({
         <form onSubmit={handleUploadSubmit} className="space-y-5">
           {/* File Select Dropzone */}
           <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50/80 hover:bg-amber-50/20 rounded-2xl p-5 text-center cursor-pointer transition-all"
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className="border-2 border-dashed border-zinc-300 hover:border-amber-400 bg-zinc-50/80 hover:bg-amber-50/20 rounded-2xl p-5 text-center cursor-pointer transition-all disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2 shadow-2xs">
               <IconCamera />
@@ -1906,6 +2007,7 @@ function MultiImageUploadModal({
               className="hidden"
               ref={fileInputRef}
               onChange={handleFileSelect}
+              disabled={uploading}
             />
           </div>
 
@@ -1929,6 +2031,7 @@ function MultiImageUploadModal({
                     <button
                       type="button"
                       onClick={() => removeFile(i)}
+                      disabled={uploading}
                       className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/75 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] transition-colors cursor-pointer"
                       title="Remove image"
                     >
@@ -1936,6 +2039,30 @@ function MultiImageUploadModal({
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {uploading && (
+            <div
+              aria-live="polite"
+              className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900"
+            >
+              <div className="flex items-center justify-between gap-3 font-semibold">
+                <span>
+                  {uploadProgress.phase === "saving"
+                    ? "Saving your photos..."
+                    : `Uploading ${uploadProgress.completed} of ${uploadProgress.total} photos...`}
+                </span>
+                <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-amber-700 border-t-transparent" />
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-amber-100">
+                <div
+                  className="h-full rounded-full bg-amber-600 transition-[width] duration-200"
+                  style={{
+                    width: `${uploadProgress.total ? (uploadProgress.completed / uploadProgress.total) * 100 : 0}%`,
+                  }}
+                />
               </div>
             </div>
           )}
@@ -1970,6 +2097,7 @@ function MultiImageUploadModal({
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Tell the story behind this trip..."
+              disabled={uploading}
               className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
@@ -1979,6 +2107,7 @@ function MultiImageUploadModal({
             <button
               type="button"
               onClick={onClose}
+              disabled={uploading}
               className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
@@ -1988,7 +2117,11 @@ function MultiImageUploadModal({
               disabled={uploading || selectedFiles.length === 0}
               className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-semibold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              {uploading ? "Uploading..." : `Upload (${selectedFiles.length})`}
+              {uploadProgress.phase === "saving"
+                ? "Saving photos..."
+                : uploading
+                  ? `Uploading ${uploadProgress.completed}/${uploadProgress.total}...`
+                  : `Upload (${selectedFiles.length})`}
             </button>
           </div>
         </form>
@@ -2061,7 +2194,13 @@ function EditTripPhotoModal({
 
         <form onSubmit={handleSave} className="space-y-4">
           <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-zinc-200 shadow-2xs">
-            <Image src={photo.url} alt="Photo" fill className="object-cover" />
+            <Image
+              src={photo.url}
+              alt="Photo"
+              fill
+              unoptimized
+              className="object-cover"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2165,7 +2304,13 @@ function DeleteTripPhotoModal({
         </p>
 
         <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-zinc-200 mb-4">
-          <Image src={photo.url} alt="Photo" fill className="object-cover" />
+          <Image
+            src={photo.url}
+            alt="Photo"
+            fill
+            unoptimized
+            className="object-cover"
+          />
         </div>
 
         <div className="flex justify-end gap-2">
@@ -2219,6 +2364,7 @@ function LightboxModal({
             src={photo.url}
             alt="Photo"
             fill
+            unoptimized
             className="object-contain"
             priority
           />

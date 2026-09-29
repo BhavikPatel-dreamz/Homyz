@@ -160,6 +160,7 @@ async function runPersonalInformationTests() {
   assert(apiContent.includes("requireApiAuth"), "API route authenticates with requireApiAuth");
 
   // --- 7. Identity Document Upload & Self-Verification Prevention ---
+  const mappersPath = path.join(process.cwd(), "services/mappers.ts");
   const mappersContent = fs.readFileSync(mappersPath, "utf8");
   assert(!mappersContent.includes("personalInfo:"), "Public user DTO must never leak personalInfo");
 
