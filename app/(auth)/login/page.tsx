@@ -15,11 +15,17 @@ export default async function LoginPage({
 
   const { callbackUrl: rawCallbackUrl, error, method } = resolvedParams || {};
 
-  const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/dashboard");
+  const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/");
 
   if (user && user.status !== "SUSPENDED") {
     if (user.role === "ADMIN" || user.adminRoleSlug) {
       redirect("/admin");
+    }
+    if (user.role === "HOST" && (safeCallbackUrl === "/" || safeCallbackUrl === "/dashboard")) {
+      redirect("/dashboard");
+    }
+    if (safeCallbackUrl === "/dashboard") {
+      redirect("/");
     }
     redirect(safeCallbackUrl);
   }

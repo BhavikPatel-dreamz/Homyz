@@ -491,12 +491,13 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
             Close
           </button>
           <Link
-            href="/profile/tab/support"
+            href="/messages"
             onClick={onClose}
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors"
           >
-            <span>Chat with Support</span>
+            <span>Message Host</span>
           </Link>
+
         </div>
       </div>
     </ModalOverlay>

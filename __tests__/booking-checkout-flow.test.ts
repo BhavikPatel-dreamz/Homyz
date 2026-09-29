@@ -67,9 +67,20 @@ assert(clientCode.includes("Dates"), "Must display Dates row with Change button"
 assert(clientCode.includes("Guests"), "Must display Guests row with Change button");
 assert(clientCode.includes("Price details"), "Must display Price details section");
 assert(clientCode.includes("Taxes"), "Must display Taxes line");
+assert(clientCode.includes("Extra guest fee"), "Must itemize the extra-guest fee included in the total");
+assert(clientCode.includes("Service fee"), "Must itemize the service fee included in the total");
+assert(clientCode.includes("Pet fee"), "Must itemize a pet fee when one is included in the total");
 assert(clientCode.includes("Total"), "Must display Total amount row");
 assert(clientCode.includes("Price breakdown"), "Must include Price breakdown modal trigger");
 assert(clientCode.includes("ModalOverlay"), "Must use ModalOverlay for modals");
+assert(
+  clientCode.includes("formatMoney(quote.guestTotal, true)"),
+  "Checkout payment labels must display the authoritative quote total with two decimal places",
+);
+assert(
+  clientCode.includes('isQuoteLoading\n    ? "Calculating…"'),
+  "Checkout must not display the regular listing-price fallback while an offer quote is loading",
+);
 console.log("✓ Sticky property & price summary card verified!");
 
 // [4] Listing Detail CTA Redirection Audit

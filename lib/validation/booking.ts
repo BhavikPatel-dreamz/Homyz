@@ -11,6 +11,7 @@ export const createBookingSchema = z
     message: z.string().optional(),
     paymentPlan: z.enum(["FULL", "SPLIT", "KLARNA"]).optional(),
     paymentMethod: z.enum(["CARD", "APPLE_PAY", "GOOGLE_PAY", "LOCAL"]).optional(),
+    specialOfferId: z.string().optional(),
   })
   .refine((obj) => obj.endDate > obj.startDate, {
     message: "endDate must be after startDate",
@@ -26,6 +27,7 @@ export const quoteBookingSchema = z
     guests: z.coerce.number().int().min(1).max(50).optional().default(1),
     pets: z.coerce.number().int().min(0).max(20).optional(),
     nonRefundable: z.preprocess((value) => value === "true" || value === true, z.boolean()).optional().default(false),
+    specialOfferId: z.string().optional(),
   })
   .refine((obj) => obj.endDate > obj.startDate, {
     message: "endDate must be after startDate",

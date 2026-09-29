@@ -12,7 +12,9 @@ export const MEDIA_KINDS = Object.freeze([
   "stamp-icons",
   "guidebook-photos",
   "host-documents",
+  "message-attachments",
 ]);
+
 
 export const PUBLIC_MEDIA_KINDS = Object.freeze([
   "listing-photos",

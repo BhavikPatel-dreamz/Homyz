@@ -81,14 +81,20 @@ export function GuestDashboardSidebar({
                 }`}
               >
                 {item.id === "about_me" ? (
-                  <span className={`relative block overflow-hidden rounded-full border border-[#1F1F1F] ${isActive ? "h-full w-full" : "h-10 w-10"}`}>
-                  <Image
-                    src={avatarUrl || item.image}
-                    alt="About me"
-                    fill
-                    sizes={isActive ? "(min-width: 1280px) 64px, (min-width: 1024px) 48px, 40px" : "40px"}
-                    className="object-cover"
-                  />
+                  <span className={`relative flex items-center justify-center overflow-hidden rounded-full border border-[#1F1F1F] ${isActive ? "h-full w-full" : "h-10 w-10"}`}>
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="About me"
+                        fill
+                        sizes={isActive ? "(min-width: 1280px) 64px, (min-width: 1024px) 48px, 40px" : "40px"}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <svg className="h-1/2 w-1/2 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    )}
                   </span>
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#1F1F1F]">

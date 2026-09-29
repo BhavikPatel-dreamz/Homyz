@@ -27,6 +27,12 @@ export default async function ProfileTabPage({
     redirect("/profile/tab/account_settings");
   }
 
+  // Canonicalize messages tab to centralized /messages hub
+  if (slug[0] === "messages") {
+    redirect("/messages");
+  }
+
+
   const data = await loadProfilePageData(route.tab, route.subTab);
 
   return (

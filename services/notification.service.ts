@@ -589,7 +589,29 @@ async function sendHostMessageNotification(params: {
     message: params.messagePreview,
     entityId: params.conversationId,
     entityType: "conversation",
-    link: "/host/messages",
+    link: `/host/messages?id=${params.conversationId}`,
+    metadata: {
+      conversationId: params.conversationId,
+      senderName: params.senderName,
+    },
+  });
+}
+
+async function sendMessageNotification(params: {
+  recipientUserId: string;
+  senderName: string;
+  messagePreview: string;
+  conversationId: string;
+  isHostRecipient: boolean;
+}): Promise<NotificationDTO> {
+  return create({
+    userId: params.recipientUserId,
+    type: NotificationType.MESSAGE,
+    title: `Message from ${params.senderName}`,
+    message: params.messagePreview,
+    entityId: params.conversationId,
+    entityType: "conversation",
+    link: params.isHostRecipient ? `/host/messages?id=${params.conversationId}` : `/messages?id=${params.conversationId}`,
     metadata: {
       conversationId: params.conversationId,
       senderName: params.senderName,
@@ -607,4 +629,6 @@ export const notificationService = {
   deleteNotification,
   syncRealEventsForUser,
   sendHostMessageNotification,
+  sendMessageNotification,
 };
+

@@ -12,15 +12,16 @@ import path from "node:path";
  */
 
 export type PublicMediaKind = "listing-photos" | "guidebook-photos";
-export type PrivateMediaKind = "host-documents";
+export type PrivateMediaKind = "host-documents" | "message-attachments";
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
 const PUBLIC_KINDS = new Set<string>([
   "listing-photos",
   "guidebook-photos",
 ]);
-const PRIVATE_KINDS = new Set<string>(["host-documents"]);
+const PRIVATE_KINDS = new Set<string>(["host-documents", "message-attachments"]);
 const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
+
 const SAFE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 let s3ClientPromise: Promise<import("@aws-sdk/client-s3").S3Client | null> | null =
@@ -353,16 +354,20 @@ async function writeObject(options: {
   }
 
   if (isMediaServerEnabled()) {
-    const saved = await putMediaServer({
-      key,
-      body: options.body,
-      contentType: options.contentType,
-    });
-    return {
-      url: publicMediaUrl(key, saved.publicUrl),
-      fileName,
-      key,
-    };
+    try {
+      const saved = await putMediaServer({
+        key,
+        body: options.body,
+        contentType: options.contentType,
+      });
+      return {
+        url: publicMediaUrl(key, saved.publicUrl),
+        fileName,
+        key,
+      };
+    } catch (err) {
+      // Fallback to local disk if media server is unreachable or doesn't support the kind yet
+    }
   }
 
   warnLocalDisk();
@@ -380,8 +385,11 @@ async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
     return;
   }
   if (isMediaServerEnabled()) {
-    await deleteMediaServer(key);
-    return;
+    try {
+      await deleteMediaServer(key);
+    } catch {
+      // ignore
+    }
   }
   await deleteLocal(key);
 }
@@ -433,7 +441,11 @@ export async function readPrivateMedia(
   }
 
   if (isMediaServerEnabled()) {
-    return getMediaServer(key);
+    try {
+      return await getMediaServer(key);
+    } catch {
+      // Fallback to local disk if not on media server
+    }
   }
 
   try {
