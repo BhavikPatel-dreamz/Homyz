@@ -33,7 +33,7 @@ export function SeeAllCard({
   return (
     <Link
       href={href}
-      className="group relative flex h-full min-h-[300px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-zinc-200 bg-white p-5 text-center transition-all duration-300 hover:border-zinc-300 hover:shadow-lg sm:min-h-[320px] sm:rounded-[22px] select-none"
+      className="group relative flex h-full min-h-[229px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-zinc-200 bg-white sm:p-5 p-3 text-center transition-all duration-300 hover:border-zinc-300 hover:shadow-lg sm:min-h-[320px] sm:rounded-[22px] select-none"
       aria-label={`See all ${title || "properties"}`}
     >
       {/* Stacked Floating Photo Fan */}
@@ -74,7 +74,7 @@ export function SeeAllCard({
 
       <span
         aria-hidden="true"
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FCDF9C] border border-[#FCDF9C] text-[#1f1f1f] transition-all duration-300 group-hover:bg-[#1f1f1f] group-hover:border-[#1f1f1f] group-hover:text-white  group-focus-visible:bg-[#FCDF9C] group-focus-visible:text-[#1f1f1f]"
+        className="flex sm:h-12 h-8 sm:w-12 w-8 items-center justify-center rounded-full bg-[#FCDF9C] border border-[#FCDF9C] text-[#1f1f1f] transition-all duration-300 group-hover:bg-[#1f1f1f] group-hover:border-[#1f1f1f] group-hover:text-white  group-focus-visible:bg-[#FCDF9C] group-focus-visible:text-[#1f1f1f]"
       >
         <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5">
           <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

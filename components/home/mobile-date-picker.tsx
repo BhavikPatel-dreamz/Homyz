@@ -132,8 +132,8 @@ export function MobileDatePicker({
             aria-selected={preferences.mode === mode}
             aria-controls={`${pickerId}-panel`}
             onClick={() => update({ mode })}
-            className={`flex h-9 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-[14px] font-normal leading-none capitalize text-[#1f1f1f] transition-colors cursor-pointer ${
-              preferences.mode === mode ? "bg-[#dedede]" : "hover:bg-black/5"
+            className={`flex h-9 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-[14px] font-normal leading-none capitalize text-[#1f1f1f] transition-colors duration-300 cursor-pointer ${
+              preferences.mode === mode ? "bg-[#DDDDDE]" : "hover:bg-[#DDDDDE]"
             }`}
           >
             {t(tabKeys[mode])}
