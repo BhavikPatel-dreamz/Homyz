@@ -23,6 +23,7 @@ import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
 import type { FavoriteCardItem } from "@/services/favorite.service";
 import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import {
   SavedListingsSkeleton,
   NotificationsSkeleton,
@@ -226,6 +227,7 @@ export function ProfileClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
 
   const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
 
@@ -301,8 +303,8 @@ export function ProfileClient({
                 {/* 1. Header with Title & Yellow Edit Button */}
                 <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
                   <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-                    <span className="lg:hidden text-[20px] leading-7">My profile</span>
-                    <span className="hidden lg:inline">About me</span>
+                    <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
+                    <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
                   </h2>
                   {isOwner && (
                     <button
@@ -310,7 +312,7 @@ export function ProfileClient({
                       onClick={() => handleSelectTab("profile_management")}
                       className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
                     >
-                      Edit
+                      {t("profile_edit_btn", "Edit")}
                     </button>
                   )}
                 </div>
@@ -344,7 +346,7 @@ export function ProfileClient({
                         {currentUser.name || "Name"}
                       </h3>
                       <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
-                        {pub.whereILive || (isOwner ? "Add your location" : "")}
+                        {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
                       </p>
                     </div>
 
@@ -354,14 +356,14 @@ export function ProfileClient({
                         <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
                           {initialStats.trips ?? 0}
                         </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Trips</span>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
                       </div>
 
                       <div className="flex flex-col items-center">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
                           {initialStats.reviews ?? 0}
                         </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">Reviews</span>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
                       </div>
 
                       <div className="flex flex-col items-center">
@@ -369,7 +371,7 @@ export function ProfileClient({
                           {years}
                         </div>
                         <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
-                          Years on<br />Homyz
+                          {t("profile_stat_years_on_homyz", "Years on Homyz")}
                         </span>
                       </div>
                     </div>
@@ -382,22 +384,22 @@ export function ProfileClient({
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
                       <IconTranslate />
                     </span>
-                    <span>Speaks {Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages}</span>
+                    <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
                   </div>
                 ) : null}
 
                 {hasHostProfileDetails && (
                   <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
-                    <h3 className="text-xl font-semibold text-[#1F1F1F]">About me</h3>
+                    <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
                     {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
                     <div className="space-y-3 text-sm text-zinc-700">
-                      {hostPrompts.homeUnique && <p><span className="font-semibold">What makes my home unique: </span>{hostPrompts.homeUnique}</p>}
-                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">What guests should know: </span>{hostPrompts.guestsShouldKnow}</p>}
-                      {hostPrompts.education && <p><span className="font-semibold">Education / background: </span>{hostPrompts.education}</p>}
-                      {hostPrompts.perfectGuest && <p><span className="font-semibold">Perfect guest: </span>{hostPrompts.perfectGuest}</p>}
+                      {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
+                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
+                      {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
+                      {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
                     </div>
-                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">Hobbies</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
-                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">My interests</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
                   </section>
                 )}
 
@@ -489,11 +491,11 @@ export function ProfileClient({
         <div className="mt-8 lg:hidden">
           <div>
             {[
-              ["Account setting", "account_settings", "settings"],
-              ["Help centre", "/help", "help"],
-              ["Refer a Host", "/host/refer", "refer"],
-              ["Find a co-Host", "/host/co-host", "cohost"],
-              ["Gift Cards", "/gift-cards", "gift"],
+              [t("profile_mobile_account_setting", "Account setting"), "profile_management", "settings"],
+              [t("profile_mobile_help_centre", "Help centre"), "/help", "help"],
+              [t("profile_mobile_refer_a_host", "Refer a Host"), "/host/refer", "refer"],
+              [t("profile_mobile_find_cohost", "Find a co-Host"), "/host/co-host", "cohost"],
+              [t("profile_mobile_gift_cards", "Gift Cards"), "/gift-cards", "gift"],
             ].map(([label, target, icon], index) => {
               const isTab = target.startsWith("profile_management") || target === "account_settings";
               return isTab ? (
@@ -531,7 +533,7 @@ export function ProfileClient({
             })}
           </div>
           <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
-            Log out
+            {t("profile_mobile_log_out", "Log out")}
           </LogoutButton>
         </div>
     </div>

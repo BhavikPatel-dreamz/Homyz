@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
+import { useLanguage } from "@/lib/i18n/language-context";
+
 interface ChatMessage {
   id: string;
   sender: "agent" | "user";
@@ -10,23 +12,25 @@ interface ChatMessage {
   time: string;
 }
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: "msg-1",
-    sender: "agent",
-    text: "Hello! Welcome to Homyz 24/7 Guest Care. How can I assist you with your trips, booking modifications, or account today?",
-    time: "Just now",
-  },
-];
-
-const SUGGESTIONS = [
-  "I need to change my check-in time",
-  "How do I request a booking cancellation?",
-  "Where can I find my payment invoice?",
-  "How can I contact my property host?",
-];
-
 export function SupportChatView({ user }: { user?: { name?: string | null } }) {
+  const { t } = useLanguage();
+
+  const INITIAL_MESSAGES: ChatMessage[] = [
+    {
+      id: "msg-1",
+      sender: "agent",
+      text: "Hello! Welcome to Homyz 24/7 Guest Care. How can I assist you with your trips, booking modifications, or account today?",
+      time: "Just now",
+    },
+  ];
+
+  const SUGGESTIONS = [
+    t("profile_support_sugg_checkin", "I need to change my check-in time"),
+    t("profile_support_sugg_cancel", "How do I request a booking cancellation?"),
+    t("profile_support_sugg_invoice", "Where can I find my payment invoice?"),
+    t("profile_support_sugg_host", "How can I contact my property host?"),
+  ];
+
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -89,10 +93,10 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
       {/* Title Header */}
       <div className="mb-6 lg:mb-8">
         <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-          Support / Chat with Agent
+          {t("profile_support_title", "Support / Chat with Agent")}
         </h2>
         <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
-          We are available 24/7. Ask questions, report trip issues, or chat live with a Homyz customer experience specialist.
+          {t("profile_support_subtitle", "We are available 24/7. Ask questions, report trip issues, or chat live with a Homyz customer experience specialist.")}
         </p>
       </div>
 
@@ -111,14 +115,14 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
                 />
               </div>
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-semibold text-[#1F1F1F]">Sarah • Homyz Care</span>
+                <span className="truncate text-sm font-semibold text-[#1F1F1F]">{t("profile_support_agent_name", "Sarah • Homyz Care")}</span>
                 <span className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                  Online • Typically replies instantly
+                  {t("profile_support_online", "Online • Typically replies instantly")}
                 </span>
               </div>
             </div>
-            <span className="shrink-0 text-[11px] text-[#727272] max-[420px]:hidden">24/7 Live Concierge</span>
+            <span className="shrink-0 text-[11px] text-[#727272] max-[420px]:hidden">{t("profile_support_live_concierge", "24/7 Live Concierge")}</span>
           </div>
 
           {/* Chat Messages Feed */}
@@ -150,7 +154,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
                 <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
                 <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce delay-100" />
                 <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce delay-200" />
-                Sarah is typing...
+                {t("profile_support_is_typing", "Sarah is typing...")}
               </div>
             )}
           </div>
@@ -181,7 +185,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
           >
             <input
               type="text"
-              placeholder="Type your message..."
+              placeholder={t("profile_support_input_placeholder", "Type your message...")}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="min-w-0 flex-1 rounded-full border border-[#D7D7D7] px-4 py-2 text-sm text-[#1F1F1F] placeholder:text-[#727272] transition-colors focus:border-[#1F1F1F] focus:outline-none"
@@ -191,7 +195,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
               disabled={!inputText.trim()}
               className="flex h-10 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] px-4 text-sm font-semibold text-[#1F1F1F] hover:text-white transition-colors duration-300 hover:bg-[#1f1f1f] disabled:opacity-40 sm:px-5"
             >
-              Send
+              {t("profile_support_send_btn", "Send")}
             </button>
           </form>
         </div>
@@ -199,9 +203,9 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
         {/* Other Help Channels */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 xl:flex xl:flex-col">
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">Phone Support</h4>
+            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_phone_title", "Phone Support")}</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
-              For immediate assistance with active reservations:
+              {t("profile_support_phone_desc", "For immediate assistance with active reservations:")}
             </p>
             <a
               href="tel:+18005554669"
@@ -209,13 +213,13 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
             >
               +1 (800) 555-HOMYZ
             </a>
-            <span className="mt-0.5 text-xs text-[#727272]">Toll-free 24/7</span>
+            <span className="mt-0.5 text-xs text-[#727272]">{t("profile_support_phone_availability", "Toll-free 24/7")}</span>
           </div>
 
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">Email Support</h4>
+            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_email_title", "Email Support")}</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
-              Send documents or detailed billing inquiries:
+              {t("profile_support_email_desc", "Send documents or detailed billing inquiries:")}
             </p>
             <a
               href="mailto:support@homyz.app"
@@ -223,19 +227,19 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
             >
               support@homyz.app
             </a>
-            <span className="mt-0.5 text-xs text-[#727272]">Avg response: 1-2 hours</span>
+            <span className="mt-0.5 text-xs text-[#727272]">{t("profile_support_email_avg_time", "Avg response: 1-2 hours")}</span>
           </div>
 
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">Help Centre</h4>
+            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_help_title", "Help Centre")}</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
-              Find instant answers to FAQs, cancellation policies, and guest guides.
+              {t("profile_support_help_desc", "Find instant answers to FAQs, cancellation policies, and guest guides.")}
             </p>
             <a
               href="/help"
               className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] hover:underline"
             >
-              <span>Browse Help Articles</span>
+              <span>{t("profile_support_browse_help", "Browse Help Articles")}</span>
               <span>→</span>
             </a>
           </div>

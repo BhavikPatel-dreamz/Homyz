@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 
+import { useLanguage } from "@/lib/i18n/language-context";
+
 interface Transaction {
   id: string;
   title: string;
@@ -87,10 +89,11 @@ export function LoyaltyWalletView() {
   const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
   const [redeemingReward, setRedeemingReward] = useState<(typeof REWARDS)[0] | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const handleRedeem = (reward: (typeof REWARDS)[0]) => {
     if (balance < reward.points) {
-      setToastMessage(`You need ${reward.points - balance} more points for this reward.`);
+      setToastMessage(t("profile_loyalty_need_pts_toast", { count: reward.points - balance }));
       setTimeout(() => setToastMessage(null), 3000);
       return;
     }
@@ -111,7 +114,7 @@ export function LoyaltyWalletView() {
     setTransactions((prev) => [newTx, ...prev]);
     const name = redeemingReward.title;
     setRedeemingReward(null);
-    setToastMessage(`Success! You redeemed "${name}". Voucher code added to your wallet.`);
+    setToastMessage(t("profile_loyalty_success_toast", { name }));
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -120,10 +123,10 @@ export function LoyaltyWalletView() {
       {/* Title Header */}
       <div className="mb-6 lg:mb-8">
         <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-          Loyalty Points Wallet
+          {t("profile_loyalty_title", "Loyalty Points Wallet")}
         </h2>
         <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
-          Earn points on every booking and redeem them for free nights, discounts, and travel perks.
+          {t("profile_loyalty_subtitle", "Earn points on every booking and redeem them for free nights, discounts, and travel perks.")}
         </p>
       </div>
 
@@ -138,18 +141,18 @@ export function LoyaltyWalletView() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
-              Current Balance
+              {t("profile_loyalty_current_balance", "Current Balance")}
             </span>
             <div className="flex items-baseline gap-3">
               <span className="text-4xl font-semibold tracking-tight text-[#1F1F1F] sm:text-5xl">
                 {balance.toLocaleString()}
               </span>
               <span className="text-base font-semibold text-[#727272] sm:text-lg">
-                Points
+                {t("profile_loyalty_points_unit", "Points")}
               </span>
             </div>
             <p className="text-xs font-medium text-[#1F1F1F]/80 sm:text-sm">
-              ≈ ${(balance * 0.01).toFixed(2)} USD in stay credit
+              {t("profile_loyalty_stay_credit_approx", { amount: (balance * 0.01).toFixed(2) })}
             </p>
           </div>
 
@@ -158,10 +161,10 @@ export function LoyaltyWalletView() {
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
-              Homie Explorer Tier
+              {t("profile_loyalty_tier_explorer", "Homie Explorer Tier")}
             </span>
             <span className="text-xs text-[#727272]">
-              {5000 - balance > 0 ? `${5000 - balance} pts to Homie VIP` : "VIP Tier unlocked!"}
+              {5000 - balance > 0 ? t("profile_loyalty_pts_to_vip", { count: 5000 - balance }) : t("profile_loyalty_vip_unlocked", "VIP Tier unlocked!")}
             </span>
           </div>
         </div>
@@ -175,9 +178,9 @@ export function LoyaltyWalletView() {
             />
           </div>
           <div className="mt-2 flex items-center justify-between text-[11px] text-[#727272]">
-            <span>Base (0)</span>
-            <span>Explorer (2,000)</span>
-            <span>VIP (5,000)</span>
+            <span>{t("profile_loyalty_tier_base", "Base (0)")}</span>
+            <span>{t("profile_loyalty_tier_explorer_mark", "Explorer (2,000)")}</span>
+            <span>{t("profile_loyalty_tier_vip_mark", "VIP (5,000)")}</span>
           </div>
         </div>
       </div>
@@ -185,26 +188,26 @@ export function LoyaltyWalletView() {
       {/* Ways to Earn 3-Column Strip */}
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">Book a Stay</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">10 pts / $1</span>
-          <span className="mt-0.5 text-xs text-[#727272]">Earn on all homes &amp; villas</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_book_title", "Book a Stay")}</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_book_value", "10 pts / $1")}</span>
+          <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_book_desc", "Earn on all homes & villas")}</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">Write Reviews</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">50 pts each</span>
-          <span className="mt-0.5 text-xs text-[#727272]">After every completed trip</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_review_title", "Write Reviews")}</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_review_value", "50 pts each")}</span>
+          <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_review_desc", "After every completed trip")}</span>
         </div>
         <div className="flex flex-col rounded-2xl border border-[#E5E5E5] bg-white p-4">
-          <span className="text-xs font-semibold text-[#1F1F1F]">Refer Friends</span>
-          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">250 pts</span>
-          <span className="mt-0.5 text-xs text-[#727272]">When friend completes first stay</span>
+          <span className="text-xs font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_refer_title", "Refer Friends")}</span>
+          <span className="mt-1 text-lg font-semibold text-[#1F1F1F]">{t("profile_loyalty_earn_refer_value", "250 pts")}</span>
+          <span className="mt-0.5 text-xs text-[#727272]">{t("profile_loyalty_earn_refer_desc", "When friend completes first stay")}</span>
         </div>
       </div>
 
       {/* Available Rewards Grid */}
       <div className="mb-10">
         <h3 className="mb-4 text-lg font-semibold text-[#1F1F1F] sm:text-xl">
-          Redeem Rewards
+          {t("profile_loyalty_redeem_rewards_heading", "Redeem Rewards")}
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {REWARDS.map((reward) => {
@@ -240,7 +243,7 @@ export function LoyaltyWalletView() {
                       : "cursor-not-allowed bg-zinc-100 text-zinc-400"
                   }`}
                 >
-                  {canAfford ? "Redeem Reward" : "Need more points"}
+                  {canAfford ? t("profile_loyalty_redeem_btn", "Redeem Reward") : t("profile_loyalty_need_more_pts", "Need more points")}
                 </button>
               </div>
             );
@@ -251,7 +254,7 @@ export function LoyaltyWalletView() {
       {/* Points History */}
       <div>
         <h3 className="mb-4 text-lg font-semibold text-[#1F1F1F] sm:text-xl">
-          Points Activity
+          {t("profile_loyalty_points_activity_heading", "Points Activity")}
         </h3>
         <div className="divide-y divide-[#E5E5E5] xl:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white">
           {transactions.map((tx) => (
@@ -280,10 +283,10 @@ export function LoyaltyWalletView() {
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95">
             <h3 className="text-lg font-semibold text-[#1F1F1F]">
-              Confirm Reward Redemption
+              {t("profile_loyalty_confirm_modal_title", "Confirm Reward Redemption")}
             </h3>
             <p className="mt-2 text-sm text-[#727272]">
-              Are you sure you want to redeem <strong>{redeemingReward.points.toLocaleString()} points</strong> for <strong>{redeemingReward.title}</strong>?
+              {t("profile_loyalty_confirm_modal_desc", { points: redeemingReward.points.toLocaleString(), title: redeemingReward.title })}
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -291,14 +294,14 @@ export function LoyaltyWalletView() {
                 onClick={() => setRedeemingReward(null)}
                 className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Cancel
+                {t("profile_loyalty_cancel_btn", "Cancel")}
               </button>
               <button
                 type="button"
                 onClick={confirmRedeem}
                 className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-[#1F1F1F] hover:bg-[#F7D37D]"
               >
-                Confirm &amp; Deduct
+                {t("profile_loyalty_confirm_btn", "Confirm & Deduct")}
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
 export interface FilterOptions {
   tab: "today" | "upcoming" | "past" | "all";
@@ -18,11 +19,13 @@ export function FilterBar({
   onChange: (updated: Partial<FilterOptions>) => void;
   totalCount: number;
 }) {
-  const tabs: { id: FilterOptions["tab"]; label: string }[] = [
-    { id: "today", label: "Today" },
-    { id: "upcoming", label: "Upcoming" },
-    { id: "past", label: "Past" },
-    { id: "all", label: "All" },
+  const { t } = useLanguage();
+
+  const tabs: { id: FilterOptions["tab"]; labelKey: TranslationKey; fallback: string }[] = [
+    { id: "today", labelKey: "dashboard_tab_today", fallback: "Today" },
+    { id: "upcoming", labelKey: "dashboard_tab_upcoming", fallback: "Upcoming" },
+    { id: "past", labelKey: "dashboard_tab_past", fallback: "Past" },
+    { id: "all", labelKey: "dashboard_tab_all", fallback: "All" },
   ];
 
   return (
@@ -31,27 +34,34 @@ export function FilterBar({
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1>
-            You have {totalCount} {filters.tab === "upcoming" ? "upcoming " : ""}reservations
+            {t(
+              "dashboard_res_title",
+              {
+                count: totalCount,
+                type: filters.tab === "upcoming" ? t("dashboard_res_type_upcoming", "upcoming ") : "",
+              },
+              `You have ${totalCount} ${filters.tab === "upcoming" ? "upcoming " : ""}reservations`,
+            )}
           </h1>
           <p className="text-base text-muted-foreground mt-4 font-normal">
-            Manage check-ins, guest stays, and property reservations.
+            {t("dashboard_res_subtitle", "Manage check-ins, guest stays, and property reservations.")}
           </p>
         </div>
 
         {/* View Filter Pill Tabs (Today, Upcoming, etc.) */}
         <div className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] p-1 w-fit shadow-2xs">
-          {tabs.map((t) => (
+          {tabs.map((tabItem) => (
             <button
-              key={t.id}
+              key={tabItem.id}
               type="button"
-              onClick={() => onChange({ tab: t.id })}
+              onClick={() => onChange({ tab: tabItem.id })}
               className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                filters.tab === t.id
-                ? "bg-[var(--primary)] text-primary-foreground shadow-xs"
+                filters.tab === tabItem.id
+                  ? "bg-[var(--primary)] text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-muted-foreground"
               }`}
             >
-              {t.label}
+              {t(tabItem.labelKey, tabItem.fallback)}
             </button>
           ))}
         </div>
@@ -66,7 +76,7 @@ export function FilterBar({
           </svg>
           <input
             type="text"
-            placeholder="Search by property, guest name, or location..."
+            placeholder={t("dashboard_search_placeholder", "Search by property, guest name, or location...")}
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
             className="w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 pr-4 py-2 text-sm font-normal text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]"
@@ -80,10 +90,10 @@ export function FilterBar({
             onChange={(e) => onChange({ status: e.target.value })}
             className="w-full sm:w-auto appearance-none rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-4 pr-9 py-2 text-xs font-semibold text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors cursor-pointer min-h-[46px]"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PENDING">Pending</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="ALL">{t("dashboard_status_all", "All Statuses")}</option>
+            <option value="CONFIRMED">{t("dashboard_status_confirmed", "Confirmed")}</option>
+            <option value="PENDING">{t("dashboard_status_pending", "Pending")}</option>
+            <option value="CANCELLED">{t("dashboard_status_cancelled", "Cancelled")}</option>
           </select>
           <svg
             className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 stroke-[#1D1D1D] dark:stroke-muted-foreground"

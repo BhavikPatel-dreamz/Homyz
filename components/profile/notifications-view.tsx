@@ -13,6 +13,7 @@ import {
 } from "@/actions/notification/notifications";
 import { NotificationsSkeleton } from "@/components/dashboard/section-skeletons";
 import { NotificationType } from "@/generated/prisma/enums";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type FilterTab = "ALL" | "UNREAD" | NotificationType;
 
@@ -24,7 +25,7 @@ interface NotificationsViewProps {
   };
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t?: (key: any, fallback?: string) => string): string {
   try {
     const date = new Date(dateStr);
     const now = new Date();
@@ -33,10 +34,10 @@ function formatRelativeTime(dateStr: string): string {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return t ? t("profile_notif_time_just_now", "Just now") : "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return "Yesterday";
+    if (diffDays === 1) return t ? t("profile_notif_time_yesterday", "Yesterday") : "Yesterday";
     if (diffDays < 7) return `${diffDays}d ago`;
 
     return date.toLocaleDateString("en-US", {
@@ -53,6 +54,7 @@ function getTypeBadge(
   type: NotificationType,
   entityType?: string | null,
   metadata?: Record<string, unknown> | null,
+  t?: (key: any, fallback?: string) => string,
 ) {
   switch (type) {
     case NotificationType.BOOKING: {
@@ -62,7 +64,7 @@ function getTypeBadge(
 
       if (isHost) {
         return {
-          label: "Host Reservation",
+          label: t ? t("profile_notif_type_host_res", "Host Reservation") : "Host Reservation",
           icon: (
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -74,7 +76,7 @@ function getTypeBadge(
       }
 
       return {
-        label: "Trip Booking",
+        label: t ? t("profile_notif_type_trip_booking", "Trip Booking") : "Trip Booking",
         icon: (
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -88,7 +90,7 @@ function getTypeBadge(
     }
     case NotificationType.MESSAGE:
       return {
-        label: "Message",
+        label: t ? t("profile_notif_type_message", "Message") : "Message",
         icon: (
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -98,7 +100,7 @@ function getTypeBadge(
       };
     case NotificationType.PROMOTION:
       return {
-        label: "Offer",
+        label: t ? t("profile_notif_type_offer", "Offer") : "Offer",
         icon: (
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -109,7 +111,7 @@ function getTypeBadge(
     case NotificationType.SYSTEM:
     default:
       return {
-        label: "System",
+        label: t ? t("profile_notif_type_system", "System") : "System",
         icon: (
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
@@ -123,6 +125,7 @@ function getTypeBadge(
 }
 
 export function NotificationsView({ initialData }: NotificationsViewProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationDTO[]>(
     initialData?.items || [],
@@ -143,7 +146,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     try {
       const res = await getNotificationsAction({ skip: 0, take: 20 });
       if (!res.ok) {
-        setError(res.error || "Failed to load notifications.");
+        setError(res.error || t("profile_notif_error_load", "Failed to load notifications."));
         return;
       }
       if (res.data) {
@@ -152,11 +155,11 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         setTotal(res.data.total);
       }
     } catch {
-      setError("An unexpected error occurred while fetching notifications.");
+      setError(t("profile_notif_error_unexpected", "An unexpected error occurred while fetching notifications."));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!initialData) {
@@ -328,16 +331,16 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-              Notifications
+              {t("profile_notif_title", "Notifications")}
             </h2>
             {unreadCount > 0 && (
               <span className="inline-flex items-center justify-center rounded-full bg-[#1F1F1F] text-white text-xs font-semibold px-2.5 py-0.5 shadow-2xs">
-                {unreadCount} new
+                {unreadCount} {t("profile_notif_new_badge", "new")}
               </span>
             )}
           </div>
           <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
-            Stay updated on booking confirmations, messages from hosts, promotions, and system alerts.
+            {t("profile_notif_subtitle", "Stay updated on booking confirmations, messages from hosts, promotions, and system alerts.")}
           </p>
         </div>
 
@@ -347,7 +350,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
             onClick={handleMarkAllRead}
             className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] hover:bg-zinc-50 hover:border-zinc-400 transition-all self-start sm:self-auto cursor-pointer shadow-2xs shrink-0"
           >
-            Mark all as read
+            {t("profile_notif_mark_all_read", "Mark all as read")}
           </button>
         )}
       </div>
@@ -361,7 +364,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
             onClick={loadNotifications}
             className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800 transition-colors shrink-0"
           >
-            Retry
+            {t("profile_notif_retry", "Retry")}
           </button>
         </div>
       )}
@@ -369,12 +372,12 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       {/* Filter Category Pills */}
       <div className="mb-6 flex w-full min-w-0 max-w-full flex-nowrap items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap">
         {[
-          { id: "ALL" as FilterTab, label: `All (${notifications.length})` },
-          { id: "UNREAD" as FilterTab, label: `Unread (${unreadCount})` },
-          { id: NotificationType.BOOKING as FilterTab, label: `Bookings (${bookingCount})` },
-          { id: NotificationType.MESSAGE as FilterTab, label: `Messages (${messageCount})` },
-          { id: NotificationType.PROMOTION as FilterTab, label: `Offers (${promoCount})` },
-          { id: NotificationType.SYSTEM as FilterTab, label: `System (${systemCount})` },
+          { id: "ALL" as FilterTab, label: `${t("profile_notif_filter_all", "All")} (${notifications.length})` },
+          { id: "UNREAD" as FilterTab, label: `${t("profile_notif_filter_unread", "Unread")} (${unreadCount})` },
+          { id: NotificationType.BOOKING as FilterTab, label: `${t("profile_notif_filter_bookings", "Bookings")} (${bookingCount})` },
+          { id: NotificationType.MESSAGE as FilterTab, label: `${t("profile_notif_filter_messages", "Messages")} (${messageCount})` },
+          { id: NotificationType.PROMOTION as FilterTab, label: `${t("profile_notif_filter_offers", "Offers")} (${promoCount})` },
+          { id: NotificationType.SYSTEM as FilterTab, label: `${t("profile_notif_filter_system", "System")} (${systemCount})` },
         ].map((btn) => (
           <button
             key={btn.id}
@@ -400,17 +403,17 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </div>
-          <p className="text-sm font-semibold text-[#1F1F1F]">No notifications found</p>
+          <p className="text-sm font-semibold text-[#1F1F1F]">{t("profile_notif_empty_title", "No notifications found")}</p>
           <p className="mt-1 text-xs text-[#727272]">
             {filter === "UNREAD"
-              ? "You have read all of your notifications."
-              : "You are all caught up! When updates arrive, they will appear here."}
+              ? t("profile_notif_empty_unread", "You have read all of your notifications.")
+              : t("profile_notif_empty_all", "You are all caught up! When updates arrive, they will appear here.")}
           </p>
         </div>
       ) : (
         <div className="divide-y divide-zinc-200/80 rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs">
           {filtered.map((item) => {
-            const badge = getTypeBadge(item.type, item.entityType, item.metadata);
+            const badge = getTypeBadge(item.type, item.entityType, item.metadata, t);
             const isClickable = Boolean(item.link || item.entityId);
 
             return (
@@ -455,7 +458,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                     </div>
 
                     <span className="shrink-0 text-xs text-zinc-400">
-                      {formatRelativeTime(item.createdAt)}
+                      {formatRelativeTime(item.createdAt, t)}
                     </span>
                   </div>
 
@@ -467,7 +470,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                   <div className="mt-2.5 flex items-center gap-3">
                     {isClickable && (
                       <span className="text-xs font-semibold text-[#1F1F1F] group-hover:underline inline-flex items-center gap-1">
-                        <span>View details</span>
+                        <span>{t("profile_notif_view_details", "View details")}</span>
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
@@ -478,9 +481,9 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                       type="button"
                       onClick={(e) => handleToggleRead(e, item)}
                       className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors ml-auto cursor-pointer"
-                      title={item.isRead ? "Mark as unread" : "Mark as read"}
+                      title={item.isRead ? t("profile_notif_mark_unread", "Mark as unread") : t("profile_notif_mark_read", "Mark as read")}
                     >
-                      {item.isRead ? "Mark as unread" : "Mark as read"}
+                      {item.isRead ? t("profile_notif_mark_unread", "Mark as unread") : t("profile_notif_mark_read", "Mark as read")}
                     </button>
                   </div>
                 </div>

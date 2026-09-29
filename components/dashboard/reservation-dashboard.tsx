@@ -9,6 +9,7 @@ import { ErrorState } from "./error-state";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function ReservationDashboard({
   initialReservations,
@@ -21,6 +22,7 @@ export function ReservationDashboard({
   reviews?: GuestAuthoredReviewDTO[];
   onTabChange?: (tab: FilterOptions["tab"]) => void;
 }) {
+  const { t } = useLanguage();
   const [reservations, setReservations] = useState<ReservationCardData[]>(initialReservations || []);
   const [filters, setFilters] = useState<FilterOptions>({
     tab: initialTab,
@@ -171,18 +173,18 @@ export function ReservationDashboard({
       ) : filteredItems.length === 0 ? (
         filters.tab === "upcoming" && !filters.search ? (
           <EmptyState
-            title="No upcoming trips yet"
-            description="Time to dust off your bags and start planning your next great adventure."
+            title={t("dashboard_empty_upcoming_title", "No upcoming trips yet")}
+            description={t("dashboard_empty_upcoming_desc", "Time to dust off your bags and start planning your next great adventure.")}
             actionHref="/"
-            actionText="Explore stays"
+            actionText={t("dashboard_empty_explore_action", "Explore stays")}
           />
         ) : filters.tab === "past" && !filters.search ? (
           <div className="space-y-12">
             <EmptyState
-              title="No past bookings yet"
-              description="Once you complete trips with Homyz, your completed bookings will be cataloged here."
+              title={t("dashboard_empty_past_title", "No past bookings yet")}
+              description={t("dashboard_empty_past_desc", "Once you complete trips with Homyz, your completed bookings will be cataloged here.")}
               actionHref="/"
-              actionText="Explore stays"
+              actionText={t("dashboard_empty_explore_action", "Explore stays")}
             />
             {/* My Reviews Section below past bookings even if past bookings are empty */}
             <div className="pt-8 border-t border-zinc-200/80">
@@ -191,8 +193,8 @@ export function ReservationDashboard({
           </div>
         ) : (
           <EmptyState
-            title={`No ${filters.tab} reservations`}
-            description="Try adjusting your search criteria or switching filter tabs."
+            title={t("dashboard_empty_generic_title" as any, { tab: filters.tab }, `No ${filters.tab} reservations`)}
+            description={t("dashboard_empty_generic_desc" as any, "Try adjusting your search criteria or switching filter tabs.")}
           />
         )
       ) : filters.tab === "past" ? (

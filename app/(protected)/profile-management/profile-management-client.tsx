@@ -13,6 +13,7 @@ import {
   deleteTripPhotoAction,
 } from "@/actions/user/tripPhotos";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
 import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
@@ -165,6 +166,7 @@ function LanguageMultiSelect({
   onChange: (ids: string[]) => void;
   disabled?: boolean;
 }) {
+  const { t } = useLanguage();
   const [search, setSearch] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
@@ -363,8 +365,8 @@ function LanguageMultiSelect({
             onKeyDown={handleKeyDown}
             placeholder={
               selected.length === 0
-                ? "Search & select languages (e.g. English, Arabic)..."
-                : "Add another language..."
+                ? t("profile_info_languages_ph_empty", "Search & select languages (e.g. English, Arabic)...")
+                : t("profile_info_languages_ph_more", "Add another language...")
             }
             className="flex-1 min-w-[140px] bg-transparent text-sm text-[#1F1F1F] placeholder-zinc-400 focus:outline-none py-1"
           />
@@ -373,7 +375,7 @@ function LanguageMultiSelect({
         {/* Count badge when closed */}
         {!open && uniqueSelected.length > 0 && !disabled && (
           <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
-            {uniqueSelected.length} selected
+            {uniqueSelected.length} {t("profile_info_languages_selected", "selected")}
           </span>
         )}
       </div>
@@ -497,6 +499,7 @@ function InlineLocationSearch({
   onChange: (val: string) => void;
   disabled?: boolean;
 }) {
+  const { t } = useLanguage();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState(value);
   const [suggestions, setSuggestions] = React.useState<StructuredLocation[]>(POPULAR_GLOBAL_DESTINATIONS);
@@ -623,7 +626,7 @@ function InlineLocationSearch({
             if (!open) setOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search town, city or country (e.g. Rome, Italy)..."
+          placeholder={t("profile_info_where_live_ph", "Search town, city or country (e.g. Rome, Italy)...")}
           className="flex-1 min-w-0 bg-transparent text-sm text-[#1F1F1F] placeholder-zinc-400 focus:outline-none font-medium"
         />
 
@@ -745,6 +748,7 @@ export function ProfileManagementClient({
   onSubTabChange,
   onProfileUpdated,
 }: ProfileManagementClientProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [activeMgmtTab, setActiveMgmtTab] = useState<ProfileMgmtSubTab>(() =>
     initialSubTab || extractSubTabFromQuery()
@@ -1057,7 +1061,7 @@ export function ProfileManagementClient({
                   height={24}
                   aria-hidden="true"
                 />
-                <span>{uploading ? "..." : "Edit"}</span>
+                <span>{uploading ? "..." : t("profile_mgmt_edit", "Edit")}</span>
               </button>
               <input
                 type="file"
@@ -1072,13 +1076,12 @@ export function ProfileManagementClient({
 
         <div className="flex-1 max-w-md xl:ml-15">
           <h1 className="mb-4 text-[26px] font-semibold leading-tight text-[#1F1F1F] sm:hidden">
-            My profile
+            {t("profile_mgmt_my_profile", "My profile")}
           </h1>
           <p className="text-base text-[#727272] leading-relaxed font-normal">
-            Your profile is visible to both hosts and guests, and may be shown
-            throughout Homyz to support a trustworthy community.{" "}
+            {t("profile_mgmt_community_note", "Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.")}{" "}
             <span className="font-semibold underline cursor-pointer hover:text-black transition">
-              Learn more
+              {t("profile_mgmt_learn_more", "Learn more")}
             </span>
           </p>
         </div>
@@ -1098,7 +1101,7 @@ export function ProfileManagementClient({
               : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
-          Profile Information
+          {t("profile_mgmt_tab_info", "Profile Information")}
         </Link>
 
         <Link
@@ -1113,7 +1116,7 @@ export function ProfileManagementClient({
               : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
-          Trip Photos ({tripPhotos.length})
+          {t("profile_mgmt_tab_photos", "Trip Photos")} ({tripPhotos.length})
         </Link>
 
         <Link
@@ -1128,7 +1131,7 @@ export function ProfileManagementClient({
               : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
-          Privacy & Visibility
+          {t("profile_mgmt_tab_privacy", "Privacy & Visibility")}
         </Link>
       </div>
 
@@ -1145,7 +1148,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My full name
+                  {t("profile_info_full_name", "My full name")}
                 </span>
                 <input
                   value={name}
@@ -1156,7 +1159,7 @@ export function ProfileManagementClient({
                       ? "text-[#1f1f1f] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="edit: Your full name"
+                  placeholder={t("profile_info_full_name_ph", "edit: Your full name")}
                 />
               </div>
             </div>
@@ -1165,7 +1168,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Where I&apos;ve always wanted to go
+                  {t("profile_info_where_wanted", "Where I've always wanted to go")}
                 </span>
                 <input
                   value={formDataState.whereIWantToGo}
@@ -1178,7 +1181,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="edit: Where have you always wanted to travel?"
+                  placeholder={t("profile_info_where_wanted_ph", "edit: Where have you always wanted to travel?")}
                 />
               </div>
             </div>
@@ -1188,7 +1191,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My work
+                  {t("profile_info_my_work", "My work")}
                 </span>
                 <input
                   value={formDataState.myWork}
@@ -1199,7 +1202,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="Add your work"
+                  placeholder={t("profile_info_my_work_ph", "Add your work")}
                 />
               </div>
             </div>
@@ -1209,7 +1212,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  I spend too much time
+                  {t("profile_info_spend_time", "I spend too much time")}
                 </span>
                 <input
                   value={formDataState.spendTooMuchTime}
@@ -1222,7 +1225,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="Add an answer"
+                  placeholder={t("profile_info_spend_time_ph", "Add an answer")}
                 />
               </div>
             </div>
@@ -1232,7 +1235,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Pets
+                  {t("profile_info_pets", "Pets")}
                 </span>
                 <input
                   value={formDataState.pets}
@@ -1243,7 +1246,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="Add pets"
+                  placeholder={t("profile_info_pets_ph", "Add pets")}
                 />
               </div>
             </div>
@@ -1253,7 +1256,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Decade I was born
+                  {t("profile_info_decade_born", "Decade I was born")}
                 </span>
                 <input
                   value={formDataState.decadeBorn}
@@ -1266,7 +1269,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="Add decade"
+                  placeholder={t("profile_info_decade_born_ph", "Add decade")}
                 />
               </div>
             </div>
@@ -1276,7 +1279,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  Where I went to school
+                  {t("profile_info_school", "Where I went to school")}
                 </span>
                 <input
                   value={formDataState.school}
@@ -1287,7 +1290,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="Add school"
+                  placeholder={t("profile_info_school_ph", "Add school")}
                 />
               </div>
             </div>
@@ -1297,7 +1300,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My most useless skill
+                  {t("profile_info_useless_skill", "My most useless skill")}
                 </span>
                 <input
                   value={formDataState.uselessSkill}
@@ -1310,7 +1313,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="edit: What's your most useless skill?"
+                  placeholder={t("profile_info_useless_skill_ph", "edit: What's your most useless skill?")}
                 />
               </div>
             </div>
@@ -1320,7 +1323,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My fun fact
+                  {t("profile_info_fun_fact", "My fun fact")}
                 </span>
                 <input
                   value={formDataState.funFact}
@@ -1331,7 +1334,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="edit: What's your fun fact?"
+                  placeholder={t("profile_info_fun_fact_ph", "edit: What's your fun fact?")}
                 />
               </div>
             </div>
@@ -1341,7 +1344,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My favorite song in high school
+                  {t("profile_info_fav_song", "My favorite song in high school")}
                 </span>
                 <input
                   value={formDataState.favoriteSong}
@@ -1354,7 +1357,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="edit: What was your favorite song in high school?"
+                  placeholder={t("profile_info_fav_song_ph", "edit: What was your favorite song in high school?")}
                 />
               </div>
             </div>
@@ -1366,7 +1369,7 @@ export function ProfileManagementClient({
               </div>
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272] mb-1.5">
-                  Languages I speak
+                  {t("profile_info_languages", "Languages I speak")}
                 </span>
                 <LanguageMultiSelect
                   selected={
@@ -1390,7 +1393,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  I&apos;m obsessed with
+                  {t("profile_info_obsessed_with", "I'm obsessed with")}
                 </span>
                 <input
                   value={formDataState.obsessedWith}
@@ -1403,7 +1406,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="What are you obsessed with?"
+                  placeholder={t("profile_info_obsessed_with_ph", "What are you obsessed with?")}
                 />
               </div>
             </div>
@@ -1413,7 +1416,7 @@ export function ProfileManagementClient({
               <IconSprig />
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272]">
-                  My biography title would be
+                  {t("profile_info_bio_title", "My biography title would be")}
                 </span>
                 <input
                   value={formDataState.bioTitle}
@@ -1426,7 +1429,7 @@ export function ProfileManagementClient({
                       ? "text-[#1F1F1F] font-medium"
                       : "text-zinc-400 font-normal"
                   }`}
-                  placeholder="My biography title would be"
+                  placeholder={t("profile_info_bio_title_ph", "My biography title would be")}
                 />
               </div>
             </div>
@@ -1438,7 +1441,7 @@ export function ProfileManagementClient({
               </div>
               <div className="flex-1 min-w-0">
                 <span className="block sm:text-base text-sm font-normal text-[#727272] mb-1.5">
-                  Where I live
+                  {t("profile_info_where_live", "Where I live")}
                 </span>
                 {isOwner ? (
                   <InlineLocationSearch
@@ -1456,7 +1459,7 @@ export function ProfileManagementClient({
                           : "text-zinc-400 font-normal"
                       }`}
                     >
-                      {formDataState.whereILive || "Not specified"}
+                      {formDataState.whereILive || t("profile_info_not_specified", "Not specified")}
                     </span>
                   </div>
                 )}
@@ -1468,7 +1471,7 @@ export function ProfileManagementClient({
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-medium text-[#1F1F1F]">
-                About me
+                {t("profile_info_about_me", "About me")}
               </h3>
               <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-semibold" : "text-zinc-500"}`}>
                 {(formDataState.bio || "").length} / {MAX_BIO_LENGTH}
@@ -1484,11 +1487,11 @@ export function ProfileManagementClient({
                   handleInputChange("bio", val);
                 }}
                 className="w-full h-full min-h-[90px] bg-transparent resize-y font-normal text-base text-[#1F1F1F] placeholder-zinc-400 focus:outline-none leading-relaxed"
-                placeholder="Tell hosts and guests a little about yourself, your hobbies, and travel style..."
+                placeholder={t("profile_info_about_me_ph", "Tell hosts and guests a little about yourself, your hobbies, and travel style...")}
               />
             </div>
             <p className="mt-1.5 text-xs text-zinc-500">
-              Maximum {MAX_BIO_LENGTH} characters. About me will be visible on your public profile and to hosts when booking.
+              {t("profile_info_max_chars", "Maximum 450 characters. About me will be visible on your public profile and to hosts when booking.")}
             </p>
           </div>
 
@@ -1511,17 +1514,17 @@ export function ProfileManagementClient({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    <span>Saving...</span>
+                    <span>{t("profile_info_saving", "Saving...")}</span>
                   </>
                 ) : saveStatus === "saved" ? (
                   <>
                     <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Saved!</span>
+                    <span>{t("profile_info_saved", "Saved!")}</span>
                   </>
                 ) : (
-                  <span>Save profile</span>
+                  <span>{t("profile_info_save_btn", "Save profile")}</span>
                 )}
               </button>
             </div>
@@ -1535,10 +1538,10 @@ export function ProfileManagementClient({
           <div className="flex sm:flex-nowrap flex-wrap sm:gap-0 gap-3 items-center sm:justify-between justify-center">
             <div>
               <h3 className="text-lg font-semibold text-[#1F1F1F]">
-                Trip Photos Management
+                {t("trip_photos_mgmt_title", "Trip Photos Management")}
               </h3>
               <p className="text-xs text-zinc-500">
-                Upload and curate your travel memories
+                {t("trip_photos_mgmt_subtitle", "Upload and curate your travel memories")}
               </p>
             </div>
             {isOwner && (
@@ -1548,7 +1551,7 @@ export function ProfileManagementClient({
                 className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
               >
                 <IconCamera />
-                <span>Upload Photos</span>
+                <span>{t("trip_photos_upload_btn", "Upload Photos")}</span>
               </button>
             )}
           </div>
@@ -1573,11 +1576,10 @@ export function ProfileManagementClient({
                 <IconCamera />
               </div>
               <p className="text-base font-semibold text-[#1F1F1F]">
-                You can upload best images of your trip
+                {t("trip_photos_empty_title", "You can upload best images of your trip")}
               </p>
               <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
-                Select multiple photos, tag travel companions, add captions and
-                locations.
+                {t("trip_photos_empty_subtitle", "Select multiple photos, tag travel companions, add captions and locations.")}
               </p>
               {isOwner && (
                 <button
@@ -1585,7 +1587,7 @@ export function ProfileManagementClient({
                   onClick={() => setUploadModalOpen(true)}
                   className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
                 >
-                  Upload Photos
+                  {t("trip_photos_upload_btn", "Upload Photos")}
                 </button>
               )}
             </div>
@@ -1628,7 +1630,7 @@ export function ProfileManagementClient({
                             setEditPhotoModal(photo);
                           }}
                           className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-[#1F1F1F] flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
-                          title="Edit photo"
+                          title={t("trip_photos_edit_title", "Edit photo")}
                         >
                           <IconPencil />
                         </button>
@@ -1639,7 +1641,7 @@ export function ProfileManagementClient({
                             setDeletePhotoModal(photo);
                           }}
                           className="w-8 h-8 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white text-rose-600 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
-                          title="Delete photo"
+                          title={t("trip_photos_delete_title", "Delete photo")}
                         >
                           <IconTrash />
                         </button>
@@ -1671,10 +1673,10 @@ export function ProfileManagementClient({
         <div className="flex flex-col gap-6">
           <div>
             <h3 className="text-xl font-semibold text-[#1F1F1F]">
-              Privacy & Visibility Settings
+              {t("profile_privacy_settings_title", "Privacy & Visibility Settings")}
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
-              Manage who can see your profile on Homyz.
+              {t("profile_privacy_settings_desc", "Manage who can see your profile on Homyz.")}
             </p>
           </div>
 
@@ -1683,10 +1685,10 @@ export function ProfileManagementClient({
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm font-semibold text-[#1F1F1F]">
-                  Public Profile Visibility
+                  {t("profile_privacy_public_label", "Public Profile Visibility")}
                 </h4>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  Allow hosts and other guests to discover your profile
+                  {t("profile_privacy_public_desc", "Allow hosts and other guests to discover your profile")}
                 </p>
               </div>
 
@@ -1699,7 +1701,9 @@ export function ProfileManagementClient({
                       : "bg-zinc-200 text-zinc-700 border-zinc-300"
                   }`}
                 >
-                  {(formDataState.profileVisible ?? true) ? "Active" : "OFF"}
+                  {(formDataState.profileVisible ?? true)
+                    ? t("profile_privacy_active", "Active")
+                    : t("profile_privacy_off", "OFF")}
                 </span>
 
                 {/* Interactive Red Toggle Switch */}
@@ -1720,8 +1724,8 @@ export function ProfileManagementClient({
                   }`}
                   title={
                     (formDataState.profileVisible ?? true)
-                      ? "Make profile private"
-                      : "Make profile public"
+                      ? t("profile_privacy_toggle_off_title", "Make profile private")
+                      : t("profile_privacy_toggle_on_title", "Make profile public")
                   }
                 >
                   <div
@@ -1830,6 +1834,7 @@ function MultiImageUploadModal({
   onClose: () => void;
   onUploaded: (photos: TripPhotoItem[]) => void;
 }) {
+  const { t } = useLanguage();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [location, setLocation] = useState("");
@@ -1969,10 +1974,10 @@ function MultiImageUploadModal({
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
             <h3 className="sm:text-lg text-sm sm:font-semibold font-normal text-[#1F1F1F] tracking-tight">
-              Upload Trip Photos
+              {t("trip_photos_modal_upload_title", "Upload Trip Photos")}
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Add your favorite travel memories
+              {t("trip_photos_modal_upload_subtitle", "Add your favorite travel memories")}
             </p>
           </div>
           <button
@@ -1995,10 +2000,10 @@ function MultiImageUploadModal({
               <IconCamera />
             </div>
             <p className="text-xs font-semibold text-zinc-800">
-              Select trip photos
+              {t("trip_photos_dropzone_title", "Select trip photos")}
             </p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              You can upload best images of your trip (Max 10MB each)
+              {t("trip_photos_dropzone_note", "You can upload best images of your trip (Max 10MB each)")}
             </p>
             <input
               type="file"
@@ -2015,7 +2020,7 @@ function MultiImageUploadModal({
           {previews.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-zinc-800 mb-2">
-                Selected Photos ({previews.length})
+                {t("trip_photos_selected_photos", "Selected Photos")} ({previews.length})
               </p>
               <div className="grid grid-cols-4 gap-2.5 max-h-36 overflow-y-auto p-1 bg-zinc-50 rounded-2xl border border-zinc-200/80">
                 {previews.map((src, i) => (
@@ -2033,7 +2038,7 @@ function MultiImageUploadModal({
                       onClick={() => removeFile(i)}
                       disabled={uploading}
                       className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/75 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] transition-colors cursor-pointer"
-                      title="Remove image"
+                      title={t("trip_photos_remove_img", "Remove image")}
                     >
                       ✕
                     </button>
@@ -2086,7 +2091,7 @@ function MultiImageUploadModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-[#1F1F1F]">
-                Caption
+                {t("trip_photos_caption_label", "Caption")}
               </label>
               <span className="text-[11px] font-semibold text-zinc-400">
                 {caption.length} / 300
@@ -2096,8 +2101,7 @@ function MultiImageUploadModal({
               value={caption}
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Tell the story behind this trip..."
-              disabled={uploading}
+              placeholder={t("trip_photos_caption_ph", "Tell the story behind this trip...")}
               className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
@@ -2110,18 +2114,16 @@ function MultiImageUploadModal({
               disabled={uploading}
               className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cancel
+              {t("trip_photos_cancel", "Cancel")}
             </button>
             <button
               type="submit"
               disabled={uploading || selectedFiles.length === 0}
               className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-semibold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              {uploadProgress.phase === "saving"
-                ? "Saving photos..."
-                : uploading
-                  ? `Uploading ${uploadProgress.completed}/${uploadProgress.total}...`
-                  : `Upload (${selectedFiles.length})`}
+              {uploading
+                ? t("trip_photos_uploading", "Uploading...")
+                : `${t("trip_photos_upload_submit", "Upload")} (${selectedFiles.length})`}
             </button>
           </div>
         </form>
@@ -2141,6 +2143,7 @@ function EditTripPhotoModal({
   onSaved: (updated: TripPhotoItem) => void;
   onDeleteTrigger: (p: TripPhotoItem) => void;
 }) {
+  const { t } = useLanguage();
   const [location, setLocation] = useState(photo.location || "");
   const [caption, setCaption] = useState(photo.caption || "");
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>(
@@ -2181,7 +2184,7 @@ function EditTripPhotoModal({
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <h3 className="text-lg font-semibold text-[#1F1F1F]">
-            Edit Photo Details
+            {t("trip_photos_edit_modal_title", "Edit Photo Details")}
           </h3>
           <button
             type="button"
@@ -2220,7 +2223,7 @@ function EditTripPhotoModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-[#1F1F1F]">
-                Caption
+                {t("trip_photos_caption_label", "Caption")}
               </label>
               <span className="text-[11px] font-semibold text-zinc-400">
                 {caption.length} / 300
@@ -2230,7 +2233,7 @@ function EditTripPhotoModal({
               value={caption}
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Tell the story behind this trip..."
+              placeholder={t("trip_photos_caption_ph", "Tell the story behind this trip...")}
               className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
             />
           </div>
@@ -2241,7 +2244,7 @@ function EditTripPhotoModal({
               onClick={() => onDeleteTrigger(photo)}
               className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
             >
-              Delete Photo
+              {t("trip_photos_delete_photo_link", "Delete Photo")}
             </button>
 
             <div className="flex gap-2">
@@ -2250,14 +2253,14 @@ function EditTripPhotoModal({
                 onClick={onClose}
                 className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Cancel
+                {t("trip_photos_cancel", "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
-                {saving ? "Saving..." : "Save Details"}
+                {saving ? t("trip_photos_saving_details", "Saving...") : t("trip_photos_save_details", "Save Details")}
               </button>
             </div>
           </div>
@@ -2276,6 +2279,7 @@ function DeleteTripPhotoModal({
   onClose: () => void;
   onDeleted: (id: string) => void;
 }) {
+  const { t } = useLanguage();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -2297,10 +2301,10 @@ function DeleteTripPhotoModal({
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
         <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">
-          Delete Trip Photo
+          {t("trip_photos_delete_modal_title", "Delete Trip Photo")}
         </h3>
         <p className="text-xs text-zinc-500 mb-4">
-          Are you sure you want to delete this trip photo?
+          {t("trip_photos_delete_confirm", "Are you sure you want to delete this trip photo?")}
         </p>
 
         <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-zinc-200 mb-4">
@@ -2320,7 +2324,7 @@ function DeleteTripPhotoModal({
             disabled={deleting}
             className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
           >
-            Cancel
+            {t("trip_photos_cancel", "Cancel")}
           </button>
           <button
             type="button"
@@ -2328,7 +2332,7 @@ function DeleteTripPhotoModal({
             disabled={deleting}
             className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-6 py-2 rounded-full disabled:opacity-50"
           >
-            {deleting ? "Deleting..." : "Confirm Delete"}
+            {deleting ? t("trip_photos_deleting", "Deleting...") : t("trip_photos_confirm_delete", "Confirm Delete")}
           </button>
         </div>
       </div>
@@ -2343,6 +2347,7 @@ function LightboxModal({
   photo: TripPhotoItem;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <ModalOverlay
       onClick={onClose}
@@ -2357,7 +2362,7 @@ function LightboxModal({
           onClick={onClose}
           className="absolute -top-10 right-0 text-white text-sm font-semibold"
         >
-          ✕ Close
+          ✕ {t("trip_photos_lightbox_close", "Close")}
         </button>
         <div className="relative w-full h-[70vh] rounded-2xl overflow-hidden shadow-2xl">
           <Image

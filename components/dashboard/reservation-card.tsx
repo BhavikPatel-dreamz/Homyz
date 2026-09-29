@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ReservationCardData {
   id: string;
@@ -27,11 +28,11 @@ export interface ReservationCardData {
   createdAt?: Date | string;
 }
 
-function formatDates(start: Date | string, end: Date | string) {
+function formatDates(start: Date | string, end: Date | string, fallbackText: string) {
   const first = new Date(start);
   const last = new Date(end);
   if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime())) {
-    return "Dates TBD";
+    return fallbackText;
   }
   const format = (date: Date, includeYear: boolean) =>
     date.toLocaleDateString("en-US", {
@@ -44,12 +45,13 @@ function formatDates(start: Date | string, end: Date | string) {
 }
 
 function StatusBadge({ status }: { status?: string }) {
+  const { t } = useLanguage();
   const s = (status || "PENDING").toUpperCase();
   if (s === "CONFIRMED") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200/90 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Confirmed
+        {t("dashboard_status_confirmed", "Confirmed")}
       </span>
     );
   }
@@ -57,14 +59,14 @@ function StatusBadge({ status }: { status?: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-600 border border-zinc-200 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-        Cancelled
+        {t("dashboard_status_cancelled", "Cancelled")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-amber-800 border border-amber-200/90 shadow-2xs">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-      Pending
+      {t("dashboard_status_pending", "Pending")}
     </span>
   );
 }
@@ -76,8 +78,9 @@ export function ReservationCard({
   data: ReservationCardData;
   href?: string;
 }) {
+  const { t } = useLanguage();
   const [failedImage, setFailedImage] = useState<string | null>(null);
-  const title = data.propertyName || "Property stay";
+  const title = data.propertyName || t("dashboard_card_property_stay", "Property stay");
   const detailsHref = href || `/bookings/${data.id}`;
   return (
     <article className="group flex min-h-[304px] flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
@@ -95,7 +98,7 @@ export function ReservationCard({
             />
           ) : (
             <span className="flex h-full w-full items-center justify-center text-xs sm:text-sm text-zinc-400 bg-zinc-100">
-              Photo unavailable
+              {t("dashboard_card_photo_unavailable", "Photo unavailable")}
             </span>
           )}
 
@@ -108,7 +111,7 @@ export function ReservationCard({
         {/* PROPERTY INFO */}
         <div className="mt-3.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500">
-            {formatDates(data.startDate, data.endDate)}
+            {formatDates(data.startDate, data.endDate, t("dashboard_card_dates_tbd", "Dates TBD"))}
           </p>
 
           <Link
@@ -126,7 +129,8 @@ export function ReservationCard({
           )}
 
           <p className="mt-2 text-[10px] font-medium tracking-[0.02em] text-slate-400">
-            Booking #{data.id.slice(-8).toUpperCase()}
+            {t("dashboard_card_booking_num", "Booking #")}
+            {data.id.slice(-8).toUpperCase()}
           </p>
         </div>
       </div>
