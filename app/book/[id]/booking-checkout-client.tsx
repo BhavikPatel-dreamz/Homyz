@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -28,6 +28,7 @@ interface BookingCheckoutClientProps {
   initialGuests?: number;
   initialPets?: number;
   initialNonRefundable?: boolean;
+  initialSpecialOfferId?: string;
 }
 
 interface QuoteData {
@@ -36,12 +37,17 @@ interface QuoteData {
   nightlySubtotal: number;
   cleaningFee: number;
   extraGuestFee: number;
+  petFee?: number;
+  hostServiceFee: number;
   taxes: Array<{ taxName: string; amount: number }>;
   taxTotal: number;
   subtotal: number;
   guestTotal: number;
   currency: string;
   cancellationPolicy: string;
+  isSpecialOffer?: boolean;
+  specialOfferId?: string | null;
+  specialOfferAmount?: number | null;
 }
 
 const PAYMENT_PLAN_API_VALUES = {
@@ -107,10 +113,14 @@ export function BookingCheckoutClient({
   initialGuests = 1,
   initialPets = 0,
   initialNonRefundable = false,
+  initialSpecialOfferId,
 }: BookingCheckoutClientProps) {
   const { currency: displayCurrency, formatPrice } = useCurrency();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
+
+  const specialOfferId = initialSpecialOfferId || searchParams?.get("specialOfferId") || undefined;
 
   // Booking details state
   const defaultTomorrow = useMemo(() => {
@@ -184,8 +194,10 @@ export function BookingCheckoutClient({
     setIsQuoteLoading(true);
     setQuoteError(null);
 
+    const specialOfferParam = specialOfferId ? `&specialOfferId=${encodeURIComponent(specialOfferId)}` : "";
+
     fetch(
-      `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&pets=${petsCount}&nonRefundable=${isNonRefundable}`,
+      `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&pets=${petsCount}&nonRefundable=${isNonRefundable}${specialOfferParam}`,
       { signal: controller.signal, cache: "no-store" },
     )
       .then(async (res) => ({ ok: res.ok, data: await res.json() }))
@@ -202,6 +214,7 @@ export function BookingCheckoutClient({
       .catch((err) => {
         if (!isCurrent || err?.name === "AbortError") return;
         setQuoteError("Unable to calculate price quotation.");
+        setQuote(null);
       })
       .finally(() => {
         if (isCurrent) setIsQuoteLoading(false);
@@ -211,7 +224,7 @@ export function BookingCheckoutClient({
       isCurrent = false;
       controller.abort();
     };
-  }, [listing.id, checkIn, checkOut, guestsCount, petsCount, isNonRefundable]);
+  }, [listing.id, checkIn, checkOut, guestsCount, petsCount, isNonRefundable, specialOfferId]);
 
   // Fallback calculations if quote is loading or estimated
   const nightsCount = useMemo(() => {
@@ -230,6 +243,13 @@ export function BookingCheckoutClient({
   // Split payment calculations (e.g. 20% now, 80% later)
   const partNowMinor = Math.round(effectiveTotalMinor * 0.2);
   const partLaterMinor = effectiveTotalMinor - partNowMinor;
+  const checkoutTotalLabel = isQuoteLoading
+    ? "Calculating…"
+    : quote
+      ? formatMoney(quote.guestTotal, true)
+      : "Unavailable";
+  const partNowLabel = !isQuoteLoading && quote ? formatMoney(partNowMinor, true) : checkoutTotalLabel;
+  const partLaterLabel = !isQuoteLoading && quote ? formatMoney(partLaterMinor, true) : checkoutTotalLabel;
 
   // Step 1 Submit
   const handleStep1Next = () => {
@@ -271,8 +291,9 @@ export function BookingCheckoutClient({
 
     // If user is not authenticated, redirect to login preserving intent
     if (!session?.user) {
+      const specialOfferQuery = specialOfferId ? `&specialOfferId=${encodeURIComponent(specialOfferId)}` : "";
       const returnUrl = encodeURIComponent(
-        `/book/${listing.customSlug || listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}&pets=${petsCount}`,
+        `/book/${listing.customSlug || listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}&pets=${petsCount}${specialOfferQuery}`,
       );
       router.push(`/login?returnUrl=${returnUrl}`);
       return;
@@ -290,6 +311,7 @@ export function BookingCheckoutClient({
           guests: guestsCount,
           pets: petsCount || 0,
           nonRefundable: isNonRefundable,
+          specialOfferId: specialOfferId || undefined,
           message: hostMessage.trim() || undefined,
           paymentPlan: PAYMENT_PLAN_API_VALUES[paymentPlan],
           paymentMethod: paymentMethod.toUpperCase(),
@@ -299,8 +321,9 @@ export function BookingCheckoutClient({
       const data = await res.json();
       if (!res.ok || data.error) {
         if (res.status === 401) {
+          const specialOfferQuery = specialOfferId ? `&specialOfferId=${encodeURIComponent(specialOfferId)}` : "";
           const returnUrl = encodeURIComponent(
-            `/book/${listing.customSlug || listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}&pets=${petsCount}`,
+            `/book/${listing.customSlug || listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guestsCount}&pets=${petsCount}${specialOfferQuery}`,
           );
           router.push(`/login?returnUrl=${returnUrl}`);
           return;
@@ -409,8 +432,8 @@ export function BookingCheckoutClient({
                             className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-zinc-900 focus:ring-zinc-900"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-normal text-zinc-900">
-                              Pay <strong className="font-semibold">{formatMoney(effectiveTotalMinor)}</strong> now
+                            <span className="text-sm font-normal text-zinc-900" aria-live="polite">
+                              Pay <strong className="font-semibold">{checkoutTotalLabel}</strong> now
                             </span>
                           </div>
                         </label>
@@ -431,8 +454,8 @@ export function BookingCheckoutClient({
                             <span className="block text-sm font-normal text-zinc-900">
                               Pay <strong className="font-semibold">part now, part later</strong>
                             </span>
-                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                              {formatMoney(partNowMinor)} now, {formatMoney(partLaterMinor)} will be charged on {formatPartPaymentDate(checkIn)}. No extra fees.{" "}
+                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed" aria-live="polite">
+                              {partNowLabel} now, {partLaterLabel} will be charged on {formatPartPaymentDate(checkIn)}. No extra fees.{" "}
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -480,12 +503,19 @@ export function BookingCheckoutClient({
                         </label>
                       </div>
 
+                      {quoteError && (
+                        <div className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 text-center">
+                          {quoteError}
+                        </div>
+                      )}
+
                       {/* Next Button */}
                       <div className="mt-4 flex justify-end">
                         <button
                           type="button"
                           onClick={handleStep1Next}
-                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95"
+                          disabled={isQuoteLoading || Boolean(quoteError) || !quote}
+                          className="rounded-full bg-[#fee09a] hover:bg-[#fbd775] text-zinc-900 font-bold px-8 py-2.5 text-sm transition-all shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Next
                         </button>
@@ -500,9 +530,9 @@ export function BookingCheckoutClient({
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5 font-medium">
                           {paymentPlan === "now"
-                            ? `Pay ${formatMoney(effectiveTotalMinor)} now`
+                            ? `Pay ${checkoutTotalLabel} now`
                             : paymentPlan === "part"
-                            ? `Pay part now (${formatMoney(partNowMinor)}), part later`
+                            ? `Pay part now (${partNowLabel}), part later`
                             : "Pay over time, with Klarna"}
                         </p>
                       </div>
@@ -1015,15 +1045,35 @@ export function BookingCheckoutClient({
                         <div className="h-4 bg-zinc-100 rounded w-full" />
                         <div className="h-4 bg-zinc-100 rounded w-3/4" />
                       </div>
+                    ) : quoteError ? (
+                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
+                        {quoteError}
+                      </div>
                     ) : (
                       <>
                         <div className="flex items-center justify-between text-sm text-[#727272]">
-                          <span>
-                            {nightsCount} night{nightsCount > 1 ? "s" : ""} x {formatMoney(effectiveBaseNightlyMinor)}
-                          </span>
-                          <span className="font-medium text-zinc-900">
-                            {formatMoney(effectiveNightlySubtotalMinor, true)}
-                          </span>
+                          {quote?.isSpecialOffer ? (
+                            <>
+                              <span className="flex items-center gap-1.5 font-medium text-zinc-800">
+                                <span className="inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">
+                                  Special offer
+                                </span>
+                                <span>Accommodation ({nightsCount} night{nightsCount > 1 ? "s" : ""})</span>
+                              </span>
+                              <span className="font-medium text-zinc-900">
+                                {formatMoney(effectiveNightlySubtotalMinor, true)}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span>
+                                {nightsCount} night{nightsCount > 1 ? "s" : ""} x {formatMoney(effectiveBaseNightlyMinor)}
+                              </span>
+                              <span className="font-medium text-zinc-900">
+                                {formatMoney(effectiveNightlySubtotalMinor, true)}
+                              </span>
+                            </>
+                          )}
                         </div>
 
                         {quote?.cleaningFee ? (
@@ -1031,6 +1081,33 @@ export function BookingCheckoutClient({
                             <span>Cleaning fee</span>
                             <span className="font-medium text-zinc-900">
                               {formatMoney(quote.cleaningFee, true)}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {quote?.extraGuestFee ? (
+                          <div className="flex items-center justify-between text-sm text-[#727272]">
+                            <span>Extra guest fee</span>
+                            <span className="font-medium text-zinc-900">
+                              {formatMoney(quote.extraGuestFee, true)}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {quote?.petFee ? (
+                          <div className="flex items-center justify-between text-sm text-[#727272]">
+                            <span>Pet fee</span>
+                            <span className="font-medium text-zinc-900">
+                              {formatMoney(quote.petFee, true)}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {quote?.hostServiceFee ? (
+                          <div className="flex items-center justify-between text-sm text-[#727272]">
+                            <span>Service fee</span>
+                            <span className="font-medium text-zinc-900">
+                              {formatMoney(quote.hostServiceFee, true)}
                             </span>
                           </div>
                         ) : null}
@@ -1050,8 +1127,8 @@ export function BookingCheckoutClient({
                     <span className="text-sm sm:text-base font-medium text-[#1f1f1f]">
                       Total <span className="underline decoration-zinc-400">{currencySymbol}</span>
                     </span>
-                    <span className="text-sm sm:text-base font-bold text-zinc-950">
-                      {formatMoney(effectiveTotalMinor, true)}
+                    <span className="text-sm sm:text-base font-bold text-zinc-950" aria-live="polite">
+                      {checkoutTotalLabel}
                     </span>
                   </div>
 
@@ -1320,7 +1397,11 @@ export function BookingCheckoutClient({
 
             <div className="py-5 space-y-3 text-sm text-zinc-700">
               <div className="flex justify-between">
-                <span>Accommodation ({nightsCount} nights)</span>
+                <span>
+                  {quote?.isSpecialOffer
+                    ? `Special offer accommodation (${nightsCount} night${nightsCount > 1 ? "s" : ""})`
+                    : `Accommodation (${nightsCount} nights)`}
+                </span>
                 <span className="font-semibold text-zinc-900">
                   {formatMoney(effectiveNightlySubtotalMinor, true)}
                 </span>
@@ -1335,8 +1416,35 @@ export function BookingCheckoutClient({
                 </div>
               ) : null}
 
+              {quote?.extraGuestFee ? (
+                <div className="flex justify-between">
+                  <span>Extra guest fee</span>
+                  <span className="font-semibold text-zinc-900">
+                    {formatMoney(quote.extraGuestFee, true)}
+                  </span>
+                </div>
+              ) : null}
+
+              {quote?.petFee ? (
+                <div className="flex justify-between">
+                  <span>Pet fee</span>
+                  <span className="font-semibold text-zinc-900">
+                    {formatMoney(quote.petFee, true)}
+                  </span>
+                </div>
+              ) : null}
+
+              {quote?.hostServiceFee ? (
+                <div className="flex justify-between">
+                  <span>Service fee</span>
+                  <span className="font-semibold text-zinc-900">
+                    {formatMoney(quote.hostServiceFee, true)}
+                  </span>
+                </div>
+              ) : null}
+
               <div className="flex justify-between">
-                <span>Estimated taxes (VAT 10%)</span>
+                <span>Taxes</span>
                 <span className="font-semibold text-zinc-900">
                   {formatMoney(effectiveTaxesMinor, true)}
                 </span>
@@ -1344,7 +1452,7 @@ export function BookingCheckoutClient({
 
               <div className="pt-3 border-t border-zinc-200 flex justify-between font-bold text-base text-zinc-950">
                 <span>Total ({currencySymbol})</span>
-                <span>{formatMoney(effectiveTotalMinor, true)}</span>
+                <span>{checkoutTotalLabel}</span>
               </div>
             </div>
 

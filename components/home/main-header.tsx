@@ -152,8 +152,9 @@ export function MainHeader() {
                     <div className="space-y-0.5 border-b border-zinc-200 pb-2">
                       <GuestMenuLink href="/profile/tab/saved" icon="fa-heart" label="Wishlists" onClick={() => setMenuOpen(false)} />
                       <GuestMenuLink href="/profile/tab/upcoming" icon="fa-route" label="Trips" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/profile/tab/support" icon="fa-comment" label="Messages" onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/messages" icon="fa-comment" label="Messages" onClick={() => setMenuOpen(false)} />
                       <GuestMenuLink href="/profile" icon="fa-circle-user" label="Profile" onClick={() => setMenuOpen(false)} />
+
                     </div>
 
                     <div className="space-y-0.5 border-b border-zinc-200 py-2">

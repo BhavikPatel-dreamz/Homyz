@@ -376,9 +376,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
 
                       {/* Messages */}
                       <Link
-                        href="/profile/tab/support"
+                        href="/messages"
                         onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile/tab/support" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/messages" || pathname.startsWith("/messages") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
                           }`}
                       >
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
@@ -386,6 +386,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         </span>
                         <span>Messages</span>
                       </Link>
+
 
                       {/* Profile */}
                       <Link

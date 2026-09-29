@@ -291,8 +291,9 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
     if (item.type === NotificationType.BOOKING) {
       router.push("/profile/tab/upcoming");
     } else if (item.type === NotificationType.MESSAGE) {
-      router.push("/profile/tab/support");
+      router.push("/messages");
     } else if (item.type === NotificationType.PROMOTION) {
+
       router.push("/profile/tab/invite");
     }
   };

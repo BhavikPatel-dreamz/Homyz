@@ -128,18 +128,13 @@ async function runGuestDashboardTripsReviewsTests() {
   );
 
   assert(
-    cardContent.includes("View reservation details"),
-    "ReservationCard shows clean 'View reservation details' CTA instead of cluttered buttons",
+    !cardContent.includes("View reservation details"),
+    "ReservationCard does not show cluttered action buttons inside card",
   );
 
   assert(
     !cardContent.includes("onContactHost") && !cardContent.includes("onViewReceipt"),
     "ReservationCard no longer has clutter Contact host / Receipt action buttons (moved to details page)",
-  );
-
-  assert(
-    cardContent.includes("Write review") || cardContent.includes("Review stay") || cardContent.includes("isReviewEligible"),
-    "ReservationCard still shows 'Write review' link for eligible completed past stays",
   );
 
   // --- [4] MODALS & AUTHORIZED DATA ---

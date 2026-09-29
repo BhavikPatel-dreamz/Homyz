@@ -10,15 +10,17 @@ import type { CreateBookingInput } from "@/lib/validation/booking";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, ListingStatus, NotificationType, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus } from "@/generated/prisma/enums";
 import { notificationService } from "./notification.service";
+import { messagingService } from "./messaging.service";
+
 import type { Prisma } from "@/generated/prisma/client";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
-import { calculateBookingPrice, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
+import { calculateBookingPrice, calculateSpecialOffer, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
 import { getCurrencyForCountry } from "@/lib/currency";
 import {
   computeBookingStatus,
@@ -48,6 +50,7 @@ export type BookingQuote = {
   appliedDiscount?: AppliedDiscount | null;
   cleaningFee: number; // cents
   extraGuestFee?: number; // cents
+  petFee?: number; // cents
   hostServiceFee: number; // cents
   hostServiceFeePercentage: number; // percentage e.g. 15
   subtotal: number; // nightlySubtotal - discountAmount + cleaningFee (cents)
@@ -66,11 +69,14 @@ export type BookingQuote = {
   nonRefundableAvailable: boolean;
   isNonRefundable: boolean;
   nonRefundableDiscount: AppliedDiscount | null;
+  isSpecialOffer?: boolean;
+  specialOfferId?: string | null;
+  specialOfferAmount?: number | null;
   breakdown: Array<{
     date: string;
     isWeekend: boolean;
     price: number;
-    rateSource?: "CUSTOM" | "WEEKEND" | "WEEKDAY";
+    rateSource?: "CUSTOM" | "WEEKEND" | "WEEKDAY" | "SPECIAL_OFFER";
   }>;
 };
 
@@ -138,6 +144,8 @@ export async function getBookingQuote(opts: {
   guests?: number;
   pets?: number;
   nonRefundable?: boolean;
+  specialOfferId?: string;
+  actor?: AuthUser;
 }): Promise<BookingQuote> {
   const listing = await prisma.listing.findUnique({
     where: { id: opts.listingId },
@@ -166,13 +174,61 @@ export async function getBookingQuote(opts: {
     throw AppError.badRequest("Checkout date must be after check-in date");
   }
 
+  let validatedOffer: any = null;
+  if (opts.specialOfferId) {
+    const offer = await prisma.specialOffer.findUnique({
+      where: { id: opts.specialOfferId },
+    });
+    if (!offer) {
+      throw AppError.notFound("Special offer not found or invalid");
+    }
+    if (offer.listingId !== listing.id) {
+      throw AppError.badRequest("This special offer does not apply to this property");
+    }
+    if (offer.hostId !== listing.hostId) {
+      throw AppError.badRequest("This special offer host does not match property host");
+    }
+    // Authorization check for quote calculation:
+    // Allow the recipient guest, the host who sent the offer, and administrators.
+    // Allow unauthenticated preview so guests clicking email/message links see the agreed offer price before logging in.
+    if (opts.actor) {
+      const isRecipient = offer.guestId === opts.actor.id;
+      const isHost = offer.hostId === opts.actor.id;
+      const isAdmin = opts.actor.role === Role.ADMIN;
+      if (!isRecipient && !isHost && !isAdmin) {
+        throw AppError.forbidden("This special offer was sent to a different guest");
+      }
+    }
+    if (offer.status !== SpecialOfferStatus.ACCEPTED && offer.status !== SpecialOfferStatus.PENDING) {
+      throw AppError.badRequest(`This special offer is no longer valid (${offer.status.toLowerCase()})`);
+    }
+    if (offer.expiresAt && offer.expiresAt < new Date()) {
+      await prisma.specialOffer.update({
+        where: { id: offer.id },
+        data: { status: SpecialOfferStatus.EXPIRED },
+      });
+      throw AppError.badRequest("This special offer has expired");
+    }
+    const offerStartKey = calendarDateKey(toCalendarDate(offer.startDate));
+    const offerEndKey = calendarDateKey(toCalendarDate(offer.endDate));
+    const requestedStartKey = calendarDateKey(cIn);
+    const requestedEndKey = calendarDateKey(cOut);
+    if (offerStartKey !== requestedStartKey || offerEndKey !== requestedEndKey) {
+      throw AppError.badRequest("Booking dates do not match the special offer dates");
+    }
+    if ((opts.guests ?? 1) > offer.guests) {
+      throw AppError.badRequest(`This special offer is for up to ${offer.guests} guest${offer.guests > 1 ? "s" : ""}`);
+    }
+    validatedOffer = offer;
+  }
+
   const minN = listing.minNights || 1;
   const maxN = listing.maxNights || 365;
 
-  if (nights < minN) {
+  if (!validatedOffer && nights < minN) {
     throw AppError.badRequest(`Minimum stay is ${minN} ${minN === 1 ? "night" : "nights"}`);
   }
-  if (nights > maxN) {
+  if (!validatedOffer && nights > maxN) {
     throw AppError.badRequest(`Maximum stay is ${maxN} ${maxN === 1 ? "night" : "nights"}`);
   }
 
@@ -303,27 +359,39 @@ export async function getBookingQuote(opts: {
   }));
 
   const usesManualAdjustments = listing.smartPricing !== true;
-  const pricing = await calculateBookingPrice({
-    // Pricing consumes date-only strings so it keeps the guest's selected
-    // calendar day intact in every server timezone.
-    checkIn: calendarDateKey(cIn),
-    checkOut: calendarDateKey(cOut),
-    weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
-    weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
-    customPrices: (listing as any).customPrices as Record<string, number> | null,
-    cleaningFee: listing.cleaningFee,
-    extraGuestFee: (listing as any).extraGuestFee,
-    baseGuests,
-    guests: requestedGuests,
-    pets: requestedPets,
-    petFee: listing.petFee,
-    discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
-    includeNewListingPromotion: false,
-    taxRules: resolved.systemRules,
-    hostTaxes,
-    nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
-    currency: getCurrencyForCountry(listing.country),
-  });
+  const pricing = validatedOffer
+    ? await calculateSpecialOffer({
+        specialOfferAmount: validatedOffer.subtotalPrice,
+        nights,
+        cleaningFee: listing.cleaningFee,
+        extraGuestFee: (listing as any).extraGuestFee,
+        petFee: listing.petFee,
+        guests: requestedGuests,
+        taxRules: resolved.systemRules,
+        hostTaxes,
+        currency: getCurrencyForCountry(listing.country),
+      })
+    : await calculateBookingPrice({
+        // Pricing consumes date-only strings so it keeps the guest's selected
+        // calendar day intact in every server timezone.
+        checkIn: calendarDateKey(cIn),
+        checkOut: calendarDateKey(cOut),
+        weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
+        weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
+        customPrices: (listing as any).customPrices as Record<string, number> | null,
+        cleaningFee: listing.cleaningFee,
+        extraGuestFee: (listing as any).extraGuestFee,
+        baseGuests,
+        guests: requestedGuests,
+        pets: requestedPets,
+        petFee: listing.petFee,
+        discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
+        includeNewListingPromotion: false,
+        taxRules: resolved.systemRules,
+        hostTaxes,
+        nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
+        currency: getCurrencyForCountry(listing.country),
+      });
 
   const subtotal = pricing.accommodationSubtotal + pricing.cleaningFee + pricing.extraGuestFee + pricing.petFee;
 
@@ -344,6 +412,7 @@ export async function getBookingQuote(opts: {
     appliedDiscount: pricing.appliedDiscount,
     cleaningFee: pricing.cleaningFee,
     extraGuestFee: pricing.extraGuestFee,
+    petFee: pricing.petFee,
     hostServiceFee: pricing.hostServiceFee,
     hostServiceFeePercentage: pricing.hostServiceFeePercentage,
     subtotal,
@@ -362,12 +431,25 @@ export async function getBookingQuote(opts: {
     nonRefundableAvailable,
     isNonRefundable: Boolean(opts.nonRefundable),
     nonRefundableDiscount: pricing.nonRefundableDiscount,
-    breakdown: pricing.breakdown.map((b) => ({
+    isSpecialOffer: Boolean(validatedOffer),
+    specialOfferId: validatedOffer ? validatedOffer.id : null,
+    specialOfferAmount: validatedOffer ? validatedOffer.subtotalPrice : null,
+    breakdown: pricing.breakdown.length > 0 ? pricing.breakdown.map((b) => ({
       date: b.date,
       isWeekend: b.isWeekend,
       price: b.price,
       rateSource: b.rateSource,
-    })),
+    })) : Array.from({ length: nights }, (_, i) => {
+      const d = new Date(cIn);
+      d.setDate(d.getDate() + i);
+      const isWeekend = d.getDay() === 5 || d.getDay() === 6;
+      return {
+        date: calendarDateKey(d),
+        isWeekend,
+        price: Math.round((validatedOffer?.subtotalPrice ?? pricing.staySubtotal) / nights),
+        rateSource: "SPECIAL_OFFER" as const,
+      };
+    }),
   };
 }
 
@@ -411,6 +493,15 @@ async function create(
     }
   }
 
+  if (input.specialOfferId) {
+    const offer = await prisma.specialOffer.findUnique({
+      where: { id: input.specialOfferId },
+    });
+    if (!offer || offer.guestId !== actor.id) {
+      throw AppError.forbidden("This special offer was sent to a different guest");
+    }
+  }
+
   // Calculate authoritative quote
   const quote = await getBookingQuote({
     listingId: input.listingId,
@@ -419,6 +510,8 @@ async function create(
     guests: input.guests,
     pets: input.pets,
     nonRefundable: input.nonRefundable ?? false,
+    specialOfferId: input.specialOfferId,
+    actor,
   });
   const bookingCheckIn = toCalendarDate(input.startDate);
   const bookingCheckOut = toCalendarDate(input.endDate);
@@ -483,11 +576,35 @@ async function create(
       }
     }
 
+    if (input.specialOfferId) {
+      await tx.specialOffer.update({
+        where: { id: input.specialOfferId },
+        data: { status: SpecialOfferStatus.ACCEPTED },
+      });
+    }
+
     return createdBooking;
   });
 
   // Invalidate booking caches after creation
   await invalidateBookingCache(booking.id, actor.id, listing.hostId);
+
+  // Link or create conversation for this booking and persist checkout message if provided
+  try {
+    const isAutoConfirmed = booking.status === BookingStatus.CONFIRMED;
+    await messagingService.getOrCreateBookingConversation({
+      guestId: actor.id,
+      hostId: listing.hostId,
+      listingId: input.listingId,
+      bookingId: booking.id,
+      messageContent: input.message,
+      isConfirmed: isAutoConfirmed,
+      guestName: actor.name || "A guest",
+    });
+  } catch (convErr) {
+    console.error("Failed to link conversation for booking:", convErr);
+  }
+
 
   // Trigger booking notification for guest
   try {
@@ -679,10 +796,18 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
           status: BookingStatus.CONFIRMED,
         },
       });
+
+      await messagingService.recordBookingStatusMessage({
+        bookingId: b.id,
+        statusText: "Host approved your booking request. Your reservation is confirmed!",
+        newBookingStatus: BookingStatus.CONFIRMED,
+        conversationStatus: ConversationStatus.CONFIRMED,
+      });
     } catch (err) {
       console.warn("[booking.service] Failed to send guest approval notification:", err);
     }
   }
+
 
   return { approved: result.count };
 }
@@ -796,7 +921,19 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
     console.warn("[booking.service] Failed to create cancellation notification:", err);
   }
 
+  try {
+    await messagingService.recordBookingStatusMessage({
+      bookingId: cancelled.id,
+      statusText: "Guest cancelled this reservation.",
+      newBookingStatus: BookingStatus.CANCELLED,
+      conversationStatus: ConversationStatus.CANCELLED,
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record conversation cancellation status:", err);
+  }
+
   return toBookingDTO(cancelled);
+
 }
 
 async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<BookingDTO> {
@@ -893,7 +1030,19 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
     console.warn("[booking.service] Failed to create cancellation notification:", err);
   }
 
+  try {
+    await messagingService.recordBookingStatusMessage({
+      bookingId: cancelled.id,
+      statusText: "Guest cancelled this reservation.",
+      newBookingStatus: BookingStatus.CANCELLED,
+      conversationStatus: ConversationStatus.CANCELLED,
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record conversation cancellation status:", err);
+  }
+
   return toBookingDTO(cancelled);
+
 }
 
 async function listForAdminDashboard() {

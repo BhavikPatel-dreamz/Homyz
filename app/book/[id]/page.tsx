@@ -9,9 +9,14 @@ interface BookPageProps {
   searchParams: Promise<{
     checkIn?: string;
     checkOut?: string;
+    checkin?: string;
+    checkout?: string;
+    startDate?: string;
+    endDate?: string;
     guests?: string;
     pets?: string;
     nonRefundable?: string;
+    specialOfferId?: string;
   }>;
 }
 
@@ -47,14 +52,18 @@ export default async function BookListingPage({ params, searchParams }: BookPage
     }
   }
 
+  const checkIn = sp.checkIn || sp.checkin || sp.startDate;
+  const checkOut = sp.checkOut || sp.checkout || sp.endDate;
+
   return (
     <BookingCheckoutClient
       listing={listing}
-      initialCheckIn={sp.checkIn}
-      initialCheckOut={sp.checkOut}
+      initialCheckIn={checkIn}
+      initialCheckOut={checkOut}
       initialGuests={sp.guests ? parseInt(sp.guests, 10) : 1}
       initialPets={sp.pets ? parseInt(sp.pets, 10) : 0}
       initialNonRefundable={sp.nonRefundable === "true"}
+      initialSpecialOfferId={sp.specialOfferId}
     />
   );
 }

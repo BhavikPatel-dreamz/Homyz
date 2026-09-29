@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
@@ -557,6 +558,13 @@ export function PublicListingDetailClient({
   const { formatPrice } = useCurrency();
   const router = useRouter();
   const wishlist = useWishlist();
+  const { data: session, status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
+  const isHostUser = Boolean(
+    session?.user?.id &&
+    (session.user.id === listing.host?.id || session.user.id === (listing as any).hostId)
+  );
+  const canMessageHost = isAuthenticated && !isHostUser;
   void guidebooks; // The section is intentionally paused; retain the existing server contract.
 
   // Modal and Expand States
@@ -565,8 +573,13 @@ export function PublicListingDetailClient({
   const [openThingsCard, setOpenThingsCard] = useState<"rules" | "safety" | "cancellation" | null>(null);
   const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
   const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
+  const [contactHostModalOpen, setContactHostModalOpen] = useState(false);
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [inquirySending, setInquirySending] = useState(false);
+  const [inquiryError, setInquiryError] = useState<string | null>(null);
 
   const maximumGuests = Math.max(1, listing.guests || 1);
+
   const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
   const allowsPets = listing.petsAllowed !== false;
 
@@ -1271,8 +1284,49 @@ export function PublicListingDetailClient({
     else await wishlist.add(listing.id);
   };
 
+  const handleSendInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inquiryMessage.trim() || inquirySending) return;
+    setInquirySending(true);
+    setInquiryError(null);
+    try {
+      const res = await fetch("/api/v1/messages/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: listing.id,
+          message: inquiryMessage.trim(),
+          startDate: checkIn || undefined,
+          endDate: checkOut || undefined,
+          guests: adultsCount + childrenCount,
+        }),
+      });
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
+        const data = await res.json();
+        throw new Error(data?.error?.message || "Failed to send inquiry");
+      }
+      const json = await res.json();
+      setContactHostModalOpen(false);
+      setInquiryMessage("");
+      if (json.data?.conversation?.id) {
+        router.push(`/messages?id=${json.data.conversation.id}`);
+      } else {
+        router.push("/messages");
+      }
+    } catch (err: any) {
+      setInquiryError(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setInquirySending(false);
+    }
+  };
+
   // Handle Booking — validates all listing settings before redirecting to /book/[id]
   const handleReserve = () => {
+
     if (!checkIn || !checkOut) {
       setQuoteError("Please choose check-in and check-out dates to continue.");
       trackListingEvent({
@@ -2053,22 +2107,34 @@ export function PublicListingDetailClient({
                         {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> Superhost</p>}
                       </div>}
 
-                      {hostProfileHref && (
-                        <Link
-                          href={hostProfileHref}
-                          onClick={() => {
-                            trackListingEvent({
-                              eventType: "host_profile_clicked",
-                              propertyId: listing.id,
-                              metadata: { hostId: listing.host?.id },
-                            });
-                          }}
-                          className="mt-7 inline-flex min-h-14 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
-                        >
-                          <Image src="/images/icons/messages.svg" alt="messages.svg" width={18} height={18} className="size-6 group-hover:brightness-0 group-hover:invert transition-all duration-300" />
-                          View host profile
-                        </Link>
-                      )}
+                      <div className="mt-7 flex flex-wrap items-center gap-3">
+                        {hostProfileHref && (
+                          <Link
+                            href={hostProfileHref}
+                            onClick={() => {
+                              trackListingEvent({
+                                eventType: "host_profile_clicked",
+                                propertyId: listing.id,
+                                metadata: { hostId: listing.host?.id },
+                              });
+                            }}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                          >
+                            View host profile
+                          </Link>
+                        )}
+                        {canMessageHost && (
+                          <button
+                            type="button"
+                            onClick={() => setContactHostModalOpen(true)}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-semibold text-[#1f1f1f] hover:border-black hover:bg-zinc-50 transition-colors shadow-2xs"
+                          >
+                            <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4" />
+                            Message host
+                          </button>
+                        )}
+                      </div>
+
                       <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">To help protect your payment, always use Homyz to send money and communicate with hosts.</p>
                     </div>
                   </div>
@@ -2313,7 +2379,91 @@ export function PublicListingDetailClient({
         </ModalOverlay>
       )}
 
+      {/* CONTACT HOST MODAL */}
+      {canMessageHost && contactHostModalOpen && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-host-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs"
+        >
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-[24px] border border-zinc-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <div>
+                <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
+                  Contact {listing.host?.name || "Host"}
+                </h3>
+                <p className="text-xs text-zinc-500">Ask about dates, amenities, or special requests</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContactHostModalOpen(false)}
+                aria-label="Close"
+                className="cursor-pointer size-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSendInquiry} className="space-y-4">
+              {checkIn && checkOut && (
+                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs flex justify-between items-center">
+                  <div>
+                    <span className="text-zinc-500 block">Dates selected</span>
+                    <span className="font-semibold text-zinc-800">{checkIn} to {checkOut}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Guests</span>
+                    <span className="font-semibold text-zinc-800">{adultsCount + childrenCount}</span>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Your message to the host
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={inquiryMessage}
+                  onChange={(e) => setInquiryMessage(e.target.value)}
+                  placeholder="Hi! I'm planning a trip and was wondering if..."
+                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus:outline-none"
+                />
+              </div>
+
+              {inquiryError && (
+                <p className="text-xs text-rose-600">{inquiryError}</p>
+              )}
+
+              <p className="text-[11px] text-zinc-500">
+                To protect your payments, always communicate and book through Homyz.
+              </p>
+
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setContactHostModalOpen(false)}
+                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={inquirySending || !inquiryMessage.trim()}
+                  className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black disabled:opacity-50"
+                >
+                  {inquirySending ? "Sending..." : "Send Message"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </ModalOverlay>
+      )}
+
       {/* Mobile Sticky Booking Bar (Visible below lg breakpoint where desktop card is not sticky) */}
+
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3">
           <div className="min-w-0">
