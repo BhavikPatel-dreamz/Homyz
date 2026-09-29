@@ -34,18 +34,15 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
     <section className={`w-full flex flex-col ${className}`} aria-labelledby="my-reviews-heading">
       <div className="flex items-center justify-between border-b border-zinc-200/80 pb-4 mb-6">
         <div>
-          <h2 id="my-reviews-heading" className="text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F]">
+          <h2 id="my-reviews-heading" className="text-xl font-medium tracking-tight text-[#1F1F1F]">
             My reviews
           </h2>
-          <p className="text-sm text-[#727272] mt-0.5">
-            Reviews you have written for completed stays
-          </p>
         </div>
-        {reviews.length > 0 && (
+        {/* {reviews.length > 0 && (
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
             {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
           </span>
-        )}
+        )} */}
       </div>
 
       {reviews.length === 0 ? (

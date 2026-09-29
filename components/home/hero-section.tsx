@@ -1,7 +1,7 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
@@ -277,6 +277,41 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [activeStep, setActiveStep] = useState<"where" | "when" | "who">("where");
   const desktopSearchRef = useRef<HTMLFormElement>(null);
+  const desktopActivePillRef = useRef<HTMLDivElement>(null);
+  const desktopFieldRefs = useRef<Record<NonNullable<typeof desktopPanel>, HTMLElement | null>>({
+    where: null,
+    checkIn: null,
+    checkOut: null,
+    who: null,
+  });
+
+  // One shared pill moves between fields, which makes tab changes feel continuous
+  // instead of each field independently appearing active.
+  useLayoutEffect(() => {
+    const activePill = desktopActivePillRef.current;
+    const form = desktopSearchRef.current;
+    const activeField = desktopPanel ? desktopFieldRefs.current[desktopPanel] : null;
+    if (!activePill || !form || !activeField) {
+      if (activePill) activePill.style.opacity = "0";
+      return;
+    }
+
+    const positionActivePill = () => {
+      // `Who` sits inside an extra positioned wrapper for the search button,
+      // so offsetLeft is relative to that wrapper rather than the form.
+      const formBounds = form.getBoundingClientRect();
+      const fieldBounds = activeField.getBoundingClientRect();
+      activePill.style.width = `${fieldBounds.width}px`;
+      activePill.style.transform = `translateX(${fieldBounds.left - formBounds.left}px)`;
+      activePill.style.opacity = "1";
+    };
+
+    positionActivePill();
+    const observer = new ResizeObserver(positionActivePill);
+    observer.observe(form);
+    observer.observe(activeField);
+    return () => observer.disconnect();
+  }, [desktopPanel]);
 
   // Autocomplete state
   const [suggestions, setSuggestions] = useState<SuggestResult>({
@@ -720,13 +755,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               )}
             </div>
             <div className="min-w-0">
-              <div className="text-[14px] font-bold text-zinc-900 group-hover:text-blue-700 transition-colors">
+              <div className="text-[14px] font-normal text-[#1f1f1f] truncate">
                 {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
               </div>
               <div className="text-[12px] text-zinc-500 truncate">{t("home_find_stays_near_you")}</div>
             </div>
           </div>
-          <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-blue-800">
+          <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase text-blue-800">
             GPS
           </span>
         </button>
@@ -877,14 +912,14 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       <div className="flex items-center gap-3 min-w-0">
                         <LocationIcon type={c.locationType || c.type || "city"} />
                         <div className="min-w-0">
-                          <div className="text-[14px] font-normal text-[#1f1f1f] truncate">
+                          <div className="text-[14px] font-medium text-[#1f1f1f] truncate">
                             {highlightMatch(c.fullLabel || c.name || c.city, destination)}
                           </div>
                           {c.subtitle && <div className="text-[14px] text-[#727272] truncate">{c.subtitle}</div>}
                         </div>
                       </div>
                       {isStayBadge ? (
-                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-900">
+                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-900">
                           Available Stays
                         </span>
                       ) : (
@@ -1190,11 +1225,19 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             ref={desktopSearchRef}
             onSubmit={handleSearchSubmit}
             autoComplete="off"
-            className="relative flex h-[66px] w-full max-w-[820px] items-center rounded-full bg-white shadow-[0_4px_24px_rgba(0,0,0,0.09)] border border-zinc-200/90 transition-shadow hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)]"
+            className={`relative flex h-[66px] w-full max-w-[820px] items-center rounded-full border border-zinc-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.09)] transition-[background-color,box-shadow] duration-200 hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)] bg-white ${
+              desktopPanel ? "bg-[#ebebeb]" : "bg-white"
+            }`}
           >
+            <div
+              ref={desktopActivePillRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-full bg-white opacity-0 shadow-[0_3px_12px_rgba(0,0,0,0.14)] transition-[transform,width,opacity] duration-300 ease-out"
+            />
             {/* Where */}
             <div
-              className={`flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-300 cursor-pointer ${
+              ref={(element) => { desktopFieldRefs.current.where = element; }}
+              className={`relative z-10 flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-200 cursor-pointer ${
                 desktopPanel === "where" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
               }`}
               onClick={() => setDesktopPanel("where")}
@@ -1269,7 +1312,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </div>
 
             <div
-              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
                 desktopPanel === "where" || desktopPanel === "checkIn" ? "opacity-0" : "opacity-100"
               }`}
             />
@@ -1280,8 +1323,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-expanded={desktopPanel === "checkIn"}
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
-              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors  duration-300 cursor-pointer ${
-                desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
+              ref={(element) => { desktopFieldRefs.current.checkIn = element; }}
+              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
+                desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"
               }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check in</span>
@@ -1291,7 +1335,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </button>
 
             <div
-              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
                 desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
               }`}
             />
@@ -1302,8 +1346,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-expanded={desktopPanel === "checkOut"}
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
-              className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors   duration-300cursor-pointer ${
-                desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
+              ref={(element) => { desktopFieldRefs.current.checkOut = element; }}
+              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
+                desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"
               }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check out</span>
@@ -1313,20 +1358,21 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </button>
 
             <div
-              className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
                 desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
               }`}
             />
 
             {/* Who & Search Button */}
-            <div className="flex h-full min-w-0 flex-[1.3] items-center pr-2">
+            <div className="relative z-10 flex h-full min-w-0 flex-[1.3] items-center pr-2">
               <button
                 type="button"
                 aria-expanded={desktopPanel === "who"}
                 aria-controls="desktop-search-panel"
                 onClick={() => setDesktopPanel(desktopPanel === "who" ? null : "who")}
-                className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors  duration-300 cursor-pointer ${
-                  desktopPanel === "who" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
+                ref={(element) => { desktopFieldRefs.current.who = element; }}
+                className={`relative flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
+                  desktopPanel === "who" ? "" : "hover:bg-[#fcdf9c]"
                 }`}
               >
                 <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_who")}</span>
@@ -1366,7 +1412,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     ? "Guests"
                     : "Choose dates"
                 }
-                className={`absolute top-full z-999 mt-3 max-h-[min(600px,75dvh)] max-w-full overflow-y-auto rounded-[16px] border border-zinc-100 bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.14)] animate-in fade-in zoom-in-95 duration-150 ${
+                className={`absolute top-full z-999 mt-3 max-h-[min(600px,75dvh)] max-w-full origin-top overflow-y-auto rounded-[16px] bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-top-2 zoom-in-95 transition-[width,left,right] duration-200 ease-out ${
                   desktopPanel === "where"
                     ? "left-0 w-[400px] sm:w-[480px]"
                     : desktopPanel === "who"
@@ -1374,28 +1420,30 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[756px]"
                 }`}
               >
-                {desktopPanel === "where" ? (
-                  <>
-                    <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Sugested destinations</p>
-                    {destinationSuggestions}
-                  </>
-                ) : desktopPanel === "who" ? (
-                  guestOptions
-                ) : (
-                  <MobileDatePicker
-                    desktop
-                    checkIn={checkIn}
-                    checkOut={checkOut}
-                    selectionTarget={desktopPanel === "checkOut" ? "checkOut" : "checkIn"}
-                    onDatesChange={(start, end) => {
-                      setCheckIn(start);
-                      setCheckOut(end);
-                      if (start && !end) setDesktopPanel("checkOut");
-                    }}
-                    preferences={datePreferences}
-                    onPreferencesChange={setDatePreferences}
-                  />
-                )}
+                <div key={desktopPanel} className="animate-in fade-in slide-in-from-top-1 duration-200">
+                  {desktopPanel === "where" ? (
+                    <>
+                      <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Sugested destinations</p>
+                      {destinationSuggestions}
+                    </>
+                  ) : desktopPanel === "who" ? (
+                    guestOptions
+                  ) : (
+                    <MobileDatePicker
+                      desktop
+                      checkIn={checkIn}
+                      checkOut={checkOut}
+                      selectionTarget={desktopPanel === "checkOut" ? "checkOut" : "checkIn"}
+                      onDatesChange={(start, end) => {
+                        setCheckIn(start);
+                        setCheckOut(end);
+                        if (start && !end) setDesktopPanel("checkOut");
+                      }}
+                      preferences={datePreferences}
+                      onPreferencesChange={setDatePreferences}
+                    />
+                  )}
+                </div>
               </div>
             )}
           </form>

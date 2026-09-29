@@ -2323,12 +2323,12 @@ export function PublicListingDetailClient({
               <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">About this place</h3>
               <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
-            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-sm leading-6 text-zinc-700">
+            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-base leading-6 text-[#727272]">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
                   <h4 className="text-lg font-medium text-[#1f1f1f]">{detail.heading}</h4>
-                  <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-zinc-700">{detail.content}</p>
+                  <p className="mt-1.5 whitespace-pre-line text-base leading-6 text-[#727272]">{detail.content}</p>
                 </section>
               ))}
             </div>
