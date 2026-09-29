@@ -336,7 +336,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   /* REGULAR USER / GUEST MENU (100% Matches Reference Image 1)   */
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
+                    <div className="mb-1 shrink-0 border-b border-[#727272] px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
@@ -514,7 +514,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   /* HOST & ADMIN MENU ("host show all")                           */
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-zinc-200/80 px-3.5 py-3">
+                    <div className="mb-1 shrink-0 border-b border-[#727272] px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
@@ -547,7 +547,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       </div>
                     </div>
 
-                    <div className="mt-1 shrink-0 border-t border-zinc-200/80 pt-2 flex flex-col gap-1">
+                    <div className="mt-1 shrink-0 border-t border-[#727272] pt-2 flex flex-col gap-1">
                       <button
                         type="button"
                         onClick={() => {
@@ -562,7 +562,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         <span>{t("header_languages_currency")}</span>
                       </button>
 
-                      <div className="border-t border-zinc-200/80 pt-2 mt-1">
+                      <div className="border-t border-[#727272] pt-2 mt-1">
                         <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
                           {t("header_sign_out")}
                         </LogoutButton>
