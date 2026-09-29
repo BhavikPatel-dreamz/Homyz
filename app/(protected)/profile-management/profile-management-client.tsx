@@ -587,9 +587,9 @@ function InlineLocationSearch({
     <div ref={containerRef} className="relative w-full">
       {/* Search Input Box with Map Pin */}
       <div
-        className={`flex items-center gap-2.5 min-h-[44px] rounded-xl border px-3 py-2 transition-all ${
+        className={`flex items-center gap-2.5 sm:min-h-[56px] min-h-[45px] rounded-[8px] border px-3 py-2 transition-all ${
           open
-            ? "border-[#1F1F1F] ring-2 ring-zinc-200/80 bg-white shadow-2xs"
+            ? "border-[#1F1F1F] bg-white"
             : disabled
             ? "border-zinc-200 bg-zinc-50 cursor-default"
             : "border-zinc-300 bg-white hover:border-zinc-400"
