@@ -1650,7 +1650,7 @@ function InteractionPreferencesView({
         <button
           type="button"
           onClick={() => setActiveSection("arrival-guide")}
-          className="w-full rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white disabled:opacity-50 sm:w-auto"
+          className="w-full rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors duration-300 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 hover:text-white disabled:opacity-50 sm:w-auto"
         >
           {t("host_cancel") || "Cancel"}
         </button>

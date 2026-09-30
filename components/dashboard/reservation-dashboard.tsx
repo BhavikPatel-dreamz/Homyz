@@ -209,6 +209,7 @@ export function ReservationDashboard({
                       key={item.id}
                       data={item}
                       href={`/bookings/${item.id}`}
+                      variant="past"
                     />
                   ))}
                 </div>

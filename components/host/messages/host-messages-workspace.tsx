@@ -643,7 +643,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
           {/* Header & Tabs */}
           <div className="p-4 border-b border-zinc-100 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#1F1F1F]">Messages</h2>
+              <h1>Messages</h1>
               <span className="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full">
                 {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
               </span>
