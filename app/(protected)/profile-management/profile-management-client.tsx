@@ -372,7 +372,7 @@ function LanguageMultiSelect({
 
         {/* Count badge when closed */}
         {!open && uniqueSelected.length > 0 && !disabled && (
-          <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+          <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-[#727272]">
             {uniqueSelected.length} selected
           </span>
         )}
@@ -383,10 +383,10 @@ function LanguageMultiSelect({
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           {/* Header */}
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-[#727272] uppercase tracking-wider">
               {filtered.length} {filtered.length === 1 ? "Language" : "Languages"} Available
             </span>
-            <span className="text-[10px] text-zinc-400">
+            <span className="text-[10px] text-[#727272]">
               Press Enter to add · Esc to close
             </span>
           </div>
@@ -394,7 +394,7 @@ function LanguageMultiSelect({
           {/* Quick popular tags when not searching */}
           {!query && popularLanguages.length > 0 && (
             <div className="px-3.5 py-2.5 border-b border-zinc-100 bg-zinc-50/30">
-              <p className="text-[11px] font-medium text-zinc-400 mb-1.5">Commonly Spoken:</p>
+              <p className="text-[11px] font-medium text-[#727272] mb-1.5">Commonly Spoken:</p>
               <div className="flex flex-wrap gap-1.5">
                 {popularLanguages.slice(0, 8).map((pLang) => (
                   <button
@@ -422,7 +422,7 @@ function LanguageMultiSelect({
                   {query ? `No languages match "${query}"` : "All languages have been selected"}
                 </p>
                 {query && (
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-[#727272]">
                     Try typing the English name or native spelling (e.g. Français, Español).
                   </p>
                 )}
@@ -446,13 +446,13 @@ function LanguageMultiSelect({
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className={`text-xs ${isActive ? "text-zinc-300" : "text-zinc-400"}`}>🌐</span>
+                      <span className={`text-xs ${isActive ? "text-zinc-300" : "text-[#727272]"}`}>🌐</span>
                       <span className="text-sm font-medium truncate">{lang.name}</span>
                     </div>
                     {lang.nativeName && lang.nativeName !== lang.name && (
                       <span
                         className={`text-xs shrink-0 ${
-                          isActive ? "text-zinc-300" : "text-zinc-400"
+                          isActive ? "text-zinc-300" : "text-[#727272]"
                         }`}
                       >
                         {lang.nativeName}
@@ -466,7 +466,7 @@ function LanguageMultiSelect({
 
           {/* Footer bar */}
           <div className="border-t border-zinc-100 bg-zinc-50/70 px-3.5 py-2 flex items-center justify-between text-xs">
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] text-[#727272]">
               {uniqueSelected.length} selected
             </span>
             {uniqueSelected.length > 0 && (
@@ -587,9 +587,9 @@ function InlineLocationSearch({
     <div ref={containerRef} className="relative w-full">
       {/* Search Input Box with Map Pin */}
       <div
-        className={`flex items-center gap-2.5 min-h-[44px] rounded-xl border px-3 py-2 transition-all ${
+        className={`flex items-center gap-2.5 sm:min-h-[56px] min-h-[45px] rounded-[8px] border px-3 py-2 transition-all ${
           open
-            ? "border-[#1F1F1F] ring-2 ring-zinc-200/80 bg-white shadow-2xs"
+            ? "border-[#1F1F1F] bg-white"
             : disabled
             ? "border-zinc-200 bg-zinc-50 cursor-default"
             : "border-zinc-300 bg-white hover:border-zinc-400"
@@ -601,7 +601,7 @@ function InlineLocationSearch({
           }
         }}
       >
-        <span className="text-zinc-500 text-sm shrink-0">📍</span>
+        <span className="text-[#727272] text-sm shrink-0">📍</span>
 
         <input
           ref={inputRef}
@@ -634,7 +634,7 @@ function InlineLocationSearch({
               e.stopPropagation();
               handleClear();
             }}
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 transition-colors cursor-pointer"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-[#727272] transition-colors cursor-pointer"
             title="Clear location"
             aria-label="Clear location"
           >
@@ -649,17 +649,17 @@ function InlineLocationSearch({
       {open && !disabled && (
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-[#727272] uppercase tracking-wider">
               {query.trim().length >= 2 ? "Search Results" : "Popular Destinations"}
             </span>
-            <span className="text-[10px] text-zinc-400">
+            <span className="text-[10px] text-[#727272]">
               Select one to apply
             </span>
           </div>
 
           {loading ? (
-            <div className="flex items-center gap-2.5 px-4 py-5 text-xs text-zinc-500">
-              <svg className="w-4 h-4 animate-spin text-zinc-400" viewBox="0 0 24 24" fill="none">
+            <div className="flex items-center gap-2.5 px-4 py-5 text-xs text-[#727272]">
+              <svg className="w-4 h-4 animate-spin text-[#727272]" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
               </svg>
@@ -670,7 +670,7 @@ function InlineLocationSearch({
               <p className="text-sm font-medium text-zinc-600 mb-1">
                 No places found for &ldquo;{query}&rdquo;
               </p>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-[#727272]">
                 Try searching for a city, district, or country name.
               </p>
             </div>
@@ -698,12 +698,12 @@ function InlineLocationSearch({
                         : "hover:bg-zinc-50 text-[#1F1F1F]"
                     }`}
                   >
-                    <span className={`text-xs shrink-0 ${isActive ? "text-zinc-300" : "text-zinc-400"}`}>📍</span>
+                    <span className={`text-xs shrink-0 ${isActive ? "text-zinc-300" : "text-[#727272]"}`}>📍</span>
                     <div className="min-w-0 flex-1">
                       <p className={`text-sm font-medium truncate ${isActive ? "text-white" : "text-[#1F1F1F]"}`}>
                         {dest.locationName}
                       </p>
-                      <p className={`text-xs truncate ${isActive ? "text-zinc-300" : "text-zinc-500"}`}>
+                      <p className={`text-xs truncate ${isActive ? "text-zinc-300" : "text-[#727272]"}`}>
                         {dest.formattedAddress}
                       </p>
                     </div>
@@ -712,7 +712,7 @@ function InlineLocationSearch({
                         className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
                           isActive
                             ? "bg-white/20 text-white"
-                            : "bg-zinc-100 text-zinc-500"
+                            : "bg-zinc-100 text-[#727272]"
                         }`}
                       >
                         {dest.countryCode}
@@ -725,7 +725,7 @@ function InlineLocationSearch({
           )}
 
           {/* Footer note */}
-          <div className="border-t border-zinc-100 bg-zinc-50/70 px-3.5 py-1.5 text-[10px] text-zinc-400">
+          <div className="border-t border-zinc-100 bg-zinc-50/70 px-3.5 py-1.5 text-[10px] text-[#727272]">
             Click a suggestion to set your location
           </div>
         </div>
@@ -1031,7 +1031,7 @@ export function ProfileManagementClient({
                 priority
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">
+              <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
                 <svg
                   className="h-20 w-20"
                   fill="currentColor"
@@ -1154,7 +1154,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     name
                       ? "text-[#1f1f1f] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="edit: Your full name"
                 />
@@ -1176,7 +1176,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.whereIWantToGo
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="edit: Where have you always wanted to travel?"
                 />
@@ -1197,7 +1197,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.myWork
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="Add your work"
                 />
@@ -1220,7 +1220,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.spendTooMuchTime
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="Add an answer"
                 />
@@ -1241,7 +1241,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.pets
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="Add pets"
                 />
@@ -1264,7 +1264,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.decadeBorn
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="Add decade"
                 />
@@ -1285,7 +1285,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.school
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="Add school"
                 />
@@ -1308,7 +1308,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.uselessSkill
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="edit: What's your most useless skill?"
                 />
@@ -1329,7 +1329,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.funFact
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="edit: What's your fun fact?"
                 />
@@ -1352,7 +1352,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.favoriteSong
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="edit: What was your favorite song in high school?"
                 />
@@ -1401,7 +1401,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.obsessedWith
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="What are you obsessed with?"
                 />
@@ -1424,7 +1424,7 @@ export function ProfileManagementClient({
                   className={`w-full sm:text-base text-sm bg-transparent focus:outline-none ${
                     formDataState.bioTitle
                       ? "text-[#1F1F1F] font-medium"
-                      : "text-zinc-400 font-normal"
+                      : "text-[#727272] font-normal"
                   }`}
                   placeholder="My biography title would be"
                 />
@@ -1448,12 +1448,12 @@ export function ProfileManagementClient({
                   />
                 ) : (
                   <div className="flex items-center gap-2 py-2">
-                    <span className="text-zinc-500 text-sm">📍</span>
+                    <span className="text-[#727272] text-sm">📍</span>
                     <span
                       className={`sm:text-base text-sm ${
                         formDataState.whereILive
                           ? "text-[#1F1F1F] font-medium"
-                          : "text-zinc-400 font-normal"
+                          : "text-[#727272] font-normal"
                       }`}
                     >
                       {formDataState.whereILive || "Not specified"}
@@ -1470,7 +1470,7 @@ export function ProfileManagementClient({
               <h3 className="text-lg font-medium text-[#1F1F1F]">
                 About me
               </h3>
-              <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-semibold" : "text-zinc-500"}`}>
+              <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-semibold" : "text-[#727272]"}`}>
                 {(formDataState.bio || "").length} / {MAX_BIO_LENGTH}
               </span>
             </div>
@@ -1487,7 +1487,7 @@ export function ProfileManagementClient({
                 placeholder="Tell hosts and guests a little about yourself, your hobbies, and travel style..."
               />
             </div>
-            <p className="mt-1.5 text-xs text-zinc-500">
+            <p className="mt-1.5 text-xs text-[#727272]">
               Maximum {MAX_BIO_LENGTH} characters. About me will be visible on your public profile and to hosts when booking.
             </p>
           </div>
@@ -1499,7 +1499,7 @@ export function ProfileManagementClient({
                 disabled={pending || saveStatus === "saving"}
                 className={`inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap rounded-full px-7 py-3 text-base font-medium transition-colors cursor-pointer ${
                   saveStatus === "saving"
-                    ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+                    ? "bg-zinc-200 text-[#727272] cursor-not-allowed"
                     : saveStatus === "saved"
                     ? "bg-emerald-600 text-white"
                     : "bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white"
@@ -1537,7 +1537,7 @@ export function ProfileManagementClient({
               <h3 className="text-lg font-semibold text-[#1F1F1F]">
                 Trip Photos Management
               </h3>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#727272]">
                 Upload and curate your travel memories
               </p>
             </div>
@@ -1575,7 +1575,7 @@ export function ProfileManagementClient({
               <p className="text-base font-semibold text-[#1F1F1F]">
                 You can upload best images of your trip
               </p>
-              <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
+              <p className="text-xs text-[#727272] max-w-md mt-1 mb-6 leading-relaxed">
                 Select multiple photos, tag travel companions, add captions and
                 locations.
               </p>
@@ -1597,7 +1597,7 @@ export function ProfileManagementClient({
                   className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs"
                 >
                   {failedTripPhotoIds.has(photo.id) ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-zinc-500">
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-[#727272]">
                       <IconCamera />
                       <p className="text-xs font-medium">Image unavailable</p>
                     </div>
@@ -1673,7 +1673,7 @@ export function ProfileManagementClient({
             <h3 className="text-xl font-semibold text-[#1F1F1F]">
               Privacy & Visibility Settings
             </h3>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-[#727272] mt-1">
               Manage who can see your profile on Homyz.
             </p>
           </div>
@@ -1685,7 +1685,7 @@ export function ProfileManagementClient({
                 <h4 className="text-sm font-semibold text-[#1F1F1F]">
                   Public Profile Visibility
                 </h4>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-[#727272] mt-0.5">
                   Allow hosts and other guests to discover your profile
                 </p>
               </div>
@@ -1971,7 +1971,7 @@ function MultiImageUploadModal({
             <h3 className="sm:text-lg text-sm sm:font-semibold font-normal text-[#1F1F1F] tracking-tight">
               Upload Trip Photos
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-[#727272] mt-0.5">
               Add your favorite travel memories
             </p>
           </div>
@@ -1997,7 +1997,7 @@ function MultiImageUploadModal({
             <p className="text-xs font-semibold text-zinc-800">
               Select trip photos
             </p>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-[11px] text-[#727272] mt-0.5">
               You can upload best images of your trip (Max 10MB each)
             </p>
             <input
@@ -2088,7 +2088,7 @@ function MultiImageUploadModal({
               <label className="block text-xs font-semibold text-[#1F1F1F]">
                 Caption
               </label>
-              <span className="text-[11px] font-semibold text-zinc-400">
+              <span className="text-[11px] font-semibold text-[#727272]">
                 {caption.length} / 300
               </span>
             </div>
@@ -2222,7 +2222,7 @@ function EditTripPhotoModal({
               <label className="block text-xs font-semibold text-[#1F1F1F]">
                 Caption
               </label>
-              <span className="text-[11px] font-semibold text-zinc-400">
+              <span className="text-[11px] font-semibold text-[#727272]">
                 {caption.length} / 300
               </span>
             </div>
@@ -2299,7 +2299,7 @@ function DeleteTripPhotoModal({
         <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">
           Delete Trip Photo
         </h3>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-[#727272] mb-4">
           Are you sure you want to delete this trip photo?
         </p>
 

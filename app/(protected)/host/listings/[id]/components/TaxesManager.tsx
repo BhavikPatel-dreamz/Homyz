@@ -463,7 +463,7 @@ export function TaxesManager({
           />
           <div>
             <h1>{t("host_taxes_heading")}</h1>
-            <p className="text-sm sm:text-base text-[#727272] dark:text-zinc-400 mt-1.5 leading-relaxed">
+            <p className="text-sm sm:text-base text-[#727272] dark:text-[#727272] mt-1.5 leading-relaxed">
               {t("host_taxes_subtitle")}
             </p>
           </div>
@@ -472,12 +472,12 @@ export function TaxesManager({
         {/* CARD 1: Taxes Homyz Submits */}
         <div className="border border-[#DDDDDD] dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-zinc-900 shadow-2xs">
           <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_taxes_homyz_submits_heading")}</h2>
-          <p className="text-sm text-[#727272] dark:text-zinc-400 mt-1 leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-[#727272] mt-1 leading-relaxed">
             {t("host_taxes_homyz_submits_desc")}{" "}
             <button
               type="button"
               onClick={() => setLearnMoreTopic("platform_taxes")}
-              className="underline font-normal text-zinc-900 dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
+              className="underline font-normal text-[#1F1F1F] dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
             >
               {t("host_learn_more")}
             </button>
@@ -487,7 +487,7 @@ export function TaxesManager({
             {platformTaxes.map((tax) => (
               <div key={tax.id} className="flex items-center gap-2.5 text-sm text-[#1f1f1f] dark:text-zinc-200">
                 <svg
-                  className="w-4 h-4 text-zinc-900 dark:text-zinc-200 flex-shrink-0"
+                  className="w-4 h-4 text-[#1F1F1F] dark:text-zinc-200 flex-shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -503,13 +503,13 @@ export function TaxesManager({
 
         {/* CARD 2: Add taxes you'll submit */}
         <div className="border border-[#DDDDDD] dark:border-zinc-800 rounded-2xl p-6 bg-white dark:bg-zinc-900 shadow-2xs">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">{t("host_taxes_add_taxes_heading")}</h2>
-          <p className="text-sm text-[#727272] dark:text-zinc-400 mt-1 leading-relaxed">
+          <h2 className="text-lg font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_add_taxes_heading")}</h2>
+          <p className="text-sm text-[#727272] dark:text-[#727272] mt-1 leading-relaxed">
             {t("host_taxes_add_taxes_desc")}{" "}
             <button
               type="button"
               onClick={() => setLearnMoreTopic("host_taxes")}
-              className="underline font-normal text-zinc-900 dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
+              className="underline font-normal text-[#1F1F1F] dark:text-zinc-200 hover:text-black dark:hover:text-white cursor-pointer"
             >
               {t("host_learn_more")}
             </button>
@@ -524,10 +524,10 @@ export function TaxesManager({
                   className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <div>
-                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {tax.customName || formatTaxTypeName(tax.taxType, t)}
                     </div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <div className="text-[11px] text-[#727272] dark:text-[#727272] mt-0.5">
                       {tax.calculationMethod === "PERCENTAGE"
                         ? `${tax.rate}% ${t("host_tax_type_percentage_per_booking").toLowerCase()}`
                         : `${formatPrice(tax.amount || 0, jurisdiction?.currency || listingCurrency, 2)} (${formatCalculationMethod(tax.calculationMethod, t).toLowerCase()})`}
@@ -589,12 +589,12 @@ export function TaxesManager({
                   <h2 id="tax-modal-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                     {editingTax ? t("host_taxes_edit_tax") : t("host_taxes_add_a_tax")}
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-zinc-400">
+                  <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-[#727272]">
                     {t("host_taxes_modal_intro")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("add_tax")}
-                      className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
+                      className="font-medium text-[#1F1F1F] underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
                       {t("host_learn_more")}
                     </button>
@@ -603,7 +603,7 @@ export function TaxesManager({
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                   aria-label="Close"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
@@ -615,7 +615,7 @@ export function TaxesManager({
               <form onSubmit={handleSave} className="mt-7 space-y-7">
                 {/* 1. Tax name */}
                 <div>
-                  <label htmlFor="tax-name-select" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="tax-name-select" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_name_label")}
                   </label>
                   <div className="relative">
@@ -623,7 +623,7 @@ export function TaxesManager({
                       id="tax-name-select"
                       value={taxName}
                       onChange={(e) => setTaxName(e.target.value)}
-                      className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !taxName
+                      className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !taxName
                           ? "border-[#C13515] ring-1 ring-[#C13515]"
                           : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                         }`}
@@ -641,7 +641,7 @@ export function TaxesManager({
                       <option value="City tax">{t("host_tax_name_city")}</option>
                       <option value="Other local tax">{t("host_tax_name_other")}</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500 dark:text-zinc-400">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#727272] dark:text-[#727272]">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -659,7 +659,7 @@ export function TaxesManager({
 
                 {/* 2. Tax type */}
                 <div>
-                  <label htmlFor="tax-type-select" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="tax-type-select" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_type_label")}
                   </label>
                   <div className="relative">
@@ -667,7 +667,7 @@ export function TaxesManager({
                       id="tax-type-select"
                       value={taxType}
                       onChange={(e) => handleTaxTypeChange(e.target.value)}
-                      className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !taxType
+                      className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !taxType
                           ? "border-[#C13515] ring-1 ring-[#C13515]"
                           : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                         }`}
@@ -679,7 +679,7 @@ export function TaxesManager({
                       <option value={t("host_tax_type_percentage_per_booking")}>{t("host_tax_type_percentage_per_booking")}</option>
                       <option value={t("host_tax_type_per_booking")}>{t("host_tax_type_per_booking")}</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-500 dark:text-zinc-400">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#727272] dark:text-[#727272]">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -697,7 +697,7 @@ export function TaxesManager({
 
                 {/* 3. Tax rate */}
                 <div>
-                  <label htmlFor="tax-rate-input" className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="tax-rate-input" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_rate_label")}
                   </label>
                   <div
@@ -707,7 +707,7 @@ export function TaxesManager({
                       }`}
                   >
                     <div className="bg-[#F7F7F7] dark:bg-zinc-800 border-b border-[#E5E5E5] dark:border-zinc-700 px-3.5 py-2">
-                      <span className="block text-xs leading-none text-zinc-500 dark:text-zinc-400">{t("host_select")}</span>
+                      <span className="block text-xs leading-none text-[#727272] dark:text-[#727272]">{t("host_select")}</span>
                       <span className="text-sm font-medium leading-tight text-zinc-800 dark:text-zinc-200">
                         {rateMode}
                       </span>
@@ -721,7 +721,7 @@ export function TaxesManager({
                         placeholder={rateMode === "Percentage" ? "10 (%)" : "0.00 (Amount)"}
                         value={taxRate}
                         onChange={(e) => setTaxRate(e.target.value)}
-                        className="w-full bg-transparent px-3 py-2.5 text-sm text-zinc-900 focus:outline-none dark:text-zinc-100"
+                        className="w-full bg-transparent px-3 py-2.5 text-sm text-[#1F1F1F] focus:outline-none dark:text-zinc-100"
                       />
                     </div>
                   </div>
@@ -738,7 +738,7 @@ export function TaxesManager({
                 {/* Taxable base applies only to percentage calculations. */}
                 {taxType === t("host_tax_type_percentage_per_booking") && (
                   <fieldset>
-                    <legend className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_taxable_base_label")}</legend>
+                    <legend className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_taxable_base_label")}</legend>
                     <div className="space-y-2">
                       {TAXABLE_BASE_OPTIONS.map((option) => (
                         <label key={option.value} className="flex items-center justify-between gap-3 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer">
@@ -760,10 +760,10 @@ export function TaxesManager({
 
                 {/* 5. Maximum cap */}
                 <div>
-                  <label htmlFor="tax-maximum-cap" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="tax-maximum-cap" className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_max_cap_label")}
                   </label>
-                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                     {t("host_taxes_max_cap_desc")}
                   </p>
                   <input
@@ -774,21 +774,21 @@ export function TaxesManager({
                     placeholder={t("host_optional")}
                     value={maximumAmountPerPersonPerNight}
                     onChange={(e) => setMaximumAmountPerPersonPerNight(e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
+                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
                   />
                 </div>
 
                 {/* 6. Partial-stay exemption */}
                 <div>
-                  <label htmlFor="partial-stay-exemption-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="partial-stay-exemption-input" className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_partial_exemption_label")}
                   </label>
-                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                     {t("host_taxes_partial_exemption_desc")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("partial_stay")}
-                      className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
+                      className="font-medium text-[#1F1F1F] underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
                       {t("host_learn_more")}
                     </button>
@@ -800,21 +800,21 @@ export function TaxesManager({
                     placeholder={t("host_optional")}
                     value={partialStayExemption}
                     onChange={(e) => setPartialStayExemption(e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
+                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
                   />
                 </div>
 
                 {/* 7. Full-stay exemption */}
                 <div>
-                  <label htmlFor="full-stay-exemption-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="full-stay-exemption-input" className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_full_exemption_label")}
                   </label>
-                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                     {t("host_taxes_full_exemption_desc")}{" "}
                     <button
                       type="button"
                       onClick={() => setLearnMoreTopic("full_stay")}
-                      className="font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
+                      className="font-medium text-[#1F1F1F] underline underline-offset-2 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-zinc-200 dark:hover:text-white dark:focus-visible:ring-zinc-100"
                     >
                       {t("host_learn_more")}
                     </button>
@@ -826,16 +826,16 @@ export function TaxesManager({
                     placeholder={t("host_optional")}
                     value={fullStayExemption}
                     onChange={(e) => setFullStayExemption(e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
+                    className="mt-2 w-full rounded-lg border border-[#B0B0B0] bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors hover:border-black focus:border-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-100/15"
                   />
                 </div>
 
                 {/* 8. Accommodation tax registration number */}
                 <div>
-                  <label htmlFor="tax-reg-input" className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <label htmlFor="tax-reg-input" className="block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_reg_number_label")}
                   </label>
-                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                  <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                     {t("host_taxes_reg_number_desc")}
                   </p>
                   <input
@@ -844,17 +844,17 @@ export function TaxesManager({
                     placeholder={t("host_taxes_reg_number_placeholder")}
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
-                    className={`mt-2 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !registrationNumber.trim()
+                    className={`mt-2 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-[#1F1F1F] transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/15 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-100/15 ${formSubmitted && !registrationNumber.trim()
                         ? "border-[#C13515] ring-1 ring-[#C13515]"
                         : "border-[#B0B0B0] dark:border-zinc-700 hover:border-black dark:hover:border-zinc-500 focus:border-black dark:focus:border-zinc-400"
                       }`}
                   />
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">{t("host_required")}</p>
+                  <p className="text-[10px] text-[#727272] dark:text-[#727272] mt-1">{t("host_required")}</p>
                 </div>
 
                 {/* 9. Terms for adding taxes */}
                 <div>
-                  <span className="mb-2 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <span className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_taxes_terms_label")}
                   </span>
                   <div className="flex items-start gap-3">
@@ -867,7 +867,7 @@ export function TaxesManager({
                     />
                     <label
                       htmlFor="terms-checkbox"
-                      className="text-sm leading-5 text-[#727272] dark:text-zinc-400 cursor-pointer"
+                      className="text-sm leading-5 text-[#727272] dark:text-[#727272] cursor-pointer"
                     >
                       {t("host_taxes_terms_checkbox_text")}
                     </label>
@@ -913,7 +913,7 @@ export function TaxesManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="tax-learn-more-title" className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 pb-4 pt-6 dark:border-zinc-800">
-              <h3 id="tax-learn-more-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <h3 id="tax-learn-more-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {learnMoreTopic === "platform_taxes" && t("host_taxes_learn_platform_title")}
                 {learnMoreTopic === "host_taxes" && t("host_taxes_learn_host_title")}
                 {learnMoreTopic === "add_tax" && t("host_taxes_learn_add_title")}
@@ -923,7 +923,7 @@ export function TaxesManager({
               <button
                 type="button"
                 onClick={() => setLearnMoreTopic(null)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 aria-label="Close modal"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
@@ -968,7 +968,7 @@ export function TaxesManager({
               <button
                 type="button"
                 onClick={() => setLearnMoreTopic(null)}
-                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
                 {t("host_got_it")}
               </button>
@@ -983,8 +983,8 @@ export function TaxesManager({
       {isDeleteModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-tax-title" className="w-full max-w-sm rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
-            <h3 id="delete-tax-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_delete_modal_title")}</h3>
-            <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-zinc-400">
+            <h3 id="delete-tax-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_delete_modal_title")}</h3>
+            <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-[#727272]">
               {t("host_taxes_delete_modal_desc")}
             </p>
             <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -1017,11 +1017,11 @@ export function TaxesManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="registration-details-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
-              <h3 id="registration-details-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_reg_details_title")}</h3>
+              <h3 id="registration-details-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_reg_details_title")}</h3>
               <button
                 type="button"
                 onClick={() => setViewingRegistration(null)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 aria-label="Close registration details"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
@@ -1031,20 +1031,20 @@ export function TaxesManager({
             </div>
             <div className="space-y-3 py-5 text-sm leading-6 text-[#727272] dark:text-zinc-300">
               <div>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_type_label")}:</span> {viewingRegistration.taxType}
+                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_type_label")}:</span> {viewingRegistration.taxType}
               </div>
               <div>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_reg_number_label")}:</span> {viewingRegistration.registrationNumber}
+                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_reg_number_label")}:</span> {viewingRegistration.registrationNumber}
               </div>
               <div>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">Status:</span> {viewingRegistration.status}
+                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Status:</span> {viewingRegistration.status}
               </div>
             </div>
             <div className="flex justify-end border-t border-zinc-100 pt-4 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setViewingRegistration(null)}
-                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
                 {t("host_close")}
               </button>
@@ -1060,11 +1060,11 @@ export function TaxesManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="tax-statement-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
-              <h3 id="tax-statement-title" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{t("host_taxes_statement_title")}</h3>
+              <h3 id="tax-statement-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_statement_title")}</h3>
               <button
                 type="button"
                 onClick={() => setViewingInvoiceModal(false)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
                 aria-label="Close tax statement"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
@@ -1081,7 +1081,7 @@ export function TaxesManager({
               <button
                 type="button"
                 onClick={() => setViewingInvoiceModal(false)}
-                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="min-h-11 rounded-full bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-zinc-200 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
                 {t("host_close")}
               </button>

@@ -862,7 +862,7 @@ export function BookingCheckoutClient({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased selection:bg-amber-100">
+    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1F1F1F] antialiased selection:bg-amber-100">
       <AppHeader showBottomBorder={true} />
 
       <main className="w-full flex-1 pt-8 pb-20 sm:py-12 lg:py-24">
@@ -1611,8 +1611,8 @@ export function BookingCheckoutClient({
               {/* Adults */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Adults</h4>
-                  <p className="text-xs text-zinc-500">Age 13+</p>
+                  <h4 className="text-sm font-normal text-[#1F1F1F]">Adults</h4>
+                  <p className="text-xs text-[#727272]">Age 13+</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1755,16 +1755,16 @@ export function BookingCheckoutClient({
 
             <div className="py-5 space-y-4 text-sm text-zinc-700 leading-relaxed">
               <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                <h4 className="font-bold text-zinc-900 mb-1">
+                <h4 className="font-bold text-[#1F1F1F] mb-1">
                   Full refund before {formatCancellationCutoff(checkIn)}
                 </h4>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-[#727272]">
                   Cancel up to 72 hours before check-in for a full refund minus processing fees.
                 </p>
               </div>
 
               <div>
-                <h5 className="font-bold text-zinc-900 text-xs uppercase tracking-wider mb-2">
+                <h5 className="font-bold text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
                   Standard Terms
                 </h5>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-600">

@@ -112,13 +112,13 @@ function ToastCard({ item }: { item: ToastItem }) {
 
   const borderTone = {
     success:
-      "border-l-4 border-l-emerald-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 shadow-xl shadow-emerald-900/5 dark:shadow-black/50",
+      "border-l-4 border-l-emerald-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-emerald-900/5 dark:shadow-black/50",
     error:
-      "border-l-4 border-l-rose-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 shadow-xl shadow-rose-900/5 dark:shadow-black/50",
+      "border-l-4 border-l-rose-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-rose-900/5 dark:shadow-black/50",
     warning:
-      "border-l-4 border-l-amber-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 shadow-xl shadow-amber-900/5 dark:shadow-black/50",
+      "border-l-4 border-l-amber-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-amber-900/5 dark:shadow-black/50",
     info:
-      "border-l-4 border-l-[#FEE08B] dark:border-l-amber-400 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 shadow-xl shadow-zinc-900/5 dark:shadow-black/50",
+      "border-l-4 border-l-[#FEE08B] dark:border-l-amber-400 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-zinc-900/5 dark:shadow-black/50",
   };
 
   const progressTone = {
@@ -142,7 +142,7 @@ function ToastCard({ item }: { item: ToastItem }) {
         {iconMap[item.type]}
         <div className="flex-1 text-xs space-y-0.5 pr-2">
           {item.title && (
-            <div className="font-bold text-zinc-900 dark:text-zinc-100">{item.title}</div>
+            <div className="font-bold text-[#1F1F1F] dark:text-zinc-100">{item.title}</div>
           )}
           <div className="font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
             {item.message}
@@ -152,7 +152,7 @@ function ToastCard({ item }: { item: ToastItem }) {
           type="button"
           onClick={handleDismiss}
           aria-label="Close notification"
-          className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors text-xs font-semibold shrink-0 cursor-pointer"
+          className="text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 p-1 rounded-lg transition-colors text-xs font-semibold shrink-0 cursor-pointer"
         >
           ✕
         </button>

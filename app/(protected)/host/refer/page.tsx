@@ -19,7 +19,7 @@ export default function ReferAHostPage() {
               🤝
             </div>
             <div className="space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
                 Refer a Host, Earn Rewards
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-md mx-auto">
@@ -28,7 +28,7 @@ export default function ReferAHostPage() {
             </div>
 
             <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8 space-y-4 text-left">
-              <h2 className="text-base font-bold text-zinc-900">How it works</h2>
+              <h2 className="text-base font-bold text-[#1F1F1F]">How it works</h2>
               <ol className="space-y-3 text-xs sm:text-sm text-zinc-600 list-decimal list-inside">
                 <li>Share your referral link with a prospective host.</li>
                 <li>They publish their first listing on Homyz.</li>

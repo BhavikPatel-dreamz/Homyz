@@ -108,7 +108,7 @@
 
 /* The shared editor still contains a few Host-specific neutral tokens. Map
    those to the Admin palette only inside this presentation. */
-.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class*="text-zinc-900"], [class*="text-zinc-950"]) {
+.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class*="text-[#1F1F1F]"], [class*="text-zinc-950"]) {
   color: var(--admin-editor-ink) !important;
 }
 

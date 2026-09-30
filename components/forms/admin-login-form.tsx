@@ -168,7 +168,7 @@ export function AdminLoginForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors cursor-pointer"
                       aria-label="Toggle password visibility"
                     >
                       {showPassword ? (

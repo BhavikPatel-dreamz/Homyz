@@ -20,7 +20,7 @@ export default function GiftCardsPage() {
           <div className="mx-auto max-w-3xl space-y-10">
             <div className="text-center space-y-3">
               <span className="text-4xl" aria-hidden="true">🎁</span>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
                 Homyz Gift Cards
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-lg mx-auto">
@@ -29,19 +29,19 @@ export default function GiftCardsPage() {
             </div>
 
             <div className="rounded-3xl border border-zinc-200 bg-linear-to-br from-amber-50 to-orange-50/40 p-8 shadow-sm text-center space-y-6">
-              <h2 className="text-xl font-bold text-zinc-900">Choose an amount</h2>
+              <h2 className="text-xl font-bold text-[#1F1F1F]">Choose an amount</h2>
               <div className="flex flex-wrap justify-center gap-3">
                 {denominations.map((amount) => (
                   <button
                     key={amount}
                     type="button"
-                    className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-bold text-zinc-900 hover:bg-amber-100/70 transition-colors shadow-2xs"
+                    className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-bold text-[#1F1F1F] hover:bg-amber-100/70 transition-colors shadow-2xs"
                   >
                     <CurrencyPrice amountMinorUnits={amount * 100} sourceCurrency="SAR" />
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#727272]">
                 Never expires · Valid for any listing or stay on Homyz.
               </p>
               <div>

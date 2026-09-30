@@ -1141,7 +1141,7 @@ export function NewListingGetStarted({
             <div className="mb-5 flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-lg text-rose-700">!</div>
               <div className="min-w-0 flex-1">
-                <h2 id="wizard-error-title" className="text-lg font-semibold text-zinc-900">
+                <h2 id="wizard-error-title" className="text-lg font-semibold text-[#1F1F1F]">
                   {wizardError.title}
                 </h2>
                 <div className="mt-2 space-y-1.5 text-sm leading-6 text-zinc-600">

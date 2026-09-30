@@ -34,23 +34,20 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
     <section className={`w-full flex flex-col ${className}`} aria-labelledby="my-reviews-heading">
       <div className="flex items-center justify-between border-b border-zinc-200/80 pb-4 mb-6">
         <div>
-          <h2 id="my-reviews-heading" className="text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F]">
+          <h2 id="my-reviews-heading" className="text-xl font-medium tracking-tight text-[#1F1F1F]">
             My reviews
           </h2>
-          <p className="text-sm text-[#727272] mt-0.5">
-            Reviews you have written for completed stays
-          </p>
         </div>
-        {reviews.length > 0 && (
+        {/* {reviews.length > 0 && (
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
             {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
           </span>
-        )}
+        )} */}
       </div>
 
       {reviews.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center sm:p-12 bg-zinc-50/50">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-[#727272]">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
@@ -58,7 +55,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
           <h3 className="mt-3 text-base font-semibold text-[#1F1F1F]">
             You haven&apos;t written any reviews yet.
           </h3>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-500 max-w-sm mx-auto">
+          <p className="mt-1 text-xs sm:text-sm text-[#727272] max-w-sm mx-auto">
             Once you complete a stay, you can share feedback with the host and community here.
           </p>
         </div>
@@ -94,7 +91,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                           sizes="48px"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-zinc-400 text-xs">
+                        <div className="flex h-full w-full items-center justify-center text-[#727272] text-xs">
                           Stay
                         </div>
                       )}
@@ -113,7 +110,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                         </span>
                       )}
                       {propertyLocation && (
-                        <p className="text-xs text-zinc-500 truncate">{propertyLocation}</p>
+                        <p className="text-xs text-[#727272] truncate">{propertyLocation}</p>
                       )}
                     </div>
                   </div>
@@ -121,12 +118,12 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                   {/* Rating & Date */}
                   <div className="flex items-center justify-between mt-3 mb-2">
                     <StarRating rating={rev.rating} />
-                    <span className="text-xs text-zinc-400 font-normal">{dateStr}</span>
+                    <span className="text-xs text-[#727272] font-normal">{dateStr}</span>
                   </div>
 
                   {/* Comment */}
                   <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
-                    {rev.comment || <span className="italic text-zinc-400">Rating provided without written comment.</span>}
+                    {rev.comment || <span className="italic text-[#727272]">Rating provided without written comment.</span>}
                   </p>
                 </div>
 
@@ -141,12 +138,12 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                       Show review
                     </button>
                   ) : (
-                    <span className="text-[11px] text-zinc-400">Verified guest review</span>
+                    <span className="text-[11px] text-[#727272]">Verified guest review</span>
                   )}
                   {propertyHref && (
                     <Link
                       href={propertyHref}
-                      className="text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+                      className="text-xs font-medium text-[#727272] hover:text-[#1F1F1F] transition-colors"
                     >
                       View property &rarr;
                     </Link>
@@ -171,7 +168,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
               type="button"
               onClick={() => setSelectedReview(null)}
               aria-label="Close dialog"
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -180,7 +177,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
 
             <div className="flex items-center gap-3">
               <StarRating rating={selectedReview.rating} />
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-[#727272]">
                 {new Date(selectedReview.createdAt).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
@@ -206,7 +203,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                   <h3 id="review-modal-title" className="text-sm font-semibold text-[#1F1F1F] truncate">
                     {selectedReview.listing.title}
                   </h3>
-                  <p className="text-xs text-zinc-500 truncate">
+                  <p className="text-xs text-[#727272] truncate">
                     {[selectedReview.listing.city, selectedReview.listing.country].filter(Boolean).join(", ")}
                   </p>
                 </div>

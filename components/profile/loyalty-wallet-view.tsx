@@ -237,7 +237,7 @@ export function LoyaltyWalletView() {
                   className={`mt-4 w-full rounded-full py-2 text-xs font-semibold transition-colors ${
                     canAfford
                       ? "bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D]"
-                      : "cursor-not-allowed bg-zinc-100 text-zinc-400"
+                      : "cursor-not-allowed bg-zinc-100 text-[#727272]"
                   }`}
                 >
                   {canAfford ? "Redeem Reward" : "Need more points"}

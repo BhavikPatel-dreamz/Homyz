@@ -194,7 +194,7 @@ function LocationContextEditor(props: Props) {
     <section className="max-w-xl space-y-5 pb-10">
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
         <h2 className="text-sm font-semibold">{t("host_location_features_card_title") || "Location features"}</h2>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-[#727272]">
           {t("host_location_features_card_desc") || "Choose up to three location advantages. Beach access is managed as an amenity."}
         </p>
         {LOCATION_FEATURES.map(([id, label]) => (
@@ -212,7 +212,7 @@ function LocationContextEditor(props: Props) {
       </section>
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">
         <h2 className="text-sm font-semibold">{t("host_location_neighborhood_card_title") || "Neighborhood"}</h2>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-[#727272]">
           {t("host_location_neighborhood_desc") || "Tell guests what they can expect from the neighborhood and what is nearby."}
         </p>
         <textarea
@@ -554,7 +554,7 @@ function LocationView(props: Props) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_location_show_specific_title") || "Show you specific location"}</p>
-                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                   {t("host_location_show_specific_desc") || "Guests can see your exact pinpoint location before booking. When disabled, they only see an approximate general area until a reservation is confirmed."}
                 </p>
               </div>
@@ -567,7 +567,7 @@ function LocationView(props: Props) {
             <div className="flex items-start justify-between gap-4 border-t border-[#DDDDDE] dark:border-zinc-700 pt-4">
               <div>
                 <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_location_address_privacy_title") || "Address privacy for cancellation"}</p>
-                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-zinc-400">
+                <p className="mt-1 text-sm leading-5 text-[#727272] dark:text-[#727272]">
                   {t("host_location_address_privacy_desc") || "Keep your full address private until a reservation is confirmed, even when a guest cancels."}
                 </p>
               </div>
@@ -609,7 +609,7 @@ function LocationView(props: Props) {
                   <div className="flex items-start justify-between gap-4 border-b border-[#D7D7D7] dark:border-zinc-700 pb-3.5">
                     <div className="min-w-0 flex-1">
                       <div className="text-base font-normal leading-6 text-[#1F1F1F] dark:text-zinc-100">{t(`host_loc_feature_${id}`) || label}</div>
-                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272] dark:text-zinc-400">{t("host_location_features_item_hint") || "Highlight this feature for prospective guests"}</div>
+                      <div className="mt-1 text-[14px] font-normal leading-5 text-[#727272] dark:text-[#727272]">{t("host_location_features_item_hint") || "Highlight this feature for prospective guests"}</div>
                     </div>
                     <Toggle
                       checked={locationFeatures.includes(id)}
@@ -658,7 +658,7 @@ function LocationView(props: Props) {
               placeholder={t("host_location_neighborhood_placeholder") || "Describe the area, attractions, and local conveniences."}
               className="input min-h-28"
             />
-            <p className="text-right text-xs text-zinc-400">
+            <p className="text-right text-xs text-[#727272]">
               {neighborhoodDescription.length}/2000
             </p>
             <SaveButton saving={isSaving} onSave={handleSave} />
@@ -678,7 +678,7 @@ function LocationView(props: Props) {
               placeholder={t("host_location_getting_around_placeholder") || "Share transit, parking, walking, rideshare, or nearby stations."}
               className="input min-h-28"
             />
-            <p className="text-right text-xs text-zinc-400">
+            <p className="text-right text-xs text-[#727272]">
               {gettingAround.length}/2000
             </p>
             <SaveButton saving={isSaving} onSave={handleSave} />
@@ -750,7 +750,7 @@ function Card({
       >
         <span className="min-w-0">
           <span className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{title}</span>
-          {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272] dark:text-zinc-400">{summary}</span>}
+          {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272] dark:text-[#727272]">{summary}</span>}
         </span>
         <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
           <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain dark:invert" />
@@ -941,7 +941,7 @@ function CoHostView(props: Props) {
         <>
           {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
           {active.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-[#727272]">
               {t("host_cohost_empty_state") || "No co-hosts or pending invitations."}
             </p>
           ) : (
@@ -955,7 +955,7 @@ function CoHostView(props: Props) {
                     <p className="truncate font-medium">
                       {item.user?.name || item.email || item.phone}
                     </p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
+                    <p className="mt-0.5 text-xs text-[#727272]">
                       {item.status === "PENDING"
                         ? (item.email
                           ? (t("host_cohost_status_pending_email") || "Invitation pending · sent by email")

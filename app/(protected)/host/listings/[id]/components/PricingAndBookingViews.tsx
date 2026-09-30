@@ -157,7 +157,7 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => setActiveSection("description")} className="mt-2" />
               <div>
                 <h1>{t("host_pricing_title")}</h1>
-                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
+                <p className="text-sm leading-5 text-[#727272] dark:text-[#727272]">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
               </div>
             </div>
 
@@ -278,7 +278,7 @@ export function PricingAndBookingViews({
                     {/* Weekly discount card */}
                     <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
                       <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        {t("host_discount_weekly")} <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">{t("host_discount_for_7_plus_nights")}</span>
+                        {t("host_discount_weekly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_7_plus_nights")}</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
@@ -297,11 +297,11 @@ export function PricingAndBookingViews({
                               setWeeklyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
                             placeholder="5"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
-                        <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                           {t("host_weekly_average_prefix")} {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export function PricingAndBookingViews({
                     {/* Monthly discount card */}
                     <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
                       <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        {t("host_discount_monthly")} <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">{t("host_discount_for_28_plus_nights")}</span>
+                        {t("host_discount_monthly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_28_plus_nights")}</span>
                       </span>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
@@ -329,11 +329,11 @@ export function PricingAndBookingViews({
                               setMonthlyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
                             placeholder="10"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
-                        <span className="text-xs text-[#727272] dark:text-zinc-400 font-normal">
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                           {t("host_monthly_average_prefix")} {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
                         </span>
                       </div>
@@ -342,7 +342,7 @@ export function PricingAndBookingViews({
                     {/* Last-minute discount card */}
                     <div className="hidden">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold text-zinc-400 tracking-wider uppercase block">
+                        <span className="text-[10px] font-semibold text-[#727272] tracking-wider uppercase block">
                           LAST-MINUTE - WITHIN 2 DAYS
                         </span>
                         <div className="flex items-baseline gap-1">
@@ -411,7 +411,7 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => handleBack("pricing")} className="mt-2" />
               <div>
                 <h1>{t("host_availability_title")}</h1>
-                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+                <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
                   {t("host_availability_subtitle")} <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_learn_more")}</button>
                 </p>
               </div>
@@ -463,7 +463,7 @@ export function PricingAndBookingViews({
                         aria-label={t("host_minimum_nights")}
                         className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-sm text-right text-[#727272] dark:text-zinc-400">
+                      <span className="text-sm text-right text-[#727272] dark:text-[#727272]">
                         <span className="text-center block">{t("host_minimum_nights")}</span></span>
                     </div>
                   </div>
@@ -484,7 +484,7 @@ export function PricingAndBookingViews({
                         aria-label={t("host_maximum_nights")}
                         className="w-20 sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent pl-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-sm text-right text-[#727272] dark:text-zinc-400"><span className="text-center block">{t("host_maximum_nights")}</span></span>
+                      <span className="text-sm text-right text-[#727272] dark:text-[#727272]"><span className="text-center block">{t("host_maximum_nights")}</span></span>
                     </div>
                   </div>
                 </div>
@@ -494,7 +494,7 @@ export function PricingAndBookingViews({
               <div className="space-y-2">
                 <div>
                   <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_advance_notice")}</h3>
-                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
                     {t("host_advance_notice_desc")}
                   </p>
                 </div>
@@ -515,7 +515,7 @@ export function PricingAndBookingViews({
                   <label htmlFor="same-day-cutoff" className="block text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_same_day_cutoff")}
                   </label>
-                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
                     {t("host_same_day_cutoff_desc")}
                   </p>
                   <select
@@ -544,7 +544,7 @@ export function PricingAndBookingViews({
                     <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_allow_same_day_requests")}
                     </h3>
-                    <p className="mt-1 text-xs text-[#1F1F1F] dark:text-zinc-400 opacity-50">
+                    <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
                       {t("host_allow_same_day_requests_desc")}
                     </p>
                   </div>
@@ -624,9 +624,9 @@ export function PricingAndBookingViews({
                 <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
                   <div>
                     <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_use_instant_book")}</h2>
-                    <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_instant_book_desc")}</p>
+                    <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">{t("host_instant_book_desc")}</p>
                   </div>
-                  <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-zinc-900 dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
+                  <svg aria-hidden="true" className="mt-0.5 size-8 shrink-0 text-[#1F1F1F] dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" /></svg>
                 </button>
 
                 <div className="my-5 border-t border-zinc-200 dark:border-zinc-700" />
@@ -634,14 +634,14 @@ export function PricingAndBookingViews({
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_require_good_track_record")}</h3>
-                      <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_track_record_desc")}</p>
+                      <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">{t("host_track_record_desc")}</p>
                     </div>
                     <button type="button" role="switch" aria-checked={requireGoodTrackRecord} aria-label={t("host_require_good_track_record")} disabled={isSaving || _bookingMethod !== "instant"} onClick={() => saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord: !requireGoodTrackRecord })} className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${requireGoodTrackRecord && _bookingMethod === "instant" ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-700"}`}>
                       <span className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-950 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 transition-transform ${requireGoodTrackRecord && _bookingMethod === "instant" ? "translate-x-5.5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                   <button type="button" disabled={isSaving || _bookingMethod !== "instant"} onClick={openCustomMessage} className="flex w-full items-center justify-between gap-4 text-left disabled:cursor-not-allowed disabled:opacity-55">
-                    <div><h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_add_custom_message")}</h3><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-zinc-400">{hasCustomBookingMessage ? t("host_custom_message_added") : t("host_custom_message_must_read")}</p></div>
+                    <div><h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_add_custom_message")}</h3><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">{hasCustomBookingMessage ? t("host_custom_message_added") : t("host_custom_message_must_read")}</p></div>
                     <Image
                       src="/images/icons/chevron-down-dark.svg"
                       alt=""
@@ -659,11 +659,11 @@ export function PricingAndBookingViews({
                 if (_bookingMethod === "instant") requestInstantBookOff("approve");
                 else void saveBookingSettings({ bookingMethod: "approve", requireGoodTrackRecord });
               }} className={`flex w-full items-center justify-between gap-5 rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 text-left transition-colors disabled:cursor-wait ${_bookingMethod === "approve" ? "border-zinc-900 dark:border-zinc-100" : "border-[#727272] dark:border-zinc-700 hover:border-zinc-400"}`}>
-                <div><h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_approve_all_bookings")}</h2><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_approve_all_desc")}</p></div>
-                <svg aria-hidden="true" className="size-8 shrink-0 text-zinc-900 dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
+                <div><h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_approve_all_bookings")}</h2><p className="mt-0.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">{t("host_approve_all_desc")}</p></div>
+                <svg aria-hidden="true" className="size-8 shrink-0 text-[#1F1F1F] dark:text-zinc-100" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 3v-3H6a2 2 0 01-2-2V6a2 2 0 012-2Z" /><path strokeLinecap="round" d="M8 9h8M8 13h5" /></svg>
               </button>
               {isSaving && (
-                <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-[#727272] dark:text-zinc-400">
+                <div role="status" className="flex items-center gap-2 px-1 text-sm font-medium text-[#727272] dark:text-[#727272]">
                   <span aria-hidden="true" className="size-4 animate-spin rounded-full border border-zinc-300 border-t-zinc-900 dark:border-t-zinc-100" />
                   {t("host_saving")}
                 </div>
@@ -713,7 +713,7 @@ export function PricingAndBookingViews({
 
               {/* homyz/stay/ slug input field */}
               <div className="flex items-center justify-center text-3xl sm:text-4xl font-semibold text-[#1F1F1F] dark:text-zinc-100 tracking-tight">
-                <span className="text-zinc-500 dark:text-zinc-400">homyz.com/stay/</span>
+                <span className="text-[#727272] dark:text-[#727272]">homyz.com/stay/</span>
                 <input
                   type="text"
                   value={customSlug}
@@ -741,7 +741,7 @@ export function PricingAndBookingViews({
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium">{t("host_valid_link")}: homyz.com/stay/{trimmedSlug}</span>
                 )}
                 {!hasInput && (
-                  <span className="text-[#727272] dark:text-zinc-500 font-normal">{t("host_custom_link_desc")}</span>
+                  <span className="text-[#727272] dark:text-[#727272] font-normal">{t("host_custom_link_desc")}</span>
                 )}
               </div>
 

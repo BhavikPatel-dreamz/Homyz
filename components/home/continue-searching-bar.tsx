@@ -183,27 +183,27 @@ export function ContinueSearchingBar({
       <Link
         href={href}
         onClick={() => markSearchInCurrentSession()}
-        className="group inline-flex items-center justify-center gap-3 sm:gap-3.5 py-1.5 px-3 rounded-2xl hover:bg-zinc-50 transition-all duration-200 cursor-pointer"
+        className="group inline-flex items-center justify-center gap-3 sm:gap-3.5 py-3 px-3 rounded-2xl bg-[#F3F4F5] hover:bg-zinc-50 transition-all duration-200 cursor-pointer"
         aria-label={`Continue searching for homes ${preposition ? `${preposition} ` : ""}${locationName}${dateRange ? ` ${dateRange}` : ""}`}
       >
         {/* Layered / Stacked Thumbnail */}
         <div className="relative flex-shrink-0 w-12 h-12 sm:w-[50px] sm:h-[50px]">
           {/* Back card 2 (tilted right) */}
           <div
-            className="absolute inset-0 rounded-[14px] sm:rounded-2xl bg-zinc-300/80 transform rotate-6 scale-90 border border-black/5 shadow-xs transition-transform duration-200 group-hover:rotate-8"
+            className="absolute inset-0 rounded-[14px] sm:rounded-2xl bg-zinc-300/80 transform rotate-6 scale-90 border border-black/5 transition-transform duration-200 group-hover:rotate-8"
             aria-hidden="true"
           />
           {/* Back card 1 (tilted left) */}
           <div
-            className="absolute inset-0 rounded-[14px] sm:rounded-2xl bg-zinc-200/90 transform -rotate-3 scale-95 border border-black/5 shadow-xs transition-transform duration-200 group-hover:-rotate-5"
+            className="absolute inset-0 rounded-[14px] sm:rounded-2xl bg-zinc-200/90 transform -rotate-3 scale-95 border border-black/5 transition-transform duration-200 group-hover:-rotate-5"
             aria-hidden="true"
           />
           {/* Front card with photo */}
-          <div className="relative w-full h-full rounded-[14px] sm:rounded-2xl overflow-hidden border border-black/10 shadow-sm bg-zinc-100">
+          <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
             <img
               src={imageSrc}
               alt={locationName || "Homes"}
-              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-200 text-sm"
               loading="lazy"
             />
           </div>
@@ -211,17 +211,17 @@ export function ContinueSearchingBar({
 
         {/* Text and Arrow */}
         <div className="flex items-center flex-wrap gap-x-1.5 text-[14px] sm:text-[15px] leading-tight text-[#1f1f1f]">
-          <span className="font-semibold text-zinc-900 group-hover:text-black">
+          <span className="font-medium text-[#1f1f1f] group-hover:text-black">
             {t("home_continue_searching_for_homes")}
             {locationName ? ` ${preposition} ${locationName}` : ""}
           </span>
           {dateRange && (
-            <span className="font-normal text-zinc-500 whitespace-nowrap">
+            <span className="font-normal text-[#727272] whitespace-nowrap">
               {dateRange}
             </span>
           )}
           <span
-            className="inline-block text-zinc-400 group-hover:text-zinc-900 transition-transform duration-200 group-hover:translate-x-1 ml-0.5 font-medium"
+            className="inline-block text-[#1F1F1F] transition-transform duration-200 group-hover:translate-x-1 ml-0.5 font-medium"
             aria-hidden="true"
           >
             →

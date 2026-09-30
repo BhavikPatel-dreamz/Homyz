@@ -137,7 +137,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                   type="button"
                   disabled
                   aria-disabled="true"
-                  className="inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-400"
+                  className="inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-[#727272]"
                 >
                   Cannot cancel
                 </button>
@@ -149,14 +149,14 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
         {/* 4. CANCELLED STATE — shown when booking is already cancelled */}
         {isCancelled && (
           <section className="flex items-start gap-4 rounded-2xl border border-zinc-200/70 bg-zinc-50 p-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-200 text-zinc-500">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-200 text-[#727272]">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
               <h3 className="text-base font-semibold text-zinc-700">Reservation cancelled</h3>
-              <p className="mt-1 text-sm text-zinc-500 leading-relaxed">
+              <p className="mt-1 text-sm text-[#727272] leading-relaxed">
                 This reservation has been cancelled. No further action is required. If you have a question about your refund, please contact support.
               </p>
             </div>

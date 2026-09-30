@@ -88,7 +88,7 @@ export function AdminPagination({
         <div className="hidden sm:flex items-center gap-1">
           {getPageNumbers().map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`} className="px-2 py-1 text-zinc-400">
+              <span key={`ellipsis-${idx}`} className="px-2 py-1 text-[#727272]">
                 …
               </span>
             ) : (

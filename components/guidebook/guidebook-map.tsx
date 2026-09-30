@@ -130,7 +130,7 @@ export function GuidebookMap({
               : place.isFavorite
               ? "bg-amber-100 border-amber-400 shadow-xs"
               : "bg-white border-zinc-300 shadow-xs"
-          } text-xs font-bold text-zinc-900">
+          } text-xs font-bold text-[#1F1F1F]">
             ${place.isFavorite ? "⭐" : iconText}
           </div>
           <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-zinc-800 rotate-45 rounded-[1px]"></div>
@@ -151,8 +151,8 @@ export function GuidebookMap({
 
       marker.bindPopup(`
         <div class="p-1 font-sans text-xs">
-          <p class="font-bold text-zinc-900 leading-tight">${place.title}</p>
-          ${place.address ? `<p class="text-[10px] text-zinc-500 mt-0.5">${place.address}</p>` : ""}
+          <p class="font-bold text-[#1F1F1F] leading-tight">${place.title}</p>
+          ${place.address ? `<p class="text-[10px] text-[#727272] mt-0.5">${place.address}</p>` : ""}
           ${place.isFavorite ? `<span class="inline-block mt-1 text-[9px] bg-amber-100 text-amber-900 font-semibold px-1.5 py-0.5 rounded">⭐ Host favorite</span>` : ""}
         </div>
       `);
@@ -197,7 +197,7 @@ export function GuidebookMap({
         <div className="absolute inset-0 bg-zinc-50/80 backdrop-blur-2xs flex flex-col items-center justify-center p-6 text-center pointer-events-none">
           <span className="text-3xl mb-2">🗺️</span>
           <p className="text-xs font-semibold text-zinc-700">Add places with addresses</p>
-          <p className="text-[11px] text-zinc-400 mt-0.5 max-w-xs">
+          <p className="text-[11px] text-[#727272] mt-0.5 max-w-xs">
             Places you add with locations will appear as interactive pins on this map.
           </p>
         </div>

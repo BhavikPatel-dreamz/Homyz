@@ -65,7 +65,7 @@ function AllowDenyButtons({
         aria-pressed={value === false}
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === false
-            ? "border border-[#727272] bg-zinc-900 hover:bg-[#1f1f1f] !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900 hover:!text-white"
+            ? "border border-[#727272] bg-zinc-900 hover:bg-[#1f1f1f] !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-[#1F1F1F] hover:!text-white"
           : "border border-[#727272] bg-white hover:bg-[#1f1f1f] !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
           }`}
       >
@@ -79,7 +79,7 @@ function AllowDenyButtons({
         aria-pressed={value === true}
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 cursor-pointer ${value === true
-            ? "border border-[#727272] hover:bg-[#1f1f1f] bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-zinc-900 hover:!text-white"
+            ? "border border-[#727272] hover:bg-[#1f1f1f] bg-zinc-900 !text-white shadow-xs dark:border-zinc-100 dark:bg-zinc-100 dark:!text-[#1F1F1F] hover:!text-white"
             : "border border-[#727272] hover:bg-[#1f1f1f] bg-white !text-zinc-600 hover:!text-white dark:border-zinc-700 dark:bg-zinc-800/80 dark:!text-zinc-300 dark:hover:bg-zinc-700/80"
           }`}
       >
@@ -323,7 +323,7 @@ export function GuestsSafetyView({
             />
             <div>
               <h1 className="mb-2">{t("host_guest_safety_title")}</h1>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
+              <p className="text-sm leading-5 text-[#727272] dark:text-[#727272]">
                 {t("host_guest_safety_desc")}
               </p>
             </div>
@@ -341,12 +341,12 @@ export function GuestsSafetyView({
               className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
             >
               <div className="space-y-0.5">
-                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-[#1F1F1F] dark:group-hover:text-white transition-colors duration-300">
                   {t("host_safety_considerations")}
                 </h4>
-                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getConsiderationsSummary()}</p>
+                <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{getConsiderationsSummary()}</p>
               </div>
-              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-[#727272] dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
@@ -357,12 +357,12 @@ export function GuestsSafetyView({
               className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
             >
               <div className="space-y-0.5">
-                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-[#1F1F1F] dark:group-hover:text-white transition-colors duration-300">
                   {t("host_safety_devices")}
                 </h4>
-                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getDevicesSummary()}</p>
+                <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{getDevicesSummary()}</p>
               </div>
-              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-[#727272] dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
@@ -373,12 +373,12 @@ export function GuestsSafetyView({
               className="flex items-center justify-between py-5 cursor-pointer group hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 px-2 rounded-xl transition-colors"
             >
               <div className="space-y-0.5">
-                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300">
+                <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-[#1F1F1F] dark:group-hover:text-white transition-colors duration-300">
                   {t("host_property_info")}
                 </h4>
-                <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">{getPropertyInfoSummary()}</p>
+                <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{getPropertyInfoSummary()}</p>
               </div>
-              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#1f1f1f] group-hover:text-zinc-700 dark:text-[#727272] dark:group-hover:text-zinc-300 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
@@ -396,14 +396,14 @@ export function GuestsSafetyView({
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_considerations_modal_title")}</h3>
-                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_safety_considerations_modal_desc")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-[#1f1f1f] hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-[#727272] font-semibold text-base cursor-pointer p-1"
+                className="text-[#1f1f1f] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-[#727272] font-semibold text-base cursor-pointer p-1"
               >
                 <CloseIcon className="size-6" />
               </button>
@@ -418,7 +418,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_unsuitable_children_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_unsuitable_children_desc")}
                     </p>
                     <button
@@ -441,14 +441,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.unsuitableChildrenDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableChildrenDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableChildrenDetails", e.target.value)}
                       placeholder={t("host_safety_unsuitable_children_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -462,7 +462,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_unsuitable_infants_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_unsuitable_infants_desc")}
                     </p>
                     <button
@@ -485,14 +485,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.unsuitableInfantsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.unsuitableInfantsDetails || ""}
                       onChange={(e) => updateConsideration("unsuitableInfantsDetails", e.target.value)}
                       placeholder={t("host_safety_unsuitable_infants_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -506,7 +506,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_pool_no_gate_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_pool_no_gate_desc")}
                     </p>
                   </div>
@@ -522,14 +522,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.poolNoGateDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.poolNoGateDetails || ""}
                       onChange={(e) => updateConsideration("poolNoGateDetails", e.target.value)}
                       placeholder={t("host_safety_pool_no_gate_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -543,7 +543,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_nearby_water_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_nearby_water_desc")}
                     </p>
                   </div>
@@ -559,14 +559,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.nearbyWaterDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.nearbyWaterDetails || ""}
                       onChange={(e) => updateConsideration("nearbyWaterDetails", e.target.value)}
                       placeholder={t("host_safety_nearby_water_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -580,7 +580,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_climbing_structure_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_climbing_structure_desc")}
                     </p>
                   </div>
@@ -596,14 +596,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.climbingStructureDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.climbingStructureDetails || ""}
                       onChange={(e) => updateConsideration("climbingStructureDetails", e.target.value)}
                       placeholder={t("host_safety_climbing_structure_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -617,7 +617,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_heights_no_rails_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_heights_no_rails_desc")}
                     </p>
                   </div>
@@ -633,14 +633,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.heightsNoRailsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.heightsNoRailsDetails || ""}
                       onChange={(e) => updateConsideration("heightsNoRailsDetails", e.target.value)}
                       placeholder={t("host_safety_heights_no_rails_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -654,7 +654,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_dangerous_animals_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_dangerous_animals_desc")}
                     </p>
                     <button
@@ -677,14 +677,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_label")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.dangerousAnimalsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
                       value={draftState.considerations.dangerousAnimalsDetails || ""}
                       onChange={(e) => updateConsideration("dangerousAnimalsDetails", e.target.value)}
                       placeholder={t("host_safety_dangerous_animals_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -698,7 +698,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_special_considerations_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_special_considerations_desc")}
                     </p>
                     <button
@@ -723,7 +723,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_special_considerations_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.considerations.specialConsiderationsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -739,7 +739,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_special_considerations_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.specialConsiderationsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.specialConsiderationsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -791,14 +791,14 @@ export function GuestsSafetyView({
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_devices_modal_title")}</h3>
-                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_safety_devices_modal_desc")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
+                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
               >
                 ✕
               </button>
@@ -813,10 +813,10 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_security_camera_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_security_camera_desc")}
                     </p>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed italic pt-0.5">
                       {t("host_safety_security_camera_note")}
                     </p>
                     <button
@@ -841,7 +841,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_security_camera_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.securityCameraDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.devices.securityCameraDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -857,7 +857,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_security_camera_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.securityCameraDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.securityCameraDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -877,7 +877,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_noise_monitor_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_noise_monitor_desc")}
                     </p>
                     <button
@@ -902,7 +902,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_noise_monitor_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.devices.noiseMonitorDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -918,7 +918,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_noise_monitor_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noiseMonitorDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noiseMonitorDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -938,7 +938,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_carbon_monoxide_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_carbon_monoxide_desc")}
                     </p>
                     <button
@@ -961,14 +961,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_optional")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.devices.carbonMonoxideAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.carbonMonoxideAlarmDetails || ""}
                       onChange={(e) => updateDevice("carbonMonoxideAlarmDetails", e.target.value)}
                       placeholder={t("host_safety_carbon_monoxide_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -982,7 +982,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_smoke_alarm_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_smoke_alarm_desc")}
                     </p>
                     <button
@@ -1005,14 +1005,14 @@ export function GuestsSafetyView({
                   <div className="rounded-2xl bg-zinc-50/90 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700 p-3.5 space-y-2 animate-in fade-in">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_safety_add_details_optional")}</label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.devices.smokeAlarmDetails || "").length}/500</span>
                     </div>
                     <input
                       type="text"
                       value={draftState.devices.smokeAlarmDetails || ""}
                       onChange={(e) => updateDevice("smokeAlarmDetails", e.target.value)}
                       placeholder={t("host_safety_smoke_alarm_placeholder")}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
+                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors"
                       maxLength={500}
                     />
                   </div>
@@ -1058,14 +1058,14 @@ export function GuestsSafetyView({
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
                 <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_property_info_modal_title")}</h3>
-                <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_property_info_modal_desc")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
+                className="text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-base cursor-pointer p-1"
               >
                 ✕
               </button>
@@ -1080,7 +1080,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_climb_stairs_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_climb_stairs_desc")}
                     </p>
                   </div>
@@ -1098,7 +1098,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_climb_stairs_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.climbStairsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1114,7 +1114,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_climb_stairs_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.climbStairsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.climbStairsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1134,7 +1134,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_potential_noise_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_potential_noise_desc")}
                     </p>
                   </div>
@@ -1152,7 +1152,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_potential_noise_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.potentialNoiseDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1168,7 +1168,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_potential_noise_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.potentialNoiseDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.potentialNoiseDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1188,7 +1188,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_pets_live_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_pets_live_desc")}
                     </p>
                   </div>
@@ -1206,7 +1206,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_pets_live_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.petsLiveOnPropertyDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1222,7 +1222,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_pets_live_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.petsLiveOnPropertyDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.petsLiveOnPropertyDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1242,7 +1242,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_no_parking_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_no_parking_desc")}
                     </p>
                   </div>
@@ -1260,7 +1260,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_no_parking_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.noParkingDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1276,7 +1276,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_no_parking_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noParkingDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.noParkingDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1296,7 +1296,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_shared_spaces_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_shared_spaces_desc")}
                     </p>
                   </div>
@@ -1314,7 +1314,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_shared_spaces_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.sharedSpacesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1330,7 +1330,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_shared_spaces_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.sharedSpacesDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.sharedSpacesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1350,7 +1350,7 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_limited_amenities_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_limited_amenities_desc")}
                     </p>
                   </div>
@@ -1368,7 +1368,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_limited_amenities_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.limitedAmenitiesDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1384,7 +1384,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_limited_amenities_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.limitedAmenitiesDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.limitedAmenitiesDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1404,10 +1404,10 @@ export function GuestsSafetyView({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block">
                       {t("host_safety_weapons_title")}
                     </span>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
                       {t("host_safety_weapons_desc")}
                     </p>
-                    <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed italic pt-0.5">
+                    <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed italic pt-0.5">
                       {t("host_safety_weapons_note")}
                     </p>
                     <button
@@ -1432,7 +1432,7 @@ export function GuestsSafetyView({
                       <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                         {t("host_safety_weapons_label")}
                       </label>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{(draftState.propertyInfo.weaponsDetails || "").length}/500</span>
                     </div>
                     <textarea
                       rows={2}
@@ -1448,7 +1448,7 @@ export function GuestsSafetyView({
                         }
                       }}
                       placeholder={t("host_safety_weapons_placeholder")}
-                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.weaponsDetails
+                      className={`w-full text-xs p-2.5 rounded-xl border bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 focus:outline-none transition-colors ${validationErrors.weaponsDetails
                           ? "border-rose-400 focus:border-rose-500 ring-1 ring-rose-300 dark:border-rose-500"
                           : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-zinc-100"
                         }`}
@@ -1499,7 +1499,7 @@ export function GuestsSafetyView({
             <button
               type="button"
               onClick={() => setLearnMoreTopic(null)}
-              className="absolute top-5 right-5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-5 right-5 text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-zinc-100 font-semibold text-sm cursor-pointer p-1"
             >
               ✕
             </button>
@@ -1522,7 +1522,7 @@ export function GuestsSafetyView({
                   <p>
                     {t("host_safety_learn_camera_p1")}
                   </p>
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="font-medium text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_safety_learn_camera_p2")}
                   </p>
                 </>
@@ -1573,7 +1573,7 @@ export function GuestsSafetyView({
               <button
                 type="button"
                 onClick={() => setLearnMoreTopic(null)}
-                className="rounded-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs px-6 py-2 transition-all cursor-pointer"
+                className="rounded-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-[#1F1F1F] font-medium text-xs px-6 py-2 transition-all cursor-pointer"
               >
                 {t("host_safety_close")}
               </button>

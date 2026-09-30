@@ -93,7 +93,7 @@ export function RegisterForm() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
@@ -124,7 +124,7 @@ export function RegisterForm() {
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Creating account…" : "Create account"}
       </button>
-      <p className="text-center text-sm text-zinc-500">
+      <p className="text-center text-sm text-[#727272]">
         Already have an account?{" "}
         <Link
           href="/login"

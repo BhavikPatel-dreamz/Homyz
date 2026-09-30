@@ -208,7 +208,7 @@ function AdminEditorSidebar({
             href={routeBase || "/admin/listings"}
             className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface)] transition-all cursor-pointer shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           >
-            <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)] dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)] dark:text-[#727272]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Back</span>
@@ -598,7 +598,7 @@ export function EditorSidebar({
             }}
             className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
-              : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-[#727272] dark:hover:bg-zinc-700"
               }`}
           >
             <Image src="/images/icons/setting-icon.svg" alt="" width={24} height={24} className="h-6 w-6 transition-[filter] group-hover:brightness-0 group-hover:invert dark:invert dark:group-hover:invert-0" />
@@ -679,7 +679,7 @@ export function EditorSidebar({
                       {t("host_sidebar_languages")}
                     </span>
                     <p
-                      className="max-w-[15rem] truncate text-sm font-normal text-zinc-500 dark:text-zinc-400"
+                      className="max-w-[15rem] truncate text-sm font-normal text-[#727272] dark:text-[#727272]"
                       title={getLanguageDisplayNames(
                         Array.isArray(listing?.languages) ? listing.languages : [],
                       ).join(", ")}
@@ -714,7 +714,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_guest_requirements")}
                     </span>
-                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {listing?.requireProfilePhoto ? t("host_profile_photo_required") : t("host_profile_photo_not_required")}
                     </p>
                   </div>
@@ -740,7 +740,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_local_laws")}
                     </span>
-                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_sidebar_local_laws_desc")}
                     </p>
                   </div>
@@ -766,7 +766,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_regulations")}
                     </span>
-                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_sidebar_regulations_desc")}
                     </p>
                   </div>
@@ -792,7 +792,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_taxes")}
                     </span>
-                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_sidebar_taxes_desc")}
                     </p>
                   </div>
@@ -828,12 +828,12 @@ export function EditorSidebar({
                         if (type === "DISCOUNT") {
                           const pct = Number(org.discountPercentage) || Number(org.discount) || 0;
                           return (
-                            <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">{pct}% off for homyz.org guests</p>
+                            <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{pct}% off for homyz.org guests</p>
                           );
                         }
-                        return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">Available for homyz.org guests</p>;
+                        return <p className="text-base text-[#727272] dark:text-[#727272] font-normal">Available for homyz.org guests</p>;
                       }
-                      return <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">{t("host_sidebar_homyz_org_stays_desc") || "Learn how you can help"}</p>;
+                      return <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_sidebar_homyz_org_stays_desc") || "Learn how you can help"}</p>;
                     })()}
                   </div>
                   <Image
@@ -861,7 +861,7 @@ export function EditorSidebar({
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_remove_listing")}
                     </span>
-                    <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_sidebar_remove_listing_desc")}
                     </p>
                   </div>
@@ -968,7 +968,7 @@ export function EditorSidebar({
                             className="w-full h-full object-cover transition-all duration-300"
                           />
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                          <div className="w-full h-full flex flex-col items-center justify-center text-[#727272]">
                             <span className="text-2xl mb-1">🏡</span>
                           </div>
                         )}
@@ -1015,7 +1015,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     {t("host_property_type_heading")}
                   </span>
-                  <span className="text-base font-normal text-[#727272] dark:text-zinc-400 block">
+                  <span className="text-base font-normal text-[#727272] dark:text-[#727272] block">
                     {listingTypeLabel(editListingType, t)} · {propertyTypeLabel(editPropertyType, t)}
                   </span>
                 </div>
@@ -1114,7 +1114,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5 dark:text-zinc-100">
                     {t("host_description_heading")}
                   </span>
-                  <p className="text-base font-normal text-[#727272] line-clamp-3 leading-relaxed dark:text-zinc-400">
+                  <p className="text-base font-normal text-[#727272] line-clamp-3 leading-relaxed dark:text-[#727272]">
                     {editDescription || t("host_no_description_yet")}
                   </p>
                 </div>
@@ -1185,7 +1185,7 @@ export function EditorSidebar({
                             <span className="min-w-0 flex-1 truncate font-medium">
                               {ACCESSIBILITY_FEATURE_KEYS[featureId] ? t(ACCESSIBILITY_FEATURE_KEYS[featureId]) : featureId.replace(/_/g, " ")}
                             </span>
-                            <span className="shrink-0 text-[10px] text-zinc-400">{detail?.photos.length ?? 0} {t("host_photos_label")}</span>
+                            <span className="shrink-0 text-[10px] text-[#727272]">{detail?.photos.length ?? 0} {t("host_photos_label")}</span>
                           </div>
                         );
                       })}
@@ -1450,10 +1450,10 @@ export function EditorSidebar({
                     {t("host_cancellation_policy_title")}
                   </span>
                   <div className="space-y-0.5">
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-[#727272] font-normal">
                       {t("host_for_short_term", { policy: cancellationPolicyLabel(cancellationPolicy, t) })}
                     </p>
-                    <p className="text-base text-zinc-500 font-normal">
+                    <p className="text-base text-[#727272] font-normal">
                       {t("host_for_long_term", { policy: longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term") })}
                     </p>
                   </div>
@@ -1470,7 +1470,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     {t("host_custom_link")}
                   </span>
-                  <p className="text-base text-zinc-500 dark:text-zinc-400 font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
+                  <p className="text-base text-[#727272] dark:text-[#727272] font-normal truncate" title={customSlug ? `homyz.com/stay/${customSlug}` : undefined}>
                     {customSlug ? `homyz.com/stay/${customSlug}` : t("host_add_details")}
                   </p>
                 </div>
@@ -1521,7 +1521,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_wifi_details")}
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
+                  <p className="text-base text-[#727272] font-normal">
                     {wifiNetwork ? wifiNetwork : t("host_add_details")}
                   </p>
                 </div>
@@ -1539,7 +1539,7 @@ export function EditorSidebar({
                     </span>
 
                   </div>
-                  <p className="text-base text-zinc-500 font-normal truncate">
+                  <p className="text-base text-[#727272] font-normal truncate">
                     {directions && directions.trim() ? directions : t("host_add_details")}
                   </p>
                 </div>
@@ -1555,7 +1555,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_house_manual")}
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
+                  <p className="text-base text-[#727272] font-normal">
                     {houseManual ? houseManual.slice(0, 30) + "..." : t("host_add_details")}
                   </p>
                 </div>
@@ -1571,7 +1571,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_parking")}
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
+                  <p className="text-base text-[#727272] font-normal">
                     {parkingAvailable ? `${parkingType || "Free"} parking` : t("host_no_parking_specified")}
                   </p>
                 </div>
@@ -1605,7 +1605,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_guidebooks")}
                   </span>
-                  <p className="text-base text-zinc-500 font-normal line-clamp-2 leading-relaxed">
+                  <p className="text-base text-[#727272] font-normal line-clamp-2 leading-relaxed">
                     {t("host_create_guidebook_desc")}
                   </p>
                 </div>
@@ -1623,7 +1623,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_interaction_preferences")}
                   </span>
-                  <p className="text-base text-zinc-500 font-normal">
+                  <p className="text-base text-[#727272] font-normal">
                     {t("host_add_details")}
                   </p>
                 </div>

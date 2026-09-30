@@ -145,7 +145,7 @@ function ProfileCompletionDialog({
           <h2 id="profile-completion-title" className="text-xl font-semibold tracking-tight">
             Let&apos;s complete your profile
           </h2>
-          <p id="profile-completion-description" className="mt-1 text-sm text-zinc-500">
+          <p id="profile-completion-description" className="mt-1 text-sm text-[#727272]">
             This information is required to use your Homyz account.
           </p>
         </div>
@@ -274,14 +274,14 @@ function ProfileCompletionDialog({
                   required
                   disabled={pending}
                   aria-invalid={Boolean(fieldErrors.phone)}
-                  className="h-12 flex-1 min-w-0 rounded-xl border border-zinc-300 bg-white px-4 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition focus:border-[#1F1F1F] focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100"
+                  className="h-12 flex-1 min-w-0 rounded-xl border border-zinc-300 bg-white px-4 text-sm text-[#1F1F1F] placeholder:text-[#727272] outline-none transition focus:border-[#1F1F1F] focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100"
                 />
               </div>
 
               {fieldErrors.phone ? (
                 <p className="mt-1.5 text-xs text-red-600">{fieldErrors.phone}</p>
               ) : (
-                <p className="mt-1.5 text-xs text-zinc-500">
+                <p className="mt-1.5 text-xs text-[#727272]">
                   Select your country, then enter your local number.
                 </p>
               )}

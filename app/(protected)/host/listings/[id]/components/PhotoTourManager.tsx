@@ -60,7 +60,7 @@ function RoomSelect({
           </optgroup>
         ))}
       </select>
-      <svg aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <svg aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#727272] dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
       </svg>
     </div>
@@ -345,7 +345,7 @@ export function PhotoTourManager({
 
         <div className="space-y-3 p-3.5">
           <div>
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-400" htmlFor={`photo-room-${index}`}>
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.1em] text-[#727272] dark:text-[#727272]" htmlFor={`photo-room-${index}`}>
               {t("host_room_label", "Room")}
             </label>
             <RoomSelect
@@ -358,7 +358,7 @@ export function PhotoTourManager({
             />
           </div>
           <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-3 text-center sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-zinc-200 dark:border-zinc-700 dark:sm:divide-zinc-700">
-            <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="col-span-2 flex min-h-11 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] font-medium leading-4 text-[#1f1f1f] transition hover:border-zinc-300 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:border-zinc-100 disabled:bg-zinc-50 disabled:text-zinc-400 disabled:opacity-100 sm:col-span-1 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-2 sm:hover:bg-transparent sm:hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700/50 dark:disabled:border-zinc-700 dark:disabled:bg-zinc-900/30 dark:disabled:text-zinc-500 dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-white">
+            <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="col-span-2 flex min-h-11 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] font-medium leading-4 text-[#1f1f1f] transition hover:border-zinc-300 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:border-zinc-100 disabled:bg-zinc-50 disabled:text-[#727272] disabled:opacity-100 sm:col-span-1 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-2 sm:hover:bg-transparent sm:hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700/50 dark:disabled:border-zinc-700 dark:disabled:bg-zinc-900/30 dark:disabled:text-[#727272] dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-white">
               {index === 0 ? t("host_cover_photo") : t("host_make_cover")}
             </button>
             <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="flex min-h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-[13px] font-medium leading-4 text-[#1f1f1f] transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 sm:rounded-none sm:border-0 sm:bg-transparent sm:hover:bg-transparent sm:hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700/50 dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-white">{t("host_replace_photo")}</button>
@@ -382,7 +382,7 @@ export function PhotoTourManager({
         <header className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm">
           <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="mb-2 text-sm font-semibold text-[#727272] dark:text-zinc-400">{t("host_your_space")}</p>
+              <p className="mb-2 text-sm font-semibold text-[#727272] dark:text-[#727272]">{t("host_your_space")}</p>
               <h1>{t("host_photo_tour")}</h1>
               <p className="mt-2 max-w-xl text-sm leading-5 text-[#727272] dark:text-zinc-300">{t("host_photo_tour_desc")}</p>
             </div>
@@ -396,20 +396,20 @@ export function PhotoTourManager({
             </div>
           </div>
           <div className="grid divide-y border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/50 sm:grid-cols-3 sm:divide-x sm:divide-zinc-200 dark:sm:divide-zinc-700 sm:divide-y-0">
-            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-zinc-400">{t("host_gallery_photos", "Gallery photos")}</p><p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{photos.length}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-zinc-400">{t("host_photos_unit", "photos")}</span></p></div>
-            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-zinc-400">{t("host_organized_by_room", "Organized by room")}</p><p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{assignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-zinc-400">{t("host_assigned_unit", "assigned")}</span></p></div>
-            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-zinc-400">{t("host_still_to_organize", "Still to organize")}</p><p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{unassignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-zinc-400">{t("host_unassigned_unit", "unassigned")}</span></p></div>
+            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_gallery_photos", "Gallery photos")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{photos.length}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_photos_unit", "photos")}</span></p></div>
+            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_organized_by_room", "Organized by room")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{assignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_assigned_unit", "assigned")}</span></p></div>
+            <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_still_to_organize", "Still to organize")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{unassignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_unassigned_unit", "unassigned")}</span></p></div>
           </div>
           <div className="border-t border-zinc-200 bg-white px-5 py-4 dark:border-zinc-700 dark:bg-zinc-800 sm:px-6">
             <div className="mb-2.5 flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-[#1f1f1f] dark:text-zinc-300">{t("host_photo_types_available", "Photo types available to assign")}</p>
               <div className="flex items-center gap-1.5">
-                <button type="button" aria-label={t("host_scroll_room_types_left", "Scroll room types left")} onClick={() => scrollRoomTypes("left")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100">
+                <button type="button" aria-label={t("host_scroll_room_types_left", "Scroll room types left")} onClick={() => scrollRoomTypes("left")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-[#1F1F1F] dark:hover:text-zinc-100">
                   <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
                   </svg>
                 </button>
-                <button type="button" aria-label={t("host_scroll_room_types_right", "Scroll room types right")} onClick={() => scrollRoomTypes("right")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100">
+                <button type="button" aria-label={t("host_scroll_room_types_right", "Scroll room types right")} onClick={() => scrollRoomTypes("right")} className="flex size-7 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 transition hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-[#1F1F1F] dark:hover:text-zinc-100">
                   <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
                   </svg>
@@ -458,8 +458,8 @@ export function PhotoTourManager({
           <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 shadow-sm">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{t("host_add_room_or_space_title", "Add a room or space")}</h2>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("host_add_room_or_space_subtitle", "Search and assign your selected photos to the right area.")}</p>
+                <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_add_room_or_space_title", "Add a room or space")}</h2>
+                <p className="text-sm text-zinc-600 dark:text-[#727272]">{t("host_add_room_or_space_subtitle", "Search and assign your selected photos to the right area.")}</p>
               </div>
               <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#1f1f1f] hover:border-[#1f1f1f] dark:border-zinc-700 px-2.5 py-1 text-base font-medium text-[#1f1f1f] hover:text-white dark:text-zinc-300 dark:hover:border-zinc-600 transition duration-300">{t("host_close", "Close")}</button>
             </div>
@@ -467,14 +467,14 @@ export function PhotoTourManager({
               value={roomSearch}
               onChange={(event) => setRoomSearch(event.target.value)}
               placeholder={t("host_search_rooms_placeholder", "Search rooms and spaces")}
-              className="mb-4 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
+              className="mb-4 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
             />
             <div className="max-h-80 space-y-4 overflow-y-auto pr-1">
               {filteredRoomOptions.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-sm text-zinc-500 dark:text-zinc-400">{t("host_no_matching_rooms", "No matching room types found.")}</p>
+                <p className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-sm text-[#727272] dark:text-[#727272]">{t("host_no_matching_rooms", "No matching room types found.")}</p>
               ) : filteredRoomOptions.map((group) => (
                 <div key={group.label}>
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">{group.label}</p>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#727272] dark:text-[#727272]">{group.label}</p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {group.options.map((option) => (
                       <button
@@ -500,8 +500,8 @@ export function PhotoTourManager({
         {isLoading ? <PhotosSkeleton /> : (
           <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const files = Array.from(event.dataTransfer.files); if (files.length) void uploadFiles(files); }} className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#727272] bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/60">
-              <p className="text-sm text-[#1f1f1f] dark:text-zinc-400">{t("host_drag_photo_instruction", "Drag photos to reorder them. The first photo is shown as your listing cover.")}</p>
-              {photos.length > 0 && <button type="button" onClick={() => setSelectedIndices(new Set(photos.map((_, index) => index)))} disabled={controlsDisabled} className="text-sm font-semibold text-zinc-900 underline underline-offset-4 transition hover:text-zinc-600 disabled:opacity-50 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_select_all", "Select all")}</button>}
+              <p className="text-sm text-[#1f1f1f] dark:text-[#727272]">{t("host_drag_photo_instruction", "Drag photos to reorder them. The first photo is shown as your listing cover.")}</p>
+              {photos.length > 0 && <button type="button" onClick={() => setSelectedIndices(new Set(photos.map((_, index) => index)))} disabled={controlsDisabled} className="text-sm font-semibold text-[#1F1F1F] underline underline-offset-4 transition hover:text-zinc-600 disabled:opacity-50 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_select_all", "Select all")}</button>}
             </div>
 
             {visibleRoomSections.map(({ roomType, label, description, accent }) => {
@@ -515,7 +515,7 @@ export function PhotoTourManager({
                       <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${accent}`}>{label.slice(0, 1)}</span>
                       <div>
                         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">{label}</h2>
-                        <p className="mt-0.5 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{description}</p>
+                        <p className="mt-0.5 text-xs leading-5 text-zinc-600 dark:text-[#727272]">{description}</p>
                       </div>
                     </div>
                     <span className="rounded-full bg-white dark:bg-zinc-800 border border-transparent dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 shadow-sm">{roomPhotos.length}</span>
@@ -525,7 +525,7 @@ export function PhotoTourManager({
                       {roomPhotos.map(({ photo, index }) => renderPhoto(photo, index))}
                     </div>
                   ) : (
-                    <div className="m-4 flex min-h-28 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">{t("host_no_photos_assigned_here", "No photos assigned here yet.")}</div>
+                    <div className="m-4 flex min-h-28 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 text-center text-sm text-[#727272] dark:border-zinc-700 dark:bg-zinc-900 dark:text-[#727272]">{t("host_no_photos_assigned_here", "No photos assigned here yet.")}</div>
                   )}
                 </section>
               );
@@ -536,7 +536,7 @@ export function PhotoTourManager({
                 <Image src="/images/icons/add-icon.svg" alt="" width={18} height={18} />
               </span>
               {t("host_add_more_photos_btn", "Add more photos")}
-              <span className="mt-1 text-xs font-normal text-zinc-500 dark:text-zinc-400">{t("host_photo_upload_specs", "JPEG, PNG, WebP, or AVIF · up to 10 MB each")}</span>
+              <span className="mt-1 text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_photo_upload_specs", "JPEG, PNG, WebP, or AVIF · up to 10 MB each")}</span>
             </button>
           </div>
         )}

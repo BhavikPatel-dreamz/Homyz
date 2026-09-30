@@ -188,7 +188,7 @@ export function AdminSettingsForm({
                     required
                     className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 pr-10 text-sm font-bold text-muted-foreground outline-none focus:border-[var(--accent)] transition-all font-mono"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-400 pointer-events-none">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#727272] pointer-events-none">
                     %
                   </span>
                 </div>
@@ -443,7 +443,7 @@ export function AdminSettingsForm({
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
                 aria-label="Toggle current password visibility"
               >
                 {showCurrentPassword ? (
@@ -475,7 +475,7 @@ export function AdminSettingsForm({
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
                 aria-label="Toggle new password visibility"
               >
                 {showNewPassword ? (
@@ -507,7 +507,7 @@ export function AdminSettingsForm({
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
                 aria-label="Toggle confirm password visibility"
               >
                 {showConfirmPassword ? (

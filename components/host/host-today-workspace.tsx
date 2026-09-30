@@ -469,10 +469,10 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
               <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[#FDE29B] text-2xl shadow-xs">
                 ☼
               </span>
-              <p className="text-lg font-semibold text-zinc-900">
+              <p className="text-lg font-semibold text-[#1F1F1F]">
                 {tab === "today" ? "A quiet day at home" : "Your next guests will appear here"}
               </p>
-              <p className="mt-2 text-sm text-zinc-500">
+              <p className="mt-2 text-sm text-[#727272]">
                 {filters.length
                   ? "Try clearing your listing filters to see all reservations."
                   : "Manage your calendar and pricing to attract more travelers."}
@@ -531,7 +531,7 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 <button
                   type="button"
                   onClick={() => setDraft([])}
-                  className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-zinc-900"
+                  className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-[#1F1F1F]"
                 >
                   Clear filters
                 </button>

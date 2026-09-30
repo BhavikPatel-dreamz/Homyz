@@ -80,7 +80,7 @@ export function ResultsSummaryBar({
         {headline}
       </h1>
       {subtitleParts.length > 0 && (
-        <p className="text-xs sm:text-sm text-zinc-500 font-normal mt-1.5 flex items-center gap-1.5 flex-wrap">
+        <p className="text-xs sm:text-sm text-[#727272] font-normal mt-1.5 flex items-center gap-1.5 flex-wrap">
           {subtitleParts.join(" · ")}
         </p>
       )}

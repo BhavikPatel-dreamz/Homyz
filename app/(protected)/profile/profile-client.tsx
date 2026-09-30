@@ -329,7 +329,7 @@ export function ProfileClient({
                         priority
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400">
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
                         <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
@@ -389,15 +389,15 @@ export function ProfileClient({
                 {hasHostProfileDetails && (
                   <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
                     <h3 className="text-xl font-semibold text-[#1F1F1F]">About me</h3>
-                    {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
-                    <div className="space-y-3 text-sm text-zinc-700">
+                    {pub.bio && <p className="text-base leading-6 text-[#1f1f1f]">{pub.bio}</p>}
+                    <div className="space-y-3 text-base text-[#1f1f1f]">
                       {hostPrompts.homeUnique && <p><span className="font-semibold">What makes my home unique: </span>{hostPrompts.homeUnique}</p>}
                       {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">What guests should know: </span>{hostPrompts.guestsShouldKnow}</p>}
                       {hostPrompts.education && <p><span className="font-semibold">Education / background: </span>{hostPrompts.education}</p>}
                       {hostPrompts.perfectGuest && <p><span className="font-semibold">Perfect guest: </span>{hostPrompts.perfectGuest}</p>}
                     </div>
-                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">Hobbies</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
-                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">My interests</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                  {hostHobbies.length > 0 && <div><p className="mb-2 text-base font-semibold text-[#1f1f1f]">Hobbies</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-[#F3F4F5] px-3 py-1 text-sm text-[#727272]">{hobby}</span>)}</div></div>}
+                  {hostInterests.length > 0 && <div><p className="mb-2 text-base font-semibold text-[#1f1f1f]">My interests</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-[#F3F4F5] px-3 py-1 text-sm text-[#727272]">{interest}</span>)}</div></div>}
                   </section>
                 )}
 
